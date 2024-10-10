@@ -67,6 +67,7 @@
 		7959F4D22ACDB7E20038B222 /* ExerciseDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7959F4D02ACDB7DE0038B222 /* ExerciseDTO.swift */; };
 		795A48812A6899A10008A458 /* Chronograph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795A48802A6899A10008A458 /* Chronograph.swift */; };
 		795BFA3028384C07005E59FE /* TemplateSet+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795BFA2F28384C07005E59FE /* TemplateSet+.swift */; };
+		795CF88E2CB5D1A20007E30B /* OverallSetsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795CF88D2CB5D1A20007E30B /* OverallSetsScreen.swift */; };
 		795D6E6327F50E6A00A71807 /* Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795D6E6227F50E6A00A71807 /* Timer.swift */; };
 		795D9B8B282EC34B00866C06 /* DropSet+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795D9B8A282EC34B00866C06 /* DropSet+.swift */; };
 		79602BEF2ACF39CF001A5046 /* TemplateSetDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79602BEE2ACF39CF001A5046 /* TemplateSetDTO.swift */; };
@@ -168,6 +169,7 @@
 		80D9A7DB28860BB1000BF05E /* WorkoutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D9A7DA28860BB1000BF05E /* WorkoutCell.swift */; };
 		80ED02902764D94200D59B75 /* ExerciseSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80ED028F2764D94200D59B75 /* ExerciseSelectionScreen.swift */; };
 		80F9C34B2704C4F000B6EBF2 /* Date+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9C34A2704C4F000B6EBF2 /* Date+.swift */; };
+		A004D4512CB2E009002914FF /* OverallSetsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A004D4502CB2E009002914FF /* OverallSetsTile.swift */; };
 		A06205B12CADEF1F0034BF47 /* MuscleGroupOccurancesChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = A06205B02CADEF1F0034BF47 /* MuscleGroupOccurancesChart.swift */; };
 /* End PBXBuildFile section */
 
@@ -257,6 +259,7 @@
 		7959F4D02ACDB7DE0038B222 /* ExerciseDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDTO.swift; sourceTree = "<group>"; };
 		795A48802A6899A10008A458 /* Chronograph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chronograph.swift; sourceTree = "<group>"; };
 		795BFA2F28384C07005E59FE /* TemplateSet+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TemplateSet+.swift"; sourceTree = "<group>"; };
+		795CF88D2CB5D1A20007E30B /* OverallSetsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverallSetsScreen.swift; sourceTree = "<group>"; };
 		795D6E6227F50E6A00A71807 /* Timer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timer.swift; sourceTree = "<group>"; };
 		795D9B8A282EC34B00866C06 /* DropSet+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DropSet+.swift"; sourceTree = "<group>"; };
 		79602BEE2ACF39CF001A5046 /* TemplateSetDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateSetDTO.swift; sourceTree = "<group>"; };
@@ -361,6 +364,7 @@
 		80E9FAEE26FE152100C670D5 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
 		80ED028F2764D94200D59B75 /* ExerciseSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSelectionScreen.swift; sourceTree = "<group>"; };
 		80F9C34A2704C4F000B6EBF2 /* Date+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+.swift"; sourceTree = "<group>"; };
+		A004D4502CB2E009002914FF /* OverallSetsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverallSetsTile.swift; sourceTree = "<group>"; };
 		A06205B02CADEF1F0034BF47 /* MuscleGroupOccurancesChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupOccurancesChart.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -486,6 +490,7 @@
 			children = (
 				79CC7A7C2C7A691E00674E22 /* CurrentWeekWeeklyTargetTile.swift */,
 				79CC7A802C7A7FC100674E22 /* MuscleGroupSplitTile.swift */,
+				A004D4502CB2E009002914FF /* OverallSetsTile.swift */,
 			);
 			path = Tiles;
 			sourceTree = "<group>";
@@ -657,6 +662,7 @@
 				80E9FAEE26FE152100C670D5 /* HomeScreen.swift */,
 				791F25A42AC1AE0800613793 /* MeasurementsScreen.swift */,
 				797EF7E529292E32003C2266 /* MuscleGroupSplitScreen.swift */,
+				795CF88D2CB5D1A20007E30B /* OverallSetsScreen.swift */,
 				791347B22AE2B7B700D20BB7 /* PrivacyPolicyScreen.swift */,
 				791DBE292AEA8351008B4E81 /* ScanScreen.swift */,
 				8033F98D27072B0600EC707A /* SettingsScreen.swift */,
@@ -1031,10 +1037,12 @@
 				798FBF812925571900A5F7F0 /* NavigationChevron.swift in Sources */,
 				79DB52112AE1724F00073423 /* NetworkMonitor.swift in Sources */,
 				79B27FE52AD8288A0026EF35 /* PurchaseManager.swift in Sources */,
+				A004D4512CB2E009002914FF /* OverallSetsTile.swift in Sources */,
 				79C07B2E2ABA535F000BF879 /* MeasurementController.swift in Sources */,
 				7907B5A5280B73E7003E5515 /* Database+Preview.swift in Sources */,
 				79B7C9B42BF2320A001B5353 /* StartWorkoutView.swift in Sources */,
 				7959F4D22ACDB7E20038B222 /* ExerciseDTO.swift in Sources */,
+				795CF88E2CB5D1A20007E30B /* OverallSetsScreen.swift in Sources */,
 				8058F49F268D2503006A94AC /* Workout+.swift in Sources */,
 				79B7C9B22BF228AF001B5353 /* FloatingStyle.swift in Sources */,
 				7955EEAE27FDC2F30010693C /* TemplateListScreen.swift in Sources */,

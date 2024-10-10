@@ -11,7 +11,7 @@ import SwiftUI
 struct HomeScreen: View {
 
     enum NavigationDestinationType: Hashable {
-        case targetPerWeek, muscleGroupsOverview, exerciseList, templateList
+        case targetPerWeek, muscleGroupsOverview, exerciseList, templateList, overallSets
     }
 
     // MARK: - AppStorage
@@ -98,7 +98,7 @@ struct HomeScreen: View {
                         views: [
                             currentWeekWeeklyTargetWidget,
                             muscleGroupPercentageView.widget(ofType: .muscleGroupsInLastTen, isAddedByDefault: true),
-                            setsPerWeek.widget(ofType: .setsPerWeek, isAddedByDefault: false),
+                            overallSetsView.widget(ofType: .setsPerWeek, isAddedByDefault: true),
                             workoutsPerMonth.widget(ofType: .workoutsPerMonth, isAddedByDefault: false),
                             volumePerDay.widget(ofType: .homeScreenVolumePerDay, isAddedByDefault: false)
                         ],
@@ -126,6 +126,7 @@ struct HomeScreen: View {
                 case .targetPerWeek: TargetPerWeekDetailScreen()
                 case .muscleGroupsOverview:
                     MuscleGroupSplitScreen()
+                case .overallSets: OverallSetsScreen()
                 }
             }
         }
@@ -163,30 +164,19 @@ struct HomeScreen: View {
             navigationDestinationType = .muscleGroupsOverview
         } label: {
             MuscleGroupSplitTile()
-            .contentShape(Rectangle())
+                .contentShape(Rectangle())
         }
         .buttonStyle(TileButtonStyle())
     }
-
-    private var setsPerWeek: some View {
-        VStack {
-            VStack(alignment: .leading) {
-                Text(NSLocalizedString("overallSets", comment: ""))
-                    .tileHeaderStyle()
-                Text(NSLocalizedString("PerWeek", comment: ""))
-                    .tileHeaderSecondaryStyle()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            DateBarChart(dateUnit: .weekOfYear) {
-                workoutSetRepository.getGroupedWorkoutsSets(in: .weekOfYear)
-                    .compactMap {
-                        guard let date = $0.first?.workout?.date else { return nil }
-                        return DateBarChart.Item(date: date, value: $0.count)
-                    }
-            }
+    
+    private var overallSetsView: some View {
+        Button {
+            navigationDestinationType = .overallSets
+        } label: {
+            OverallSetsTile()
+                .contentShape(Rectangle())
         }
-        .padding(CELL_PADDING)
-        .tileStyle()
+        .buttonStyle(TileButtonStyle())
     }
 
     private var workoutsPerMonth: some View {

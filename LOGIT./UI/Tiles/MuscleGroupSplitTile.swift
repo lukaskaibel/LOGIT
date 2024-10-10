@@ -34,6 +34,7 @@ struct MuscleGroupSplitTile: View {
                 }
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading) {
+                        Spacer()
                         Text(NSLocalizedString("focusedOn", comment: ""))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)

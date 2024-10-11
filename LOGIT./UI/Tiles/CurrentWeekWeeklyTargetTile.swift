@@ -31,10 +31,26 @@ struct CurrentWeekWeeklyTargetTile: View {
                 Spacer()
                 Text("\(targetPerWeek)")
                     .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
+                    .foregroundStyle(Color.accentColor.gradient)
                 NavigationChevron()
                     .foregroundStyle(.secondary)
             }
-            VStack(alignment: .leading) {
+            
+            
+//            .frame(maxWidth: .infinity, alignment: .trailing)
+//            VStack(alignment: .leading) {
+//                Text(NSLocalizedString("goal", comment: ""))
+//                    .fontWeight(.semibold)
+//                    .foregroundStyle(.secondary)
+//                
+//                Text(NSLocalizedString("PerWeek", comment: ""))
+//                    .fontWeight(.bold)
+//                    .fontDesign(.rounded)
+//                    .foregroundStyle(.secondary)
+//            }
+            VStack {
                 HStack(alignment: .lastTextBaseline) {
                     Text(NSLocalizedString("currentWeek", comment: ""))
                         .font(.body.weight(.semibold))
@@ -42,10 +58,13 @@ struct CurrentWeekWeeklyTargetTile: View {
                     if numberOfWorkoutsInCurrentWeek < targetPerWeek {
                         Label("\(targetPerWeek - numberOfWorkoutsInCurrentWeek) \(NSLocalizedString("toGo", comment: ""))", systemImage: "arrow.right.circle.fill")
                             .font(.footnote)
+                            .fontWeight(.semibold)
                             .foregroundStyle(.secondary)
                     } else {
                         Label(NSLocalizedString("done", comment: ""), systemImage: "checkmark.circle.fill")
                             .font(.footnote)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.accentColor.gradient)
                     }
                 }
                 HStack(spacing: 2) {
@@ -56,7 +75,7 @@ struct CurrentWeekWeeklyTargetTile: View {
                             bottomTrailing: index == targetPerWeek - 1 ? 10 : 0,
                             topTrailing: index == targetPerWeek - 1 ? 10 : 0
                         ))
-                        .foregroundStyle(index < numberOfWorkoutsInCurrentWeek ? .white : .placeholder)
+                        .foregroundStyle(index < numberOfWorkoutsInCurrentWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.placeholder))
                     }
                 }
                 .background(

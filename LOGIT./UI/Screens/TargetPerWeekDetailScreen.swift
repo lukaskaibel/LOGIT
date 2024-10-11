@@ -47,16 +47,19 @@ struct TargetPerWeekDetailScreen: View {
                                     VStack(alignment: .leading, spacing: 8) {
                                         HStack(alignment: .lastTextBaseline) {
                                             Text(Calendar.current.date(byAdding: .weekOfYear, value: -weeksFromNow, to: .now)!.weekDescription)
-                                                .fontWeight(isCurrentWeek ? .bold : .regular)
+                                                .fontWeight(isCurrentWeek ? .semibold : .regular)
                                             Spacer()
                                             if numberOfWorkoutsInWeek < targetPerWeek {
                                                 Label(
                                                     "\(targetPerWeek - numberOfWorkoutsInWeek) \(NSLocalizedString(isCurrentWeek ? "toGo" : "missing", comment: ""))", systemImage: isCurrentWeek ? "arrow.right.circle.fill" : "xmark.circle.fill")
                                                 .font(.footnote)
+                                                .fontWeight(.semibold)
                                                 .foregroundStyle(.secondary)
                                             } else {
                                                 Label(NSLocalizedString("completed", comment: ""), systemImage: "checkmark.circle.fill")
                                                     .font(.footnote)
+                                                    .fontWeight(.semibold)
+                                                    .foregroundStyle(Color.accentColor.gradient)
                                             }
                                         }
                                         HStack(spacing: 2) {
@@ -67,14 +70,14 @@ struct TargetPerWeekDetailScreen: View {
                                                     bottomTrailing: index == targetPerWeek - 1 ? 10 : 0,
                                                     topTrailing: index == targetPerWeek - 1 ? 10 : 0
                                                 ))
-                                                .foregroundStyle(index < numberOfWorkoutsInWeek ? .white : .placeholder)
+                                                .foregroundStyle(index < numberOfWorkoutsInWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.placeholder))
                                             }
                                         }
                                         .background(
                                             RoundedRectangle(cornerRadius: 10)
                                                 .foregroundStyle(Color.fill)
                                         )
-                                        .frame(height: 30)
+                                        .frame(height: 25)
                                     }
                                     .padding(CELL_PADDING)
                                     .tileStyle()
@@ -127,10 +130,13 @@ struct TargetPerWeekDetailScreen: View {
                     }
                 }
             } label: {
-                HStack {
+                HStack(spacing: 3) {
                     Text("\(targetPerWeek)")
                         .font(.system(size: 55))
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
                     Image(systemName: "chevron.up.chevron.down")
+                        .fontWeight(.bold)
                 }
             }
         }

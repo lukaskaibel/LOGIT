@@ -27,7 +27,7 @@ struct OverallSetsTile: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             HStack {
                 VStack(alignment: .leading) {
-                    Text(NSLocalizedString("currentWeek", comment: ""))
+                    Text(NSLocalizedString("thisWeek", comment: ""))
                         .fontWeight(.semibold)
                     Text("\(workoutRepository.getWorkouts(for: [.weekOfYear, .yearForWeekOfYear], including: .now).map({ $0.sets }).joined().count)")
                         .font(.largeTitle)

@@ -45,7 +45,7 @@ extension Date {
     
     var weekDescription: String {
         if Calendar.current.isDate(self, equalTo: .now, toGranularity: [.weekOfYear, .year]) {
-            return NSLocalizedString("currentWeek", comment: "")
+            return NSLocalizedString("thisWeek", comment: "")
         } else if Calendar.current.isDate(self, equalTo: Calendar.current.date(byAdding: .weekOfYear, value: -1, to: .now)!, toGranularity: [.weekOfYear, .year]) {
             return NSLocalizedString("lastWeek", comment: "")
         } else {

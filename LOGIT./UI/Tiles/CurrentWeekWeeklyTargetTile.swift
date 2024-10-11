@@ -52,7 +52,7 @@ struct CurrentWeekWeeklyTargetTile: View {
 //            }
             VStack {
                 HStack(alignment: .lastTextBaseline) {
-                    Text(NSLocalizedString("currentWeek", comment: ""))
+                    Text(NSLocalizedString("thisWeek", comment: ""))
                         .font(.body.weight(.semibold))
                     Spacer()
                     if numberOfWorkoutsInCurrentWeek < targetPerWeek {

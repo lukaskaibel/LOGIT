@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		790130A9291C4B9B00EF8955 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 790130A8291C4B9B00EF8955 /* Launch Screen.storyboard */; };
+		7903CBAF2CC2E89000235F88 /* ChangeWeeklyWorkoutGoalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7903CBAE2CC2E89000235F88 /* ChangeWeeklyWorkoutGoalScreen.swift */; };
 		7907B5A5280B73E7003E5515 /* Database+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7907B5A4280B73E7003E5515 /* Database+Preview.swift */; };
 		7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7907FDE9289E99B1006AF271 /* CloudKit.framework */; };
 		790E1A34279DB5B300EDB715 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 790E1A33279DB5B300EDB715 /* Database.swift */; };
@@ -199,6 +200,7 @@
 /* Begin PBXFileReference section */
 		22040B8B5D5971A78B9E3A04 /* Pods_LOGIT.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LOGIT.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		790130A8291C4B9B00EF8955 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
+		7903CBAE2CC2E89000235F88 /* ChangeWeeklyWorkoutGoalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeWeeklyWorkoutGoalScreen.swift; sourceTree = "<group>"; };
 		7907B5A4280B73E7003E5515 /* Database+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+Preview.swift"; sourceTree = "<group>"; };
 		7907FDE8289E99A5006AF271 /* LOGIT..entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LOGIT..entitlements; sourceTree = "<group>"; };
 		7907FDE9289E99B1006AF271 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
@@ -653,6 +655,7 @@
 		79A4E33327E9EBED0089001F /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				7903CBAE2CC2E89000235F88 /* ChangeWeeklyWorkoutGoalScreen.swift */,
 				799AAF2B2787831900C8BF0C /* ExerciseDetailScreen.swift */,
 				796D611827E53AB400E15F01 /* ExerciseEditScreen.swift */,
 				79F7E0FD27E67578006D4354 /* ExerciseListScreen.swift */,
@@ -1027,6 +1030,7 @@
 				7954AB792C7F53100088ECA3 /* Calendar+.swift in Sources */,
 				80F9C34B2704C4F000B6EBF2 /* Date+.swift in Sources */,
 				79EF10842C4FFFD4008444BA /* WorkoutSetGroupRepository.swift in Sources */,
+				7903CBAF2CC2E89000235F88 /* ChangeWeeklyWorkoutGoalScreen.swift in Sources */,
 				79743E052ADD82EC004E4DCC /* PreviewEnvironmentObjects.swift in Sources */,
 				7996D0A72AC49E700028FF22 /* BlockedWithoutProModifier.swift in Sources */,
 				79F7E10327E68FAC006D4354 /* SegmentedBarChart.swift in Sources */,

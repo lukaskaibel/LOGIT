@@ -5,9 +5,18 @@
 //  Created by Lukas Kaibel on 16.11.22.
 //
 
+import Charts
+import OSLog
 import SwiftUI
 
 struct TargetPerWeekDetailScreen: View {
+    
+    // MARK: - Static
+    
+    private static let logger = Logger(
+        subsystem: ".com.lukaskbl.LOGIT",
+        category: "MuscleGroupSplitScreen"
+    )
     
     // MARK: - AppStorage
     
@@ -18,126 +27,158 @@ struct TargetPerWeekDetailScreen: View {
     @EnvironmentObject var workoutRepository: WorkoutRepository
     
     // MARK: - State
-    
-    @State private var selectedMonthIndexFromNow: Int = 0
-    @State private var selectedIndexInWeekGroup: Int? = 0
-    @State private var isShowingWorkoutDetail: Bool = false
-    @State private var selectedWorkout: Workout? = nil
+
+    @State private var isShowingChangeGoalScreen = false
+    @State private var selectedWeeksFromNow = 0
     
     // MARK: - Body
     
     var body: some View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
-                header
-                    .padding(.horizontal)
-                LazyVStack(spacing: SECTION_SPACING) {
-                    ForEach(weeksSinceLogitStartGroupedByMonth, id:\.first) { weeksFromNowMonthGroup in
-                        VStack(spacing: SECTION_HEADER_SPACING) {
-                            Text(Calendar.current.date(byAdding: .weekOfYear, value: -weeksFromNowMonthGroup.first!, to: .now)?.startOfWeek.monthDescription ?? "")
-                                .sectionHeaderStyle2()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(spacing: CELL_SPACING) {
-                                ForEach(weeksFromNowMonthGroup, id:\.self) { weeksFromNow in
-                                    let isCurrentWeek = weeksFromNow == 0
-                                    let numberOfWorkoutsInWeek = workoutRepository.getWorkouts(
-                                        for: [.weekOfYear, .yearForWeekOfYear],
-                                        including: dateForWeeksAgo(weeksFromNow)!
-                                    ).count
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        HStack(alignment: .lastTextBaseline) {
-                                            Text(Calendar.current.date(byAdding: .weekOfYear, value: -weeksFromNow, to: .now)!.weekDescription)
-                                                .fontWeight(isCurrentWeek ? .semibold : .regular)
-                                            Spacer()
-                                            if numberOfWorkoutsInWeek < targetPerWeek {
-                                                Label(
-                                                    "\(targetPerWeek - numberOfWorkoutsInWeek) \(NSLocalizedString(isCurrentWeek ? "toGo" : "missing", comment: ""))", systemImage: isCurrentWeek ? "arrow.right.circle.fill" : "xmark.circle.fill")
-                                                .font(.footnote)
-                                                .fontWeight(.semibold)
-                                                .foregroundStyle(.secondary)
-                                            } else {
-                                                Label(NSLocalizedString("completed", comment: ""), systemImage: "checkmark.circle.fill")
-                                                    .font(.footnote)
-                                                    .fontWeight(.semibold)
-                                                    .foregroundStyle(Color.accentColor.gradient)
-                                            }
-                                        }
-                                        HStack(spacing: 2) {
-                                            ForEach(0..<targetPerWeek, id:\.self) { index in
-                                                UnevenRoundedRectangle(cornerRadii: .init(
-                                                    topLeading: index == 0 ? 10 : 0,
-                                                    bottomLeading: index == 0 ? 10 : 0,
-                                                    bottomTrailing: index == targetPerWeek - 1 ? 10 : 0,
-                                                    topTrailing: index == targetPerWeek - 1 ? 10 : 0
-                                                ))
-                                                .foregroundStyle(index < numberOfWorkoutsInWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.placeholder))
-                                            }
-                                        }
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(Color.fill)
-                                        )
-                                        .frame(height: 25)
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("workouts", comment: ""))
+                        .screenHeaderStyle()
+                    Text(NSLocalizedString("PerWeek", comment: ""))
+                         .screenHeaderSecondaryStyle()
+                         .foregroundColor(.secondaryLabel)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if #available(iOS 17.0, *) {
+                    VStack(spacing: 20) {
+                        HStack {
+                            Text(Calendar.current.date(byAdding: .weekOfYear, value: -selectedWeeksFromNow, to: .now)?.startOfWeek.weekDescription ?? "")
+                            Spacer()
+                            HStack {
+                                Button {
+                                    withAnimation {
+                                        selectedWeeksFromNow = selectedWeeksFromNow < 54 ? selectedWeeksFromNow + 1 : 0
                                     }
-                                    .padding(CELL_PADDING)
-                                    .tileStyle()
+                                } label: {
+                                    Image(systemName: "chevron.left")
                                 }
+                                .disabled(selectedWeeksFromNow >= 54)
+                                Button {
+                                    withAnimation {
+                                        selectedWeeksFromNow = selectedWeeksFromNow > 0 ? selectedWeeksFromNow - 1 : 0
+                                    }
+                                } label: {
+                                    Image(systemName: "chevron.right")
+                                }
+                                .disabled(selectedWeeksFromNow == 0)
                             }
                         }
-                    }
-                    .overlay {
-                        if workouts.isEmpty {
-                            Text(NSLocalizedString("noData", comment: ""))
-                                .fontWeight(.bold)
-                                .foregroundColor(.secondaryLabel)
+                        .font(.title3)
+                        
+                        TabView(selection: $selectedWeeksFromNow) {
+                            ForEach(Array<Int>(0..<54).reversed(), id:\.self) { weeksFromNow in
+                                let numberOfWorkoutsInCurrentWeek = getWorkouts(inWeeksFromNow: weeksFromNow).count
+                                Chart {
+                                    ForEach(0..<targetPerWeek, id:\.self) { value in
+                                        SectorMark(
+                                            angle: .value("Value", 1),
+                                            innerRadius: .ratio(0.65),
+                                            angularInset: 1
+                                        )
+                                        .foregroundStyle(value < numberOfWorkoutsInCurrentWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.fill))
+                                    }
+                                }
+                                .overlay {
+                                    if numberOfWorkoutsInCurrentWeek >= targetPerWeek {
+                                        Image(systemName: "checkmark")
+                                            .font(.title)
+                                            .fontWeight(.bold)
+                                            .foregroundStyle(Color.accentColor.gradient)
+                                    } else {
+                                        VStack(spacing: 0) {
+                                            Text("\(targetPerWeek - numberOfWorkoutsInCurrentWeek)")
+                                                .font(.title3)
+                                                .fontWeight(.semibold)
+                                            Text(NSLocalizedString("toGo", comment: ""))
+                                                .font(.footnote)
+                                                .textCase(.uppercase)
+                                        }
+                                        .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .frame(width: 200, height: 200)
+                                .tag(weeksFromNow)
+                            }
+                        }
+                        .tabViewStyle(.page(indexDisplayMode: .never))
+                        .frame(height: 250)
+                        
+                        HStack(alignment: .firstTextBaseline) {
+                            Spacer()
+                            VStack {
+                                let numberOfWorkoutsInCurrentWeek = getWorkouts(inWeeksFromNow: selectedWeeksFromNow).count
+                                Text("\(numberOfWorkoutsInCurrentWeek)")
+                                    .font(.title)
+                                    .fontDesign(.rounded)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.accentColor.gradient)
+                                Text(NSLocalizedString("workout\(numberOfWorkoutsInCurrentWeek == 1 ? "" : "s")", comment: ""))
+                                    .textCase(.uppercase)
+                                    .font(.footnote)
+                                    .foregroundStyle(Color.accentColor.gradient)
+                            }
+                            .frame(maxWidth: .infinity)
+                            Text("/")
+                                .textCase(.uppercase)
+                                .font(.title2)
+                                .fontDesign(.rounded)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.secondary)
+                            
+                            VStack {
+                                Text("\(targetPerWeek)")
+                                    .font(.title)
+                                    .fontDesign(.rounded)
+                                    .fontWeight(.bold)
+                                Text(NSLocalizedString("goal", comment: ""))
+                                    .textCase(.uppercase)
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            Spacer()
                         }
                     }
                 }
-                .padding(.horizontal)
+                Spacer()
+                Button {
+                    isShowingChangeGoalScreen = true
+                } label: {
+                    Label("Change Goal", systemImage: "plusminus.circle")
+                }
+                .buttonStyle(SecondaryBigButtonStyle())
             }
+            .padding(.horizontal)
+            .padding(.bottom)
+            VStack(spacing: SECTION_HEADER_SPACING) {
+                Text(NSLocalizedString("workouts", comment: ""))
+                    .sectionHeaderStyle2()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(spacing: CELL_SPACING) {
+                    ForEach(getWorkouts(inWeeksFromNow: selectedWeeksFromNow)) { workout in
+                        WorkoutCell(workout: workout)
+                            .padding(CELL_PADDING)
+                            .secondaryTileStyle()
+                    }
+                    .emptyPlaceholder(getWorkouts(inWeeksFromNow: 0)) {
+                        Text(NSLocalizedString("noWorkouts", comment: ""))
+                    }
+                }
+            }
+            .padding()
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+            .background(Color.secondaryBackground)
+            .edgesIgnoringSafeArea(.bottom)
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: $isShowingWorkoutDetail) {
-            if let workout = selectedWorkout {
-                WorkoutDetailScreen(workout: workout, canNavigateToTemplate: true)
-            }
-        }
-    }
-    
-    // MARK: - Supporting Views
-    
-    private var header: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(NSLocalizedString("workoutGoal", comment: ""))
-                    .screenHeaderStyle()
-                Text("\(NSLocalizedString("PerWeek", comment: ""))")
-                    .screenHeaderSecondaryStyle()
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
-            Menu {
-                ForEach(1...10, id:\.self) { value in
-                    Button {
-                        targetPerWeek = value
-                    } label: {
-                        Text("\(value) \(NSLocalizedString("workout\(value == 1 ? "" : "s")", comment: ""))")
-                        Text("\(NSLocalizedString("perWeek", comment: ""))")
-                        if value == targetPerWeek {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-            } label: {
-                HStack(spacing: 3) {
-                    Text("\(targetPerWeek)")
-                        .font(.system(size: 55))
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
-                    Image(systemName: "chevron.up.chevron.down")
-                        .fontWeight(.bold)
-                }
+        .sheet(isPresented: $isShowingChangeGoalScreen) {
+            NavigationStack {
+                ChangeWeeklyWorkoutGoalScreen()
             }
         }
     }
@@ -148,32 +189,20 @@ struct TargetPerWeekDetailScreen: View {
         workoutRepository.getWorkouts(sortedBy: .date)
     }
     
-    private var numberOfWeeksSinceLogitStart: Int {
-        let logitStartDate = Calendar.current.date(from: .init(year: 2023, month: 1, day: 2))
-        return Calendar.current.dateComponents([.weekOfYear], from: logitStartDate!, to: .now).weekOfYear!
-    }
-    
-    private var weeksSinceLogitStartGroupedByMonth: [[Int]] {
-        Array(0...numberOfWeeksSinceLogitStart).reduce([[Int]]()) { currentResult, nextValue in
-            guard let lastMonth = currentResult.last, !lastMonth.isEmpty else {
-                return currentResult + [[nextValue]]
-            }
-            
-            let currentWeekDate = Calendar.current.date(byAdding: .weekOfYear, value: -nextValue, to: Date())!.startOfWeek
-            let lastMonthWeekDate = Calendar.current.date(byAdding: .weekOfYear, value: -lastMonth.first!, to: Date())!.startOfWeek
-            
-            if Calendar.current.isDate(currentWeekDate, equalTo: lastMonthWeekDate, toGranularity: .month) {
-                var newResult = currentResult
-                newResult[newResult.count - 1].append(nextValue)
-                return newResult
-            } else {
-                return currentResult + [[nextValue]]
-            }
+    private func getWorkouts(inWeeksFromNow weeksFromNow: Int) -> [Workout] {
+        guard let weeksFromNowDate = Calendar.current.date(
+            byAdding: .weekOfYear,
+            value: -weeksFromNow,
+            to: .now
+        ) else {
+            Self.logger.warning("weeksFromNowDate could not be created.")
+            return []
         }
-    }
-    
-    private func dateForWeeksAgo(_ weeksAgo: Int) -> Date? {
-        return Calendar.current.date(byAdding: .day, value: -(7 * weeksAgo), to: .now, wrappingComponents: false)
+        let workoutsInWeek = workoutRepository.getWorkouts(
+            for: [.weekOfYear, .yearForWeekOfYear],
+            including: weeksFromNowDate
+        )
+        return workoutsInWeek
     }
 
 }

@@ -38,6 +38,7 @@
 "calories" = "Verbrannte Kalorien";
 "cancel" = "Abbrechen";
 "cardio" = "Ausdauer";
+"changeGoal" = "Ziel Ändern";
 "charts" = "Diagramme";
 "chartsPromotionText" = "Tracke deinen Fitnessfortschritt, wie z.B. Gewicht, Volumen und mehr...";
 "chest" = "Brust";
@@ -115,6 +116,7 @@
 "generatingWorkout" = "Workout wird erstellt";
 "generatingWorkoutFailed" = "Workout erstellen fehlgeschlagen";
 "generatingWorkoutFailedText" = "Stelle sicher, dass das Foto ein Workout enthält und versuche es erneut.";
+"goal" = "Ziel";
 
 // MARK: - I
 
@@ -325,6 +327,7 @@
 "weeklyAverage" = "Wöchentlicher Durchschnitt";
 "weeklyTarget" = "Wöchentliches Ziel";
 "weeklyTargetDescription" = "Wähle aus, wie viele Workouts du pro Woche machen möchtest.";
+"weeklyWorkoutGoal" = "Wöchentliches Workout Ziel";
 "weight" = "Gewicht";
 "weightUnit" = "Gewichts Einheit";
 "weightUnitDescription" = "Wähle deine bevorzugte Einheit aus.";

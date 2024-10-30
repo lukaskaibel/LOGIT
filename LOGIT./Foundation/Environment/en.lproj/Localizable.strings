@@ -38,6 +38,7 @@
 "caloriesBurned" = "Calories Burned";
 "cancel" = "Cancel";
 "cardio" = "Cardio";
+"changeGoal" = "Change Goal";
 "charts" = "Charts";
 "chartsPromotionText" = "From weight to reps, volume, and sets – visualize every step of your fitness journey!";
 "chest" = "Chest";
@@ -110,6 +111,7 @@
 "generatingWorkout" = "Generating Workout";
 "generatingWorkoutFailed" = "Generating Workout Failed";
 "generatingWorkoutFailedText" = "Make sure the photo contains a workout and try again.";
+"goal" = "Goal";
 
 // MARK: - H
 
@@ -322,6 +324,7 @@
 "weeklyAverage" = "Weekly Average";
 "weeklyTarget" = "Weekly Target";
 "weeklyTargetDescription" = "Select how many workouts you want to do per week.";
+"weeklyWorkoutGoal" = "Weekly Workout Goal";
 "weight" = "Weight";
 "weightUnit" = "Weight Unit";
 "weightUnitDescription" = "Select the unit you want to use throughout the app.";

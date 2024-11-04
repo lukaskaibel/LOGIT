@@ -13,30 +13,22 @@ struct CurrentWorkoutView: View {
     let workoutDate: Date?
     
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Text(NSLocalizedString("currentWorkout", comment: ""))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Group {
-                    if let workoutStartTime = workoutDate {
-                        StopwatchView(startTime: workoutStartTime)
-                    } else {
-                        Text("-:--:--")
-                    }
-                }
-                .font(.footnote.monospacedDigit())
-                .foregroundStyle(.secondary)
-                // TODO: If timer is running, add a Divider and the timer with a timer symbol
-                // Maybe put a white rounded rect around the timer value, so its more visible
-            }
+        HStack {
             Text(workoutHasName ? workoutName! : Workout.getStandardName(for: workoutDate ?? .now))
-                .fontWeight(.semibold)
+                .fontWeight(.bold)
                 .lineLimit(1)
+            Spacer()
+            Group {
+                if let workoutStartTime = workoutDate {
+                    StopwatchView(startTime: workoutStartTime)
+                } else {
+                    Text("-:--:--")
+                }
+            }
+            .font(.body.monospacedDigit())
+//            .foregroundStyle(Color.accentColor.gradient)
         }
-        .padding(10)
-        .floatingStyle()
+        .padding(20)
     }
     
     private var workoutHasName: Bool {

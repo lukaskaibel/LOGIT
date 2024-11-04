@@ -10,8 +10,15 @@ import SwiftUI
 
 struct HomeScreen: View {
 
-    enum NavigationDestinationType: Hashable {
-        case targetPerWeek, muscleGroupsOverview, exerciseList, templateList, overallSets
+    enum NavigationDestinationType: Hashable, Identifiable {
+        var id: String {
+            switch self {
+            case .workout(let workout): return "workout\(String(describing: workout.id))"
+            default: return String(describing: self)
+            }
+        }
+        
+        case targetPerWeek, muscleGroupsOverview, exerciseList, templateList, overallSets, workoutList, measurements, workout(Workout)
     }
 
     // MARK: - AppStorage
@@ -29,9 +36,9 @@ struct HomeScreen: View {
     // MARK: - State
 
     @State private var navigationDestinationType: NavigationDestinationType?
-    @State private var selectedWorkout: Workout?
     @State private var showNoWorkoutTip = false
     @State private var isShowingWorkoutRecorder = false
+    @State private var isShowingSettings = false
 
     // MARK: - Body
 
@@ -40,70 +47,113 @@ struct HomeScreen: View {
             ScrollView {
                 VStack(spacing: SECTION_SPACING) {
                     header
-                        .padding([.horizontal, .top])
-
+                        .padding(.horizontal)
+                    
                     if showNoWorkoutTip {
                         noWorkoutTip
                             .padding(.horizontal)
                     }
-
-                    VStack(spacing: 0) {
-                        Button {
-                            navigationDestinationType = .exerciseList
-                        } label: {
-                            HStack {
-                                HStack {
-                                    Image(systemName: "dumbbell")
-                                        .frame(width: 40)
-                                        .foregroundColor(.secondary)
-                                    Text(NSLocalizedString("exercises", comment: ""))
-                                        .foregroundStyle(.white)
-                                }
-                                Spacer()
-                                NavigationChevron()
-                                    .foregroundStyle(Color.secondaryLabel)
-                            }
-                            .padding(.trailing)
-                            .padding(.vertical, 12)
-                        }
-                        Divider()
-                            .padding(.leading, 45)
-                        Button {
-                            navigationDestinationType = .templateList
-                        } label: {
-                            HStack {
-                                HStack {
-                                    Image(systemName: "list.bullet.rectangle.portrait")
-                                        .frame(width: 40)
-                                        .foregroundColor(.secondary)
-                                    Text(NSLocalizedString("templates", comment: ""))
-                                        .foregroundStyle(.white)
-                                }
-                                Spacer()
-                                NavigationChevron()
-                                    .foregroundStyle(Color.secondaryLabel)
-                            }
-                            .padding(.trailing)
-                            .padding(.vertical, 12)
-                        }
-                        Divider()
-                            .padding(.leading, 45)
+                    
+                    VStack(spacing: 8) {
+                        currentWeekWeeklyTargetWidget
+                        muscleGroupPercentageView
+                        overallSetsView
+                        workoutsPerMonth
+                        volumePerDay
                     }
-                    .font(.title2)
-                    .padding(.leading)
-
-                    WidgetCollectionView(
-                        type: .homeScreen,
-                        title: NSLocalizedString("overview", comment: ""),
-                        views: [
-                            currentWeekWeeklyTargetWidget,
-                            muscleGroupPercentageView.widget(ofType: .muscleGroupsInLastTen, isAddedByDefault: true),
-                            overallSetsView.widget(ofType: .setsPerWeek, isAddedByDefault: true),
-                            workoutsPerMonth.widget(ofType: .workoutsPerMonth, isAddedByDefault: false),
-                            volumePerDay.widget(ofType: .homeScreenVolumePerDay, isAddedByDefault: false)
-                        ],
-                        database: database
-                    )
+                    .padding(.horizontal)
+                    
+                    
+                    VStack(spacing: SECTION_HEADER_SPACING) {
+                        HStack {
+                            Text(NSLocalizedString("recentWorkouts", comment: ""))
+                                .sectionHeaderStyle2()
+                            Spacer()
+                            Button {
+                                navigationDestinationType = .workoutList
+                            } label: {
+                                Text(NSLocalizedString("all", comment: ""))
+                            }
+                        }
+                        VStack(spacing: CELL_SPACING) {
+                            ForEach(recentWorkouts) { workout in
+                                WorkoutCell(workout: workout)
+                                    .padding(CELL_PADDING)
+                                    .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                                    .onTapGesture {
+                                        navigationDestinationType = .workout(workout)
+                                    }
+                            }
+                            .emptyPlaceholder(recentWorkouts) {
+                                Text(NSLocalizedString("noWorkouts", comment: ""))
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    VStack(spacing: SECTION_HEADER_SPACING) {
+                        Text(NSLocalizedString("library", comment: ""))
+                            .sectionHeaderStyle2()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(spacing: CELL_SPACING) {
+                            Button {
+                                navigationDestinationType = .exerciseList
+                            } label: {
+                                HStack {
+                                    HStack {
+                                        Image(systemName: "dumbbell")
+                                            .frame(width: 40)
+                                            .foregroundStyle(Color.accentColor)
+                                        Text(NSLocalizedString("exercises", comment: ""))
+                                            .foregroundStyle(.white)
+                                    }
+                                    Spacer()
+                                    NavigationChevron()
+                                        .foregroundStyle(Color.secondaryLabel)
+                                }
+                                .padding(CELL_PADDING)
+                                .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                            }
+                            
+                            Button {
+                                navigationDestinationType = .templateList
+                            } label: {
+                                HStack {
+                                    HStack {
+                                        Image(systemName: "list.bullet.rectangle.portrait")
+                                            .frame(width: 40)
+                                            .foregroundStyle(Color.accentColor)
+                                        Text(NSLocalizedString("templates", comment: ""))
+                                            .foregroundStyle(.white)
+                                    }
+                                    Spacer()
+                                    NavigationChevron()
+                                        .foregroundStyle(Color.secondaryLabel)
+                                }
+                                .padding(CELL_PADDING)
+                                .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                            }
+                            Button {
+                                navigationDestinationType = .measurements
+                            } label: {
+                                HStack {
+                                    HStack {
+                                        Image(systemName: "ruler")
+                                            .frame(width: 40)
+                                            .foregroundStyle(Color.accentColor)
+                                        Text(NSLocalizedString("measurements", comment: ""))
+                                            .foregroundStyle(.white)
+                                    }
+                                    Spacer()
+                                    NavigationChevron()
+                                        .foregroundStyle(Color.secondaryLabel)
+                                }
+                                .padding(CELL_PADDING)
+                                .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                            }
+                        }
+                        .font(.title2)
+                    }
                     .padding(.horizontal)
                 }
                 .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
@@ -112,7 +162,19 @@ struct HomeScreen: View {
             .onAppear {
                 showNoWorkoutTip = workouts.isEmpty
             }
-            .scrollIndicators(.hidden)
+            .sheet(isPresented: $isShowingSettings) {
+                NavigationStack {
+                    SettingsScreen()
+                        .navigationTitle(NSLocalizedString("settings", comment: ""))
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button(NSLocalizedString("done", comment: "")) {
+                                    isShowingSettings = false
+                                }
+                            }
+                        }
+                }
+            }
             .fullScreenCover(isPresented: $isShowingWorkoutRecorder) {
                 WorkoutRecorderScreen()
                     .onAppear {
@@ -127,6 +189,22 @@ struct HomeScreen: View {
                 case .muscleGroupsOverview:
                     MuscleGroupSplitScreen()
                 case .overallSets: OverallSetsScreen()
+                case .workoutList: WorkoutListScreen()
+                case .measurements: MeasurementsScreen()
+                case .workout(let workout):
+                    WorkoutDetailScreen(
+                        workout: workout,
+                        canNavigateToTemplate: true
+                    )
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isShowingSettings = true
+                    } label: {
+                        Image(systemName: "gear")
+                    }
                 }
             }
         }
@@ -233,10 +311,16 @@ struct HomeScreen: View {
     }
 
     // MARK: - Supportings Methods
-
-    var workouts: [Workout] {
-        workoutRepository.getWorkouts(sortedBy: .date)
+    
+    private var workouts: [Workout] {
+        workoutRepository.getWorkouts()
     }
+
+    private var recentWorkouts: [Workout] {
+        Array(workouts.prefix(3))
+    }
+    
+    
 
 }
 

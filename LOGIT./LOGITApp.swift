@@ -72,48 +72,7 @@ struct LOGIT: App {
     var body: some Scene {
         WindowGroup {
             if setupDone {
-                TabView(selection: $selectedTab) {
-                    Group {
-                        HomeScreen()
-                            .tabItem {
-                                Label(
-                                    NSLocalizedString("home", comment: ""),
-                                    systemImage: "house.fill"
-                                )
-                            }
-                            .tag(TabType.home)
-                        NavigationStack {
-                            WorkoutListScreen()
-                        }
-                        .tabItem {
-                            Label(
-                                NSLocalizedString("workoutHistory", comment: ""),
-                                systemImage: "clock"
-                            )
-                        }
-                        .tag(TabType.templates)
-                        NavigationStack {
-                            MeasurementsScreen()
-                        }
-                        .tabItem {
-                            Label(
-                                NSLocalizedString("measurements", comment: ""),
-                                systemImage: "ruler"
-                            )
-                        }
-                        .tag(TabType.exercises)
-                        NavigationStack {
-                            SettingsScreen()
-                        }
-                        .tabItem {
-                            Label(
-                                NSLocalizedString("settings", comment: ""),
-                                systemImage: "gear"
-                            )
-                        }
-                        .tag(TabType.settings)
-                    }
-                    .toolbarBackground(.hidden, for: .tabBar)
+                HomeScreen()
                     .overlay {
                         Rectangle()
                             .fill(.bar)
@@ -135,6 +94,10 @@ struct LOGIT: App {
                     .safeAreaInset(edge: .bottom) {
                         if let workout = workoutRecorder.workout {
                             CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
+                                .frame(maxWidth: .infinity)
+                                .background(.regularMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 15))
+                                .shadow(radius: 10)
                                 .padding(.horizontal, 10)
                                 .padding(.bottom, 5)
                                 .onTapGesture {
@@ -143,12 +106,11 @@ struct LOGIT: App {
                                 .transition(.move(edge: .bottom))
                         } else {
                             StartWorkoutView()
-                                .floatingStyle()
+                                .shadow(radius: 10)
                                 .padding(.horizontal, 10)
                                 .padding(.bottom, 5)
                         }
                     }
-                }
                 .zIndex(0)
                 .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
                     WorkoutRecorderScreen()

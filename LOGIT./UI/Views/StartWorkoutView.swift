@@ -30,7 +30,7 @@ struct StartWorkoutView: View {
     
     var body: some View {
         ZStack {
-            CurrentWorkoutView(workoutName: nil, workoutDate: nil)
+            CurrentWorkoutView(workoutName: nil, workoutDate: .now)
                 .opacity(0.0001)
                 .fixedSize()
             HStack(spacing: 0) {
@@ -41,11 +41,14 @@ struct StartWorkoutView: View {
                 } label: {
                     Label(NSLocalizedString("startWorkout", comment: ""), systemImage: "play.fill")
                         .font(.body.weight(.semibold))
-                        .padding(10)
+                        .padding(20)
                         .frame(maxWidth: .infinity)
                 }
-                Divider()
-                    .frame(height: currentWorkoutViewHeight)
+                .background(.regularMaterial)
+                .clipShape(UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 15, bottomLeading: 15)))
+                Rectangle()
+                    .foregroundStyle(.clear)
+                    .frame(width: 5)
                 Menu {
                     Button {
                         isShowingTemplateListScreen = true
@@ -64,12 +67,19 @@ struct StartWorkoutView: View {
                     }
                     .requiresNetworkConnection()
                 } label: {
-                    Image(systemName: "ellipsis")
-                        .padding()
-                        .frame(width: 60)
-                        .font(.title3.weight(.semibold))
+                    ZStack {
+                        Text(" ")
+                            .padding(20)
+                        Image(systemName: "ellipsis")
+                            .padding()
+                            .frame(width: 60)
+                            .font(.title3.weight(.semibold))
+                    }
                 }
+                .background(.regularMaterial)
+                .clipShape(UnevenRoundedRectangle(bottomTrailingRadius: 15, topTrailingRadius: 15))
             }
+            .frame(height: currentWorkoutViewHeight)
         }
         .background {
             GeometryReader { geometry in

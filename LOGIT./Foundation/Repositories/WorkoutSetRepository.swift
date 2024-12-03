@@ -30,21 +30,63 @@ final class WorkoutSetRepository: ObservableObject {
                 && (includingCurrentWorkout ? true : !isSetInCurrentWorkout)
         }
     }
-
+    
     func getWorkoutSets(
         with exercise: Exercise? = nil,
-        onlyHighest attribute: WorkoutSet.Attribute,
-        in calendarComponent: Calendar.Component
+        for calendarComponents: [Calendar.Component],
+        including date: Date,
+        includingCurrentWorkout: Bool = false
     ) -> [WorkoutSet] {
+        getWorkoutSets(with: exercise, includingCurrentWorkout: includingCurrentWorkout)
+            .filter {
+                guard let workoutDate = $0.workout?.date else { return false }
+                return Calendar.current.isDate(workoutDate, equalTo: date, toGranularity: calendarComponents)
+            }
+    }
+
+//    func getWorkoutSets(
+//        with exercise: Exercise? = nil,
+//        onlyHighest attribute: WorkoutSet.Attribute,
+//        in calendarComponent: Calendar.Component
+//    ) -> [WorkoutSet] {
+//        var result = [[WorkoutSet]]()
+//        getWorkoutSets(with: exercise)
+//            .forEach { workoutSet in
+//                if let lastDate = result.last?.last?.workout?.date,
+//                    let setGroupDate = workoutSet.workout?.date,
+//                    Calendar.current.isDate(
+//                        lastDate,
+//                        equalTo: setGroupDate,
+//                        toGranularity: calendarComponent
+//                    )
+//                {
+//                    result[result.count - 1].append(workoutSet)
+//                } else {
+//                    result.append([workoutSet])
+//                }
+//            }
+//        return
+//            result
+//            .compactMap { workoutSetsInWeek in
+//                workoutSetsInWeek.max { $0.max(attribute) < $1.max(attribute) }
+//            }
+//            .sorted { $0.workout?.date ?? .now < $1.workout?.date ?? .now }
+//    }
+    
+    func getGroupedWorkoutsSets(
+        with exercise: Exercise? = nil,
+        groupedBy groupingComponents: [Calendar.Component],
+        includingCurrentWorkout: Bool = false
+    ) -> [[WorkoutSet]] {
         var result = [[WorkoutSet]]()
-        getWorkoutSets(with: exercise)
+        getWorkoutSets(with: exercise, includingCurrentWorkout: includingCurrentWorkout)
             .forEach { workoutSet in
                 if let lastDate = result.last?.last?.workout?.date,
                     let setGroupDate = workoutSet.workout?.date,
                     Calendar.current.isDate(
                         lastDate,
                         equalTo: setGroupDate,
-                        toGranularity: calendarComponent
+                        toGranularity: groupingComponents
                     )
                 {
                     result[result.count - 1].append(workoutSet)
@@ -54,25 +96,26 @@ final class WorkoutSetRepository: ObservableObject {
             }
         return
             result
-            .compactMap { workoutSetsInWeek in
-                workoutSetsInWeek.max { $0.max(attribute) < $1.max(attribute) }
-            }
-            .sorted { $0.workout?.date ?? .now < $1.workout?.date ?? .now }
+            .map { $0.sorted { $0.workout?.date ?? .now < $1.workout?.date ?? .now } }
+            .sorted { $0.first?.workout?.date ?? .now < $1.first?.workout?.date ?? .now }
     }
 
     func getGroupedWorkoutsSets(
         with exercise: Exercise? = nil,
-        in calendarComponent: Calendar.Component
+        for calendarComponents: [Calendar.Component],
+        inclusing date: Date,
+        groupedBy groupingComponents: [Calendar.Component],
+        includingCurrentWorkout: Bool = false
     ) -> [[WorkoutSet]] {
         var result = [[WorkoutSet]]()
-        getWorkoutSets(with: exercise)
+        getWorkoutSets(with: exercise, for: calendarComponents, including: date, includingCurrentWorkout: includingCurrentWorkout)
             .forEach { workoutSet in
                 if let lastDate = result.last?.last?.workout?.date,
                     let setGroupDate = workoutSet.workout?.date,
                     Calendar.current.isDate(
                         lastDate,
                         equalTo: setGroupDate,
-                        toGranularity: calendarComponent
+                        toGranularity: groupingComponents
                     )
                 {
                     result[result.count - 1].append(workoutSet)

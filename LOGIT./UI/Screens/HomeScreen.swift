@@ -288,7 +288,7 @@ struct HomeScreen: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             DateLineChart(dateDomain: .threeMonths) {
-                getVolume(of: workoutSetRepository.getGroupedWorkoutsSets(in: .day))
+                getVolume(of: workoutSetRepository.getGroupedWorkoutsSets(groupedBy: [.day]))
                     .map { .init(date: $0.0, value: $0.1) }
             }
         }

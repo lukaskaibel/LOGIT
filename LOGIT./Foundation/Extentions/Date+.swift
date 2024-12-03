@@ -21,8 +21,18 @@ extension Date {
         return Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: self)) ?? self
     }
     
+    var endOfMonth: Date {
+        let startOfNextMonth = Calendar.current.date(byAdding: .month, value: 1, to: startOfMonth)
+        return Calendar.current.date(byAdding: .second, value: -1, to: startOfNextMonth ?? self) ?? self
+    }
+    
     var startOfYear: Date {
         return Calendar.current.date(from: Calendar.current.dateComponents([.year], from: self)) ?? self
+    }
+    
+    var endOfYear: Date {
+        let startOfNextYear = Calendar.current.date(byAdding: .year, value: 1, to: startOfYear)
+        return Calendar.current.date(byAdding: .second, value: -1, to: startOfNextYear ?? self) ?? self
     }
 
     func inSameWeekOfYear(as date: Date) -> Bool {

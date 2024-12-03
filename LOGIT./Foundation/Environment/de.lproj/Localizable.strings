@@ -54,6 +54,7 @@
 "createTemplate" = "Vorlage erstellen";
 "creatingTemplateFailed" = "Generieren Fehlgeschlagen";
 "creatingTemplateFailedText" = "Stelle sicher, dass das Bild ein Workout enthält.";
+"currentBest" = "Aktuelle Bestleistung";
 "currentWorkout" = "Aktuelles Workout";
 
 // MARK: - D
@@ -289,8 +290,10 @@
 "templateNeverUsed" = "Vorlage nie benutzt";
 "templates" = "Vorlagen";
 "this" = "Diese";
+"thisMonth" = "This Month";
 "thisWeek" = "Diese Woche";
 "ThisWeek" = "Diese Woche";
+"thisYear" = "Dieses Jahr";
 "three" = "Drei";
 "threeMonths" = "3 Monate";
 "threeWeeksAgo" = "Vor 3 Wochen";

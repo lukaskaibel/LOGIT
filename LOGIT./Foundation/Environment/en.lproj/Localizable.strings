@@ -54,6 +54,7 @@
 "createTemplate" = "Create Template";
 "creatingTemplateFailed" = "Creating Template Failed";
 "creatingTemplateFailedText" = "Make sure the selected image contains a workout.";
+"currentBest" = "Current Best";
 "currentWorkout" = "Current Workout";
 
 // MARK: - D
@@ -286,8 +287,10 @@
 "templateNeverUsed" = "Template never used";
 "templates" = "Templates";
 "this" = "This";
+"thisMonth" = "This Month";
 "thisWeek" = "This Week";
 "ThisWeek" = "This Week";
+"thisYear" = "This Year";
 "three" = "Three";
 "threeMonths" = "3 Months";
 "threeWeeksAgo" = "Three weeks ago";

@@ -22,28 +22,22 @@ struct MuscleGroupSplitTile: View {
             let muscleGroupOccurances = getMuscleGroupOccurancesThisWeek()
             VStack(spacing: 20) {
                 HStack {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("muscleGroupSplit", comment: ""))
-                            .tileHeaderStyle()
-                        Text(NSLocalizedString("ThisWeek", comment: ""))
-                            .tileHeaderSecondaryStyle()
-                    }
+                    Text(NSLocalizedString("muscleGroups", comment: ""))
+                        .tileHeaderStyle()
                     Spacer()
                     NavigationChevron()
                         .foregroundStyle(.secondary)
                 }
-                HStack(alignment: .bottom) {
+                HStack {
                     VStack(alignment: .leading) {
-                        Spacer()
-                        Text(NSLocalizedString("focusedOn", comment: ""))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        Text(NSLocalizedString("focusThisWeek", comment: ""))
                         HStack {
                             ForEach(getFocusedMuscleGroups()) { muscleGroup in
                                 Text(muscleGroup.description)
+                                    .font(.title3)
                                     .fontWeight(.bold)
                                     .fontDesign(.rounded)
-                                    .foregroundStyle(muscleGroup.color)
+                                    .foregroundStyle(muscleGroup.color.gradient)
                             }
                         }
                     }
@@ -52,39 +46,10 @@ struct MuscleGroupSplitTile: View {
                             .font(.body)
                             .multilineTextAlignment(.center)
                     }
-                    .frame(maxHeight: 150)
                     Spacer()
                     MuscleGroupOccurancesChart(muscleGroupOccurances: muscleGroupOccurances)
-                    .frame(width: 150, height: 150)
+                    .frame(width: 120, height: 80)
                 }
-                // MARK: Legend, maybe needed in future...
-//                Grid(alignment: .leading) {
-//                    GridRow {
-//                        ForEach(muscleGroupOccurances.prefix(upTo: muscleGroupOccurances.count / 2 + 1), id:\.0) { muscleGroupOccurance in
-//                            HStack {
-//                                Circle()
-//                                    .frame(width: 5, height: 5)
-//                                    .foregroundStyle(muscleGroupOccurance.0.color.gradient)
-//                                Text(muscleGroupOccurance.0.description)
-//                                    .font(.footnote)
-//                            }
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                        }
-//                    }
-//                    GridRow {
-//                        ForEach(muscleGroupOccurances.suffix(from: muscleGroupOccurances.count / 2 + 1), id:\.0) { muscleGroupOccurance in
-//                            HStack {
-//                                Circle()
-//                                    .frame(width: 5, height: 5)
-//                                    .foregroundStyle(muscleGroupOccurance.0.color.gradient)
-//                                Text(muscleGroupOccurance.0.description)
-//                                    .font(.footnote)
-//                            }
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                        }
-//                    }
-//                }
-                
             }
             .padding(CELL_PADDING)
             .tileStyle()

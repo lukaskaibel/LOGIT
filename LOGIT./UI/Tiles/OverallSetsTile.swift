@@ -30,9 +30,10 @@ struct OverallSetsTile: View {
                     Text(NSLocalizedString("thisWeek", comment: ""))
                         .fontWeight(.semibold)
                     Text("\(workoutRepository.getWorkouts(for: [.weekOfYear, .yearForWeekOfYear], including: .now).map({ $0.sets }).joined().count)")
-                        .font(.largeTitle)
+                        .font(.title)
+                        .fontWeight(.bold)
                         .fontDesign(.rounded)
-                        .foregroundStyle(.tint)
+                        .foregroundStyle(Color.accentColor.gradient)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Chart {
@@ -62,7 +63,7 @@ struct OverallSetsTile: View {
                 .chartYAxis {
 //                    AxisMarks(values: .automatic(desiredCount: 3))
                 }
-                .frame(height: 100)
+                .frame(width: 120, height: 80)
                 .padding(.trailing)
             }
         }

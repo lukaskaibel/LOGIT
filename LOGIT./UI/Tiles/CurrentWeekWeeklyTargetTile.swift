@@ -29,20 +29,19 @@ struct CurrentWeekWeeklyTargetTile: View {
                 NavigationChevron()
                     .foregroundStyle(.secondary)
             }
-            
-            
-//            .frame(maxWidth: .infinity, alignment: .trailing)
-//            VStack(alignment: .leading) {
-//                Text(NSLocalizedString("goal", comment: ""))
-//                    .fontWeight(.semibold)
-//                    .foregroundStyle(.secondary)
-//                
-//                Text(NSLocalizedString("PerWeek", comment: ""))
-//                    .fontWeight(.bold)
-//                    .fontDesign(.rounded)
-//                    .foregroundStyle(.secondary)
-//            }
             HStack {
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("ThisWeek", comment: ""))
+                    HStack(alignment: .lastTextBaseline) {
+                        Text("\(numberOfWorkoutsInCurrentWeek)")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundStyle(Color.accentColor.gradient)
+                        Text("\(NSLocalizedString("of", comment: "")) \(targetPerWeek)")
+                            .foregroundStyle(Color.secondaryLabel)
+                    }
+                }
+                Spacer()
                 if #available(iOS 17.0, *) {
                     Chart {
                         ForEach(0..<targetPerWeek, id:\.self) { value in
@@ -57,86 +56,14 @@ struct CurrentWeekWeeklyTargetTile: View {
                     .overlay {
                         if numberOfWorkoutsInCurrentWeek >= targetPerWeek {
                             Image(systemName: "checkmark")
-                                .font(.title2)
                                 .fontWeight(.bold)
+                                .fontDesign(.rounded)
                                 .foregroundStyle(Color.accentColor.gradient)
-                        } else {
-                            VStack(spacing: 0) {
-                                Text("\(targetPerWeek - numberOfWorkoutsInCurrentWeek)")
-                                    .fontWeight(.semibold)
-                                Text(NSLocalizedString("toGo", comment: ""))
-                                    .font(.caption)
-                                    .textCase(.uppercase)
-                            }
-                            .foregroundStyle(.secondary)
                         }
                     }
-                    .frame(width: 120, height: 120)
-                    .padding(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(width: 120, height: 80, alignment: .trailing)
                 }
-                VStack(alignment: .leading) {
-//                    Text(NSLocalizedString("thisWeek", comment: ""))
-////                        .fontWeight(.medium)
-//                    HStack(alignment: .lastTextBaseline, spacing: 0) {
-//                        Text("\(numberOfWorkoutsInCurrentWeek)")
-//                            .foregroundStyle(Color.accentColor.gradient)
-//                            .fontWeight(.bold)
-//                            .fontDesign(.rounded)
-//                            .font(.title)
-////                        Text("workouts")
-////                            .textCase(.uppercase)
-////                            .foregroundStyle(.secondary)
-////                            .fontWeight(.semibold)
-////                            .fontDesign(.rounded)
-//                    }
-                    HStack(alignment: .firstTextBaseline) {
-                        VStack {
-                            Text("\(numberOfWorkoutsInCurrentWeek)")
-                                .font(.title)
-                                .fontDesign(.rounded)
-                                .fontWeight(.bold)
-                                .foregroundStyle(Color.accentColor.gradient)
-                            Text(NSLocalizedString("thisWeek", comment: ""))
-                                .textCase(.uppercase)
-                                .font(.footnote)
-                                .foregroundStyle(Color.accentColor.gradient)
-                        }
-                        .frame(maxWidth: .infinity)
-                        Text("/")
-                            .textCase(.uppercase)
-                            .font(.title2)
-                            .fontDesign(.rounded)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
-                        
-                        VStack {
-                            Text("\(targetPerWeek)")
-                                .font(.title)
-                                .fontDesign(.rounded)
-                                .fontWeight(.bold)
-                            Text(NSLocalizedString("goal", comment: ""))
-                                .textCase(.uppercase)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                
             }
-            
-//            VStack(spacing: 10) {
-//                Divider()
-//                HStack {
-//                    Text("Goal")
-//                    Spacer()
-//                    Text("3")
-//                        .fontWeight(.medium)
-//                }
-//            }
-           
         }
         .padding(CELL_PADDING)
         .tileStyle()

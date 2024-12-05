@@ -45,57 +45,15 @@ struct HomeScreen: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: SECTION_SPACING) {
+                VStack(spacing: 5) {
                     header
-                        .padding(.horizontal)
-                    
-                    if showNoWorkoutTip {
-                        noWorkoutTip
-                            .padding(.horizontal)
-                    }
-                    
-                    VStack(spacing: 8) {
-                        currentWeekWeeklyTargetWidget
-                        muscleGroupPercentageView
-                        overallSetsView
-                        workoutsPerMonth
-                        volumePerDay
-                    }
-                    .padding(.horizontal)
-                    
-                    
-                    VStack(spacing: SECTION_HEADER_SPACING) {
-                        HStack {
-                            Text(NSLocalizedString("recentWorkouts", comment: ""))
-                                .sectionHeaderStyle2()
-                            Spacer()
-                            Button {
-                                navigationDestinationType = .workoutList
-                            } label: {
-                                Text(NSLocalizedString("all", comment: ""))
-                            }
+                        .padding([.top, .horizontal])
+                    VStack(spacing: SECTION_SPACING) {
+                        if showNoWorkoutTip {
+                            noWorkoutTip
+                                .padding(.horizontal)
                         }
-                        VStack(spacing: CELL_SPACING) {
-                            ForEach(recentWorkouts) { workout in
-                                WorkoutCell(workout: workout)
-                                    .padding(CELL_PADDING)
-                                    .secondaryTileStyle(backgroundColor: .secondaryBackground)
-                                    .onTapGesture {
-                                        navigationDestinationType = .workout(workout)
-                                    }
-                            }
-                            .emptyPlaceholder(recentWorkouts) {
-                                Text(NSLocalizedString("noWorkouts", comment: ""))
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                    
-                    VStack(spacing: SECTION_HEADER_SPACING) {
-                        Text(NSLocalizedString("library", comment: ""))
-                            .sectionHeaderStyle2()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        VStack(spacing: CELL_SPACING) {
+                        VStack(spacing: 0) {
                             Button {
                                 navigationDestinationType = .exerciseList
                             } label: {
@@ -111,10 +69,11 @@ struct HomeScreen: View {
                                     NavigationChevron()
                                         .foregroundStyle(Color.secondaryLabel)
                                 }
-                                .padding(CELL_PADDING)
-                                .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                                .padding(.trailing)
+                                .padding(.vertical, 12)
                             }
-                            
+                            Divider()
+                                .padding(.leading, 45)
                             Button {
                                 navigationDestinationType = .templateList
                             } label: {
@@ -130,9 +89,11 @@ struct HomeScreen: View {
                                     NavigationChevron()
                                         .foregroundStyle(Color.secondaryLabel)
                                 }
-                                .padding(CELL_PADDING)
-                                .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                                .padding(.trailing)
+                                .padding(.vertical, 12)
                             }
+                            Divider()
+                                .padding(.leading, 45)
                             Button {
                                 navigationDestinationType = .measurements
                             } label: {
@@ -148,16 +109,63 @@ struct HomeScreen: View {
                                     NavigationChevron()
                                         .foregroundStyle(Color.secondaryLabel)
                                 }
-                                .padding(CELL_PADDING)
-                                .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                                .padding(.trailing)
+                                .padding(.vertical, 12)
                             }
+                            Divider()
+                                .padding(.leading, 45)
                         }
                         .font(.title2)
+                        .padding(.horizontal)
+                        
+                        VStack(spacing: SECTION_HEADER_SPACING) {
+                            Text(NSLocalizedString("summary", comment: ""))
+                                .sectionHeaderStyle2()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            VStack(spacing: 8) {
+                                currentWeekWeeklyTargetWidget
+                                overallSetsView
+                                workoutsPerMonth
+                                volumePerDay
+                                muscleGroupPercentageView
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        VStack(spacing: SECTION_HEADER_SPACING) {
+                            HStack {
+                                Text(NSLocalizedString("recentWorkouts", comment: ""))
+                                    .sectionHeaderStyle2()
+                                Spacer()
+                                Button {
+                                    navigationDestinationType = .workoutList
+                                } label: {
+                                    HStack {
+                                        Text(NSLocalizedString("all", comment: ""))
+                                        Image(systemName: "chevron.right")
+                                            .font(.footnote)
+                                    }
+                                }
+                                .fontWeight(.semibold)
+                            }
+                            VStack(spacing: CELL_SPACING) {
+                                ForEach(recentWorkouts) { workout in
+                                    WorkoutCell(workout: workout)
+                                        .padding(CELL_PADDING)
+                                        .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                                        .onTapGesture {
+                                            navigationDestinationType = .workout(workout)
+                                        }
+                                }
+                                .emptyPlaceholder(recentWorkouts) {
+                                    Text(NSLocalizedString("noWorkouts", comment: ""))
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
+                    .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                 }
-                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                .padding(.top)
             }
             .onAppear {
                 showNoWorkoutTip = workouts.isEmpty

@@ -7,17 +7,26 @@
 
 import SwiftUI
 
+enum UnitViewConfiguration {
+    case normal, large
+}
+
 struct UnitView: View {
 
     let value: String
     let unit: String
+    var configuration: UnitViewConfiguration = .normal
 
     var body: some View {
         HStack(alignment: .lastTextBaseline, spacing: 0) {
             Text(value)
-                .font(.system(.title3, design: .rounded, weight: .bold))
+                .font(configuration == .large ? .title : .title3)
+                .fontWeight(.bold)
+                .fontDesign(.rounded)
             Text(unit.uppercased())
-                .font(.system(.subheadline, design: .rounded, weight: .bold))
+                .font(configuration == .large ? .body : .subheadline)
+                .fontWeight(.bold)
+                .fontDesign(.rounded)
         }
     }
 

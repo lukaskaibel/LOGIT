@@ -85,6 +85,8 @@
 		7962583E29341122003AC2AC /* ExerciseHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7962583D29341122003AC2AC /* ExerciseHeader.swift */; };
 		7967D57E2811887F00B30D03 /* MuscleGroupSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7967D57D2811887F00B30D03 /* MuscleGroupSelector.swift */; };
 		796D611927E53AB400E15F01 /* ExerciseEditScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796D611827E53AB400E15F01 /* ExerciseEditScreen.swift */; };
+		796FE6EA2D01F467001AE313 /* VolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796FE6E92D01F467001AE313 /* VolumeTile.swift */; };
+		796FE6EC2D01FA92001AE313 /* VolumeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796FE6EB2D01FA92001AE313 /* VolumeScreen.swift */; };
 		79702C6A2A7D0F0200F19EF3 /* GenerationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79702C692A7D0F0200F19EF3 /* GenerationScreen.swift */; };
 		79702C6C2A7D356100F19EF3 /* ExerciseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79702C6B2A7D356100F19EF3 /* ExerciseService.swift */; };
 		79743E052ADD82EC004E4DCC /* PreviewEnvironmentObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79743E042ADD82EC004E4DCC /* PreviewEnvironmentObjects.swift */; };
@@ -285,6 +287,8 @@
 		7962583D29341122003AC2AC /* ExerciseHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHeader.swift; sourceTree = "<group>"; };
 		7967D57D2811887F00B30D03 /* MuscleGroupSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupSelector.swift; sourceTree = "<group>"; };
 		796D611827E53AB400E15F01 /* ExerciseEditScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseEditScreen.swift; sourceTree = "<group>"; };
+		796FE6E92D01F467001AE313 /* VolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeTile.swift; sourceTree = "<group>"; };
+		796FE6EB2D01FA92001AE313 /* VolumeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeScreen.swift; sourceTree = "<group>"; };
 		79702C692A7D0F0200F19EF3 /* GenerationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationScreen.swift; sourceTree = "<group>"; };
 		79702C6B2A7D356100F19EF3 /* ExerciseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseService.swift; sourceTree = "<group>"; };
 		79743E042ADD82EC004E4DCC /* PreviewEnvironmentObjects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewEnvironmentObjects.swift; sourceTree = "<group>"; };
@@ -483,7 +487,6 @@
 				7919C5FE2A742EA500F35493 /* Modifiers */,
 				79A4E33327E9EBED0089001F /* Screens */,
 				7988FBB12A7307B500E4FE54 /* Styles */,
-				792F18DC2C6FC7B000B50C05 /* Tiles */,
 				79D570D42779F9AE0005E006 /* Views */,
 			);
 			path = UI;
@@ -497,16 +500,6 @@
 				22040B8B5D5971A78B9E3A04 /* Pods_LOGIT.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		792F18DC2C6FC7B000B50C05 /* Tiles */ = {
-			isa = PBXGroup;
-			children = (
-				79CC7A7C2C7A691E00674E22 /* CurrentWeekWeeklyTargetTile.swift */,
-				79CC7A802C7A7FC100674E22 /* MuscleGroupSplitTile.swift */,
-				A004D4502CB2E009002914FF /* OverallSetsTile.swift */,
-			);
-			path = Tiles;
 			sourceTree = "<group>";
 		};
 		79488DDC2A756AA4005C485D /* Cells */ = {
@@ -610,6 +603,27 @@
 			path = Charts;
 			sourceTree = "<group>";
 		};
+		796FE6E72D01F42F001AE313 /* HomeScreen */ = {
+			isa = PBXGroup;
+			children = (
+				80E9FAEE26FE152100C670D5 /* HomeScreen.swift */,
+				796FE6EB2D01FA92001AE313 /* VolumeScreen.swift */,
+				796FE6E82D01F44B001AE313 /* Tiles */,
+			);
+			path = HomeScreen;
+			sourceTree = "<group>";
+		};
+		796FE6E82D01F44B001AE313 /* Tiles */ = {
+			isa = PBXGroup;
+			children = (
+				79CC7A7C2C7A691E00674E22 /* CurrentWeekWeeklyTargetTile.swift */,
+				79CC7A802C7A7FC100674E22 /* MuscleGroupSplitTile.swift */,
+				A004D4502CB2E009002914FF /* OverallSetsTile.swift */,
+				796FE6E92D01F467001AE313 /* VolumeTile.swift */,
+			);
+			path = Tiles;
+			sourceTree = "<group>";
+		};
 		7988FBB12A7307B500E4FE54 /* Styles */ = {
 			isa = PBXGroup;
 			children = (
@@ -673,7 +687,7 @@
 				80ED028F2764D94200D59B75 /* ExerciseSelectionScreen.swift */,
 				79A4E32F27E8CB0C0089001F /* FirstStartScreen.swift */,
 				79702C692A7D0F0200F19EF3 /* GenerationScreen.swift */,
-				80E9FAEE26FE152100C670D5 /* HomeScreen.swift */,
+				796FE6E72D01F42F001AE313 /* HomeScreen */,
 				791F25A42AC1AE0800613793 /* MeasurementsScreen.swift */,
 				797EF7E529292E32003C2266 /* MuscleGroupSplitScreen.swift */,
 				795CF88D2CB5D1A20007E30B /* OverallSetsScreen.swift */,
@@ -1082,6 +1096,7 @@
 				792DAB7327EB97E80062C20D /* LineGraph.swift in Sources */,
 				79F6D5F22B0F8742005D48CB /* SegmentedStackedBarChart.swift in Sources */,
 				79DE32952BCDD1D800FD417A /* EntityObserver.swift in Sources */,
+				796FE6EA2D01F467001AE313 /* VolumeTile.swift in Sources */,
 				795D6E6327F50E6A00A71807 /* Timer.swift in Sources */,
 				79702C6C2A7D356100F19EF3 /* ExerciseService.swift in Sources */,
 				79898A7C27F71BE500935E05 /* StopwatchView.swift in Sources */,
@@ -1091,6 +1106,7 @@
 				79AB818D2ACB4EB200B2CCDF /* WidgetType.swift in Sources */,
 				79AB81922ACB694A00B2CCDF /* MeasurementEntryType.swift in Sources */,
 				807FC47F268A909D00169820 /* Exercise+.swift in Sources */,
+				796FE6EC2D01FA92001AE313 /* VolumeScreen.swift in Sources */,
 				79488DDB2A755C52005C485D /* WorkoutSetGroupList.swift in Sources */,
 				79C07B2A2AB8AE65000BF879 /* MeasurementView.swift in Sources */,
 				791E955E2C4E8158006A6664 /* WorkoutRepository.swift in Sources */,

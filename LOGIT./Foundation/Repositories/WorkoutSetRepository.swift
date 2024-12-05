@@ -43,35 +43,6 @@ final class WorkoutSetRepository: ObservableObject {
                 return Calendar.current.isDate(workoutDate, equalTo: date, toGranularity: calendarComponents)
             }
     }
-
-//    func getWorkoutSets(
-//        with exercise: Exercise? = nil,
-//        onlyHighest attribute: WorkoutSet.Attribute,
-//        in calendarComponent: Calendar.Component
-//    ) -> [WorkoutSet] {
-//        var result = [[WorkoutSet]]()
-//        getWorkoutSets(with: exercise)
-//            .forEach { workoutSet in
-//                if let lastDate = result.last?.last?.workout?.date,
-//                    let setGroupDate = workoutSet.workout?.date,
-//                    Calendar.current.isDate(
-//                        lastDate,
-//                        equalTo: setGroupDate,
-//                        toGranularity: calendarComponent
-//                    )
-//                {
-//                    result[result.count - 1].append(workoutSet)
-//                } else {
-//                    result.append([workoutSet])
-//                }
-//            }
-//        return
-//            result
-//            .compactMap { workoutSetsInWeek in
-//                workoutSetsInWeek.max { $0.max(attribute) < $1.max(attribute) }
-//            }
-//            .sorted { $0.workout?.date ?? .now < $1.workout?.date ?? .now }
-//    }
     
     func getGroupedWorkoutsSets(
         with exercise: Exercise? = nil,

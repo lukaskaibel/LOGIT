@@ -18,7 +18,7 @@ struct HomeScreen: View {
             }
         }
         
-        case targetPerWeek, muscleGroupsOverview, exerciseList, templateList, overallSets, workoutList, measurements, workout(Workout)
+        case targetPerWeek, muscleGroupsOverview, exerciseList, templateList, overallSets, workoutList, measurements, workout(Workout), volume
     }
 
     // MARK: - AppStorage
@@ -197,6 +197,7 @@ struct HomeScreen: View {
                 case .muscleGroupsOverview:
                     MuscleGroupSplitScreen()
                 case .overallSets: OverallSetsScreen()
+                case .volume: VolumeScreen()
                 case .workoutList: WorkoutListScreen()
                 case .measurements: MeasurementsScreen()
                 case .workout(let workout):
@@ -235,14 +236,13 @@ struct HomeScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    private var currentWeekWeeklyTargetWidget: WidgetView<AnyView> {
+    private var currentWeekWeeklyTargetWidget: some View {
         Button {
             navigationDestinationType = .targetPerWeek
         } label: {
             CurrentWeekWeeklyTargetTile()
         }
         .buttonStyle(TileButtonStyle())
-        .widget(ofType: .currentWeekTargetPerWeek, isAddedByDefault: true)
     }
 
     private var muscleGroupPercentageView: some View {
@@ -287,21 +287,12 @@ struct HomeScreen: View {
     }
     
     private var volumePerDay: some View {
-        VStack {
-            VStack(alignment: .leading) {
-                Text(NSLocalizedString("overallVolume", comment: ""))
-                    .tileHeaderStyle()
-                Text(WeightUnit.used.rawValue.uppercased() + " " + NSLocalizedString("perDay", comment: ""))
-                    .tileHeaderSecondaryStyle()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            DateLineChart(dateDomain: .threeMonths) {
-                getVolume(of: workoutSetRepository.getGroupedWorkoutsSets(groupedBy: [.day]))
-                    .map { .init(date: $0.0, value: $0.1) }
-            }
+        Button {
+            navigationDestinationType = .volume
+        } label: {
+            VolumeTile()
         }
-        .padding(CELL_PADDING)
-        .tileStyle()
+        .buttonStyle(TileButtonStyle())
     }
 
     private var noWorkoutTip: some View {

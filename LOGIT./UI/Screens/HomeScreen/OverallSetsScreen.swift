@@ -29,6 +29,7 @@ struct OverallSetsScreen: View {
                          .foregroundColor(.secondaryLabel)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
                 
                 VStack {
                     Picker("Select Chart Granularity", selection: $chartGranularity) {
@@ -85,8 +86,8 @@ struct OverallSetsScreen: View {
                         AxisMarks(values: .automatic(desiredCount: 3))
                     }
                     .frame(height: 300)
-
                 }
+                .padding(.horizontal)
                 
                 VStack(spacing: SECTION_HEADER_SPACING) {
                     Text(NSLocalizedString("workouts", comment: ""))
@@ -96,15 +97,18 @@ struct OverallSetsScreen: View {
                         ForEach(workoutsInSelectedGranularity) { workout in
                             WorkoutCell(workout: workout)
                                 .padding(CELL_PADDING)
-                                .tileStyle()
+                                .secondaryTileStyle()
                         }
                         .emptyPlaceholder(workoutsInSelectedGranularity) {
                             Text(NSLocalizedString("noWorkouts", comment: ""))
                         }
                     }
                 }
+                .padding()
+                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                .background(Color.secondaryBackground)
+                .edgesIgnoringSafeArea(.bottom)
             }
-            .padding(.horizontal)
         }
         
     }

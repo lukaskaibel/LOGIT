@@ -46,7 +46,18 @@ struct ExerciseHistoryScreen: View {
             }
             .padding([.top, .horizontal])
         }
-        .navigationTitle("\(exercise.name ?? "") \(NSLocalizedString("history", comment: ""))")
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack {
+                    Text("\(NSLocalizedString("history", comment: ""))")
+                        .font(.headline)
+                    Text(exercise.name ?? "")
+                        .foregroundStyle(.secondary)
+                        .font(.footnote)
+                }
+            }
+            
+        }
     }
     
     private var groupedWorkoutSetGroups: [[WorkoutSetGroup]] {

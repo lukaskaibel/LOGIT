@@ -144,30 +144,38 @@ struct MuscleGroupSplitScreen: View {
                     with: selectedMuscleGroup!,
                     from: workoutsInSelectedWeek
                 )
-                VStack(spacing: CELL_SPACING) {
-                    ForEach(
-                        setGroupsInSelectedWeekWithSelectedMuscleGroup,
-                        id: \.objectID
-                    ) { setGroup in
-                        WorkoutSetGroupCell(
-                            setGroup: setGroup,
-                            focusedIntegerFieldIndex: .constant(nil),
-                            sheetType: .constant(nil),
-                            isReordering: .constant(false),
-                            supplementaryText:
-                                "\(setGroup.workout!.date!.description(.short))  ·  \(setGroup.workout!.name!)"
-                        )
-                        .canEdit(false)
-                        .padding(CELL_PADDING)
-                        .tileStyle()
-                    }
-                    .emptyPlaceholder(setGroupsInSelectedWeekWithSelectedMuscleGroup) {
-                        Text(NSLocalizedString("noWorkoutsInWeek", comment: ""))
+                VStack(spacing: SECTION_HEADER_SPACING) {
+                    Text(NSLocalizedString("exercises", comment: ""))
+                        .sectionHeaderStyle2()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    VStack(spacing: CELL_SPACING) {
+                        ForEach(
+                            setGroupsInSelectedWeekWithSelectedMuscleGroup,
+                            id: \.objectID
+                        ) { setGroup in
+                            WorkoutSetGroupCell(
+                                setGroup: setGroup,
+                                focusedIntegerFieldIndex: .constant(nil),
+                                sheetType: .constant(nil),
+                                isReordering: .constant(false),
+                                supplementaryText:
+                                    "\(setGroup.workout!.date!.description(.short))  ·  \(setGroup.workout!.name!)"
+                            )
+                            .canEdit(false)
+                            .padding(CELL_PADDING)
+                            .tileStyle()
+                            .shadow(color: .black.opacity(0.5), radius: 10)
+                        }
+                        .emptyPlaceholder(setGroupsInSelectedWeekWithSelectedMuscleGroup) {
+                            Text(NSLocalizedString("noExercisesInWeek", comment: ""))
+                        }
                     }
                 }
-                .padding(.horizontal)
+                .padding()
+                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                .background(Color.secondaryBackground)
+                .edgesIgnoringSafeArea(.bottom)
             }
-            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
         .onChange(of: selectedWeeksFromNow) { _ in
             selectedMuscleGroup = muscleGroupsInSelectedWeek.contains(where: { $0 == selectedMuscleGroup }) ? selectedMuscleGroup : nil

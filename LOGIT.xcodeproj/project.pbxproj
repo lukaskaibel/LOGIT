@@ -607,6 +607,9 @@
 			isa = PBXGroup;
 			children = (
 				80E9FAEE26FE152100C670D5 /* HomeScreen.swift */,
+				797EF7E529292E32003C2266 /* MuscleGroupSplitScreen.swift */,
+				795CF88D2CB5D1A20007E30B /* OverallSetsScreen.swift */,
+				79511D062925A2EE00AF8363 /* TargetPerWeekDetailScreen.swift */,
 				796FE6EB2D01FA92001AE313 /* VolumeScreen.swift */,
 				796FE6E82D01F44B001AE313 /* Tiles */,
 			);
@@ -689,12 +692,9 @@
 				79702C692A7D0F0200F19EF3 /* GenerationScreen.swift */,
 				796FE6E72D01F42F001AE313 /* HomeScreen */,
 				791F25A42AC1AE0800613793 /* MeasurementsScreen.swift */,
-				797EF7E529292E32003C2266 /* MuscleGroupSplitScreen.swift */,
-				795CF88D2CB5D1A20007E30B /* OverallSetsScreen.swift */,
 				791347B22AE2B7B700D20BB7 /* PrivacyPolicyScreen.swift */,
 				791DBE292AEA8351008B4E81 /* ScanScreen.swift */,
 				8033F98D27072B0600EC707A /* SettingsScreen.swift */,
-				79511D062925A2EE00AF8363 /* TargetPerWeekDetailScreen.swift */,
 				79F2D1212800CD0C00197E0A /* TemplateDetailScreen.swift */,
 				79898A7F27F7B02100935E05 /* TemplateEditorScreen.swift */,
 				7955EEAD27FDC2F30010693C /* TemplateListScreen.swift */,

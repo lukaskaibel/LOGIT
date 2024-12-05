@@ -125,7 +125,6 @@ struct HomeScreen: View {
                             VStack(spacing: 8) {
                                 currentWeekWeeklyTargetWidget
                                 overallSetsView
-                                workoutsPerMonth
                                 volumePerDay
                                 muscleGroupPercentageView
                             }
@@ -263,27 +262,6 @@ struct HomeScreen: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(TileButtonStyle())
-    }
-
-    private var workoutsPerMonth: some View {
-        VStack {
-            VStack(alignment: .leading) {
-                Text(NSLocalizedString("workouts", comment: ""))
-                    .tileHeaderStyle()
-                Text(NSLocalizedString("PerMonth", comment: ""))
-                    .tileHeaderSecondaryStyle()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            DateBarChart(dateUnit: .month) {
-                workoutRepository.getGroupedWorkouts(groupedBy: .date(calendarComponents: [.month, .year]))
-                    .compactMap {
-                        guard let date = $0.first?.date else { return nil }
-                        return DateBarChart.Item(date: date, value: $0.count)
-                    }
-            }
-        }
-        .padding(CELL_PADDING)
-        .tileStyle()
     }
     
     private var volumePerDay: some View {

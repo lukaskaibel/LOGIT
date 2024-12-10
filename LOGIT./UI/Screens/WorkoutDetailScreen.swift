@@ -211,21 +211,19 @@ struct WorkoutDetailScreen: View {
                     .foregroundStyle(.tint)
                     .rotationEffect(isMuscleGroupExpanded ? .degrees(90) : .degrees(0))
             }
-            HStack(alignment: .bottom) {
+            HStack {
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("focusedOn", comment: ""))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
                     HStack {
                         ForEach(getFocusedMuscleGroups()) { muscleGroup in
                             Text(muscleGroup.description)
+                                .font(.title3)
                                 .fontWeight(.bold)
                                 .fontDesign(.rounded)
                                 .foregroundStyle(muscleGroup.color)
                         }
                     }
                 }
-                .frame(maxHeight: .infinity, alignment: .bottom)
                 .emptyPlaceholder(getMuscleGroupOccurancesInWorkout) {
                     Text(NSLocalizedString("noWorkoutsThisWeek", comment: ""))
                         .font(.body)
@@ -234,7 +232,8 @@ struct WorkoutDetailScreen: View {
                 .frame(maxHeight: 150)
                 Spacer()
                 MuscleGroupOccurancesChart(muscleGroupOccurances: getMuscleGroupOccurancesInWorkout)
-                    .frame(width: 150, height: 150)
+                    .frame(width: 100, height: 100)
+                    .padding(.trailing)
             }
             if isMuscleGroupExpanded {
                 VStack(spacing: CELL_SPACING) {

@@ -35,7 +35,7 @@ struct HomeScreen: View {
 
     // MARK: - State
 
-    @State private var navigationDestinationType: NavigationDestinationType?
+    @State private var path: [NavigationDestinationType] = []
     @State private var showNoWorkoutTip = false
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingSettings = false
@@ -43,7 +43,7 @@ struct HomeScreen: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 VStack(spacing: 5) {
                     header
@@ -55,7 +55,7 @@ struct HomeScreen: View {
                         }
                         VStack(spacing: 0) {
                             Button {
-                                navigationDestinationType = .exerciseList
+                                path.append(.exerciseList)
                             } label: {
                                 HStack {
                                     HStack {
@@ -75,7 +75,7 @@ struct HomeScreen: View {
                             Divider()
                                 .padding(.leading, 45)
                             Button {
-                                navigationDestinationType = .templateList
+                                path.append(.templateList)
                             } label: {
                                 HStack {
                                     HStack {
@@ -95,7 +95,7 @@ struct HomeScreen: View {
                             Divider()
                                 .padding(.leading, 45)
                             Button {
-                                navigationDestinationType = .measurements
+                                path.append(.measurements)
                             } label: {
                                 HStack {
                                     HStack {
@@ -137,7 +137,7 @@ struct HomeScreen: View {
                                     .sectionHeaderStyle2()
                                 Spacer()
                                 Button {
-                                    navigationDestinationType = .workoutList
+                                    path.append(.workoutList)
                                 } label: {
                                     HStack {
                                         Text(NSLocalizedString("all", comment: ""))
@@ -153,7 +153,7 @@ struct HomeScreen: View {
                                         .padding(CELL_PADDING)
                                         .secondaryTileStyle(backgroundColor: .secondaryBackground)
                                         .onTapGesture {
-                                            navigationDestinationType = .workout(workout)
+                                            path.append(.workout(workout))
                                         }
                                 }
                                 .emptyPlaceholder(recentWorkouts) {
@@ -188,7 +188,7 @@ struct HomeScreen: View {
                         workoutRecorder.startWorkout()
                     }
             }
-            .navigationDestination(item: $navigationDestinationType) { destination in
+            .navigationDestination(for: NavigationDestinationType.self) { destination in
                 switch destination {
                 case .exerciseList: ExerciseListScreen()
                 case .templateList: TemplateListScreen()
@@ -237,7 +237,7 @@ struct HomeScreen: View {
     
     private var currentWeekWeeklyTargetWidget: some View {
         Button {
-            navigationDestinationType = .targetPerWeek
+            path.append(.targetPerWeek)
         } label: {
             CurrentWeekWeeklyTargetTile()
         }
@@ -246,7 +246,7 @@ struct HomeScreen: View {
 
     private var muscleGroupPercentageView: some View {
         Button {
-            navigationDestinationType = .muscleGroupsOverview
+            path.append(.muscleGroupsOverview)
         } label: {
             MuscleGroupSplitTile()
                 .contentShape(Rectangle())
@@ -256,7 +256,7 @@ struct HomeScreen: View {
     
     private var overallSetsView: some View {
         Button {
-            navigationDestinationType = .overallSets
+            path.append(.overallSets)
         } label: {
             OverallSetsTile()
                 .contentShape(Rectangle())
@@ -266,7 +266,7 @@ struct HomeScreen: View {
     
     private var volumePerDay: some View {
         Button {
-            navigationDestinationType = .volume
+            path.append(.volume)
         } label: {
             VolumeTile()
         }

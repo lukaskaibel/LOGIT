@@ -606,6 +606,7 @@
 		796FE6E72D01F42F001AE313 /* HomeScreen */ = {
 			isa = PBXGroup;
 			children = (
+				7903CBAE2CC2E89000235F88 /* ChangeWeeklyWorkoutGoalScreen.swift */,
 				80E9FAEE26FE152100C670D5 /* HomeScreen.swift */,
 				797EF7E529292E32003C2266 /* MuscleGroupSplitScreen.swift */,
 				795CF88D2CB5D1A20007E30B /* OverallSetsScreen.swift */,
@@ -683,7 +684,6 @@
 		79A4E33327E9EBED0089001F /* Screens */ = {
 			isa = PBXGroup;
 			children = (
-				7903CBAE2CC2E89000235F88 /* ChangeWeeklyWorkoutGoalScreen.swift */,
 				79C7892B2CFF5BF300534FA1 /* ExerciseDetailScreen */,
 				796D611827E53AB400E15F01 /* ExerciseEditScreen.swift */,
 				79F7E0FD27E67578006D4354 /* ExerciseListScreen.swift */,

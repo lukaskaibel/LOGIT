@@ -13,12 +13,12 @@ struct TemplateListScreen: View {
     
     @Environment(\.dismiss) var dismiss
 
-    @EnvironmentObject var database: Database
-    @EnvironmentObject var workoutRecorder: WorkoutRecorder
+    @EnvironmentObject private var database: Database
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
+    @EnvironmentObject private var workoutRecorder: WorkoutRecorder
 
     // MARK: - State
 
-    @State private var path: [Template] = []
     @State private var searchedText = ""
     @State private var sortingKey: Database.TemplateSortingKey = .name
     @State private var selectedMuscleGroup: MuscleGroup? = nil
@@ -30,98 +30,96 @@ struct TemplateListScreen: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack(path: $path) {
-            ScrollView {
-                LazyVStack(spacing: SECTION_SPACING) {
-                    MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
-                    if isShowingNoTemplatesTip {
-                        TipView(
-                            title: NSLocalizedString("noTemplatesTip", comment: ""),
-                            description: NSLocalizedString("noTemplatesTipDescription", comment: ""),
-                            buttonAction: .init(
-                                title: NSLocalizedString("createTemplate", comment: ""),
-                                action: { showingTemplateCreation = true }
-                            ),
-                            isShown: $isShowingNoTemplatesTip
-                        )
-                        .padding(CELL_PADDING)
-                        .tileStyle()
-                        .padding(.horizontal)
-                    }
-                    ForEach(groupedTemplates.indices, id: \.self) { index in
-                        VStack(spacing: CELL_SPACING) {
-                            Text(header(for: index))
-                                .sectionHeaderStyle2()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            ForEach(groupedTemplates.value(at: index) ?? [], id: \.objectID) {
-                                template in
-                                Button {
-                                    path.append(template)
-                                } label: {
-                                    VStack {
-                                        HStack {
-                                            TemplateCell(template: template)
-                                            NavigationChevron()
-                                                .foregroundStyle(.secondary)
-                                        }
-                                        if showStartButton {
-                                            Button {
-                                                workoutRecorder.startWorkout(from: template)
-                                                dismiss()
-                                            } label: {
-                                                Label(NSLocalizedString("startFromTemplate", comment: ""), systemImage: "play.fill")
-                                            }
-                                            .buttonStyle(SecondaryBigButtonStyle())
-                                        }
-                                    }
-                                    .padding(CELL_PADDING)
-                                    .tileStyle()
-                                }
-                                .buttonStyle(TileButtonStyle())
-                            }
-                        }
-                    }
-                    .emptyPlaceholder(groupedTemplates) {
-                        Text(NSLocalizedString("noTemplates", comment: ""))
-                    }
+        ScrollView {
+            LazyVStack(spacing: SECTION_SPACING) {
+                MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
+                if isShowingNoTemplatesTip {
+                    TipView(
+                        title: NSLocalizedString("noTemplatesTip", comment: ""),
+                        description: NSLocalizedString("noTemplatesTipDescription", comment: ""),
+                        buttonAction: .init(
+                            title: NSLocalizedString("createTemplate", comment: ""),
+                            action: { showingTemplateCreation = true }
+                        ),
+                        isShown: $isShowingNoTemplatesTip
+                    )
+                    .padding(CELL_PADDING)
+                    .tileStyle()
                     .padding(.horizontal)
                 }
-                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-            }
-            .searchable(text: $searchedText)
-            .onAppear {
-                isShowingNoTemplatesTip = groupedTemplates.isEmpty
-            }
-            .navigationBarTitleDisplayMode(.large)
-            .navigationDestination(for: Template.self) { template in
-                TemplateDetailScreen(template: template)
-            }
-            .navigationTitle(NSLocalizedString("templates", comment: ""))
-            .toolbar {
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button(action: {
-                            sortingKey = .name
-                        }) {
-                            Label(NSLocalizedString("name", comment: ""), systemImage: "textformat")
+                ForEach(groupedTemplates.indices, id: \.self) { index in
+                    VStack(spacing: CELL_SPACING) {
+                        Text(header(for: index))
+                            .sectionHeaderStyle2()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        ForEach(groupedTemplates.value(at: index) ?? [], id: \.objectID) {
+                            template in
+                            Button {
+                                homeNavigationCoordinator.path.append(.template(template))
+                            } label: {
+                                VStack {
+                                    HStack {
+                                        TemplateCell(template: template)
+                                        NavigationChevron()
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    if showStartButton {
+                                        Button {
+                                            workoutRecorder.startWorkout(from: template)
+                                            dismiss()
+                                        } label: {
+                                            Label(NSLocalizedString("startFromTemplate", comment: ""), systemImage: "play.fill")
+                                        }
+                                        .buttonStyle(SecondaryBigButtonStyle())
+                                    }
+                                }
+                                .padding(CELL_PADDING)
+                                .tileStyle()
+                            }
+                            .buttonStyle(TileButtonStyle())
                         }
-                        Button(action: {
-                            sortingKey = .lastUsed
-                        }) {
-                            Label(NSLocalizedString("lastUsed", comment: ""), systemImage: "calendar")
-                        }
-                    } label: {
-                        Label(
-                            NSLocalizedString(sortingKey == .name ? "name" : "lastUsed", comment: ""),
-                            systemImage: "arrow.up.arrow.down"
-                        )
                     }
-                    CreateTemplateMenu()
                 }
+                .emptyPlaceholder(groupedTemplates) {
+                    Text(NSLocalizedString("noTemplates", comment: ""))
+                }
+                .padding(.horizontal)
             }
-            .popover(isPresented: $showingTemplateCreation) {
-                TemplateEditorScreen(template: database.newTemplate(), isEditingExistingTemplate: false)
+            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+        }
+        .searchable(text: $searchedText)
+        .onAppear {
+            isShowingNoTemplatesTip = groupedTemplates.isEmpty
+        }
+        .navigationBarTitleDisplayMode(.large)
+        .navigationTitle(NSLocalizedString("templates", comment: ""))
+        .toolbar {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Menu {
+                    Button(action: {
+                        sortingKey = .name
+                    }) {
+                        Label(NSLocalizedString("name", comment: ""), systemImage: "textformat")
+                    }
+                    Button(action: {
+                        sortingKey = .lastUsed
+                    }) {
+                        Label(NSLocalizedString("lastUsed", comment: ""), systemImage: "calendar")
+                    }
+                } label: {
+                    Label(
+                        NSLocalizedString(sortingKey == .name ? "name" : "lastUsed", comment: ""),
+                        systemImage: "arrow.up.arrow.down"
+                    )
+                }
+                CreateTemplateMenu()
             }
+            ToolbarItem(placement: .bottomBar) {
+                Text("\(templates.count) \(NSLocalizedString("templates", comment: ""))")
+            }
+        }
+        .popover(isPresented: $showingTemplateCreation) {
+            TemplateEditorScreen(template: database.newTemplate(), isEditingExistingTemplate: false)
         }
     }
 
@@ -133,6 +131,10 @@ struct TemplateListScreen: View {
             groupedBy: sortingKey,
             usingMuscleGroup: selectedMuscleGroup
         )
+    }
+    
+    private var templates: [Template] {
+        database.getTemplates()
     }
 
     private func header(for index: Int) -> String {

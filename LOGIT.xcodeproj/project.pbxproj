@@ -40,6 +40,7 @@
 		793115C32CFFB4B700093878 /* ExerciseRepetitionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793115C22CFFB4B700093878 /* ExerciseRepetitionsScreen.swift */; };
 		793115C52CFFB63E00093878 /* ExerciseVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793115C42CFFB63C00093878 /* ExerciseVolumeTile.swift */; };
 		793115C72CFFB70600093878 /* ExerciseVolumeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793115C62CFFB70600093878 /* ExerciseVolumeScreen.swift */; };
+		793776292D17752900F7E000 /* HomeNavigationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793776282D17751E00F7E000 /* HomeNavigationCoordinator.swift */; };
 		793CB8A82975BB1B00140D2B /* IntegerField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793CB8A72975BB1B00140D2B /* IntegerField.swift */; };
 		79407A8B2772380C004F32A3 /* UnitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79407A8A2772380C004F32A3 /* UnitView.swift */; };
 		79488DD72A7558B2005C485D /* EnvironmentValues+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79488DD62A7558B2005C485D /* EnvironmentValues+.swift */; };
@@ -241,6 +242,7 @@
 		793115C22CFFB4B700093878 /* ExerciseRepetitionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRepetitionsScreen.swift; sourceTree = "<group>"; };
 		793115C42CFFB63C00093878 /* ExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseVolumeTile.swift; sourceTree = "<group>"; };
 		793115C62CFFB70600093878 /* ExerciseVolumeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseVolumeScreen.swift; sourceTree = "<group>"; };
+		793776282D17751E00F7E000 /* HomeNavigationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeNavigationCoordinator.swift; sourceTree = "<group>"; };
 		793CB8A72975BB1B00140D2B /* IntegerField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegerField.swift; sourceTree = "<group>"; };
 		79407A8A2772380C004F32A3 /* UnitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitView.swift; sourceTree = "<group>"; };
 		79488DD62A7558B2005C485D /* EnvironmentValues+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EnvironmentValues+.swift"; sourceTree = "<group>"; };
@@ -607,6 +609,7 @@
 			isa = PBXGroup;
 			children = (
 				7903CBAE2CC2E89000235F88 /* ChangeWeeklyWorkoutGoalScreen.swift */,
+				793776282D17751E00F7E000 /* HomeNavigationCoordinator.swift */,
 				80E9FAEE26FE152100C670D5 /* HomeScreen.swift */,
 				797EF7E529292E32003C2266 /* MuscleGroupSplitScreen.swift */,
 				795CF88D2CB5D1A20007E30B /* OverallSetsScreen.swift */,
@@ -1053,6 +1056,7 @@
 				795D9B8B282EC34B00866C06 /* DropSet+.swift in Sources */,
 				796D611927E53AB400E15F01 /* ExerciseEditScreen.swift in Sources */,
 				793115C52CFFB63E00093878 /* ExerciseVolumeTile.swift in Sources */,
+				793776292D17752900F7E000 /* HomeNavigationCoordinator.swift in Sources */,
 				801CDC4C2688BDC800BB653D /* Color+.swift in Sources */,
 				798CEE6D280DC7CE00114FEE /* MuscleGroup.swift in Sources */,
 				7919C5FD2A7410FB00F35493 /* WorkoutSetGroupCell.swift in Sources */,

@@ -10,17 +10,6 @@ import SwiftUI
 
 struct HomeScreen: View {
 
-    enum NavigationDestinationType: Hashable, Identifiable {
-        var id: String {
-            switch self {
-            case .workout(let workout): return "workout\(String(describing: workout.id))"
-            default: return String(describing: self)
-            }
-        }
-        
-        case targetPerWeek, muscleGroupsOverview, exerciseList, templateList, overallSets, workoutList, measurements, workout(Workout), volume
-    }
-
     // MARK: - AppStorage
 
     @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = 3
@@ -32,10 +21,10 @@ struct HomeScreen: View {
     @EnvironmentObject private var workoutSetRepository: WorkoutSetRepository
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var workoutRecorder: WorkoutRecorder
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
 
     // MARK: - State
 
-    @State private var path: [NavigationDestinationType] = []
     @State private var showNoWorkoutTip = false
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingSettings = false
@@ -43,7 +32,7 @@ struct HomeScreen: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: $homeNavigationCoordinator.path) {
             ScrollView {
                 VStack(spacing: 5) {
                     header
@@ -55,7 +44,7 @@ struct HomeScreen: View {
                         }
                         VStack(spacing: 0) {
                             Button {
-                                path.append(.exerciseList)
+                                homeNavigationCoordinator.path.append(.exerciseList)
                             } label: {
                                 HStack {
                                     HStack {
@@ -75,7 +64,7 @@ struct HomeScreen: View {
                             Divider()
                                 .padding(.leading, 45)
                             Button {
-                                path.append(.templateList)
+                                homeNavigationCoordinator.path.append(.templateList)
                             } label: {
                                 HStack {
                                     HStack {
@@ -95,7 +84,7 @@ struct HomeScreen: View {
                             Divider()
                                 .padding(.leading, 45)
                             Button {
-                                path.append(.measurements)
+                                homeNavigationCoordinator.path.append(.measurements)
                             } label: {
                                 HStack {
                                     HStack {
@@ -137,7 +126,7 @@ struct HomeScreen: View {
                                     .sectionHeaderStyle2()
                                 Spacer()
                                 Button {
-                                    path.append(.workoutList)
+                                    homeNavigationCoordinator.path.append(.workoutList)
                                 } label: {
                                     HStack {
                                         Text(NSLocalizedString("all", comment: ""))
@@ -153,7 +142,7 @@ struct HomeScreen: View {
                                         .padding(CELL_PADDING)
                                         .secondaryTileStyle(backgroundColor: .secondaryBackground)
                                         .onTapGesture {
-                                            path.append(.workout(workout))
+                                            homeNavigationCoordinator.path.append(.workout(workout))
                                         }
                                 }
                                 .emptyPlaceholder(recentWorkouts) {
@@ -188,22 +177,26 @@ struct HomeScreen: View {
                         workoutRecorder.startWorkout()
                     }
             }
-            .navigationDestination(for: NavigationDestinationType.self) { destination in
+            .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
                 switch destination {
-                case .exerciseList: ExerciseListScreen()
-                case .templateList: TemplateListScreen()
-                case .targetPerWeek: TargetPerWeekDetailScreen()
-                case .muscleGroupsOverview:
-                    MuscleGroupSplitScreen()
-                case .overallSets: OverallSetsScreen()
-                case .volume: VolumeScreen()
-                case .workoutList: WorkoutListScreen()
-                case .measurements: MeasurementsScreen()
-                case .workout(let workout):
-                    WorkoutDetailScreen(
-                        workout: workout,
-                        canNavigateToTemplate: true
-                    )
+                    case .exercise(let exercise):
+                        ExerciseDetailScreen(exercise: exercise)
+                    case .exerciseList: ExerciseListScreen()
+                    case .measurements: MeasurementsScreen()
+                    case .muscleGroupsOverview:
+                        MuscleGroupSplitScreen()
+                    case .overallSets: OverallSetsScreen()
+                    case .targetPerWeek: TargetPerWeekDetailScreen()
+                    case .template(let template):
+                        TemplateDetailScreen(template: template)
+                    case .templateList: TemplateListScreen()
+                    case .volume: VolumeScreen()
+                    case .workout(let workout):
+                        WorkoutDetailScreen(
+                            workout: workout,
+                            canNavigateToTemplate: true
+                        )
+                    case .workoutList: WorkoutListScreen()
                 }
             }
             .toolbar {
@@ -214,6 +207,9 @@ struct HomeScreen: View {
                         Image(systemName: "gear")
                     }
                 }
+            }
+            .overlay {
+                startAndCurrentWorkoutButton
             }
         }
     }
@@ -237,7 +233,7 @@ struct HomeScreen: View {
     
     private var currentWeekWeeklyTargetWidget: some View {
         Button {
-            path.append(.targetPerWeek)
+            homeNavigationCoordinator.path.append(.targetPerWeek)
         } label: {
             CurrentWeekWeeklyTargetTile()
         }
@@ -246,7 +242,7 @@ struct HomeScreen: View {
 
     private var muscleGroupPercentageView: some View {
         Button {
-            path.append(.muscleGroupsOverview)
+            homeNavigationCoordinator.path.append(.muscleGroupsOverview)
         } label: {
             MuscleGroupSplitTile()
                 .contentShape(Rectangle())
@@ -256,7 +252,7 @@ struct HomeScreen: View {
     
     private var overallSetsView: some View {
         Button {
-            path.append(.overallSets)
+            homeNavigationCoordinator.path.append(.overallSets)
         } label: {
             OverallSetsTile()
                 .contentShape(Rectangle())
@@ -266,7 +262,7 @@ struct HomeScreen: View {
     
     private var volumePerDay: some View {
         Button {
-            path.append(.volume)
+            homeNavigationCoordinator.path.append(.volume)
         } label: {
             VolumeTile()
         }
@@ -285,6 +281,45 @@ struct HomeScreen: View {
         )
         .padding(CELL_PADDING)
         .tileStyle()
+    }
+    
+    private var startAndCurrentWorkoutButton: some View {
+        ZStack {
+            Rectangle()
+                .fill(.bar)
+                .frame(height: 140)
+                .mask {
+                    VStack(spacing: 0) {
+                        LinearGradient(colors: [Color.black.opacity(0),
+                                                Color.black],
+                                       startPoint: .top,
+                                       endPoint: .bottom)
+                            .frame(height: 45)
+                        
+                        Rectangle()
+                    }
+                }
+            if let workout = workoutRecorder.workout {
+                CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
+                    .frame(maxWidth: .infinity)
+                    .background(.regularMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                    .shadow(radius: 10)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 5)
+                    .onTapGesture {
+                        isShowingWorkoutRecorder = true
+                    }
+                    .transition(.move(edge: .bottom))
+            } else {
+                StartWorkoutView()
+                    .shadow(radius: 10)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 5)
+            }
+        }
+        .frame(maxHeight: .infinity, alignment: .bottom)
+        .edgesIgnoringSafeArea(.bottom)
     }
 
     // MARK: - Supportings Methods

@@ -11,12 +11,12 @@ struct WorkoutListScreen: View {
 
     // MARK: - Environment
 
-    @EnvironmentObject var database: Database
-    @EnvironmentObject var workoutRepository: WorkoutRepository
+    @EnvironmentObject private var database: Database
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
+    @EnvironmentObject private var workoutRepository: WorkoutRepository
 
     // MARK: - State
-
-    @State private var path: [Workout] = []
+    
     @State private var groupingKey: WorkoutRepository.WorkoutGroupingKey = .date(calendarComponents: [.month, .year])
     @State private var searchedText: String = ""
     @State private var selectedMuscleGroup: MuscleGroup? = nil
@@ -25,71 +25,63 @@ struct WorkoutListScreen: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack(path: $path) {
-            ScrollView {
-                LazyVStack(spacing: SECTION_SPACING) {
-                    MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
-                    ForEach(groupedWorkouts.indices, id: \.self) { index in
-                        VStack(spacing: SECTION_HEADER_SPACING) {
-                            Text(header(for: index))
-                                .sectionHeaderStyle2()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(spacing: CELL_SPACING) {
-                                ForEach(groupedWorkouts.value(at: index) ?? [], id: \.objectID) {
-                                    workout in
-                                    Button {
-                                        path.append(workout)
-                                    } label: {
-                                        WorkoutCell(workout: workout)
-                                            .padding(CELL_PADDING)
-                                            .tileStyle()
-                                    }
-                                    .buttonStyle(TileButtonStyle())
+        ScrollView {
+            LazyVStack(spacing: SECTION_SPACING) {
+                MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
+                ForEach(groupedWorkouts.indices, id: \.self) { index in
+                    VStack(spacing: SECTION_HEADER_SPACING) {
+                        Text(header(for: index))
+                            .sectionHeaderStyle2()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(spacing: CELL_SPACING) {
+                            ForEach(groupedWorkouts.value(at: index) ?? [], id: \.objectID) {
+                                workout in
+                                Button {
+                                    homeNavigationCoordinator.path.append(.workout(workout))
+                                } label: {
+                                    WorkoutCell(workout: workout)
+                                        .padding(CELL_PADDING)
+                                        .tileStyle()
                                 }
+                                .buttonStyle(TileButtonStyle())
                             }
                         }
-                        .padding(.horizontal)
                     }
-                    .emptyPlaceholder(groupedWorkouts) {
-                        Text(NSLocalizedString("noWorkouts", comment: ""))
-                    }
+                    .padding(.horizontal)
                 }
-                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                .emptyPlaceholder(groupedWorkouts) {
+                    Text(NSLocalizedString("noWorkouts", comment: ""))
+                }
             }
-            .searchable(
-                text: $searchedText,
-                prompt: NSLocalizedString("searchWorkouts", comment: "")
-            )
-            .navigationTitle(NSLocalizedString("workoutHistory", comment: ""))
-            .navigationBarTitleDisplayMode(.large)
-            .navigationDestination(for: Workout.self) { workout in
-                WorkoutDetailScreen(
-                    workout: workout,
-                    canNavigateToTemplate: true
-                )
-            }
-            .toolbar {
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Menu {
-                        Section {
-                            Button(action: { groupingKey = .name }) {
-                                Label(NSLocalizedString("name", comment: ""), systemImage: "textformat")
-                            }
-                            Button(action: { groupingKey = .date(calendarComponents: [.month, .year]) }) {
-                                Label(NSLocalizedString("date", comment: ""), systemImage: "calendar")
-                            }
+            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+        }
+        .searchable(
+            text: $searchedText,
+            prompt: NSLocalizedString("searchWorkouts", comment: "")
+        )
+        .navigationTitle(NSLocalizedString("workoutHistory", comment: ""))
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Menu {
+                    Section {
+                        Button(action: { groupingKey = .name }) {
+                            Label(NSLocalizedString("name", comment: ""), systemImage: "textformat")
                         }
-                    } label: {
-                        Label(
-                            NSLocalizedString(groupingKey == .name ? "name" : "date", comment: ""),
-                            systemImage: "arrow.up.arrow.down"
-                        )
+                        Button(action: { groupingKey = .date(calendarComponents: [.month, .year]) }) {
+                            Label(NSLocalizedString("date", comment: ""), systemImage: "calendar")
+                        }
                     }
-                    Button {
-                        isShowingAddWorkout = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
+                } label: {
+                    Label(
+                        NSLocalizedString(groupingKey == .name ? "name" : "date", comment: ""),
+                        systemImage: "arrow.up.arrow.down"
+                    )
+                }
+                Button {
+                    isShowingAddWorkout = true
+                } label: {
+                    Image(systemName: "plus")
                 }
             }
         }
@@ -125,7 +117,7 @@ struct WorkoutListScreen: View {
 
 struct AllWorkoutsView_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationView {
+        NavigationStack {
             WorkoutListScreen()
         }
         .previewEnvironmentObjects()

@@ -11,11 +11,11 @@ struct ExerciseListScreen: View {
 
     // MARK: - Environment
 
-    @EnvironmentObject var database: Database
+    @EnvironmentObject private var database: Database
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
 
     // MARK: - State
-
-    @State private var path: [Exercise] = []
+    
     @State private var searchedText = ""
     @State private var selectedMuscleGroup: MuscleGroup? = nil
     @State private var showingAddExercise = false
@@ -24,67 +24,65 @@ struct ExerciseListScreen: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack(path: $path) {
-            ScrollView {
-                LazyVStack(spacing: SECTION_SPACING) {
-                    MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
-                    if isShowingNoExercisesTip {
-                        TipView(title: NSLocalizedString("noExercisesTip", comment: ""),
-                                description: NSLocalizedString("noExercisesTipDescription", comment: ""),
-                                buttonAction: .init(title: NSLocalizedString("createExercise", comment: ""), action: { showingAddExercise = true }),
-                                isShown: $isShowingNoExercisesTip)
-                        .padding(CELL_PADDING)
-                        .tileStyle()
-                        .padding(.horizontal)
-                    }
-                    ForEach(groupedExercises) { group in
-                        VStack(spacing: SECTION_HEADER_SPACING) {
-                            Text(getLetter(for: group))
-                                .sectionHeaderStyle2()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(spacing: CELL_SPACING) {
-                                ForEach(group, id: \.objectID) { exercise in
-                                    Button {
-                                        path.append(exercise)
-                                    } label: {
-                                        HStack {
-                                            ExerciseCell(exercise: exercise)
-                                            Spacer()
-                                            NavigationChevron()
-                                                .foregroundColor(
-                                                    exercise.muscleGroup?.color ?? .secondaryLabel
-                                                )
-                                        }
-                                        .padding(CELL_PADDING)
-                                        .tileStyle()
+        ScrollView {
+            LazyVStack(spacing: SECTION_SPACING) {
+                MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
+                if isShowingNoExercisesTip {
+                    TipView(title: NSLocalizedString("noExercisesTip", comment: ""),
+                            description: NSLocalizedString("noExercisesTipDescription", comment: ""),
+                            buttonAction: .init(title: NSLocalizedString("createExercise", comment: ""), action: { showingAddExercise = true }),
+                            isShown: $isShowingNoExercisesTip)
+                    .padding(CELL_PADDING)
+                    .tileStyle()
+                    .padding(.horizontal)
+                }
+                ForEach(groupedExercises) { group in
+                    VStack(spacing: SECTION_HEADER_SPACING) {
+                        Text(getLetter(for: group))
+                            .sectionHeaderStyle2()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(spacing: CELL_SPACING) {
+                            ForEach(group, id: \.objectID) { exercise in
+                                Button {
+                                    homeNavigationCoordinator.path.append(.exercise(exercise))
+                                } label: {
+                                    HStack {
+                                        ExerciseCell(exercise: exercise)
+                                        Spacer()
+                                        NavigationChevron()
+                                            .foregroundColor(
+                                                exercise.muscleGroup?.color ?? .secondaryLabel
+                                            )
                                     }
-                                    .buttonStyle(TileButtonStyle())
+                                    .padding(CELL_PADDING)
+                                    .tileStyle()
                                 }
+                                .buttonStyle(TileButtonStyle())
                             }
                         }
-                        .padding(.horizontal)
                     }
-                    .emptyPlaceholder(groupedExercises) {
-                        Text(NSLocalizedString("noExercises", comment: ""))
-                    }
+                    .padding(.horizontal)
                 }
-                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-            }
-            .searchable(text: $searchedText)
-            .onAppear {
-                isShowingNoExercisesTip = groupedExercises.isEmpty
-            }
-            .navigationTitle(NSLocalizedString("exercises", comment: "sports activity"))
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddExercise.toggle() }) {
-                        Image(systemName: "plus")
-                    }
+                .emptyPlaceholder(groupedExercises) {
+                    Text(NSLocalizedString("noExercises", comment: ""))
                 }
             }
-            .navigationDestination(for: Exercise.self) { exercise in
-                ExerciseDetailScreen(exercise: exercise)
+            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+        }
+        .searchable(text: $searchedText)
+        .onAppear {
+            isShowingNoExercisesTip = groupedExercises.isEmpty
+        }
+        .navigationTitle(NSLocalizedString("exercises", comment: "sports activity"))
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { showingAddExercise.toggle() }) {
+                    Image(systemName: "plus")
+                }
+            }
+            ToolbarItem(placement: .bottomBar) {
+                Text("\(exercises.count) \(NSLocalizedString("exercises", comment: ""))")
             }
         }
         .sheet(isPresented: $showingAddExercise) {
@@ -94,14 +92,18 @@ struct ExerciseListScreen: View {
 
     // MARK: - Methods / Computed Properties
 
-    var groupedExercises: [[Exercise]] {
+    private var groupedExercises: [[Exercise]] {
         database.getGroupedExercises(
             withNameIncluding: searchedText,
             for: selectedMuscleGroup
         )
     }
+    
+    private var exercises: [Exercise] {
+        database.getExercises()
+    }
 
-    func getLetter(for group: [Exercise]) -> String {
+    private func getLetter(for group: [Exercise]) -> String {
         String(group.first?.name?.first ?? Character(" "))
     }
 

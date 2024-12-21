@@ -13,8 +13,6 @@ private struct CanEditKey: EnvironmentKey {
     static let defaultValue: Bool = true
 }
 
-
-
 extension EnvironmentValues {
     var canEdit: Bool {
         get { self[CanEditKey.self] }

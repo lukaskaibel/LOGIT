@@ -14,7 +14,6 @@ extension Database {
     public func convertSetGroupToStandardSets(_ setGroup: WorkoutSetGroup) {
         setGroup.sets
             .forEach { convertToStandardSet($0) }
-        refreshObjects()
     }
 
     private func convertToStandardSet(_ workoutSet: WorkoutSet) {
@@ -46,7 +45,6 @@ extension Database {
     public func convertSetGroupToDropSets(_ setGroup: WorkoutSetGroup) {
         setGroup.sets
             .forEach { convertToDropSet($0) }
-        refreshObjects()
     }
 
     private func convertToDropSet(_ workoutSet: WorkoutSet) {
@@ -78,7 +76,6 @@ extension Database {
     public func convertSetGroupToSuperSets(_ setGroup: WorkoutSetGroup) {
         setGroup.sets
             .forEach { convertToSuperSet($0) }
-        refreshObjects()
     }
 
     private func convertToSuperSet(_ workoutSet: WorkoutSet) {
@@ -112,7 +109,6 @@ extension Database {
     public func convertSetGroupToStandardSets(_ templateSetGroup: TemplateSetGroup) {
         templateSetGroup.sets
             .forEach { convertToStandardSet($0) }
-        refreshObjects()
     }
 
     private func convertToStandardSet(_ templateSet: TemplateSet) {
@@ -144,7 +140,6 @@ extension Database {
     public func convertSetGroupToDropSets(_ templateSetGroup: TemplateSetGroup) {
         templateSetGroup.sets
             .forEach { convertToTemplateDropSet($0) }
-        refreshObjects()
     }
 
     private func convertToTemplateDropSet(_ templateSet: TemplateSet) {
@@ -176,7 +171,6 @@ extension Database {
     public func convertSetGroupToSuperSet(_ templateSetGroup: TemplateSetGroup) {
         templateSetGroup.sets
             .forEach { convertToTemplateSuperSet($0) }
-        refreshObjects()
     }
 
     private func convertToTemplateSuperSet(_ templateSet: TemplateSet) {

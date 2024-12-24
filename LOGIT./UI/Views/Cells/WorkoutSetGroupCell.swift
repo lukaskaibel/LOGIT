@@ -39,8 +39,7 @@ struct WorkoutSetGroupCell: View {
                         ReorderableForEach(
                             $setGroup.sets,
                             canReorder: canEdit,
-                            isReordering: $isReorderingSets,
-                            onOrderChanged: { database.refreshObjects() }
+                            isReordering: $isReorderingSets
                         ) { workoutSet in
                             WorkoutSetCell(
                                 workoutSet: workoutSet,
@@ -51,7 +50,6 @@ struct WorkoutSetGroupCell: View {
                             .onDelete(disabled: !canEdit) {
                                 withAnimation(.interactiveSpring()) {
                                     database.delete(workoutSet)
-                                    database.refreshObjects()
                                 }
                             }
                             .secondaryTileStyle()
@@ -95,7 +93,6 @@ struct WorkoutSetGroupCell: View {
                             exercise: setGroup.exercise,
                             setExercise: {
                                 setGroup.exercise = $0
-                                database.refreshObjects()
                             },
                             forSecondary: false
                         )
@@ -105,7 +102,6 @@ struct WorkoutSetGroupCell: View {
                             exercise: setGroup.secondaryExercise,
                             setExercise: {
                                 setGroup.secondaryExercise = $0
-                                database.refreshObjects()
                             },
                             forSecondary: true
                         )

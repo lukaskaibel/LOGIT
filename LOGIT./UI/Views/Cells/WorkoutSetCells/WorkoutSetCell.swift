@@ -76,7 +76,6 @@ struct WorkoutSetCell: View {
                         Button {
                             UISelectionFeedbackGenerator().selectionChanged()
                             dropSet.removeLastDrop()
-                            database.refreshObjects()
                         } label: {
                             Image(systemName: "minus")
                                 .fontWeight(.semibold)
@@ -90,7 +89,6 @@ struct WorkoutSetCell: View {
                         Button {
                             UISelectionFeedbackGenerator().selectionChanged()
                             dropSet.addDrop()
-                            database.refreshObjects()
                         } label: {
                             Image(systemName: "plus")
                                 .fontWeight(.semibold)

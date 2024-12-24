@@ -46,8 +46,7 @@ struct WorkoutSetGroupList: View {
             ReorderableForEach(
                 $workout.setGroups,
                 canReorder: canReorder,
-                isReordering: $isReordering,
-                onOrderChanged: { database.refreshObjects() }
+                isReordering: $isReordering
             ) { setGroup in
                 WorkoutSetGroupCell(
                     setGroup: setGroup,

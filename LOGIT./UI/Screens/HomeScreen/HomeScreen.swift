@@ -208,9 +208,9 @@ struct HomeScreen: View {
                     }
                 }
             }
-            .overlay {
-                startAndCurrentWorkoutButton
-            }
+        }
+        .overlay {
+            startAndCurrentWorkoutButton
         }
     }
 

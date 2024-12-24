@@ -182,6 +182,7 @@
 "noData" = "No Data";
 "noEntriesConfirmation" = "This workout has no entries. Discard it?";
 "noExercises" = "No Exercises";
+"noExercisesInWeek" = "No Exercise in Week";
 "noExercisesTip" = "Exercise Library 🏋️";
 "noExercisesTipDescription" = "Craft your personal Exercise library and categorize by muscle group. Click below to start adding your first Exercise!";
 "noHistory" = "No History";

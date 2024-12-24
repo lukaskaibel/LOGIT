@@ -81,9 +81,6 @@ struct ExerciseListScreen: View {
                     Image(systemName: "plus")
                 }
             }
-            ToolbarItem(placement: .bottomBar) {
-                Text("\(exercises.count) \(NSLocalizedString("exercises", comment: ""))")
-            }
         }
         .sheet(isPresented: $showingAddExercise) {
             ExerciseEditScreen(initialMuscleGroup: selectedMuscleGroup ?? .chest)

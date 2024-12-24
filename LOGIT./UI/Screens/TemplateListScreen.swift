@@ -114,9 +114,6 @@ struct TemplateListScreen: View {
                 }
                 CreateTemplateMenu()
             }
-            ToolbarItem(placement: .bottomBar) {
-                Text("\(templates.count) \(NSLocalizedString("templates", comment: ""))")
-            }
         }
         .popover(isPresented: $showingTemplateCreation) {
             TemplateEditorScreen(template: database.newTemplate(), isEditingExistingTemplate: false)

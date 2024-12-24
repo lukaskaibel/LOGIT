@@ -68,10 +68,6 @@ class Database: ObservableObject {
         context.hasChanges
     }
 
-    func refreshObjects() {
-        context.refreshAllObjects()
-    }
-
     // MARK: - Object Access / Manipulation
     
     func fetch(

@@ -106,7 +106,6 @@ struct WorkoutEditorScreen: View {
                                                 exercise: exercise,
                                                 workout: workout
                                             )
-                                            database.refreshObjects()
                                             withAnimation {
                                                 scrollable.scrollTo(1, anchor: .bottom)
                                             }

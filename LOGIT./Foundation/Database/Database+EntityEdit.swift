@@ -18,7 +18,6 @@ extension Database {
         } else {
             newStandardSet(setGroup: setGroup)
         }
-        refreshObjects()
     }
 
     public func addSet(to templateSetGroup: TemplateSetGroup) {
@@ -30,7 +29,6 @@ extension Database {
         } else {
             newTemplateStandardSet(setGroup: templateSetGroup)
         }
-        refreshObjects()
     }
 
 }

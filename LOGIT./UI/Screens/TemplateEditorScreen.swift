@@ -59,8 +59,7 @@ struct TemplateEditorScreen: View {
                     VStack(spacing: SECTION_SPACING) {
                         ReorderableForEach(
                             $template.setGroups,
-                            isReordering: $isReordering,
-                            onOrderChanged: { database.refreshObjects() }
+                            isReordering: $isReordering
                         ) { setGroup in
                             TemplateSetGroupCell(
                                 setGroup: setGroup,
@@ -164,7 +163,6 @@ struct TemplateEditorScreen: View {
                         exercise: exercise,
                         template: template
                     )
-                    database.refreshObjects()
                 },
                 forSecondary: false
             )
@@ -182,7 +180,6 @@ struct TemplateEditorScreen: View {
 
     public func moveSetGroups(from source: IndexSet, to destination: Int) {
         template.setGroups.move(fromOffsets: source, toOffset: destination)
-        database.refreshObjects()
     }
 
 }

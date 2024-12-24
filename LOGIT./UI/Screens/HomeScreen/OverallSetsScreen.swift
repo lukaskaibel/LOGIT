@@ -110,7 +110,6 @@ struct OverallSetsScreen: View {
                 .edgesIgnoringSafeArea(.bottom)
             }
         }
-        
     }
     
     private func xAxisDateString(for date: Date) -> String {

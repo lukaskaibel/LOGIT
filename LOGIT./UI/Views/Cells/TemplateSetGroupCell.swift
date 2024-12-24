@@ -39,8 +39,7 @@ struct TemplateSetGroupCell: View {
                         ReorderableForEach(
                             $setGroup.sets,
                             canReorder: canEdit,
-                            isReordering: $isReorderingSets,
-                            onOrderChanged: { database.refreshObjects() }
+                            isReordering: $isReorderingSets
                         ) { templateSet in
                             TemplateSetCell(
                                 templateSet: templateSet,
@@ -51,7 +50,6 @@ struct TemplateSetGroupCell: View {
                             .onDelete(disabled: !canEdit) {
                                 withAnimation(.interactiveSpring()) {
                                     database.delete(templateSet)
-                                    database.refreshObjects()
                                 }
                             }
                             .secondaryTileStyle()
@@ -95,7 +93,6 @@ struct TemplateSetGroupCell: View {
                             exercise: setGroup.exercise,
                             setExercise: {
                                 setGroup.exercise = $0
-                                database.refreshObjects()
                             },
                             forSecondary: false
                         )
@@ -105,7 +102,6 @@ struct TemplateSetGroupCell: View {
                             exercise: setGroup.secondaryExercise,
                             setExercise: {
                                 setGroup.secondaryExercise = $0
-                                database.refreshObjects()
                             },
                             forSecondary: true
                         )

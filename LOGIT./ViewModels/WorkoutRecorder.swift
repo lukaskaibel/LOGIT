@@ -109,7 +109,6 @@ final class WorkoutRecorder: ObservableObject {
             
             // This refresh is needed, as otherwise workoutCopy.isEmpty will still put out false
             // even if all the WorkoutSetGroups have been deleted, as the workoutCopy object has not refreshed yet
-            database.refreshObjects()
             
             if workoutCopy.isEmpty {
                 database.delete(workoutCopy, saveContext: true)

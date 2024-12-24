@@ -183,6 +183,7 @@
 "noData" = "Keine Daten";
 "noEntriesConfirmation" = "Das Workout hat kein Einträge. Workout verwerfen?";
 "noExercises" = "Keine Übungen";
+"noExercisesInWeek" = "Keine Übungen in der Woche";
 "noExercisesTip" = "Übungsbibliothek 🏋️";
 "noExercisesTipDescription" = "Erstelle deine persönliche Übungsbibliothek und kategorisiere nach Muskelgruppen. Klicke unten, um deine erste Übung hinzuzufügen!";
 "noHistory" = "Keine Ausführungen";

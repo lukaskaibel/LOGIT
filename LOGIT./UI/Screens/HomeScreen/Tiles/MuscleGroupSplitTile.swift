@@ -82,7 +82,7 @@ struct MuscleGroupSplitTile: View {
             accumulatedPercetange += Float(muscleGroupOccurance.1) / Float(amountOfOccurances)
             focusedMuscleGroups.append(muscleGroupOccurance.0)
             if accumulatedPercetange > 0.51 {
-                return focusedMuscleGroups
+                return Array(focusedMuscleGroups.prefix(2))
             }
         }
         return []

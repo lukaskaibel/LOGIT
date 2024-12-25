@@ -154,7 +154,9 @@ struct TemplateListScreen: View {
 
 struct TemplateListView_Previews: PreviewProvider {
     static var previews: some View {
-        TemplateListScreen()
-            .previewEnvironmentObjects()
+        NavigationStack {
+            TemplateListScreen()
+        }
+        .previewEnvironmentObjects()
     }
 }

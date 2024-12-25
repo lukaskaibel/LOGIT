@@ -31,20 +31,21 @@ struct MuscleGroupSplitTile: View {
                 HStack {
                     VStack(alignment: .leading) {
                         Text(NSLocalizedString("focusThisWeek", comment: ""))
-                        HStack {
-                            ForEach(getFocusedMuscleGroups()) { muscleGroup in
-                                Text(muscleGroup.description)
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                    .fontDesign(.rounded)
-                                    .foregroundStyle(muscleGroup.color.gradient)
+                        
+                            HStack {
+                                if !getFocusedMuscleGroups().isEmpty {
+                                    ForEach(getFocusedMuscleGroups()) { muscleGroup in
+                                        Text(muscleGroup.description)
+                                            .foregroundStyle(muscleGroup.color.gradient)
+                                    }
+                                } else {
+                                    Text(NSLocalizedString("none", comment: ""))
+                                        .foregroundStyle(Color.secondaryLabel.gradient)
+                                }
                             }
-                        }
-                    }
-                    .emptyPlaceholder(muscleGroupOccurances) {
-                        Text(NSLocalizedString("noWorkoutsThisWeek", comment: ""))
-                            .font(.body)
-                            .multilineTextAlignment(.center)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .fontDesign(.rounded)
                     }
                     Spacer()
                     MuscleGroupOccurancesChart(muscleGroupOccurances: muscleGroupOccurances)

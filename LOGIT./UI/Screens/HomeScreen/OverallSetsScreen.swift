@@ -21,16 +21,6 @@ struct OverallSetsScreen: View {
     var body: some View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("overallSets", comment: ""))
-                        .screenHeaderStyle()
-                    Text(NSLocalizedString("PerWeek", comment: ""))
-                         .screenHeaderSecondaryStyle()
-                         .foregroundColor(.secondaryLabel)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-                
                 VStack {
                     Picker("Select Chart Granularity", selection: $chartGranularity) {
                         Text(NSLocalizedString("week", comment: ""))
@@ -109,7 +99,10 @@ struct OverallSetsScreen: View {
                 .background(Color.secondaryBackground)
                 .edgesIgnoringSafeArea(.bottom)
             }
+            .padding(.top)
         }
+        .navigationTitle(NSLocalizedString("overallSets", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     private func xAxisDateString(for date: Date) -> String {

@@ -33,15 +33,6 @@ struct MuscleGroupSplitScreen: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: SECTION_SPACING) {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("muscleGroups", comment: ""))
-                        .screenHeaderStyle()
-                    Text(NSLocalizedString("PerWeek", comment: ""))
-                         .screenHeaderSecondaryStyle()
-                         .foregroundColor(.secondaryLabel)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
                 if #available(iOS 17.0, *) {
                     HStack {
                         Text(Calendar.current.date(byAdding: .weekOfYear, value: -selectedWeeksFromNow, to: .now)?.startOfWeek.weekDescription ?? "")
@@ -176,11 +167,23 @@ struct MuscleGroupSplitScreen: View {
                 .background(Color.secondaryBackground)
                 .edgesIgnoringSafeArea(.bottom)
             }
+            .padding(.top)
         }
         .onChange(of: selectedWeeksFromNow) { _ in
             selectedMuscleGroup = muscleGroupsInSelectedWeek.contains(where: { $0 == selectedMuscleGroup }) ? selectedMuscleGroup : nil
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack {
+                    Text(NSLocalizedString("muscleGroups", comment: ""))
+                        .font(.headline)
+                    Text(NSLocalizedString("PerWeek", comment: ""))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
     }
 
     // MARK: - Computed Properties

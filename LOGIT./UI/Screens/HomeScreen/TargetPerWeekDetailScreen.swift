@@ -36,14 +36,6 @@ struct TargetPerWeekDetailScreen: View {
     var body: some View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("workouts", comment: ""))
-                        .screenHeaderStyle()
-                    Text(NSLocalizedString("PerWeek", comment: ""))
-                         .screenHeaderSecondaryStyle()
-                         .foregroundColor(.secondaryLabel)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 if #available(iOS 17.0, *) {
                     VStack(spacing: 20) {
                         HStack {
@@ -175,7 +167,19 @@ struct TargetPerWeekDetailScreen: View {
             .background(Color.secondaryBackground)
             .edgesIgnoringSafeArea(.bottom)
         }
+        .padding(.top)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack {
+                    Text(NSLocalizedString("workouts", comment: ""))
+                        .font(.headline)
+                    Text(NSLocalizedString("PerWeek", comment: ""))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
         .sheet(isPresented: $isShowingChangeGoalScreen) {
             NavigationStack {
                 ChangeWeeklyWorkoutGoalScreen()

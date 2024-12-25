@@ -49,7 +49,7 @@ struct CreateTemplateMenu: View {
         } label: {
             Image(systemName: "plus")
                 .font(.title2)
-                .foregroundStyle(Color.label)
+                .foregroundStyle(.tint)
         }
         .templateGeneration(from: $templateImage, to: $newTemplate)
         .onChange(of: newTemplate) { newValue in

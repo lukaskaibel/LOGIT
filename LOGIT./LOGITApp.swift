@@ -57,7 +57,7 @@ struct LOGIT: App {
         self._templateService = StateObject(wrappedValue: TemplateService(database: database))
         self._measurementController = StateObject(wrappedValue: MeasurementEntryController(database: database))
         self._workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: database, workoutRepository: workoutRepository, currentWorkoutManager: currentWorkoutManager))
-        self._muscleGroupService = StateObject(wrappedValue: MuscleGroupService(workoutRepository: workoutRepository))
+        self._muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
         self._homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
         
         UserDefaults.standard.register(defaults: [

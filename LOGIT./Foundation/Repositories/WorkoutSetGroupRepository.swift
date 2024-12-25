@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 23.07.24.
 //
 
+import Combine
 import Foundation
 
 final class WorkoutSetGroupRepository: ObservableObject {
@@ -15,10 +16,17 @@ final class WorkoutSetGroupRepository: ObservableObject {
     
     private let database: Database
     private let currentWorkoutManager: CurrentWorkoutManager
+    private var cancellables = Set<AnyCancellable>()
     
     init(database: Database, currentWorkoutManager: CurrentWorkoutManager) {
         self.database = database
         self.currentWorkoutManager = currentWorkoutManager
+        
+        self.database.objectWillChange
+            .sink { [weak self] in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
     }
 
     func getWorkoutSetGroups(with exercise: Exercise? = nil, includingCurrentWorkout: Bool = false) -> [WorkoutSetGroup] {

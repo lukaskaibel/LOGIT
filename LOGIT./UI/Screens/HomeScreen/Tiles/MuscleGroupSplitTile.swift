@@ -19,6 +19,7 @@ struct MuscleGroupSplitTile: View {
     
     var body: some View {
         if #available(iOS 17.0, *) {
+            let workouts = workoutsThisWeek
             let muscleGroupOccurances = getMuscleGroupOccurancesThisWeek()
             VStack(spacing: 20) {
                 HStack {
@@ -57,16 +58,18 @@ struct MuscleGroupSplitTile: View {
         } else {
             // Fallback on earlier versions
         }
-        
     }
     
     // MAKR: - Supporting Methods
     
-    func getMuscleGroupOccurancesThisWeek() -> [(MuscleGroup, Int)] {
-        let workoutsThisWeek = workoutRepository.getWorkouts(
+    private var workoutsThisWeek: [Workout] {
+        workoutRepository.getWorkouts(
             for: [.weekOfYear, .yearForWeekOfYear],
             including: .now
         )
+    }
+    
+    private func getMuscleGroupOccurancesThisWeek() -> [(MuscleGroup, Int)] {
         return muscleGroupService.getMuscleGroupOccurances(in: workoutsThisWeek)
     }
     

@@ -5,16 +5,24 @@
 //  Created by Lukas Kaibel on 22.07.24.
 //
 
+import Combine
 import Foundation
 
 class WorkoutRepository: ObservableObject {
     
     private let database: Database
     private let currentWorkoutManager: CurrentWorkoutManager
+    private var cancellables = Set<AnyCancellable>()
     
     init(database: Database, currentWorkoutManager: CurrentWorkoutManager) {
         self.database = database
         self.currentWorkoutManager = currentWorkoutManager
+        
+        self.database.objectWillChange
+            .sink { [weak self] in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
     }
     
     enum WorkoutSortingKey: String {

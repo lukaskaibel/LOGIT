@@ -36,7 +36,7 @@ struct PreviewEnvironmentObjects: ViewModifier {
         _purchaseManager = StateObject(wrappedValue: PurchaseManager())
         _networkMonitor = StateObject(wrappedValue: NetworkMonitor())
         _workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: db, workoutRepository: wr, currentWorkoutManager: cwm))
-        _muscleGroupService = StateObject(wrappedValue: MuscleGroupService(workoutRepository: wr))
+        _muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
         _homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
     }
 

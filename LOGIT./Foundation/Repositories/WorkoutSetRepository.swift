@@ -5,16 +5,24 @@
 //  Created by Lukas Kaibel on 23.07.24.
 //
 
+import Combine
 import Foundation
 
 final class WorkoutSetRepository: ObservableObject {
     
     private let database: Database
     private let currentWorkoutManager: CurrentWorkoutManager
+    private var cancellables = Set<AnyCancellable>()
     
     init(database: Database, currentWorkoutManager: CurrentWorkoutManager) {
         self.database = database
         self.currentWorkoutManager = currentWorkoutManager
+        
+        self.database.objectWillChange
+            .sink { [weak self] in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
     }
     
     func getWorkoutSets(with exercise: Exercise? = nil, includingCurrentWorkout: Bool = false) -> [WorkoutSet] {

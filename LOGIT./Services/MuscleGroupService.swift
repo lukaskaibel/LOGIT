@@ -9,16 +9,6 @@ import Foundation
 
 final class MuscleGroupService: ObservableObject {
     
-    // MARK: - Parameters
-    
-    let workoutRepository: WorkoutRepository
-    
-    // MARK: - Init
-    
-    init(workoutRepository: WorkoutRepository) {
-        self.workoutRepository = workoutRepository
-    }
-    
     // MARK: - Public
     
     func getMuscleGroupOccurances(in sets: [WorkoutSet]) -> [(MuscleGroup, Int)] {

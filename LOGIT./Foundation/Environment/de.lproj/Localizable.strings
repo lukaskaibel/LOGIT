@@ -21,6 +21,7 @@
 "alreadyExists" = "existiert schon.";
 "autoRenewMonth" = "Erneuert automatisch am Ende des Monats";
 "ascending" = "Aufsteigend";
+"availableWith" = "Verfügbar mit";
 
 // MARK: - B
 
@@ -107,6 +108,7 @@
 
 // MARK: - H
 
+"hips" = "Hips";
 "history" = "Ausführungen";
 "home" = "Home";
 

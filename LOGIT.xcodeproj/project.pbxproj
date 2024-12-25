@@ -749,11 +749,9 @@
 				79C789272CFF5BF300534FA1 /* ExerciseDetailScreen.swift */,
 				79C789282CFF5BF300534FA1 /* ExerciseHistoryScreen.swift */,
 				793115C22CFFB4B700093878 /* ExerciseRepetitionsScreen.swift */,
-				793115C02CFFB18200093878 /* ExerciseRepetitionsTile.swift */,
 				793115C62CFFB70600093878 /* ExerciseVolumeScreen.swift */,
-				793115C42CFFB63C00093878 /* ExerciseVolumeTile.swift */,
 				79C789292CFF5BF300534FA1 /* ExerciseWeightScreen.swift */,
-				79C7892A2CFF5BF300534FA1 /* ExerciseWeightTile.swift */,
+				804C694E2D1C7DC700F0E91F /* Tiles */,
 			);
 			path = ExerciseDetailScreen;
 			sourceTree = "<group>";
@@ -812,6 +810,16 @@
 				7996D0A82AC4C9F70028FF22 /* View+.swift */,
 			);
 			path = Extentions;
+			sourceTree = "<group>";
+		};
+		804C694E2D1C7DC700F0E91F /* Tiles */ = {
+			isa = PBXGroup;
+			children = (
+				793115C02CFFB18200093878 /* ExerciseRepetitionsTile.swift */,
+				793115C42CFFB63C00093878 /* ExerciseVolumeTile.swift */,
+				79C7892A2CFF5BF300534FA1 /* ExerciseWeightTile.swift */,
+			);
+			path = Tiles;
 			sourceTree = "<group>";
 		};
 		8065AA622686667F00F53A5A = {

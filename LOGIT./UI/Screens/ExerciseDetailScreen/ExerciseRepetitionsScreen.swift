@@ -109,6 +109,7 @@ struct ExerciseRepetitionsScreen: View {
                     .padding(.top)
                 }
             }
+            .isBlockedWithoutPro()
             Spacer()
         }
         .padding(.horizontal)

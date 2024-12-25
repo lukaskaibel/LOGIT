@@ -51,7 +51,6 @@ struct WorkoutDetailScreen: View {
                         setsPerMuscleGroup
                             .padding(CELL_PADDING)
                             .tileStyle()
-                            .isBlockedWithoutPro()
                     }
                 }
 
@@ -211,75 +210,77 @@ struct WorkoutDetailScreen: View {
                     .foregroundStyle(.tint)
                     .rotationEffect(isMuscleGroupExpanded ? .degrees(90) : .degrees(0))
             }
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("focusedOn", comment: ""))
-                    HStack {
-                        ForEach(getFocusedMuscleGroups()) { muscleGroup in
-                            Text(muscleGroup.description)
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .fontDesign(.rounded)
-                                .foregroundStyle(muscleGroup.color)
-                        }
-                    }
-                }
-                .emptyPlaceholder(getMuscleGroupOccurancesInWorkout) {
-                    Text(NSLocalizedString("noWorkoutsThisWeek", comment: ""))
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxHeight: 150)
-                Spacer()
-                MuscleGroupOccurancesChart(muscleGroupOccurances: getMuscleGroupOccurancesInWorkout)
-                    .frame(width: 100, height: 100)
-                    .padding(.trailing)
-            }
-            if isMuscleGroupExpanded {
-                VStack(spacing: CELL_SPACING) {
-                    ForEach(getMuscleGroupOccurancesInWorkout, id:\.self.0) { muscleGroupOccurance in
+            VStack(alignment: .leading, spacing: 20) {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("focusedOn", comment: ""))
                         HStack {
-                            Text(muscleGroupOccurance.0.description)
-                                .fontWeight(.bold)
-                                .fontDesign(.rounded)
-                                .foregroundStyle(muscleGroupOccurance.0.color)
-                            Spacer()
-                            HStack(spacing: 10) {
-                                VStack(alignment: .leading) {
-                                    Text(NSLocalizedString("exercises", comment: ""))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                    Text("\(workout.setGroups.filter({ $0.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) }).count)")
-                                        .fontWeight(.bold)
-                                        .fontDesign(.rounded)
-                                }
-                                Divider()
-                                VStack(alignment: .leading) {
-                                    Text(NSLocalizedString("sets", comment: ""))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                    Text("\(workout.sets.filter({ $0.setGroup?.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) ?? false }).count)")
-                                        .fontWeight(.bold)
-                                        .fontDesign(.rounded)
-                                }
-                                Divider()
-                                VStack(alignment: .leading) {
-                                    Text(NSLocalizedString("volume", comment: ""))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                    UnitView(
-                                        value: "\(convertWeightForDisplaying(volume(for: muscleGroupOccurance.0, in: workout.sets)))",
-                                        unit: WeightUnit.used.rawValue
-                                    )
-                                }
+                            ForEach(getFocusedMuscleGroups()) { muscleGroup in
+                                Text(muscleGroup.description)
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                    .fontDesign(.rounded)
+                                    .foregroundStyle(muscleGroup.color)
                             }
                         }
-
-                        .padding(CELL_PADDING)
-                        .secondaryTileStyle(backgroundColor: muscleGroupOccurance.0.color.secondaryTranslucentBackground)
+                    }
+                    .emptyPlaceholder(getMuscleGroupOccurancesInWorkout) {
+                        Text(NSLocalizedString("noWorkoutsThisWeek", comment: ""))
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxHeight: 150)
+                    Spacer()
+                    MuscleGroupOccurancesChart(muscleGroupOccurances: getMuscleGroupOccurancesInWorkout)
+                        .frame(width: 100, height: 100)
+                        .padding(.trailing)
+                }
+                if isMuscleGroupExpanded {
+                    VStack(spacing: CELL_SPACING) {
+                        ForEach(getMuscleGroupOccurancesInWorkout, id:\.self.0) { muscleGroupOccurance in
+                            HStack {
+                                Text(muscleGroupOccurance.0.description)
+                                    .fontWeight(.bold)
+                                    .fontDesign(.rounded)
+                                    .foregroundStyle(muscleGroupOccurance.0.color)
+                                Spacer()
+                                HStack(spacing: 10) {
+                                    VStack(alignment: .leading) {
+                                        Text(NSLocalizedString("exercises", comment: ""))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text("\(workout.setGroups.filter({ $0.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) }).count)")
+                                            .fontWeight(.bold)
+                                            .fontDesign(.rounded)
+                                    }
+                                    Divider()
+                                    VStack(alignment: .leading) {
+                                        Text(NSLocalizedString("sets", comment: ""))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text("\(workout.sets.filter({ $0.setGroup?.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) ?? false }).count)")
+                                            .fontWeight(.bold)
+                                            .fontDesign(.rounded)
+                                    }
+                                    Divider()
+                                    VStack(alignment: .leading) {
+                                        Text(NSLocalizedString("volume", comment: ""))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        UnitView(
+                                            value: "\(convertWeightForDisplaying(volume(for: muscleGroupOccurance.0, in: workout.sets)))",
+                                            unit: WeightUnit.used.rawValue
+                                        )
+                                    }
+                                }
+                            }
+                            .padding(CELL_PADDING)
+                            .secondaryTileStyle(backgroundColor: muscleGroupOccurance.0.color.secondaryTranslucentBackground)
+                        }
                     }
                 }
             }
+            .isBlockedWithoutPro()
         }
         .contentShape(Rectangle())
         .onTapGesture {

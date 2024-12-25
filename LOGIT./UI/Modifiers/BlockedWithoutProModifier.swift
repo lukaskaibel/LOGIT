@@ -19,22 +19,23 @@ struct BlockedWithoutProModifier: ViewModifier {
         if !purchaseManager.hasUnlockedPro && blocked {
             content
                 .overlay {
-                    Color.black.opacity(0.2)
+                    Color.black.opacity(0.3)
+                        .edgesIgnoringSafeArea(.bottom)
                 }
-                .blur(radius: 5)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .blur(radius: 8)
                 .allowsHitTesting(false)
                 .overlay {
                     Button {
                         isShowingUpgradeToProScreen = true
                     } label: {
                         HStack {
-                            Text("Available with")
+                            Image(systemName: "crown.fill")
+                            Text(NSLocalizedString("availableWith", comment: ""))
                             LogitProLogo()
                                 .environment(\.colorScheme, .light)
                         }
                     }
-                    .buttonStyle(CapsuleButtonStyle())
+                    .buttonStyle(CapsuleButtonStyle(color: .white))
                     .shadow(radius: 15)
                 }
                 .sheet(isPresented: $isShowingUpgradeToProScreen) {

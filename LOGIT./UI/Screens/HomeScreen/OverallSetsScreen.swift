@@ -101,6 +101,7 @@ struct OverallSetsScreen: View {
             }
             .padding(.top)
         }
+        .isBlockedWithoutPro()
         .navigationTitle(NSLocalizedString("overallSets", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
     }

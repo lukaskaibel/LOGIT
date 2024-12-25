@@ -99,6 +99,7 @@ struct VolumeScreen: View {
             }
             .padding(.top)
         }
+        .isBlockedWithoutPro()
         .navigationBarTitle(NSLocalizedString("volume", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
     }

@@ -22,10 +22,6 @@ struct ExerciseWeightScreen: View {
     
     var body: some View {
         VStack {
-//            Text(exercise.name ?? "")
-//                .screenHeaderSecondaryStyle()
-//                .foregroundStyle(exerciseMuscleGroupColor.gradient)
-//                .frame(maxWidth: .infinity, alignment: .leading)
             HStack {
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("currentBest", comment: ""))
@@ -113,6 +109,7 @@ struct ExerciseWeightScreen: View {
                     .padding(.top)
                 }
             }
+            .isBlockedWithoutPro()
             Spacer()
         }
         .padding(.horizontal)

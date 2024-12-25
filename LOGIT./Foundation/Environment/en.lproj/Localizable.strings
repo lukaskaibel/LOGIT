@@ -21,6 +21,7 @@
 "alreadyExists" = "already exists.";
 "autoRenewMonth" = "Automatically renews every month";
 "ascending" = "Ascending";
+"availableWith" = "Available with";
 
 // MARK: - B
 
@@ -117,6 +118,7 @@
 
 // MARK: - H
 
+"hips" = "Hips";
 "history" = "History";
 "home" = "Home";
 

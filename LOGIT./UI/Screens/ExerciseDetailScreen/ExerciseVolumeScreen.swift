@@ -83,6 +83,7 @@ struct ExerciseVolumeScreen: View {
             .padding(.horizontal)
             .padding(.top)
         }
+        .isBlockedWithoutPro()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

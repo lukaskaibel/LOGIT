@@ -168,6 +168,7 @@ struct TargetPerWeekDetailScreen: View {
             .edgesIgnoringSafeArea(.bottom)
         }
         .padding(.top)
+        .isBlockedWithoutPro()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

@@ -161,6 +161,7 @@ struct MuscleGroupSplitScreen: View {
                             Text(NSLocalizedString("noExercisesInWeek", comment: ""))
                         }
                     }
+                    .padding(.top, 5)
                 }
                 .padding()
                 .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)

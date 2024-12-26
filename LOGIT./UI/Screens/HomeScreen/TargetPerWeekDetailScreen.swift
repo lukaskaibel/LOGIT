@@ -157,7 +157,7 @@ struct TargetPerWeekDetailScreen: View {
                             .padding(CELL_PADDING)
                             .secondaryTileStyle()
                     }
-                    .emptyPlaceholder(getWorkouts(inWeeksFromNow: 0)) {
+                    .emptyPlaceholder(getWorkouts(inWeeksFromNow: selectedWeeksFromNow)) {
                         Text(NSLocalizedString("noWorkouts", comment: ""))
                     }
                 }
@@ -165,7 +165,6 @@ struct TargetPerWeekDetailScreen: View {
             .padding()
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
             .background(Color.secondaryBackground)
-            .edgesIgnoringSafeArea(.bottom)
         }
         .padding(.top)
         .isBlockedWithoutPro()
@@ -186,6 +185,7 @@ struct TargetPerWeekDetailScreen: View {
                 ChangeWeeklyWorkoutGoalScreen()
             }
         }
+        .edgesIgnoringSafeArea(.bottom)
     }
     
     // MARK: - Supporting Methods

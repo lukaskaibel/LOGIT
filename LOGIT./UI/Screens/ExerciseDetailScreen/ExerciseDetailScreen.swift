@@ -96,6 +96,7 @@ struct ExerciseDetailScreen: View {
                                     "\(setGroup.workout?.date?.description(.short) ?? "")  ·  \(setGroup.workout?.name ?? "")"
                             )
                             .canEdit(false)
+                            .allowsHitTesting(false)
                             .padding(CELL_PADDING)
                             .tileStyle()
                             .shadow(color: .black.opacity(0.5), radius: 10)
@@ -104,6 +105,7 @@ struct ExerciseDetailScreen: View {
                             Text(NSLocalizedString("noAttempts", comment: ""))
                         }
                     }
+                    .padding(.top, 5)
                 }
                 .padding()
                 .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)

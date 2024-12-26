@@ -34,6 +34,7 @@ struct ExerciseHistoryScreen: View {
                                 .padding(CELL_PADDING)
                                 .tileStyle()
                                 .canEdit(false)
+                                .allowsHitTesting(false)
                             }
                         }
                     }

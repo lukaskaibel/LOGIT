@@ -44,14 +44,14 @@ struct ExerciseWeightTile: View {
                     ForEach(maxWeightDailySets) { workoutSet in
                         LineMark(
                             x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                            y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.max(.weight)))
+                            y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
                         )
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(exerciseMuscleGroupColor.gradient)
                         .lineStyle(StrokeStyle(lineWidth: 3))
                         AreaMark(
                             x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                            y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.max(.weight)))
+                            y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
                         )
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(Gradient(colors: [
@@ -78,7 +78,7 @@ struct ExerciseWeightTile: View {
         )
 
         let maxSetsPerDay = groupedSets.compactMap { setsPerDay -> WorkoutSet? in
-            return setsPerDay.max(by: { $0.max(.weight) < $1.max(.weight) })
+            return setsPerDay.max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
         }
         
         return maxSetsPerDay
@@ -96,11 +96,11 @@ struct ExerciseWeightTile: View {
         )
         
         guard !setsThisMonth.isEmpty else {
-            return workoutSetRepository.getWorkoutSets(with: exercise).first?.max(.weight)
+            return workoutSetRepository.getWorkoutSets(with: exercise).first?.maximum(.weight, for: exercise)
         }
         
         return setsThisMonth
-            .map({ $0.max(.weight) })
+            .map({ $0.maximum(.weight, for: exercise) })
             .max()
     }
 }

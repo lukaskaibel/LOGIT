@@ -56,6 +56,7 @@
 "creatingTemplateFailed" = "Creating Template Failed";
 "creatingTemplateFailedText" = "Make sure the selected image contains a workout.";
 "currentBest" = "Current Best";
+"currentBestInfo" = "Current Best displays your top attempt this month or, if none, your most recent prior attempt.";
 "currentWorkout" = "Current Workout";
 
 // MARK: - D
@@ -181,6 +182,7 @@
 "newTemplateFromWorkout" = "Use as Template...";
 "night" = "Night";
 "nine" = "Nine";
+"noAttempts" = "No Attempts";
 "noData" = "No Data";
 "noEntriesConfirmation" = "This workout has no entries. Discard it?";
 "noExercises" = "No Exercises";
@@ -231,6 +233,7 @@
 
 // MARK: - R
 
+"recentAttempts" = "Recent Attempts";
 "recentWorkouts" = "Recent Workouts";
 "remove" = "Remove";
 "reorderingDone" = "Reordering Done";

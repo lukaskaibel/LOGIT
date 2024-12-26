@@ -19,12 +19,27 @@ struct ExerciseWeightScreen: View {
     let exercise: Exercise
     
     @State private var chartGranularity: ChartGranularity = .month
+    @State private var isShowingCurrentBestInfo = false
     
     var body: some View {
         VStack {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(NSLocalizedString("currentBest", comment: ""))
+                    HStack {
+                        Text(NSLocalizedString("currentBest", comment: ""))
+                        Button {
+                            isShowingCurrentBestInfo = true
+                        } label: {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(Color.secondaryLabel)
+                        }
+                        .popover(isPresented: $isShowingCurrentBestInfo) {
+                            InfoView(
+                                title: NSLocalizedString("currentBest", comment: ""),
+                                infoText: NSLocalizedString("currentBestInfo", comment: "")
+                            )
+                        }
+                    }
                     HStack(alignment: .lastTextBaseline, spacing: 0) {
                         Text("\(currentBestWeight != nil ? String(convertWeightForDisplaying(currentBestWeight!)) : "––")")
                             .font(.title)
@@ -67,7 +82,7 @@ struct ExerciseWeightScreen: View {
                             ForEach(maxWeightDailySets) { workoutSet in
                                 LineMark(
                                     x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                    y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.max(.weight)))
+                                    y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
                                 )
                                 .interpolationMethod(.catmullRom)
                                 .foregroundStyle(exerciseMuscleGroupColor.gradient)
@@ -84,7 +99,7 @@ struct ExerciseWeightScreen: View {
                                 }
                                 AreaMark(
                                     x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                    y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.max(.weight)))
+                                    y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
                                 )
                                 .interpolationMethod(.catmullRom)
                                 .foregroundStyle(Gradient(colors: [
@@ -139,7 +154,7 @@ struct ExerciseWeightScreen: View {
         )
 
         let maxSetsPerDay = groupedSets.compactMap { setsPerDay -> WorkoutSet? in
-            return setsPerDay.max(by: { $0.max(.weight) < $1.max(.weight) })
+            return setsPerDay.max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
         }
         
         return maxSetsPerDay
@@ -186,14 +201,17 @@ struct ExerciseWeightScreen: View {
     }
     
     private var allTimeWeightPR: Int {
-        workoutSetRepository.getWorkoutSets(with: exercise)
-            .map {
-                convertWeightForDisplaying($0.max(.weight))
-            }
-            .max() ?? 0
+        convertWeightForDisplaying(
+            workoutSetRepository.getWorkoutSets(with: exercise)
+                .map {
+                    $0.maximum(.weight, for: exercise)
+                }
+                .max() ?? 0
+        )
     }
     
     private var currentBestWeight: Int? {
+        // TODO: This only gives the best value this calendar month, not of the last 30 days
         let setsThisMonth = workoutSetRepository.getWorkoutSets(
             with: exercise,
             for: [.month, .year],
@@ -201,11 +219,11 @@ struct ExerciseWeightScreen: View {
         )
         
         guard !setsThisMonth.isEmpty else {
-            return workoutSetRepository.getWorkoutSets(with: exercise).first?.max(.weight)
+            return workoutSetRepository.getWorkoutSets(with: exercise).first?.maximum(.weight, for: exercise)
         }
         
         return setsThisMonth
-            .map({ $0.max(.weight) })
+            .map({ $0.maximum(.weight, for: exercise) })
             .max()
     }
     

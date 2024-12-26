@@ -69,39 +69,49 @@ struct ExerciseDetailScreen: View {
                 }
                 .padding(.horizontal)
                 
-//                WidgetCollectionView(
-//                    type: .exerciseDetail,
-//                    title: NSLocalizedString("overview", comment: ""),
-//                    views: [
-//                        exerciseInfo.widget(ofType: .personalBest, isAddedByDefault: true),
-//                        weightGraph.widget(ofType: .bestWeightPerDay, isAddedByDefault: true),
-//                        repetitionsGraph.widget(ofType: .bestRepetitionsPerDay, isAddedByDefault: false),
-//                        volumePerDayGraph.widget(ofType: .volumePerDay, isAddedByDefault: false),
-//                        setsPerWeekGraph.widget(ofType: .exerciseSetsPerWeek, isAddedByDefault: false)
-//                    ],
-//                    database: database
-//                )
-//                .padding(.horizontal)
-
-                Button {
-                    isShowingExerciseHistoryScreen = true
-                } label: {
+                VStack(spacing: SECTION_HEADER_SPACING) {
                     HStack {
-                        Text(NSLocalizedString("history", comment: ""))
-                            .fontWeight(.semibold)
+                        Text(NSLocalizedString("recentAttempts", comment: ""))
+                            .sectionHeaderStyle2()
                         Spacer()
-                        NavigationChevron()
-                            .foregroundStyle(.secondary)
+                        Button {
+                            isShowingExerciseHistoryScreen = true
+                        } label: {
+                            HStack {
+                                Text(NSLocalizedString("all", comment: ""))
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote)
+                            }
+                            .fontWeight(.semibold)
+                        }
                     }
-                    .contentShape(Rectangle())
-                    .padding(CELL_PADDING)
-                    .tileStyle()
+                    VStack(spacing: CELL_SPACING) {
+                        ForEach(recentAttempts) { setGroup in
+                            WorkoutSetGroupCell(
+                                setGroup: setGroup,
+                                focusedIntegerFieldIndex: .constant(nil),
+                                sheetType: .constant(nil),
+                                isReordering: .constant(false),
+                                supplementaryText:
+                                    "\(setGroup.workout?.date?.description(.short) ?? "")  ·  \(setGroup.workout?.name ?? "")"
+                            )
+                            .canEdit(false)
+                            .padding(CELL_PADDING)
+                            .tileStyle()
+                            .shadow(color: .black.opacity(0.5), radius: 10)
+                        }
+                        .emptyPlaceholder(recentAttempts) {
+                            Text(NSLocalizedString("noAttempts", comment: ""))
+                        }
+                    }
                 }
-                .padding(.horizontal)
+                .padding()
+                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                .background(Color.secondaryBackground)
             }
             .animation(.easeInOut)
-            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
+        .edgesIgnoringSafeArea(.bottom)
         .navigationBarTitleDisplayMode(.inline)
         .tint(exercise.muscleGroup?.color ?? .accentColor)
         .toolbar {
@@ -169,36 +179,18 @@ struct ExerciseDetailScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
-//    private var setsPerWeekGraph: some View {
-//        VStack {
-//            VStack(alignment: .leading) {
-//                Text(NSLocalizedString("sets", comment: ""))
-//                    .tileHeaderStyle()
-//                Text(NSLocalizedString("PerWeek", comment: ""))
-//                    .tileHeaderSecondaryStyle()
-//            }
-//            .frame(maxWidth: .infinity, alignment: .leading)
-//            DateBarChart(dateUnit: .weekOfYear) {
-//                workoutSetRepository.getGroupedWorkoutsSets(with: exercise, in: .weekOfYear)
-//                    .compactMap {
-//                        guard let date = $0.first?.workout?.date else { return nil }
-//                        return .init(date: date, value: $0.count)
-//                    }
-//            }
-//            .foregroundStyle((exercise.muscleGroup?.color.gradient) ?? Color.accentColor.gradient)
-//        }
-//        .padding(CELL_PADDING)
-//        .tileStyle()
-//    }
 
     // MARK: - Computed Properties
+    
+    private var recentAttempts: [WorkoutSetGroup] {
+        Array(workoutSetGroupRepository.getWorkoutSetGroups(with: exercise).prefix(3))
+    }
 
     private func personalBest(for attribute: WorkoutSet.Attribute) -> Int {
         workoutSetRepository.getWorkoutSets(with: exercise)
             .map {
                 attribute == .repetitions
-                    ? $0.max(.repetitions) : convertWeightForDisplaying($0.max(.weight))
+                ? $0.maximum(.repetitions, for: exercise) : convertWeightForDisplaying($0.maximum(.weight, for: exercise))
             }
             .max() ?? 0
     }
@@ -234,18 +226,6 @@ struct ExerciseDetailScreen: View {
             .min()
             ?? .now
     }
-
-//    private func setsForExercise(
-//        withHeighest attribute: WorkoutSet.Attribute,
-//        withoutZeroRepetitions: Bool = false,
-//        withoutZeroWeights: Bool = false
-//    ) -> [WorkoutSet] {
-//        workoutSetRepository.getWorkoutSets(with: exercise, onlyHighest: attribute, in: .day)
-//            .filter { !withoutZeroRepetitions || $0.max(.repetitions) > 0 }
-//            .filter { !withoutZeroWeights || $0.max(.weight) > 0 }
-//    }
-
-    
 
 }
 

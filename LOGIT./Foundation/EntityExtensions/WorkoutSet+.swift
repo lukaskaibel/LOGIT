@@ -34,27 +34,29 @@ extension WorkoutSet {
             || setGroup?.secondaryExercise?.muscleGroup == muscleGroup
     }
 
-    func max(_ attribute: WorkoutSet.Attribute) -> Int {
-        if let standardSet = self as? StandardSet {
+    func maximum(_ attribute: WorkoutSet.Attribute, for exercise: Exercise) -> Int {
+        if let standardSet = self as? StandardSet, standardSet.exercise == exercise {
             return Int(attribute == .repetitions ? standardSet.repetitions : standardSet.weight)
         }
-        if let dropSet = self as? DropSet {
+        if let dropSet = self as? DropSet, dropSet.exercise == exercise {
             return Int(
                 (attribute == .repetitions ? dropSet.repetitions : dropSet.weights)?.max() ?? 0
             )
         }
         if let superSet = self as? SuperSet {
-            if superSet.setGroup?.exercise == exercise {
-                return Int(
+            var maxValue: Int = 0
+            if superSet.exercise == exercise {
+                maxValue = Int(
                     attribute == .repetitions
                         ? superSet.repetitionsFirstExercise : superSet.weightFirstExercise
                 )
             } else {
-                return Int(
+                maxValue = max(maxValue, Int(
                     attribute == .repetitions
                         ? superSet.repetitionsSecondExercise : superSet.weightSecondExercise
-                )
+                ))
             }
+            return maxValue
         }
         return 0
     }

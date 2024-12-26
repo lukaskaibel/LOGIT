@@ -169,7 +169,7 @@ struct MuscleGroupSplitScreen: View {
             }
             .padding(.top)
         }
-        .isBlockedWithoutPro()
+        .isBlockedWithoutPro(false)
         .onChange(of: selectedWeeksFromNow) { _ in
             selectedMuscleGroup = muscleGroupsInSelectedWeek.contains(where: { $0 == selectedMuscleGroup }) ? selectedMuscleGroup : nil
         }

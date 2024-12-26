@@ -56,6 +56,7 @@
 "creatingTemplateFailed" = "Generieren Fehlgeschlagen";
 "creatingTemplateFailedText" = "Stelle sicher, dass das Bild ein Workout enthält.";
 "currentBest" = "Aktuelle Bestleistung";
+"currentBestInfo" = "Aktuelle Bestleistung zeigt Ihren besten Versuch dieses Monats oder, falls keiner vorhanden ist, Ihren letzten vorherigen Versuch.";
 "currentWorkout" = "Aktuelles Workout";
 
 // MARK: - D
@@ -182,6 +183,7 @@
 "newTemplateFromWorkout" = "Als Vorlage verwenden...";
 "night" = "Nacht";
 "nine" = "Neun";
+"noAttempts" = "Keine Ausführungen";
 "noData" = "Keine Daten";
 "noEntriesConfirmation" = "Das Workout hat kein Einträge. Workout verwerfen?";
 "noExercises" = "Keine Übungen";
@@ -233,6 +235,7 @@
 
 // MARK: - R
 
+"recentAttempts" = "Letzte Ausführungen";
 "recentWorkouts" = "Letzte Workouts";
 "remove" = "Entfernen";
 "reorderingDone" = "Fertig umsortiert";

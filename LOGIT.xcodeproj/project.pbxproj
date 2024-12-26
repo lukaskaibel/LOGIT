@@ -167,6 +167,7 @@
 		79FF2BB02A8A71C200548661 /* ScreenHeaderStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FF2BAF2A8A71C200548661 /* ScreenHeaderStyle.swift */; };
 		79FF97B72AA29E680070015E /* ExerciseServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E849092A7EA28000C0DF95 /* ExerciseServiceTests.swift */; };
 		8010137B284791AB00309279 /* PieGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8010137A284791AB00309279 /* PieGraph.swift */; };
+		8016E6682D1DCA26007CEFDA /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8016E6672D1DCA26007CEFDA /* InfoView.swift */; };
 		801CDC4C2688BDC800BB653D /* Color+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CDC4B2688BDC800BB653D /* Color+.swift */; };
 		8033F98E27072B0600EC707A /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8033F98D27072B0600EC707A /* SettingsScreen.swift */; };
 		8058F49F268D2503006A94AC /* Workout+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8058F49E268D2503006A94AC /* Workout+.swift */; };
@@ -369,6 +370,7 @@
 		79F7E10227E68FAC006D4354 /* SegmentedBarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedBarChart.swift; sourceTree = "<group>"; };
 		79FF2BAF2A8A71C200548661 /* ScreenHeaderStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenHeaderStyle.swift; sourceTree = "<group>"; };
 		8010137A284791AB00309279 /* PieGraph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieGraph.swift; sourceTree = "<group>"; };
+		8016E6672D1DCA26007CEFDA /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		801CDC4B2688BDC800BB653D /* Color+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+.swift"; sourceTree = "<group>"; };
 		8033F98D27072B0600EC707A /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		8058F49E268D2503006A94AC /* Workout+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Workout+.swift"; sourceTree = "<group>"; };
@@ -765,6 +767,7 @@
 				79CABA752BA0D0EA00F97599 /* CurrentWorkoutView.swift */,
 				7962583D29341122003AC2AC /* ExerciseHeader.swift */,
 				79A637D62A39E2A1002A1F20 /* FlashView.swift */,
+				8016E6672D1DCA26007CEFDA /* InfoView.swift */,
 				793CB8A72975BB1B00140D2B /* IntegerField.swift */,
 				7967D57C2811886700B30D03 /* Charts */,
 				7996D0A42AC49CCA0028FF22 /* LogitProLogo.swift */,
@@ -1064,6 +1067,7 @@
 				795D9B8B282EC34B00866C06 /* DropSet+.swift in Sources */,
 				796D611927E53AB400E15F01 /* ExerciseEditScreen.swift in Sources */,
 				793115C52CFFB63E00093878 /* ExerciseVolumeTile.swift in Sources */,
+				8016E6682D1DCA26007CEFDA /* InfoView.swift in Sources */,
 				793776292D17752900F7E000 /* HomeNavigationCoordinator.swift in Sources */,
 				801CDC4C2688BDC800BB653D /* Color+.swift in Sources */,
 				798CEE6D280DC7CE00114FEE /* MuscleGroup.swift in Sources */,

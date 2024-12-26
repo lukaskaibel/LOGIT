@@ -44,14 +44,14 @@ struct ExerciseRepetitionsTile: View {
                     ForEach(maxRepetitionsDailySets) { workoutSet in
                         LineMark(
                             x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                            y: .value("Max weight on day", workoutSet.max(.repetitions))
+                            y: .value("Max weight on day", workoutSet.maximum(.repetitions, for: exercise))
                         )
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(exerciseMuscleGroupColor.gradient)
                         .lineStyle(StrokeStyle(lineWidth: 3))
                         AreaMark(
                             x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                            y: .value("Max weight on day", workoutSet.max(.repetitions))
+                            y: .value("Max weight on day", workoutSet.maximum(.repetitions, for: exercise))
                         )
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(Gradient(colors: [
@@ -78,7 +78,7 @@ struct ExerciseRepetitionsTile: View {
         )
 
         let maxSetsPerDay = groupedSets.compactMap { setsPerDay -> WorkoutSet? in
-            return setsPerDay.max(by: { $0.max(.repetitions) < $1.max(.repetitions) })
+            return setsPerDay.max(by: { $0.maximum(.repetitions, for: exercise) < $1.maximum(.repetitions, for: exercise) })
         }
         
         return maxSetsPerDay
@@ -96,11 +96,11 @@ struct ExerciseRepetitionsTile: View {
         )
         
         guard !setsThisMonth.isEmpty else {
-            return workoutSetRepository.getWorkoutSets(with: exercise).first?.max(.repetitions)
+            return workoutSetRepository.getWorkoutSets(with: exercise).first?.maximum(.repetitions, for: exercise)
         }
         
         return setsThisMonth
-            .map({ $0.max(.repetitions) })
+            .map({ $0.maximum(.repetitions, for: exercise) })
             .max()
     }
 }

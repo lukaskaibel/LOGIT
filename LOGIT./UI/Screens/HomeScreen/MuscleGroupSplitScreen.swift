@@ -33,141 +33,139 @@ struct MuscleGroupSplitScreen: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: SECTION_SPACING) {
-                if #available(iOS 17.0, *) {
+                HStack {
+                    Text(Calendar.current.date(byAdding: .weekOfYear, value: -selectedWeeksFromNow, to: .now)?.startOfWeek.weekDescription ?? "")
+                    Spacer()
                     HStack {
-                        Text(Calendar.current.date(byAdding: .weekOfYear, value: -selectedWeeksFromNow, to: .now)?.startOfWeek.weekDescription ?? "")
-                        Spacer()
-                        HStack {
-                            Button {
-                                withAnimation {
-                                    selectedWeeksFromNow = selectedWeeksFromNow < 54 ? selectedWeeksFromNow + 1 : 0
-                                }
-                            } label: {
-                                Image(systemName: "chevron.left")
+                        Button {
+                            withAnimation {
+                                selectedWeeksFromNow = selectedWeeksFromNow < 54 ? selectedWeeksFromNow + 1 : 0
                             }
-                            .disabled(selectedWeeksFromNow >= 54)
-                            Button {
-                                withAnimation {
-                                    selectedWeeksFromNow = selectedWeeksFromNow > 0 ? selectedWeeksFromNow - 1 : 0
-                                }
-                            } label: {
-                                Image(systemName: "chevron.right")
-                            }
-                            .disabled(selectedWeeksFromNow == 0)
+                        } label: {
+                            Image(systemName: "chevron.left")
                         }
-                    }
-                    .font(.title3)
-                    .padding(.horizontal)
-                    
-                    TabView(selection: $selectedWeeksFromNow) {
-                        ForEach(Array<Int>(0..<54).reversed(), id:\.self) { weeksFromNow in
-                            let workoutsInWeek = getWorkouts(inWeeksFromNow: weeksFromNow)
-                            HStack {
-                                if let selectedMuscleGroup = selectedMuscleGroup {
-                                    let setGroupsInWeekForSelectedMuscleGroup = getSetGroups(
-                                        with: selectedMuscleGroup,
-                                        from: workoutsInWeek
-                                    
-                                    )
-                                    VStack(alignment: .leading, spacing: 10) {
-                                        VStack(alignment: .leading) {
-                                            Text(NSLocalizedString("exercises", comment: ""))
-                                            Text("\(setGroupsInWeekForSelectedMuscleGroup.count)")
-                                                .font(.title3)
-                                                .fontDesign(.rounded)
-                                                .fontWeight(.bold)
-                                                .foregroundStyle(selectedMuscleGroup.color.gradient)
-                                        }
-                                        Divider()
-                                        VStack(alignment: .leading) {
-                                            Text(NSLocalizedString("sets", comment: ""))
-                                            Text("\(setGroupsInWeekForSelectedMuscleGroup.flatMap({ $0.sets }).count)")
-                                                .font(.title3)
-                                                .fontDesign(.rounded)
-                                                .fontWeight(.bold)
-                                                .foregroundStyle(selectedMuscleGroup.color.gradient)
-                                        }
-                                        Divider()
-                                        VStack(alignment: .leading) {
-                                            Text(NSLocalizedString("volume", comment: ""))
-                                            UnitView(value: "\(convertWeightForDisplaying(volume(for: selectedMuscleGroup, in: setGroupsInWeekForSelectedMuscleGroup.flatMap({ $0.sets }))))", unit: WeightUnit.used.rawValue)
-                                                .font(.title3)
-                                                .fontDesign(.rounded)
-                                                .fontWeight(.bold)
-                                                .foregroundStyle(selectedMuscleGroup.color.gradient)
-                                        }
-                                    }
-                                    .padding(.leading)
-                                    Spacer()
-                                }
-                                
-                                let muscleGroupOccurances = muscleGroupService.getMuscleGroupOccurances(
-                                    in: getWorkouts(
-                                        inWeeksFromNow: weeksFromNow
-                                    )
-                                )
-                                MuscleGroupOccurancesChart(
-                                    muscleGroupOccurances: muscleGroupOccurances,
-                                    selectedMuscleGroup: selectedMuscleGroup
-                                )
-                                .animation(nil, value: UUID())
-                                .frame(width: 200, height: 200)
-                                .padding()
-                                .padding(.vertical, 50)
+                        .disabled(selectedWeeksFromNow >= 54)
+                        Button {
+                            withAnimation {
+                                selectedWeeksFromNow = selectedWeeksFromNow > 0 ? selectedWeeksFromNow - 1 : 0
                             }
-                            .frame(minHeight: 200)
-                            .padding(.horizontal)
-                            .tag(weeksFromNow)
+                        } label: {
+                            Image(systemName: "chevron.right")
                         }
+                        .disabled(selectedWeeksFromNow == 0)
                     }
-                    .tabViewStyle(.page)
-                    .frame(minHeight: 300)
                 }
+                .font(.title3)
+                .padding(.horizontal)
                 
-                MuscleGroupSelector(
-                    selectedMuscleGroup: $selectedMuscleGroup,
-                    from: muscleGroupsInSelectedWeek,
-                    withAnimation: true
-                )
-
-                let workoutsInSelectedWeek = getWorkouts(inWeeksFromNow: selectedWeeksFromNow)
-                let setGroupsInSelectedWeekWithSelectedMuscleGroup = selectedMuscleGroup == nil ? Array(workoutsInSelectedWeek.map({ $0.setGroups }).joined()) : getSetGroups(
-                    with: selectedMuscleGroup!,
-                    from: workoutsInSelectedWeek
-                )
-                VStack(spacing: SECTION_HEADER_SPACING) {
-                    Text(NSLocalizedString("exercises", comment: ""))
-                        .sectionHeaderStyle2()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    VStack(spacing: CELL_SPACING) {
-                        ForEach(
-                            setGroupsInSelectedWeekWithSelectedMuscleGroup,
-                            id: \.objectID
-                        ) { setGroup in
-                            WorkoutSetGroupCell(
-                                setGroup: setGroup,
-                                focusedIntegerFieldIndex: .constant(nil),
-                                sheetType: .constant(nil),
-                                isReordering: .constant(false),
-                                supplementaryText:
-                                    "\(setGroup.workout!.date!.description(.short))  ·  \(setGroup.workout!.name!)"
+                TabView(selection: $selectedWeeksFromNow) {
+                    ForEach(Array<Int>(0..<54).reversed(), id:\.self) { weeksFromNow in
+                        let workoutsInWeek = getWorkouts(inWeeksFromNow: weeksFromNow)
+                        HStack {
+                            if let selectedMuscleGroup = selectedMuscleGroup {
+                                let setGroupsInWeekForSelectedMuscleGroup = getSetGroups(
+                                    with: selectedMuscleGroup,
+                                    from: workoutsInWeek
+                                
+                                )
+                                VStack(alignment: .leading, spacing: 10) {
+                                    VStack(alignment: .leading) {
+                                        Text(NSLocalizedString("exercises", comment: ""))
+                                        Text("\(setGroupsInWeekForSelectedMuscleGroup.count)")
+                                            .font(.title3)
+                                            .fontDesign(.rounded)
+                                            .fontWeight(.bold)
+                                            .foregroundStyle(selectedMuscleGroup.color.gradient)
+                                    }
+                                    Divider()
+                                    VStack(alignment: .leading) {
+                                        Text(NSLocalizedString("sets", comment: ""))
+                                        Text("\(setGroupsInWeekForSelectedMuscleGroup.flatMap({ $0.sets }).count)")
+                                            .font(.title3)
+                                            .fontDesign(.rounded)
+                                            .fontWeight(.bold)
+                                            .foregroundStyle(selectedMuscleGroup.color.gradient)
+                                    }
+                                    Divider()
+                                    VStack(alignment: .leading) {
+                                        Text(NSLocalizedString("volume", comment: ""))
+                                        UnitView(value: "\(convertWeightForDisplaying(volume(for: selectedMuscleGroup, in: setGroupsInWeekForSelectedMuscleGroup.flatMap({ $0.sets }))))", unit: WeightUnit.used.rawValue)
+                                            .font(.title3)
+                                            .fontDesign(.rounded)
+                                            .fontWeight(.bold)
+                                            .foregroundStyle(selectedMuscleGroup.color.gradient)
+                                    }
+                                }
+                                .padding(.leading)
+                                Spacer()
+                            }
+                            
+                            let muscleGroupOccurances = muscleGroupService.getMuscleGroupOccurances(
+                                in: getWorkouts(
+                                    inWeeksFromNow: weeksFromNow
+                                )
                             )
-                            .canEdit(false)
-                            .padding(CELL_PADDING)
-                            .tileStyle()
-                            .shadow(color: .black.opacity(0.5), radius: 10)
+                            MuscleGroupOccurancesChart(
+                                muscleGroupOccurances: muscleGroupOccurances,
+                                selectedMuscleGroup: selectedMuscleGroup
+                            )
+                            .animation(nil, value: UUID())
+                            .frame(width: 200, height: 200)
+                            .padding()
+                            .padding(.vertical, 50)
                         }
-                        .emptyPlaceholder(setGroupsInSelectedWeekWithSelectedMuscleGroup) {
-                            Text(NSLocalizedString("noExercisesInWeek", comment: ""))
-                        }
+                        .frame(minHeight: 200)
+                        .padding(.horizontal)
+                        .tag(weeksFromNow)
                     }
-                    .padding(.top, 5)
                 }
-                .padding()
-                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                .background(Color.secondaryBackground)
-                .edgesIgnoringSafeArea(.bottom)
+                .tabViewStyle(.page)
+                .frame(minHeight: 300)
             }
+            
+            MuscleGroupSelector(
+                selectedMuscleGroup: $selectedMuscleGroup,
+                from: muscleGroupsInSelectedWeek,
+                withAnimation: true
+            )
+
+            let workoutsInSelectedWeek = getWorkouts(inWeeksFromNow: selectedWeeksFromNow)
+            let setGroupsInSelectedWeekWithSelectedMuscleGroup = selectedMuscleGroup == nil ? Array(workoutsInSelectedWeek.map({ $0.setGroups }).joined()) : getSetGroups(
+                with: selectedMuscleGroup!,
+                from: workoutsInSelectedWeek
+            )
+            VStack(spacing: SECTION_HEADER_SPACING) {
+                Text(NSLocalizedString("exercises", comment: ""))
+                    .sectionHeaderStyle2()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(spacing: CELL_SPACING) {
+                    ForEach(
+                        setGroupsInSelectedWeekWithSelectedMuscleGroup,
+                        id: \.objectID
+                    ) { setGroup in
+                        WorkoutSetGroupCell(
+                            setGroup: setGroup,
+                            focusedIntegerFieldIndex: .constant(nil),
+                            sheetType: .constant(nil),
+                            isReordering: .constant(false),
+                            supplementaryText:
+                                "\(setGroup.workout!.date!.description(.short))  ·  \(setGroup.workout!.name!)"
+                        )
+                        .canEdit(false)
+                        .padding(CELL_PADDING)
+                        .tileStyle()
+                        .shadow(color: .black.opacity(0.5), radius: 10)
+                    }
+                    .emptyPlaceholder(setGroupsInSelectedWeekWithSelectedMuscleGroup) {
+                        Text(NSLocalizedString("noExercisesInWeek", comment: ""))
+                    }
+                }
+                .padding(.top, 5)
+            }
+            .padding()
+            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+            .background(Color.secondaryBackground)
+            .edgesIgnoringSafeArea(.bottom)
             .padding(.top)
         }
         .isBlockedWithoutPro()

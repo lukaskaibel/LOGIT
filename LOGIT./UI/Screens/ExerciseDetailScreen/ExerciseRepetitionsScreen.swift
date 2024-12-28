@@ -77,41 +77,39 @@ struct ExerciseRepetitionsScreen: View {
                     .sectionHeaderStyle2()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 VStack {
-                    if #available(iOS 17.0, *) {
-                        Chart {
-                            ForEach(maxRepetitionsDailySets) { workoutSet in
-                                LineMark(
-                                    x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                    y: .value("Max weight on day", workoutSet.maximum(.repetitions, for: exercise))
-                                )
-                                .interpolationMethod(.catmullRom)
-                                .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                                .lineStyle(StrokeStyle(lineWidth: 5))
-                                .symbol {
-                                    Circle()
-                                        .frame(width: 10, height: 10)
-                                        .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                                        .overlay {
-                                            Circle()
-                                                .frame(width: 4, height: 4)
-                                                .foregroundStyle(Color.black)
-                                        }
-                                }
-                                AreaMark(
-                                    x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                    y: .value("Max weight on day", workoutSet.maximum(.repetitions, for: exercise))
-                                )
-                                .interpolationMethod(.catmullRom)
-                                .foregroundStyle(Gradient(colors: [
-                                    exerciseMuscleGroupColor.opacity(0.5),
-                                    exerciseMuscleGroupColor.opacity(0.2),
-                                    exerciseMuscleGroupColor.opacity(0.05)
-                                ]))
+                    Chart {
+                        ForEach(maxRepetitionsDailySets) { workoutSet in
+                            LineMark(
+                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
+                                y: .value("Max weight on day", workoutSet.maximum(.repetitions, for: exercise))
+                            )
+                            .interpolationMethod(.catmullRom)
+                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                            .lineStyle(StrokeStyle(lineWidth: 5))
+                            .symbol {
+                                Circle()
+                                    .frame(width: 10, height: 10)
+                                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                                    .overlay {
+                                        Circle()
+                                            .frame(width: 4, height: 4)
+                                            .foregroundStyle(Color.black)
+                                    }
                             }
+                            AreaMark(
+                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
+                                y: .value("Max weight on day", workoutSet.maximum(.repetitions, for: exercise))
+                            )
+                            .interpolationMethod(.catmullRom)
+                            .foregroundStyle(Gradient(colors: [
+                                exerciseMuscleGroupColor.opacity(0.5),
+                                exerciseMuscleGroupColor.opacity(0.2),
+                                exerciseMuscleGroupColor.opacity(0.05)
+                            ]))
                         }
-                        .chartXScale(domain: xDomain)
-                        .frame(height: 300)
                     }
+                    .chartXScale(domain: xDomain)
+                    .frame(height: 300)
                     Picker("Select Chart Granularity", selection: $chartGranularity) {
                         Text(NSLocalizedString("month", comment: ""))
                             .tag(ChartGranularity.month)

@@ -24,20 +24,17 @@ struct WorkoutCell: View {
         HStack {
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 12) {
-                    if #available(iOS 17.0, *) {
-                        Chart {
-                            ForEach(muscleGroupService.getMuscleGroupOccurances(in: workout), id:\.0) { muscleGroupOccurance in
-                                SectorMark(
-                                    angle: .value("Value", muscleGroupOccurance.1),
-                                    innerRadius: .ratio(0.65),
-                                    angularInset: 1
-                                )
-                                .foregroundStyle(muscleGroupOccurance.0.color.gradient)
-                            }
+                    Chart {
+                        ForEach(muscleGroupService.getMuscleGroupOccurances(in: workout), id:\.0) { muscleGroupOccurance in
+                            SectorMark(
+                                angle: .value("Value", muscleGroupOccurance.1),
+                                innerRadius: .ratio(0.65),
+                                angularInset: 1
+                            )
+                            .foregroundStyle(muscleGroupOccurance.0.color.gradient)
                         }
-                        .frame(width: 40, height: 40)
-        //                .background(Color.yellow)
                     }
+                    .frame(width: 40, height: 40)
                     VStack(alignment: .leading) {
                         Text(
                             "\(workout.date?.description(.short) ?? "")  \(workout.date?.formatted(.dateTime.hour().minute()) ?? "")"
@@ -53,17 +50,6 @@ struct WorkoutCell: View {
                     NavigationChevron()
                         .foregroundStyle(.secondary)
                 }
-//                HStack {
-//                    ForEach(workout.muscleGroups) { muscleGroup in
-//                        Text(muscleGroup.description)
-//                            .font(.system(.body, design: .rounded, weight: .bold))
-//                            .foregroundStyle(muscleGroup.color.gradient)
-//                            .lineLimit(1)
-//                    }
-//                }
-//                Text("\(exercisesString)")
-//                    .foregroundColor(.secondary)
-//                    .lineLimit(2, reservesSpace: true)
             }
         }
     }

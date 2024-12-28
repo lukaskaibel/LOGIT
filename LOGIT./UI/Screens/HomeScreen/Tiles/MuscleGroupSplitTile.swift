@@ -18,46 +18,42 @@ struct MuscleGroupSplitTile: View {
     // MARK: - Body
     
     var body: some View {
-        if #available(iOS 17.0, *) {
-            let workouts = workoutsThisWeek
-            let muscleGroupOccurances = getMuscleGroupOccurancesThisWeek()
-            VStack(spacing: 20) {
-                HStack {
-                    Text(NSLocalizedString("muscleGroups", comment: ""))
-                        .tileHeaderStyle()
-                    Spacer()
-                    NavigationChevron()
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("focusThisWeek", comment: ""))
-                        
-                            HStack {
-                                if !getFocusedMuscleGroups().isEmpty {
-                                    ForEach(getFocusedMuscleGroups()) { muscleGroup in
-                                        Text(muscleGroup.description)
-                                            .foregroundStyle(muscleGroup.color.gradient)
-                                    }
-                                } else {
-                                    Text(NSLocalizedString("none", comment: ""))
-                                        .foregroundStyle(Color.secondaryLabel.gradient)
-                                }
-                            }
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .fontDesign(.rounded)
-                    }
-                    Spacer()
-                    MuscleGroupOccurancesChart(muscleGroupOccurances: muscleGroupOccurances)
-                    .frame(width: 120, height: 80)
-                }
+        let workouts = workoutsThisWeek
+        let muscleGroupOccurances = getMuscleGroupOccurancesThisWeek()
+        VStack(spacing: 20) {
+            HStack {
+                Text(NSLocalizedString("muscleGroups", comment: ""))
+                    .tileHeaderStyle()
+                Spacer()
+                NavigationChevron()
+                    .foregroundStyle(.secondary)
             }
-            .padding(CELL_PADDING)
-            .tileStyle()
-        } else {
-            // Fallback on earlier versions
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("focusThisWeek", comment: ""))
+                    
+                        HStack {
+                            if !getFocusedMuscleGroups().isEmpty {
+                                ForEach(getFocusedMuscleGroups()) { muscleGroup in
+                                    Text(muscleGroup.description)
+                                        .foregroundStyle(muscleGroup.color.gradient)
+                                }
+                            } else {
+                                Text(NSLocalizedString("none", comment: ""))
+                                    .foregroundStyle(Color.secondaryLabel.gradient)
+                            }
+                        }
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                }
+                Spacer()
+                MuscleGroupOccurancesChart(muscleGroupOccurances: muscleGroupOccurances)
+                .frame(width: 120, height: 80)
+            }
         }
+        .padding(CELL_PADDING)
+        .tileStyle()
     }
     
     // MAKR: - Supporting Methods

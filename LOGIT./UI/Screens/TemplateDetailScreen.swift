@@ -30,7 +30,7 @@ struct TemplateDetailScreen: View {
     // MARK: - Body
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: SECTION_SPACING) {
                 templateHeader
                 VStack(spacing: SECTION_HEADER_SPACING) {

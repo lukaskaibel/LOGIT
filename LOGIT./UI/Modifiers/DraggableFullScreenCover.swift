@@ -38,24 +38,12 @@ struct FullScreenDraggableCover<ScreenContent: View, Background: ShapeStyle>: Vi
                             })
                             .environment(\.fullScreenDraggableDragEnded, { _ in
                                 if yOffset > geometry.size.height * Y_OFFSET_THRESHOLD_FOR_DISMISS {
-                                    if #available(iOS 17.0, *) {
-                                        withAnimation(.bouncy(duration: 0.2)) {
-                                            yOffset = geometry.size.height + geometry.safeAreaInsets.top
-                                        } completion: {
-                                            isPresented = false
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                                yOffset = 0
-                                            }
-                                        }
-                                    } else {
-                                        withAnimation(.bouncy(duration: 0.2)) {
-                                            yOffset = geometry.size.height + geometry.safeAreaInsets.top
-                                        }
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                            isPresented = false
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                                yOffset = 0
-                                            }
+                                    withAnimation(.bouncy(duration: 0.2)) {
+                                        yOffset = geometry.size.height + geometry.safeAreaInsets.top
+                                    } completion: {
+                                        isPresented = false
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            yOffset = 0
                                         }
                                     }
                                 } else {

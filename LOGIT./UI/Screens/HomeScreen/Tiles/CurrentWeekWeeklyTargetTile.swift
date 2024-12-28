@@ -42,27 +42,25 @@ struct CurrentWeekWeeklyTargetTile: View {
                     }
                 }
                 Spacer()
-                if #available(iOS 17.0, *) {
-                    Chart {
-                        ForEach(0..<targetPerWeek, id:\.self) { value in
-                            SectorMark(
-                                angle: .value("Value", 1),
-                                innerRadius: .ratio(0.65),
-                                angularInset: 1
-                            )
-                            .foregroundStyle(value < numberOfWorkoutsInCurrentWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.fill))
-                        }
+                Chart {
+                    ForEach(0..<targetPerWeek, id:\.self) { value in
+                        SectorMark(
+                            angle: .value("Value", 1),
+                            innerRadius: .ratio(0.65),
+                            angularInset: 1
+                        )
+                        .foregroundStyle(value < numberOfWorkoutsInCurrentWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.fill))
                     }
-                    .overlay {
-                        if numberOfWorkoutsInCurrentWeek >= targetPerWeek {
-                            Image(systemName: "checkmark")
-                                .fontWeight(.bold)
-                                .fontDesign(.rounded)
-                                .foregroundStyle(Color.accentColor.gradient)
-                        }
-                    }
-                    .frame(width: 120, height: 80, alignment: .trailing)
                 }
+                .overlay {
+                    if numberOfWorkoutsInCurrentWeek >= targetPerWeek {
+                        Image(systemName: "checkmark")
+                            .fontWeight(.bold)
+                            .fontDesign(.rounded)
+                            .foregroundStyle(Color.accentColor.gradient)
+                    }
+                }
+                .frame(width: 120, height: 80, alignment: .trailing)
             }
         }
         .padding(CELL_PADDING)

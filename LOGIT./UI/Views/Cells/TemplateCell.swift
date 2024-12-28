@@ -23,19 +23,17 @@ struct TemplateCell: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack(spacing: 12) {
-                if #available(iOS 17.0, *) {
-                    Chart {
-                        ForEach(muscleGroupService.getMuscleGroupOccurances(in: template), id:\.0) { muscleGroupOccurance in
-                            SectorMark(
-                                angle: .value("Value", muscleGroupOccurance.1),
-                                innerRadius: .ratio(0.65),
-                                angularInset: 1
-                            )
-                            .foregroundStyle(muscleGroupOccurance.0.color.gradient)
-                        }
+                Chart {
+                    ForEach(muscleGroupService.getMuscleGroupOccurances(in: template), id:\.0) { muscleGroupOccurance in
+                        SectorMark(
+                            angle: .value("Value", muscleGroupOccurance.1),
+                            innerRadius: .ratio(0.65),
+                            angularInset: 1
+                        )
+                        .foregroundStyle(muscleGroupOccurance.0.color.gradient)
                     }
-                    .frame(width: 40, height: 40)
                 }
+                .frame(width: 40, height: 40)
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("template", comment: "").uppercased())
                         .font(.footnote.weight(.medium))

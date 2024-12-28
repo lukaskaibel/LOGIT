@@ -19,23 +19,21 @@ struct MuscleGroupOccurancesChart: View {
     }
     
     var body: some View {
-        if #available(iOS 17.0, *) {
-            Chart {
-                if muscleGroupOccurances.isEmpty {
+        Chart {
+            if muscleGroupOccurances.isEmpty {
+                SectorMark(
+                    angle: .value("Value", 1),
+                    innerRadius: .ratio(0.65)
+                )
+                .foregroundStyle(Color.secondary.secondaryTranslucentBackground)
+            } else {
+                ForEach(muscleGroupOccurances, id:\.0) { muscleGroupOccurance in
                     SectorMark(
-                        angle: .value("Value", 1),
-                        innerRadius: .ratio(0.65)
+                        angle: .value("Value", muscleGroupOccurance.1),
+                        innerRadius: .ratio(0.65),
+                        angularInset: 1
                     )
-                    .foregroundStyle(Color.secondary.secondaryTranslucentBackground)
-                } else {
-                    ForEach(muscleGroupOccurances, id:\.0) { muscleGroupOccurance in
-                        SectorMark(
-                            angle: .value("Value", muscleGroupOccurance.1),
-                            innerRadius: .ratio(0.65),
-                            angularInset: 1
-                        )
-                        .foregroundStyle(foregroundStyle(for: muscleGroupOccurance.0))
-                    }
+                    .foregroundStyle(foregroundStyle(for: muscleGroupOccurance.0))
                 }
             }
         }

@@ -36,105 +36,103 @@ struct TargetPerWeekDetailScreen: View {
     var body: some View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
-                if #available(iOS 17.0, *) {
-                    VStack(spacing: 20) {
+                VStack(spacing: 20) {
+                    HStack {
+                        Text(Calendar.current.date(byAdding: .weekOfYear, value: -selectedWeeksFromNow, to: .now)?.startOfWeek.weekDescription ?? "")
+                        Spacer()
                         HStack {
-                            Text(Calendar.current.date(byAdding: .weekOfYear, value: -selectedWeeksFromNow, to: .now)?.startOfWeek.weekDescription ?? "")
-                            Spacer()
-                            HStack {
-                                Button {
-                                    withAnimation {
-                                        selectedWeeksFromNow = selectedWeeksFromNow < 54 ? selectedWeeksFromNow + 1 : 0
-                                    }
-                                } label: {
-                                    Image(systemName: "chevron.left")
+                            Button {
+                                withAnimation {
+                                    selectedWeeksFromNow = selectedWeeksFromNow < 54 ? selectedWeeksFromNow + 1 : 0
                                 }
-                                .disabled(selectedWeeksFromNow >= 54)
-                                Button {
-                                    withAnimation {
-                                        selectedWeeksFromNow = selectedWeeksFromNow > 0 ? selectedWeeksFromNow - 1 : 0
-                                    }
-                                } label: {
-                                    Image(systemName: "chevron.right")
-                                }
-                                .disabled(selectedWeeksFromNow == 0)
+                            } label: {
+                                Image(systemName: "chevron.left")
                             }
+                            .disabled(selectedWeeksFromNow >= 54)
+                            Button {
+                                withAnimation {
+                                    selectedWeeksFromNow = selectedWeeksFromNow > 0 ? selectedWeeksFromNow - 1 : 0
+                                }
+                            } label: {
+                                Image(systemName: "chevron.right")
+                            }
+                            .disabled(selectedWeeksFromNow == 0)
                         }
-                        .font(.title3)
-                        
-                        TabView(selection: $selectedWeeksFromNow) {
-                            ForEach(Array<Int>(0..<54).reversed(), id:\.self) { weeksFromNow in
-                                let numberOfWorkoutsInCurrentWeek = getWorkouts(inWeeksFromNow: weeksFromNow).count
-                                Chart {
-                                    ForEach(0..<targetPerWeek, id:\.self) { value in
-                                        SectorMark(
-                                            angle: .value("Value", 1),
-                                            innerRadius: .ratio(0.65),
-                                            angularInset: 1
-                                        )
-                                        .foregroundStyle(value < numberOfWorkoutsInCurrentWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.fill))
-                                    }
+                    }
+                    .font(.title3)
+                    
+                    TabView(selection: $selectedWeeksFromNow) {
+                        ForEach(Array<Int>(0..<54).reversed(), id:\.self) { weeksFromNow in
+                            let numberOfWorkoutsInCurrentWeek = getWorkouts(inWeeksFromNow: weeksFromNow).count
+                            Chart {
+                                ForEach(0..<targetPerWeek, id:\.self) { value in
+                                    SectorMark(
+                                        angle: .value("Value", 1),
+                                        innerRadius: .ratio(0.65),
+                                        angularInset: 1
+                                    )
+                                    .foregroundStyle(value < numberOfWorkoutsInCurrentWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.fill))
                                 }
-                                .overlay {
-                                    if numberOfWorkoutsInCurrentWeek >= targetPerWeek {
-                                        Image(systemName: "checkmark")
-                                            .font(.title)
-                                            .fontWeight(.bold)
-                                            .foregroundStyle(Color.accentColor.gradient)
-                                    } else {
-                                        VStack(spacing: 0) {
-                                            Text("\(targetPerWeek - numberOfWorkoutsInCurrentWeek)")
-                                                .font(.title3)
-                                                .fontWeight(.semibold)
-                                            Text(NSLocalizedString("toGo", comment: ""))
-                                                .font(.footnote)
-                                                .textCase(.uppercase)
-                                        }
-                                        .foregroundStyle(.secondary)
+                            }
+                            .overlay {
+                                if numberOfWorkoutsInCurrentWeek >= targetPerWeek {
+                                    Image(systemName: "checkmark")
+                                        .font(.title)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(Color.accentColor.gradient)
+                                } else {
+                                    VStack(spacing: 0) {
+                                        Text("\(targetPerWeek - numberOfWorkoutsInCurrentWeek)")
+                                            .font(.title3)
+                                            .fontWeight(.semibold)
+                                        Text(NSLocalizedString("toGo", comment: ""))
+                                            .font(.footnote)
+                                            .textCase(.uppercase)
                                     }
-                                }
-                                .frame(width: 200, height: 200)
-                                .tag(weeksFromNow)
-                            }
-                        }
-                        .tabViewStyle(.page(indexDisplayMode: .never))
-                        .frame(height: 250)
-                        
-                        HStack(alignment: .firstTextBaseline) {
-                            Spacer()
-                            VStack {
-                                let numberOfWorkoutsInCurrentWeek = getWorkouts(inWeeksFromNow: selectedWeeksFromNow).count
-                                Text("\(numberOfWorkoutsInCurrentWeek)")
-                                    .font(.title)
-                                    .fontDesign(.rounded)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(Color.accentColor.gradient)
-                                Text(NSLocalizedString("workout\(numberOfWorkoutsInCurrentWeek == 1 ? "" : "s")", comment: ""))
-                                    .textCase(.uppercase)
-                                    .font(.footnote)
-                                    .foregroundStyle(Color.accentColor.gradient)
-                            }
-                            .frame(maxWidth: .infinity)
-                            Text("/")
-                                .textCase(.uppercase)
-                                .font(.title2)
-                                .fontDesign(.rounded)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.secondary)
-                            
-                            VStack {
-                                Text("\(targetPerWeek)")
-                                    .font(.title)
-                                    .fontDesign(.rounded)
-                                    .fontWeight(.bold)
-                                Text(NSLocalizedString("goal", comment: ""))
-                                    .textCase(.uppercase)
-                                    .font(.footnote)
                                     .foregroundStyle(.secondary)
+                                }
                             }
-                            .frame(maxWidth: .infinity)
-                            Spacer()
+                            .frame(width: 200, height: 200)
+                            .tag(weeksFromNow)
                         }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .frame(height: 250)
+                    
+                    HStack(alignment: .firstTextBaseline) {
+                        Spacer()
+                        VStack {
+                            let numberOfWorkoutsInCurrentWeek = getWorkouts(inWeeksFromNow: selectedWeeksFromNow).count
+                            Text("\(numberOfWorkoutsInCurrentWeek)")
+                                .font(.title)
+                                .fontDesign(.rounded)
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.accentColor.gradient)
+                            Text(NSLocalizedString("workout\(numberOfWorkoutsInCurrentWeek == 1 ? "" : "s")", comment: ""))
+                                .textCase(.uppercase)
+                                .font(.footnote)
+                                .foregroundStyle(Color.accentColor.gradient)
+                        }
+                        .frame(maxWidth: .infinity)
+                        Text("/")
+                            .textCase(.uppercase)
+                            .font(.title2)
+                            .fontDesign(.rounded)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
+                        
+                        VStack {
+                            Text("\(targetPerWeek)")
+                                .font(.title)
+                                .fontDesign(.rounded)
+                                .fontWeight(.bold)
+                            Text(NSLocalizedString("goal", comment: ""))
+                                .textCase(.uppercase)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        Spacer()
                     }
                 }
                 Spacer()

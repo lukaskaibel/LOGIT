@@ -238,7 +238,7 @@ struct WorkoutRecorderScreen: View {
                         axis: .vertical
                     )
                     .focused($isFocusingTitleTextfield)
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .foregroundColor(.label)
                     .font(.title2.weight(.bold))
                     Spacer()

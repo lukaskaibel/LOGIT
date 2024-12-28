@@ -43,7 +43,9 @@ struct FullScreenDraggableCover<ScreenContent: View, Background: ShapeStyle>: Vi
                                             yOffset = geometry.size.height + geometry.safeAreaInsets.top
                                         } completion: {
                                             isPresented = false
-                                            yOffset = 0
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                                yOffset = 0
+                                            }
                                         }
                                     } else {
                                         withAnimation(.bouncy(duration: 0.2)) {
@@ -51,7 +53,9 @@ struct FullScreenDraggableCover<ScreenContent: View, Background: ShapeStyle>: Vi
                                         }
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                             isPresented = false
-                                            yOffset = 0
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                                yOffset = 0
+                                            }
                                         }
                                     }
                                 } else {
@@ -64,33 +68,9 @@ struct FullScreenDraggableCover<ScreenContent: View, Background: ShapeStyle>: Vi
                             .clipped()
                             .background(background)
                             .clipShape(RoundedRectangle(cornerRadius: yOffset != 0 ? UIScreen.main.displayCornerRadius : 0, style: .continuous))
-                        
                             .offset(y: yOffset > 0 ? yOffset : 0)
                             .ignoresSafeArea(.container, edges: .all)
-                        //                        .onAppear {
-                        //                            yOffset = geometry.size.height
-                        //                            if #available(iOS 17.0, *) {
-                        //                                withAnimation(.easeOut(duration: 0.15)) {
-                        //                                    yOffset = 0
-                        //                                } completion: {
-                        //                                    bringFocusToCover = true
-                        //                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.001) {
-                        //                                        bringFocusToCover = false
-                        //                                    }
-                        //                                }
-                        //                            } else {
-                        //                                withAnimation(.easeOut(duration: 0.15)) {
-                        //                                    yOffset = 0
-                        //                                }
-                        //                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        //                                    bringFocusToCover = true
-                        //                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.001) {
-                        //                                        bringFocusToCover = false
-                        //                                    }
-                        //                                }
-                        //                            }
-                        //                        }
-                        //                        .transition(.move(edge: .bottom))
+                            .ignoresSafeArea(.keyboard)
                     }
                 }
                 .presentationBackground(.clear)

@@ -76,6 +76,9 @@ struct LOGIT: App {
             if setupDone {
                 HomeScreen()
                     .zIndex(0)
+                    .overlay {
+                        startAndCurrentWorkoutButton
+                    }
                     .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
                         WorkoutRecorderScreen()
                     }
@@ -139,6 +142,55 @@ struct LOGIT: App {
 
     func testFirstStart() {
         UserDefaults.standard.set(false, forKey: "setupDone")
+    }
+    
+    private var startAndCurrentWorkoutButton: some View {
+        ZStack {
+            Rectangle()
+                .fill(.bar)
+                .frame(height: 140)
+                .mask {
+                    VStack(spacing: 0) {
+                        LinearGradient(colors: [Color.black.opacity(0),
+                                                Color.black],
+                                       startPoint: .top,
+                                       endPoint: .bottom)
+                            .frame(height: 45)
+                        
+                        Rectangle()
+                    }
+                }
+            if let workout = workoutRecorder.workout {
+                Button {
+                    isShowingWorkoutRecorder = true
+                } label: {
+                    CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
+                        .frame(maxWidth: .infinity)
+                        .background(.regularMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                        .shadow(radius: 10)
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 5)
+                }
+                .buttonStyle(TileButtonStyle())
+                .gesture(
+                    DragGesture()
+                        .onChanged { dragValue in
+                            if dragValue.translation.height < 0 {
+                                isShowingWorkoutRecorder = true
+                            }
+                        }
+                )
+                .transition(.move(edge: .bottom))
+            } else {
+                StartWorkoutView()
+                    .shadow(radius: 10)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 5)
+            }
+        }
+        .frame(maxHeight: .infinity, alignment: .bottom)
+        .edgesIgnoringSafeArea(.bottom)
     }
 
 }

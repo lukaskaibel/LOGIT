@@ -171,12 +171,6 @@ struct HomeScreen: View {
                         }
                 }
             }
-            .fullScreenCover(isPresented: $isShowingWorkoutRecorder) {
-                WorkoutRecorderScreen()
-                    .onAppear {
-                        workoutRecorder.startWorkout()
-                    }
-            }
             .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
                 switch destination {
                     case .exercise(let exercise):
@@ -208,9 +202,6 @@ struct HomeScreen: View {
                     }
                 }
             }
-        }
-        .overlay {
-            startAndCurrentWorkoutButton
         }
     }
 
@@ -281,45 +272,6 @@ struct HomeScreen: View {
         )
         .padding(CELL_PADDING)
         .tileStyle()
-    }
-    
-    private var startAndCurrentWorkoutButton: some View {
-        ZStack {
-            Rectangle()
-                .fill(.bar)
-                .frame(height: 140)
-                .mask {
-                    VStack(spacing: 0) {
-                        LinearGradient(colors: [Color.black.opacity(0),
-                                                Color.black],
-                                       startPoint: .top,
-                                       endPoint: .bottom)
-                            .frame(height: 45)
-                        
-                        Rectangle()
-                    }
-                }
-            if let workout = workoutRecorder.workout {
-                CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
-                    .frame(maxWidth: .infinity)
-                    .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 15))
-                    .shadow(radius: 10)
-                    .padding(.horizontal, 10)
-                    .padding(.bottom, 5)
-                    .onTapGesture {
-                        isShowingWorkoutRecorder = true
-                    }
-                    .transition(.move(edge: .bottom))
-            } else {
-                StartWorkoutView()
-                    .shadow(radius: 10)
-                    .padding(.horizontal, 10)
-                    .padding(.bottom, 5)
-            }
-        }
-        .frame(maxHeight: .infinity, alignment: .bottom)
-        .edgesIgnoringSafeArea(.bottom)
     }
 
     // MARK: - Supportings Methods

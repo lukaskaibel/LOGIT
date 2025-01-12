@@ -100,9 +100,6 @@ struct WorkoutSetCell: View {
                 }
             }
         }
-        .onReceive(workoutSet.objectWillChange) { _ in
-            workoutSet.workout?.endDate = .now
-        }
     }
 
     // MARK: - Supporting Methods

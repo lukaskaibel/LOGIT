@@ -205,7 +205,7 @@
 "noWorkoutsInWeek" = "Keine Workouts in der Woche";
 "noWorkoutsThisWeek" = "Keine Workouts in dieser Woche";
 "noWorkoutsTip" = "Lass uns trainieren 💪";
-"noWorkoutsTipDescription" = "Du hast bisher keine Workouts in LOGIT eingetragen. Starte jetzt und klicke unten, um dein erstes Training zu erfassen!";
+"noWorkoutsTipDescription" = "Du hast bisher keine Workouts in LOGIT eingetragen. Klicke den Button unten auf dem Screen, um dein erstes Training zu erfassen!";
 
 
 // MARK: - O

@@ -96,6 +96,7 @@ final class WorkoutRecorder: ObservableObject {
             if workoutCopy.name?.isEmpty ?? true {
                 workoutCopy.name = Workout.getStandardName(for: workoutCopy.date!)
             }
+            workoutCopy.endDate = .now
             workoutCopy.setGroups.forEach {
                 if $0.setType == .superSet && $0.secondaryExercise == nil {
                     database.convertSetGroupToStandardSets($0)

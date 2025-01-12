@@ -31,7 +31,6 @@ final class CurrentWorkoutManager {
         guard let idString = UserDefaults.standard.value(forKey: CurrentWorkoutManager.CURRENT_WORKOUT_ID_KEY) as? String,
                 let uuid = UUID(uuidString: idString)
         else {
-            Self.logger.log("No current workout available")
             return nil
         }
         guard let currentWorkout = (database.fetch(Workout.self, predicate: NSPredicate(format: "id == %@", uuid as CVarArg)) as! [Workout]).first else {

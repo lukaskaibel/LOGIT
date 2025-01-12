@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 23.01.22.
 //
 
+import Combine
 import CoreData
 import OSLog
 
@@ -13,10 +14,12 @@ class Database: ObservableObject {
     // MARK: - Constants
 
     private let container: NSPersistentContainer
-
     private let TEMPORARY_OBJECT_IDS_KEY = "temporaryObjectIds"
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Properties
+    
+    @Published private(set) var hasUnsavedChanges: Bool = false
     
     var isPreview: Bool
     
@@ -37,6 +40,7 @@ class Database: ObservableObject {
         if isPreview {
             setupPreviewDatabase()
         }
+        setupObservers()
     }
 
     // MARK: - Computed Properties
@@ -49,10 +53,12 @@ class Database: ObservableObject {
 
     func save() {
         DispatchQueue.main.async { [weak self] in
-            guard self?.context.hasChanges ?? false else { return }
+            guard let self = self else { return }
+            guard self.context.hasChanges else { return }
             do {
-                try self?.context.save()
-                self?.objectWillChange.send()
+                try self.context.save()
+                self.hasUnsavedChanges = self.context.hasChanges
+                self.objectWillChange.send()
             } catch {
                 os_log("Database: Failed to save context: %@", type: .error, error.localizedDescription)
             }
@@ -61,11 +67,10 @@ class Database: ObservableObject {
     
     func discardUnsavedChanges() {
         context.rollback()
+        DispatchQueue.main.async {
+            self.hasUnsavedChanges = self.context.hasChanges
+        }
         objectWillChange.send()
-    }
-    
-    var hasUnsavedChanges: Bool {
-        context.hasChanges
     }
 
     // MARK: - Object Access / Manipulation
@@ -106,6 +111,20 @@ class Database: ObservableObject {
     
     func managedObjectID(forURIRepresentation url: URL) -> NSManagedObjectID? {
         container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: url)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func setupObservers() {
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: context)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                print("Database.hasChanges: ", self.context.hasChanges)
+                DispatchQueue.main.async {
+                    self.hasUnsavedChanges = self.context.hasChanges
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Temporary Objects

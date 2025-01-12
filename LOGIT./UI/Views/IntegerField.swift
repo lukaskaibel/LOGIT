@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 16.01.23.
 //
 
+import Combine
 import SwiftUI
 
 struct IntegerField: View {
@@ -36,12 +37,8 @@ struct IntegerField: View {
                 if canEdit {
                     TextField(String(placeholder), text: $valueString)
                         .focused($isFocused)
-                        .onChange(of: valueString) { newValue in
-                            if newValue.count > 4 {
-                                valueString = String(newValue.prefix(4))
-                            } else if newValue.isEmpty || Int(newValue) == 0 {
-                                valueString = ""
-                            }
+                        .onReceive(Just(valueString)) {
+                            valueString = (valueString == "0" || valueString.isEmpty) ? "" : String($0.prefix(4))
                         }
                         .keyboardType(.numberPad)
                         .accentColor(.clear)
@@ -85,7 +82,7 @@ struct IntegerField: View {
         .onChange(of: valueString) { newValue in
             if let valueInt = Int64(newValue), valueInt != value {
                 value = valueInt
-            } else if newValue.isEmpty {
+            } else if newValue.isEmpty && value != 0 {
                 value = 0
             }
         }

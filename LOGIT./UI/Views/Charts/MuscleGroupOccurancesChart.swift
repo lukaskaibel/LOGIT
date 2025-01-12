@@ -25,7 +25,7 @@ struct MuscleGroupOccurancesChart: View {
                     angle: .value("Value", 1),
                     innerRadius: .ratio(0.65)
                 )
-                .foregroundStyle(Color.secondary.secondaryTranslucentBackground)
+                .foregroundStyle(Color.fill.gradient)
             } else {
                 ForEach(muscleGroupOccurances, id:\.0) { muscleGroupOccurance in
                     SectorMark(

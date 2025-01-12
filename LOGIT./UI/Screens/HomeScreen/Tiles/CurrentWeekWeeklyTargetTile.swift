@@ -49,7 +49,7 @@ struct CurrentWeekWeeklyTargetTile: View {
                             innerRadius: .ratio(0.65),
                             angularInset: 1
                         )
-                        .foregroundStyle(value < numberOfWorkoutsInCurrentWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.fill))
+                        .foregroundStyle(value < numberOfWorkoutsInCurrentWeek ? AnyShapeStyle(Color.accentColor.gradient) : AnyShapeStyle(Color.fill.gradient))
                     }
                 }
                 .overlay {

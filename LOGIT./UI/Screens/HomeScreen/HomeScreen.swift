@@ -264,10 +264,7 @@ struct HomeScreen: View {
         TipView(
             title: NSLocalizedString("noWorkoutsTip", comment: ""),
             description: NSLocalizedString("noWorkoutsTipDescription", comment: ""),
-            buttonAction: .init(
-                title: NSLocalizedString("startWorkout", comment: ""),
-                action: { isShowingWorkoutRecorder = true }
-            ),
+            buttonAction: nil,
             isShown: $showNoWorkoutTip
         )
         .padding(CELL_PADDING)

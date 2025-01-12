@@ -188,7 +188,6 @@ struct WorkoutEditorScreen: View {
                     }
                 }
             }
-            
             .onAppear {
                 if workout.date == nil {
                     workout.date = .now

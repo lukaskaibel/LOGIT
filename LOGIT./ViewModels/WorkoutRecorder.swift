@@ -25,7 +25,6 @@ final class WorkoutRecorder: ObservableObject {
     
     private let database: Database
     private let workoutRepository: WorkoutRepository
-    private let entityObserver = EntityObserver()
     private let currentWorkoutManager: CurrentWorkoutManager
     private var workoutSetTemplateSetDictionary = [WorkoutSet: TemplateSet]()
     private var cancellable: AnyCancellable?
@@ -84,7 +83,6 @@ final class WorkoutRecorder: ObservableObject {
         // Use a local copy of the workout for the background operations to avoid race conditions
         let workoutCopy = workout
         self.workout = nil
-        entityObserver.unsubscribeObject(workoutCopy)
         currentWorkoutManager.setCurrentWorkout(nil)
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -128,7 +126,6 @@ final class WorkoutRecorder: ObservableObject {
         
         let workoutCopy = workout
         self.workout = nil
-        entityObserver.unsubscribeObject(workoutCopy)
         currentWorkoutManager.setCurrentWorkout(nil)
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in

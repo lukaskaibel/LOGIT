@@ -247,13 +247,13 @@ struct WorkoutRecorderScreen: View {
                     ProgressCircleButton(
                         progress: progress
                     ) {
-                        if !(workoutRecorder.workout?.hasEntries ?? false) {
-                            workoutRecorder.saveWorkout()
+                        guard workoutRecorder.workout?.hasEntries ?? false else {
+                            workoutRecorder.discardWorkout()
                             dismiss()
-                        } else {
-                            UINotificationFeedbackGenerator().notificationOccurred(.success)
-                            isShowingFinishConfirmation = true
+                            return
                         }
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        isShowingFinishConfirmation = true
                     }
                     .offset(y: -2)
                     .onAppear {

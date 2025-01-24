@@ -155,7 +155,6 @@
 		79DB25A02914382400ADDF24 /* UIConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79DB259F2914382400ADDF24 /* UIConstants.swift */; };
 		79DB52112AE1724F00073423 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79DB52102AE1724F00073423 /* NetworkMonitor.swift */; };
 		79DB52132AE176D000073423 /* RequiresNetworkConnectionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79DB52122AE176D000073423 /* RequiresNetworkConnectionModifier.swift */; };
-		79DE32952BCDD1D800FD417A /* EntityObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79DE32942BCDD1D800FD417A /* EntityObserver.swift */; };
 		79E2E6022912E9F8003845BC /* Database+EntityFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E2E6012912E9F8003845BC /* Database+EntityFetch.swift */; };
 		79E2E60429132C46003845BC /* Database+SetConvert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E2E60329132C46003845BC /* Database+SetConvert.swift */; };
 		79EF10822C4FFA0D008444BA /* WorkoutSetRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79EF10812C4FFA0D008444BA /* WorkoutSetRepository.swift */; };
@@ -359,7 +358,6 @@
 		79DB259F2914382400ADDF24 /* UIConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConstants.swift; sourceTree = "<group>"; };
 		79DB52102AE1724F00073423 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		79DB52122AE176D000073423 /* RequiresNetworkConnectionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequiresNetworkConnectionModifier.swift; sourceTree = "<group>"; };
-		79DE32942BCDD1D800FD417A /* EntityObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityObserver.swift; sourceTree = "<group>"; };
 		79E2E6012912E9F8003845BC /* Database+EntityFetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+EntityFetch.swift"; sourceTree = "<group>"; };
 		79E2E60329132C46003845BC /* Database+SetConvert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+SetConvert.swift"; sourceTree = "<group>"; };
 		79E849072A7EA28000C0DF95 /* LOGITTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LOGITTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -663,7 +661,6 @@
 			isa = PBXGroup;
 			children = (
 				795A48802A6899A10008A458 /* Chronograph.swift */,
-				79DE32942BCDD1D800FD417A /* EntityObserver.swift */,
 				79702C6B2A7D356100F19EF3 /* ExerciseService.swift */,
 				79C07B2D2ABA535F000BF879 /* MeasurementController.swift */,
 				79DB52102AE1724F00073423 /* NetworkMonitor.swift */,
@@ -1118,7 +1115,6 @@
 				7996D0AB2AC60C0E0028FF22 /* VolumeCalculating.swift in Sources */,
 				792DAB7327EB97E80062C20D /* LineGraph.swift in Sources */,
 				79F6D5F22B0F8742005D48CB /* SegmentedStackedBarChart.swift in Sources */,
-				79DE32952BCDD1D800FD417A /* EntityObserver.swift in Sources */,
 				796FE6EA2D01F467001AE313 /* VolumeTile.swift in Sources */,
 				795D6E6327F50E6A00A71807 /* Timer.swift in Sources */,
 				79702C6C2A7D356100F19EF3 /* ExerciseService.swift in Sources */,

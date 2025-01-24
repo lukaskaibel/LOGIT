@@ -46,6 +46,7 @@ struct ExerciseHistoryScreen: View {
                 }
             }
             .padding([.top, .horizontal])
+            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
         .toolbar {
             ToolbarItem(placement: .principal) {

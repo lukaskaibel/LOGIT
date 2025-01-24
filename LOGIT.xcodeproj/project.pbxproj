@@ -178,6 +178,8 @@
 		807FC47F268A909D00169820 /* Exercise+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 807FC47E268A909D00169820 /* Exercise+.swift */; };
 		8084604B276662A000E0D0D0 /* WorkoutListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8084604A276662A000E0D0D0 /* WorkoutListScreen.swift */; };
 		80D9A7DB28860BB1000BF05E /* WorkoutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D9A7DA28860BB1000BF05E /* WorkoutCell.swift */; };
+		80EC5D8C2D3A85AE00AFAE9A /* ExercisePersonalBestsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EC5D8B2D3A85AE00AFAE9A /* ExercisePersonalBestsTile.swift */; };
+		80EC5D8E2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */; };
 		80ED02902764D94200D59B75 /* ExerciseSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80ED028F2764D94200D59B75 /* ExerciseSelectionScreen.swift */; };
 		80F9C34B2704C4F000B6EBF2 /* Date+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9C34A2704C4F000B6EBF2 /* Date+.swift */; };
 		A004D4512CB2E009002914FF /* OverallSetsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A004D4502CB2E009002914FF /* OverallSetsTile.swift */; };
@@ -384,6 +386,8 @@
 		8084604A276662A000E0D0D0 /* WorkoutListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutListScreen.swift; sourceTree = "<group>"; };
 		80D9A7DA28860BB1000BF05E /* WorkoutCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCell.swift; sourceTree = "<group>"; };
 		80E9FAEE26FE152100C670D5 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		80EC5D8B2D3A85AE00AFAE9A /* ExercisePersonalBestsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisePersonalBestsTile.swift; sourceTree = "<group>"; };
+		80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetRepositoryTests.swift; sourceTree = "<group>"; };
 		80ED028F2764D94200D59B75 /* ExerciseSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSelectionScreen.swift; sourceTree = "<group>"; };
 		80F9C34A2704C4F000B6EBF2 /* Date+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+.swift"; sourceTree = "<group>"; };
 		A004D4502CB2E009002914FF /* OverallSetsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverallSetsTile.swift; sourceTree = "<group>"; };
@@ -794,6 +798,7 @@
 				79E849092A7EA28000C0DF95 /* ExerciseServiceTests.swift */,
 				79C07B2F2ABA566E000BF879 /* MeasurementEntryControllerTests.swift */,
 				794A8E5C2ACC211D006087EA /* TemplateServiceTests.swift */,
+				80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */,
 				7959F4CE2ACD8F5B0038B222 /* WorkoutImages.xcassets */,
 			);
 			path = LOGITTests;
@@ -818,6 +823,7 @@
 		804C694E2D1C7DC700F0E91F /* Tiles */ = {
 			isa = PBXGroup;
 			children = (
+				80EC5D8B2D3A85AE00AFAE9A /* ExercisePersonalBestsTile.swift */,
 				793115C02CFFB18200093878 /* ExerciseRepetitionsTile.swift */,
 				793115C42CFFB63C00093878 /* ExerciseVolumeTile.swift */,
 				79C7892A2CFF5BF300534FA1 /* ExerciseWeightTile.swift */,
@@ -1011,6 +1017,7 @@
 				79C07B302ABA566E000BF879 /* MeasurementEntryControllerTests.swift in Sources */,
 				794A8E5D2ACC211D006087EA /* TemplateServiceTests.swift in Sources */,
 				792A3FF32AB478F000C6A097 /* DatabaseTests.swift in Sources */,
+				80EC5D8E2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift in Sources */,
 				79FF97B72AA29E680070015E /* ExerciseServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1128,6 +1135,7 @@
 				791E955E2C4E8158006A6664 /* WorkoutRepository.swift in Sources */,
 				79A637D92A3A0157002A1F20 /* WorkoutRecorderScreen+Toolbar.swift in Sources */,
 				79488DEA2A76FB4E005C485D /* MuscleGroupGradientStyle.swift in Sources */,
+				80EC5D8C2D3A85AE00AFAE9A /* ExercisePersonalBestsTile.swift in Sources */,
 				79ACE8842BDD281A00815A5F /* CurrentWorkoutManager.swift in Sources */,
 				79488DD72A7558B2005C485D /* EnvironmentValues+.swift in Sources */,
 				79898A8627F7BE4A00935E05 /* TemplateSetGroup+.swift in Sources */,
@@ -1213,7 +1221,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kaibel.LOGITTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1233,7 +1241,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kaibel.LOGITTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";

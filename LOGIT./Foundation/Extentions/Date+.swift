@@ -14,7 +14,11 @@ extension Date {
     }
     
     var endOfWeek: Date {
-        return Calendar.current.date(byAdding: .day, value: 6, to: startOfWeek) ?? self
+        guard let lastDayOfWeek = Calendar.current.date(byAdding: .day, value: 6, to: startOfWeek) else {
+            return self
+        }
+        return Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: lastDayOfWeek)?
+            .addingTimeInterval(0.999) ?? lastDayOfWeek
     }
         
     var startOfMonth: Date {
@@ -65,6 +69,10 @@ extension Date {
 
     var monthDescription: String {
         return self.formatted(.dateTime.month(.wide).year())
+    }
+    
+    var yearDescription: String {
+        return self.formatted(.dateTime.year())
     }
 
     var timeString: String {

@@ -19,66 +19,79 @@ struct ExerciseVolumeScreen: View {
     let exercise: Exercise
     
     @State private var chartGranularity: ChartGranularity = .month
+    @State private var chartScrollPosition: Date = .now
     
     var body: some View {
         ScrollView {
-            VStack(spacing: SECTION_SPACING) {
-                VStack {
-                    
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("total", comment: ""))
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                            .textCase(.uppercase)
-                            .foregroundStyle(.secondary)
-                        UnitView(
-                            value: "\(volumeInThisChartGranularity)",
-                            unit: WeightUnit.used.rawValue
-                        )
-                        .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                        Text("\(NSLocalizedString("this", comment: "")) \(NSLocalizedString(chartGranularity == .month ? "month" : "year", comment: ""))")
-                            .fontWeight(.bold)
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    Chart {
-                        ForEach(setsGroupedByGranularity, id: \.date) { data in
-                            BarMark(
-                                x: .value("Day", data.date, unit: chartGranularity == .month ? .weekOfYear : .month),
-                                y: .value("Volume", volume(for: data.workoutSets)),
-                                width: .ratio(0.5)
-                            )
-                            .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
-                        }
-                    }
-                    .chartXAxis {
-                        AxisMarks(
-                            position: .bottom,
-                            values: .stride(by: chartGranularity == .month ? .weekOfYear : .month)
-                        ) { value in
-                            if let date = value.as(Date.self) {
-                                AxisGridLine()
-                                    .foregroundStyle(Color.gray.opacity(0.5))
-                                AxisValueLabel(xAxisDateString(for: date))
-                                    .foregroundStyle(isDateNow(date, for: chartGranularity) ? Color.primary : .secondary)
-                                    .font(.caption.weight(.bold))
-                            }
-                        }
-                    }
-                    .chartYAxis {
-                        AxisMarks(values: .automatic(desiredCount: 3))
-                    }
-                    .frame(height: 300)
-                    Picker("Select Chart Granularity", selection: $chartGranularity) {
-                        Text(NSLocalizedString("month", comment: ""))
-                            .tag(ChartGranularity.month)
-                        Text(NSLocalizedString("year", comment: ""))
-                            .tag(ChartGranularity.year)
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.top)
+            VStack {
+                Picker("Select Chart Granularity", selection: $chartGranularity) {
+                    Text(NSLocalizedString("month", comment: ""))
+                        .tag(ChartGranularity.month)
+                    Text(NSLocalizedString("year", comment: ""))
+                        .tag(ChartGranularity.year)
                 }
+                .pickerStyle(.segmented)
+                .padding(.vertical)
+                
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("total", comment: ""))
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                        .textCase(.uppercase)
+                        .foregroundStyle(.secondary)
+                    UnitView(
+                        value: "\(totalVolumeInTimeFrame)",
+                        unit: WeightUnit.used.rawValue
+                    )
+                    .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
+                    Text("\(NSLocalizedString("this", comment: "")) \(NSLocalizedString(chartGranularity == .month ? "month" : "year", comment: ""))")
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Chart {
+                    ForEach(setsGroupedByGranularity, id:\.first) { groupedWorkoutSets in
+                        BarMark(
+                            x: .value("Day", groupedWorkoutSets.first?.workout?.date ?? .now, unit: .weekOfYear),
+                            y: .value("Volume", volume(for: groupedWorkoutSets)),
+                            width: .ratio(0.5)
+                        )
+                        .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
+                    }
+                }
+                .chartXScale(domain: xDomain)
+                .chartScrollableAxes(.horizontal)
+                .chartScrollPosition(x: $chartScrollPosition)
+                .chartScrollTargetBehavior(
+                    .valueAligned(
+                        matching: chartGranularity == .month ? DateComponents(weekday: 2) : DateComponents(month: 1, day: 1)
+                    )
+                )
+                .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+                .chartXAxis {
+                    AxisMarks(
+                        position: .bottom,
+                        values: .stride(by: chartGranularity == .month ? .weekOfYear : .month)
+                    ) { value in
+                        if let date = value.as(Date.self) {
+                            AxisGridLine()
+                                .foregroundStyle(Color.gray.opacity(0.5))
+                            AxisValueLabel(xAxisDateString(for: date))
+                                .foregroundStyle(isDateNow(date, for: chartGranularity) ? Color.primary : .secondary)
+                                .font(.caption.weight(.bold))
+                        }
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(values: .automatic(desiredCount: 4))
+                }
+                .emptyPlaceholder(setsGroupedByGranularity) {
+                    Text(NSLocalizedString("noData", comment: ""))
+                }
+                .frame(height: 300)
+                
             }
             .padding(.horizontal)
             .padding(.top)
@@ -99,8 +112,33 @@ struct ExerciseVolumeScreen: View {
         }
     }
     
-    private var volumeInThisChartGranularity: Int {
-        convertWeightForDisplaying(getVolume(of: workoutSetsInSelectedGranularity, for: exercise))
+    // MARK: - Private Methods
+    
+    private var visibleChartDomainInSeconds: Int {
+        3600 * 24 * (chartGranularity == .month ? 35 : 365)
+    }
+    
+    private var xDomain: some ScaleDomain {
+        let maxStartDate = Calendar.current.date(
+            byAdding: chartGranularity == .month ? .month : .year,
+            value: -1,
+            to: .now
+        )!
+        let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
+        guard let firstSetDate = setsGroupedByGranularity.first?.first?.workout?.date, firstSetDate < maxStartDate
+        else { return maxStartDate...endDate }
+        let startDate = chartGranularity == .month ? firstSetDate.startOfMonth : firstSetDate.startOfYear
+        return startDate...endDate
+    }
+    
+    private var totalVolumeInTimeFrame: Int {
+        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)
+        let setsInTimeFrame = workoutSetRepository.getWorkoutSets(
+            with: exercise,
+            from: chartScrollPosition,
+            to: endDate
+        )
+        return volume(for: setsInTimeFrame)
     }
     
     private func volume(for sets: [WorkoutSet]) -> Int {
@@ -125,65 +163,11 @@ struct ExerciseVolumeScreen: View {
         }
     }
     
-    private func getPeriodStart(for date: Date, granularity: ChartGranularity) -> Date? {
-        let calendar = Calendar.current
-        switch granularity {
-        case .month:
-            return calendar.dateInterval(of: .weekOfYear, for: date)?.start
-        case .year:
-            return calendar.dateInterval(of: .month, for: date)?.start
-        }
-    }
-    
-    private var workoutSetsInSelectedGranularity: [WorkoutSet] {
-        workoutSetRepository.getWorkoutSets(
+    private var setsGroupedByGranularity: [[WorkoutSet]] {
+        workoutSetRepository.getGroupedWorkoutSets(
             with: exercise,
-            for: chartGranularity == .month ? [.month, .year] : [.year],
-            including: .now
+            groupedBy: [.weekOfYear, .year]
         )
-    }
-    
-    private var setsGroupedByGranularity: [(date: Date, workoutSets: [WorkoutSet])] {
-        var result = [(date: Date, workoutSets: [WorkoutSet])]()
-        let allPeriods = allPeriodsInSelectedGranularity
-        var groupedByPeriod: [Date: [WorkoutSet]] = [:]
-
-        workoutSetsInSelectedGranularity
-            .forEach { workoutSet in
-                if let setDate = workoutSet.workout?.date,
-                   let periodStart = getPeriodStart(for: setDate, granularity: chartGranularity) {
-                    groupedByPeriod[periodStart, default: []].append(workoutSet)
-                }
-            }
-
-        allPeriods.forEach { periodStart in
-            let setsForPeriod = groupedByPeriod[periodStart] ?? []
-            result.append((date: periodStart, workoutSets: setsForPeriod))
-        }
-
-        return result
-    }
-    
-    private var allPeriodsInSelectedGranularity: [Date] {
-        let calendar = Calendar.current
-        let today = Date()
-        var periods = [Date]()
-
-        switch chartGranularity {
-        case .month:
-            guard let monthInterval = calendar.dateInterval(of: .month, for: today),
-                  let firstWeekStart = getPeriodStart(for: monthInterval.start, granularity: .month) else { return [] }
-            var periodStart = firstWeekStart
-            while periodStart < monthInterval.end {
-                periods.append(periodStart)
-                guard let nextPeriodStart = calendar.date(byAdding: .weekOfYear, value: 1, to: periodStart) else { break }
-                periodStart = nextPeriodStart
-            }
-        case .year:
-            guard let yearStart = calendar.dateInterval(of: .year, for: today)?.start else { return [] }
-            periods = (0..<12).compactMap { calendar.date(byAdding: .month, value: $0, to: yearStart) }
-        }
-        return periods
     }
 
 }

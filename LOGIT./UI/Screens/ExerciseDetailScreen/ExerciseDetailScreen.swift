@@ -47,7 +47,16 @@ struct ExerciseDetailScreen: View {
                 header
                     .padding(.horizontal)
                 
+                ExercisePersonalBestsTile(exercise: exercise)
+                    .padding(.horizontal)
+                
                 VStack {
+                    Button {
+                        isShowingVolumeScreen = true
+                    } label: {
+                        ExerciseVolumeTile(exercise: exercise)
+                    }
+                    .buttonStyle(TileButtonStyle())
                     Button {
                         isShowingWeightScreen = true
                     } label: {
@@ -58,12 +67,6 @@ struct ExerciseDetailScreen: View {
                         isShowingRepetitionsScreen = true
                     } label: {
                         ExerciseRepetitionsTile(exercise: exercise)
-                    }
-                    .buttonStyle(TileButtonStyle())
-                    Button {
-                        isShowingVolumeScreen = true
-                    } label: {
-                        ExerciseVolumeTile(exercise: exercise)
                     }
                     .buttonStyle(TileButtonStyle())
                 }

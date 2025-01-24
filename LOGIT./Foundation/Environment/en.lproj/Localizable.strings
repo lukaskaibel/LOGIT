@@ -27,6 +27,7 @@
 
 "back" = "Back";
 "bestPerDay" = "Best per Day";
+"bestThisMonth" = "Best this Month";
 "bestWeightPerDay" = "Best Weight per Day";
 "bestRepetitionsPerDay" = "Best Reps per Day";
 "biceps" = "Biceps";
@@ -239,6 +240,7 @@
 "reorderingDone" = "Reordering Done";
 "reorderExercises" = "Reorder Exercises";
 "repetitions" = "Repetitions";
+"repetitionsPR" = "Repetitions PR";
 "reps" = "rps";
 "replaceExercise" = "Replace Exercise";
 "replaceSecondaryExercise" = "Replace Secondary Exercise";
@@ -337,6 +339,7 @@
 "weeklyTargetDescription" = "Select how many workouts you want to do per week.";
 "weeklyWorkoutGoal" = "Weekly Workout Goal";
 "weight" = "Weight";
+"weightPR" = "Weight PR";
 "weightUnit" = "Weight Unit";
 "weightUnitDescription" = "Select the unit you want to use throughout the app.";
 "welcomeTo" = "Welcome to";

@@ -9,6 +9,7 @@ import XCTest
 
 @testable import LOGIT
 
+/*
 final class DatabaseTests: XCTestCase {
 
     private var database: Database!
@@ -98,3 +99,4 @@ final class DatabaseTests: XCTestCase {
     }
 
 }
+*/

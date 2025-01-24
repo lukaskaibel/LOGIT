@@ -50,7 +50,7 @@ extension WorkoutSet {
                     attribute == .repetitions
                         ? superSet.repetitionsFirstExercise : superSet.weightFirstExercise
                 )
-            } else {
+            } else if superSet.secondaryExercise == exercise {
                 maxValue = max(maxValue, Int(
                     attribute == .repetitions
                         ? superSet.repetitionsSecondExercise : superSet.weightSecondExercise

@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum UnitViewConfiguration {
-    case normal, large
+    case normal, large, small
 }
 
 struct UnitView: View {
@@ -20,11 +20,11 @@ struct UnitView: View {
     var body: some View {
         HStack(alignment: .lastTextBaseline, spacing: 0) {
             Text(value)
-                .font(configuration == .large ? .title : .title3)
+                .font(configuration == .large ? .title : configuration == .small ? .subheadline : .title3)
                 .fontWeight(.bold)
                 .fontDesign(.rounded)
             Text(unit.uppercased())
-                .font(configuration == .large ? .body : .subheadline)
+                .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
                 .fontWeight(.bold)
                 .fontDesign(.rounded)
         }
@@ -34,6 +34,10 @@ struct UnitView: View {
 
 struct UnitView_Previews: PreviewProvider {
     static var previews: some View {
-        UnitView(value: "12", unit: "rps")
+        VStack {
+            UnitView(value: "12", unit: "rps", configuration: .small)
+            UnitView(value: "12", unit: "rps")
+            UnitView(value: "12", unit: "rps", configuration: .large)
+        }
     }
 }

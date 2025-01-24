@@ -27,6 +27,7 @@
 
 "back" = "Rücken";
 "bestPerDay" = "Höchstes pro Tag";
+"bestThisMonth" = "Max diesen Monat";
 "bestWeightPerDay" = "Höchstes Gewicht pro Tag";
 "bestRepetitionsPerDay" = "Höchste Wdh. pro Tag";
 "biceps" = "Bizeps";
@@ -241,6 +242,7 @@
 "reorderingDone" = "Fertig umsortiert";
 "reorderExercises" = "Übungen umsortieren";
 "repetitions" = "Wiederholungen";
+"repetitionsPR" = "Wiederholungen PR";
 "reps" = "Wdh";
 "replaceExercise" = "Übung ersetzen";
 "replaceSecondaryExercise" = "Zweite Übung ersetzen";
@@ -340,6 +342,7 @@
 "weeklyTargetDescription" = "Wähle aus, wie viele Workouts du pro Woche machen möchtest.";
 "weeklyWorkoutGoal" = "Wöchentliches Workout Ziel";
 "weight" = "Gewicht";
+"weightPR" = "Gewicht PR";
 "weightUnit" = "Gewichts Einheit";
 "weightUnitDescription" = "Wähle deine bevorzugte Einheit aus.";
 "welcomeTo" = "Willkommen bei";

@@ -11,7 +11,7 @@ import SwiftUI
 struct ExerciseWeightScreen: View {
     
     private enum ChartGranularity {
-        case month, year, allTime
+        case month, year
     }
     
     @EnvironmentObject private var workoutSetRepository: WorkoutSetRepository
@@ -20,110 +20,129 @@ struct ExerciseWeightScreen: View {
     
     @State private var chartGranularity: ChartGranularity = .month
     @State private var isShowingCurrentBestInfo = false
+    @State private var chartScrollPosition: Date = .now
     
     var body: some View {
         VStack {
-            HStack {
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text(NSLocalizedString("currentBest", comment: ""))
-                        Button {
-                            isShowingCurrentBestInfo = true
-                        } label: {
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(Color.secondaryLabel)
-                        }
-                        .popover(isPresented: $isShowingCurrentBestInfo) {
-                            InfoView(
-                                title: NSLocalizedString("currentBest", comment: ""),
-                                infoText: NSLocalizedString("currentBestInfo", comment: "")
-                            )
-                        }
-                    }
-                    HStack(alignment: .lastTextBaseline, spacing: 0) {
-                        Text("\(currentBestWeight != nil ? String(convertWeightForDisplaying(currentBestWeight!)) : "––")")
-                            .font(.title)
-                            .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                        Text(WeightUnit.used.rawValue)
-                            .textCase(.uppercase)
-                            .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                    }
-                    .fontWeight(.bold)
-                    .fontDesign(.rounded)
-                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                }
-                .frame(maxWidth: .infinity)
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("personalBest", comment: ""))
-                    HStack(alignment: .lastTextBaseline, spacing: 0) {
-                        Text("\(String(allTimeWeightPR))")
-                            .font(.title)
-                            .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                        Text(WeightUnit.used.rawValue)
-                            .textCase(.uppercase)
-                            .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                    }
-                    .fontWeight(.bold)
-                    .fontDesign(.rounded)
-                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                }
-                .frame(maxWidth: .infinity)
+            Picker("Select Chart Granularity", selection: $chartGranularity) {
+                Text(NSLocalizedString("month", comment: ""))
+                    .tag(ChartGranularity.month)
+                Text(NSLocalizedString("year", comment: ""))
+                    .tag(ChartGranularity.year)
             }
-            .padding()
+            .pickerStyle(.segmented)
             .padding(.vertical)
-            
-            VStack(spacing: SECTION_HEADER_SPACING) {
+                        
+            VStack(alignment: .leading) {
+                Text("Monthly best")
+                    .font(.footnote)
+                    .fontWeight(.medium)
+                    .textCase(.uppercase)
+                    .foregroundStyle(.secondary)
+                UnitView(
+                    value: "\(bestWeightInGranularity != nil ? String(convertWeightForDisplaying(bestWeightInGranularity!)) : "––")",
+                    unit: WeightUnit.used.rawValue
+                )
+                .foregroundStyle(exerciseMuscleGroupColor.gradient)
                 Text(chartHeaderTitle)
-                    .sectionHeaderStyle2()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                VStack {
-                    Chart {
-                        ForEach(maxWeightDailySets) { workoutSet in
-                            LineMark(
-                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
-                            )
-                            .interpolationMethod(.catmullRom)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Chart {
+                if let firstEntry = allDailyMaxWeightSets.first {
+                    LineMark(
+                        x: .value("Date", Date.distantPast, unit: .day),
+                        y: .value("Max repetitions on day", convertWeightForDisplaying(firstEntry.maximum(.weight, for: exercise)))
+                    )
+                    .interpolationMethod(.monotone)
+                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                    .lineStyle(StrokeStyle(lineWidth: 5))
+                    AreaMark(
+                        x: .value("Date", Date.distantPast, unit: .day),
+                        y: .value("Max repetitions on day", convertWeightForDisplaying(firstEntry.maximum(.weight, for: exercise)))
+                    )
+                    .interpolationMethod(.monotone)
+                    .foregroundStyle(Gradient(colors: [
+                        exerciseMuscleGroupColor.opacity(0.5),
+                        exerciseMuscleGroupColor.opacity(0.2),
+                        exerciseMuscleGroupColor.opacity(0.05)
+                    ]))
+                }
+                ForEach(allDailyMaxWeightSets) { workoutSet in
+                    LineMark(
+                        x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
+                        y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
+                    )
+                    .interpolationMethod(.monotone)
+                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                    .lineStyle(StrokeStyle(lineWidth: 5))
+                    .symbol {
+                        Circle()
+                            .frame(width: 10, height: 10)
                             .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                            .lineStyle(StrokeStyle(lineWidth: 5))
-                            .symbol {
+                            .overlay {
                                 Circle()
-                                    .frame(width: 10, height: 10)
-                                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                                    .overlay {
-                                        Circle()
-                                            .frame(width: 4, height: 4)
-                                            .foregroundStyle(Color.black)
-                                    }
+                                    .frame(width: 4, height: 4)
+                                    .foregroundStyle(Color.black)
                             }
-                            AreaMark(
-                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
-                            )
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(Gradient(colors: [
-                                exerciseMuscleGroupColor.opacity(0.5),
-                                exerciseMuscleGroupColor.opacity(0.2),
-                                exerciseMuscleGroupColor.opacity(0.05)
-                            ]))
-                        }
                     }
-                    .chartXScale(domain: xDomain)
-                    .frame(height: 300)
-                    Picker("Select Chart Granularity", selection: $chartGranularity) {
-                        Text(NSLocalizedString("month", comment: ""))
-                            .tag(ChartGranularity.month)
-                        Text(NSLocalizedString("year", comment: ""))
-                            .tag(ChartGranularity.year)
-                        Text(NSLocalizedString("allTime", comment: ""))
-                            .tag(ChartGranularity.allTime)
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.top)
+                    AreaMark(
+                        x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
+                        y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
+                    )
+                    .interpolationMethod(.monotone)
+                    .foregroundStyle(Gradient(colors: [
+                        exerciseMuscleGroupColor.opacity(0.5),
+                        exerciseMuscleGroupColor.opacity(0.2),
+                        exerciseMuscleGroupColor.opacity(0.05)
+                    ]))
                 }
             }
-            .isBlockedWithoutPro()
+            .chartXScale(domain: xDomain)
+            .chartYScale(domain: 0...(Double(allTimeWeightPR) * 1.1))
+            .chartScrollableAxes(.horizontal)
+            .chartScrollPosition(x: $chartScrollPosition)
+            .chartScrollTargetBehavior(
+                .valueAligned(
+                    matching: chartGranularity == .month ? DateComponents(weekday: 2) : DateComponents(month: 1, day: 1)
+                )
+            )
+            .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+            .chartXAxis {
+                AxisMarks(
+                    position: .bottom,
+                    values: .stride(by: chartGranularity == .month ? .weekOfYear : .month)
+                ) { value in
+                    if let date = value.as(Date.self) {
+                        AxisGridLine()
+                            .foregroundStyle(Color.gray.opacity(0.5))
+                        AxisValueLabel(xAxisDateString(for: date))
+                            .foregroundStyle(isDateNow(date, for: chartGranularity) ? Color.primary : .secondary)
+                            .font(.caption.weight(.bold))
+                    }
+                }
+            }
+            .chartYAxis {
+                AxisMarks(values: .automatic(desiredCount: 4))
+                if let currentBestWeight = bestWeightInGranularity {
+                    AxisMarks(values: [convertWeightForDisplaying(currentBestWeight)]) {
+                        AxisValueLabel()
+                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                            .font(.system(.caption, design: .rounded, weight: .bold))
+                    }
+                }
+            }
+            .emptyPlaceholder(allDailyMaxWeightSets) {
+                Text(NSLocalizedString("noData", comment: ""))
+            }
+            .frame(height: 300)
             Spacer()
+        }
+        .isBlockedWithoutPro(true)
+        .onAppear {
+            let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
+            chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!
         }
         .padding(.horizontal)
         .navigationBarTitleDisplayMode(.inline)
@@ -141,60 +160,65 @@ struct ExerciseWeightScreen: View {
         }
     }
     
-    private var maxWeightDailySets: [WorkoutSet] {
-        let components: [Calendar.Component] = (chartGranularity == .month ? [.month, .year] : chartGranularity == .year ? [.year] : [])
-
+    private var allDailyMaxWeightSets: [WorkoutSet] {
         let groupedSets = workoutSetRepository.getGroupedWorkoutsSets(
             with: exercise,
-            for: components,
-            inclusing: .now,
             groupedBy: [.day, .year]
         )
-
-        let maxSetsPerDay = groupedSets.compactMap { setsPerDay -> WorkoutSet? in
-            return setsPerDay.max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
-        }
-        
+        let maxSetsPerDay = groupedSets
+            .compactMap { setsPerDay -> WorkoutSet? in
+                return setsPerDay.max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
+            }
+            .filter { $0.maximum(.weight, for: exercise) > 0 }
         return maxSetsPerDay
+    }
+    
+    private var visibleChartDomainInSeconds: Int {
+        3600 * 24 * (chartGranularity == .month ? 35 : 365)
+    }
+    
+    private var xDomain: some ScaleDomain {
+        let maxStartDate = Calendar.current.date(
+            byAdding: chartGranularity == .month ? .month : .year,
+            value: -1,
+            to: .now
+        )!
+        let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
+        guard let firstSetDate = allDailyMaxWeightSets.first?.workout?.date, firstSetDate < maxStartDate
+        else { return maxStartDate...endDate }
+        let startDate = chartGranularity == .month ? firstSetDate.startOfMonth : firstSetDate.startOfYear
+        return startDate...endDate
     }
     
     private var exerciseMuscleGroupColor: Color {
         exercise.muscleGroup?.color ?? Color.accentColor
     }
     
-    private var xDomain: some ScaleDomain {
+    private func xAxisDateString(for date: Date) -> String {
         switch chartGranularity {
         case .month:
-            return Date.now.startOfMonth ... Date.now.endOfMonth
+            return date.formatted(.dateTime.day().month(.defaultDigits))
         case .year:
-            return Date.now.startOfYear ... Date.now.endOfYear
-        default:
-            guard let firstDate = maxWeightDailySets.sorted(by: {
-                ($0.workout?.date ?? .distantPast) < ($1.workout?.date ?? .distantPast)
-            }).first?.workout?.date else {
-                return Date.now.startOfYear ... Date.now.endOfYear // Default to this year if no data exists
-            }
-            
-            let endDate = Date.now.endOfYear
-            let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: endDate) ?? Date.distantPast
-
-            // If the range is shorter than a year, extend it to a full year
-            if firstDate > oneYearAgo {
-                return Date.now.startOfYear ... endDate
-            } else {
-                return firstDate ... endDate
-            }
+            return date.formatted(Date.FormatStyle().month(.narrow))
+        }
+    }
+    
+    private func isDateNow(_ date: Date, for granularity: ChartGranularity) -> Bool {
+        switch chartGranularity {
+        case .month:
+            return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.weekOfYear, .yearForWeekOfYear])
+        case .year:
+            return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.month, .year])
         }
     }
 
     private var chartHeaderTitle: String {
+        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         switch chartGranularity {
         case .month:
-            return "\(NSLocalizedString("thisMonth", comment: ""))"
+            return "\(chartScrollPosition.formatted(.dateTime.day().month())) - \(endDate.formatted(.dateTime.day().month()))"
         case .year:
-            return "\(NSLocalizedString("thisYear", comment: ""))"
-        case .allTime:
-            return NSLocalizedString("allTime", comment: "")
+            return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
         }
     }
     
@@ -208,12 +232,12 @@ struct ExerciseWeightScreen: View {
         )
     }
     
-    private var currentBestWeight: Int? {
-        // TODO: This only gives the best value this calendar month, not of the last 30 days
+    private var bestWeightInGranularity: Int? {
+        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)
         let setsThisMonth = workoutSetRepository.getWorkoutSets(
             with: exercise,
-            for: [.month, .year],
-            including: .now
+            from: chartScrollPosition,
+            to: endDate
         )
         
         guard !setsThisMonth.isEmpty else {

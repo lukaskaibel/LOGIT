@@ -37,7 +37,6 @@ final class CurrentWorkoutManager {
             Self.logger.warning("Failed to get current workout: no workout matching id: \(uuid)")
             return nil
         }
-        Self.logger.log("Successfully retrieved current workout with id: \(currentWorkout.id?.uuidString ?? "no id")")
         return currentWorkout
     }
     

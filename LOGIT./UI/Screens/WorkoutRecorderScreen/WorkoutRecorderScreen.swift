@@ -10,6 +10,7 @@ import CoreData
 import OSLog
 import SwiftUI
 import UIKit
+import Combine
 
 struct WorkoutRecorderScreen: View {
 
@@ -38,6 +39,7 @@ struct WorkoutRecorderScreen: View {
     @State private var shouldFlash = false
     @State private var didAppear = false
     @State private var timerSound: AVAudioPlayer?
+    @State private var progress: Float = 0
 
     @State private var isShowingFinishConfirmation = false
     @State internal var sheetType: WorkoutSetGroupList.SheetType?
@@ -243,7 +245,7 @@ struct WorkoutRecorderScreen: View {
                     .font(.title2.weight(.bold))
                     Spacer()
                     ProgressCircleButton(
-                        progress: progressInWorkout
+                        progress: progress
                     ) {
                         if !(workoutRecorder.workout?.hasEntries ?? false) {
                             workoutRecorder.saveWorkout()
@@ -254,6 +256,12 @@ struct WorkoutRecorderScreen: View {
                         }
                     }
                     .offset(y: -2)
+                    .onAppear {
+                        updateProgress()
+                    }
+                    .onReceive(workoutRecorder.workout?.objectWillChange ?? ObservableObjectPublisher()) {
+                        updateProgress()
+                    }
                 }
             }
             .padding(.horizontal)
@@ -277,6 +285,16 @@ struct WorkoutRecorderScreen: View {
 
     private var workoutName: Binding<String> {
         Binding(get: { workoutRecorder.workout?.name ?? "" }, set: { workoutRecorder.workout?.name = $0 })
+    }
+    
+    private func updateProgress()  {
+        guard let workout = workoutRecorder.workout else {
+            progress = 0
+            return
+        }
+        let totalSets = workout.sets.count
+        let completedSets = workout.sets.filter { $0.hasEntry }.count
+        progress = totalSets > 0 ? Float(completedSets) / Float(totalSets) : 0
     }
 
     private var progressInWorkout: Float {

@@ -37,8 +37,8 @@ struct IntegerField: View {
                 if canEdit {
                     TextField(String(placeholder), text: $valueString)
                         .focused($isFocused)
-                        .onReceive(Just(valueString)) {
-                            valueString = (valueString == "0" || valueString.isEmpty) ? "" : String($0.prefix(4))
+                        .onChange(of: valueString) {
+                            valueString = ($0 == "0" || $0.isEmpty) ? "" : String($0.prefix(4))
                         }
                         .keyboardType(.numberPad)
                         .accentColor(.clear)

@@ -18,9 +18,7 @@ class Database: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Properties
-    
-    @Published private(set) var hasUnsavedChanges: Bool = false
-    
+        
     var isPreview: Bool
     
     // MARK: - Init
@@ -40,7 +38,6 @@ class Database: ObservableObject {
         if isPreview {
             setupPreviewDatabase()
         }
-        setupObservers()
     }
 
     // MARK: - Computed Properties
@@ -48,29 +45,31 @@ class Database: ObservableObject {
     var context: NSManagedObjectContext {
         container.viewContext
     }
+    
+    var hasUnsavedChanges: Bool {
+        context.hasChanges
+    }
 
     // MARK: - Context Methods / Properties
 
     func save() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            guard self.context.hasChanges else { return }
+        guard context.hasChanges else { return }
+        context.perform {
             do {
                 try self.context.save()
-                self.hasUnsavedChanges = self.context.hasChanges
-                self.objectWillChange.send()
+                os_log("Database: Context saved successfully", type: .info)
             } catch {
                 os_log("Database: Failed to save context: %@", type: .error, error.localizedDescription)
             }
         }
     }
+
     
     func discardUnsavedChanges() {
-        context.rollback()
-        DispatchQueue.main.async {
-            self.hasUnsavedChanges = self.context.hasChanges
+        guard context.hasChanges else { return }
+        context.perform {
+            self.context.rollback()
         }
-        objectWillChange.send()
     }
 
     // MARK: - Object Access / Manipulation
@@ -100,9 +99,8 @@ class Database: ObservableObject {
         {
             delete(setGroup)
         }
-        context.delete(object)
-        DispatchQueue.main.async {
-            object.objectWillChange.send()
+        context.perform {
+            self.context.delete(object)
         }
         if saveContext {
             save()
@@ -111,20 +109,6 @@ class Database: ObservableObject {
     
     func managedObjectID(forURIRepresentation url: URL) -> NSManagedObjectID? {
         container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: url)
-    }
-    
-    // MARK: - Private Methods
-    
-    private func setupObservers() {
-        NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: context)
-            .sink { [weak self] _ in
-                guard let self = self else { return }
-                print("Database.hasChanges: ", self.context.hasChanges)
-                DispatchQueue.main.async {
-                    self.hasUnsavedChanges = self.context.hasChanges
-                }
-            }
-            .store(in: &cancellables)
     }
 
     // MARK: - Temporary Objects

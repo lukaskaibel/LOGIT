@@ -183,22 +183,18 @@ final class WorkoutRecorder: ObservableObject {
         workoutSetTemplateSetDictionary[workoutSet]
     }
     
-    
     /// Returns the next workout set to be executed. This is the first workout set, that has no workout set with entries after it.
     var nextPerformedWorkoutSet: WorkoutSet? {
         workout?.sets.reversed().reduce(nil, { $1.hasEntry ? $0 : $1 })
     }
     
     // MARK: - Auto-save workout changes
-    
+
     private func setUpAutoSaveForWorkout() {
-        cancellable = self.$workout
-            .sink { [weak self] newValue in
-                if let workout = newValue {
-                    self?.entityObserver.onWorkoutChanged(workout: workout) {
-                        self?.database.save()
-                    }
-                }
+        cancellable = NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
+            .sink { [weak self] _ in
+                self?.workout?.objectWillChange.send()
+                self?.database.save()
             }
     }
 

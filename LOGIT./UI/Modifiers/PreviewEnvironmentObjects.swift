@@ -42,6 +42,7 @@ struct PreviewEnvironmentObjects: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .environment(\.managedObjectContext, database.context)
             .environmentObject(database)
             .environmentObject(workoutRepository)
             .environmentObject(workoutSetRepository)

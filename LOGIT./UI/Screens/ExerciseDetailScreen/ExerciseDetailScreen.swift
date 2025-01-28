@@ -19,8 +19,6 @@ struct ExerciseDetailScreen: View {
 
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var database: Database
-    @EnvironmentObject private var workoutSetRepository: WorkoutSetRepository
-    @EnvironmentObject private var workoutSetGroupRepository: WorkoutSetGroupRepository
 
     // MARK: - State
 
@@ -42,132 +40,139 @@ struct ExerciseDetailScreen: View {
     // MARK: - Body
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: SECTION_SPACING) {
-                header
-                    .padding(.horizontal)
-                
-                ExercisePersonalBestsTile(exercise: exercise)
-                    .padding(.horizontal)
-                
-                VStack {
-                    Button {
-                        isShowingVolumeScreen = true
-                    } label: {
-                        ExerciseVolumeTile(exercise: exercise)
-                    }
-                    .buttonStyle(TileButtonStyle())
-                    Button {
-                        isShowingWeightScreen = true
-                    } label: {
-                        ExerciseWeightTile(exercise: exercise)
-                    }
-                    .buttonStyle(TileButtonStyle())
-                    Button {
-                        isShowingRepetitionsScreen = true
-                    } label: {
-                        ExerciseRepetitionsTile(exercise: exercise)
-                    }
-                    .buttonStyle(TileButtonStyle())
-                }
-                .padding(.horizontal)
-                
-                VStack(spacing: SECTION_HEADER_SPACING) {
-                    HStack {
-                        Text(NSLocalizedString("recentAttempts", comment: ""))
-                            .sectionHeaderStyle2()
-                        Spacer()
+        FetchRequestWrapper(
+            WorkoutSetGroup.self,
+            sortDescriptors: [SortDescriptor(\.workout?.date, order: .reverse)],
+            predicate: WorkoutSetGroupPredicateFactory.getWorkoutSetGroups(withExercise: exercise)
+        ) { workoutSetGroups in
+            let recentWorkoutSetGroups = workoutSetGroups.prefix(3)
+            ScrollView {
+                VStack(spacing: SECTION_SPACING) {
+                    header
+                        .padding(.horizontal)
+                    
+                    ExercisePersonalBestsTile(exercise: exercise)
+                        .padding(.horizontal)
+                    
+                    VStack {
                         Button {
-                            isShowingExerciseHistoryScreen = true
+                            isShowingVolumeScreen = true
                         } label: {
-                            HStack {
-                                Text(NSLocalizedString("all", comment: ""))
-                                Image(systemName: "chevron.right")
-                                    .font(.footnote)
+                            ExerciseVolumeTile(exercise: exercise)
+                        }
+                        .buttonStyle(TileButtonStyle())
+                        Button {
+                            isShowingWeightScreen = true
+                        } label: {
+                            ExerciseWeightTile(exercise: exercise)
+                        }
+                        .buttonStyle(TileButtonStyle())
+                        Button {
+                            isShowingRepetitionsScreen = true
+                        } label: {
+                            ExerciseRepetitionsTile(exercise: exercise)
+                        }
+                        .buttonStyle(TileButtonStyle())
+                    }
+                    .padding(.horizontal)
+                    
+                    VStack(spacing: SECTION_HEADER_SPACING) {
+                        HStack {
+                            Text(NSLocalizedString("recentAttempts", comment: ""))
+                                .sectionHeaderStyle2()
+                            Spacer()
+                            Button {
+                                isShowingExerciseHistoryScreen = true
+                            } label: {
+                                HStack {
+                                    Text(NSLocalizedString("all", comment: ""))
+                                    Image(systemName: "chevron.right")
+                                        .font(.footnote)
+                                }
+                                .fontWeight(.semibold)
                             }
-                            .fontWeight(.semibold)
                         }
+                        VStack(spacing: CELL_SPACING) {
+                            ForEach(recentWorkoutSetGroups) { setGroup in
+                                WorkoutSetGroupCell(
+                                    setGroup: setGroup,
+                                    focusedIntegerFieldIndex: .constant(nil),
+                                    sheetType: .constant(nil),
+                                    isReordering: .constant(false),
+                                    supplementaryText:
+                                        "\(setGroup.workout?.date?.description(.short) ?? "")  ·  \(setGroup.workout?.name ?? "")"
+                                )
+                                .canEdit(false)
+                                .allowsHitTesting(false)
+                                .padding(CELL_PADDING)
+                                .tileStyle()
+                                .shadow(color: .black.opacity(0.5), radius: 10)
+                            }
+                            .emptyPlaceholder(recentWorkoutSetGroups) {
+                                Text(NSLocalizedString("noAttempts", comment: ""))
+                            }
+                        }
+                        .padding(.top, 5)
                     }
-                    VStack(spacing: CELL_SPACING) {
-                        ForEach(recentAttempts) { setGroup in
-                            WorkoutSetGroupCell(
-                                setGroup: setGroup,
-                                focusedIntegerFieldIndex: .constant(nil),
-                                sheetType: .constant(nil),
-                                isReordering: .constant(false),
-                                supplementaryText:
-                                    "\(setGroup.workout?.date?.description(.short) ?? "")  ·  \(setGroup.workout?.name ?? "")"
-                            )
-                            .canEdit(false)
-                            .allowsHitTesting(false)
-                            .padding(CELL_PADDING)
-                            .tileStyle()
-                            .shadow(color: .black.opacity(0.5), radius: 10)
-                        }
-                        .emptyPlaceholder(recentAttempts) {
-                            Text(NSLocalizedString("noAttempts", comment: ""))
-                        }
+                    .padding()
+                    .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                    .background(Color.secondaryBackground)
+                }
+                .animation(.easeInOut)
+            }
+            .edgesIgnoringSafeArea(.bottom)
+            .navigationBarTitleDisplayMode(.inline)
+            .tint(exercise.muscleGroup?.color ?? .accentColor)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Button(
+                            action: { showingEditExercise.toggle() },
+                            label: {
+                                Label(NSLocalizedString("edit", comment: ""), systemImage: "pencil")
+                            }
+                        )
+                        Button(
+                            role: .destructive,
+                            action: { showDeletionAlert.toggle() },
+                            label: {
+                                Label(NSLocalizedString("delete", comment: ""), systemImage: "trash")
+                            }
+                        )
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
                     }
-                    .padding(.top, 5)
-                }
-                .padding()
-                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                .background(Color.secondaryBackground)
-            }
-            .animation(.easeInOut)
-        }
-        .edgesIgnoringSafeArea(.bottom)
-        .navigationBarTitleDisplayMode(.inline)
-        .tint(exercise.muscleGroup?.color ?? .accentColor)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    Button(
-                        action: { showingEditExercise.toggle() },
-                        label: {
-                            Label(NSLocalizedString("edit", comment: ""), systemImage: "pencil")
-                        }
-                    )
-                    Button(
-                        role: .destructive,
-                        action: { showDeletionAlert.toggle() },
-                        label: {
-                            Label(NSLocalizedString("delete", comment: ""), systemImage: "trash")
-                        }
-                    )
-                } label: {
-                    Image(systemName: "ellipsis.circle")
                 }
             }
-        }
-        .confirmationDialog(
-            Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
-            isPresented: $showDeletionAlert,
-            titleVisibility: .visible
-        ) {
-            Button(
-                "\(NSLocalizedString("delete", comment: ""))",
-                role: .destructive,
-                action: {
-                    database.delete(exercise, saveContext: true)
-                    dismiss()
-                }
-            )
-        }
-        .sheet(isPresented: $showingEditExercise) {
-            ExerciseEditScreen(exerciseToEdit: exercise)
-        }
-        .navigationDestination(isPresented: $isShowingExerciseHistoryScreen) {
-            ExerciseHistoryScreen(exercise: exercise)
-        }
-        .navigationDestination(isPresented: $isShowingWeightScreen) {
-            ExerciseWeightScreen(exercise: exercise)
-        }
-        .navigationDestination(isPresented: $isShowingRepetitionsScreen) {
-            ExerciseRepetitionsScreen(exercise: exercise)
-        }
-        .navigationDestination(isPresented: $isShowingVolumeScreen) {
-            ExerciseVolumeScreen(exercise: exercise)
+            .confirmationDialog(
+                Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
+                isPresented: $showDeletionAlert,
+                titleVisibility: .visible
+            ) {
+                Button(
+                    "\(NSLocalizedString("delete", comment: ""))",
+                    role: .destructive,
+                    action: {
+                        database.delete(exercise, saveContext: true)
+                        dismiss()
+                    }
+                )
+            }
+            .sheet(isPresented: $showingEditExercise) {
+                ExerciseEditScreen(exerciseToEdit: exercise)
+            }
+            .navigationDestination(isPresented: $isShowingExerciseHistoryScreen) {
+                ExerciseHistoryScreen(exercise: exercise)
+            }
+            .navigationDestination(isPresented: $isShowingWeightScreen) {
+                ExerciseWeightScreen(exercise: exercise)
+            }
+            .navigationDestination(isPresented: $isShowingRepetitionsScreen) {
+                ExerciseRepetitionsScreen(exercise: exercise)
+            }
+            .navigationDestination(isPresented: $isShowingVolumeScreen) {
+                ExerciseVolumeScreen(exercise: exercise)
+            }
         }
     }
 
@@ -186,19 +191,6 @@ struct ExerciseDetailScreen: View {
     }
 
     // MARK: - Computed Properties
-    
-    private var recentAttempts: [WorkoutSetGroup] {
-        Array(workoutSetGroupRepository.getWorkoutSetGroups(with: exercise).prefix(3))
-    }
-
-    private func personalBest(for attribute: WorkoutSet.Attribute) -> Int {
-        workoutSetRepository.getWorkoutSets(with: exercise)
-            .map {
-                attribute == .repetitions
-                ? $0.maximum(.repetitions, for: exercise) : convertWeightForDisplaying($0.maximum(.weight, for: exercise))
-            }
-            .max() ?? 0
-    }
 
     private func max(_ attribute: WorkoutSet.Attribute, in workoutSet: WorkoutSet) -> Int {
         if let standardSet = workoutSet as? StandardSet {
@@ -223,13 +215,6 @@ struct ExerciseDetailScreen: View {
             }
         }
         return 0
-    }
-
-    private var firstPerformedOverOneYearAgo: Bool {
-        Calendar.current.date(byAdding: .year, value: -1, to: .now)!
-            > workoutSetRepository.getWorkoutSets(with: exercise).compactMap({ $0.setGroup?.workout?.date })
-            .min()
-            ?? .now
     }
 
 }

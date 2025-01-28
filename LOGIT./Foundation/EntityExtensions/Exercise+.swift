@@ -30,6 +30,11 @@ extension Exercise {
             setGroups_ = NSSet(array: newValue)
         }
     }
+    
+    @objc var firstLetterOfName: String {
+        guard let name = name, !name.isEmpty else { return " " }
+        return name.first!.lowercased()
+    }
 
     var templateSetGroups: [TemplateSetGroup] {
         get {

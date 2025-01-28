@@ -165,6 +165,12 @@
 		79F7E10327E68FAC006D4354 /* SegmentedBarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F7E10227E68FAC006D4354 /* SegmentedBarChart.swift */; };
 		79FF2BB02A8A71C200548661 /* ScreenHeaderStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FF2BAF2A8A71C200548661 /* ScreenHeaderStyle.swift */; };
 		79FF97B72AA29E680070015E /* ExerciseServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E849092A7EA28000C0DF95 /* ExerciseServiceTests.swift */; };
+		800D574E2D44240D001A5C8D /* ExercisePredicateFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800D574D2D442406001A5C8D /* ExercisePredicateFactory.swift */; };
+		800D57502D442BBA001A5C8D /* SectionedFetchRequestWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800D574F2D442BA4001A5C8D /* SectionedFetchRequestWrapper.swift */; };
+		800D57522D443551001A5C8D /* FetchRequestWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800D57512D443551001A5C8D /* FetchRequestWrapper.swift */; };
+		800D57542D4440B8001A5C8D /* WorkoutSetPredicateFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800D57532D4440B8001A5C8D /* WorkoutSetPredicateFactory.swift */; };
+		800D57562D44428B001A5C8D /* WorkoutPredicateFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800D57552D444284001A5C8D /* WorkoutPredicateFactory.swift */; };
+		800D57582D4443AE001A5C8D /* WorkoutSetGroupPredicateFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800D57572D4443A5001A5C8D /* WorkoutSetGroupPredicateFactory.swift */; };
 		8010137B284791AB00309279 /* PieGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8010137A284791AB00309279 /* PieGraph.swift */; };
 		8016E6682D1DCA26007CEFDA /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8016E6672D1DCA26007CEFDA /* InfoView.swift */; };
 		801CDC4C2688BDC800BB653D /* Color+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CDC4B2688BDC800BB653D /* Color+.swift */; };
@@ -369,6 +375,12 @@
 		79F7E0FD27E67578006D4354 /* ExerciseListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseListScreen.swift; sourceTree = "<group>"; };
 		79F7E10227E68FAC006D4354 /* SegmentedBarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedBarChart.swift; sourceTree = "<group>"; };
 		79FF2BAF2A8A71C200548661 /* ScreenHeaderStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenHeaderStyle.swift; sourceTree = "<group>"; };
+		800D574D2D442406001A5C8D /* ExercisePredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisePredicateFactory.swift; sourceTree = "<group>"; };
+		800D574F2D442BA4001A5C8D /* SectionedFetchRequestWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionedFetchRequestWrapper.swift; sourceTree = "<group>"; };
+		800D57512D443551001A5C8D /* FetchRequestWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRequestWrapper.swift; sourceTree = "<group>"; };
+		800D57532D4440B8001A5C8D /* WorkoutSetPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetPredicateFactory.swift; sourceTree = "<group>"; };
+		800D57552D444284001A5C8D /* WorkoutPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPredicateFactory.swift; sourceTree = "<group>"; };
+		800D57572D4443A5001A5C8D /* WorkoutSetGroupPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetGroupPredicateFactory.swift; sourceTree = "<group>"; };
 		8010137A284791AB00309279 /* PieGraph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieGraph.swift; sourceTree = "<group>"; };
 		8016E6672D1DCA26007CEFDA /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		801CDC4B2688BDC800BB653D /* Color+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+.swift"; sourceTree = "<group>"; };
@@ -480,6 +492,7 @@
 				794DAC662A320F9C006F0168 /* Enums */,
 				79488DF22A770DFD005C485D /* Environment */,
 				801CDC482688BD9D00BB653D /* Extentions */,
+				800D574C2D4423F4001A5C8D /* PredicateFactories */,
 				791E955C2C4E813F006A6664 /* Repositories */,
 				798BDC262A7BCCE300EAA75D /* Utilities */,
 				79602BED2ACF393B001A5046 /* DataTransferObjects */,
@@ -801,6 +814,19 @@
 			path = LOGITTests;
 			sourceTree = "<group>";
 		};
+		800D574C2D4423F4001A5C8D /* PredicateFactories */ = {
+			isa = PBXGroup;
+			children = (
+				800D57512D443551001A5C8D /* FetchRequestWrapper.swift */,
+				800D574F2D442BA4001A5C8D /* SectionedFetchRequestWrapper.swift */,
+				800D574D2D442406001A5C8D /* ExercisePredicateFactory.swift */,
+				800D57552D444284001A5C8D /* WorkoutPredicateFactory.swift */,
+				800D57572D4443A5001A5C8D /* WorkoutSetGroupPredicateFactory.swift */,
+				800D57532D4440B8001A5C8D /* WorkoutSetPredicateFactory.swift */,
+			);
+			path = PredicateFactories;
+			sourceTree = "<group>";
+		};
 		801CDC482688BD9D00BB653D /* Extentions */ = {
 			isa = PBXGroup;
 			children = (
@@ -1042,11 +1068,13 @@
 				7955EEB427FDD8820010693C /* StartWorkoutScreen.swift in Sources */,
 				79488DE72A76F012005C485D /* TemplateStandardSetCell.swift in Sources */,
 				7954EE7F2AC449D900877D74 /* NoDataPlaceholderModifier.swift in Sources */,
+				800D57522D443551001A5C8D /* FetchRequestWrapper.swift in Sources */,
 				79A27AF8283D8F6A000A8EF7 /* TemplateSuperSet+.swift in Sources */,
 				7962583E29341122003AC2AC /* ExerciseHeader.swift in Sources */,
 				79746709277136FE006518F0 /* WorkoutDetailScreen.swift in Sources */,
 				79488DE62A76F00F005C485D /* TemplateDropSetCell.swift in Sources */,
 				79602BF32ACF3AE4001A5046 /* TemplateDTO.swift in Sources */,
+				800D574E2D44240D001A5C8D /* ExercisePredicateFactory.swift in Sources */,
 				791F556729EC768100902352 /* StandardSetCell.swift in Sources */,
 				794E64FC28EE38F3003AACDD /* ExerciseCell.swift in Sources */,
 				794DAC632A320919006F0168 /* ChronoView.swift in Sources */,
@@ -1057,6 +1085,7 @@
 				793115C32CFFB4B700093878 /* ExerciseRepetitionsScreen.swift in Sources */,
 				792156D02A9539530010A0FC /* TileHeaderStyle.swift in Sources */,
 				79AB81902ACB4F0800B2CCDF /* WidgetCollectionType.swift in Sources */,
+				800D57542D4440B8001A5C8D /* WorkoutSetPredicateFactory.swift in Sources */,
 				793115C72CFFB70600093878 /* ExerciseVolumeScreen.swift in Sources */,
 				79E2E60429132C46003845BC /* Database+SetConvert.swift in Sources */,
 				79CC7A7D2C7A691E00674E22 /* CurrentWeekWeeklyTargetTile.swift in Sources */,
@@ -1078,6 +1107,7 @@
 				7919C5FD2A7410FB00F35493 /* WorkoutSetGroupCell.swift in Sources */,
 				797EF7E829293222003C2266 /* TitleUnitView.swift in Sources */,
 				79B7F2A92AA9E1A20090B785 /* ReorderableForEach.swift in Sources */,
+				800D57582D4443AE001A5C8D /* WorkoutSetGroupPredicateFactory.swift in Sources */,
 				7988FBB72A73391600E4FE54 /* ButtonStyle.swift in Sources */,
 				7967D57E2811887F00B30D03 /* MuscleGroupSelector.swift in Sources */,
 				792A3FEC2AB34EB400C6A097 /* UpgradeToProScreen.swift in Sources */,
@@ -1088,6 +1118,7 @@
 				7975E3AF27CED6DE000BA25B /* WorkoutSetGroup+.swift in Sources */,
 				79488DEE2A770CB9005C485D /* OnSwipeDownModifier.swift in Sources */,
 				8065AA7B2686668100F53A5A /* LOGIT.xcdatamodeld in Sources */,
+				800D57502D442BBA001A5C8D /* SectionedFetchRequestWrapper.swift in Sources */,
 				793115C12CFFB18200093878 /* ExerciseRepetitionsTile.swift in Sources */,
 				7919C6002A742EB900F35493 /* OnDeleteModifier.swift in Sources */,
 				7954AB792C7F53100088ECA3 /* Calendar+.swift in Sources */,
@@ -1126,6 +1157,7 @@
 				79AB81922ACB694A00B2CCDF /* MeasurementEntryType.swift in Sources */,
 				807FC47F268A909D00169820 /* Exercise+.swift in Sources */,
 				796FE6EC2D01FA92001AE313 /* VolumeScreen.swift in Sources */,
+				800D57562D44428B001A5C8D /* WorkoutPredicateFactory.swift in Sources */,
 				79488DDB2A755C52005C485D /* WorkoutSetGroupList.swift in Sources */,
 				79C07B2A2AB8AE65000BF879 /* MeasurementView.swift in Sources */,
 				791E955E2C4E8158006A6664 /* WorkoutRepository.swift in Sources */,

@@ -88,6 +88,7 @@ struct LOGIT: App {
                         }
                         .interactiveDismissDisabled()
                     }
+                    .environment(\.managedObjectContext, database.context)
                     .environmentObject(database)
                     .environmentObject(workoutRepository)
                     .environmentObject(workoutSetRepository)

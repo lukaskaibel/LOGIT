@@ -13,6 +13,8 @@ struct WorkoutPredicateFactory {
     static func getWorkouts(
         nameIncluding nameSubstring: String = "",
         withMuscleGroup muscleGroup: MuscleGroup? = nil,
+        from startDate: Date? = nil,
+        to endDate: Date? = nil,
         excludingWorkoutWithId excludedWorkoutID: UUID? = nil
     ) -> NSPredicate? {
         // Initialize an array for subpredicates
@@ -26,8 +28,18 @@ struct WorkoutPredicateFactory {
 
         // 2. Filter by muscle group
         if let muscleGroup = muscleGroup {
-            let muscleGroupPredicate = NSPredicate(format: "ANY exercises.muscleGroupString == %@", muscleGroup.rawValue)
-            subpredicates.append(muscleGroupPredicate)
+            let muscleGroupPredicate = NSPredicate(format: "ANY setGroups_.exercises_.muscleGroupString == %@", muscleGroup.rawValue)
+            //subpredicates.append(muscleGroupPredicate)
+        }
+        
+        if let startDate = startDate {
+            let startDatePredicate = NSPredicate(format: "date >= %@", startDate as NSDate)
+            subpredicates.append(startDatePredicate)
+        }
+        
+        if let endDate = endDate {
+            let endDatePredicate = NSPredicate(format: "date <= %@", endDate as NSDate)
+            subpredicates.append(endDatePredicate)
         }
 
         // 3. Exclude current workout

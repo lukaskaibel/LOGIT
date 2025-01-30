@@ -13,97 +13,109 @@ struct OverallSetsScreen: View {
     private enum ChartGranularity {
         case week, month, year
     }
-    
-    @EnvironmentObject private var workoutRepository: WorkoutRepository
-    
+        
     @State private var chartGranularity: ChartGranularity = .week
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: SECTION_SPACING) {
-                VStack {
-                    Picker("Select Chart Granularity", selection: $chartGranularity) {
-                        Text(NSLocalizedString("week", comment: ""))
-                            .tag(ChartGranularity.week)
-                        Text(NSLocalizedString("month", comment: ""))
-                            .tag(ChartGranularity.month)
-                        Text(NSLocalizedString("year", comment: ""))
-                            .tag(ChartGranularity.year)
-                    }
-                    .pickerStyle(.segmented)
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("total", comment: ""))
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                            .textCase(.uppercase)
-                            .foregroundStyle(.secondary)
-                        UnitView(
-                            value: "\(workoutsInSelectedGranularity.map({ $0.sets }).joined().count)",
-                            unit: NSLocalizedString("sets", comment: "")
-                        )
-                        .foregroundStyle(.tint)
-                        Text("\(NSLocalizedString("this", comment: "")) \(NSLocalizedString(chartGranularity == .week ? "week" : chartGranularity == .month ? "month" : "year", comment: ""))")
-                            .fontWeight(.bold)
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    Chart {
-                        ForEach(setsGroupedByGranularity, id: \.date) { data in
-                            BarMark(
-                                x: .value("Day", data.date, unit: chartGranularity == .week ? .day : chartGranularity == .month ? .weekOfYear : .month),
-                                y: .value("Number of Sets", data.workoutSets.count),
-                                width: .ratio(0.5)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 1))
+        FetchRequestWrapper(
+            Workout.self,
+            sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
+            predicate: WorkoutPredicateFactory.getWorkouts(
+                from: Calendar.current.date(
+                    byAdding: chartGranularity == .week ? .weekOfYear : chartGranularity == .month ? .month : .year,
+                    value: -1,
+                    to: .now
+                ),
+                to: .now
+            )
+        ) { workouts in
+            ScrollView {
+                VStack(spacing: SECTION_SPACING) {
+                    VStack {
+                        Picker("Select Chart Granularity", selection: $chartGranularity) {
+                            Text(NSLocalizedString("week", comment: ""))
+                                .tag(ChartGranularity.week)
+                            Text(NSLocalizedString("month", comment: ""))
+                                .tag(ChartGranularity.month)
+                            Text(NSLocalizedString("year", comment: ""))
+                                .tag(ChartGranularity.year)
                         }
+                        .pickerStyle(.segmented)
+                        VStack(alignment: .leading) {
+                            Text(NSLocalizedString("total", comment: ""))
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                                .textCase(.uppercase)
+                                .foregroundStyle(.secondary)
+                            UnitView(
+                                value: "\(workouts.map({ $0.sets }).joined().count)",
+                                unit: NSLocalizedString("sets", comment: "")
+                            )
+                            .foregroundStyle(.tint)
+                            Text("\(NSLocalizedString("this", comment: "")) \(NSLocalizedString(chartGranularity == .week ? "week" : chartGranularity == .month ? "month" : "year", comment: ""))")
+                                .fontWeight(.bold)
+                                .fontDesign(.rounded)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Chart {
+                            ForEach(setsGroupedByGranularity(workouts), id: \.date) { data in
+                                BarMark(
+                                    x: .value("Day", data.date, unit: chartGranularity == .week ? .day : chartGranularity == .month ? .weekOfYear : .month),
+                                    y: .value("Number of Sets", data.workoutSets.count),
+                                    width: .ratio(0.5)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 1))
+                            }
+                        }
+                        .chartXAxis {
+                            AxisMarks(
+                                position: .bottom,
+                                values: .stride(by: chartGranularity == .week ? .day : chartGranularity == .month ? .weekOfYear : .month)
+                            ) { value in
+                                if let date = value.as(Date.self) {
+                                    AxisGridLine()
+                                        .foregroundStyle(Color.gray.opacity(0.5))
+                                    AxisValueLabel(xAxisDateString(for: date))
+                                        .foregroundStyle(isDateNow(date, for: chartGranularity) ? Color.primary : .secondary)
+                                        .font(.caption.weight(.bold))
+                                }
+                            }
+                        }
+                        .chartYAxis {
+                            AxisMarks(values: .automatic(desiredCount: 3))
+                        }
+                        .frame(height: 300)
                     }
-                    .chartXAxis {
-                        AxisMarks(
-                            position: .bottom,
-                            values: .stride(by: chartGranularity == .week ? .day : chartGranularity == .month ? .weekOfYear : .month)
-                        ) { value in
-                            if let date = value.as(Date.self) {
-                                AxisGridLine()
-                                    .foregroundStyle(Color.gray.opacity(0.5))
-                                AxisValueLabel(xAxisDateString(for: date))
-                                    .foregroundStyle(isDateNow(date, for: chartGranularity) ? Color.primary : .secondary)
-                                    .font(.caption.weight(.bold))
+                    .padding(.horizontal)
+                    
+                    VStack(spacing: SECTION_HEADER_SPACING) {
+                        Text(NSLocalizedString("workouts", comment: ""))
+                            .sectionHeaderStyle2()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(spacing: CELL_SPACING) {
+                            ForEach(workouts) { workout in
+                                WorkoutCell(workout: workout)
+                                    .padding(CELL_PADDING)
+                                    .secondaryTileStyle()
+                            }
+                            .emptyPlaceholder(workouts) {
+                                Text(NSLocalizedString("noWorkouts", comment: ""))
                             }
                         }
                     }
-                    .chartYAxis {
-                        AxisMarks(values: .automatic(desiredCount: 3))
-                    }
-                    .frame(height: 300)
+                    .padding()
+                    .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                    .background(Color.secondaryBackground)
+                    .edgesIgnoringSafeArea(.bottom)
                 }
-                .padding(.horizontal)
-                
-                VStack(spacing: SECTION_HEADER_SPACING) {
-                    Text(NSLocalizedString("workouts", comment: ""))
-                        .sectionHeaderStyle2()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    VStack(spacing: CELL_SPACING) {
-                        ForEach(workoutsInSelectedGranularity) { workout in
-                            WorkoutCell(workout: workout)
-                                .padding(CELL_PADDING)
-                                .secondaryTileStyle()
-                        }
-                        .emptyPlaceholder(workoutsInSelectedGranularity) {
-                            Text(NSLocalizedString("noWorkouts", comment: ""))
-                        }
-                    }
-                }
-                .padding()
-                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                .background(Color.secondaryBackground)
-                .edgesIgnoringSafeArea(.bottom)
+                .padding(.top)
             }
-            .padding(.top)
+            .isBlockedWithoutPro()
+            .navigationTitle(NSLocalizedString("overallSets", comment: ""))
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .isBlockedWithoutPro()
-        .navigationTitle(NSLocalizedString("overallSets", comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
     }
     
     private func xAxisDateString(for date: Date) -> String {
@@ -128,12 +140,6 @@ struct OverallSetsScreen: View {
         }
     }
     
-    private var workoutsInSelectedGranularity: [Workout] {
-        workoutRepository.getWorkouts(
-            for: chartGranularity == .week ? [.weekOfYear, .yearForWeekOfYear] : chartGranularity == .month ? [.month, .year] : [.year],
-            including: .now)
-    }
-    
     private func getPeriodStart(for date: Date, granularity: ChartGranularity) -> Date? {
         let calendar = Calendar.current
         switch granularity {
@@ -146,12 +152,12 @@ struct OverallSetsScreen: View {
         }
     }
 
-    private var setsGroupedByGranularity: [(date: Date, workoutSets: [WorkoutSet])] {
+    private func setsGroupedByGranularity(_ workouts: [Workout]) -> [(date: Date, workoutSets: [WorkoutSet])] {
         var result = [(date: Date, workoutSets: [WorkoutSet])]()
         let allPeriods = allPeriodsInSelectedGranularity
         var groupedByPeriod: [Date: [WorkoutSet]] = [:]
 
-        workoutsInSelectedGranularity
+        workouts
             .flatMap { $0.sets }
             .forEach { workoutSet in
                 if let setDate = workoutSet.workout?.date,

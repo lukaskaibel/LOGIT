@@ -9,61 +9,107 @@ import Charts
 import SwiftUI
 
 struct VolumeTile: View {
-    
-    @EnvironmentObject private var workoutSetRepository: WorkoutSetRepository
-    
+        
     var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("volume", comment: ""))
-                        .tileHeaderStyle()
-                    
-                }
-                Spacer()
-                NavigationChevron()
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("thisWeek", comment: ""))
-                    UnitView(
-                        value: "\(volumePerWeek(for: 0))",
-                        unit: WeightUnit.used.rawValue,
-                        configuration: .large
-                    )
-                    .foregroundStyle(Color.accentColor.gradient)
-                }
-                Spacer()
-                Chart {
-                    ForEach(0..<5, id: \.self) { weeksBeforeNow in
-                        let date = Calendar.current.date(byAdding: .weekOfYear, value: -weeksBeforeNow, to: .now) ?? .now
-                        BarMark(
-                            x: .value("Weeks before now", date, unit: .weekOfYear),
-                            y: .value("Volume in week", volumePerWeek(for: weeksBeforeNow)),
-                            width: .ratio(0.5)
-                        )
-                        .foregroundStyle((weeksBeforeNow == 0 ? Color.accentColor : Color.fill).gradient)
+        FetchRequestWrapper(
+            Workout.self,
+            sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
+            predicate: WorkoutPredicateFactory.getWorkouts(
+                from: Calendar.current.date(
+                    byAdding: .month,
+                    value: -1,
+                    to: .now
+                ),
+                to: .now
+            )
+        ) { workouts in
+            let workoutSets = workouts.flatMap({ $0.sets })
+            VStack(spacing: 20) {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("volume", comment: ""))
+                            .tileHeaderStyle()
+                        
                     }
+                    Spacer()
+                    NavigationChevron()
+                        .foregroundStyle(.secondary)
                 }
-                .chartXAxis {}
-                .chartYAxis {}
-                .frame(width: 120, height: 80)
-                .padding(.trailing)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("thisWeek", comment: ""))
+                        let setsThisWeek = workoutSets.filter({ Calendar.current.isDate($0.workout?.date ?? .distantPast, equalTo: .now, toGranularity: [.weekOfYear, .year]) })
+                        UnitView(
+                            value: "\(convertWeightForDisplaying(getVolume(of: setsThisWeek)))",
+                            unit: WeightUnit.used.rawValue,
+                            configuration: .large
+                        )
+                        .foregroundStyle(Color.accentColor.gradient)
+                    }
+                    Spacer()
+                    Chart {
+                        ForEach(setsGroupedByGranularity(workoutSets), id:\.0) { key, workoutSets in
+                            let volume = convertWeightForDisplaying(getVolume(of: workoutSets))
+                            BarMark(
+                                x: .value("Weeks before now", key, unit: .weekOfYear),
+                                y: .value("Volume in week", volume),
+                                width: .ratio(0.5)
+                            )
+                            .foregroundStyle((Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? Color.accentColor : Color.fill).gradient)
+                        }
+                    }
+                    .chartXAxis {}
+                    .chartYAxis {}
+                    .frame(width: 120, height: 80)
+                    .padding(.trailing)
+                }
             }
+            .padding(CELL_PADDING)
+            .tileStyle()
         }
-        .padding(CELL_PADDING)
-        .tileStyle()
     }
     
-    private func volumePerWeek(for weeksBeforeNow: Int) -> Int {
-        guard let date = Calendar.current.date(byAdding: .weekOfYear, value: -(weeksBeforeNow), to: .now) else { return 0 }
-        let workoutSetsThisWeek = workoutSetRepository.getWorkoutSets(
-            for: [.weekOfYear, .yearForWeekOfYear],
-            including: date
-        )
-        return convertWeightForDisplaying(getVolume(of: workoutSetsThisWeek))
+    private func getPeriodStart(for date: Date) -> Date? {
+        let calendar = Calendar.current
+        return calendar.dateInterval(of: .weekOfYear, for: date)?.start
+    }
+    
+    private func setsGroupedByGranularity(_ workoutSets: [WorkoutSet]) -> [(date: Date, workoutSets: [WorkoutSet])] {
+        var result = [(date: Date, workoutSets: [WorkoutSet])]()
+        let allPeriods = last5Weeks
+        var groupedByPeriod: [Date: [WorkoutSet]] = [:]
+
+        workoutSets
+            .forEach { workoutSet in
+                if let setDate = workoutSet.workout?.date,
+                   let periodStart = getPeriodStart(for: setDate) {
+                    groupedByPeriod[periodStart, default: []].append(workoutSet)
+                }
+            }
+
+        allPeriods.forEach { periodStart in
+            let setsForPeriod = groupedByPeriod[periodStart] ?? []
+            result.append((date: periodStart, workoutSets: setsForPeriod))
+        }
+
+        return result
+    }
+    
+    private var last5Weeks: [Date] {
+        let calendar = Calendar.current
+        let today = Date()
+        var periods = [Date]()
+        
+        guard let monthInterval = calendar.dateInterval(of: .month, for: today),
+              let firstWeekStart = getPeriodStart(for: monthInterval.start) else { return [] }
+        var periodStart = firstWeekStart
+        while periodStart < monthInterval.end {
+            periods.append(periodStart)
+            guard let nextPeriodStart = calendar.date(byAdding: .weekOfYear, value: 1, to: periodStart) else { break }
+            periodStart = nextPeriodStart
+        }
+        return periods
     }
 
 }

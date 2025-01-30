@@ -9,75 +9,76 @@ import Charts
 import SwiftUI
 
 struct OverallSetsTile: View {
-    
-    @EnvironmentObject private var workoutRepository: WorkoutRepository
-    
+        
     var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("overallSets", comment: ""))
-                        .tileHeaderStyle()
-                    
-                }
-                Spacer()
-                NavigationChevron()
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("thisWeek", comment: ""))
-                    Text("\(workoutRepository.getWorkouts(for: [.weekOfYear, .yearForWeekOfYear], including: .now).map({ $0.sets }).joined().count)")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
-                        .foregroundStyle(Color.accentColor.gradient)
+        FetchRequestWrapper(
+            Workout.self,
+            sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
+            predicate: WorkoutPredicateFactory.getWorkouts(
+                from: .now.startOfWeek,
+                to: .now
+            )
+        ) { workouts in
+            VStack(spacing: 20) {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("overallSets", comment: ""))
+                            .tileHeaderStyle()
+                        
+                    }
+                    Spacer()
+                    NavigationChevron()
+                        .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                Chart {
-                    ForEach(setsOfLastWeekGroupedByDay, id: \.date) { data in
-                        BarMark(
-                            x: .value("Day", data.date, unit: .day),
-                            y: .value("Number of Sets", data.workoutSets.count),
-                            width: .ratio(0.5)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 1))
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("thisWeek", comment: ""))
+                        Text("\(workouts.map({ $0.sets }).joined().count)")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .fontDesign(.rounded)
+                            .foregroundStyle(Color.accentColor.gradient)
                     }
-                }
-                .chartXAxis {
-                    AxisMarks(position: .bottom, values: .stride(by: .day)) { value in
-                        if let date = value.as(Date.self) {
-                            // Add vertical dotted grid lines
-                            AxisGridLine()
-                                .foregroundStyle(Color.gray.opacity(0.5))
-//                                .dashStyle([5, 5]) // Dotted line style
-
-                            AxisValueLabel(date.formatted(.dateTime.weekday(.narrow)))
-                                .foregroundStyle(Calendar.current.isDateInToday(date) ? Color.primary : .secondary)
-                                .font(.caption.weight(.bold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Chart {
+                        ForEach(setsOfLastWeekGroupedByDay(workouts), id: \.date) { data in
+                            BarMark(
+                                x: .value("Day", data.date, unit: .day),
+                                y: .value("Number of Sets", data.workoutSets.count),
+                                width: .ratio(0.5)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 1))
                         }
                     }
+                    .chartXAxis {
+                        AxisMarks(position: .bottom, values: .stride(by: .day)) { value in
+                            if let date = value.as(Date.self) {
+                                AxisGridLine()
+                                    .foregroundStyle(Color.gray.opacity(0.5))
+                                AxisValueLabel(date.formatted(.dateTime.weekday(.narrow)))
+                                    .foregroundStyle(Calendar.current.isDateInToday(date) ? Color.primary : .secondary)
+                                    .font(.caption.weight(.bold))
+                            }
+                        }
+                    }
+                    .chartYAxis {}
+                    .frame(width: 120, height: 80)
+                    .padding(.trailing)
                 }
-                .chartYAxis {
-//                    AxisMarks(values: .automatic(desiredCount: 3))
-                }
-                .frame(width: 120, height: 80)
-                .padding(.trailing)
             }
+            .padding(CELL_PADDING)
+            .tileStyle()
         }
-        .padding(CELL_PADDING)
-        .tileStyle()
     }
     
-    private var setsOfLastWeekGroupedByDay: [(date: Date, workoutSets: [WorkoutSet])] {
+    private func setsOfLastWeekGroupedByDay(_ workouts: [Workout]) -> [(date: Date, workoutSets: [WorkoutSet])] {
         var result = [(date: Date, workoutSets: [WorkoutSet])]()
         let allDays = allDaysOfTheWeek
 
-        // Create a dictionary to store the workout sets grouped by date
         var groupedByDay: [Date: [WorkoutSet]] = [:]
 
-        workoutRepository.getWorkouts(for: [.weekOfYear, .yearForWeekOfYear], including: .now)
+        workouts
             .map({ $0.sets })
             .joined()
             .forEach { workoutSet in
@@ -87,7 +88,6 @@ struct OverallSetsTile: View {
                 }
             }
 
-        // Ensure every day of the current week is represented, even with no data
         allDays.forEach { day in
             let startOfDay = Calendar.current.startOfDay(for: day)
             let setsForDay = groupedByDay[startOfDay] ?? []
@@ -101,7 +101,6 @@ struct OverallSetsTile: View {
         let calendar = Calendar.current
         let today = Date()
 
-        // Get the start of the current week (assuming Sunday start)
         guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: today)?.start else { return [] }
 
         return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }

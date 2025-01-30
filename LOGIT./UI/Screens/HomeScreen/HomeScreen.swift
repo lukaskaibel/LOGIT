@@ -16,9 +16,6 @@ struct HomeScreen: View {
 
     // MARK: - Environment
 
-    @EnvironmentObject private var database: Database
-    @EnvironmentObject private var workoutRepository: WorkoutRepository
-    @EnvironmentObject private var workoutSetRepository: WorkoutSetRepository
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var workoutRecorder: WorkoutRecorder
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
@@ -32,173 +29,179 @@ struct HomeScreen: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack(path: $homeNavigationCoordinator.path) {
-            ScrollView {
-                VStack(spacing: 5) {
-                    header
-                        .padding([.top, .horizontal])
-                    VStack(spacing: SECTION_SPACING) {
-                        if showNoWorkoutTip {
-                            noWorkoutTip
-                                .padding(.horizontal)
-                        }
-                        VStack(spacing: 0) {
-                            Button {
-                                homeNavigationCoordinator.path.append(.exerciseList)
-                            } label: {
-                                HStack {
-                                    HStack {
-                                        Image(systemName: "dumbbell")
-                                            .frame(width: 40)
-                                            .foregroundStyle(Color.accentColor)
-                                        Text(NSLocalizedString("exercises", comment: ""))
-                                            .foregroundStyle(.white)
-                                    }
-                                    Spacer()
-                                    NavigationChevron()
-                                        .foregroundStyle(Color.secondaryLabel)
-                                }
-                                .padding(.trailing)
-                                .padding(.vertical, 12)
+        FetchRequestWrapper(
+            Workout.self,
+            sortDescriptors: [SortDescriptor(\.date, order: .reverse)]
+        ) { workouts in
+            NavigationStack(path: $homeNavigationCoordinator.path) {
+                ScrollView {
+                    VStack(spacing: 5) {
+                        header
+                            .padding([.top, .horizontal])
+                        VStack(spacing: SECTION_SPACING) {
+                            if showNoWorkoutTip {
+                                noWorkoutTip
+                                    .padding(.horizontal)
                             }
-                            Divider()
-                                .padding(.leading, 45)
-                            Button {
-                                homeNavigationCoordinator.path.append(.templateList)
-                            } label: {
-                                HStack {
-                                    HStack {
-                                        Image(systemName: "list.bullet.rectangle.portrait")
-                                            .frame(width: 40)
-                                            .foregroundStyle(Color.accentColor)
-                                        Text(NSLocalizedString("templates", comment: ""))
-                                            .foregroundStyle(.white)
-                                    }
-                                    Spacer()
-                                    NavigationChevron()
-                                        .foregroundStyle(Color.secondaryLabel)
-                                }
-                                .padding(.trailing)
-                                .padding(.vertical, 12)
-                            }
-                            Divider()
-                                .padding(.leading, 45)
-                            Button {
-                                homeNavigationCoordinator.path.append(.measurements)
-                            } label: {
-                                HStack {
-                                    HStack {
-                                        Image(systemName: "ruler")
-                                            .frame(width: 40)
-                                            .foregroundStyle(Color.accentColor)
-                                        Text(NSLocalizedString("measurements", comment: ""))
-                                            .foregroundStyle(.white)
-                                    }
-                                    Spacer()
-                                    NavigationChevron()
-                                        .foregroundStyle(Color.secondaryLabel)
-                                }
-                                .padding(.trailing)
-                                .padding(.vertical, 12)
-                            }
-                            Divider()
-                                .padding(.leading, 45)
-                        }
-                        .font(.title2)
-                        .padding(.horizontal)
-                        
-                        VStack(spacing: SECTION_HEADER_SPACING) {
-                            Text(NSLocalizedString("summary", comment: ""))
-                                .sectionHeaderStyle2()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(spacing: 8) {
-                                currentWeekWeeklyTargetWidget
-                                overallSetsView
-                                volumePerDay
-                                muscleGroupPercentageView
-                            }
-                        }
-                        .padding(.horizontal)
-                        
-                        VStack(spacing: SECTION_HEADER_SPACING) {
-                            HStack {
-                                Text(NSLocalizedString("recentWorkouts", comment: ""))
-                                    .sectionHeaderStyle2()
-                                Spacer()
+                            VStack(spacing: 0) {
                                 Button {
-                                    homeNavigationCoordinator.path.append(.workoutList)
+                                    homeNavigationCoordinator.path.append(.exerciseList)
                                 } label: {
                                     HStack {
-                                        Text(NSLocalizedString("all", comment: ""))
-                                        Image(systemName: "chevron.right")
-                                            .font(.footnote)
+                                        HStack {
+                                            Image(systemName: "dumbbell")
+                                                .frame(width: 40)
+                                                .foregroundStyle(Color.accentColor)
+                                            Text(NSLocalizedString("exercises", comment: ""))
+                                                .foregroundStyle(.white)
+                                        }
+                                        Spacer()
+                                        NavigationChevron()
+                                            .foregroundStyle(Color.secondaryLabel)
+                                    }
+                                    .padding(.trailing)
+                                    .padding(.vertical, 12)
+                                }
+                                Divider()
+                                    .padding(.leading, 45)
+                                Button {
+                                    homeNavigationCoordinator.path.append(.templateList)
+                                } label: {
+                                    HStack {
+                                        HStack {
+                                            Image(systemName: "list.bullet.rectangle.portrait")
+                                                .frame(width: 40)
+                                                .foregroundStyle(Color.accentColor)
+                                            Text(NSLocalizedString("templates", comment: ""))
+                                                .foregroundStyle(.white)
+                                        }
+                                        Spacer()
+                                        NavigationChevron()
+                                            .foregroundStyle(Color.secondaryLabel)
+                                    }
+                                    .padding(.trailing)
+                                    .padding(.vertical, 12)
+                                }
+                                Divider()
+                                    .padding(.leading, 45)
+                                Button {
+                                    homeNavigationCoordinator.path.append(.measurements)
+                                } label: {
+                                    HStack {
+                                        HStack {
+                                            Image(systemName: "ruler")
+                                                .frame(width: 40)
+                                                .foregroundStyle(Color.accentColor)
+                                            Text(NSLocalizedString("measurements", comment: ""))
+                                                .foregroundStyle(.white)
+                                        }
+                                        Spacer()
+                                        NavigationChevron()
+                                            .foregroundStyle(Color.secondaryLabel)
+                                    }
+                                    .padding(.trailing)
+                                    .padding(.vertical, 12)
+                                }
+                                Divider()
+                                    .padding(.leading, 45)
+                            }
+                            .font(.title2)
+                            .padding(.horizontal)
+                            
+                            VStack(spacing: SECTION_HEADER_SPACING) {
+                                Text(NSLocalizedString("summary", comment: ""))
+                                    .sectionHeaderStyle2()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                VStack(spacing: 8) {
+                                    currentWeekWeeklyTargetWidget
+                                    overallSetsView
+                                    volumePerDay
+                                    muscleGroupPercentageView
+                                }
+                            }
+                            .padding(.horizontal)
+                            
+                            VStack(spacing: SECTION_HEADER_SPACING) {
+                                HStack {
+                                    Text(NSLocalizedString("recentWorkouts", comment: ""))
+                                        .sectionHeaderStyle2()
+                                    Spacer()
+                                    Button {
+                                        homeNavigationCoordinator.path.append(.workoutList)
+                                    } label: {
+                                        HStack {
+                                            Text(NSLocalizedString("all", comment: ""))
+                                            Image(systemName: "chevron.right")
+                                                .font(.footnote)
+                                        }
+                                    }
+                                    .fontWeight(.semibold)
+                                }
+                                VStack(spacing: CELL_SPACING) {
+                                    let recentWorkouts = workouts.prefix(3)
+                                    ForEach(recentWorkouts) { workout in
+                                        WorkoutCell(workout: workout)
+                                            .padding(CELL_PADDING)
+                                            .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                                            .onTapGesture {
+                                                homeNavigationCoordinator.path.append(.workout(workout))
+                                            }
+                                    }
+                                    .emptyPlaceholder(recentWorkouts) {
+                                        Text(NSLocalizedString("noWorkouts", comment: ""))
                                     }
                                 }
-                                .fontWeight(.semibold)
                             }
-                            VStack(spacing: CELL_SPACING) {
-                                ForEach(recentWorkouts) { workout in
-                                    WorkoutCell(workout: workout)
-                                        .padding(CELL_PADDING)
-                                        .secondaryTileStyle(backgroundColor: .secondaryBackground)
-                                        .onTapGesture {
-                                            homeNavigationCoordinator.path.append(.workout(workout))
-                                        }
-                                }
-                                .emptyPlaceholder(recentWorkouts) {
-                                    Text(NSLocalizedString("noWorkouts", comment: ""))
-                                }
-                            }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
+                        .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                     }
-                    .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                 }
-            }
-            .onAppear {
-                showNoWorkoutTip = workouts.isEmpty
-            }
-            .sheet(isPresented: $isShowingSettings) {
-                NavigationStack {
-                    SettingsScreen()
-                        .navigationTitle(NSLocalizedString("settings", comment: ""))
-                        .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Button(NSLocalizedString("done", comment: "")) {
-                                    isShowingSettings = false
+                .onAppear {
+                    showNoWorkoutTip = workouts.isEmpty
+                }
+                .sheet(isPresented: $isShowingSettings) {
+                    NavigationStack {
+                        SettingsScreen()
+                            .navigationTitle(NSLocalizedString("settings", comment: ""))
+                            .toolbar {
+                                ToolbarItem(placement: .topBarTrailing) {
+                                    Button(NSLocalizedString("done", comment: "")) {
+                                        isShowingSettings = false
+                                    }
                                 }
                             }
+                    }
+                }
+                .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
+                    switch destination {
+                        case .exercise(let exercise):
+                            ExerciseDetailScreen(exercise: exercise)
+                        case .exerciseList: ExerciseListScreen()
+                        case .measurements: MeasurementsScreen()
+                        case .muscleGroupsOverview:
+                            MuscleGroupSplitScreen()
+                        case .overallSets: OverallSetsScreen()
+                        case .targetPerWeek: TargetPerWeekDetailScreen()
+                        case .template(let template):
+                            TemplateDetailScreen(template: template)
+                        case .templateList: TemplateListScreen()
+                        case .volume: VolumeScreen()
+                        case .workout(let workout):
+                            WorkoutDetailScreen(
+                                workout: workout,
+                                canNavigateToTemplate: true
+                            )
+                        case .workoutList: WorkoutListScreen()
+                    }
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            isShowingSettings = true
+                        } label: {
+                            Image(systemName: "gear")
                         }
-                }
-            }
-            .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
-                switch destination {
-                    case .exercise(let exercise):
-                        ExerciseDetailScreen(exercise: exercise)
-                    case .exerciseList: ExerciseListScreen()
-                    case .measurements: MeasurementsScreen()
-                    case .muscleGroupsOverview:
-                        MuscleGroupSplitScreen()
-                    case .overallSets: OverallSetsScreen()
-                    case .targetPerWeek: TargetPerWeekDetailScreen()
-                    case .template(let template):
-                        TemplateDetailScreen(template: template)
-                    case .templateList: TemplateListScreen()
-                    case .volume: VolumeScreen()
-                    case .workout(let workout):
-                        WorkoutDetailScreen(
-                            workout: workout,
-                            canNavigateToTemplate: true
-                        )
-                    case .workoutList: WorkoutListScreen()
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isShowingSettings = true
-                    } label: {
-                        Image(systemName: "gear")
                     }
                 }
             }
@@ -270,18 +273,6 @@ struct HomeScreen: View {
         .padding(CELL_PADDING)
         .tileStyle()
     }
-
-    // MARK: - Supportings Methods
-    
-    private var workouts: [Workout] {
-        workoutRepository.getWorkouts()
-    }
-
-    private var recentWorkouts: [Workout] {
-        Array(workouts.prefix(3))
-    }
-    
-    
 
 }
 

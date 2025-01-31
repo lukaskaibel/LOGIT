@@ -9,11 +9,10 @@ import SwiftUI
 
 struct ExercisePersonalBestsTile: View {
     
-    @EnvironmentObject private var workoutSetRepository: WorkoutSetRepository
-    
-    let exercise: Exercise
+    @StateObject var exercise: Exercise
     
     var body: some View {
+        let workoutSets = exercise.sets
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 5) {
                 Text(NSLocalizedString("weightPR", comment: ""))
@@ -22,7 +21,7 @@ struct ExercisePersonalBestsTile: View {
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 HStack(alignment: .lastTextBaseline) {
-                    UnitView(value: "\(allTimeWeightPREntry.0)", unit: WeightUnit.used.rawValue, configuration: .large)
+                    UnitView(value: "\(allTimeWeightPREntry(in: workoutSets).0)", unit: WeightUnit.used.rawValue, configuration: .large)
                         .foregroundStyle(exerciseMuscleGroupColor.gradient)
                     Spacer()
                     HStack(spacing: 5) {
@@ -30,7 +29,7 @@ struct ExercisePersonalBestsTile: View {
                             .font(.caption2)
                             .fontWeight(.bold)
                             .fontDesign(.rounded)
-                        UnitView(value: "\(allTimeWeightPREntry.1)", unit: NSLocalizedString("rps", comment: ""), configuration: .small)
+                        UnitView(value: "\(allTimeWeightPREntry(in: workoutSets).1)", unit: NSLocalizedString("rps", comment: ""), configuration: .small)
                     }
                     .foregroundStyle(.secondary)
                 }
@@ -44,7 +43,7 @@ struct ExercisePersonalBestsTile: View {
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 HStack(alignment: .lastTextBaseline) {
-                    UnitView(value: "\(allTimeRepetitionsPREntry.0)", unit: NSLocalizedString("rps", comment: ""), configuration: .large)
+                    UnitView(value: "\(allTimeRepetitionsPREntry(in: workoutSets).0)", unit: NSLocalizedString("rps", comment: ""), configuration: .large)
                         .foregroundStyle(exerciseMuscleGroupColor.gradient)
                     Spacer()
                     HStack(spacing: 5) {
@@ -52,7 +51,7 @@ struct ExercisePersonalBestsTile: View {
                             .font(.caption2)
                             .fontWeight(.bold)
                             .fontDesign(.rounded)
-                        UnitView(value: "\(allTimeRepetitionsPREntry.1)", unit: WeightUnit.used.rawValue, configuration: .small)
+                        UnitView(value: "\(allTimeRepetitionsPREntry(in: workoutSets).1)", unit: WeightUnit.used.rawValue, configuration: .small)
                     }
                     .foregroundStyle(.secondary)
                 }
@@ -71,8 +70,8 @@ struct ExercisePersonalBestsTile: View {
     
     // MARK: - Private Methods
     
-    private var allTimeWeightPREntry: (Int, Int) {
-        let workoutSet = workoutSetRepository.getWorkoutSets(with: exercise)
+    private func allTimeWeightPREntry(in workoutSets: [WorkoutSet]) -> (Int, Int) {
+        let workoutSet = workoutSets
             .max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
         var maxWeight: Int64 = 0
         var repetitionsOfMaxWeight: Int64 = 0
@@ -99,8 +98,8 @@ struct ExercisePersonalBestsTile: View {
         return (convertWeightForDisplaying(maxWeight), Int(repetitionsOfMaxWeight))
     }
     
-    private var allTimeRepetitionsPREntry: (Int, Int) {
-        let workoutSet = workoutSetRepository.getWorkoutSets(with: exercise)
+    private func allTimeRepetitionsPREntry(in workoutSets: [WorkoutSet]) -> (Int, Int) {
+        let workoutSet = workoutSets
             .max(by: { $0.maximum(.repetitions, for: exercise) < $1.maximum(.repetitions, for: exercise) })
         var maxRepetitions: Int64 = 0
         var weightOfMaxRepetitions: Int64 = 0

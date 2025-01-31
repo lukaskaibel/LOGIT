@@ -24,16 +24,14 @@ final class WorkoutRecorder: ObservableObject {
     // MARK: - Private Variables
     
     private let database: Database
-    private let workoutRepository: WorkoutRepository
     private let currentWorkoutManager: CurrentWorkoutManager
     private var workoutSetTemplateSetDictionary = [WorkoutSet: TemplateSet]()
     private var cancellable: AnyCancellable?
     
     // MARK: - Init
     
-    init(database: Database, workoutRepository: WorkoutRepository, currentWorkoutManager: CurrentWorkoutManager) {
+    init(database: Database, currentWorkoutManager: CurrentWorkoutManager) {
         self.database = database
-        self.workoutRepository = workoutRepository
         self.currentWorkoutManager = currentWorkoutManager
         setUpAutoSaveForWorkout()
         workout = currentWorkoutManager.getCurrentWorkout()

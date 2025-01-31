@@ -226,7 +226,7 @@ private struct PreviewWrapperView: View {
             ScrollView {
                 VStack {
                     TemplateSetGroupCell(
-                        setGroup: database.getTemplates().first!.setGroups.first!,
+                        setGroup: database.testTemplate.setGroups.first!,
                         focusedIntegerFieldIndex: .constant(nil),
                         sheetType: .constant(nil),
                         isReordering: .constant(false),
@@ -236,7 +236,7 @@ private struct PreviewWrapperView: View {
                     .tileStyle()
                     .padding()
                     TemplateSetGroupCell(
-                        setGroup: database.getTemplates().first!.setGroups.first!,
+                        setGroup: database.testTemplate.setGroups.first!,
                         focusedIntegerFieldIndex: .constant(nil),
                         sheetType: .constant(nil),
                         isReordering: .constant(true),
@@ -246,7 +246,7 @@ private struct PreviewWrapperView: View {
                     .tileStyle()
                     .padding()
                     TemplateSetGroupCell(
-                        setGroup: database.getTemplates().first!.setGroups.first!,
+                        setGroup: database.testTemplate.setGroups.first!,
                         focusedIntegerFieldIndex: .constant(nil),
                         sheetType: .constant(nil),
                         isReordering: .constant(false),

@@ -30,7 +30,7 @@ struct WorkoutDetailScreen: View {
 
     // MARK: - Variables
 
-    let workout: Workout
+    @StateObject var workout: Workout
     let canNavigateToTemplate: Bool
 
     // MARK: - Body
@@ -377,12 +377,12 @@ struct WorkoutDetailScreen: View {
 }
 
 private struct PreviewWrapperView: View {
-    @EnvironmentObject var workoutRepository: WorkoutRepository
+    @EnvironmentObject var database: Database
     
     var body: some View {
         NavigationStack {
             WorkoutDetailScreen(
-                workout: workoutRepository.getWorkouts().first!,
+                workout: database.testWorkout,
                 canNavigateToTemplate: false
             )
         }

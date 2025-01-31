@@ -35,7 +35,7 @@ struct ExerciseDetailScreen: View {
 
     // MARK: - Variables
 
-    let exercise: Exercise
+    @StateObject var exercise: Exercise
 
     // MARK: - Body
 

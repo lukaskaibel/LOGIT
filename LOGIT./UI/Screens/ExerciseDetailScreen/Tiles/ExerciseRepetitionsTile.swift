@@ -9,12 +9,15 @@ import Charts
 import SwiftUI
 
 struct ExerciseRepetitionsTile: View {
-    
-    @EnvironmentObject private var workoutSetRepository: WorkoutSetRepository
-    
-    let exercise: Exercise
+        
+    @StateObject var exercise: Exercise
     
     var body: some View {
+        let workoutSets = exercise.sets
+        let groupedWorkoutSets = Dictionary(grouping: workoutSets) {
+            Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
+        }.sorted { $0.key < $1.key }
+        let maxDailySets = maxRepetitionsDailySets(in: groupedWorkoutSets.map({ $0.1 }))
         VStack {
             HStack {
                 Text(NSLocalizedString("repetitions", comment: ""))
@@ -28,7 +31,7 @@ struct ExerciseRepetitionsTile: View {
                     VStack(alignment: .leading) {
                         Text(NSLocalizedString("bestThisMonth", comment: ""))
                         HStack(alignment: .lastTextBaseline, spacing: 0) {
-                            Text(bestRepetitionsThisMonth != nil ? String(bestRepetitionsThisMonth!) : "––")
+                            Text(bestRepetitionsThisMonth(workoutSets) != nil ? String(bestRepetitionsThisMonth(workoutSets)!) : "––")
                                 .font(.title)
                                 .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
                             Text(NSLocalizedString("rps", comment: ""))
@@ -41,7 +44,7 @@ struct ExerciseRepetitionsTile: View {
                 }
                 Spacer()
                 Chart {
-                    if let firstEntry = maxRepetitionsDailySets.first {
+                    if let firstEntry = maxDailySets.first {
                         LineMark(
                             x: .value("Date", Date.distantPast, unit: .day),
                             y: .value("Max repetitions on day", firstEntry.maximum(.repetitions, for: exercise))
@@ -60,7 +63,7 @@ struct ExerciseRepetitionsTile: View {
                             exerciseMuscleGroupColor.opacity(0)
                         ]))
                     }
-                    ForEach(maxRepetitionsDailySets) { workoutSet in
+                    ForEach(maxDailySets) { workoutSet in
                         LineMark(
                             x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
                             y: .value("Max repetitions on day", workoutSet.maximum(.repetitions, for: exercise))
@@ -99,15 +102,9 @@ struct ExerciseRepetitionsTile: View {
         return startDate...Date.now
     }
     
-    private var maxRepetitionsDailySets: [WorkoutSet] {
+    private func maxRepetitionsDailySets(in groupedWorkoutSets: [[WorkoutSet]]) -> [WorkoutSet] {
         let startDate = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: .now)!
-        let groupedSets = workoutSetRepository.getGroupedWorkoutSets(
-            with: exercise,
-            groupedBy: [.day, .month, .year],
-            from: startDate,
-            to: .now
-        )
-        let maxSetsPerDay = groupedSets.compactMap { setsPerDay -> WorkoutSet? in
+        let maxSetsPerDay = groupedWorkoutSets.compactMap { setsPerDay -> WorkoutSet? in
             return setsPerDay.max(by: { $0.maximum(.repetitions, for: exercise) < $1.maximum(.repetitions, for: exercise) })
         }
         return maxSetsPerDay
@@ -121,17 +118,13 @@ struct ExerciseRepetitionsTile: View {
         3600 * 24 * 35
     }
     
-    private var bestRepetitionsThisMonth: Int? {
+    private func bestRepetitionsThisMonth(_ workoutSets: [WorkoutSet]) -> Int? {
         let startDate = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: .now)!
-        let setsThisMonth = workoutSetRepository.getWorkoutSets(
-            with: exercise,
-            from: startDate,
-            to: .now
-        )
-        guard !setsThisMonth.isEmpty else {
+        let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= startDate }
+        guard !setsInTimeFrame.isEmpty else {
             return 0
         }
-        return setsThisMonth
+        return setsInTimeFrame
             .map({ $0.maximum(.repetitions, for: exercise) })
             .max()
     }

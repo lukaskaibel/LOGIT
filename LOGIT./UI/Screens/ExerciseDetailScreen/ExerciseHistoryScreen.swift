@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ExerciseHistoryScreen: View {
         
-    let exercise: Exercise
+    @StateObject var exercise: Exercise
     
     var body: some View {
         FetchRequestWrapper(

@@ -219,45 +219,49 @@ struct WorkoutSetGroupCell: View {
 }
 
 private struct PreviewWrapperView: View {
-    @EnvironmentObject private var workoutRepository: WorkoutRepository
-    
+
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack {
-                    WorkoutSetGroupCell(
-                        setGroup: workoutRepository.getWorkouts().first!.setGroups.first!,
-                        focusedIntegerFieldIndex: .constant(nil),
-                        sheetType: .constant(nil),
-                        isReordering: .constant(false),
-                        supplementaryText: "1 / 3"
-                    )
-                    .padding(CELL_PADDING)
-                    .tileStyle()
-                    .padding()
-                    WorkoutSetGroupCell(
-                        setGroup: workoutRepository.getWorkouts().first!.setGroups.first!,
-                        focusedIntegerFieldIndex: .constant(nil),
-                        sheetType: .constant(nil),
-                        isReordering: .constant(true),
-                        supplementaryText: "1 / 3"
-                    )
-                    .padding(CELL_PADDING)
-                    .tileStyle()
-                    .padding()
-                    WorkoutSetGroupCell(
-                        setGroup: workoutRepository.getWorkouts().first!.setGroups.first!,
-                        focusedIntegerFieldIndex: .constant(nil),
-                        sheetType: .constant(nil),
-                        isReordering: .constant(false),
-                        supplementaryText: "1 / 3"
-                    )
-                    .padding(CELL_PADDING)
-                    .tileStyle()
-                    .padding()
-                    .canEdit(false)
+        FetchRequestWrapper(
+            Workout.self,
+            sortDescriptors: [SortDescriptor(\.date, order: .reverse)]
+        ) { workouts in
+            NavigationStack {
+                ScrollView {
+                    VStack {
+                        WorkoutSetGroupCell(
+                            setGroup: workouts.first!.setGroups.first!,
+                            focusedIntegerFieldIndex: .constant(nil),
+                            sheetType: .constant(nil),
+                            isReordering: .constant(false),
+                            supplementaryText: "1 / 3"
+                        )
+                        .padding(CELL_PADDING)
+                        .tileStyle()
+                        .padding()
+                        WorkoutSetGroupCell(
+                            setGroup: workouts.first!.setGroups.first!,
+                            focusedIntegerFieldIndex: .constant(nil),
+                            sheetType: .constant(nil),
+                            isReordering: .constant(true),
+                            supplementaryText: "1 / 3"
+                        )
+                        .padding(CELL_PADDING)
+                        .tileStyle()
+                        .padding()
+                        WorkoutSetGroupCell(
+                            setGroup: workouts.first!.setGroups.first!,
+                            focusedIntegerFieldIndex: .constant(nil),
+                            sheetType: .constant(nil),
+                            isReordering: .constant(false),
+                            supplementaryText: "1 / 3"
+                        )
+                        .padding(CELL_PADDING)
+                        .tileStyle()
+                        .padding()
+                        .canEdit(false)
+                    }
+                    
                 }
-                
             }
         }
     }

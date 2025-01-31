@@ -13,15 +13,15 @@ struct ExerciseVolumeScreen: View {
     private enum ChartGranularity {
         case month, year
     }
-    
-    @EnvironmentObject private var workoutSetRepository: WorkoutSetRepository
-    
-    let exercise: Exercise
+        
+    @StateObject var exercise: Exercise
     
     @State private var chartGranularity: ChartGranularity = .month
     @State private var chartScrollPosition: Date = .now
     
     var body: some View {
+        let workoutSets = exercise.sets
+        let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
         ScrollView {
             VStack {
                 Picker("Select Chart Granularity", selection: $chartGranularity) {
@@ -40,11 +40,11 @@ struct ExerciseVolumeScreen: View {
                         .textCase(.uppercase)
                         .foregroundStyle(.secondary)
                     UnitView(
-                        value: "\(totalVolumeInTimeFrame)",
+                        value: "\(totalVolumeInTimeFrame(workoutSets))",
                         unit: WeightUnit.used.rawValue
                     )
                     .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                    Text("\(NSLocalizedString("this", comment: "")) \(NSLocalizedString(chartGranularity == .month ? "month" : "year", comment: ""))")
+                    Text("\(visibleDomainDescription)")
                         .fontWeight(.bold)
                         .fontDesign(.rounded)
                         .foregroundStyle(.secondary)
@@ -52,16 +52,16 @@ struct ExerciseVolumeScreen: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
                 Chart {
-                    ForEach(setsGroupedByGranularity, id:\.first) { groupedWorkoutSets in
+                    ForEach(groupedWorkoutSets, id:\.0) { key, workoutSets in
                         BarMark(
-                            x: .value("Day", groupedWorkoutSets.first?.workout?.date ?? .now, unit: .weekOfYear),
-                            y: .value("Volume", volume(for: groupedWorkoutSets)),
+                            x: .value("Day", workoutSets.first?.workout?.date ?? .now, unit: .weekOfYear),
+                            y: .value("Volume", volume(for: workoutSets)),
                             width: .ratio(0.5)
                         )
                         .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
                     }
                 }
-                .chartXScale(domain: xDomain)
+                .chartXScale(domain: xDomain(for: groupedWorkoutSets.map({ $0.1 })))
                 .chartScrollableAxes(.horizontal)
                 .chartScrollPosition(x: $chartScrollPosition)
                 .chartScrollTargetBehavior(
@@ -87,7 +87,7 @@ struct ExerciseVolumeScreen: View {
                 .chartYAxis {
                     AxisMarks(values: .automatic(desiredCount: 4))
                 }
-                .emptyPlaceholder(setsGroupedByGranularity) {
+                .emptyPlaceholder(groupedWorkoutSets) {
                     Text(NSLocalizedString("noData", comment: ""))
                 }
                 .frame(height: 300)
@@ -97,6 +97,10 @@ struct ExerciseVolumeScreen: View {
             .padding(.top)
         }
         .isBlockedWithoutPro()
+        .onAppear {
+            let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
+            chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!
+        }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -118,26 +122,22 @@ struct ExerciseVolumeScreen: View {
         3600 * 24 * (chartGranularity == .month ? 35 : 365)
     }
     
-    private var xDomain: some ScaleDomain {
+    private func xDomain(for groupedWorkoutSets: [[WorkoutSet]]) -> some ScaleDomain {
         let maxStartDate = Calendar.current.date(
             byAdding: chartGranularity == .month ? .month : .year,
             value: -1,
             to: .now
         )!
         let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
-        guard let firstSetDate = setsGroupedByGranularity.first?.first?.workout?.date, firstSetDate < maxStartDate
+        guard let firstSetDate = groupedWorkoutSets.first?.first?.workout?.date, firstSetDate < maxStartDate
         else { return maxStartDate...endDate }
         let startDate = chartGranularity == .month ? firstSetDate.startOfMonth : firstSetDate.startOfYear
         return startDate...endDate
     }
     
-    private var totalVolumeInTimeFrame: Int {
-        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)
-        let setsInTimeFrame = workoutSetRepository.getWorkoutSets(
-            with: exercise,
-            from: chartScrollPosition,
-            to: endDate
-        )
+    private func totalVolumeInTimeFrame(_ workoutSets: [WorkoutSet]) -> Int {
+        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
+        let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= chartScrollPosition && $0.workout?.date ?? .distantFuture <= endDate }
         return volume(for: setsInTimeFrame)
     }
     
@@ -163,11 +163,14 @@ struct ExerciseVolumeScreen: View {
         }
     }
     
-    private var setsGroupedByGranularity: [[WorkoutSet]] {
-        workoutSetRepository.getGroupedWorkoutSets(
-            with: exercise,
-            groupedBy: [.weekOfYear, .year]
-        )
+    private var visibleDomainDescription: String {
+        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
+        switch chartGranularity {
+        case .month:
+            return "\(chartScrollPosition.formatted(.dateTime.day().month())) - \(endDate.formatted(.dateTime.day().month()))"
+        case .year:
+            return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
+        }
     }
 
 }

@@ -22,9 +22,6 @@ struct LOGIT: App {
     // MARK: - State
 
     @StateObject private var database: Database
-    @StateObject private var workoutRepository: WorkoutRepository
-    @StateObject private var workoutSetRepository: WorkoutSetRepository
-    @StateObject private var workoutSetGroupRepository: WorkoutSetGroupRepository
     @StateObject private var templateService: TemplateService
     @StateObject private var measurementController: MeasurementEntryController
     @StateObject private var purchaseManager = PurchaseManager()
@@ -46,17 +43,11 @@ struct LOGIT: App {
         let database = Database()
 //        #endif
         let currentWorkoutManager = CurrentWorkoutManager(database: database)
-        let workoutRepository = WorkoutRepository(database: database, currentWorkoutManager: currentWorkoutManager)
-        let workoutSetRepository = WorkoutSetRepository(database: database, currentWorkoutManager: currentWorkoutManager)
-        let workoutSetGroupRepository = WorkoutSetGroupRepository(database: database, currentWorkoutManager: currentWorkoutManager)
         
         self._database = StateObject(wrappedValue: database)
-        self._workoutRepository = StateObject(wrappedValue: workoutRepository)
-        self._workoutSetRepository = StateObject(wrappedValue: workoutSetRepository)
-        self._workoutSetGroupRepository = StateObject(wrappedValue: workoutSetGroupRepository)
         self._templateService = StateObject(wrappedValue: TemplateService(database: database))
         self._measurementController = StateObject(wrappedValue: MeasurementEntryController(database: database))
-        self._workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: database, workoutRepository: workoutRepository, currentWorkoutManager: currentWorkoutManager))
+        self._workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: database, currentWorkoutManager: currentWorkoutManager))
         self._muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
         self._homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
         
@@ -90,9 +81,6 @@ struct LOGIT: App {
                     }
                     .environment(\.managedObjectContext, database.context)
                     .environmentObject(database)
-                    .environmentObject(workoutRepository)
-                    .environmentObject(workoutSetRepository)
-                    .environmentObject(workoutSetGroupRepository)
                     .environmentObject(measurementController)
                     .environmentObject(templateService)
                     .environmentObject(purchaseManager)

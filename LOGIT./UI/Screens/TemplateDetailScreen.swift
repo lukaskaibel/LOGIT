@@ -25,7 +25,7 @@ struct TemplateDetailScreen: View {
 
     // MARK: - Variables
 
-    let template: Template
+    @StateObject var template: Template
 
     // MARK: - Body
 

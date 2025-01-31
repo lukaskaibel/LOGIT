@@ -9,12 +9,15 @@ import Charts
 import SwiftUI
 
 struct ExerciseWeightTile: View {
-    
-    @EnvironmentObject private var workoutSetRepository: WorkoutSetRepository
-    
-    let exercise: Exercise
+        
+    @StateObject var exercise: Exercise
     
     var body: some View {
+        let workoutSets = exercise.sets
+        let groupedWorkoutSets = Dictionary(grouping: workoutSets) {
+            Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
+        }.sorted { $0.key < $1.key }
+        let maxDailySets = maxWeightDailySets(in: groupedWorkoutSets.map({ $0.1 }))
         VStack {
             HStack {
                 Text(NSLocalizedString("weight", comment: ""))
@@ -28,7 +31,7 @@ struct ExerciseWeightTile: View {
                     VStack(alignment: .leading) {
                         Text(NSLocalizedString("bestThisMonth", comment: ""))
                         HStack(alignment: .lastTextBaseline, spacing: 0) {
-                            Text(bestWeightThisMonth != nil ? String(convertWeightForDisplaying(bestWeightThisMonth!)) : "––")
+                            Text(bestWeightThisMonth(workoutSets) != nil ? String(convertWeightForDisplaying(bestWeightThisMonth(workoutSets)!)) : "––")
                                 .font(.title)
                                 .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
                             Text(WeightUnit.used.rawValue)
@@ -41,7 +44,7 @@ struct ExerciseWeightTile: View {
                 }
                 Spacer()
                 Chart {
-                    if let firstEntry = maxWeightDailySets.first {
+                    if let firstEntry = maxDailySets.first {
                         LineMark(
                             x: .value("Date", Date.distantPast, unit: .day),
                             y: .value("Max weight on day", convertWeightForDisplaying(firstEntry.maximum(.weight, for: exercise)))
@@ -60,7 +63,7 @@ struct ExerciseWeightTile: View {
                             exerciseMuscleGroupColor.opacity(0)
                         ]))
                     }
-                    ForEach(maxWeightDailySets) { workoutSet in
+                    ForEach(maxDailySets) { workoutSet in
                         LineMark(
                             x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
                             y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
@@ -95,19 +98,12 @@ struct ExerciseWeightTile: View {
     // MARK: - Private Methods
     
     private var xDomain: some ScaleDomain {
-        let startDate = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: .now)!
-        return startDate...Date.now
+        let startDate = Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now)!.startOfWeek
+        return startDate...Date.now.endOfWeek
     }
     
-    private var maxWeightDailySets: [WorkoutSet] {
-        let startDate = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: .now)!
-        let groupedSets = workoutSetRepository.getGroupedWorkoutSets(
-            with: exercise,
-            groupedBy: [.day, .month, .year],
-            from: startDate,
-            to: .now
-        )
-        let maxSetsPerDay = groupedSets.compactMap { setsPerDay -> WorkoutSet? in
+    private func maxWeightDailySets(in groupedWorkoutSets: [[WorkoutSet]]) -> [WorkoutSet] {
+        let maxSetsPerDay = groupedWorkoutSets.compactMap { setsPerDay -> WorkoutSet? in
             return setsPerDay.max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
         }
         return maxSetsPerDay
@@ -121,17 +117,13 @@ struct ExerciseWeightTile: View {
         3600 * 24 * 35
     }
     
-    private var bestWeightThisMonth: Int? {
+    private func bestWeightThisMonth(_ workoutSets: [WorkoutSet]) -> Int? {
         let startDate = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: .now)!
-        let setsThisMonth = workoutSetRepository.getWorkoutSets(
-            with: exercise,
-            from: startDate,
-            to: .now
-        )
-        guard !setsThisMonth.isEmpty else {
+        let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= startDate }
+        guard !setsInTimeFrame.isEmpty else {
             return 0
         }
-        return setsThisMonth
+        return setsInTimeFrame
             .map({ $0.maximum(.weight, for: exercise) })
             .max()
     }

@@ -8,18 +8,17 @@
 import SwiftUI
 
 struct ExerciseCell: View {
-
+    
     // MARK: - Environment
-
+    
     @EnvironmentObject var database: Database
-    @EnvironmentObject private var workoutSetGroupRepository: WorkoutSetGroupRepository
-
+    
     // MARK: - Parameters
-
-    let exercise: Exercise
-
+    
+    @StateObject var exercise: Exercise
+    
     // MARK: - Body
-
+    
     var body: some View {
         VStack(alignment: .leading) {
             Text(exercise.name ?? "")
@@ -31,13 +30,7 @@ struct ExerciseCell: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
-    // MARK: - Computed Properties
-
-    private var lastUsed: Date? {
-        workoutSetGroupRepository.getWorkoutSetGroups(with: exercise).last?.workout?.date
-    }
-
+    
 }
 
 private struct PreviewWrapperView: View {

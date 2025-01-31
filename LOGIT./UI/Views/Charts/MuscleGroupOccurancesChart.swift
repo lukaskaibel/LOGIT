@@ -50,9 +50,7 @@ struct MuscleGroupOccurancesChart: View {
 }
 
 private struct MuscleGroupOccurancesChartPreviewView: View {
-    
-    @EnvironmentObject private var workoutRepository: WorkoutRepository
-    
+        
     var body: some View {
         MuscleGroupOccurancesChart(muscleGroupOccurances: getMuscleGroupOccurances(in: []))
     }

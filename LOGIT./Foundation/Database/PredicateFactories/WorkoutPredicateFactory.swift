@@ -28,8 +28,16 @@ struct WorkoutPredicateFactory {
 
         // 2. Filter by muscle group
         if let muscleGroup = muscleGroup {
-            let muscleGroupPredicate = NSPredicate(format: "ANY setGroups_.exercises_.muscleGroupString == %@", muscleGroup.rawValue)
-            //subpredicates.append(muscleGroupPredicate)
+            let muscleGroupPredicate = NSPredicate(
+                format: """
+                SUBQUERY(
+                   setGroups_, $sg,
+                   SUBQUERY($sg.exercises_, $ex, $ex.muscleGroupString == %@).@count > 0
+                ).@count > 0
+                """,
+                muscleGroup.rawValue
+            )
+            subpredicates.append(muscleGroupPredicate)
         }
         
         if let startDate = startDate {

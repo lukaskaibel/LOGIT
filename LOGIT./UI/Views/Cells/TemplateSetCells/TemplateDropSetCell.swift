@@ -78,7 +78,7 @@ struct TemplateDropSetCell: View {
                 return Int64(convertWeightForDisplaying(dropSet.weights?.value(at: index) ?? 0))
             },
             set: { newValue in
-                dropSet.weights?[index] = newValue
+                dropSet.weights?[index] = convertWeightForStoring(newValue)
             }
         )
     }

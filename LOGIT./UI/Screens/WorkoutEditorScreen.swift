@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 27.02.24.
 //
 
+import Combine
 import SwiftUI
 
 struct WorkoutEditorScreen: View {
@@ -21,6 +22,7 @@ struct WorkoutEditorScreen: View {
     // MARK: - State
     
     @State private var sheetType: WorkoutSetGroupList.SheetType? = nil
+    @State private var cancellable: AnyCancellable?
     @FocusState private var focusedTextField: TextFieldType?
     
     // MARK: - Parameters
@@ -143,7 +145,7 @@ struct WorkoutEditorScreen: View {
                         dismiss()
                     }
                     .fontWeight(.bold)
-                    .disabled(!database.hasUnsavedChanges || !canSaveWorkout)
+                    .disabled(!canSaveWorkout)
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     Button(NSLocalizedString("cancel", comment: "")) {
@@ -193,6 +195,7 @@ struct WorkoutEditorScreen: View {
                     workout.date = .now
                     workout.endDate = .now.addingTimeInterval(1000)
                 }
+                refreshOnChange()
             }
         }
     }
@@ -234,6 +237,17 @@ struct WorkoutEditorScreen: View {
             focusedTextField = $0 == nil ? nil : .workoutSetEntry(index: $0!)
         })
     }
+    
+    // MARK: - Autosave
+    
+    private func refreshOnChange() {
+        cancellable = NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
+            .sink { _ in
+                print("WorkoutEditorScreen: Detected DB Change")
+                self.workout.objectWillChange.send()
+            }
+    }
+    
 }
 
 

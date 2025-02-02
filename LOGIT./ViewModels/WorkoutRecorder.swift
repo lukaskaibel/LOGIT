@@ -33,7 +33,6 @@ final class WorkoutRecorder: ObservableObject {
     init(database: Database, currentWorkoutManager: CurrentWorkoutManager) {
         self.database = database
         self.currentWorkoutManager = currentWorkoutManager
-        setUpAutoSaveForWorkout()
         workout = currentWorkoutManager.getCurrentWorkout()
     }
     
@@ -181,16 +180,6 @@ final class WorkoutRecorder: ObservableObject {
     /// Returns the next workout set to be executed. This is the first workout set, that has no workout set with entries after it.
     var nextPerformedWorkoutSet: WorkoutSet? {
         workout?.sets.reversed().reduce(nil, { $1.hasEntry ? $0 : $1 })
-    }
-    
-    // MARK: - Auto-save workout changes
-
-    private func setUpAutoSaveForWorkout() {
-        cancellable = NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
-            .sink { [weak self] _ in
-                self?.workout?.objectWillChange.send()
-                self?.database.save()
-            }
     }
 
 }

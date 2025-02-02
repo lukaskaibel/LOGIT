@@ -40,6 +40,7 @@ struct WorkoutRecorderScreen: View {
     @State private var didAppear = false
     @State private var timerSound: AVAudioPlayer?
     @State private var progress: Float = 0
+    @State private var cancellable: AnyCancellable?
 
     @State private var isShowingFinishConfirmation = false
     @State internal var sheetType: WorkoutSetGroupList.SheetType?
@@ -196,6 +197,7 @@ struct WorkoutRecorderScreen: View {
             // onAppear called twice because of bug
             if !didAppear {
                 didAppear = true
+                setUpAutoSaveForWorkout()
                 chronograph.onTimerFired = {
                     shouldFlash = true
                     if !timerIsMuted {
@@ -410,6 +412,16 @@ struct WorkoutRecorderScreen: View {
 
     private var remainingChronoTimeString: String {
         "\(Int(chronograph.seconds)/60 / 10 % 6 )\(Int(chronograph.seconds)/60 % 10):\(Int(chronograph.seconds) % 60 / 10)\(Int(chronograph.seconds) % 60 % 10)"
+    }
+    
+    // MARK: - Autosave
+    
+    private func setUpAutoSaveForWorkout() {
+        cancellable = NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
+            .sink { _ in
+                self.workoutRecorder.workout?.objectWillChange.send()
+                self.database.save()
+            }
     }
 
 }

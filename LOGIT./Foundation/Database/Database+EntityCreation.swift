@@ -39,10 +39,7 @@ extension Database {
         } else if createFirstSetAutomatically {
             newStandardSet(setGroup: setGroup)
         }
-        exercise?.setGroups.append(setGroup)
-        if let exercise = exercise {
-            setGroup.exerciseOrder = [exercise.id!]
-        }
+        setGroup.exercise = exercise
         workout?.setGroups.append(setGroup)
         return setGroup
     }
@@ -174,10 +171,7 @@ extension Database {
         } else if createFirstSetAutomatically {
             newTemplateStandardSet(setGroup: templateSetGroup)
         }
-        exercise?.templateSetGroups.append(templateSetGroup)
-        if let exercise = exercise {
-            templateSetGroup.exerciseOrder = [exercise.id!]
-        }
+        templateSetGroup.exercise = exercise
         template?.setGroups.append(templateSetGroup)
         return templateSetGroup
     }

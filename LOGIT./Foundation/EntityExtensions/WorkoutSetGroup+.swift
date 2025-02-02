@@ -48,28 +48,37 @@ extension WorkoutSetGroup {
     }
 
     public var exercise: Exercise? {
-        get { exercises.first }
+        get {
+            exercises.first
+        }
         set {
-            guard let exercise = newValue else { return }
-            if exercises.count == 0 {
-                exercises = [exercise, exercise]
+            guard let newExercise = newValue else { return }
+            var currentExercises = exercises
+
+            if currentExercises.isEmpty {
+                currentExercises = [newExercise]
             } else {
-                exercises.replaceValue(at: 0, with: exercise)
+                currentExercises[0] = newExercise
             }
+            exercises = currentExercises
         }
     }
 
     public var secondaryExercise: Exercise? {
-        get { exercises.value(at: 1) }
+        get {
+            return exercises.value(at: 1)
+        }
         set {
             guard let exercise = newValue else { return }
-            if exercises.count == 0 {
-                exercises = [exercise, exercise]
-            } else if exercises.count == 1 {
-                exercises.append(exercise)
+            var currentExercises = exercises
+            if currentExercises.count == 0 {
+                currentExercises = [exercise, exercise]
+            } else if currentExercises.count == 1 {
+                currentExercises.append(exercise)
             } else {
-                exercises.replaceValue(at: 1, with: exercise)
+                currentExercises.replaceValue(at: 1, with: exercise)
             }
+            exercises = currentExercises
         }
     }
     

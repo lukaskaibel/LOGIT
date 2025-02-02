@@ -25,10 +25,6 @@ extension Exercise {
                         }
                 }
         }
-        set {
-            setGroupOrder = newValue.map { $0.id! }
-            setGroups_ = NSSet(array: newValue)
-        }
     }
     
     @objc var firstLetterOfName: String {
@@ -46,10 +42,6 @@ extension Exercise {
                             templateSetGroup.id == id
                         }
                 }
-        }
-        set {
-            templateSetGroupOrder = newValue.map { $0.id! }
-            templateSetGroups_ = NSSet(array: newValue)
         }
     }
 

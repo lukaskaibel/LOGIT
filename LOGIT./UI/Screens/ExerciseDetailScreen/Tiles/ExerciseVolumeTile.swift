@@ -55,6 +55,7 @@ struct ExerciseVolumeTile: View {
                             .foregroundStyle(Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill)
                         }
                     }
+                    .chartXScale(domain: xDomain)
                     .chartXAxis {}
                     .chartYAxis {}
                     .frame(width: 120, height: 80)
@@ -64,6 +65,11 @@ struct ExerciseVolumeTile: View {
             .padding(CELL_PADDING)
             .tileStyle()
         }
+    }
+    
+    private var xDomain: some ScaleDomain {
+        let startDate = Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now)!.startOfWeek
+        return startDate...Date.now.endOfWeek
     }
     
 }

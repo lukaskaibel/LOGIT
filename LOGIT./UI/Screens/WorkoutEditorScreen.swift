@@ -243,7 +243,6 @@ struct WorkoutEditorScreen: View {
     private func refreshOnChange() {
         cancellable = NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
             .sink { _ in
-                print("WorkoutEditorScreen: Detected DB Change")
                 self.workout.objectWillChange.send()
             }
     }

@@ -105,7 +105,7 @@ struct StartWorkoutView: View {
         }
         .sheet(isPresented: $isShowingTemplateListScreen) {
             NavigationStack {
-                TemplateListScreen(showStartButton: true)
+                TemplateListScreen(startWorkoutOnTap: true)
             }
         }
     }

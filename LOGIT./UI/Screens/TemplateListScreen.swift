@@ -24,7 +24,7 @@ struct TemplateListScreen: View {
     @State private var showingTemplateCreation = false
     @State private var isShowingNoTemplatesTip = false
     
-    var showStartButton: Bool = false
+    var startWorkoutOnTap: Bool = false
 
     // MARK: - Body
 
@@ -65,22 +65,18 @@ struct TemplateListScreen: View {
                             ForEach(templates) {
                                 template in
                                 Button {
-                                    homeNavigationCoordinator.path.append(.template(template))
+                                    if startWorkoutOnTap {
+                                        workoutRecorder.startWorkout(from: template)
+                                        dismiss()
+                                    } else {
+                                        homeNavigationCoordinator.path.append(.template(template))
+                                    }
                                 } label: {
                                     VStack {
                                         HStack {
                                             TemplateCell(template: template)
                                             NavigationChevron()
                                                 .foregroundStyle(.secondary)
-                                        }
-                                        if showStartButton {
-                                            Button {
-                                                workoutRecorder.startWorkout(from: template)
-                                                dismiss()
-                                            } label: {
-                                                Label(NSLocalizedString("startFromTemplate", comment: ""), systemImage: "play.fill")
-                                            }
-                                            .buttonStyle(SecondaryBigButtonStyle())
                                         }
                                     }
                                     .padding(CELL_PADDING)
@@ -102,7 +98,7 @@ struct TemplateListScreen: View {
                 isShowingNoTemplatesTip = groupedTemplates.isEmpty
             }
             .navigationBarTitleDisplayMode(.large)
-            .navigationTitle(NSLocalizedString("templates", comment: ""))
+            .navigationTitle(NSLocalizedString(startWorkoutOnTap ? "selectTemplate" : "templates", comment: ""))
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     CreateTemplateMenu()

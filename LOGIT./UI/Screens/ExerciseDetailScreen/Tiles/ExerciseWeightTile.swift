@@ -44,26 +44,17 @@ struct ExerciseWeightTile: View {
                 }
                 Spacer()
                 Chart {
-                    if let firstEntry = maxDailySets.first {
-                        LineMark(
-                            x: .value("Date", Date.distantPast, unit: .day),
-                            y: .value("Max weight on day", convertWeightForDisplaying(firstEntry.maximum(.weight, for: exercise)))
-                        )
-                        .interpolationMethod(.catmullRom)
-                        .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                        .lineStyle(StrokeStyle(lineWidth: 6))
-                        AreaMark(
-                            x: .value("Date", Date.distantPast, unit: .day),
-                            y: .value("Max weight on day", convertWeightForDisplaying(firstEntry.maximum(.weight, for: exercise)))
-                        )
-                        .interpolationMethod(.catmullRom)
-                        .foregroundStyle(Gradient(colors: [
-                            exerciseMuscleGroupColor.opacity(0.5),
-                            exerciseMuscleGroupColor.opacity(0.2),
-                            exerciseMuscleGroupColor.opacity(0)
-                        ]))
-                    }
                     ForEach(maxDailySets) { workoutSet in
+                        if maxDailySets.first == workoutSet {
+                            LineMark(
+                                x: .value("Date", Date.distantPast, unit: .day),
+                                y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
+                            )
+                            .interpolationMethod(.catmullRom)
+                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                            .lineStyle(StrokeStyle(lineWidth: 5, lineCap: .round))
+
+                        }
                         LineMark(
                             x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
                             y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
@@ -77,13 +68,14 @@ struct ExerciseWeightTile: View {
                         )
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(Gradient(colors: [
-                            exerciseMuscleGroupColor.opacity(0.5),
-                            exerciseMuscleGroupColor.opacity(0.2),
+                            exerciseMuscleGroupColor.opacity(0.3),
+                            exerciseMuscleGroupColor.opacity(0.1),
                             exerciseMuscleGroupColor.opacity(0)
                         ]))
                     }
                 }
                 .chartXScale(domain: xDomain)
+                .chartYScale(domain: 0...(Double(allTimeWeightPR(in: workoutSets)) * 1.1))
                 .chartXAxis {}
                 .chartYAxis {}
                 .frame(width: 120, height: 80)
@@ -99,7 +91,7 @@ struct ExerciseWeightTile: View {
     
     private var xDomain: some ScaleDomain {
         let startDate = Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now)!.startOfWeek
-        return startDate...Date.now.endOfWeek
+        return startDate...Date.now
     }
     
     private func maxWeightDailySets(in groupedWorkoutSets: [[WorkoutSet]]) -> [WorkoutSet] {
@@ -126,6 +118,16 @@ struct ExerciseWeightTile: View {
         return setsInTimeFrame
             .map({ $0.maximum(.weight, for: exercise) })
             .max()
+    }
+    
+    private func allTimeWeightPR(in workoutSets: [WorkoutSet]) -> Int {
+        convertWeightForDisplaying(
+            workoutSets
+                .map {
+                    $0.maximum(.weight, for: exercise)
+                }
+                .max() ?? 0
+        )
     }
 }
 

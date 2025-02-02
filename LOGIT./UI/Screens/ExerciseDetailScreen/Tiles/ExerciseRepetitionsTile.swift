@@ -51,17 +51,7 @@ struct ExerciseRepetitionsTile: View {
                         )
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                        .lineStyle(StrokeStyle(lineWidth: 6))
-                        AreaMark(
-                            x: .value("Date", Date.distantPast, unit: .day),
-                            y: .value("Max repetitions on day", firstEntry.maximum(.repetitions, for: exercise))
-                        )
-                        .interpolationMethod(.catmullRom)
-                        .foregroundStyle(Gradient(colors: [
-                            exerciseMuscleGroupColor.opacity(0.5),
-                            exerciseMuscleGroupColor.opacity(0.2),
-                            exerciseMuscleGroupColor.opacity(0)
-                        ]))
+                        .lineStyle(StrokeStyle(lineWidth: 5, lineCap: .round))
                     }
                     ForEach(maxDailySets) { workoutSet in
                         LineMark(
@@ -77,14 +67,15 @@ struct ExerciseRepetitionsTile: View {
                         )
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(Gradient(colors: [
-                            exerciseMuscleGroupColor.opacity(0.5),
-                            exerciseMuscleGroupColor.opacity(0.2),
+                            exerciseMuscleGroupColor.opacity(0.3),
+                            exerciseMuscleGroupColor.opacity(0.1),
                             exerciseMuscleGroupColor.opacity(0)
                         ]))
                     }
                 }
                 .chartXScale(domain: xDomain)
                 .chartXAxis {}
+                .chartYScale(domain: 0...(Double(allTimeRepetitionsPR(in: workoutSets)) * 1.1))
                 .chartYAxis {}
                 .frame(width: 120, height: 80)
                 .clipped()
@@ -103,7 +94,6 @@ struct ExerciseRepetitionsTile: View {
     }
     
     private func maxRepetitionsDailySets(in groupedWorkoutSets: [[WorkoutSet]]) -> [WorkoutSet] {
-        let startDate = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: .now)!
         let maxSetsPerDay = groupedWorkoutSets.compactMap { setsPerDay -> WorkoutSet? in
             return setsPerDay.max(by: { $0.maximum(.repetitions, for: exercise) < $1.maximum(.repetitions, for: exercise) })
         }
@@ -128,6 +118,15 @@ struct ExerciseRepetitionsTile: View {
             .map({ $0.maximum(.repetitions, for: exercise) })
             .max()
     }
+    
+    private func allTimeRepetitionsPR(in workoutSets: [WorkoutSet]) -> Int {
+        workoutSets
+            .map {
+                $0.maximum(.repetitions, for: exercise)
+            }
+            .max() ?? 0
+    }
+
 }
 
 private struct PreviewWrapperView: View {

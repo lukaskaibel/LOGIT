@@ -15,7 +15,7 @@ struct WorkoutPredicateFactory {
         withMuscleGroup muscleGroup: MuscleGroup? = nil,
         from startDate: Date? = nil,
         to endDate: Date? = nil,
-        excludingWorkoutWithId excludedWorkoutID: UUID? = nil
+        excludeCurrentWorkout: Bool = true
     ) -> NSPredicate? {
         // Initialize an array for subpredicates
         var subpredicates = [NSPredicate]()
@@ -51,8 +51,8 @@ struct WorkoutPredicateFactory {
         }
 
         // 3. Exclude current workout
-        if let excludedWorkoutID = excludedWorkoutID {
-            let excludeCurrentWorkoutPredicate = NSPredicate(format: "id != %@", excludedWorkoutID.uuidString)
+        if excludeCurrentWorkout {
+            let excludeCurrentWorkoutPredicate = NSPredicate(format: "isCurrentWorkout == nil OR isCurrentWorkout == NO")
             subpredicates.append(excludeCurrentWorkoutPredicate)
         }
 

@@ -31,7 +31,8 @@ struct HomeScreen: View {
     var body: some View {
         FetchRequestWrapper(
             Workout.self,
-            sortDescriptors: [SortDescriptor(\.date, order: .reverse)]
+            sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
+            predicate: WorkoutPredicateFactory.getWorkouts()
         ) { workouts in
             NavigationStack(path: $homeNavigationCoordinator.path) {
                 ScrollView {

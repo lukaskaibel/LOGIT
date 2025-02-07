@@ -42,12 +42,11 @@ struct LOGIT: App {
 //        #else
         let database = Database()
 //        #endif
-        let currentWorkoutManager = CurrentWorkoutManager(database: database)
         
         self._database = StateObject(wrappedValue: database)
         self._templateService = StateObject(wrappedValue: TemplateService(database: database))
         self._measurementController = StateObject(wrappedValue: MeasurementEntryController(database: database))
-        self._workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: database, currentWorkoutManager: currentWorkoutManager))
+        self._workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: database))
         self._muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
         self._homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
         

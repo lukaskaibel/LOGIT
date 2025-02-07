@@ -12,7 +12,7 @@ struct WorkoutSetGroupPredicateFactory {
     
     static func getWorkoutSetGroups(
         withExercise exercise: Exercise? = nil,
-        excludingWorkoutId workoutID: UUID? = nil
+        excludeCurrentWorkout: Bool = true
     ) -> NSPredicate? {
         var subpredicates = [NSPredicate]()
 
@@ -23,12 +23,10 @@ struct WorkoutSetGroupPredicateFactory {
             )
             subpredicates.append(exercisePredicate)
         }
-
-        if let workoutID = workoutID {
-            let excludeWorkoutPredicate = NSPredicate(
-                format: "workout.id != %@", workoutID.uuidString
-            )
-            subpredicates.append(excludeWorkoutPredicate)
+        
+        if excludeCurrentWorkout {
+            let excludeCurrentWorkoutPredicate = NSPredicate(format: "workout.isCurrentWorkout == nil OR workout.isCurrentWorkout == NO")
+            subpredicates.append(excludeCurrentWorkoutPredicate)
         }
 
         if subpredicates.isEmpty {

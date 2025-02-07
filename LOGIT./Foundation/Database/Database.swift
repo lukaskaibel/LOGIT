@@ -26,6 +26,9 @@ class Database: ObservableObject {
     init(isPreview: Bool = false) {
         self.isPreview = isPreview
         container = NSPersistentCloudKitContainer(name: "LOGIT")
+        let description = container.persistentStoreDescriptions.first
+        description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+        description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
 
         if isPreview {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")

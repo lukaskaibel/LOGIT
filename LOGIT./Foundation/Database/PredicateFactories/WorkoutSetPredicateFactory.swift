@@ -15,7 +15,7 @@ struct WorkoutSetPredicateFactory {
         with exercise: Exercise? = nil,
         from startDate: Date? = nil,
         to endDate: Date? = nil,
-        excludeFromWorkout workoutID: UUID? = nil
+        excludeCurrentWorkout: Bool = true
     ) -> NSPredicate? {
         var subpredicates = [NSPredicate]()
         
@@ -34,9 +34,9 @@ struct WorkoutSetPredicateFactory {
             subpredicates.append(endDatePredicate)
         }
 
-        if let workoutID = workoutID {
-            let excludeWorkoutPredicate = NSPredicate(format: "setGroup.workout.id != %@", workoutID.uuidString)
-            subpredicates.append(excludeWorkoutPredicate)
+        if excludeCurrentWorkout {
+            let excludeCurrentWorkoutPredicate = NSPredicate(format: "setGroup.workout.isCurrentWorkout == nil OR setGroup.workout.isCurrentWorkout == NO")
+            subpredicates.append(excludeCurrentWorkoutPredicate)
         }
         
         if subpredicates.isEmpty {

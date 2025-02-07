@@ -121,7 +121,6 @@
 		79AB818D2ACB4EB200B2CCDF /* WidgetType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79AB818C2ACB4EB200B2CCDF /* WidgetType.swift */; };
 		79AB81902ACB4F0800B2CCDF /* WidgetCollectionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79AB818F2ACB4F0800B2CCDF /* WidgetCollectionType.swift */; };
 		79AB81922ACB694A00B2CCDF /* MeasurementEntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79AB81912ACB694A00B2CCDF /* MeasurementEntryType.swift */; };
-		79ACE8842BDD281A00815A5F /* CurrentWorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79ACE8832BDD281A00815A5F /* CurrentWorkoutManager.swift */; };
 		79B27FE32AD803C90026EF35 /* LOGITStoreKit.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 79B27FE22AD803C90026EF35 /* LOGITStoreKit.storekit */; };
 		79B27FE52AD8288A0026EF35 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B27FE42AD8288A0026EF35 /* PurchaseManager.swift */; };
 		79B2FA422B8EA08300987578 /* WorkoutEditorScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B2FA412B8EA08200987578 /* WorkoutEditorScreen.swift */; };
@@ -321,7 +320,6 @@
 		79AB818C2ACB4EB200B2CCDF /* WidgetType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetType.swift; sourceTree = "<group>"; };
 		79AB818F2ACB4F0800B2CCDF /* WidgetCollectionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetCollectionType.swift; sourceTree = "<group>"; };
 		79AB81912ACB694A00B2CCDF /* MeasurementEntryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementEntryType.swift; sourceTree = "<group>"; };
-		79ACE8832BDD281A00815A5F /* CurrentWorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentWorkoutManager.swift; sourceTree = "<group>"; };
 		79B27FE22AD803C90026EF35 /* LOGITStoreKit.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = LOGITStoreKit.storekit; sourceTree = "<group>"; };
 		79B27FE42AD8288A0026EF35 /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
 		79B2FA412B8EA08200987578 /* WorkoutEditorScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutEditorScreen.swift; sourceTree = "<group>"; };
@@ -374,6 +372,7 @@
 		807FC47E268A909D00169820 /* Exercise+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+.swift"; sourceTree = "<group>"; };
 		8084604A276662A000E0D0D0 /* WorkoutListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutListScreen.swift; sourceTree = "<group>"; };
 		80B8CBB72D4C286000FEDF23 /* TemplatePredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplatePredicateFactory.swift; sourceTree = "<group>"; };
+		80CBC33C2D56BE19001946EA /* LOGIT 3.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 3.0.xcdatamodel"; sourceTree = "<group>"; };
 		80D9A7DA28860BB1000BF05E /* WorkoutCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCell.swift; sourceTree = "<group>"; };
 		80E9FAEE26FE152100C670D5 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
 		80EC5D8B2D3A85AE00AFAE9A /* ExercisePersonalBestsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisePersonalBestsTile.swift; sourceTree = "<group>"; };
@@ -555,7 +554,6 @@
 		79585CED2B9298B500E85476 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				79ACE8832BDD281A00815A5F /* CurrentWorkoutManager.swift */,
 				79585CEE2B92991D00E85476 /* WorkoutRecorder.swift */,
 			);
 			path = ViewModels;
@@ -1118,7 +1116,6 @@
 				79A637D92A3A0157002A1F20 /* WorkoutRecorderScreen+Toolbar.swift in Sources */,
 				79488DEA2A76FB4E005C485D /* MuscleGroupGradientStyle.swift in Sources */,
 				80EC5D8C2D3A85AE00AFAE9A /* ExercisePersonalBestsTile.swift in Sources */,
-				79ACE8842BDD281A00815A5F /* CurrentWorkoutManager.swift in Sources */,
 				79488DD72A7558B2005C485D /* EnvironmentValues+.swift in Sources */,
 				79898A8627F7BE4A00935E05 /* TemplateSetGroup+.swift in Sources */,
 				79DB25A02914382400ADDF24 /* UIConstants.swift in Sources */,
@@ -1491,10 +1488,11 @@
 		8065AA792686668100F53A5A /* LOGIT.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				80CBC33C2D56BE19001946EA /* LOGIT 3.0.xcdatamodel */,
 				796031442AB0B15D00C2CF7B /* LOGIT 2.0.xcdatamodel */,
 				8065AA7A2686668100F53A5A /* WorkoutDiary.xcdatamodel */,
 			);
-			currentVersion = 796031442AB0B15D00C2CF7B /* LOGIT 2.0.xcdatamodel */;
+			currentVersion = 80CBC33C2D56BE19001946EA /* LOGIT 3.0.xcdatamodel */;
 			path = LOGIT.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

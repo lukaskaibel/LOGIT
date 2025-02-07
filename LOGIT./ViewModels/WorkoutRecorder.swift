@@ -24,23 +24,21 @@ final class WorkoutRecorder: ObservableObject {
     // MARK: - Private Variables
     
     private let database: Database
-    private let currentWorkoutManager: CurrentWorkoutManager
     private var workoutSetTemplateSetDictionary = [WorkoutSet: TemplateSet]()
     private var cancellable: AnyCancellable?
     
     // MARK: - Init
     
-    init(database: Database, currentWorkoutManager: CurrentWorkoutManager) {
+    init(database: Database) {
         self.database = database
-        self.currentWorkoutManager = currentWorkoutManager
-        workout = currentWorkoutManager.getCurrentWorkout()
+        workout = (database.fetch(Workout.self, predicate: NSPredicate(format: "isCurrentWorkout == true")) as? [Workout])?.first
     }
-    
+
     // MARK: - Public Methods
     
     func startWorkout(from template: Template? = nil) {
         workout = database.newWorkout()
-        currentWorkoutManager.setCurrentWorkout(workout!)
+        workout?.isCurrentWorkout = true
         if let template = template {
             template.workouts.append(workout!)
             workout!.name = template.name
@@ -69,6 +67,7 @@ final class WorkoutRecorder: ObservableObject {
             }
         }
         database.save()
+        objectWillChange.send()
     }
     
     func saveWorkout() {
@@ -77,11 +76,12 @@ final class WorkoutRecorder: ObservableObject {
             return
         }
         
+        workout.isCurrentWorkout = false
+        objectWillChange.send()
         // Use a local copy of the workout for the background operations to avoid race conditions
         let workoutCopy = workout
         self.workout = nil
-        currentWorkoutManager.setCurrentWorkout(nil)
-        
+                
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let database = self?.database else {
                 Self.logger.error("Failed to clean up workout after finish: self already uninitialized")
@@ -121,9 +121,11 @@ final class WorkoutRecorder: ObservableObject {
             return
         }
         
+        workout.isCurrentWorkout = false
+        objectWillChange.send()
+        
         let workoutCopy = workout
         self.workout = nil
-        currentWorkoutManager.setCurrentWorkout(nil)
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let database = self?.database else {

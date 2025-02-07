@@ -34,7 +34,6 @@ struct MuscleGroupSplitScreen: View {
             Workout.self,
             sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
             predicate: WorkoutPredicateFactory.getWorkouts(
-                withMuscleGroup: selectedMuscleGroup,
                 from: Calendar.current.date(
                     byAdding: .weekOfYear,
                     value: -selectedWeeksFromNow,
@@ -82,7 +81,6 @@ struct MuscleGroupSplitScreen: View {
                                 Workout.self,
                                 sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
                                 predicate: WorkoutPredicateFactory.getWorkouts(
-                                    withMuscleGroup: selectedMuscleGroup,
                                     from: Calendar.current.date(
                                         byAdding: .weekOfYear,
                                         value: -weeksFromNow,

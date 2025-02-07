@@ -143,7 +143,7 @@ struct ExerciseWeightScreen: View {
             .frame(height: 300)
             Spacer()
         }
-        .isBlockedWithoutPro(false)
+        .isBlockedWithoutPro()
         .onAppear {
             let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
             chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!

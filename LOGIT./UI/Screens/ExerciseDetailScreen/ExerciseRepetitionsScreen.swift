@@ -142,7 +142,7 @@ struct ExerciseRepetitionsScreen: View {
             .frame(height: 300)
             Spacer()
         }
-        .isBlockedWithoutPro(false)
+        .isBlockedWithoutPro()
         .padding(.horizontal)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

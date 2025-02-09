@@ -32,7 +32,6 @@ struct FetchRequestWrapper<Content: View, Object: NSManagedObject>: View  {
     
     var body: some View {
         content(Array(sections))
-            .id(sections.count)
     }
     
 }

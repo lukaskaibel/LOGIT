@@ -9,10 +9,10 @@ import SwiftUI
 
 struct ExercisePersonalBestsTile: View {
     
-    @StateObject var exercise: Exercise
+    let exercise: Exercise
+    let workoutSets: [WorkoutSet]
     
     var body: some View {
-        let workoutSets = exercise.sets
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 5) {
                 Text(NSLocalizedString("weightPR", comment: ""))
@@ -139,7 +139,7 @@ private struct PreviewWrapperView: View {
     
     var body: some View {
         NavigationView {
-            ExercisePersonalBestsTile(exercise: database.getExercises().first!)
+            ExercisePersonalBestsTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap({ $0.sets }))
                 .padding()
         }
     }

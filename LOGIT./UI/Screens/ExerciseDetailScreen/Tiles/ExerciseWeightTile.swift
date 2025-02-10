@@ -10,10 +10,10 @@ import SwiftUI
 
 struct ExerciseWeightTile: View {
         
-    @StateObject var exercise: Exercise
-    
+    let exercise: Exercise
+    let workoutSets: [WorkoutSet]
+
     var body: some View {
-        let workoutSets = exercise.sets
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
@@ -136,7 +136,7 @@ private struct PreviewWrapperView: View {
     
     var body: some View {
         NavigationStack {
-            ExerciseWeightTile(exercise: database.getExercises().first!)
+            ExerciseWeightTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap({ $0.sets }))
         }
     }
 }

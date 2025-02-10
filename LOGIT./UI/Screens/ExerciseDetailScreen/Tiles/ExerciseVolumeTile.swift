@@ -10,8 +10,9 @@ import SwiftUI
 
 struct ExerciseVolumeTile: View {
         
-    @StateObject var exercise: Exercise
-    
+    let exercise: Exercise
+    let workoutSets: [WorkoutSet]
+
     var body: some View {
         FetchRequestWrapper(
             WorkoutSet.self,
@@ -21,6 +22,7 @@ struct ExerciseVolumeTile: View {
                 to: .now
             )
         ) { workoutSets in
+            
             let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
             VStack {
                 HStack {
@@ -80,7 +82,7 @@ private struct PreviewWrapperView: View {
     
     var body: some View {
         NavigationStack {
-            ExerciseVolumeTile(exercise: database.getExercises().first!)
+            ExerciseVolumeTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap({ $0.sets }))
         }
     }
 }

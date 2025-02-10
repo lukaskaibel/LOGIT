@@ -10,10 +10,10 @@ import SwiftUI
 
 struct ExerciseRepetitionsTile: View {
         
-    @StateObject var exercise: Exercise
-    
+    let exercise: Exercise
+    let workoutSets: [WorkoutSet]
+
     var body: some View {
-        let workoutSets = exercise.sets
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
@@ -134,7 +134,7 @@ private struct PreviewWrapperView: View {
     
     var body: some View {
         NavigationStack {
-            ExerciseRepetitionsTile(exercise: database.getExercises().first!)
+            ExerciseRepetitionsTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap({ $0.sets }))
         }
     }
 }

@@ -9,66 +9,65 @@ import Charts
 import SwiftUI
 
 struct OverallSetsTile: View {
+    
+    // MARK: - Parameter
+    
+    let workouts: [Workout]
         
     var body: some View {
-        FetchRequestWrapper(
-            Workout.self,
-            sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
-            predicate: WorkoutPredicateFactory.getWorkouts(
-                from: .now.startOfWeek,
-                to: .now
-            )
-        ) { workouts in
-            VStack(spacing: 20) {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("overallSets", comment: ""))
-                            .tileHeaderStyle()
-                        
-                    }
-                    Spacer()
-                    NavigationChevron()
-                        .foregroundStyle(.secondary)
+        let workoutsThisWeek = workouts.filter({ $0.date ?? .distantPast >= .now.startOfWeek && $0.date ?? .distantFuture <= .now })
+        VStack(spacing: 20) {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("overallSets", comment: ""))
+                        .tileHeaderStyle()
+                    
+                }
+                Spacer()
+                NavigationChevron()
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("thisWeek", comment: ""))
+                    Text("\(workoutsThisWeek.map({ $0.sets }).joined().count)")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(Color.accentColor.gradient)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("thisWeek", comment: ""))
-                        Text("\(workouts.map({ $0.sets }).joined().count)")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .fontDesign(.rounded)
-                            .foregroundStyle(Color.accentColor.gradient)
+                Chart {
+                    ForEach(setsOfLastWeekGroupedByDay(workoutsThisWeek), id: \.date) { data in
+                        BarMark(
+                            x: .value("Day", data.date, unit: .day),
+                            y: .value("Number of Sets", data.workoutSets.count),
+                            width: .ratio(0.5)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 1))
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    Chart {
-                        ForEach(setsOfLastWeekGroupedByDay(workouts), id: \.date) { data in
-                            BarMark(
-                                x: .value("Day", data.date, unit: .day),
-                                y: .value("Number of Sets", data.workoutSets.count),
-                                width: .ratio(0.5)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 1))
-                        }
-                    }
-                    .chartXAxis {
-                        AxisMarks(position: .bottom, values: .stride(by: .day)) { value in
-                            if let date = value.as(Date.self) {
-                                AxisGridLine()
-                                    .foregroundStyle(Color.gray.opacity(0.5))
-                                AxisValueLabel(date.formatted(.dateTime.weekday(.narrow)))
-                                    .foregroundStyle(Calendar.current.isDateInToday(date) ? Color.primary : .secondary)
-                                    .font(.caption.weight(.bold))
-                            }
-                        }
-                    }
-                    .chartYAxis {}
-                    .frame(width: 120, height: 80)
-                    .padding(.trailing)
                 }
+                .chartXAxis {
+                    AxisMarks(position: .bottom, values: .stride(by: .day)) { value in
+                        if let date = value.as(Date.self) {
+                            AxisGridLine()
+                                .foregroundStyle(Color.gray.opacity(0.5))
+                            AxisValueLabel(date.formatted(.dateTime.weekday(.narrow)))
+                                .foregroundStyle(Calendar.current.isDateInToday(date) ? Color.primary : .secondary)
+                                .font(.caption.weight(.bold))
+                        }
+                    }
+                }
+                .chartYAxis {}
+                .frame(width: 120, height: 80)
+                .padding(.trailing)
             }
-            .padding(CELL_PADDING)
-            .tileStyle()
+        }
+        .padding(CELL_PADDING)
+        .tileStyle()
+        .onAppear {
+            print("OverallSetsTile appeared")
         }
     }
     
@@ -109,7 +108,9 @@ struct OverallSetsTile: View {
 }
 
 #Preview {
-    OverallSetsTile()
-        .previewEnvironmentObjects()
-        .padding()
+    FetchRequestWrapper(Workout.self) { workouts in
+        OverallSetsTile(workouts: workouts)
+            .previewEnvironmentObjects()
+            .padding()
+    }
 }

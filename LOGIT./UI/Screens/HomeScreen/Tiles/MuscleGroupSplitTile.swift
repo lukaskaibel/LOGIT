@@ -14,53 +14,49 @@ struct MuscleGroupSplitTile: View {
     
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     
+    // MARK: - Parameters
+    
+    let workouts: [Workout]
+    
     // MARK: - Body
     
     var body: some View {
-        FetchRequestWrapper(
-            Workout.self,
-            sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
-            predicate: WorkoutPredicateFactory.getWorkouts(
-                from: .now.startOfWeek,
-                to: .now
-            )
-        ) { workouts in
-            let muscleGroupOccurances = muscleGroupService.getMuscleGroupOccurances(in: workouts)
-            VStack(spacing: 20) {
-                HStack {
-                    Text(NSLocalizedString("muscleGroups", comment: ""))
-                        .tileHeaderStyle()
-                    Spacer()
-                    NavigationChevron()
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("focusThisWeek", comment: ""))
-                            let fucusedMuscleGroups = getFocusedMuscleGroups(muscleGroupOccurances)
-                            HStack {
-                                if !fucusedMuscleGroups.isEmpty {
-                                    ForEach(fucusedMuscleGroups) { muscleGroup in
-                                        Text(muscleGroup.description)
-                                            .foregroundStyle(muscleGroup.color.gradient)
-                                    }
-                                } else {
-                                    Text(NSLocalizedString("none", comment: ""))
-                                        .foregroundStyle(Color.secondaryLabel.gradient)
-                                }
-                            }
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .fontDesign(.rounded)
-                    }
-                    Spacer()
-                    MuscleGroupOccurancesChart(muscleGroupOccurances: muscleGroupOccurances)
-                    .frame(width: 120, height: 80)
-                }
+        let workoutsThisWeek = workouts.filter({ $0.date ?? .distantPast >= .now.startOfWeek && $0.date ?? .distantFuture <= .now })
+        let muscleGroupOccurances = muscleGroupService.getMuscleGroupOccurances(in: workoutsThisWeek)
+        VStack(spacing: 20) {
+            HStack {
+                Text(NSLocalizedString("muscleGroups", comment: ""))
+                    .tileHeaderStyle()
+                Spacer()
+                NavigationChevron()
+                    .foregroundStyle(.secondary)
             }
-            .padding(CELL_PADDING)
-            .tileStyle()
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("focusThisWeek", comment: ""))
+                        let fucusedMuscleGroups = getFocusedMuscleGroups(muscleGroupOccurances)
+                        HStack {
+                            if !fucusedMuscleGroups.isEmpty {
+                                ForEach(fucusedMuscleGroups) { muscleGroup in
+                                    Text(muscleGroup.description)
+                                        .foregroundStyle(muscleGroup.color.gradient)
+                                }
+                            } else {
+                                Text(NSLocalizedString("none", comment: ""))
+                                    .foregroundStyle(Color.secondaryLabel.gradient)
+                            }
+                        }
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                }
+                Spacer()
+                MuscleGroupOccurancesChart(muscleGroupOccurances: muscleGroupOccurances)
+                .frame(width: 120, height: 80)
+            }
         }
+        .padding(CELL_PADDING)
+        .tileStyle()
     }
     
     // MAKR: - Supporting Methods
@@ -84,7 +80,9 @@ struct MuscleGroupSplitTile: View {
 }
 
 #Preview {
-    MuscleGroupSplitTile()
-        .padding()
-        .previewEnvironmentObjects()
+    FetchRequestWrapper(Workout.self) { workouts in
+        MuscleGroupSplitTile(workouts: workouts)
+            .padding()
+            .previewEnvironmentObjects()
+    }
 }

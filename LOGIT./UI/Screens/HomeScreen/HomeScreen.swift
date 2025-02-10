@@ -115,9 +115,27 @@ struct HomeScreen: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 VStack(spacing: 8) {
                                     currentWeekWeeklyTargetWidget
-                                    overallSetsView
-                                    volumePerDay
-                                    muscleGroupPercentageView
+                                    Button {
+                                        homeNavigationCoordinator.path.append(.overallSets)
+                                    } label: {
+                                        OverallSetsTile(workouts: workouts)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(TileButtonStyle())
+                                    Button {
+                                        homeNavigationCoordinator.path.append(.volume)
+                                    } label: {
+                                        VolumeTile(workouts: workouts)
+                                    }
+                                    .buttonStyle(TileButtonStyle())
+                                    Button {
+                                        homeNavigationCoordinator.path.append(.muscleGroupsOverview)
+                                    } label: {
+                                        MuscleGroupSplitTile(workouts: workouts)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(TileButtonStyle())
+
                                 }
                             }
                             .padding(.horizontal)
@@ -231,35 +249,6 @@ struct HomeScreen: View {
             homeNavigationCoordinator.path.append(.targetPerWeek)
         } label: {
             CurrentWeekWeeklyTargetTile()
-        }
-        .buttonStyle(TileButtonStyle())
-    }
-
-    private var muscleGroupPercentageView: some View {
-        Button {
-            homeNavigationCoordinator.path.append(.muscleGroupsOverview)
-        } label: {
-            MuscleGroupSplitTile()
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(TileButtonStyle())
-    }
-    
-    private var overallSetsView: some View {
-        Button {
-            homeNavigationCoordinator.path.append(.overallSets)
-        } label: {
-            OverallSetsTile()
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(TileButtonStyle())
-    }
-    
-    private var volumePerDay: some View {
-        Button {
-            homeNavigationCoordinator.path.append(.volume)
-        } label: {
-            VolumeTile()
         }
         .buttonStyle(TileButtonStyle())
     }

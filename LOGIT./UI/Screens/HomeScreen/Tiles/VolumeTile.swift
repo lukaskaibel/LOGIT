@@ -9,65 +9,55 @@ import Charts
 import SwiftUI
 
 struct VolumeTile: View {
+    
+    let workouts: [Workout]
         
     var body: some View {
-        FetchRequestWrapper(
-            Workout.self,
-            sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
-            predicate: WorkoutPredicateFactory.getWorkouts(
-                from: Calendar.current.date(
-                    byAdding: .month,
-                    value: -1,
-                    to: .now
-                ),
-                to: .now
-            )
-        ) { workouts in
-            let workoutSets = workouts.flatMap({ $0.sets })
-            VStack(spacing: 20) {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("volume", comment: ""))
-                            .tileHeaderStyle()
-                        
-                    }
-                    Spacer()
-                    NavigationChevron()
-                        .foregroundStyle(.secondary)
+        let workoutsLastMonth = workouts.filter({ $0.date ?? .distantPast >= Calendar.current.date(byAdding: .month, value: -1, to: .now)! && $0.date ?? .distantFuture <= .now })
+        let workoutSets = workoutsLastMonth.flatMap({ $0.sets })
+        VStack(spacing: 20) {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("volume", comment: ""))
+                        .tileHeaderStyle()
+                    
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("thisWeek", comment: ""))
-                        let setsThisWeek = workoutSets.filter({ Calendar.current.isDate($0.workout?.date ?? .distantPast, equalTo: .now, toGranularity: [.weekOfYear, .year]) })
-                        UnitView(
-                            value: "\(convertWeightForDisplaying(getVolume(of: setsThisWeek)))",
-                            unit: WeightUnit.used.rawValue,
-                            configuration: .large
-                        )
-                        .foregroundStyle(Color.accentColor.gradient)
-                    }
-                    Spacer()
-                    Chart {
-                        ForEach(setsGroupedByGranularity(workoutSets), id:\.0) { key, workoutSets in
-                            let volume = convertWeightForDisplaying(getVolume(of: workoutSets))
-                            BarMark(
-                                x: .value("Weeks before now", key, unit: .weekOfYear),
-                                y: .value("Volume in week", volume),
-                                width: .ratio(0.5)
-                            )
-                            .foregroundStyle((Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? Color.accentColor : Color.fill).gradient)
-                        }
-                    }
-                    .chartXAxis {}
-                    .chartYAxis {}
-                    .frame(width: 120, height: 80)
-                    .padding(.trailing)
-                }
+                Spacer()
+                NavigationChevron()
+                    .foregroundStyle(.secondary)
             }
-            .padding(CELL_PADDING)
-            .tileStyle()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("thisWeek", comment: ""))
+                    let setsThisWeek = workoutSets.filter({ Calendar.current.isDate($0.workout?.date ?? .distantPast, equalTo: .now, toGranularity: [.weekOfYear, .year]) })
+                    UnitView(
+                        value: "\(convertWeightForDisplaying(getVolume(of: setsThisWeek)))",
+                        unit: WeightUnit.used.rawValue,
+                        configuration: .large
+                    )
+                    .foregroundStyle(Color.accentColor.gradient)
+                }
+                Spacer()
+                Chart {
+                    ForEach(setsGroupedByGranularity(workoutSets), id:\.0) { key, workoutSets in
+                        let volume = convertWeightForDisplaying(getVolume(of: workoutSets))
+                        BarMark(
+                            x: .value("Weeks before now", key, unit: .weekOfYear),
+                            y: .value("Volume in week", volume),
+                            width: .ratio(0.5)
+                        )
+                        .foregroundStyle((Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? Color.accentColor : Color.fill).gradient)
+                    }
+                }
+                .chartXAxis {}
+                .chartYAxis {}
+                .frame(width: 120, height: 80)
+                .padding(.trailing)
+            }
         }
+        .padding(CELL_PADDING)
+        .tileStyle()
     }
     
     private func getPeriodStart(for date: Date) -> Date? {
@@ -115,7 +105,9 @@ struct VolumeTile: View {
 }
 
 #Preview {
-    VolumeTile()
-        .previewEnvironmentObjects()
-        .padding()
+    FetchRequestWrapper(Workout.self) { workouts in
+        VolumeTile(workouts: workouts)
+            .previewEnvironmentObjects()
+            .padding()
+    }
 }

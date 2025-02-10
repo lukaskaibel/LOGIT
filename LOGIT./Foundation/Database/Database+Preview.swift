@@ -76,121 +76,118 @@ extension Database {
             database.newStandardSet(repetitions: 12, weight: 30000, setGroup: curlGroup)
             database.newStandardSet(repetitions: 12, weight: 30000, setGroup: curlGroup)
 
-            if i != 0 {
-                date = Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!
-                let pushday = database.newWorkout(name: "Pushday", date: date)
-                let benchpressGroup = database.newWorkoutSetGroup(
-                    createFirstSetAutomatically: false,
-                    exercise: benchpress,
-                    workout: pushday
-                )
-                database.newStandardSet(
-                    repetitions: 5,
-                    weight: i == 0
-                        ? 10000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
-                    setGroup: benchpressGroup
-                )
-                database.newStandardSet(
-                    repetitions: 5,
-                    weight: i == 0
-                        ? 10000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
-                    setGroup: benchpressGroup
-                )
-                database.newStandardSet(
-                    repetitions: 5,
-                    weight: i == 0
-                        ? 10000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
-                    setGroup: benchpressGroup
-                )
-                database.newStandardSet(
-                    repetitions: 5,
-                    weight: i == 0
-                        ? 10000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
-                    setGroup: benchpressGroup
-                )
-                database.newStandardSet(
-                    repetitions: 5,
-                    weight: i == 0
-                        ? 10000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
-                    setGroup: benchpressGroup
-                )
-                let overheadPressGroup = database.newWorkoutSetGroup(
-                    createFirstSetAutomatically: false,
-                    exercise: overheadPress,
-                    workout: pushday
-                )
-                database.newStandardSet(
-                    repetitions: 10,
-                    weight: 30000,
-                    setGroup: overheadPressGroup
-                )
-                database.newStandardSet(
-                    repetitions: 10,
-                    weight: 30000,
-                    setGroup: overheadPressGroup
-                )
-                database.newStandardSet(
-                    repetitions: 10,
-                    weight: 30000,
-                    setGroup: overheadPressGroup
-                )
-                let inclinedBenchpressGroup = database.newWorkoutSetGroup(
-                    createFirstSetAutomatically: false,
-                    exercise: inclinedBenchpress,
-                    workout: pushday
-                )
-                database.newStandardSet(
-                    repetitions: 12,
-                    weight: 50000,
-                    setGroup: inclinedBenchpressGroup
-                )
-                database.newStandardSet(
-                    repetitions: 12,
-                    weight: 50000,
-                    setGroup: inclinedBenchpressGroup
-                )
-                database.newStandardSet(
-                    repetitions: 12,
-                    weight: 50000,
-                    setGroup: inclinedBenchpressGroup
-                )
-                let dipsGroup = database.newWorkoutSetGroup(
-                    createFirstSetAutomatically: false,
-                    exercise: dips,
-                    workout: pushday
-                )
-                database.newStandardSet(repetitions: 8, weight: 0, setGroup: dipsGroup)
-                database.newStandardSet(repetitions: 8, weight: 0, setGroup: dipsGroup)
-                database.newStandardSet(repetitions: 6, weight: 0, setGroup: dipsGroup)
-                let tricepsShoulderGroup = database.newWorkoutSetGroup(
-                    createFirstSetAutomatically: false,
-                    exercise: tricepsExtensions,
-                    workout: pushday
-                )
-                tricepsShoulderGroup.secondaryExercise = lateralRaises
-                database.newSuperSet(
-                    repetitionsFirstExercise: 12,
-                    repeptitionsSecondExercise: 14,
-                    weightFirstExercise: 25000,
-                    weightSecondExercise: 18000,
-                    setGroup: tricepsShoulderGroup
-                )
-                database.newSuperSet(
-                    repetitionsFirstExercise: 12,
-                    repeptitionsSecondExercise: 14,
-                    weightFirstExercise: 25000,
-                    weightSecondExercise: 18000,
-                    setGroup: tricepsShoulderGroup
-                )
-                database.newSuperSet(
-                    repetitionsFirstExercise: 12,
-                    repeptitionsSecondExercise: 14,
-                    weightFirstExercise: 25000,
-                    weightSecondExercise: 18000,
-                    setGroup: tricepsShoulderGroup
-                )
-
-            }
+            date = Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!
+            let pushday = database.newWorkout(name: "Pushday", date: date)
+            let benchpressGroup = database.newWorkoutSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: benchpress,
+                workout: pushday
+            )
+            database.newStandardSet(
+                repetitions: 5,
+                weight: i == 0
+                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                setGroup: benchpressGroup
+            )
+            database.newStandardSet(
+                repetitions: 5,
+                weight: i == 0
+                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                setGroup: benchpressGroup
+            )
+            database.newStandardSet(
+                repetitions: 5,
+                weight: i == 0
+                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                setGroup: benchpressGroup
+            )
+            database.newStandardSet(
+                repetitions: 5,
+                weight: i == 0
+                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                setGroup: benchpressGroup
+            )
+            database.newStandardSet(
+                repetitions: 5,
+                weight: i == 0
+                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                setGroup: benchpressGroup
+            )
+            let overheadPressGroup = database.newWorkoutSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: overheadPress,
+                workout: pushday
+            )
+            database.newStandardSet(
+                repetitions: 10,
+                weight: 30000,
+                setGroup: overheadPressGroup
+            )
+            database.newStandardSet(
+                repetitions: 10,
+                weight: 30000,
+                setGroup: overheadPressGroup
+            )
+            database.newStandardSet(
+                repetitions: 10,
+                weight: 30000,
+                setGroup: overheadPressGroup
+            )
+            let inclinedBenchpressGroup = database.newWorkoutSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: inclinedBenchpress,
+                workout: pushday
+            )
+            database.newStandardSet(
+                repetitions: 12,
+                weight: 50000,
+                setGroup: inclinedBenchpressGroup
+            )
+            database.newStandardSet(
+                repetitions: 12,
+                weight: 50000,
+                setGroup: inclinedBenchpressGroup
+            )
+            database.newStandardSet(
+                repetitions: 12,
+                weight: 50000,
+                setGroup: inclinedBenchpressGroup
+            )
+            let dipsGroup = database.newWorkoutSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: dips,
+                workout: pushday
+            )
+            database.newStandardSet(repetitions: 8, weight: 0, setGroup: dipsGroup)
+            database.newStandardSet(repetitions: 8, weight: 0, setGroup: dipsGroup)
+            database.newStandardSet(repetitions: 6, weight: 0, setGroup: dipsGroup)
+            let tricepsShoulderGroup = database.newWorkoutSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: tricepsExtensions,
+                workout: pushday
+            )
+            tricepsShoulderGroup.secondaryExercise = lateralRaises
+            database.newSuperSet(
+                repetitionsFirstExercise: 12,
+                repeptitionsSecondExercise: 14,
+                weightFirstExercise: 25000,
+                weightSecondExercise: 18000,
+                setGroup: tricepsShoulderGroup
+            )
+            database.newSuperSet(
+                repetitionsFirstExercise: 12,
+                repeptitionsSecondExercise: 14,
+                weightFirstExercise: 25000,
+                weightSecondExercise: 18000,
+                setGroup: tricepsShoulderGroup
+            )
+            database.newSuperSet(
+                repetitionsFirstExercise: 12,
+                repeptitionsSecondExercise: 14,
+                weightFirstExercise: 25000,
+                weightSecondExercise: 18000,
+                setGroup: tricepsShoulderGroup
+            )
 
             if i > 0 && i != 4 {
                 date = Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!

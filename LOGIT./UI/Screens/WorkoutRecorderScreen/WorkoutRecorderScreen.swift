@@ -33,6 +33,7 @@ struct WorkoutRecorderScreen: View {
 
     @EnvironmentObject var database: Database
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
+    @EnvironmentObject var muscleGroupService: MuscleGroupService
 
     // MARK: - State
 
@@ -239,44 +240,45 @@ struct WorkoutRecorderScreen: View {
                     .clipShape(Capsule())
                     .opacity(exerciseSelectionPresentationDetent == .large ? 0 : 1)
                 HStack {
-                    if let workoutStartTime = workoutRecorder.workout?.date {
-                        StopwatchView(startTime: workoutStartTime)
-                            .font(.body.weight(.bold).monospacedDigit())
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack {
+                            if let workoutStartTime = workoutRecorder.workout?.date {
+                                StopwatchView(startTime: workoutStartTime)
+                                    .foregroundStyle(.secondary)
+                                    .font(.footnote.weight(.bold).monospacedDigit())
+                            }
+                            if isShowingChronoInHeader {
+                                Divider()
+                                    .frame(height: 20)
+                                TimeStringView
+                            }
+                        }
+                        TextField(
+                            "",
+                            text: workoutName,
+                            prompt: Text(Workout.getStandardName(for: Date())).foregroundStyle(Color.label)
+                        )
+                        .submitLabel(.done)
+                        .focused($isFocusingTitleTextfield)
+                        .lineLimit(1)
+                        .foregroundColor(.label)
+                        .font(.body.weight(.bold))
                     }
-                    if isShowingChronoInHeader {
-                        Divider()
-                            .frame(height: 20)
-                        TimeStringView
-                    }
-                }
-                HStack {
-                    TextField(
-                        Workout.getStandardName(for: Date()),
-                        text: workoutName,
-                        axis: .vertical
-                    )
-                    .focused($isFocusingTitleTextfield)
-                    .lineLimit(1)
-                    .foregroundColor(.label)
-                    .font(.title2.weight(.bold))
                     Spacer()
-                    ProgressCircleButton(
-                        progress: progress
-                    ) {
+                    Button {
                         guard workoutRecorder.workout?.hasEntries ?? false else {
                             workoutRecorder.discardWorkout()
                             dismiss()
                             return
                         }
-                        UINotificationFeedbackGenerator().notificationOccurred(.success)
                         isShowingFinishConfirmation = true
-                    }
-                    .offset(y: -2)
-                    .onAppear {
-                        updateProgress()
-                    }
-                    .onReceive(workoutRecorder.workout?.objectWillChange ?? ObservableObjectPublisher()) {
-                        updateProgress()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.body.weight(.bold))
+                            .foregroundColor(Color.accentColor)
+                            .padding(8)
+                            .background(Color.accentColor.secondaryTranslucentBackground)
+                            .clipShape(Circle())
                     }
                 }
             }
@@ -294,7 +296,7 @@ struct WorkoutRecorderScreen: View {
             Text(remainingChronoTimeString)
         }
         .foregroundColor(chronograph.status == .running ? .accentColor : .secondaryLabel)
-        .font(.body.weight(.semibold).monospacedDigit())
+        .font(.footnote.weight(.semibold).monospacedDigit())
     }
 
     // MARK: - Supporting Methods / Computed Properties

@@ -58,10 +58,10 @@ struct WorkoutSetGroupList: View {
                 )
                 .padding(CELL_PADDING)
                 .tileStyle()
+                .transition(.scale)
                 .id(setGroup)
             }
         }
-        .animation(.interactiveSpring())
     }
 }
 

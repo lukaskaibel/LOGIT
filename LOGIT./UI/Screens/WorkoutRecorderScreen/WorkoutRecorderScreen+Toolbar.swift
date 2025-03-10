@@ -9,29 +9,6 @@ import SwiftUI
 
 extension WorkoutRecorderScreen {
 
-    internal var ToolbarItemsBottomBar: some ToolbarContent {
-        ToolbarItemGroup(placement: .bottomBar) {
-            Button {
-                withAnimation {
-                    isShowingChronoView.toggle()
-                }
-            } label: {
-                if !isShowingChronoView && chronograph.status != .idle {
-                    TimeStringView
-                } else {
-                    Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
-                }
-            }
-            .buttonStyle(SelectionButtonStyle(isSelected: isShowingChronoView))
-            Spacer()
-            Text(
-                "\(workoutRecorder.workout?.setGroups.count ?? 0) \(NSLocalizedString("exercise\(workoutRecorder.workout?.setGroups.count ?? 0 == 1 ? "" : "s")", comment: ""))"
-            )
-            .font(.caption)
-            Spacer()
-        }
-    }
-
     internal var ToolbarItemsKeyboard: some ToolbarContent {
         ToolbarItemGroup(placement: .keyboard) {
             HStack {

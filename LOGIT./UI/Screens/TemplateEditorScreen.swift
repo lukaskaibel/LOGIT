@@ -10,15 +10,9 @@ import SwiftUI
 struct TemplateEditorScreen: View {
 
     enum SheetType: Identifiable {
-        case exerciseSelection(
-            exercise: Exercise?,
-            setExercise: (Exercise) -> Void,
-            forSecondary: Bool
-        )
         case exerciseDetail(exercise: Exercise)
         var id: Int {
             switch self {
-            case .exerciseSelection: return 0
             case .exerciseDetail: return 1
             }
         }
@@ -36,6 +30,8 @@ struct TemplateEditorScreen: View {
 
     @State private var isReordering: Bool = false
     @State private var sheetType: SheetType? = nil
+    @State private var exerciseSelectionPresentationDetent: PresentationDetent = .fraction(0.09)
+
 
     // MARK: - Parameters
 
@@ -45,43 +41,65 @@ struct TemplateEditorScreen: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack {
-                    TextField(
-                        NSLocalizedString("title", comment: ""),
-                        text: templateName,
-                        axis: .vertical
-                    )
-                    .font(.largeTitle.weight(.bold))
-                    .lineLimit(2)
-                    .padding(.vertical)
+            ScrollViewReader { scrollable in
+                ScrollView {
+                    VStack {
+                        TextField(
+                            NSLocalizedString("title", comment: ""),
+                            text: templateName,
+                            axis: .vertical
+                        )
+                        .font(.largeTitle.weight(.bold))
+                        .lineLimit(2)
+                        .padding(.vertical)
 
-                    VStack(spacing: SECTION_SPACING) {
-                        ReorderableForEach(
-                            $template.setGroups,
-                            isReordering: $isReordering
-                        ) { setGroup in
-                            TemplateSetGroupCell(
-                                setGroup: setGroup,
-                                focusedIntegerFieldIndex: .constant(nil),
-                                sheetType: $sheetType,
-                                isReordering: $isReordering,
-                                supplementaryText:
-                                    "\(template.setGroups.firstIndex(of: setGroup)! + 1) / \(template.setGroups.count)  ·  \(setGroup.setType.description)"
-                            )
-                            .padding(CELL_PADDING)
-                            .tileStyle()
+                        VStack(spacing: SECTION_SPACING) {
+                            ReorderableForEach(
+                                $template.setGroups,
+                                isReordering: $isReordering
+                            ) { setGroup in
+                                TemplateSetGroupCell(
+                                    setGroup: setGroup,
+                                    focusedIntegerFieldIndex: .constant(nil),
+                                    sheetType: $sheetType,
+                                    isReordering: $isReordering,
+                                    supplementaryText:
+                                        "\(template.setGroups.firstIndex(of: setGroup)! + 1) / \(template.setGroups.count)  ·  \(setGroup.setType.description)"
+                                )
+                                .padding(CELL_PADDING)
+                                .tileStyle()
+                            }
                         }
+                        .animation(.interactiveSpring())
                     }
-                    .animation(.interactiveSpring())
-
-                    addExerciseButton
-                        .padding(.vertical, 30)
+                    .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                    .padding(.horizontal)
+                    .id(1)
                 }
-                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                .padding(.horizontal)
+                .scrollIndicators(.hidden)
+                .sheet(isPresented: .constant(true)) {
+                    NavigationView {
+                        ExerciseSelectionScreen(
+                            selectedExercise: nil,
+                            setExercise: { exercise in
+                                database.newTemplateSetGroup(
+                                    createFirstSetAutomatically: true,
+                                    exercise: exercise,
+                                    template: template
+                                )
+                                withAnimation {
+                                    scrollable.scrollTo(1, anchor: .bottom)
+                                }
+                            },
+                            forSecondary: false,
+                            presentationDetentSelection: $exerciseSelectionPresentationDetent
+                        )
+                    }
+                    .presentationDetents([.fraction(0.09), .medium, .large], selection: $exerciseSelectionPresentationDetent)
+                    .presentationBackgroundInteraction(.enabled)
+                    .interactiveDismissDisabled()
+                }
             }
-            .scrollIndicators(.hidden)
             .interactiveDismissDisabled()
             .navigationTitle(
                 isEditingExistingTemplate
@@ -118,58 +136,37 @@ struct TemplateEditorScreen: View {
                     .font(.caption)
                 }
             }
-            .sheet(item: $sheetType) { style in
-                NavigationStack {
-                    switch style {
-                    case let .exerciseSelection(exercise, setExercise, forSecondary):
-                        ExerciseSelectionScreen(
-                            selectedExercise: exercise,
-                            setExercise: setExercise,
-                            forSecondary: forSecondary
-                        )
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
-                                    sheetType = nil
-                                }
-                            }
-                        }
-                    case let .exerciseDetail(exercise):
-                        ExerciseDetailScreen(exercise: exercise)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button(NSLocalizedString("dismiss", comment: ""), role: .cancel)
-                                    {
-                                        sheetType = nil
-                                    }
-                                }
-                            }
-                    }
-                }
-            }
+//            .sheet(item: $sheetType) { style in
+//                NavigationStack {
+//                    switch style {
+//                    case let .exerciseSelection(exercise, setExercise, forSecondary):
+//                        ExerciseSelectionScreen(
+//                            selectedExercise: exercise,
+//                            setExercise: setExercise,
+//                            forSecondary: forSecondary
+//                        )
+//                        .toolbar {
+//                            ToolbarItem(placement: .navigationBarLeading) {
+//                                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
+//                                    sheetType = nil
+//                                }
+//                            }
+//                        }
+//                    case let .exerciseDetail(exercise):
+//                        ExerciseDetailScreen(exercise: exercise)
+//                            .toolbar {
+//                                ToolbarItem(placement: .navigationBarLeading) {
+//                                    Button(NSLocalizedString("dismiss", comment: ""), role: .cancel)
+//                                    {
+//                                        sheetType = nil
+//                                    }
+//                                }
+//                            }
+//                    }
+//                }
+//            }
             .scrollDismissesKeyboard(.immediately)
         }
-    }
-
-    // MARK: - Supporting Views
-
-    private var addExerciseButton: some View {
-        Button {
-            sheetType = .exerciseSelection(
-                exercise: nil,
-                setExercise: { exercise in
-                    database.newTemplateSetGroup(
-                        createFirstSetAutomatically: true,
-                        exercise: exercise,
-                        template: template
-                    )
-                },
-                forSecondary: false
-            )
-        } label: {
-            Label(NSLocalizedString("addExercise", comment: ""), systemImage: "plus.circle.fill")
-        }
-        .buttonStyle(BigButtonStyle())
     }
 
     // MARK: - Computed Properties

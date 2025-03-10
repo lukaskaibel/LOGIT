@@ -32,11 +32,12 @@ struct ExerciseEditScreen: View {
     init(
         exerciseToEdit: Exercise? = nil,
         onEditFinished: ((_ exercise: Exercise) -> Void)? = nil,
+        initialExerciseName: String? = nil,
         initialMuscleGroup: MuscleGroup = .chest
     ) {
         self.exerciseToEdit = exerciseToEdit
         self.onEditFinished = onEditFinished
-        _exerciseName = State(initialValue: exerciseToEdit?.name ?? "")
+        _exerciseName = State(initialValue: initialExerciseName ?? exerciseToEdit?.name ?? "")
         _muscleGroup = State(initialValue: exerciseToEdit?.muscleGroup ?? initialMuscleGroup)
     }
 

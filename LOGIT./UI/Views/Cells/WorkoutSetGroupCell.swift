@@ -27,7 +27,10 @@ struct WorkoutSetGroupCell: View {
     // MARK: - State
 
     @State private var isReorderingSets = false
-
+    @State private var isSelectingPrimaryExercise = false
+    @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
+    @State private var isSelectingSecondaryExercise = false
+    
     // MARK: - Body
 
     var body: some View {
@@ -71,6 +74,34 @@ struct WorkoutSetGroupCell: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $isSelectingPrimaryExercise) {
+            NavigationStack {
+                ExerciseSelectionScreen(
+                    selectedExercise: setGroup.exercise,
+                    setExercise: {
+                        setGroup.exercise = $0
+                        isSelectingPrimaryExercise = false
+                    },
+                    forSecondary: false,
+                    presentationDetentSelection: .constant(.large)
+                )
+                .presentationDetents([.large], selection: .constant(.large))
+                .navigationTitle(NSLocalizedString("replaceExercise", comment: ""))
+            }
+        }
+        .sheet(isPresented: $isSelectingSecondaryExercise) {
+            ExerciseSelectionScreen(
+                selectedExercise: setGroup.secondaryExercise,
+                setExercise: {
+                    setGroup.secondaryExercise = $0
+                    isSelectingSecondaryExercise = false
+                },
+                forSecondary: true,
+                presentationDetentSelection: .constant(.large)
+            )
+            .presentationDetents([.large], selection: .constant(.large))
+            .navigationTitle(NSLocalizedString("replaceSecondaryExercise", comment: ""))
         }
         .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
     }
@@ -136,11 +167,7 @@ struct WorkoutSetGroupCell: View {
                 }
                 if let exercise = setGroup.exercise {
                     Button {
-                        sheetType = .exerciseSelection(
-                            exercise: exercise,
-                            setExercise: { setGroup.exercise = $0 },
-                            forSecondary: false
-                        )
+                        isSelectingPrimaryExercise = true
                     } label: {
                         Label(
                             NSLocalizedString("replaceExercise", comment: ""),
@@ -151,11 +178,7 @@ struct WorkoutSetGroupCell: View {
                 if setGroup.setType == .superSet, let secondaryExercise = setGroup.secondaryExercise
                 {
                     Button {
-                        sheetType = .exerciseSelection(
-                            exercise: secondaryExercise,
-                            setExercise: { setGroup.secondaryExercise = $0 },
-                            forSecondary: true
-                        )
+                        isSelectingSecondaryExercise = true
                     } label: {
                         Label(
                             NSLocalizedString("replaceSecondaryExercise", comment: ""),

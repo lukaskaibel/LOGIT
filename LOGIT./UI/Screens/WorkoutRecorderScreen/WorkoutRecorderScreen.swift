@@ -13,6 +13,10 @@ import UIKit
 import Combine
 
 struct WorkoutRecorderScreen: View {
+    
+    enum ReplaceExerciseSheetMode {
+        case idle, presented(onExerciseSelection: (Exercise) -> Void)
+    }
 
     // MARK: - AppStorage
 
@@ -44,6 +48,8 @@ struct WorkoutRecorderScreen: View {
 
     @State private var isShowingFinishConfirmation = false
     @State internal var sheetType: WorkoutSetGroupList.SheetType?
+    @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
+    @State private var replaceExerciseSheetMode: ReplaceExerciseSheetMode = .idle
 
     @State internal var focusedIntegerFieldIndex: IntegerField.Index?
 
@@ -67,32 +73,69 @@ struct WorkoutRecorderScreen: View {
                                 .padding(.horizontal)
                                 .padding(.top, 90)
                                 .padding(.top, fullScreenDraggableCoverTopInset)
-
-                                Button {
-                                    sheetType = .exerciseSelection(
-                                        exercise: nil,
-                                        setExercise: { exercise in
-                                            workoutRecorder.addSetGroup(with: exercise)
-                                            withAnimation {
-                                                scrollable.scrollTo(1, anchor: .bottom)
-                                            }
-                                        },
-                                        forSecondary: false
-                                    )
-                                } label: {
-                                    Label(
-                                        NSLocalizedString("addExercise", comment: ""),
-                                        systemImage: "plus.circle.fill"
-                                    )
-                                }
-                                .buttonStyle(BigButtonStyle())
                                 .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                                .padding(.horizontal)
-                                .padding(.vertical, 30)
                                 .id(1)
+                                .emptyPlaceholder(workout.setGroups) {
+                                    Text("Add exercises from below.")
+                                        .foregroundStyle(Color.secondaryLabel)
+                                        .font(.body)
+                                        .fontWeight(.medium)
+                                        .padding(.top, 30)
+                                }
                             }
                         }
                         .scrollIndicators(.hidden)
+                        .sheet(isPresented: .constant(true)) {
+                            NavigationView {
+                                ExerciseSelectionScreen(
+                                    selectedExercise: nil,
+                                    setExercise: { exercise in
+                                        withAnimation {
+                                            workoutRecorder.addSetGroup(with: exercise)
+                                            scrollable.scrollTo(1, anchor: .bottom)
+                                        }
+                                    },
+                                    forSecondary: false,
+                                    presentationDetentSelection: $exerciseSelectionPresentationDetent
+                                )
+                                .padding(.top)
+                                .toolbar {
+                                    if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
+                                        ToolbarItemGroup(placement: .bottomBar) {
+                                            Button {
+                                                // Handle undo
+                                            } label: {
+                                                Image(systemName: "arrow.uturn.backward")
+                                            }
+                                            Spacer()
+                                            Button {
+                                                // Handle redo
+                                            } label: {
+                                                Image(systemName: "arrow.uturn.forward")
+                                            }
+                                            Spacer()
+                                            Button {
+                                                // Show Workout Info (volume, number of sets, some charts ???)
+                                            } label: {
+                                                Image(systemName: "info.circle")
+                                            }
+                                            Spacer()
+                                            Button {
+                                                // Show Timer / Stopwatch
+                                            } label: {
+                                                Image(systemName: "timer")
+                                            }
+                                        }
+                                    }
+                                }
+                                .toolbar(.hidden, for: .navigationBar)
+                            }
+                            .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
+                            .presentationBackgroundInteraction(.enabled)
+                            .presentationBackground(.thickMaterial)
+                            .presentationCornerRadius(30)
+                            .interactiveDismissDisabled()
+                        }
                     }
                 }
 
@@ -115,38 +158,7 @@ struct WorkoutRecorderScreen: View {
             }
             .toolbar(.hidden, for: .navigationBar)
             .toolbar {
-                ToolbarItemsBottomBar
                 ToolbarItemsKeyboard
-            }
-            .fullScreenCover(item: $sheetType) { type in
-                NavigationStack {
-                    switch type {
-                    case let .exerciseDetail(exercise):
-                        ExerciseDetailScreen(exercise: exercise)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button(NSLocalizedString("dismiss", comment: "")) {
-                                        sheetType = nil
-                                    }
-                                }
-                            }
-                            .tag("detail")
-                    case let .exerciseSelection(exercise, setExercise, forSecondary):
-                        ExerciseSelectionScreen(
-                            selectedExercise: exercise,
-                            setExercise: setExercise,
-                            forSecondary: forSecondary
-                        )
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
-                                    sheetType = nil
-                                }
-                            }
-                        }
-                        .tag("selection")
-                    }
-                }
             }
             .confirmationDialog(
                 Text(
@@ -198,6 +210,7 @@ struct WorkoutRecorderScreen: View {
             if !didAppear {
                 didAppear = true
                 setUpAutoSaveForWorkout()
+                exerciseSelectionPresentationDetent = workoutRecorder.workout?.isEmpty ?? true ? .medium : .fraction(BOTTOM_SHEET_SMALL)
                 chronograph.onTimerFired = {
                     shouldFlash = true
                     if !timerIsMuted {
@@ -224,6 +237,7 @@ struct WorkoutRecorderScreen: View {
                 Rectangle()
                     .frame(width: 40, height: 5)
                     .clipShape(Capsule())
+                    .opacity(exerciseSelectionPresentationDetent == .large ? 0 : 1)
                 HStack {
                     if let workoutStartTime = workoutRecorder.workout?.date {
                         StopwatchView(startTime: workoutStartTime)

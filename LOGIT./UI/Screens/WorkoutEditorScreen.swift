@@ -24,6 +24,8 @@ struct WorkoutEditorScreen: View {
     @State private var sheetType: WorkoutSetGroupList.SheetType? = nil
     @State private var cancellable: AnyCancellable?
     @FocusState private var focusedTextField: TextFieldType?
+    @State private var exerciseSelectionPresentationDetent: PresentationDetent = .fraction(0.09)
+
     
     // MARK: - Parameters
     
@@ -99,36 +101,35 @@ struct WorkoutEditorScreen: View {
                                         }
                                     }
                                 }
-                                Button {
-                                    sheetType = .exerciseSelection(
-                                        exercise: nil,
-                                        setExercise: { exercise in
-                                            database.newWorkoutSetGroup(
-                                                createFirstSetAutomatically: true,
-                                                exercise: exercise,
-                                                workout: workout
-                                            )
-                                            withAnimation {
-                                                scrollable.scrollTo(1, anchor: .bottom)
-                                            }
-                                        },
-                                        forSecondary: false
-                                    )
-                                } label: {
-                                    Label(
-                                        NSLocalizedString("addExercise", comment: ""),
-                                        systemImage: "plus.circle.fill"
-                                    )
-                                }
-                                .buttonStyle(BigButtonStyle())
                                 .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                                .padding(.top, 30)
                                 .id(1)
                             }
                         }
                     }
                     .padding(.horizontal)
                     .padding(.top)
+                }
+                .sheet(isPresented: .constant(true)) {
+                    NavigationView {
+                        ExerciseSelectionScreen(
+                            selectedExercise: nil,
+                            setExercise: { exercise in
+                                database.newWorkoutSetGroup(
+                                    createFirstSetAutomatically: true,
+                                    exercise: exercise,
+                                    workout: workout
+                                )
+                                withAnimation {
+                                    scrollable.scrollTo(1, anchor: .bottom)
+                                }
+                                },
+                            forSecondary: false,
+                            presentationDetentSelection: $exerciseSelectionPresentationDetent
+                        )
+                    }
+                    .presentationDetents([.fraction(0.09), .medium, .large], selection: $exerciseSelectionPresentationDetent)
+                    .presentationBackgroundInteraction(.enabled)
+                    .interactiveDismissDisabled()
                 }
             }
             .navigationTitle(NSLocalizedString(isAddingNewWorkout ? "addWorkout" : "editWorkout", comment: ""))
@@ -153,43 +154,37 @@ struct WorkoutEditorScreen: View {
                         dismiss()
                     }
                 }
-                ToolbarItemGroup(placement: .bottomBar) {
-                    Text(
-                        "\(workout.setGroups.count) \(NSLocalizedString("exercise\(workout.setGroups.count == 1 ? "" : "s")", comment: ""))"
-                    )
-                    .font(.caption)
-                }
             }
-            .sheet(item: $sheetType) { type in
-                NavigationStack {
-                    switch type {
-                    case let .exerciseDetail(exercise):
-                        ExerciseDetailScreen(exercise: exercise)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button(NSLocalizedString("dismiss", comment: "")) {
-                                        sheetType = nil
-                                    }
-                                }
-                            }
-                            .tag("detail")
-                    case let .exerciseSelection(exercise, setExercise, forSecondary):
-                        ExerciseSelectionScreen(
-                            selectedExercise: exercise,
-                            setExercise: setExercise,
-                            forSecondary: forSecondary
-                        )
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
-                                    sheetType = nil
-                                }
-                            }
-                        }
-                        .tag("selection")
-                    }
-                }
-            }
+//            .sheet(item: $sheetType) { type in
+//                NavigationStack {
+//                    switch type {
+//                    case let .exerciseDetail(exercise):
+//                        ExerciseDetailScreen(exercise: exercise)
+//                            .toolbar {
+//                                ToolbarItem(placement: .navigationBarLeading) {
+//                                    Button(NSLocalizedString("dismiss", comment: "")) {
+//                                        sheetType = nil
+//                                    }
+//                                }
+//                            }
+//                            .tag("detail")
+//                    case let .exerciseSelection(exercise, setExercise, forSecondary):
+//                        ExerciseSelectionScreen(
+//                            selectedExercise: exercise,
+//                            setExercise: setExercise,
+//                            forSecondary: forSecondary
+//                        )
+//                        .toolbar {
+//                            ToolbarItem(placement: .navigationBarLeading) {
+//                                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
+//                                    sheetType = nil
+//                                }
+//                            }
+//                        }
+//                        .tag("selection")
+//                    }
+//                }
+//            }
             .onAppear {
                 if workout.date == nil {
                     workout.date = .now

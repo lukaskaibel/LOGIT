@@ -51,6 +51,7 @@ struct WorkoutRecorderScreen: View {
     @State internal var sheetType: WorkoutSetGroupList.SheetType?
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var replaceExerciseSheetMode: ReplaceExerciseSheetMode = .idle
+    @State private var isShowingDetailsSheet = false
 
     @State internal var focusedIntegerFieldIndex: IntegerField.Index?
 
@@ -116,7 +117,7 @@ struct WorkoutRecorderScreen: View {
                                             }
                                             Spacer()
                                             Button {
-                                                // Show Workout Info (volume, number of sets, some charts ???)
+                                                isShowingDetailsSheet = true
                                             } label: {
                                                 Image(systemName: "info.circle")
                                             }
@@ -130,6 +131,88 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 }
                                 .toolbar(.hidden, for: .navigationBar)
+                                .sheet(isPresented: $isShowingDetailsSheet) {
+                                    VStack {
+                                        HStack {
+                                            Text(workoutRecorder.workout?.name?.isEmpty ?? true ? Workout.getStandardName(for: Date()) : workoutRecorder.workout!.name!)
+                                                .font(.title3)
+                                                .fontWeight(.bold)
+                                            Spacer()
+                                            Button {
+                                                isShowingDetailsSheet = false
+                                            } label: {
+                                                Image(systemName: "xmark")
+                                                    .font(.body.weight(.bold))
+                                                    .foregroundColor(Color.secondaryLabel)
+                                                    .padding(8)
+                                                    .background(Color.fill)
+                                                    .clipShape(Circle())
+                                            }
+                                        }
+                                        VStack {
+                                            HStack {
+                                                Text(NSLocalizedString("progress", comment: ""))
+                                                Spacer()
+                                                Text("\(Int(progress * 100))%")
+                                                    .fontWeight(.bold)
+                                                    .fontDesign(.rounded)
+                                                    .foregroundStyle(Color.accentColor)
+                                            }
+                                            RoundedRectangle(cornerRadius: 5)
+                                                .foregroundStyle(Color.placeholder)
+                                                .frame(height: 20)
+                                                .overlay {
+                                                    GeometryReader { geometry in
+                                                        RoundedRectangle(cornerRadius: 5)
+                                                            .foregroundStyle(Color.accentColor)
+                                                            .frame(width: geometry.size.width * CGFloat(progress))
+                                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                                    }
+                                                }
+                                        }
+                                        .padding(CELL_PADDING)
+                                        .tileStyle()
+                                        HStack {
+                                            VStack(alignment: .leading) {
+                                                Text(NSLocalizedString("exercises", comment: ""))
+                                                Text("\(workoutRecorder.workout?.exercises.count ?? 0)")
+                                                    .font(.title3)
+                                                    .fontWeight(.bold)
+                                                    .fontDesign(.rounded)
+                                                    .foregroundStyle(Color.accentColor)
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(CELL_PADDING)
+                                            .tileStyle()
+                                            VStack(alignment: .leading) {
+                                                Text(NSLocalizedString("sets", comment: ""))
+                                                Text("\(workoutRecorder.workout?.sets.count ?? 0)")
+                                                    .font(.title3)
+                                                    .fontWeight(.bold)
+                                                    .fontDesign(.rounded)
+                                                    .foregroundStyle(Color.accentColor)
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(CELL_PADDING)
+                                            .tileStyle()
+                                            VStack(alignment: .leading) {
+                                                Text(NSLocalizedString("volume", comment: ""))
+                                                UnitView(
+                                                    value: "\(getVolume(of: workoutRecorder.workout?.sets ?? []))",
+                                                    unit: WeightUnit.used.rawValue
+                                                )
+                                                .foregroundStyle(Color.accentColor)
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(CELL_PADDING)
+                                            .tileStyle()
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding()
+                                    .presentationDetents([.fraction(0.4)])
+                                    .presentationCornerRadius(30)
+                                }
                             }
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
@@ -138,8 +221,13 @@ struct WorkoutRecorderScreen: View {
                             .interactiveDismissDisabled()
                         }
                     }
+                    .onAppear {
+                        updateProgress()
+                    }
+                    .onReceive(workoutRecorder.workout?.objectWillChange ?? ObservableObjectPublisher()) {
+                        updateProgress()
+                    }
                 }
-
                 Header
                     .fullScreenDraggableCoverDragArea()
                     .frame(maxHeight: .infinity, alignment: .top)

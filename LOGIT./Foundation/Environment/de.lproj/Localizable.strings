@@ -221,6 +221,7 @@
 
 // MARK: - P
 
+"pause" = "Stop";
 "performed" = "Ausführungen:";
 "personalBest" = "Persönliche Bestleistung";
 "perDay" = "pro Tag";
@@ -287,6 +288,7 @@
 "starttime" = "Startzeit";
 "startWorkout" = "Workout starten";
 "stop" = "Stop";
+"stopwatch" = "Stoppuhr";
 "subscription" = "Abonnement";
 "summary" = "Zusammenfassung";
 "superSet" = "Supersatz";

@@ -31,29 +31,79 @@ struct ChronoView: View {
     // MARK: - View
 
     var body: some View {
-        VStack(spacing: 10) {
-            pickerView
+        VStack(spacing: 20) {
             HStack {
-                controlButtons
+                Button {
+                    if chronograph.mode != .timer {
+                        UISelectionFeedbackGenerator().selectionChanged()
+                    }
+                    chronograph.mode = .timer
+                } label: {
+                    Text(NSLocalizedString("timer", comment: ""))
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundStyle(chronograph.mode == .timer ? .white : .placeholder)
+                }
+                Spacer()
+                Button {
+                    if chronograph.mode != .stopwatch {
+                        UISelectionFeedbackGenerator().selectionChanged()
+                    }
+                    chronograph.mode = .stopwatch
+                } label: {
+                    Text(NSLocalizedString("stopwatch", comment: ""))
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundStyle(chronograph.mode == .stopwatch ? .white : .placeholder)
+                }
+            }
+            Spacer()
+            HStack {
                 Spacer()
                 if chronograph.mode == .timer {
                     timerIncreaseButton
                 }
+                Spacer()
                 Text(remainingTimeString)
-                    .font(.system(size: 70, weight: .light).monospacedDigit())
-                    .foregroundColor(
-                        .accentColor.opacity(
-                            chronograph.status == .paused ? opacityOfTimeWhenPaused : 1.0
-                        )
-                    )
+                    .font(.system(size: 70, weight: .regular).monospacedDigit())
+                    .fontDesign(.rounded)
+                    .foregroundColor(.accentColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
+                Spacer()
                 if chronograph.mode == .timer {
                     timerDecreaseButton
                 }
+                Spacer()
+            }
+            Spacer()
+            HStack {
+                Button {
+                    chronograph.cancel()
+                } label: {
+                    Label(NSLocalizedString("cancel", comment: ""), systemImage: "xmark")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .background(Color.secondary.secondaryTranslucentBackground)
+                        .cornerRadius(15)
+                        .opacity(chronograph.seconds == 0 ? 0.5 : 1.0)
+                }
+                .disabled(chronograph.seconds == 0)
+                Button {
+                    chronograph.status == .running ? chronograph.stop() : chronograph.start()
+                } label: {
+                    Label(NSLocalizedString(chronograph.status == .running ? "pause" : "start", comment: ""), systemImage: chronograph.status == .running ? "pause.fill" : "play.fill")
+                        .frame(maxWidth: .infinity)
+                        .fontWeight(.semibold)
+                        .padding()
+                        .background(Color.accentColor.secondaryTranslucentBackground)
+                        .cornerRadius(15)
+                }
+                .disabled(chronograph.mode == .timer && chronograph.seconds == 0)
             }
         }
-        .padding()
     }
 
     // MARK: - Subviews
@@ -154,5 +204,7 @@ struct ChronoView: View {
 struct TimerView_Previews: PreviewProvider {
     static var previews: some View {
         ChronoView(chronograph: Chronograph())
+            .padding()
+            .tileStyle()
     }
 }

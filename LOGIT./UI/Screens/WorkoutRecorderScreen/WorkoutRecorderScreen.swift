@@ -38,9 +38,7 @@ struct WorkoutRecorderScreen: View {
     // MARK: - State
 
     @StateObject var chronograph = Chronograph()
-    @State internal var isShowingChronoView = false
-    @State private var shouldShowChronoViewAgainWhenPossible = false
-    @State private var isShowingChronoInHeader = false
+    @State internal var isShowingChronoSheet = false
     @State private var shouldFlash = false
     @State private var didAppear = false
     @State private var timerSound: AVAudioPlayer?
@@ -123,7 +121,7 @@ struct WorkoutRecorderScreen: View {
                                             }
                                             Spacer()
                                             Button {
-                                                // Show Timer / Stopwatch
+                                                isShowingChronoSheet = true
                                             } label: {
                                                 Image(systemName: "timer")
                                             }
@@ -131,87 +129,20 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 }
                                 .toolbar(.hidden, for: .navigationBar)
+                                .sheet(isPresented: $isShowingChronoSheet) {
+                                    ChronoView(chronograph: chronograph)
+                                        .presentationDetents([.fraction(0.4)])
+                                        .presentationCornerRadius(30)
+                                        .padding()
+                                        .frame(maxHeight: .infinity, alignment: .top)
+                                }
                                 .sheet(isPresented: $isShowingDetailsSheet) {
-                                    VStack {
-                                        HStack {
-                                            Text(workoutRecorder.workout?.name?.isEmpty ?? true ? Workout.getStandardName(for: Date()) : workoutRecorder.workout!.name!)
-                                                .font(.title3)
-                                                .fontWeight(.bold)
-                                            Spacer()
-                                            Button {
-                                                isShowingDetailsSheet = false
-                                            } label: {
-                                                Image(systemName: "xmark")
-                                                    .font(.body.weight(.bold))
-                                                    .foregroundColor(Color.secondaryLabel)
-                                                    .padding(8)
-                                                    .background(Color.fill)
-                                                    .clipShape(Circle())
-                                            }
-                                        }
-                                        VStack {
-                                            HStack {
-                                                Text(NSLocalizedString("progress", comment: ""))
-                                                Spacer()
-                                                Text("\(Int(progress * 100))%")
-                                                    .fontWeight(.bold)
-                                                    .fontDesign(.rounded)
-                                                    .foregroundStyle(Color.accentColor)
-                                            }
-                                            RoundedRectangle(cornerRadius: 5)
-                                                .foregroundStyle(Color.placeholder)
-                                                .frame(height: 20)
-                                                .overlay {
-                                                    GeometryReader { geometry in
-                                                        RoundedRectangle(cornerRadius: 5)
-                                                            .foregroundStyle(Color.accentColor)
-                                                            .frame(width: geometry.size.width * CGFloat(progress))
-                                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                                    }
-                                                }
-                                        }
-                                        .padding(CELL_PADDING)
-                                        .tileStyle()
-                                        HStack {
-                                            VStack(alignment: .leading) {
-                                                Text(NSLocalizedString("exercises", comment: ""))
-                                                Text("\(workoutRecorder.workout?.exercises.count ?? 0)")
-                                                    .font(.title3)
-                                                    .fontWeight(.bold)
-                                                    .fontDesign(.rounded)
-                                                    .foregroundStyle(Color.accentColor)
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding(CELL_PADDING)
-                                            .tileStyle()
-                                            VStack(alignment: .leading) {
-                                                Text(NSLocalizedString("sets", comment: ""))
-                                                Text("\(workoutRecorder.workout?.sets.count ?? 0)")
-                                                    .font(.title3)
-                                                    .fontWeight(.bold)
-                                                    .fontDesign(.rounded)
-                                                    .foregroundStyle(Color.accentColor)
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding(CELL_PADDING)
-                                            .tileStyle()
-                                            VStack(alignment: .leading) {
-                                                Text(NSLocalizedString("volume", comment: ""))
-                                                UnitView(
-                                                    value: "\(getVolume(of: workoutRecorder.workout?.sets ?? []))",
-                                                    unit: WeightUnit.used.rawValue
-                                                )
-                                                .foregroundStyle(Color.accentColor)
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding(CELL_PADDING)
-                                            .tileStyle()
-                                        }
-                                        Spacer()
+                                    if let workout = workoutRecorder.workout {
+                                        WorkoutDetailSheet(workout: workout, progress: progress)
+                                            .padding()
+                                            .presentationDetents([.fraction(0.4)])
+                                            .presentationCornerRadius(30)
                                     }
-                                    .padding()
-                                    .presentationDetents([.fraction(0.4)])
-                                    .presentationCornerRadius(30)
                                 }
                             }
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
@@ -231,19 +162,6 @@ struct WorkoutRecorderScreen: View {
                 Header
                     .fullScreenDraggableCoverDragArea()
                     .frame(maxHeight: .infinity, alignment: .top)
-            }
-            .overlay {
-                if isShowingChronoView {
-                    ChronoView(chronograph: chronograph)
-                        .contentShape(Rectangle())
-                        .onSwipeDown { withAnimation { isShowingChronoView = false } }
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(30)
-                        .shadow(color: .black.opacity(0.8), radius: 20)
-                        .padding(.bottom, CELL_SPACING)
-                        .frame(maxHeight: .infinity, alignment: .bottom)
-                        .transition(.move(edge: .bottom))
-                }
             }
             .toolbar(.hidden, for: .navigationBar)
             .toolbar {
@@ -280,20 +198,6 @@ struct WorkoutRecorderScreen: View {
                 .edgesIgnoringSafeArea(.all)
                 .allowsHitTesting(false)
         }
-        .onChange(of: focusedIntegerFieldIndex) { newValue in
-            if newValue == nil {
-                isShowingChronoView = shouldShowChronoViewAgainWhenPossible
-                shouldShowChronoViewAgainWhenPossible = false
-            } else {
-                shouldShowChronoViewAgainWhenPossible =
-                    shouldShowChronoViewAgainWhenPossible
-                    ? shouldShowChronoViewAgainWhenPossible : isShowingChronoView
-                isShowingChronoView = false
-            }
-            withAnimation {
-                isShowingChronoInHeader = chronograph.status != .idle && newValue != nil
-            }
-        }
         .onAppear {
             // onAppear called twice because of bug
             if !didAppear {
@@ -329,15 +233,15 @@ struct WorkoutRecorderScreen: View {
                     .opacity(exerciseSelectionPresentationDetent == .large ? 0 : 1)
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        HStack {
+                        HStack(spacing: 10) {
                             if let workoutStartTime = workoutRecorder.workout?.date {
                                 StopwatchView(startTime: workoutStartTime)
                                     .foregroundStyle(.secondary)
                                     .font(.footnote.weight(.bold).monospacedDigit())
                             }
-                            if isShowingChronoInHeader {
+                            if chronograph.status != .idle {
                                 Divider()
-                                    .frame(height: 20)
+                                    .frame(height: 12)
                                 TimeStringView
                             }
                         }

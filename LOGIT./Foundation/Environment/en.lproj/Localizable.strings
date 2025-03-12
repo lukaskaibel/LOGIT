@@ -219,6 +219,7 @@
 
 // MARK: - P
 
+"pause" = "Pause";
 "performed" = "Performed";
 "personalBest" = "Personal Best";
 "perDay" = "per Day";
@@ -284,6 +285,7 @@
 "starttime" = "Start Time";
 "startWorkout" = "Start Workout";
 "stop" = "Stop";
+"stopwatch" = "Stopwatch";
 "subscription" = "Subscription";
 "summary" = "Summary";
 "superSet" = "Superset";

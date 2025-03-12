@@ -18,7 +18,9 @@ class Database: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Properties
-        
+    
+    @Published var canUndo: Bool = false
+    @Published var canRedo: Bool = false
     var isPreview: Bool
     
     // MARK: - Init
@@ -41,6 +43,9 @@ class Database: ObservableObject {
         if isPreview {
             setupPreviewDatabase()
         }
+
+        container.viewContext.undoManager = UndoManager()
+        observeUndoManager()
     }
 
     // MARK: - Computed Properties
@@ -112,6 +117,39 @@ class Database: ObservableObject {
     
     func managedObjectID(forURIRepresentation url: URL) -> NSManagedObjectID? {
         container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: url)
+    }
+    
+    // MARK: - UndoManager
+    
+    func undo() {
+        guard let undoManager = context.undoManager, undoManager.canUndo else { return }
+        context.perform {
+            undoManager.undo()
+        }
+    }
+
+    func redo() {
+        guard let undoManager = context.undoManager, undoManager.canRedo else { return }
+        context.perform {
+            undoManager.redo()
+        }
+    }
+    
+    private func observeUndoManager() {
+        guard let undoManager = context.undoManager else { return }
+
+        NotificationCenter.default.addObserver(forName: .NSUndoManagerCheckpoint, object: undoManager, queue: .main) { _ in
+            if self.canUndo != undoManager.canUndo {
+                DispatchQueue.main.async {
+                    self.canUndo = undoManager.canUndo
+                }
+            }
+            if self.canRedo != undoManager.canRedo {
+                DispatchQueue.main.async {
+                    self.canRedo = undoManager.canRedo
+                }
+            }
+        }
     }
 
     // MARK: - Temporary Objects

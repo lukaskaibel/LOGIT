@@ -28,6 +28,7 @@ struct WorkoutRecorderScreen: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.goHome) var goHome
     @Environment(\.fullScreenDraggableCoverTopInset) var fullScreenDraggableCoverTopInset
+    @Environment(\.undoManager) var undoManager
 
     @Environment(\.colorScheme) var colorScheme: ColorScheme
 
@@ -73,7 +74,7 @@ struct WorkoutRecorderScreen: View {
                                 .padding(.horizontal)
                                 .padding(.top, 90)
                                 .padding(.top, fullScreenDraggableCoverTopInset)
-                                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                                .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
                                 .id(1)
                                 .emptyPlaceholder(workout.setGroups) {
                                     Text("Add exercises from below.")
@@ -103,16 +104,18 @@ struct WorkoutRecorderScreen: View {
                                     if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
                                         ToolbarItemGroup(placement: .bottomBar) {
                                             Button {
-                                                // Handle undo
+                                                database.undo()
                                             } label: {
                                                 Image(systemName: "arrow.uturn.backward")
                                             }
+                                            .disabled(!database.canUndo)
                                             Spacer()
                                             Button {
-                                                // Handle redo
+                                                database.redo()
                                             } label: {
                                                 Image(systemName: "arrow.uturn.forward")
                                             }
+                                            .disabled(!database.canRedo)
                                             Spacer()
                                             Button {
                                                 isShowingDetailsSheet = true

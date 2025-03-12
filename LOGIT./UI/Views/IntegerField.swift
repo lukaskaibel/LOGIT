@@ -39,6 +39,11 @@ struct IntegerField: View {
                         .focused($isFocused)
                         .onChange(of: valueString) {
                             valueString = ($0 == "0" || $0.isEmpty) ? "" : String($0.prefix(4))
+                            if let valueInt = Int64(valueString), valueInt != value {
+                                value = valueInt
+                            } else if valueString.isEmpty && value != 0 {
+                                value = 0
+                            }
                         }
                         .keyboardType(.numberPad)
                         .accentColor(.clear)
@@ -78,13 +83,6 @@ struct IntegerField: View {
         .onChange(of: isFocused) { newValue in
             guard newValue != (focusedIntegerFieldIndex == index) else { return }
             focusedIntegerFieldIndex = index
-        }
-        .onChange(of: valueString) { newValue in
-            if let valueInt = Int64(newValue), valueInt != value {
-                value = valueInt
-            } else if newValue.isEmpty && value != 0 {
-                value = 0
-            }
         }
         .onChange(of: value) { newValue in
             if String(newValue) != valueString {

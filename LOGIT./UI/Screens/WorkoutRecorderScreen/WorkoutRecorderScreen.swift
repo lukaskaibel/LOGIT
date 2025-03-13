@@ -147,6 +147,18 @@ struct WorkoutRecorderScreen: View {
                                             .presentationCornerRadius(30)
                                     }
                                 }
+                                .sheet(isPresented: $isShowingFinishConfirmation) {
+                                    if let workout = workoutRecorder.workout {
+                                        FinishConfirmationSheet(workout: workout, onEndWorkout: {
+                                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                                            workoutRecorder.saveWorkout()
+                                            dismiss()
+                                            goHome()
+                                        })
+                                        .padding([.top, .horizontal])
+                                        .presentationDetents([.fraction(0.4)])   
+                                    }
+                                }
                             }
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
@@ -169,31 +181,6 @@ struct WorkoutRecorderScreen: View {
             .toolbar(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItemsKeyboard
-            }
-            .confirmationDialog(
-                Text(
-                    workoutRecorder.workout?.allSetsHaveEntries ?? false
-                        ? NSLocalizedString("finishWorkoutConfimation", comment: "")
-                        : !(workoutRecorder.workout?.hasEntries ?? false)
-                            ? NSLocalizedString("noEntriesConfirmation", comment: "")
-                            : NSLocalizedString("deleteSetsWithoutEntries", comment: "")
-                ),
-                isPresented: $isShowingFinishConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button(
-                    workoutRecorder.workout?.allSetsHaveEntries ?? false
-                        ? NSLocalizedString("finishWorkout", comment: "")
-                        : !(workoutRecorder.workout?.hasEntries ?? false)
-                            ? NSLocalizedString("noEntriesConfirmation", comment: "")
-                            : NSLocalizedString("deleteSets", comment: "")
-                ) {
-                    workoutRecorder.saveWorkout()
-                    dismiss()
-                    goHome()
-                }
-                .font(.body.weight(.semibold))
-                Button(NSLocalizedString("continueWorkout", comment: ""), role: .cancel) {}
             }
         }
         .overlay {

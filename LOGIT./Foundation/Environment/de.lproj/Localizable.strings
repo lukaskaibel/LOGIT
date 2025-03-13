@@ -17,8 +17,10 @@
 "addWorkout" = "Workout hinzufügen";
 "afternoon" = "Nachmittag";
 "all" = "Alle";
+"allSetsCompleted" = "Alle Sätze vollständig";
 "allTime" = "Aller Zeiten";
 "alreadyExists" = "existiert schon.";
+"areYouSure?" = "Bist du sicher?";
 "autoRenewMonth" = "Erneuert automatisch am Ende des Monats";
 "ascending" = "Aufsteigend";
 "availableWith" = "Verfügbar mit";
@@ -89,6 +91,7 @@
 "editWorkout" = "Workout bearbeiten";
 "eight" = "Acht";
 "end" = "Ende";
+"endWorkout" = "Workout beenden";
 "evening" = "Abend";
 "exercise" = "Übung";
 "exerciseName" = "Übungsname";
@@ -126,6 +129,7 @@
 
 // MARK: - I
 
+"incompleteSetsWillNotBeSaved" = "Unvollständige Sätze werden nicht gespeichert.";
 "inSelectedWeek" = "In Ausgewählter Woche";
 
 // MARK: - L
@@ -264,9 +268,11 @@
 "selectDuration" = "Dauer auswählen";
 "selectExercise" = "Übung auswählen";
 "selectMuscleGroup" = "Muskelgruppe auswählen";
+"selectSecondaryExercise" = "Zweite Übung auswählen";
 "selectTemplate" = "Vorlage auswählen";
 "set" = "Satz";
 "sets" = "Sätze";
+"setsIncomplete" = "Sätze unvollständig";
 "setsPerWeek" = "Gesamte Sätze pro Woche";
 "setType" = "Satz Art";
 "setTimer" = "Timer starten";

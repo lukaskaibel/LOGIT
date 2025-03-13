@@ -88,20 +88,39 @@ struct WorkoutSetGroupCell: View {
                 )
                 .presentationDetents([.large], selection: .constant(.large))
                 .navigationTitle(NSLocalizedString("replaceExercise", comment: ""))
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(NSLocalizedString("cancel", comment: "")) {
+                            isSelectingPrimaryExercise = false
+                        }
+                    }
+                }
             }
         }
         .sheet(isPresented: $isSelectingSecondaryExercise) {
-            ExerciseSelectionScreen(
-                selectedExercise: setGroup.secondaryExercise,
-                setExercise: {
-                    setGroup.secondaryExercise = $0
-                    isSelectingSecondaryExercise = false
-                },
-                forSecondary: true,
-                presentationDetentSelection: .constant(.large)
-            )
-            .presentationDetents([.large], selection: .constant(.large))
-            .navigationTitle(NSLocalizedString("replaceSecondaryExercise", comment: ""))
+            NavigationStack {
+                ExerciseSelectionScreen(
+                    selectedExercise: setGroup.secondaryExercise,
+                    setExercise: {
+                        setGroup.secondaryExercise = $0
+                        isSelectingSecondaryExercise = false
+                    },
+                    forSecondary: true,
+                    presentationDetentSelection: .constant(.large)
+                )
+                .presentationDetents([.large], selection: .constant(.large))
+                .navigationTitle(NSLocalizedString("selectSecondaryExercise", comment: ""))
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(NSLocalizedString("cancel", comment: "")) {
+                            if setGroup.secondaryExercise == nil {
+                                database.convertSetGroupToStandardSets(setGroup)
+                            }
+                            isSelectingSecondaryExercise = false
+                        }
+                    }
+                }
+            }
         }
         .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
     }
@@ -165,18 +184,15 @@ struct WorkoutSetGroupCell: View {
                 ) {
                     Label(NSLocalizedString("remove", comment: ""), systemImage: "xmark.circle")
                 }
-                if let exercise = setGroup.exercise {
-                    Button {
-                        isSelectingPrimaryExercise = true
-                    } label: {
-                        Label(
-                            NSLocalizedString("replaceExercise", comment: ""),
-                            systemImage: "arrow.triangle.2.circlepath"
-                        )
-                    }
+                Button {
+                    isSelectingPrimaryExercise = true
+                } label: {
+                    Label(
+                        NSLocalizedString("replaceExercise", comment: ""),
+                        systemImage: "arrow.triangle.2.circlepath"
+                    )
                 }
-                if setGroup.setType == .superSet, let secondaryExercise = setGroup.secondaryExercise
-                {
+                if setGroup.setType == .superSet {
                     Button {
                         isSelectingSecondaryExercise = true
                     } label: {
@@ -209,13 +225,7 @@ struct WorkoutSetGroupCell: View {
                 }
                 Button {
                     database.convertSetGroupToSuperSets(setGroup)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        sheetType = .exerciseSelection(
-                            exercise: setGroup.secondaryExercise,
-                            setExercise: { setGroup.secondaryExercise = $0 },
-                            forSecondary: true
-                        )
-                    }
+                    isSelectingSecondaryExercise = true
                 } label: {
                     Label(
                         NSLocalizedString("superSet", comment: ""),

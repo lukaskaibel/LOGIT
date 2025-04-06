@@ -13,6 +13,7 @@
 "acceptPrivacyPolicy" = "Accept Privacy Policy";
 "add" = "Add";
 "addExercise" = "Add Exercise";
+"addExercisesFromBelow" = "Add exercises from below.";
 "addSet" = "Add Set";
 "addWorkout" = "Add Workout";
 "afternoon" = "Afternoon";
@@ -87,7 +88,9 @@
 
 "edit" = "Edit";
 "edit" = "Edit";
+"editDateTime" = "Edit Date / Time";
 "editTemplate" = "Edit Template";
+"editTime" = "Edit Time";
 "editWorkout" = "Edit Workout";
 "eight" = "Eight";
 "end" = "End";
@@ -244,6 +247,7 @@
 "recentAttempts" = "Recent Attempts";
 "recentWorkouts" = "Recent Workouts";
 "remove" = "Remove";
+"rename" = "Rename";
 "reorderingDone" = "Reordering Done";
 "reorderExercises" = "Reorder Exercises";
 "repetitions" = "Repetitions";

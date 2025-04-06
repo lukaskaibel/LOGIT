@@ -19,7 +19,6 @@ struct WorkoutSetGroupCell: View {
     @ObservedObject var setGroup: WorkoutSetGroup
 
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
-    @Binding var sheetType: WorkoutSetGroupList.SheetType?
     @Binding var isReordering: Bool
 
     let supplementaryText: String?
@@ -139,22 +138,10 @@ struct WorkoutSetGroupCell: View {
                     exercise: setGroup.exercise,
                     secondaryExercise: setGroup.secondaryExercise,
                     noExerciseAction: {
-                        sheetType = .exerciseSelection(
-                            exercise: setGroup.exercise,
-                            setExercise: {
-                                setGroup.exercise = $0
-                            },
-                            forSecondary: false
-                        )
+                        isSelectingPrimaryExercise = true
                     },
                     noSecondaryExerciseAction: {
-                        sheetType = .exerciseSelection(
-                            exercise: setGroup.secondaryExercise,
-                            setExercise: {
-                                setGroup.secondaryExercise = $0
-                            },
-                            forSecondary: true
-                        )
+                        isSelectingSecondaryExercise = true
                     },
                     isSuperSet: setGroup.setType == .superSet,
                     navigationToDetailEnabled: true
@@ -264,7 +251,6 @@ private struct PreviewWrapperView: View {
                         WorkoutSetGroupCell(
                             setGroup: workouts.first!.setGroups.first!,
                             focusedIntegerFieldIndex: .constant(nil),
-                            sheetType: .constant(nil),
                             isReordering: .constant(false),
                             supplementaryText: "1 / 3"
                         )
@@ -274,7 +260,6 @@ private struct PreviewWrapperView: View {
                         WorkoutSetGroupCell(
                             setGroup: workouts.first!.setGroups.first!,
                             focusedIntegerFieldIndex: .constant(nil),
-                            sheetType: .constant(nil),
                             isReordering: .constant(true),
                             supplementaryText: "1 / 3"
                         )
@@ -284,7 +269,6 @@ private struct PreviewWrapperView: View {
                         WorkoutSetGroupCell(
                             setGroup: workouts.first!.setGroups.first!,
                             focusedIntegerFieldIndex: .constant(nil),
-                            sheetType: .constant(nil),
                             isReordering: .constant(false),
                             supplementaryText: "1 / 3"
                         )

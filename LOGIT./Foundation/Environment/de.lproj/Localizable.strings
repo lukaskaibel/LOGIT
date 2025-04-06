@@ -13,6 +13,7 @@
 "acceptPrivacyPolicy" = "Datenschutzbestimmungen akzeptieren";
 "add" = "Hinzufügen";
 "addExercise" = "Übung hinzufügen";
+"addExercisesFromBelow" = "Übungen von unten auswählen.";
 "addSet" = "Satz hinzufügen";
 "addWorkout" = "Workout hinzufügen";
 "afternoon" = "Nachmittag";
@@ -87,7 +88,9 @@
 
 "edit" = "Bearbeiten";
 "edit" = "Bearbeiten";
+"editDateTime" = "Datum / Zeit bearbeiten";
 "editTemplate" = "Vorlagen bearbeiten";
+"editTime" = "Zeit bearbeiten";
 "editWorkout" = "Workout bearbeiten";
 "eight" = "Acht";
 "end" = "Ende";
@@ -246,6 +249,7 @@
 "recentAttempts" = "Letzte Ausführungen";
 "recentWorkouts" = "Letzte Workouts";
 "remove" = "Entfernen";
+"rename" = "Umbennen";
 "reorderingDone" = "Fertig umsortiert";
 "reorderExercises" = "Übungen umsortieren";
 "repetitions" = "Wiederholungen";

@@ -13,10 +13,6 @@ import UIKit
 import Combine
 
 struct WorkoutRecorderScreen: View {
-    
-    enum ReplaceExerciseSheetMode {
-        case idle, presented(onExerciseSelection: (Exercise) -> Void)
-    }
 
     // MARK: - AppStorage
 
@@ -47,9 +43,7 @@ struct WorkoutRecorderScreen: View {
     @State private var cancellable: AnyCancellable?
 
     @State private var isShowingFinishConfirmation = false
-    @State internal var sheetType: WorkoutSetGroupList.SheetType?
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
-    @State private var replaceExerciseSheetMode: ReplaceExerciseSheetMode = .idle
     @State private var isShowingDetailsSheet = false
 
     @State internal var focusedIntegerFieldIndex: IntegerField.Index?
@@ -68,7 +62,6 @@ struct WorkoutRecorderScreen: View {
                                 WorkoutSetGroupList(
                                     workout: workout,
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                                    sheetType: $sheetType,
                                     canReorder: true
                                 )
                                 .padding(.horizontal)
@@ -77,7 +70,7 @@ struct WorkoutRecorderScreen: View {
                                 .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
                                 .id(1)
                                 .emptyPlaceholder(workout.setGroups) {
-                                    Text("Add exercises from below.")
+                                    Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
                                         .foregroundStyle(Color.secondaryLabel)
                                         .font(.body)
                                         .fontWeight(.medium)
@@ -156,7 +149,7 @@ struct WorkoutRecorderScreen: View {
                                             goHome()
                                         })
                                         .padding([.top, .horizontal])
-                                        .presentationDetents([.fraction(0.4)])   
+                                        .presentationDetents([.fraction(0.4)])
                                     }
                                 }
                             }

@@ -61,7 +61,6 @@ struct WorkoutDetailScreen: View {
                     WorkoutSetGroupList(
                         workout: workout,
                         focusedIntegerFieldIndex: .constant(nil),
-                        sheetType: .constant(nil),
                         canReorder: false
                     )
                     .canEdit(false)

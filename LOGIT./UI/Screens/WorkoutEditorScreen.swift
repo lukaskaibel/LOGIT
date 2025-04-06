@@ -21,10 +21,12 @@ struct WorkoutEditorScreen: View {
     
     // MARK: - State
     
-    @State private var sheetType: WorkoutSetGroupList.SheetType? = nil
     @State private var cancellable: AnyCancellable?
     @FocusState private var focusedTextField: TextFieldType?
-    @State private var exerciseSelectionPresentationDetent: PresentationDetent = .fraction(0.09)
+    @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
+    @State private var isRenamingWorkout = false
+    @State private var focusedIntegerFieldIndex: IntegerField.Index?
+    @State private var isEditingStartEndDate = false
 
     
     // MARK: - Parameters
@@ -39,45 +41,6 @@ struct WorkoutEditorScreen: View {
             ScrollViewReader { scrollable in
                 ScrollView {
                     VStack(spacing: SECTION_SPACING) {
-                        TextField(
-                            Workout.getStandardName(for: workout.date ?? .now),
-                            text: workoutName,
-                            axis: .vertical
-                        )
-                        .font(.largeTitle.weight(.bold))
-                        .focused($focusedTextField, equals: .workoutName)
-                        .onChange(of: workout.name) { newValue in
-                            if newValue?.last == "\n" {
-                                workout.name?.removeLast()
-                                focusedTextField = nil
-                            }
-                        }
-                        .submitLabel(.done)
-                        .lineLimit(2)
-                        VStack {
-                            DatePicker(
-                                NSLocalizedString("start", comment: ""),
-                                selection: workoutStart,
-                                in: ...workoutEnd.wrappedValue,
-                                displayedComponents: [.date, .hourAndMinute]
-                            )
-                            DatePicker(
-                                NSLocalizedString("end", comment: ""),
-                                selection: workoutEnd,
-                                in: workoutStart.wrappedValue...,
-                                displayedComponents: [.date, .hourAndMinute]
-                            )
-                            Divider()
-                                .padding(.vertical, 10)
-                            HStack {
-                                Text(NSLocalizedString("duration", comment: ""))
-                                Spacer()
-                                Text(workoutDurationString)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(CELL_PADDING)
-                        .tileStyle()
                         VStack(spacing: SECTION_HEADER_SPACING) {
                             Text(NSLocalizedString("exercises", comment: ""))
                                 .sectionHeaderStyle2()
@@ -85,24 +48,18 @@ struct WorkoutEditorScreen: View {
                             VStack(spacing: CELL_SPACING) {
                                 WorkoutSetGroupList(
                                     workout: workout,
-                                    focusedIntegerFieldIndex: focusedIntegerFieldIndex,
-                                    sheetType: $sheetType,
+                                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                     canReorder: true
                                 )
-                                .toolbar {
-                                    ToolbarItemGroup(placement: .keyboard) {
-                                        HStack {
-                                            Spacer()
-                                            Button {
-                                                focusedTextField = nil
-                                            } label: {
-                                                Image(systemName: "keyboard.chevron.compact.down")
-                                            }
-                                        }
-                                    }
-                                }
-                                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                                .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
                                 .id(1)
+                                .emptyPlaceholder(workout.setGroups) {
+                                    Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
+                                        .foregroundStyle(Color.secondaryLabel)
+                                        .font(.body)
+                                        .fontWeight(.medium)
+                                        .padding(.top, 30)
+                                }
                             }
                         }
                     }
@@ -119,17 +76,86 @@ struct WorkoutEditorScreen: View {
                                     exercise: exercise,
                                     workout: workout
                                 )
-                                withAnimation {
-                                    scrollable.scrollTo(1, anchor: .bottom)
-                                }
-                                },
+                            },
                             forSecondary: false,
                             presentationDetentSelection: $exerciseSelectionPresentationDetent
                         )
+                        .padding(.top)
+                        .toolbar {
+                            if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
+                                ToolbarItemGroup(placement: .bottomBar) {
+                                    Spacer()
+                                    Button {
+                                        database.undo()
+                                    } label: {
+                                        Image(systemName: "arrow.uturn.backward")
+                                    }
+                                    .disabled(!database.canUndo)
+                                    Spacer()
+                                    Button {
+                                        database.redo()
+                                    } label: {
+                                        Image(systemName: "arrow.uturn.forward")
+                                    }
+                                    .disabled(!database.canRedo)
+                                    Spacer()
+                                }
+                            }
+                        }
+                        .toolbar(.hidden, for: .navigationBar)
                     }
-                    .presentationDetents([.fraction(0.09), .medium, .large], selection: $exerciseSelectionPresentationDetent)
+                    .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                     .presentationBackgroundInteraction(.enabled)
+                    .presentationCornerRadius(30)
                     .interactiveDismissDisabled()
+                    .sheet(isPresented: $isEditingStartEndDate) {
+                        VStack(spacing: 30) {
+                            HStack {
+                                Text(NSLocalizedString("editTime", comment: ""))
+                                    .font(.title)
+                                    .fontWeight(.bold)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Spacer()
+                                Button {
+                                    isEditingStartEndDate = false
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.body.weight(.bold))
+                                        .foregroundColor(Color.secondaryLabel)
+                                        .padding(8)
+                                        .background(Color.fill)
+                                        .clipShape(Circle())
+                                }
+                            }
+                            VStack(spacing: 15) {
+                                DatePicker(
+                                    NSLocalizedString("start", comment: ""),
+                                    selection: workoutStart,
+                                    in: ...workoutEnd.wrappedValue,
+                                    displayedComponents: [.date, .hourAndMinute]
+                                )
+                                
+                                DatePicker(
+                                    NSLocalizedString("end", comment: ""),
+                                    selection: workoutEnd,
+                                    in: workoutStart.wrappedValue...,
+                                    displayedComponents: [.date, .hourAndMinute]
+                                )
+                                Divider()
+                                HStack {
+                                    Label(NSLocalizedString("duration", comment: ""), systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                                    Spacer()
+                                    Text(workoutDurationString)
+                                        .padding(.trailing)
+                                }
+                                .fontWeight(.medium)
+                                .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                        }
+                        .padding()
+                        .presentationDetents([.fraction(0.35)])
+                    }
                 }
             }
             .navigationTitle(NSLocalizedString(isAddingNewWorkout ? "addWorkout" : "editWorkout", comment: ""))
@@ -137,54 +163,102 @@ struct WorkoutEditorScreen: View {
             .interactiveDismissDisabled(true)
             .scrollDismissesKeyboard(.interactively)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("save", comment: "")) {
-                        if workout.name?.isEmpty ?? true || workout.name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "" == "", let date = workout.date {
-                            workout.name = Workout.getStandardName(for: date)
+                ToolbarItem(placement: .principal) {
+                    if isRenamingWorkout {
+                        HStack {
+                            TextField(
+                                Workout.getStandardName(for: workout.date ?? .now),
+                                text: workoutName
+                            )
+                            .multilineTextAlignment(.center)
+                            .lineLimit(1)
+                            .focused($focusedTextField, equals: .workoutName)
+                            .onSubmit {
+                                isRenamingWorkout = false
+                                focusedTextField = nil
+                                workout.name = workout.name?.isEmpty ?? true ? Workout.getStandardName(for: workout.date ?? .now) : workout.name
+                            }
+                            .submitLabel(.done)
+                            Button {
+                                workout.name = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(Color.placeholder)
+                                    .font(.caption)
+                            }
                         }
-                        database.save()
-                        dismiss()
+                        .fontWeight(.bold)
+                        .padding(5)
+                        .background(Color.secondaryBackground)
+                        .cornerRadius(10)
+                    } else {
+                        Menu {
+                            Button {
+                                isRenamingWorkout = true
+                                exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    focusedTextField = .workoutName
+                                }
+                            } label: {
+                                Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")
+                            }
+                            Button {
+                                isEditingStartEndDate = true
+                            } label: {
+                                Label(NSLocalizedString("editDateTime", comment: ""), systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                            }
+                        } label: {
+                            HStack {
+                                VStack {
+                                    Text(workout.name ?? "")
+                                        .foregroundStyle(Color.label)
+                                        .fontWeight(.bold)
+                                        .lineLimit(1)
+                                    HStack(spacing: 5) {
+                                        Text(workout.date?.formatted(.dateTime.day().month().year()) ?? "")
+                                        Text("•")
+                                        Text(workoutDurationString)
+                                    }
+                                    .font(.caption)
+                                    .foregroundStyle(Color.secondaryLabel)
+                                }
+                                Image(systemName: "chevron.down.circle.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(Color.secondaryLabel)
+                            }
+                        }
                     }
-                    .fontWeight(.bold)
-                    .disabled(!canSaveWorkout)
                 }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(NSLocalizedString("cancel", comment: "")) {
-                        database.discardUnsavedChanges()
-                        dismiss()
+                if !isRenamingWorkout {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(NSLocalizedString("save", comment: "")) {
+                            if workout.name?.isEmpty ?? true || workout.name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "" == "", let date = workout.date {
+                                workout.name = Workout.getStandardName(for: date)
+                            }
+                            database.save()
+                            dismiss()
+                        }
+                        .fontWeight(.bold)
+                        .disabled(!canSaveWorkout)
+                    }
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(NSLocalizedString("cancel", comment: "")) {
+                            database.discardUnsavedChanges()
+                            dismiss()
+                        }
+                    }
+                    ToolbarItemGroup(placement: .keyboard) {
+                        HStack {
+                            Spacer()
+                            Button {
+                                focusedIntegerFieldIndex = nil
+                            } label: {
+                                Image(systemName: "keyboard.chevron.compact.down")
+                            }
+                        }
                     }
                 }
             }
-//            .sheet(item: $sheetType) { type in
-//                NavigationStack {
-//                    switch type {
-//                    case let .exerciseDetail(exercise):
-//                        ExerciseDetailScreen(exercise: exercise)
-//                            .toolbar {
-//                                ToolbarItem(placement: .navigationBarLeading) {
-//                                    Button(NSLocalizedString("dismiss", comment: "")) {
-//                                        sheetType = nil
-//                                    }
-//                                }
-//                            }
-//                            .tag("detail")
-//                    case let .exerciseSelection(exercise, setExercise, forSecondary):
-//                        ExerciseSelectionScreen(
-//                            selectedExercise: exercise,
-//                            setExercise: setExercise,
-//                            forSecondary: forSecondary
-//                        )
-//                        .toolbar {
-//                            ToolbarItem(placement: .navigationBarLeading) {
-//                                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
-//                                    sheetType = nil
-//                                }
-//                            }
-//                        }
-//                        .tag("selection")
-//                    }
-//                }
-//            }
             .onAppear {
                 if workout.date == nil {
                     workout.date = .now
@@ -221,18 +295,6 @@ struct WorkoutEditorScreen: View {
         workout.date != nil && workout.endDate != nil && !workout.setGroups.isEmpty
     }
     
-    private var focusedIntegerFieldIndex: Binding<IntegerField.Index?> {
-        Binding(get: {
-            switch focusedTextField {
-            case .workoutName: return nil
-            case let .workoutSetEntry(index): return index
-            default: return nil
-            }
-        }, set: {
-            focusedTextField = $0 == nil ? nil : .workoutSetEntry(index: $0!)
-        })
-    }
-    
     // MARK: - Autosave
     
     private func refreshOnChange() {
@@ -251,9 +313,13 @@ private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
     
     var body: some View {
-        NavigationView {
-            WorkoutEditorScreen(workout: database.testWorkout, isAddingNewWorkout: true)
-        }
+        Rectangle()
+            .sheet(isPresented: .constant(true)) {
+                NavigationView {
+                    WorkoutEditorScreen(workout: database.testWorkout, isAddingNewWorkout: true)
+                }
+                .presentationBackground(Color.black)
+            }
     }
 }
 

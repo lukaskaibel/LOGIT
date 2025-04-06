@@ -175,7 +175,6 @@ struct MuscleGroupSplitScreen: View {
                             WorkoutSetGroupCell(
                                 setGroup: setGroup,
                                 focusedIntegerFieldIndex: .constant(nil),
-                                sheetType: .constant(nil),
                                 isReordering: .constant(false),
                                 supplementaryText:
                                     "\(setGroup.workout!.date!.description(.short))  ·  \(setGroup.workout!.name!)"

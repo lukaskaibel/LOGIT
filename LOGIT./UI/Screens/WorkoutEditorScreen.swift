@@ -12,6 +12,13 @@ struct WorkoutEditorScreen: View {
     
     enum TextFieldType: Hashable {
         case workoutName, workoutSetEntry(index: IntegerField.Index)
+        
+//        var hastValue: String {
+//            switch self {
+//            case .workoutName: return "workoutName"
+//            case .workoutSetEntry(let index): return "workoutSetEntry(\(index))"
+//            }
+//        }
     }
     
     // MARK: - Environment
@@ -38,6 +45,47 @@ struct WorkoutEditorScreen: View {
     
     var body: some View {
         NavigationStack {
+            if isRenamingWorkout {
+                HStack {
+                    TextField(
+                        Workout.getStandardName(for: workout.date ?? .now),
+                        text: workoutName
+                    )
+                    .focused($focusedTextField, equals: .workoutName)
+                    .onChange(of: focusedTextField) {
+                        if focusedTextField != .workoutName {
+                            withAnimation {
+                                isRenamingWorkout = false
+                            }
+                        }
+                    }
+                    .scrollDismissesKeyboard(.immediately)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .fontWeight(.bold)
+                    .onSubmit {
+                        focusedTextField = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isRenamingWorkout = false
+                        }
+                        workout.name = workout.name?.isEmpty ?? true ? Workout.getStandardName(for: workout.date ?? .now) : workout.name
+                    }
+                    .submitLabel(.done)
+                    if !(workout.name?.isEmpty ?? true) {
+                        Button {
+                            workout.name = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(Color.secondaryLabel)
+                                .font(.body)
+                        }
+                    }
+                }
+                .padding(10)
+                .background(Color.secondaryBackground)
+                .cornerRadius(10)
+                .padding(10)
+            }
             ScrollViewReader { scrollable in
                 ScrollView {
                     VStack(spacing: SECTION_SPACING) {
@@ -158,95 +206,64 @@ struct WorkoutEditorScreen: View {
                     }
                 }
             }
-            .navigationTitle(NSLocalizedString(isAddingNewWorkout ? "addWorkout" : "editWorkout", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarHidden(isRenamingWorkout)
             .interactiveDismissDisabled(true)
             .scrollDismissesKeyboard(.interactively)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    if isRenamingWorkout {
-                        HStack {
-                            TextField(
-                                Workout.getStandardName(for: workout.date ?? .now),
-                                text: workoutName
-                            )
-                            .multilineTextAlignment(.center)
-                            .lineLimit(1)
-                            .focused($focusedTextField, equals: .workoutName)
-                            .onSubmit {
-                                isRenamingWorkout = false
-                                focusedTextField = nil
-                                workout.name = workout.name?.isEmpty ?? true ? Workout.getStandardName(for: workout.date ?? .now) : workout.name
-                            }
-                            .submitLabel(.done)
-                            Button {
-                                workout.name = ""
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(Color.placeholder)
-                                    .font(.caption)
-                            }
-                        }
-                        .fontWeight(.bold)
-                        .padding(5)
-                        .background(Color.secondaryBackground)
-                        .cornerRadius(10)
-                    } else {
-                        Menu {
-                            Button {
-                                isRenamingWorkout = true
-                                exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                    focusedTextField = .workoutName
-                                }
-                            } label: {
-                                Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")
-                            }
-                            Button {
-                                isEditingStartEndDate = true
-                            } label: {
-                                Label(NSLocalizedString("editDateTime", comment: ""), systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                            }
+                    Menu {
+                        Button {
+                            focusedTextField = .workoutName
+                            isRenamingWorkout = true
+                            exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
                         } label: {
-                            HStack {
-                                VStack {
-                                    Text(workout.name ?? "")
-                                        .foregroundStyle(Color.label)
-                                        .fontWeight(.bold)
-                                        .lineLimit(1)
-                                    HStack(spacing: 5) {
-                                        Text(workout.date?.formatted(.dateTime.day().month().year()) ?? "")
-                                        Text("•")
-                                        Text(workoutDurationString)
-                                    }
-                                    .font(.caption)
-                                    .foregroundStyle(Color.secondaryLabel)
+                            Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")
+                        }
+                        Button {
+                            isEditingStartEndDate = true
+                        } label: {
+                            Label(NSLocalizedString("editDateTime", comment: ""), systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                        }
+                    } label: {
+                        HStack {
+                            VStack {
+                                Text(workout.name ?? "")
+                                    .foregroundStyle(Color.label)
+                                    .fontWeight(.bold)
+                                    .lineLimit(1)
+                                HStack(spacing: 5) {
+                                    Text(workout.date?.formatted(.dateTime.day().month().year()) ?? "")
+                                    Text("•")
+                                    Text(workoutDurationString)
                                 }
-                                Image(systemName: "chevron.down.circle.fill")
-                                    .font(.caption)
-                                    .foregroundStyle(Color.secondaryLabel)
+                                .font(.caption)
+                                .foregroundStyle(Color.secondaryLabel)
                             }
+                            Image(systemName: "chevron.down.circle.fill")
+                                .font(.caption)
+                                .foregroundStyle(Color.secondaryLabel)
                         }
                     }
                 }
-                if !isRenamingWorkout {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(NSLocalizedString("save", comment: "")) {
-                            if workout.name?.isEmpty ?? true || workout.name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "" == "", let date = workout.date {
-                                workout.name = Workout.getStandardName(for: date)
-                            }
-                            database.save()
-                            dismiss()
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(NSLocalizedString("save", comment: "")) {
+                        if workout.name?.isEmpty ?? true || workout.name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "" == "", let date = workout.date {
+                            workout.name = Workout.getStandardName(for: date)
                         }
-                        .fontWeight(.bold)
-                        .disabled(!canSaveWorkout)
+                        database.save()
+                        dismiss()
                     }
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button(NSLocalizedString("cancel", comment: "")) {
-                            database.discardUnsavedChanges()
-                            dismiss()
-                        }
+                    .fontWeight(.bold)
+                    .disabled(!canSaveWorkout)
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(NSLocalizedString("cancel", comment: "")) {
+                        database.discardUnsavedChanges()
+                        dismiss()
                     }
+                }
+                if focusedTextField != .workoutName {
                     ToolbarItemGroup(placement: .keyboard) {
                         HStack {
                             Spacer()

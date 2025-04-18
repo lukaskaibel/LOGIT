@@ -30,7 +30,9 @@ struct TemplateEditorScreen: View {
 
     @State private var isReordering: Bool = false
     @State private var sheetType: SheetType? = nil
-    @State private var exerciseSelectionPresentationDetent: PresentationDetent = .fraction(0.09)
+    @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
+    @State private var isRenamingTemplate = false
+    @FocusState private var isFocusingRenameTemplateField: Bool
 
 
     // MARK: - Parameters
@@ -41,18 +43,49 @@ struct TemplateEditorScreen: View {
 
     var body: some View {
         NavigationStack {
+            if isRenamingTemplate {
+                HStack {
+                    TextField(
+                        NSLocalizedString("newTemplate", comment: ""),
+                        text: templateName
+                    )
+                    .focused($isFocusingRenameTemplateField)
+                    .onChange(of: isFocusingRenameTemplateField) {
+                        if !isFocusingRenameTemplateField {
+                            withAnimation {
+                                isRenamingTemplate = false
+                            }
+                        }
+                    }
+                    .scrollDismissesKeyboard(.immediately)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .fontWeight(.bold)
+                    .onSubmit {
+                        isFocusingRenameTemplateField = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isRenamingTemplate = false
+                        }
+                    }
+                    .submitLabel(.done)
+                    if !(template.name?.isEmpty ?? true) {
+                        Button {
+                            template.name = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(Color.secondaryLabel)
+                                .font(.body)
+                        }
+                    }
+                }
+                .padding(10)
+                .background(Color.secondaryBackground)
+                .cornerRadius(10)
+                .padding(10)
+            }
             ScrollViewReader { scrollable in
                 ScrollView {
                     VStack {
-                        TextField(
-                            NSLocalizedString("title", comment: ""),
-                            text: templateName,
-                            axis: .vertical
-                        )
-                        .font(.largeTitle.weight(.bold))
-                        .lineLimit(2)
-                        .padding(.vertical)
-
                         VStack(spacing: SECTION_SPACING) {
                             ReorderableForEach(
                                 $template.setGroups,
@@ -94,18 +127,37 @@ struct TemplateEditorScreen: View {
                             forSecondary: false,
                             presentationDetentSelection: $exerciseSelectionPresentationDetent
                         )
+                        .padding(.top)
+                        .toolbar {
+                            if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
+                                ToolbarItemGroup(placement: .bottomBar) {
+                                    Spacer()
+                                    Button {
+                                        database.undo()
+                                    } label: {
+                                        Image(systemName: "arrow.uturn.backward")
+                                    }
+                                    .disabled(!database.canUndo)
+                                    Spacer()
+                                    Button {
+                                        database.redo()
+                                    } label: {
+                                        Image(systemName: "arrow.uturn.forward")
+                                    }
+                                    .disabled(!database.canRedo)
+                                    Spacer()
+                                }
+                            }
+                        }
+                        .toolbar(.hidden, for: .navigationBar)
                     }
-                    .presentationDetents([.fraction(0.09), .medium, .large], selection: $exerciseSelectionPresentationDetent)
+                    .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                     .presentationBackgroundInteraction(.enabled)
+                    .presentationCornerRadius(30)
                     .interactiveDismissDisabled()
                 }
             }
             .interactiveDismissDisabled()
-            .navigationTitle(
-                isEditingExistingTemplate
-                    ? NSLocalizedString("editTemplate", comment: "")
-                    : NSLocalizedString("newTemplate", comment: "")
-            )
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 if !isEditingExistingTemplate {
@@ -113,58 +165,58 @@ struct TemplateEditorScreen: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(NSLocalizedString("save", comment: "")) {
-                        template.exercises.forEach { database.unflagAsTemporary($0) }
-                        database.unflagAsTemporary(template)
-                        database.save()
-                        dismiss()
+                ToolbarItem(placement: .principal) {
+                    Menu {
+                        Button {
+                            isRenamingTemplate = true
+                            exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                isFocusingRenameTemplateField = true
+                            }
+                        } label: {
+                            Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")
+                        }
+                    } label: {
+                        HStack {
+                            Text(templateName.wrappedValue.isEmpty ? NSLocalizedString("newTemplate", comment: "") : templateName.wrappedValue)
+                                .foregroundStyle(templateName.wrappedValue.isEmpty ? Color.placeholder : Color.label)
+                                .fontWeight(.bold)
+                                .lineLimit(1)
+                            Image(systemName: "chevron.down.circle.fill")
+                                .font(.caption)
+                                .foregroundStyle(Color.secondaryLabel)
+                        }
                     }
-                    .font(.body.weight(.bold))
-                    .disabled(template.name?.isEmpty ?? true)
                 }
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(NSLocalizedString("cancel", comment: "")) {
-                        database.discardUnsavedChanges()
-                        dismiss()
+                if !isRenamingTemplate {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(NSLocalizedString("save", comment: "")) {
+                            template.name = template.name?.isEmpty ?? true ? NSLocalizedString("newTemplate", comment: "") : template.name
+                            template.exercises.forEach { database.unflagAsTemporary($0) }
+                            database.unflagAsTemporary(template)
+                            database.save()
+                            dismiss()
+                        }
+                        .fontWeight(.bold)
                     }
-                }
-                ToolbarItemGroup(placement: .bottomBar) {
-                    Text(
-                        "\(template.setGroups.count) \(NSLocalizedString("exercise\(template.setGroups.count == 1 ? "" : "s")", comment: ""))"
-                    )
-                    .font(.caption)
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(NSLocalizedString("cancel", comment: "")) {
+                            database.discardUnsavedChanges()
+                            dismiss()
+                        }
+                    }
+                    ToolbarItemGroup(placement: .keyboard) {
+                        HStack {
+                            Spacer()
+                            Button {
+                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            } label: {
+                                Image(systemName: "keyboard.chevron.compact.down")
+                            }
+                        }
+                    }
                 }
             }
-//            .sheet(item: $sheetType) { style in
-//                NavigationStack {
-//                    switch style {
-//                    case let .exerciseSelection(exercise, setExercise, forSecondary):
-//                        ExerciseSelectionScreen(
-//                            selectedExercise: exercise,
-//                            setExercise: setExercise,
-//                            forSecondary: forSecondary
-//                        )
-//                        .toolbar {
-//                            ToolbarItem(placement: .navigationBarLeading) {
-//                                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {
-//                                    sheetType = nil
-//                                }
-//                            }
-//                        }
-//                    case let .exerciseDetail(exercise):
-//                        ExerciseDetailScreen(exercise: exercise)
-//                            .toolbar {
-//                                ToolbarItem(placement: .navigationBarLeading) {
-//                                    Button(NSLocalizedString("dismiss", comment: ""), role: .cancel)
-//                                    {
-//                                        sheetType = nil
-//                                    }
-//                                }
-//                            }
-//                    }
-//                }
-//            }
             .scrollDismissesKeyboard(.immediately)
         }
     }

@@ -110,11 +110,13 @@ struct WorkoutRecorderScreen: View {
                                             }
                                             .disabled(!database.canRedo)
                                             Spacer()
-                                            Button {
-                                                isShowingDetailsSheet = true
-                                            } label: {
-                                                Image(systemName: "info.circle")
-                                            }
+                                            // TODO: Think about info button. Maybe not needed. Maybe something else ?
+//                                            Button {
+//                                                isShowingDetailsSheet = true
+//                                            } label: {
+//                                                Image(systemName: "info.circle")
+//                                            }
+                                            Spacer()
                                             Spacer()
                                             Button {
                                                 isShowingChronoSheet = true

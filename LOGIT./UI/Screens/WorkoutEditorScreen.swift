@@ -12,13 +12,6 @@ struct WorkoutEditorScreen: View {
     
     enum TextFieldType: Hashable {
         case workoutName, workoutSetEntry(index: IntegerField.Index)
-        
-//        var hastValue: String {
-//            switch self {
-//            case .workoutName: return "workoutName"
-//            case .workoutSetEntry(let index): return "workoutSetEntry(\(index))"
-//            }
-//        }
     }
     
     // MARK: - Environment
@@ -214,7 +207,9 @@ struct WorkoutEditorScreen: View {
                 ToolbarItem(placement: .principal) {
                     Menu {
                         Button {
-                            focusedTextField = .workoutName
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                focusedTextField = .workoutName
+                            }
                             isRenamingWorkout = true
                             exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
                         } label: {

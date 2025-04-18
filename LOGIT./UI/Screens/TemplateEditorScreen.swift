@@ -159,6 +159,7 @@ struct TemplateEditorScreen: View {
             }
             .interactiveDismissDisabled()
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarHidden(isRenamingTemplate)
             .onAppear {
                 if !isEditingExistingTemplate {
                     database.flagAsTemporary(template)
@@ -168,11 +169,12 @@ struct TemplateEditorScreen: View {
                 ToolbarItem(placement: .principal) {
                     Menu {
                         Button {
-                            isRenamingTemplate = true
-                            exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 isFocusingRenameTemplateField = true
                             }
+                            isRenamingTemplate = true
+                            exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
+                            
                         } label: {
                             Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")
                         }

@@ -159,12 +159,14 @@ struct HomeScreen: View {
                                 VStack(spacing: CELL_SPACING) {
                                     let recentWorkouts = workouts.prefix(3)
                                     ForEach(recentWorkouts) { workout in
-                                        WorkoutCell(workout: workout)
-                                            .padding(CELL_PADDING)
-                                            .secondaryTileStyle(backgroundColor: .secondaryBackground)
-                                            .onTapGesture {
-                                                homeNavigationCoordinator.path.append(.workout(workout))
-                                            }
+                                        Button {
+                                            homeNavigationCoordinator.path.append(.workout(workout))
+                                        } label: {
+                                            WorkoutCell(workout: workout)
+                                                .padding(CELL_PADDING)
+                                                .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                                        }
+                                        .buttonStyle(TileButtonStyle())
                                     }
                                     .emptyPlaceholder(recentWorkouts) {
                                         Text(NSLocalizedString("noWorkouts", comment: ""))

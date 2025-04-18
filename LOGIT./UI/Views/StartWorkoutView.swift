@@ -40,12 +40,13 @@ struct StartWorkoutView: View {
                     }
                 } label: {
                     Label(NSLocalizedString("startWorkout", comment: ""), systemImage: "play.fill")
-                        .font(.body.weight(.semibold))
+                        .font(.body.weight(.bold))
                         .padding(20)
                         .frame(maxWidth: .infinity)
                 }
-                .background(.regularMaterial)
-                .clipShape(UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 15, bottomLeading: 15)))
+                .foregroundStyle(.black)
+                .background(Color.accentColor.opacity(0.9))
+                .clipShape(UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 15, bottomLeading: 15, bottomTrailing: 5, topTrailing: 5)))
                 Rectangle()
                     .foregroundStyle(.clear)
                     .frame(width: 5)
@@ -70,14 +71,30 @@ struct StartWorkoutView: View {
                     ZStack {
                         Text(" ")
                             .padding(20)
-                        Image(systemName: "ellipsis")
-                            .padding()
-                            .frame(width: 60)
-                            .font(.title3.weight(.semibold))
+                            Image(systemName: "play.fill")
+                                .padding(2)
+                                .overlay {
+                                    GeometryReader { geometry in
+                                        ZStack {
+                                            Circle()
+                                                .fill(.black)
+                                                .frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5)
+                                            Image(systemName: "ellipsis.circle.fill")
+                                                .resizable()
+                                                .frame(width: geometry.size.width * 0.4, height: geometry.size.width * 0.4)
+                                            
+                                        }
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                                    }
+
+                                }
+                        .padding()
+                        .frame(width: 70)
+                        .font(.title3.weight(.semibold))
                     }
                 }
-                .background(.regularMaterial)
-                .clipShape(UnevenRoundedRectangle(bottomTrailingRadius: 15, topTrailingRadius: 15))
+                .background(Color.accentColor.secondaryTranslucentBackground)
+                .clipShape(UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 5, bottomLeading: 5, bottomTrailing: 15, topTrailing: 15)))
             }
             .frame(height: currentWorkoutViewHeight)
         }
@@ -114,4 +131,5 @@ struct StartWorkoutView: View {
 #Preview {
     StartWorkoutView()
         .previewEnvironmentObjects()
+        .padding(10)
 }

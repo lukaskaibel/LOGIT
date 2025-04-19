@@ -26,7 +26,10 @@ struct TemplateSetGroupCell: View {
 
     // MARK: - State
 
-    @State var isReorderingSets = false
+    @State private var isReorderingSets = false
+    @State private var isSelectingPrimaryExercise = false
+    @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
+    @State private var isSelectingSecondaryExercise = false
 
     // MARK: - Body
 
@@ -72,6 +75,53 @@ struct TemplateSetGroupCell: View {
                 }
             }
         }
+        .sheet(isPresented: $isSelectingPrimaryExercise) {
+            NavigationStack {
+                ExerciseSelectionScreen(
+                    selectedExercise: setGroup.exercise,
+                    setExercise: {
+                        setGroup.exercise = $0
+                        isSelectingPrimaryExercise = false
+                    },
+                    forSecondary: false,
+                    presentationDetentSelection: .constant(.large)
+                )
+                .presentationDetents([.large], selection: .constant(.large))
+                .navigationTitle(NSLocalizedString("replaceExercise", comment: ""))
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(NSLocalizedString("cancel", comment: "")) {
+                            isSelectingPrimaryExercise = false
+                        }
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $isSelectingSecondaryExercise) {
+            NavigationStack {
+                ExerciseSelectionScreen(
+                    selectedExercise: setGroup.secondaryExercise,
+                    setExercise: {
+                        setGroup.secondaryExercise = $0
+                        isSelectingSecondaryExercise = false
+                    },
+                    forSecondary: true,
+                    presentationDetentSelection: .constant(.large)
+                )
+                .presentationDetents([.large], selection: .constant(.large))
+                .navigationTitle(NSLocalizedString("selectSecondaryExercise", comment: ""))
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(NSLocalizedString("cancel", comment: "")) {
+                            if setGroup.secondaryExercise == nil {
+                                database.convertSetGroupToStandardSets(setGroup)
+                            }
+                            isSelectingSecondaryExercise = false
+                        }
+                    }
+                }
+            }
+        }
         .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
     }
 
@@ -86,30 +136,18 @@ struct TemplateSetGroupCell: View {
                         .foregroundColor(.secondaryLabel)
                 }
                 EmptyView()
-//                ExerciseHeader(
-//                    exercise: setGroup.exercise,
-//                    secondaryExercise: setGroup.secondaryExercise,
-//                    noExerciseAction: {
-//                        sheetType = .exerciseSelection(
-//                            exercise: setGroup.exercise,
-//                            setExercise: {
-//                                setGroup.exercise = $0
-//                            },
-//                            forSecondary: false
-//                        )
-//                    },
-//                    noSecondaryExerciseAction: {
-//                        sheetType = .exerciseSelection(
-//                            exercise: setGroup.secondaryExercise,
-//                            setExercise: {
-//                                setGroup.secondaryExercise = $0
-//                            },
-//                            forSecondary: true
-//                        )
-//                    },
-//                    isSuperSet: setGroup.setType == .superSet,
-//                    navigationToDetailEnabled: true
-//                )
+                ExerciseHeader(
+                    exercise: setGroup.exercise,
+                    secondaryExercise: setGroup.secondaryExercise,
+                    noExerciseAction: {
+                        isSelectingPrimaryExercise = true
+                    },
+                    noSecondaryExerciseAction: {
+                        isSelectingSecondaryExercise = true
+                    },
+                    isSuperSet: setGroup.setType == .superSet,
+                    navigationToDetailEnabled: true
+                )
             }
             Spacer()
             if canEdit {
@@ -124,93 +162,76 @@ struct TemplateSetGroupCell: View {
 
     private var menu: some View {
         Menu {
-//            Section {
-//                Button(
-//                    role: .destructive,
-//                    action: {
-//                        withAnimation {
-//                            database.delete(setGroup)
-//                        }
-//                    }
-//                ) {
-//                    Label(NSLocalizedString("remove", comment: ""), systemImage: "xmark.circle")
-//                }
-//                if let exercise = setGroup.exercise {
-//                    Button {
-//                        sheetType = .exerciseSelection(
-//                            exercise: exercise,
-//                            setExercise: { setGroup.exercise = $0 },
-//                            forSecondary: false
-//                        )
-//                    } label: {
-//                        Label(
-//                            NSLocalizedString("replaceExercise", comment: ""),
-//                            systemImage: "arrow.triangle.2.circlepath"
-//                        )
-//                    }
-//                }
-//                if setGroup.setType == .superSet, let secondaryExercise = setGroup.secondaryExercise
-//                {
-//                    Button {
-//                        sheetType = .exerciseSelection(
-//                            exercise: secondaryExercise,
-//                            setExercise: { setGroup.secondaryExercise = $0 },
-//                            forSecondary: true
-//                        )
-//                    } label: {
-//                        Label(
-//                            NSLocalizedString("replaceSecondaryExercise", comment: ""),
-//                            systemImage: "arrow.triangle.2.circlepath"
-//                        )
-//                    }
-//                }
-//                Button {
-//                    isReordering.toggle()
-//                } label: {
-//                    Label(
-//                        NSLocalizedString(
-//                            isReordering ? "reorderingDone" : "reorderExercises",
-//                            comment: ""
-//                        ),
-//                        systemImage: "arrow.up.arrow.down"
-//                    )
-//                }
-//            }
-//            Section {
-//                Button {
-//                    database.convertSetGroupToStandardSets(setGroup)
-//                } label: {
-//                    Label(
-//                        NSLocalizedString("standard", comment: ""),
-//                        systemImage: setGroup.setType == .standard ? "checkmark" : ""
-//                    )
-//                }
-//                Button {
-//                    database.convertSetGroupToSuperSet(setGroup)
-//                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-//                        sheetType = .exerciseSelection(
-//                            exercise: setGroup.secondaryExercise,
-//                            setExercise: { setGroup.secondaryExercise = $0 },
-//                            forSecondary: true
-//                        )
-//                    }
-//                } label: {
-//                    Label(
-//                        NSLocalizedString("superSet", comment: ""),
-//                        systemImage: setGroup.setType == .superSet ? "checkmark" : ""
-//                    )
-//                }
-//                Button {
-//                    database.convertSetGroupToDropSets(setGroup)
-//                } label: {
-//                    Label(
-//                        NSLocalizedString("dropSet", comment: ""),
-//                        systemImage: setGroup.setType == .dropSet ? "checkmark" : ""
-//                    )
-//                }
-//            } header: {
-//                Text(NSLocalizedString("setType", comment: ""))
-//            }
+            Section {
+                Button(
+                    role: .destructive,
+                    action: {
+                        withAnimation {
+                            database.delete(setGroup)
+                        }
+                    }
+                ) {
+                    Label(NSLocalizedString("remove", comment: ""), systemImage: "xmark.circle")
+                }
+                Button {
+                    isSelectingPrimaryExercise = true
+                } label: {
+                    Label(
+                        NSLocalizedString("replaceExercise", comment: ""),
+                        systemImage: "arrow.triangle.2.circlepath"
+                    )
+                }
+                if setGroup.setType == .superSet {
+                    Button {
+                        isSelectingSecondaryExercise = true
+                    } label: {
+                        Label(
+                            NSLocalizedString("replaceSecondaryExercise", comment: ""),
+                            systemImage: "arrow.triangle.2.circlepath"
+                        )
+                    }
+                }
+                Button {
+                    isReordering.toggle()
+                } label: {
+                    Label(
+                        NSLocalizedString(
+                            isReordering ? "reorderingDone" : "reorderExercises",
+                            comment: ""
+                        ),
+                        systemImage: "arrow.up.arrow.down"
+                    )
+                }
+            }
+            Section {
+                Button {
+                    database.convertSetGroupToStandardSets(setGroup)
+                } label: {
+                    Label(
+                        NSLocalizedString("standard", comment: ""),
+                        systemImage: setGroup.setType == .standard ? "checkmark" : ""
+                    )
+                }
+                Button {
+                    database.convertSetGroupToSuperSet(setGroup)
+                    isSelectingSecondaryExercise = true
+                } label: {
+                    Label(
+                        NSLocalizedString("superSet", comment: ""),
+                        systemImage: setGroup.setType == .superSet ? "checkmark" : ""
+                    )
+                }
+                Button {
+                    database.convertSetGroupToDropSets(setGroup)
+                } label: {
+                    Label(
+                        NSLocalizedString("dropSet", comment: ""),
+                        systemImage: setGroup.setType == .dropSet ? "checkmark" : ""
+                    )
+                }
+            } header: {
+                Text(NSLocalizedString("setType", comment: ""))
+            }
         } label: {
             Image(systemName: "ellipsis")
                 .padding(.vertical)

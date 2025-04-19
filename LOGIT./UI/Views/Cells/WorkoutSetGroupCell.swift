@@ -35,8 +35,9 @@ struct WorkoutSetGroupCell: View {
     var body: some View {
         VStack(spacing: SECTION_HEADER_SPACING) {
             header
+                .padding(.bottom, 3)
             if !isReordering {
-                VStack(spacing: CELL_PADDING) {
+                VStack(spacing: 8) {
                     VStack(spacing: CELL_SPACING) {
                         ReorderableForEach(
                             $setGroup.sets,
@@ -59,17 +60,25 @@ struct WorkoutSetGroupCell: View {
                     }
                     .animation(.interactiveSpring())
                     if canEdit {
-                        Button {
-                            withAnimation(.interactiveSpring()) {
-                                database.addSet(to: setGroup)
+                        HStack(spacing: 5) {
+                            Button {
+                                withAnimation(.interactiveSpring()) {
+                                    database.addSet(to: setGroup)
+                                }
+                            } label: {
+                                Label(
+                                    NSLocalizedString("addSet", comment: ""),
+                                    systemImage: "plus.circle.fill"
+                                )
                             }
-                        } label: {
-                            Label(
-                                NSLocalizedString("addSet", comment: ""),
-                                systemImage: "plus.circle.fill"
-                            )
+                            .buttonStyle(SecondaryBigButtonStyle(padding: 18, trailingCornerRadius: 5))
+                            Button {
+                                
+                            } label: {
+                                Image(systemName: "plus.square.on.square")
+                            }
+                            .buttonStyle(SecondaryBigButtonStyle(padding: 18, maxWidth: 30, leadingCornerRadius: 5))
                         }
-                        .buttonStyle(SecondaryBigButtonStyle())
                     }
                 }
             }
@@ -128,12 +137,29 @@ struct WorkoutSetGroupCell: View {
 
     private var header: some View {
         HStack {
+            if let indexInWorkout = setGroup.workout?.setGroups.firstIndex(of: setGroup) {
+                Text("\(indexInWorkout + 1)")
+                    .font(.title)
+                    .fontWeight(.medium)
+                    .fontDesign(.rounded)
+                    .foregroundStyle(.secondary)
+                    .padding(.trailing, 5)
+            }
             VStack(alignment: .leading, spacing: 0) {
-                if let supplementaryText = supplementaryText {
-                    Text(supplementaryText)
-                        .font(.footnote.weight(.medium))
-                        .foregroundColor(.secondaryLabel)
+                HStack {
+                    Text(setGroup.exercise?.muscleGroup?.description ?? "")
+                        .foregroundColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
+                    if setGroup.setType == .superSet {
+                        Text(setGroup.secondaryExercise?.muscleGroup?.description ?? "")
+                            .foregroundColor(setGroup.secondaryExercise?.muscleGroup?.color ?? .accentColor)
+                    }
+                    Spacer()
+//                    if let supplementaryText = supplementaryText {
+//                        Text(supplementaryText)
+//                            .foregroundStyle(.secondary)
+//                    }
                 }
+                .font(.system(.footnote, design: .rounded, weight: .bold))
                 ExerciseHeader(
                     exercise: setGroup.exercise,
                     secondaryExercise: setGroup.secondaryExercise,
@@ -205,34 +231,46 @@ struct WorkoutSetGroupCell: View {
                 Button {
                     database.convertSetGroupToStandardSets(setGroup)
                 } label: {
-                    Label(
-                        NSLocalizedString("standard", comment: ""),
-                        systemImage: setGroup.setType == .standard ? "checkmark" : ""
-                    )
+                    HStack {
+                        Text(NSLocalizedString("standard", comment: ""))
+                        if setGroup.setType == .standard {
+                            Image(systemName: "checkmark")
+                        }
+                    }
                 }
                 Button {
                     database.convertSetGroupToSuperSets(setGroup)
                     isSelectingSecondaryExercise = true
                 } label: {
-                    Label(
-                        NSLocalizedString("superSet", comment: ""),
-                        systemImage: setGroup.setType == .superSet ? "checkmark" : ""
-                    )
+                    HStack {
+                        Text(NSLocalizedString("superSet", comment: ""))
+                        if setGroup.setType == .superSet {
+                            Image(systemName: "checkmark")
+                        }
+                    }
                 }
                 Button {
                     database.convertSetGroupToDropSets(setGroup)
                 } label: {
-                    Label(
-                        NSLocalizedString("dropSet", comment: ""),
-                        systemImage: setGroup.setType == .dropSet ? "checkmark" : ""
-                    )
+                    HStack {
+                        Text(NSLocalizedString("dropSet", comment: ""))
+                        if setGroup.setType == .dropSet {
+                            Image(systemName: "checkmark")
+                        }
+                    }
                 }
             } header: {
                 Text(NSLocalizedString("setType", comment: ""))
             }
         } label: {
             Image(systemName: "ellipsis")
-                .padding(.vertical)
+                .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                .padding(.horizontal, 3)
+                .padding(.vertical, 10)
+                .background(
+                    Circle()
+                        .fill((setGroup.exercise?.muscleGroup?.color ?? .accentColor).secondaryTranslucentBackground)
+                )
         }
     }
 
@@ -252,7 +290,7 @@ private struct PreviewWrapperView: View {
                             setGroup: workouts.first!.setGroups.first!,
                             focusedIntegerFieldIndex: .constant(nil),
                             isReordering: .constant(false),
-                            supplementaryText: "1 / 3"
+                            supplementaryText: ""
                         )
                         .padding(CELL_PADDING)
                         .tileStyle()

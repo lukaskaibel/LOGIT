@@ -31,15 +31,21 @@ struct BigButtonStyle: ButtonStyle {
 }
 
 struct SecondaryBigButtonStyle: ButtonStyle {
+    
+    var padding: CGFloat = 20
+    var maxWidth: CGFloat? = .infinity
+    var leadingCornerRadius: CGFloat = 15
+    var trailingCornerRadius: CGFloat = 15
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.body, design: .rounded, weight: .bold))
             .foregroundColor(.accentColor)
-            .frame(maxWidth: .infinity)
-            .padding(20)
+            .frame(maxWidth: maxWidth)
+            .padding(padding)
             .background(Color.accentColor.secondaryTranslucentBackground)
             .listRowBackground(Color.clear)
-            .cornerRadius(15)
+            .clipShape(UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: leadingCornerRadius, bottomLeading: leadingCornerRadius, bottomTrailing: trailingCornerRadius, topTrailing: trailingCornerRadius)))
             .scaleEffect(configuration.isPressed ? MIN_BUTTON_SCALE : 1.0)
             .onChange(of: configuration.isPressed) { isPressed in
                 if isPressed {

@@ -19,6 +19,31 @@ extension Database {
             newStandardSet(setGroup: setGroup)
         }
     }
+    
+    public func duplicateLastSet(from setGroup: WorkoutSetGroup) {
+        let lastSet = setGroup.sets.last
+        if let standardSet = lastSet as? StandardSet {
+            newStandardSet(
+                repetitions: Int(standardSet.repetitions),
+                weight: Int(standardSet.weight),
+                setGroup: setGroup
+            )
+        } else if let dropSet = lastSet as? DropSet {
+            newDropSet(
+                repetitions: dropSet.repetitions?.map({ Int($0) }) ?? [0],
+                weights: dropSet.weights?.map({ Int($0) }) ?? [0],
+                setGroup: setGroup
+            )
+        } else if let superSet = lastSet as? SuperSet {
+            newSuperSet(
+                repetitionsFirstExercise: Int(superSet.repetitionsFirstExercise),
+                repeptitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
+                weightFirstExercise: Int(superSet.weightFirstExercise),
+                weightSecondExercise: Int(superSet.weightSecondExercise),
+                setGroup: setGroup
+            )
+        }
+    }
 
     public func addSet(to templateSetGroup: TemplateSetGroup) {
         let lastSet = templateSetGroup.sets.last

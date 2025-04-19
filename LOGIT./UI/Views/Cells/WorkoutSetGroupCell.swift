@@ -35,7 +35,7 @@ struct WorkoutSetGroupCell: View {
     var body: some View {
         VStack(spacing: SECTION_HEADER_SPACING) {
             header
-                .padding(.bottom, 3)
+                
             if !isReordering {
                 VStack(spacing: 8) {
                     VStack(spacing: CELL_SPACING) {
@@ -73,7 +73,9 @@ struct WorkoutSetGroupCell: View {
                             }
                             .buttonStyle(SecondaryBigButtonStyle(padding: 18, trailingCornerRadius: 5))
                             Button {
-                                
+                                withAnimation(.interactiveSpring()) {
+                                    database.duplicateLastSet(from: setGroup)
+                                }
                             } label: {
                                 Image(systemName: "plus.square.on.square")
                             }
@@ -81,6 +83,7 @@ struct WorkoutSetGroupCell: View {
                         }
                     }
                 }
+                .padding(.top, 3)
             }
         }
         .sheet(isPresented: $isSelectingPrimaryExercise) {
@@ -154,10 +157,11 @@ struct WorkoutSetGroupCell: View {
                             .foregroundColor(setGroup.secondaryExercise?.muscleGroup?.color ?? .accentColor)
                     }
                     Spacer()
-//                    if let supplementaryText = supplementaryText {
-//                        Text(supplementaryText)
-//                            .foregroundStyle(.secondary)
-//                    }
+                    if !isReordering, let supplementaryText = supplementaryText {
+                        Text(supplementaryText)
+                            .foregroundStyle(.secondary)
+                            .fontWeight(.medium)
+                    }
                 }
                 .font(.system(.footnote, design: .rounded, weight: .bold))
                 ExerciseHeader(
@@ -176,6 +180,11 @@ struct WorkoutSetGroupCell: View {
             Spacer()
             if canEdit && !isReordering {
                 menu
+            }
+            if isReordering {
+                Image(systemName: "line.3.horizontal")
+                    .fontWeight(.regular)
+                    .foregroundStyle(.secondary)
             }
         }
         .font(.title3.weight(.bold))
@@ -299,7 +308,7 @@ private struct PreviewWrapperView: View {
                             setGroup: workouts.first!.setGroups.first!,
                             focusedIntegerFieldIndex: .constant(nil),
                             isReordering: .constant(true),
-                            supplementaryText: "1 / 3"
+                            supplementaryText: nil
                         )
                         .padding(CELL_PADDING)
                         .tileStyle()
@@ -308,7 +317,7 @@ private struct PreviewWrapperView: View {
                             setGroup: workouts.first!.setGroups.first!,
                             focusedIntegerFieldIndex: .constant(nil),
                             isReordering: .constant(false),
-                            supplementaryText: "1 / 3"
+                            supplementaryText: "Saturday Night Workout"
                         )
                         .padding(CELL_PADDING)
                         .tileStyle()

@@ -80,15 +80,6 @@ struct ExerciseHeader: View {
                     Spacer()
                 }
             }
-            HStack {
-                Text(exercise?.muscleGroup?.description ?? "")
-                    .foregroundColor(exercise?.muscleGroup?.color ?? .accentColor)
-                if isSuperSet {
-                    Text(secondaryExercise?.muscleGroup?.description ?? "")
-                        .foregroundColor(secondaryExercise?.muscleGroup?.color ?? .accentColor)
-                }
-            }
-            .font(.system(.body, design: .rounded, weight: .bold))
         }
         .textCase(nil)
         .font(.title3.weight(.bold))

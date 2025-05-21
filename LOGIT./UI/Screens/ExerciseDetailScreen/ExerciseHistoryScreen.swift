@@ -34,7 +34,7 @@ struct ExerciseHistoryScreen: View {
                                         focusedIntegerFieldIndex: .constant(nil),
                                         isReordering: .constant(false),
                                         supplementaryText:
-                                            "\(setGroup.workout?.date?.description(.short) ?? "")  ·  \(setGroup.workout?.name ?? "")"
+                                            "\(setGroup.workout?.date?.description(.short) ?? "")"
                                     )
                                     .padding(CELL_PADDING)
                                     .tileStyle()

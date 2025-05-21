@@ -156,10 +156,7 @@ struct WorkoutRecorderScreen: View {
                                 }
                             }
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
-                            .presentationBackgroundInteraction(.enabled)
-                            .presentationBackground(.thickMaterial)
-                            .presentationCornerRadius(30)
-                            .interactiveDismissDisabled()
+                            .detentableBottomSheetStyle()
                         }
                     }
                     .onAppear {

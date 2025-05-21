@@ -22,7 +22,7 @@ struct SuperSetCell: View {
     // MARK: - Body
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             if let indexInWorkout = indexInWorkout {
                 HStack {
                     Text("1")

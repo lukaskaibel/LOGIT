@@ -35,7 +35,11 @@ struct IntegerField: View {
         HStack(alignment: .lastTextBaseline, spacing: 0) {
             Group {
                 if canEdit {
-                    TextField(String(placeholder), text: $valueString)
+                    TextField(
+                        String(placeholder),
+                        text: $valueString,
+                        prompt: Text(String(placeholder)).foregroundStyle(isFocused ? Color(UIColor.systemGray2) : Color.placeholder)
+                    )
                         .focused($isFocused)
                         .onChange(of: valueString) {
                             valueString = ($0 == "0" || $0.isEmpty) ? "" : String($0.prefix(4))
@@ -45,8 +49,8 @@ struct IntegerField: View {
                                 value = 0
                             }
                         }
+                        .foregroundStyle(isFocused ? Color.black : Color.white)
                         .keyboardType(.numberPad)
-                        .accentColor(.clear)
                 } else {
                     Text(valueString)
                         .foregroundColor(isEmpty ? .placeholder : .primary)
@@ -57,14 +61,7 @@ struct IntegerField: View {
             .fixedSize()
             Text(unit?.uppercased() ?? "")
                 .font(.system(.footnote, design: .rounded, weight: .bold))
-                .foregroundColor(isEmpty ? .placeholder : .secondary)
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: 2)
-                .foregroundStyle(isFocused ? Color.label : Color.clear)
-                .frame(height: 2)
-                .frame(maxHeight: .infinity, alignment: .bottom)
-                .offset(y: 3)
+                .foregroundColor(isFocused ? (isEmpty ? Color(UIColor.systemGray) : Color(UIColor.systemGray3)) : isEmpty ? .placeholder : .secondary)
         }
         .fixedSize()
         .onTapGesture {
@@ -81,6 +78,9 @@ struct IntegerField: View {
             isFocused = true
         }
         .onChange(of: isFocused) { newValue in
+            if newValue {
+                UISelectionFeedbackGenerator().selectionChanged()
+            }
             guard newValue != (focusedIntegerFieldIndex == index) else { return }
             focusedIntegerFieldIndex = index
         }
@@ -89,6 +89,9 @@ struct IntegerField: View {
                 valueString = String(newValue)
             }
         }
+        .padding(.vertical, 5)
+        .padding(.horizontal, 8)
+        .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.tertiaryBackground)
         .frame(minWidth: 100, alignment: .trailing)
     }
 

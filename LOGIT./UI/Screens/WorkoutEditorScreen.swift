@@ -146,9 +146,7 @@ struct WorkoutEditorScreen: View {
                         .toolbar(.hidden, for: .navigationBar)
                     }
                     .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
-                    .presentationBackgroundInteraction(.enabled)
-                    .presentationCornerRadius(30)
-                    .interactiveDismissDisabled()
+                    .detentableBottomSheetStyle()
                     .sheet(isPresented: $isEditingStartEndDate) {
                         VStack(spacing: 30) {
                             HStack {
@@ -202,6 +200,7 @@ struct WorkoutEditorScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarHidden(isRenamingWorkout)
             .interactiveDismissDisabled(true)
+            .presentationBackground(Color.background)
             .scrollDismissesKeyboard(.interactively)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -277,6 +276,7 @@ struct WorkoutEditorScreen: View {
                     workout.endDate = .now.addingTimeInterval(1000)
                 }
                 refreshOnChange()
+                exerciseSelectionPresentationDetent = workout.isEmpty ? .medium : .fraction(BOTTOM_SHEET_SMALL)
             }
         }
     }

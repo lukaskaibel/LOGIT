@@ -42,7 +42,6 @@ extension WorkoutRecorderScreen {
                     }
                     HStack(spacing: 0) {
                         Button {
-                            UISelectionFeedbackGenerator().selectionChanged()
                             focusedIntegerFieldIndex = previousIntegerFieldIndex()
                         } label: {
                             Image(systemName: "chevron.up")
@@ -53,7 +52,6 @@ extension WorkoutRecorderScreen {
                         }
                         .disabled(previousIntegerFieldIndex() == nil)
                         Button {
-                            UISelectionFeedbackGenerator().selectionChanged()
                             focusedIntegerFieldIndex = nextIntegerFieldIndex()
                         } label: {
                             Image(systemName: "chevron.down")

@@ -36,8 +36,7 @@ struct WorkoutSetGroupList: View {
                     setGroup: setGroup,
                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                     isReordering: $isReordering,
-                    supplementaryText:
-                        "\(workout.setGroups.firstIndex(of: setGroup)! + 1) / \(workout.setGroups.count)  ·  \(setGroup.setType.description)"
+                    supplementaryText: nil
                 )
                 .padding(CELL_PADDING)
                 .tileStyle()

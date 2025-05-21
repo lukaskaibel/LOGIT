@@ -239,8 +239,7 @@ struct TemplateDetailScreen: View {
                     focusedIntegerFieldIndex: .constant(nil),
                     sheetType: .constant(nil),
                     isReordering: .constant(false),
-                    supplementaryText:
-                        "\(template.setGroups.firstIndex(of: templateSetGroup)! + 1) / \(template.setGroups.count)  ·  \(templateSetGroup.setType.description)"
+                    supplementaryText: nil
                 )
                 .padding(CELL_PADDING)
                 .tileStyle()

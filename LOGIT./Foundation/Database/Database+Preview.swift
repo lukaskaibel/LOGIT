@@ -169,21 +169,21 @@ extension Database {
             tricepsShoulderGroup.secondaryExercise = lateralRaises
             database.newSuperSet(
                 repetitionsFirstExercise: 12,
-                repeptitionsSecondExercise: 14,
+                repetitionsSecondExercise: 14,
                 weightFirstExercise: 25000,
                 weightSecondExercise: 18000,
                 setGroup: tricepsShoulderGroup
             )
             database.newSuperSet(
                 repetitionsFirstExercise: 12,
-                repeptitionsSecondExercise: 14,
+                repetitionsSecondExercise: 14,
                 weightFirstExercise: 25000,
                 weightSecondExercise: 18000,
                 setGroup: tricepsShoulderGroup
             )
             database.newSuperSet(
                 repetitionsFirstExercise: 12,
-                repeptitionsSecondExercise: 14,
+                repetitionsSecondExercise: 14,
                 weightFirstExercise: 25000,
                 weightSecondExercise: 18000,
                 setGroup: tricepsShoulderGroup

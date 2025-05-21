@@ -35,7 +35,6 @@ struct WorkoutSetGroupCell: View {
     var body: some View {
         VStack(spacing: SECTION_HEADER_SPACING) {
             header
-                
             if !isReordering {
                 VStack(spacing: 8) {
                     VStack(spacing: CELL_SPACING) {
@@ -48,7 +47,6 @@ struct WorkoutSetGroupCell: View {
                                 workoutSet: workoutSet,
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex
                             )
-                            .padding(CELL_PADDING)
                             .contentShape(Rectangle())
                             .onDelete(disabled: !canEdit) {
                                 withAnimation(.interactiveSpring()) {

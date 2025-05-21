@@ -37,7 +37,7 @@ struct TemplateSetGroupCell: View {
         VStack(spacing: SECTION_HEADER_SPACING) {
             header
             if !isReordering {
-                VStack(spacing: CELL_PADDING) {
+                VStack(spacing: 8) {
                     VStack(spacing: CELL_SPACING) {
                         ReorderableForEach(
                             $setGroup.sets,
@@ -48,7 +48,6 @@ struct TemplateSetGroupCell: View {
                                 templateSet: templateSet,
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex
                             )
-                            .padding(CELL_PADDING)
                             .contentShape(Rectangle())
                             .onDelete(disabled: !canEdit) {
                                 withAnimation(.interactiveSpring()) {
@@ -59,18 +58,28 @@ struct TemplateSetGroupCell: View {
                         }
                     }
                     .animation(.interactiveSpring())
-                    if canEdit && !isReordering {
-                        Button {
-                            withAnimation(.interactiveSpring()) {
-                                database.addSet(to: setGroup)
+                    if canEdit {
+                        HStack(spacing: 5) {
+                            Button {
+                                withAnimation(.interactiveSpring()) {
+                                    database.addSet(to: setGroup)
+                                }
+                            } label: {
+                                Label(
+                                    NSLocalizedString("addSet", comment: ""),
+                                    systemImage: "plus.circle.fill"
+                                )
                             }
-                        } label: {
-                            Label(
-                                NSLocalizedString("addSet", comment: ""),
-                                systemImage: "plus.circle.fill"
-                            )
+                            .buttonStyle(SecondaryBigButtonStyle(padding: 18, trailingCornerRadius: 5))
+                            Button {
+                                withAnimation(.interactiveSpring()) {
+                                    database.duplicateLastSet(from: setGroup)
+                                }
+                            } label: {
+                                Image(systemName: "plus.square.on.square")
+                            }
+                            .buttonStyle(SecondaryBigButtonStyle(padding: 18, maxWidth: 30, leadingCornerRadius: 5))
                         }
-                        .buttonStyle(SecondaryBigButtonStyle())
                     }
                 }
             }
@@ -129,13 +138,30 @@ struct TemplateSetGroupCell: View {
 
     private var header: some View {
         HStack {
+            if let indexInWorkout = setGroup.workout?.setGroups.firstIndex(of: setGroup) {
+                Text("\(indexInWorkout + 1)")
+                    .font(.title)
+                    .fontWeight(.medium)
+                    .fontDesign(.rounded)
+                    .foregroundStyle(.secondary)
+                    .padding(.trailing, 5)
+            }
             VStack(alignment: .leading, spacing: 0) {
-                if let supplementaryText = supplementaryText {
-                    Text(supplementaryText)
-                        .font(.footnote.weight(.medium))
-                        .foregroundColor(.secondaryLabel)
+                HStack {
+                    Text(setGroup.exercise?.muscleGroup?.description ?? "")
+                        .foregroundColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
+                    if setGroup.setType == .superSet {
+                        Text(setGroup.secondaryExercise?.muscleGroup?.description ?? "")
+                            .foregroundColor(setGroup.secondaryExercise?.muscleGroup?.color ?? .accentColor)
+                    }
+                    Spacer()
+                    if !isReordering, let supplementaryText = supplementaryText {
+                        Text(supplementaryText)
+                            .foregroundStyle(.secondary)
+                            .fontWeight(.medium)
+                    }
                 }
-                EmptyView()
+                .font(.system(.footnote, design: .rounded, weight: .bold))
                 ExerciseHeader(
                     exercise: setGroup.exercise,
                     secondaryExercise: setGroup.secondaryExercise,
@@ -150,8 +176,13 @@ struct TemplateSetGroupCell: View {
                 )
             }
             Spacer()
-            if canEdit {
+            if canEdit && !isReordering {
                 menu
+            }
+            if isReordering {
+                Image(systemName: "line.3.horizontal")
+                    .fontWeight(.regular)
+                    .foregroundStyle(.secondary)
             }
         }
         .font(.title3.weight(.bold))
@@ -234,7 +265,13 @@ struct TemplateSetGroupCell: View {
             }
         } label: {
             Image(systemName: "ellipsis")
-                .padding(.vertical)
+                .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                .padding(.horizontal, 3)
+                .padding(.vertical, 10)
+                .background(
+                    Circle()
+                        .fill((setGroup.exercise?.muscleGroup?.color ?? .accentColor).secondaryTranslucentBackground)
+                )
         }
     }
 
@@ -252,7 +289,7 @@ private struct PreviewWrapperView: View {
                         focusedIntegerFieldIndex: .constant(nil),
                         sheetType: .constant(nil),
                         isReordering: .constant(false),
-                        supplementaryText: "1 / 3"
+                        supplementaryText: nil
                     )
                     .padding(CELL_PADDING)
                     .tileStyle()

@@ -86,20 +86,30 @@ struct TemplateEditorScreen: View {
             ScrollViewReader { scrollable in
                 ScrollView {
                     VStack {
-                        VStack(spacing: SECTION_SPACING) {
+                        VStack(spacing: 0) {
                             ReorderableForEach(
                                 $template.setGroups,
                                 isReordering: $isReordering
                             ) { setGroup in
-                                TemplateSetGroupCell(
-                                    setGroup: setGroup,
-                                    focusedIntegerFieldIndex: .constant(nil),
-                                    sheetType: $sheetType,
-                                    isReordering: $isReordering,
-                                    supplementaryText: nil
-                                )
-                                .padding(CELL_PADDING)
-                                .tileStyle()
+                                VStack(spacing: 0) {
+                                    TemplateSetGroupCell(
+                                        setGroup: setGroup,
+                                        focusedIntegerFieldIndex: .constant(nil),
+                                        sheetType: $sheetType,
+                                        isReordering: $isReordering,
+                                        supplementaryText: nil
+                                    )
+                                    .padding(CELL_PADDING)
+                                    .tileStyle()
+                                    .shadow(color: .black.opacity(0.5), radius: 5)
+                                    .zIndex(1)
+                                    if template.setGroups.last != setGroup {
+                                        Rectangle()
+                                            .foregroundStyle(.secondary)
+                                            .frame(width: 3, height: SECTION_SPACING)
+                                            .zIndex(0)
+                                    }
+                                }
                             }
                         }
                         .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))

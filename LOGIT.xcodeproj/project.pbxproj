@@ -169,6 +169,7 @@
 		8065AA732686668100F53A5A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8065AA722686668100F53A5A /* Assets.xcassets */; };
 		8065AA7B2686668100F53A5A /* LOGIT.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 8065AA792686668100F53A5A /* LOGIT.xcdatamodeld */; };
 		806C4FFA2688B46400A9B01D /* StandardSet+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806C4FF92688B46400A9B01D /* StandardSet+.swift */; };
+		80750E112DDFCA550037F1FE /* WishKit in Frameworks */ = {isa = PBXBuildFile; productRef = 80750E102DDFCA550037F1FE /* WishKit */; };
 		807FC47F268A909D00169820 /* Exercise+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 807FC47E268A909D00169820 /* Exercise+.swift */; };
 		8084604B276662A000E0D0D0 /* WorkoutListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8084604A276662A000E0D0D0 /* WorkoutListScreen.swift */; };
 		8095E29E2DDE78E600234564 /* DetentableBottomSheetStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8095E29D2DDE78DF00234564 /* DetentableBottomSheetStyle.swift */; };
@@ -409,6 +410,7 @@
 				79C8FADF2AE3F657001EA5A7 /* OpenAIKit in Frameworks */,
 				7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */,
 				795767812AE706DB0040E327 /* Camera-SwiftUI in Frameworks */,
+				80750E112DDFCA550037F1FE /* WishKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -906,6 +908,7 @@
 				791347B52AE2BEB100D20BB7 /* MarkdownUI */,
 				79C8FADE2AE3F657001EA5A7 /* OpenAIKit */,
 				795767802AE706DB0040E327 /* Camera-SwiftUI */,
+				80750E102DDFCA550037F1FE /* WishKit */,
 			);
 			productName = WorkoutDiary;
 			productReference = 8065AA6B2686667F00F53A5A /* LOGIT.app */;
@@ -944,6 +947,7 @@
 				791347B42AE2BEB100D20BB7 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 				79C8FADD2AE3F657001EA5A7 /* XCRemoteSwiftPackageReference "OpenAI" */,
 				7957677F2AE706DB0040E327 /* XCRemoteSwiftPackageReference "Camera-SwiftUI" */,
+				80750E0F2DDFCA550037F1FE /* XCRemoteSwiftPackageReference "wishkit-ios" */,
 			);
 			productRefGroup = 8065AA6C2686667F00F53A5A /* Products */;
 			projectDirPath = "";
@@ -1476,6 +1480,14 @@
 				minimumVersion = 1.5.0;
 			};
 		};
+		80750E0F2DDFCA550037F1FE /* XCRemoteSwiftPackageReference "wishkit-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/wishkit/wishkit-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.7.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1493,6 +1505,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 79C8FADD2AE3F657001EA5A7 /* XCRemoteSwiftPackageReference "OpenAI" */;
 			productName = OpenAIKit;
+		};
+		80750E102DDFCA550037F1FE /* WishKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 80750E0F2DDFCA550037F1FE /* XCRemoteSwiftPackageReference "wishkit-ios" */;
+			productName = WishKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 

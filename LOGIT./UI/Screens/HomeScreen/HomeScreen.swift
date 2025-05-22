@@ -7,6 +7,7 @@
 
 import CoreData
 import SwiftUI
+import WishKit
 
 struct HomeScreen: View {
 
@@ -25,6 +26,7 @@ struct HomeScreen: View {
     @State private var showNoWorkoutTip = false
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingSettings = false
+    @State private var isShowingWishkit = false
 
     // MARK: - Body
 
@@ -174,6 +176,16 @@ struct HomeScreen: View {
                                 }
                             }
                             .padding(.horizontal)
+                            VStack {
+                                Button {
+                                    isShowingWishkit = true
+                                } label: {
+                                    Label(NSLocalizedString("whatsStillMissing", comment: ""), systemImage: "questionmark.bubble.fill")
+                                }
+                                .buttonStyle(SecondaryBigButtonStyle())
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 30)
                         }
                         .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                     }
@@ -193,6 +205,15 @@ struct HomeScreen: View {
                                 }
                             }
                     }
+                }
+                .sheet(isPresented: $isShowingWishkit) {
+                    WishKit.FeedbackListView().withNavigation()
+                        .onAppear {
+                            WishKit.configure(with: WISHKIT_API_KEY)
+                            WishKit.config.allowUndoVote = true
+                            WishKit.theme.primaryColor = .accentColor
+                            WishKit.config.buttons.saveButton.textColor = .setBoth(to: .black)
+                        }
                 }
                 .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
                     switch destination {

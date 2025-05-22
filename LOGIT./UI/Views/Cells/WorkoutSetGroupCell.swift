@@ -54,14 +54,36 @@ struct WorkoutSetGroupCell: View {
                                     database.delete(workoutSet)
                                 }
                             }
-                            .secondaryTileStyle()
+                            .background(
+                                RoundedRectangle(cornerRadius: 15)
+                                    .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                                    .foregroundStyle(Color.secondaryBackground)
+                            )
+                            .cornerRadius(15)
                         }
                     }
                     .animation(.interactiveSpring())
                     if canEdit {
-                        Button {
-                            withAnimation(.interactiveSpring()) {
-                                database.addSet(to: setGroup)
+                        HStack(spacing: 5) {
+                            Button {
+                                withAnimation(.interactiveSpring()) {
+                                    database.addSet(to: setGroup)
+                                }
+                            } label: {
+                                Label(
+                                    NSLocalizedString("addSet", comment: ""),
+                                    systemImage: "plus.circle.fill"
+                                )
+                                .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                            }
+                            .buttonStyle(SecondaryBigButtonStyle(padding: 18, trailingCornerRadius: 5))
+                            Button {
+                                withAnimation(.interactiveSpring()) {
+                                    database.duplicateLastSet(from: setGroup)
+                                }
+                            } label: {
+                                Image(systemName: "plus.square.on.square")
+                                    .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
                             }
                         } label: {
                             Label(

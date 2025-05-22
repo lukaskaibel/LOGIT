@@ -89,6 +89,10 @@ struct IntegerField: View {
                 valueString = String(newValue)
             }
         }
+        .padding(.vertical, 5)
+        .padding(.horizontal, 8)
+        .contentShape(Rectangle())
+        .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.00001))
         .frame(minWidth: 100, alignment: .trailing)
     }
 

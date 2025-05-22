@@ -232,19 +232,28 @@ struct TemplateDetailScreen: View {
     }
 
     private var exercisesList: some View {
-        VStack(spacing: CELL_SPACING) {
+        VStack(spacing: 0) {
             ForEach(template.setGroups) { templateSetGroup in
-                TemplateSetGroupCell(
-                    setGroup: templateSetGroup,
-                    focusedIntegerFieldIndex: .constant(nil),
-                    sheetType: .constant(nil),
-                    isReordering: .constant(false),
-                    supplementaryText:
-                        "\(template.setGroups.firstIndex(of: templateSetGroup)! + 1) / \(template.setGroups.count)  ·  \(templateSetGroup.setType.description)"
-                )
-                .padding(CELL_PADDING)
-                .tileStyle()
-                .canEdit(false)
+                VStack(spacing: 0) {
+                    TemplateSetGroupCell(
+                        setGroup: templateSetGroup,
+                        focusedIntegerFieldIndex: .constant(nil),
+                        sheetType: .constant(nil),
+                        isReordering: .constant(false),
+                        supplementaryText: nil
+                    )
+                    .padding(CELL_PADDING)
+                    .tileStyle()
+                    .canEdit(false)
+                    .shadow(color: .black, radius: 5)
+                    .zIndex(1)
+                    if template.setGroups.last != templateSetGroup {
+                        Rectangle()
+                            .foregroundStyle(.secondary)
+                            .frame(width: 3, height: SECTION_SPACING)
+                            .zIndex(0)
+                    }
+                }
             }
         }
     }

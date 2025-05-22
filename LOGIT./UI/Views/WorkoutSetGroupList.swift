@@ -18,6 +18,7 @@ struct WorkoutSetGroupList: View {
     @ObservedObject var workout: Workout
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
     let canReorder: Bool
+    var reduceShadow: Bool = false
 
     // MARK: - State
 
@@ -26,21 +27,30 @@ struct WorkoutSetGroupList: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: SECTION_SPACING) {
+        VStack(spacing: 0) {
             ReorderableForEach(
                 $workout.setGroups,
                 canReorder: canReorder,
                 isReordering: $isReordering
             ) { setGroup in
-                WorkoutSetGroupCell(
-                    setGroup: setGroup,
-                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                    isReordering: $isReordering,
-                    supplementaryText:
-                        "\(workout.setGroups.firstIndex(of: setGroup)! + 1) / \(workout.setGroups.count)  ·  \(setGroup.setType.description)"
-                )
-                .padding(CELL_PADDING)
-                .tileStyle()
+                VStack(spacing: 0) {
+                    WorkoutSetGroupCell(
+                        setGroup: setGroup,
+                        focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                        isReordering: $isReordering,
+                        supplementaryText: nil
+                    )
+                    .padding(CELL_PADDING)
+                    .tileStyle()
+                    .shadow(color: .black.opacity(reduceShadow ? 0.5 : 1.0), radius: 5)
+                    .zIndex(1)
+                    if workout.setGroups.last != setGroup {
+                        Rectangle()
+                            .foregroundStyle(.secondary)
+                            .frame(width: 3, height: SECTION_SPACING)
+                            .zIndex(0)
+                    }
+                }
                 .transition(.scale)
                 .id(setGroup)
             }
@@ -55,13 +65,17 @@ private struct PreviewWrapperView: View {
         WorkoutSetGroupList(
             workout: database.testWorkout,
             focusedIntegerFieldIndex: .constant(nil),
-            canReorder: false
+            canReorder: true
         )
     }
 }
 
 struct WorkoutSetGroupList_Previews: PreviewProvider {
     static var previews: some View {
-        PreviewWrapperView()
+        ScrollView {
+            PreviewWrapperView()
+                .padding()
+        }
+        .previewEnvironmentObjects()
     }
 }

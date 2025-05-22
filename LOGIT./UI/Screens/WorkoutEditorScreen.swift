@@ -82,25 +82,21 @@ struct WorkoutEditorScreen: View {
             ScrollViewReader { scrollable in
                 ScrollView {
                     VStack(spacing: SECTION_SPACING) {
-                        VStack(spacing: SECTION_HEADER_SPACING) {
-                            Text(NSLocalizedString("exercises", comment: ""))
-                                .sectionHeaderStyle2()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(spacing: CELL_SPACING) {
-                                WorkoutSetGroupList(
-                                    workout: workout,
-                                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                                    canReorder: true
-                                )
-                                .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
-                                .id(1)
-                                .emptyPlaceholder(workout.setGroups) {
-                                    Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
-                                        .foregroundStyle(Color.secondaryLabel)
-                                        .font(.body)
-                                        .fontWeight(.medium)
-                                        .padding(.top, 30)
-                                }
+                        VStack(spacing: CELL_SPACING) {
+                            WorkoutSetGroupList(
+                                workout: workout,
+                                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                                canReorder: true,
+                                reduceShadow: true
+                            )
+                            .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
+                            .id(1)
+                            .emptyPlaceholder(workout.setGroups) {
+                                Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
+                                    .foregroundStyle(Color.secondaryLabel)
+                                    .font(.body)
+                                    .fontWeight(.medium)
+                                    .padding(.top, 30)
                             }
                         }
                     }
@@ -146,9 +142,7 @@ struct WorkoutEditorScreen: View {
                         .toolbar(.hidden, for: .navigationBar)
                     }
                     .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
-                    .presentationBackgroundInteraction(.enabled)
-                    .presentationCornerRadius(30)
-                    .interactiveDismissDisabled()
+                    .detentableBottomSheetStyle()
                     .sheet(isPresented: $isEditingStartEndDate) {
                         VStack(spacing: 30) {
                             HStack {
@@ -202,6 +196,7 @@ struct WorkoutEditorScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarHidden(isRenamingWorkout)
             .interactiveDismissDisabled(true)
+            .presentationBackground(Color.background)
             .scrollDismissesKeyboard(.interactively)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -277,6 +272,7 @@ struct WorkoutEditorScreen: View {
                     workout.endDate = .now.addingTimeInterval(1000)
                 }
                 refreshOnChange()
+                exerciseSelectionPresentationDetent = workout.isEmpty ? .medium : .fraction(BOTTOM_SHEET_SMALL)
             }
         }
     }

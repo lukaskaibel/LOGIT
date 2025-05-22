@@ -22,7 +22,7 @@ struct TemplateSetCell: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: CELL_PADDING) {
+        VStack(spacing: 0) {
             if let indexInSetGroup = indexInSetGroup {
                 HStack {
                     Text("\(NSLocalizedString("set", comment: "")) \(indexInSetGroup + 1)")
@@ -70,6 +70,8 @@ struct TemplateSetCell: View {
                 }
                 if let dropSet = templateSet as? TemplateDropSet, canEdit {
                     Divider()
+                        .padding(.top, 8)
+                        .padding(.bottom, CELL_PADDING)
                     HStack {
                         Text(NSLocalizedString("dropCount", comment: ""))
                         Spacer()
@@ -100,6 +102,9 @@ struct TemplateSetCell: View {
                 }
             }
         }
+        .padding(.leading, CELL_PADDING)
+        .padding([.top, .trailing], 8)
+        .padding(.bottom, templateSet as? TemplateDropSet != nil ? CELL_PADDING : 8)
     }
 
     // MARK: - Supporting Methods

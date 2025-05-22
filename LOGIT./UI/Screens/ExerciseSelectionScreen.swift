@@ -113,30 +113,32 @@ struct ExerciseSelectionScreen: View {
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                         VStack(spacing: CELL_SPACING) {
                                             ForEach(exercises) { exercise in
-                                                HStack {
-                                                    ExerciseCell(exercise: exercise)
-                                                    Spacer()
-                                                    if exercise == selectedExercise {
-                                                        Image(systemName: "checkmark")
-                                                            .fontWeight(.semibold)
-                                                            .foregroundColor(exercise.muscleGroup?.color)
-                                                    }
-                                                    Button {
-                                                        selectedExerciseForDetail = exercise
-                                                    } label: {
-                                                        Image(systemName: "info.circle")
-                                                            .font(.title3)
-                                                    }
-                                                    .buttonStyle(TileButtonStyle())
-                                                    .foregroundColor(exercise.muscleGroup?.color)
-                                                }
-                                                .padding(CELL_PADDING)
-                                                .tileStyle()
-                                                .contentShape(Rectangle())
-                                                .onTapGesture {
+                                                Button {
                                                     setExercise(exercise)
                                                     presentationDetentSelection = .fraction(BOTTOM_SHEET_SMALL)
+                                                } label: {
+                                                    HStack {
+                                                        ExerciseCell(exercise: exercise)
+                                                        Spacer()
+                                                        if exercise == selectedExercise {
+                                                            Image(systemName: "checkmark")
+                                                                .fontWeight(.semibold)
+                                                                .foregroundColor(exercise.muscleGroup?.color)
+                                                        }
+                                                        Button {
+                                                            selectedExerciseForDetail = exercise
+                                                        } label: {
+                                                            Image(systemName: "info.circle")
+                                                                .font(.title3)
+                                                        }
+                                                        .buttonStyle(TileButtonStyle())
+                                                        .foregroundColor(exercise.muscleGroup?.color)
+                                                    }
+                                                    .padding(CELL_PADDING)
+                                                    .tileStyle()
+                                                    .contentShape(Rectangle())
                                                 }
+                                                .buttonStyle(TileButtonStyle())
                                             }
                                         }
                                     }

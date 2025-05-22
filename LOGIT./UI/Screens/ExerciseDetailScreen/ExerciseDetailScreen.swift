@@ -99,7 +99,7 @@ struct ExerciseDetailScreen: View {
                                     focusedIntegerFieldIndex: .constant(nil),
                                     isReordering: .constant(false),
                                     supplementaryText:
-                                        "\(setGroup.workout?.date?.description(.short) ?? "")  ·  \(setGroup.workout?.name ?? "")"
+                                        "\(setGroup.workout?.date?.description(.short) ?? "")"
                                 )
                                 .canEdit(false)
                                 .allowsHitTesting(false)

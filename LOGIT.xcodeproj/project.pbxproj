@@ -171,6 +171,7 @@
 		806C4FFA2688B46400A9B01D /* StandardSet+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806C4FF92688B46400A9B01D /* StandardSet+.swift */; };
 		807FC47F268A909D00169820 /* Exercise+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 807FC47E268A909D00169820 /* Exercise+.swift */; };
 		8084604B276662A000E0D0D0 /* WorkoutListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8084604A276662A000E0D0D0 /* WorkoutListScreen.swift */; };
+		8095E29E2DDE78E600234564 /* DetentableBottomSheetStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8095E29D2DDE78DF00234564 /* DetentableBottomSheetStyle.swift */; };
 		80B0A58B2D7F204900253CAD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B0A58A2D7F204500253CAD /* Constants.swift */; };
 		80B8CBB82D4C286000FEDF23 /* TemplatePredicateFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B8CBB72D4C286000FEDF23 /* TemplatePredicateFactory.swift */; };
 		80D9A7DB28860BB1000BF05E /* WorkoutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D9A7DA28860BB1000BF05E /* WorkoutCell.swift */; };
@@ -374,6 +375,7 @@
 		806C4FF92688B46400A9B01D /* StandardSet+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StandardSet+.swift"; sourceTree = "<group>"; };
 		807FC47E268A909D00169820 /* Exercise+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise+.swift"; sourceTree = "<group>"; };
 		8084604A276662A000E0D0D0 /* WorkoutListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutListScreen.swift; sourceTree = "<group>"; };
+		8095E29D2DDE78DF00234564 /* DetentableBottomSheetStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetentableBottomSheetStyle.swift; sourceTree = "<group>"; };
 		80B0A58A2D7F204500253CAD /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		80B8CBB72D4C286000FEDF23 /* TemplatePredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplatePredicateFactory.swift; sourceTree = "<group>"; };
 		80CBC33C2D56BE19001946EA /* LOGIT 3.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 3.0.xcdatamodel"; sourceTree = "<group>"; };
@@ -614,6 +616,7 @@
 		7988FBB12A7307B500E4FE54 /* Styles */ = {
 			isa = PBXGroup;
 			children = (
+				8095E29D2DDE78DF00234564 /* DetentableBottomSheetStyle.swift */,
 				7988FBB62A73391600E4FE54 /* ButtonStyle.swift */,
 				79488DEF2A770CE4005C485D /* KeyboardToolbarButtonStyle.swift */,
 				79488DE92A76FB4E005C485D /* MuscleGroupGradientStyle.swift */,
@@ -1070,6 +1073,7 @@
 				7919C5FD2A7410FB00F35493 /* WorkoutSetGroupCell.swift in Sources */,
 				797EF7E829293222003C2266 /* TitleUnitView.swift in Sources */,
 				79B7F2A92AA9E1A20090B785 /* ReorderableForEach.swift in Sources */,
+				8095E29E2DDE78E600234564 /* DetentableBottomSheetStyle.swift in Sources */,
 				800D57582D4443AE001A5C8D /* WorkoutSetGroupPredicateFactory.swift in Sources */,
 				7988FBB72A73391600E4FE54 /* ButtonStyle.swift in Sources */,
 				7967D57E2811887F00B30D03 /* MuscleGroupSelector.swift in Sources */,
@@ -1374,7 +1378,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.1;
+				MARKETING_VERSION = 3.2;
 				PRODUCT_BUNDLE_IDENTIFIER = .com.lukaskbl.LOGIT;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1404,7 +1408,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.1;
+				MARKETING_VERSION = 3.2;
 				PRODUCT_BUNDLE_IDENTIFIER = .com.lukaskbl.LOGIT;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

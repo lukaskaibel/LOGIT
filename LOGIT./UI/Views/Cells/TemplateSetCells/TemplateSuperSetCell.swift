@@ -21,7 +21,7 @@ struct TemplateSuperSetCell: View {
     // MARK: - Body
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             if let indexInTemplate = indexInTemplate {
                 HStack {
                     Text("1")

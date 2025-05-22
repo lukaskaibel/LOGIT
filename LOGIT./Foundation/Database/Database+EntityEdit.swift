@@ -19,6 +19,31 @@ extension Database {
             newStandardSet(setGroup: setGroup)
         }
     }
+    
+    public func duplicateLastSet(from setGroup: WorkoutSetGroup) {
+        let lastSet = setGroup.sets.last
+        if let standardSet = lastSet as? StandardSet {
+            newStandardSet(
+                repetitions: Int(standardSet.repetitions),
+                weight: Int(standardSet.weight),
+                setGroup: setGroup
+            )
+        } else if let dropSet = lastSet as? DropSet {
+            newDropSet(
+                repetitions: dropSet.repetitions?.map({ Int($0) }) ?? [0],
+                weights: dropSet.weights?.map({ Int($0) }) ?? [0],
+                setGroup: setGroup
+            )
+        } else if let superSet = lastSet as? SuperSet {
+            newSuperSet(
+                repetitionsFirstExercise: Int(superSet.repetitionsFirstExercise),
+                repetitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
+                weightFirstExercise: Int(superSet.weightFirstExercise),
+                weightSecondExercise: Int(superSet.weightSecondExercise),
+                setGroup: setGroup
+            )
+        }
+    }
 
     public func addSet(to templateSetGroup: TemplateSetGroup) {
         let lastSet = templateSetGroup.sets.last
@@ -28,6 +53,31 @@ extension Database {
             newTemplateSuperSet(setGroup: templateSetGroup)
         } else {
             newTemplateStandardSet(setGroup: templateSetGroup)
+        }
+    }
+    
+    public func duplicateLastSet(from setGroup: TemplateSetGroup) {
+        let lastSet = setGroup.sets.last
+        if let standardSet = lastSet as? TemplateStandardSet {
+            newTemplateStandardSet(
+                repetitions: Int(standardSet.repetitions),
+                weight: Int(standardSet.weight),
+                setGroup: setGroup
+            )
+        } else if let dropSet = lastSet as? TemplateDropSet {
+            newTemplateDropSet(
+                repetitions: dropSet.repetitions?.map({ Int($0) }) ?? [0],
+                weights: dropSet.weights?.map({ Int($0) }) ?? [0],
+                templateSetGroup: setGroup
+            )
+        } else if let superSet = lastSet as? TemplateSuperSet {
+            newTemplateSuperSet(
+                repetitionsFirstExercise: Int(superSet.repetitionsFirstExercise),
+                repetitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
+                weightFirstExercise: Int(superSet.weightFirstExercise),
+                weightSecondExercise: Int(superSet.weightSecondExercise),
+                setGroup: setGroup
+            )
         }
     }
 

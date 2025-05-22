@@ -157,7 +157,7 @@ struct LOGIT: App {
                         .background(.regularMaterial)
                         .clipShape(RoundedRectangle(cornerRadius: 15))
                         .shadow(radius: 10)
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, 12)
                         .padding(.bottom, 5)
                 }
                 .buttonStyle(TileButtonStyle())
@@ -173,7 +173,7 @@ struct LOGIT: App {
             } else {
                 StartWorkoutView()
                     .shadow(radius: 10)
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, 12)
                     .padding(.bottom, 5)
             }
         }

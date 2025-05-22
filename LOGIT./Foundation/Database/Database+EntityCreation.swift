@@ -87,7 +87,7 @@ extension Database {
     @discardableResult
     func newSuperSet(
         repetitionsFirstExercise: Int = 0,
-        repeptitionsSecondExercise: Int = 0,
+        repetitionsSecondExercise: Int = 0,
         weightFirstExercise: Int = 0,
         weightSecondExercise: Int = 0,
         setGroup: WorkoutSetGroup? = nil
@@ -95,7 +95,7 @@ extension Database {
         let superSet = SuperSet(context: context)
         superSet.id = UUID()
         superSet.repetitionsFirstExercise = Int64(repetitionsFirstExercise)
-        superSet.repetitionsSecondExercise = Int64(repeptitionsSecondExercise)
+        superSet.repetitionsSecondExercise = Int64(repetitionsSecondExercise)
         superSet.weightFirstExercise = Int64(weightFirstExercise)
         superSet.weightSecondExercise = Int64(weightSecondExercise)
         setGroup?.sets.append(superSet)

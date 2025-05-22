@@ -110,11 +110,13 @@ struct WorkoutRecorderScreen: View {
                                             }
                                             .disabled(!database.canRedo)
                                             Spacer()
-                                            Button {
-                                                isShowingDetailsSheet = true
-                                            } label: {
-                                                Image(systemName: "info.circle")
-                                            }
+                                            // TODO: Think about info button. Maybe not needed. Maybe something else ?
+//                                            Button {
+//                                                isShowingDetailsSheet = true
+//                                            } label: {
+//                                                Image(systemName: "info.circle")
+//                                            }
+                                            Spacer()
                                             Spacer()
                                             Button {
                                                 isShowingChronoSheet = true
@@ -154,10 +156,7 @@ struct WorkoutRecorderScreen: View {
                                 }
                             }
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
-                            .presentationBackgroundInteraction(.enabled)
-                            .presentationBackground(.thickMaterial)
-                            .presentationCornerRadius(30)
-                            .interactiveDismissDisabled()
+                            .detentableBottomSheetStyle()
                         }
                     }
                     .onAppear {

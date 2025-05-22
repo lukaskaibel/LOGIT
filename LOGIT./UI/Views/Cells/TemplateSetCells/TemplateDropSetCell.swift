@@ -21,7 +21,7 @@ struct TemplateDropSetCell: View {
     // MARK: - Body
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             if let indexInTemplate = indexInTemplate {
                 ForEach(0..<(dropSet.repetitions?.count ?? 0), id: \.self) { index in
                     HStack {

@@ -54,7 +54,12 @@ struct TemplateSetGroupCell: View {
                                     database.delete(templateSet)
                                 }
                             }
-                            .secondaryTileStyle()
+                            .background(
+                                RoundedRectangle(cornerRadius: 15)
+                                    .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                                    .foregroundStyle(Color.secondaryBackground)
+                            )
+                            .cornerRadius(15)
                         }
                     }
                     .animation(.interactiveSpring())

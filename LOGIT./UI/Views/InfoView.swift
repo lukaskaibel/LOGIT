@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct InfoView: View {
-    
     let title: String
     let infoText: String
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Label(title, systemImage: "info.circle")

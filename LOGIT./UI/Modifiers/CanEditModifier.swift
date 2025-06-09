@@ -8,20 +8,16 @@
 import SwiftUI
 
 struct CanEditModifier: ViewModifier {
-
     let canEdit: Bool
 
     func body(content: Content) -> some View {
         content
             .environment(\.canEdit, canEdit)
     }
-
 }
 
 extension View {
-
     func canEdit(_ canEdit: Bool) -> some View {
-        self.modifier(CanEditModifier(canEdit: canEdit))
+        modifier(CanEditModifier(canEdit: canEdit))
     }
-
 }

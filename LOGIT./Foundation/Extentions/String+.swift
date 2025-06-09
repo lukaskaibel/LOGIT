@@ -15,8 +15,8 @@ extension String {
 
     var firstLetterUppercased: String {
         return
-            self.replacingOccurrences(of: "(?<=.)([A-Z])", with: " $1", options: .regularExpression)
-            .capitalized
-            .replacingOccurrences(of: " ", with: "")
+            replacingOccurrences(of: "(?<=.)([A-Z])", with: " $1", options: .regularExpression)
+                .capitalized
+                .replacingOccurrences(of: " ", with: "")
     }
 }

@@ -9,7 +9,6 @@ import CoreData
 import SwiftUI
 
 struct ExerciseSelectionScreen: View {
-
     enum SheetType: Identifiable {
         case addExercise
         case exerciseDetail(exercise: Exercise)
@@ -20,7 +19,7 @@ struct ExerciseSelectionScreen: View {
             }
         }
     }
-    
+
     // MARK: - State
 
     @State private var searchedText: String = ""
@@ -105,7 +104,7 @@ struct ExerciseSelectionScreen: View {
                                     .tileStyle()
                                     .padding(.horizontal)
                                 }
-                                ForEach(groupedExercises, id:\.0) { key, exercises in
+                                ForEach(groupedExercises, id: \.0) { key, exercises in
                                     VStack(spacing: SECTION_HEADER_SPACING) {
                                         Text(key)
                                             .textCase(.uppercase)
@@ -211,15 +210,13 @@ struct ExerciseSelectionScreen: View {
             }
         }
     }
-
 }
 
 // MARK: - Preview
 
 private struct ExerciseSelectionScreenPreviewWrapper: View {
-    
     @State private var presentationDetent: PresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
-    
+
     var body: some View {
         Rectangle()
             .sheet(isPresented: .constant(true)) {
@@ -236,7 +233,6 @@ private struct ExerciseSelectionScreenPreviewWrapper: View {
             }
             .previewEnvironmentObjects()
     }
-    
 }
 
 struct ExerciseSelectionView_Previews: PreviewProvider {

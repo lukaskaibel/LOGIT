@@ -1,5 +1,5 @@
 //
-//  WorkoutRecorderView+Toolbar.swift
+//  WorkoutRecorderScreen+Toolbar.swift
 //  LOGIT.
 //
 //  Created by Lukas Kaibel on 14.06.23.
@@ -8,8 +8,7 @@
 import SwiftUI
 
 extension WorkoutRecorderScreen {
-
-    internal var ToolbarItemsKeyboard: some ToolbarContent {
+    var ToolbarItemsKeyboard: some ToolbarContent {
         ToolbarItemGroup(placement: .keyboard) {
             HStack {
                 Spacer()
@@ -79,5 +78,4 @@ extension WorkoutRecorderScreen {
             }
         }
     }
-
 }

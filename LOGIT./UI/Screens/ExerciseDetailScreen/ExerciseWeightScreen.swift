@@ -9,23 +9,22 @@ import Charts
 import SwiftUI
 
 struct ExerciseWeightScreen: View {
-    
     private enum ChartGranularity {
         case month, year
     }
-        
+
     @StateObject var exercise: Exercise
-    
+
     @State private var chartGranularity: ChartGranularity = .month
     @State private var isShowingCurrentBestInfo = false
     @State private var chartScrollPosition: Date = .now
-    
+
     var body: some View {
         let workoutSets = exercise.sets.sorted { $0.workout?.date ?? .now < $1.workout?.date ?? .now }
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
-        let allDailyMaxSets = allDailyMaxWeightSets(in: groupedWorkoutSets.map({ $0.1 }))
+        let allDailyMaxSets = allDailyMaxWeightSets(in: groupedWorkoutSets.map { $0.1 })
         let bestVisibleWeight = bestWeightInGranularity(workoutSets)
         VStack {
             Picker("Select Chart Granularity", selection: $chartGranularity) {
@@ -36,7 +35,7 @@ struct ExerciseWeightScreen: View {
             }
             .pickerStyle(.segmented)
             .padding(.vertical)
-                        
+
             VStack(alignment: .leading) {
                 Text(NSLocalizedString("monthlyBest", comment: ""))
                     .font(.footnote)
@@ -70,7 +69,7 @@ struct ExerciseWeightScreen: View {
                     .foregroundStyle(Gradient(colors: [
                         exerciseMuscleGroupColor.opacity(0.5),
                         exerciseMuscleGroupColor.opacity(0.2),
-                        exerciseMuscleGroupColor.opacity(0.05)
+                        exerciseMuscleGroupColor.opacity(0.05),
                     ]))
                 }
                 ForEach(allDailyMaxSets) { workoutSet in
@@ -99,12 +98,12 @@ struct ExerciseWeightScreen: View {
                     .foregroundStyle(Gradient(colors: [
                         exerciseMuscleGroupColor.opacity(0.5),
                         exerciseMuscleGroupColor.opacity(0.2),
-                        exerciseMuscleGroupColor.opacity(0.05)
+                        exerciseMuscleGroupColor.opacity(0.05),
                     ]))
                 }
             }
             .chartXScale(domain: xDomain(for: workoutSets))
-            .chartYScale(domain: 0...(Double(allTimeWeightPR(in: workoutSets)) * 1.1))
+            .chartYScale(domain: 0 ... (Double(allTimeWeightPR(in: workoutSets)) * 1.1))
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
@@ -160,10 +159,9 @@ struct ExerciseWeightScreen: View {
                         .font(.footnote)
                 }
             }
-            
         }
     }
-    
+
     private func allDailyMaxWeightSets(in groupedWorkoutSets: [[WorkoutSet]]) -> [WorkoutSet] {
         let maxSetsPerDay = groupedWorkoutSets
             .compactMap { setsPerDay -> WorkoutSet? in
@@ -172,11 +170,11 @@ struct ExerciseWeightScreen: View {
             .filter { $0.maximum(.weight, for: exercise) > 0 }
         return maxSetsPerDay
     }
-    
+
     private var visibleChartDomainInSeconds: Int {
         3600 * 24 * (chartGranularity == .month ? 35 : 365)
     }
-    
+
     private func xDomain(for workoutSets: [WorkoutSet]) -> some ScaleDomain {
         let maxStartDate = Calendar.current.date(
             byAdding: chartGranularity == .month ? .month : .year,
@@ -185,15 +183,15 @@ struct ExerciseWeightScreen: View {
         )!
         let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
         guard let firstSetDate = workoutSets.first?.workout?.date, firstSetDate < maxStartDate
-        else { return maxStartDate...endDate }
+        else { return maxStartDate ... endDate }
         let startDate = chartGranularity == .month ? firstSetDate.startOfMonth : firstSetDate.startOfYear
-        return startDate...endDate
+        return startDate ... endDate
     }
-    
+
     private var exerciseMuscleGroupColor: Color {
         exercise.muscleGroup?.color ?? Color.accentColor
     }
-    
+
     private func xAxisDateString(for date: Date) -> String {
         switch chartGranularity {
         case .month:
@@ -202,8 +200,8 @@ struct ExerciseWeightScreen: View {
             return date.formatted(Date.FormatStyle().month(.narrow))
         }
     }
-    
-    private func isDateNow(_ date: Date, for granularity: ChartGranularity) -> Bool {
+
+    private func isDateNow(_ date: Date, for _: ChartGranularity) -> Bool {
         switch chartGranularity {
         case .month:
             return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.weekOfYear, .yearForWeekOfYear])
@@ -221,7 +219,7 @@ struct ExerciseWeightScreen: View {
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
         }
     }
-    
+
     private func allTimeWeightPR(in workoutSets: [WorkoutSet]) -> Int {
         convertWeightForDisplaying(
             workoutSets
@@ -231,7 +229,7 @@ struct ExerciseWeightScreen: View {
                 .max() ?? 0
         )
     }
-    
+
     private func bestWeightInGranularity(_ workoutSets: [WorkoutSet]) -> Int? {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= chartScrollPosition && $0.workout?.date ?? .distantFuture <= endDate }
@@ -239,17 +237,16 @@ struct ExerciseWeightScreen: View {
         guard !setsInTimeFrame.isEmpty else {
             return workoutSets.first?.maximum(.weight, for: exercise)
         }
-        
+
         return setsInTimeFrame
-            .map({ $0.maximum(.weight, for: exercise) })
+            .map { $0.maximum(.weight, for: exercise) }
             .max()
     }
-    
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationView {
             ExerciseWeightScreen(exercise: database.getExercises().first!)

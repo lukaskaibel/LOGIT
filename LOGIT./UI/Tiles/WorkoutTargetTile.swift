@@ -8,11 +8,10 @@
 import SwiftUI
 
 struct WorkoutTargetTile: View {
-    
     var targetPerWeek: Int = 2
-    
+
     @EnvironmentObject private var workoutRepository: WorkoutRepository
-    
+
     var body: some View {
         VStack {
             VStack {
@@ -51,7 +50,6 @@ struct WorkoutTargetTile: View {
                                             .frame(width: geometry.size.width * targetPercentageDone)
                                         Spacer()
                                     }
-                                    
                                 }
                         }
                         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -71,17 +69,14 @@ struct WorkoutTargetTile: View {
         }
         .tileStyle()
     }
-                    
-                    
+
     private var workoutsThisWeek: Int {
         workoutRepository.getWorkouts(for: .weekOfYear, including: .now).count
     }
-    
+
     private var targetPercentageDone: CGFloat {
         CGFloat(workoutsThisWeek) / CGFloat(targetPerWeek)
     }
-    
-    
 }
 
 #Preview {

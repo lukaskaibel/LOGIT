@@ -8,9 +8,8 @@
 import Foundation
 
 final class MuscleGroupService: ObservableObject {
-    
     // MARK: - Public
-    
+
     func getMuscleGroupOccurances(in sets: [WorkoutSet]) -> [(MuscleGroup, Int)] {
         Array(
             sets
@@ -25,15 +24,15 @@ final class MuscleGroupService: ObservableObject {
                 .sorted { $0.value == $1.value ? $0.key < $1.key : $0.value > $1.value }
         )
     }
-    
+
     func getMuscleGroupOccurances(in workouts: [Workout]) -> [(MuscleGroup, Int)] {
-        getMuscleGroupOccurances(in: Array(workouts.map({ $0.sets }).joined()))
+        getMuscleGroupOccurances(in: Array(workouts.map { $0.sets }.joined()))
     }
-    
+
     func getMuscleGroupOccurances(in workout: Workout) -> [(MuscleGroup, Int)] {
         getMuscleGroupOccurances(in: [workout])
     }
-    
+
     func getMuscleGroupOccurances(in sets: [TemplateSet]) -> [(MuscleGroup, Int)] {
         Array(
             sets
@@ -48,11 +47,11 @@ final class MuscleGroupService: ObservableObject {
                 .sorted { $0.value == $1.value ? $0.key < $1.key : $0.value > $1.value }
         )
     }
-    
+
     func getMuscleGroupOccurances(in templates: [Template]) -> [(MuscleGroup, Int)] {
-        getMuscleGroupOccurances(in: Array(templates.map({ $0.sets }).joined()))
+        getMuscleGroupOccurances(in: Array(templates.map { $0.sets }.joined()))
     }
-    
+
     func getMuscleGroupOccurances(in template: Template) -> [(MuscleGroup, Int)] {
         getMuscleGroupOccurances(in: [template])
     }
@@ -60,7 +59,6 @@ final class MuscleGroupService: ObservableObject {
     // MARK: - Private
 
     private var allMuscleGroupZeroDict: [MuscleGroup: Int] {
-        MuscleGroup.allCases.reduce(into: [MuscleGroup: Int](), { $0[$1, default: 0] = 0 })
+        MuscleGroup.allCases.reduce(into: [MuscleGroup: Int]()) { $0[$1, default: 0] = 0 }
     }
-    
 }

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct MeasurementsScreen: View {
-
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
@@ -28,11 +27,11 @@ struct MeasurementsScreen: View {
                         MeasurementEntryView(measurementType: .caloriesBurned)
                             .padding(CELL_PADDING)
                             .tileStyle()
-                            .widget(ofType: .measurement(.caloriesBurned), isAddedByDefault: false)
+                            .widget(ofType: .measurement(.caloriesBurned), isAddedByDefault: false),
                     ],
                     database: database
                 )
-                
+
                 WidgetCollectionView(
                     type: .circumferenceMeasurements,
                     title: NSLocalizedString("bodyParts", comment: ""),

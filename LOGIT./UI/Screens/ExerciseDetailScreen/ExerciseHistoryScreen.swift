@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct ExerciseHistoryScreen: View {
-        
     @StateObject var exercise: Exercise
-    
+
     var body: some View {
         FetchRequestWrapper(
             WorkoutSetGroup.self,
@@ -34,7 +33,7 @@ struct ExerciseHistoryScreen: View {
                                         focusedIntegerFieldIndex: .constant(nil),
                                         isReordering: .constant(false),
                                         supplementaryText:
-                                            "\(setGroup.workout?.date?.description(.short) ?? "")"
+                                        "\(setGroup.workout?.date?.description(.short) ?? "")"
                                     )
                                     .padding(CELL_PADDING)
                                     .tileStyle()
@@ -63,16 +62,14 @@ struct ExerciseHistoryScreen: View {
                             .font(.footnote)
                     }
                 }
-                
             }
         }
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationView {
             ExerciseHistoryScreen(exercise: database.getExercises().first!)

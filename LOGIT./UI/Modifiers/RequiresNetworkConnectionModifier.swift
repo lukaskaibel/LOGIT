@@ -8,11 +8,10 @@
 import SwiftUI
 
 struct RequiresNetworkConnectionModifier: ViewModifier {
-    
     @EnvironmentObject private var networkMonitor: NetworkMonitor
-    
+
     @State private var isShowingNoConnectinoAlert = false
-    
+
     func body(content: Content) -> some View {
         content
             .simultaneousGesture(

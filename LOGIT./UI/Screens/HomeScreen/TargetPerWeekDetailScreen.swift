@@ -10,25 +10,24 @@ import OSLog
 import SwiftUI
 
 struct TargetPerWeekDetailScreen: View {
-    
     // MARK: - Static
-    
+
     private static let logger = Logger(
         subsystem: ".com.lukaskbl.LOGIT",
         category: "MuscleGroupSplitScreen"
     )
-    
+
     // MARK: - AppStorage
-    
+
     @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = 3
-        
+
     // MARK: - State
 
     @State private var isShowingChangeGoalScreen = false
     @State private var selectedWeeksFromNow = 0
-    
+
     // MARK: - Body
-    
+
     var body: some View {
         FetchRequestWrapper(
             Workout.self,
@@ -72,9 +71,9 @@ struct TargetPerWeekDetailScreen: View {
                             }
                         }
                         .font(.title3)
-                        
+
                         TabView(selection: $selectedWeeksFromNow) {
-                            ForEach(Array<Int>(0..<54).reversed(), id:\.self) { weeksFromNow in
+                            ForEach([Int](0 ..< 54).reversed(), id: \.self) { weeksFromNow in
                                 FetchRequestWrapper(
                                     Workout.self,
                                     sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
@@ -92,7 +91,7 @@ struct TargetPerWeekDetailScreen: View {
                                     )
                                 ) { workouts in
                                     Chart {
-                                        ForEach(0..<targetPerWeek, id:\.self) { value in
+                                        ForEach(0 ..< targetPerWeek, id: \.self) { value in
                                             SectorMark(
                                                 angle: .value("Value", 1),
                                                 innerRadius: .ratio(0.65),
@@ -126,7 +125,7 @@ struct TargetPerWeekDetailScreen: View {
                         }
                         .tabViewStyle(.page(indexDisplayMode: .never))
                         .frame(height: 250)
-                        
+
                         HStack(alignment: .firstTextBaseline) {
                             Spacer()
                             VStack {
@@ -148,7 +147,7 @@ struct TargetPerWeekDetailScreen: View {
                                 .fontDesign(.rounded)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.secondary)
-                            
+
                             VStack {
                                 Text("\(targetPerWeek)")
                                     .font(.title)
@@ -214,7 +213,6 @@ struct TargetPerWeekDetailScreen: View {
             .edgesIgnoringSafeArea(.bottom)
         }
     }
-
 }
 
 struct TargetWorkoutsDetailView_Previews: PreviewProvider {

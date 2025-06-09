@@ -7,6 +7,4 @@
 
 import SwiftUI
 
-extension WorkoutRecorderView {
-
-}
+extension WorkoutRecorderView {}

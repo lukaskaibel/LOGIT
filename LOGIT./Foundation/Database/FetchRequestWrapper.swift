@@ -1,5 +1,5 @@
 //
-//  SectionedFetchRequestWrapper.swift
+//  FetchRequestWrapper.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 24.01.25.
@@ -8,15 +8,13 @@
 import CoreData
 import SwiftUI
 
-
-struct FetchRequestWrapper<Content: View, Object: NSManagedObject>: View  {
-    
+struct FetchRequestWrapper<Content: View, Object: NSManagedObject>: View {
     @FetchRequest var sections: FetchedResults<Object>
-    
+
     let content: ([Object]) -> Content
-    
+
     init(
-        _ type: Object.Type,
+        _: Object.Type,
         sortDescriptors: [SortDescriptor<Object>] = [],
         predicate: NSPredicate? = nil,
         animation: Animation? = nil,
@@ -29,9 +27,8 @@ struct FetchRequestWrapper<Content: View, Object: NSManagedObject>: View  {
         )
         self.content = content
     }
-    
+
     var body: some View {
         content(Array(sections))
     }
-    
 }

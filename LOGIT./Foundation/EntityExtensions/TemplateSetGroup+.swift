@@ -8,12 +8,11 @@
 import Foundation
 
 extension TemplateSetGroup {
-
     enum SetType: String {
         case standard, superSet, dropSet
 
         var description: String {
-            NSLocalizedString(self.rawValue, comment: "")
+            NSLocalizedString(rawValue, comment: "")
         }
     }
 
@@ -73,11 +72,11 @@ extension TemplateSetGroup {
             exercises = currentExercises
         }
     }
-    
+
     var muscleGroups: [MuscleGroup] {
-        Array(Set(exercises.compactMap({ $0.muscleGroup })))
+        Array(Set(exercises.compactMap { $0.muscleGroup }))
     }
-    
+
     var setType: SetType {
         let firstSet = sets.first
         if let _ = firstSet as? TemplateDropSet {
@@ -92,5 +91,4 @@ extension TemplateSetGroup {
     func index(of set: TemplateSet) -> Int? {
         sets.firstIndex(of: set)
     }
-
 }

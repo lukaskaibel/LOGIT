@@ -8,13 +8,12 @@
 import SwiftUI
 
 struct ChangeWeeklyWorkoutGoalScreen: View {
-    
     @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = 3
 
     @Environment(\.dismiss) var dismiss
-    
+
     @State private var selectedValue: Int = 0
-    
+
     var body: some View {
         VStack {
             VStack(spacing: 25) {

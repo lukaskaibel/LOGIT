@@ -1,5 +1,5 @@
 //
-//  OnDelete.swift
+//  OnDeleteModifier.swift
 //  LOGIT.
 //
 //  Created by Lukas Kaibel on 28.07.23.
@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct OnDeleteModifier: ViewModifier {
-
     let action: () -> Void
 
     @State var offset: CGSize = .zero
@@ -49,10 +48,10 @@ struct OnDeleteModifier: ViewModifier {
                         if gesture.translation.width + initialOffset.width <= 0 {
                             self.offset.width = gesture.translation.width + initialOffset.width
                         }
-                        if self.offset.width < -deletionDistance && !willDeleteIfReleased {
+                        if self.offset.width < -deletionDistance, !willDeleteIfReleased {
                             hapticFeedback()
                             willDeleteIfReleased.toggle()
-                        } else if offset.width > -deletionDistance && willDeleteIfReleased {
+                        } else if offset.width > -deletionDistance, willDeleteIfReleased {
                             hapticFeedback()
                             willDeleteIfReleased.toggle()
                         }
@@ -82,16 +81,14 @@ struct OnDeleteModifier: ViewModifier {
         generator.impactOccurred()
     }
 
-    //MARK: Constants
+    // MARK: Constants
 
     let deletionDistance = CGFloat(200)
     let halfDeletionDistance = CGFloat(50)
     let tappableDeletionWidth = CGFloat(100)
-
 }
 
 extension View {
-
     func onDelete(disabled: Bool = false, perform action: @escaping () -> Void) -> some View {
         Group {
             if disabled {
@@ -101,5 +98,4 @@ extension View {
             }
         }
     }
-
 }

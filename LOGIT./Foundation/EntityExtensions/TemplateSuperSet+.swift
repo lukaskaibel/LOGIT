@@ -7,17 +7,15 @@
 
 import Foundation
 
-extension TemplateSuperSet {
-
-    public var secondaryExercise: Exercise? {
+public extension TemplateSuperSet {
+    var secondaryExercise: Exercise? {
         setGroup?.secondaryExercise
     }
 
     // MARK: Overrides from TemplateSet
 
-    public override var hasEntry: Bool {
+    override var hasEntry: Bool {
         repetitionsFirstExercise + repetitionsSecondExercise + weightFirstExercise
             + weightSecondExercise > 0
     }
-
 }

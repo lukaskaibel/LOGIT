@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SetChangerView: View {
-
     @Binding var workoutSet: WorkoutSet
 
     var body: some View {
@@ -19,7 +18,7 @@ struct SetChangerView: View {
                         "Repetitions",
                         selection: $workoutSet.repetitions,
                         content: {
-                            ForEach(0..<10000, id: \.self) { i in
+                            ForEach(0 ..< 10000, id: \.self) { i in
                                 Text(String(i))
                             }
                         }
@@ -36,7 +35,7 @@ struct SetChangerView: View {
                         "Weight",
                         selection: $workoutSet.weight,
                         content: {
-                            ForEach(0..<10000, id: \.self) { i in
+                            ForEach(0 ..< 10000, id: \.self) { i in
                                 Text(String(i))
                             }
                         }
@@ -53,7 +52,7 @@ struct SetChangerView: View {
                         "time",
                         selection: $workoutSet.time,
                         content: {
-                            ForEach(0..<10000, id: \.self) { i in
+                            ForEach(0 ..< 10000, id: \.self) { i in
                                 Text(String(i))
                             }
                         }

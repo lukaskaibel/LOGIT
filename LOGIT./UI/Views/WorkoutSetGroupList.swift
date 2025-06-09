@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct WorkoutSetGroupList: View {
-
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
@@ -60,7 +59,7 @@ struct WorkoutSetGroupList: View {
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         WorkoutSetGroupList(
             workout: database.testWorkout,

@@ -11,7 +11,6 @@ import XCTest
 @testable import LOGIT
 
 final class ExerciseServiceTests: XCTestCase {
-
     let database = Database(isPreview: true)
     private lazy var exerciseService = ExerciseService(database: database)
 
@@ -27,15 +26,15 @@ final class ExerciseServiceTests: XCTestCase {
                     switch completion {
                     case .finished:
                         break
-                    case .failure(let error):
+                    case let .failure(error):
                         XCTFail(
                             "ExerciseServiceTests: testMatchingExerciseToExistingExercises failed: \(error.localizedDescription)"
                         )
                     }
-                    expectation.fulfill()  // Fulfill the expectation when completed
+                    expectation.fulfill() // Fulfill the expectation when completed
                 },
                 receiveValue: { [unowned self] matches in
-                    exerciseNames.forEach { exerciseName in }
+                    exerciseNames.forEach { _ in }
                     XCTAssertEqual(
                         matches["Deadlift"],
                         database.getExercises(withNameIncluding: "Deadlift").first!,
@@ -91,22 +90,21 @@ final class ExerciseServiceTests: XCTestCase {
 //                }
 //            )
 //            .store(in: &cancellables)
-        
+
         exerciseService.createExercise(for: "barbell hip thrusts")
             .sink(
                 receiveCompletion: { completion in
                     switch completion {
                     case .finished:
                         print("Completed")
-                        break
-                    case .failure(let error):
+                    case let .failure(error):
                         XCTFail(
                             "ExerciseServiceTests: testCreateExerciseForName failed: \(error.localizedDescription)"
                         )
                     }
-                    expectation.fulfill()  // Fulfill the expectation when completed
+                    expectation.fulfill() // Fulfill the expectation when completed
                 },
-                receiveValue: { [unowned self] exercise in
+                receiveValue: { [unowned self] _ in
                     XCTAssertEqual(
                         "barbell hip thrusts",
                         database.getExercises(withNameIncluding: "thrust").first!.name,
@@ -124,5 +122,4 @@ final class ExerciseServiceTests: XCTestCase {
 
         wait(for: [expectation], timeout: 20.0)
     }
-
 }

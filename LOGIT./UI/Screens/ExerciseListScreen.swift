@@ -8,13 +8,12 @@
 import SwiftUI
 
 struct ExerciseListScreen: View {
-
     // MARK: - Environment
 
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
-    
+
     // MARK: - State
-    
+
     @State private var searchedText = ""
     @State private var selectedMuscleGroup: MuscleGroup? = nil
     @State private var showingAddExercise = false
@@ -42,11 +41,11 @@ struct ExerciseListScreen: View {
                                 description: NSLocalizedString("noExercisesTipDescription", comment: ""),
                                 buttonAction: .init(title: NSLocalizedString("createExercise", comment: ""), action: { showingAddExercise = true }),
                                 isShown: $isShowingNoExercisesTip)
-                        .padding(CELL_PADDING)
-                        .tileStyle()
-                        .padding(.horizontal)
+                            .padding(CELL_PADDING)
+                            .tileStyle()
+                            .padding(.horizontal)
                     }
-                    ForEach(groupedExercises, id:\.0) { key, exercises in
+                    ForEach(groupedExercises, id: \.0) { key, exercises in
                         VStack(spacing: SECTION_HEADER_SPACING) {
                             Text(key)
                                 .sectionHeaderStyle2()
@@ -103,7 +102,6 @@ struct ExerciseListScreen: View {
     private func getLetter(for group: [Exercise]) -> String {
         String(group.first?.name?.first ?? Character(" "))
     }
-
 }
 
 struct AllExercisesView_Previews: PreviewProvider {

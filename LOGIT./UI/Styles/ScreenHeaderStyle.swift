@@ -34,9 +34,11 @@ extension View {
     func screenHeaderStyle() -> some View {
         modifier(ScreenHeaderModifier())
     }
+
     func screenHeaderSecondaryStyle() -> some View {
         modifier(ScreenHeaderSecondaryModifier())
     }
+
     func screenHeaderTertiaryStyle() -> some View {
         modifier(ScreenHeaderTertiaryModifier())
     }

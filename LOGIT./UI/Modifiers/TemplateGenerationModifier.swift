@@ -10,17 +10,16 @@ import OSLog
 import SwiftUI
 
 struct TemplateGenerationModifier: ViewModifier {
-    
     @EnvironmentObject private var templateService: TemplateService
-    
+
     @State private var isShowingTemplateGenerationScreen = false
     @State private var isShowingCreationFailedAlert = false
 
     @State private var templateExtraction: AnyCancellable?
-    
+
     @Binding var uiImage: UIImage?
     @Binding var newTemplate: Template?
-    
+
     func body(content: Content) -> some View {
         content
             .onChange(of: uiImage) { image in
@@ -35,8 +34,7 @@ struct TemplateGenerationModifier: ViewModifier {
                             switch completion {
                             case .finished:
                                 isShowingTemplateGenerationScreen = false
-                                break
-                            case .failure(let error):
+                            case let .failure(error):
                                 isShowingCreationFailedAlert = true
                                 Logger()
                                     .error(

@@ -1,5 +1,5 @@
 //
-//  Exercise+Decodable.swift
+//  ExerciseDTO.swift
 //  LOGITTests
 //
 //  Created by Lukas Kaibel on 04.10.23.

@@ -9,9 +9,8 @@ import Charts
 import SwiftUI
 
 struct TemplateCell: View {
-    
     // MARK: - Environment
-    
+
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
 
     // MARK: - Variables
@@ -24,7 +23,7 @@ struct TemplateCell: View {
         VStack(alignment: .leading) {
             HStack(spacing: 12) {
                 Chart {
-                    ForEach(muscleGroupService.getMuscleGroupOccurances(in: template), id:\.0) { muscleGroupOccurance in
+                    ForEach(muscleGroupService.getMuscleGroupOccurances(in: template), id: \.0) { muscleGroupOccurance in
                         SectorMark(
                             angle: .value("Value", muscleGroupOccurance.1),
                             innerRadius: .ratio(0.65),
@@ -47,12 +46,11 @@ struct TemplateCell: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         ScrollView {
             TemplateCell(template: database.testTemplate)

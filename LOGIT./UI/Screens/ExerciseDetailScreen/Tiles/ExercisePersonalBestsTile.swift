@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct ExercisePersonalBestsTile: View {
-    
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
-    
+
     var body: some View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 5) {
@@ -67,9 +66,9 @@ struct ExercisePersonalBestsTile: View {
             }
         )
     }
-    
+
     // MARK: - Private Methods
-    
+
     private func allTimeWeightPREntry(in workoutSets: [WorkoutSet]) -> (Int, Int) {
         let workoutSet = workoutSets
             .max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
@@ -88,16 +87,15 @@ struct ExercisePersonalBestsTile: View {
                 repetitionsOfMaxWeight = superSet.repetitionsSecondExercise
             }
         } else if let dropSet = workoutSet as? DropSet {
-            zip(dropSet.weights ?? [], dropSet.repetitions ?? [])
-                .forEach {
-                    let shouldUpdate = $0.0 > maxWeight
-                    maxWeight = shouldUpdate ? $0.0 : maxWeight
-                    repetitionsOfMaxWeight = shouldUpdate ? $0.1 : repetitionsOfMaxWeight
-                }
+            for item in zip(dropSet.weights ?? [], dropSet.repetitions ?? []) {
+                let shouldUpdate = item.0 > maxWeight
+                maxWeight = shouldUpdate ? item.0 : maxWeight
+                repetitionsOfMaxWeight = shouldUpdate ? item.1 : repetitionsOfMaxWeight
+            }
         }
         return (convertWeightForDisplaying(maxWeight), Int(repetitionsOfMaxWeight))
     }
-    
+
     private func allTimeRepetitionsPREntry(in workoutSets: [WorkoutSet]) -> (Int, Int) {
         let workoutSet = workoutSets
             .max(by: { $0.maximum(.repetitions, for: exercise) < $1.maximum(.repetitions, for: exercise) })
@@ -116,30 +114,28 @@ struct ExercisePersonalBestsTile: View {
                 weightOfMaxRepetitions = superSet.weightSecondExercise
             }
         } else if let dropSet = workoutSet as? DropSet {
-            zip(dropSet.repetitions ?? [], dropSet.weights ?? [])
-                .forEach {
-                    let shouldUpdate = $0.0 > maxRepetitions
-                    maxRepetitions = shouldUpdate ? $0.0 : maxRepetitions
-                    weightOfMaxRepetitions = shouldUpdate ? $0.1 : weightOfMaxRepetitions
-                }
+            for item in zip(dropSet.repetitions ?? [], dropSet.weights ?? []) {
+                let shouldUpdate = item.0 > maxRepetitions
+                maxRepetitions = shouldUpdate ? item.0 : maxRepetitions
+                weightOfMaxRepetitions = shouldUpdate ? item.1 : weightOfMaxRepetitions
+            }
         }
         return (Int(maxRepetitions), convertWeightForDisplaying(weightOfMaxRepetitions))
     }
-    
+
     private var exerciseMuscleGroupColor: Color {
         exercise.muscleGroup?.color ?? Color.accentColor
     }
-    
 }
 
 // MARK: - Preview
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationView {
-            ExercisePersonalBestsTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap({ $0.sets }))
+            ExercisePersonalBestsTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap { $0.sets })
                 .padding()
         }
     }

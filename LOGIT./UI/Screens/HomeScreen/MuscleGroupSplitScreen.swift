@@ -1,5 +1,5 @@
 //
-//  MuscleGroupsDetailScreen.swift
+//  MuscleGroupSplitScreen.swift
 //  LOGIT.
 //
 //  Created by Lukas Kaibel on 19.11.22.
@@ -10,16 +10,15 @@ import OSLog
 import SwiftUI
 
 struct MuscleGroupSplitScreen: View {
-    
     // MARK: - Static
-    
+
     private static let logger = Logger(
         subsystem: ".com.lukaskbl.LOGIT",
         category: "MuscleGroupSplitScreen"
     )
-    
+
     // MARK: - Environment
-    
+
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
 
     // MARK: - State
@@ -47,7 +46,7 @@ struct MuscleGroupSplitScreen: View {
             )
         ) { workouts in
             let muscleGroupsInSelectedWeek = muscleGroupService.getMuscleGroupOccurances(in: workouts)
-                .map({ $0.0 })
+                .map { $0.0 }
             ScrollView {
                 LazyVStack(spacing: SECTION_SPACING) {
                     HStack {
@@ -74,9 +73,9 @@ struct MuscleGroupSplitScreen: View {
                     }
                     .font(.title3)
                     .padding(.horizontal)
-                    
+
                     TabView(selection: $selectedWeeksFromNow) {
-                        ForEach(Array<Int>(0..<54).reversed(), id:\.self) { weeksFromNow in
+                        ForEach([Int](0 ..< 54).reversed(), id: \.self) { weeksFromNow in
                             FetchRequestWrapper(
                                 Workout.self,
                                 sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
@@ -98,7 +97,6 @@ struct MuscleGroupSplitScreen: View {
                                         let setGroupsInWeekForSelectedMuscleGroup = getSetGroups(
                                             with: selectedMuscleGroup,
                                             from: workouts
-                                            
                                         )
                                         VStack(alignment: .leading, spacing: 10) {
                                             VStack(alignment: .leading) {
@@ -112,7 +110,7 @@ struct MuscleGroupSplitScreen: View {
                                             Divider()
                                             VStack(alignment: .leading) {
                                                 Text(NSLocalizedString("sets", comment: ""))
-                                                Text("\(setGroupsInWeekForSelectedMuscleGroup.flatMap({ $0.sets }).count)")
+                                                Text("\(setGroupsInWeekForSelectedMuscleGroup.flatMap { $0.sets }.count)")
                                                     .font(.title3)
                                                     .fontDesign(.rounded)
                                                     .fontWeight(.bold)
@@ -121,7 +119,7 @@ struct MuscleGroupSplitScreen: View {
                                             Divider()
                                             VStack(alignment: .leading) {
                                                 Text(NSLocalizedString("volume", comment: ""))
-                                                UnitView(value: "\(convertWeightForDisplaying(volume(for: selectedMuscleGroup, in: setGroupsInWeekForSelectedMuscleGroup.flatMap({ $0.sets }))))", unit: WeightUnit.used.rawValue)
+                                                UnitView(value: "\(convertWeightForDisplaying(volume(for: selectedMuscleGroup, in: setGroupsInWeekForSelectedMuscleGroup.flatMap { $0.sets })))", unit: WeightUnit.used.rawValue)
                                                     .font(.title3)
                                                     .fontDesign(.rounded)
                                                     .fontWeight(.bold)
@@ -152,14 +150,14 @@ struct MuscleGroupSplitScreen: View {
                     .tabViewStyle(.page)
                     .frame(minHeight: 300)
                 }
-                
+
                 MuscleGroupSelector(
                     selectedMuscleGroup: $selectedMuscleGroup,
                     from: muscleGroupsInSelectedWeek,
                     withAnimation: true
                 )
-                
-                let setGroupsInSelectedWeekWithSelectedMuscleGroup = selectedMuscleGroup == nil ? Array(workouts.map({ $0.setGroups }).joined()) : getSetGroups(
+
+                let setGroupsInSelectedWeekWithSelectedMuscleGroup = selectedMuscleGroup == nil ? Array(workouts.map { $0.setGroups }.joined()) : getSetGroups(
                     with: selectedMuscleGroup!,
                     from: workouts
                 )
@@ -177,7 +175,7 @@ struct MuscleGroupSplitScreen: View {
                                 focusedIntegerFieldIndex: .constant(nil),
                                 isReordering: .constant(false),
                                 supplementaryText:
-                                    "\(setGroup.workout!.date!.description(.short))  ·  \(setGroup.workout!.name!)"
+                                "\(setGroup.workout!.date!.description(.short))  ·  \(setGroup.workout!.name!)"
                             )
                             .canEdit(false)
                             .padding(CELL_PADDING)
@@ -195,7 +193,6 @@ struct MuscleGroupSplitScreen: View {
                 .background(Color.secondaryBackground)
                 .edgesIgnoringSafeArea(.bottom)
                 .padding(.top)
-                
             }
             .isBlockedWithoutPro()
             .onChange(of: selectedWeeksFromNow) { _ in
@@ -217,7 +214,7 @@ struct MuscleGroupSplitScreen: View {
     }
 
     // MARK: - Computed Properties
-    
+
     private func foregroundStyle(for muscleGroup: MuscleGroup) -> some ShapeStyle {
         if selectedMuscleGroup == nil || muscleGroup == selectedMuscleGroup {
             return AnyShapeStyle(muscleGroup.color.gradient)
@@ -225,17 +222,18 @@ struct MuscleGroupSplitScreen: View {
             return AnyShapeStyle(muscleGroup.color.secondaryTranslucentBackground)
         }
     }
-    
-    private func getSetGroups(with muscleGroup: MuscleGroup, from workouts: [Workout]) -> [WorkoutSetGroup] {
+
+    private func getSetGroups(with _: MuscleGroup, from workouts: [Workout]) -> [WorkoutSetGroup] {
         workouts
-            .map({ $0.setGroups })
+            .map { $0.setGroups }
             .joined()
-            .filter({ $0.exercise?.muscleGroup == selectedMuscleGroup
-                || $0.secondaryExercise?.muscleGroup == selectedMuscleGroup })
+            .filter { $0.exercise?.muscleGroup == selectedMuscleGroup
+                || $0.secondaryExercise?.muscleGroup == selectedMuscleGroup
+            }
     }
-    
+
     private func volume(for muscleGroup: MuscleGroup, in sets: [WorkoutSet]) -> Int {
-        sets.reduce(0, { currentVolume, currentSet in
+        sets.reduce(0) { currentVolume, currentSet in
             if let standardSet = currentSet as? StandardSet {
                 guard standardSet.exercise?.muscleGroup == muscleGroup else { return currentVolume }
                 return currentVolume + Int(standardSet.repetitions * standardSet.weight)
@@ -256,9 +254,8 @@ struct MuscleGroupSplitScreen: View {
                 return currentVolume + volumeForFirstExercise + volumeForSecondExercise
             }
             return currentVolume
-        })
+        }
     }
-
 }
 
 private struct PreviewWrapperView: View {

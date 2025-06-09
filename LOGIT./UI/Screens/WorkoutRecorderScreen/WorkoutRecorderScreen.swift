@@ -6,14 +6,13 @@
 //
 
 import AVFoundation
+import Combine
 import CoreData
 import OSLog
 import SwiftUI
 import UIKit
-import Combine
 
 struct WorkoutRecorderScreen: View {
-
     // MARK: - AppStorage
 
     @AppStorage("preventAutoLock") var preventAutoLock: Bool = true
@@ -36,7 +35,7 @@ struct WorkoutRecorderScreen: View {
     // MARK: - State
 
     @StateObject var chronograph = Chronograph()
-    @State internal var isShowingChronoSheet = false
+    @State var isShowingChronoSheet = false
     @State private var shouldFlash = false
     @State private var didAppear = false
     @State private var timerSound: AVAudioPlayer?
@@ -48,9 +47,9 @@ struct WorkoutRecorderScreen: View {
     @State private var isShowingDetailsSheet = false
     @State private var isShowingExerciseSelectionSheet = false
 
-    @State internal var focusedIntegerFieldIndex: IntegerField.Index?
+    @State var focusedIntegerFieldIndex: IntegerField.Index?
 
-    @FocusState internal var isFocusingTitleTextfield: Bool
+    @FocusState var isFocusingTitleTextfield: Bool
 
     // MARK: - Body
 
@@ -278,7 +277,7 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
-    internal var TimeStringView: some View {
+    var TimeStringView: some View {
         HStack {
             Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
             Text(remainingChronoTimeString)
@@ -292,8 +291,8 @@ struct WorkoutRecorderScreen: View {
     private var workoutName: Binding<String> {
         Binding(get: { workoutRecorder.workout?.name ?? "" }, set: { workoutRecorder.workout?.name = $0 })
     }
-    
-    private func updateProgress()  {
+
+    private func updateProgress() {
         guard let workout = workoutRecorder.workout else {
             progress = 0
             return
@@ -308,7 +307,7 @@ struct WorkoutRecorderScreen: View {
         return Float((workout.sets.filter { $0.hasEntry }).count) / Float(workout.sets.count)
     }
 
-    internal func indexInSetGroup(for workoutSet: WorkoutSet) -> Int? {
+    func indexInSetGroup(for workoutSet: WorkoutSet) -> Int? {
         guard let workout = workoutRecorder.workout else { return nil }
         for setGroup in workout.setGroups {
             if let index = setGroup.index(of: workoutSet) {
@@ -318,15 +317,15 @@ struct WorkoutRecorderScreen: View {
         return nil
     }
 
-    internal var selectedWorkoutSet: WorkoutSet? {
+    var selectedWorkoutSet: WorkoutSet? {
         guard let focusedIndex = focusedIntegerFieldIndex else { return nil }
         return workoutRecorder.workout?.sets.value(at: focusedIndex.primary)
     }
 
-    internal func nextIntegerFieldIndex() -> IntegerField.Index? {
+    func nextIntegerFieldIndex() -> IntegerField.Index? {
         guard let workout = workoutRecorder.workout else { return nil }
         guard let focusedIndex = focusedIntegerFieldIndex,
-            let focusedWorkoutSet = workout.sets.value(at: focusedIndex.primary)
+              let focusedWorkoutSet = workout.sets.value(at: focusedIndex.primary)
         else { return nil }
         if let _ = focusedWorkoutSet as? StandardSet {
             guard focusedIndex.primary + 1 < workout.sets.count else { return nil }
@@ -367,7 +366,7 @@ struct WorkoutRecorderScreen: View {
         return nil
     }
 
-    internal func previousIntegerFieldIndex() -> IntegerField.Index? {
+    func previousIntegerFieldIndex() -> IntegerField.Index? {
         guard let workout = workoutRecorder.workout else { return nil }
         guard let focusedIndex = focusedIntegerFieldIndex else { return nil }
         guard focusedIndex.secondary == 0 else {
@@ -415,11 +414,11 @@ struct WorkoutRecorderScreen: View {
     }
 
     private var remainingChronoTimeString: String {
-        "\(Int(chronograph.seconds)/60 / 10 % 6 )\(Int(chronograph.seconds)/60 % 10):\(Int(chronograph.seconds) % 60 / 10)\(Int(chronograph.seconds) % 60 % 10)"
+        "\(Int(chronograph.seconds) / 60 / 10 % 6)\(Int(chronograph.seconds) / 60 % 10):\(Int(chronograph.seconds) % 60 / 10)\(Int(chronograph.seconds) % 60 % 10)"
     }
-    
+
     // MARK: - Autosave
-    
+
     private func setUpAutoSaveForWorkout() {
         cancellable = NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
             .sink { _ in
@@ -427,13 +426,12 @@ struct WorkoutRecorderScreen: View {
                 self.database.save()
             }
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
     @EnvironmentObject private var workoutRecorder: WorkoutRecorder
-    
+
     var body: some View {
         WorkoutRecorderScreen()
             .onAppear {

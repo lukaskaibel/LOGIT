@@ -6,57 +6,56 @@
 //
 
 import Combine
-import OSLog
 import OpenAIKit
+import OSLog
 import SwiftUI
 
 class TemplateService: ObservableObject {
-    
     private static let logger = Logger(subsystem: "com.lukaskbl.LOGIT", category: "TemplateService")
 
     enum Error: Swift.Error {
         case emptyResponse, invalidData, invalidImage, jsonParsingError, keysNotMatching,
-            noRecognizedText
+             noRecognizedText
     }
 
     private let database: Database
     private var exerciseService: ExerciseService
-    
+
     var cancellables = [AnyCancellable]()
-    
+
     init(database: Database) {
         self.database = database
-        self.exerciseService = ExerciseService(database: database)
+        exerciseService = ExerciseService(database: database)
     }
 
     // MARK: - Prompts
 
     private let systemPrompt = """
-            Your job is to extract the workout from a text.
-            You will have to infer if a value means number of sets, repetitions, or weight.
-            Exercise names should only include the name of the exercise, nothing else.
-            If you cannot infer a value, use the default from below.
-            Return a JSON like this:
-            Workout = {
-                name: string = "",
-                setGroups: [{
-                    exercise: Exercise,
-                    sets: [{
-                        repetitions: integer = 0,
-                        weight: integer = 0
-                    }]
+        Your job is to extract the workout from a text.
+        You will have to infer if a value means number of sets, repetitions, or weight.
+        Exercise names should only include the name of the exercise, nothing else.
+        If you cannot infer a value, use the default from below.
+        Return a JSON like this:
+        Workout = {
+            name: string = "",
+            setGroups: [{
+                exercise: Exercise,
+                sets: [{
+                    repetitions: integer = 0,
+                    weight: integer = 0
                 }]
-            }
-            Exercise = {
-                name: string
-            }
-        """
+            }]
+        }
+        Exercise = {
+            name: string
+        }
+    """
 
     // MARK: - Public Methods
 
     func createTemplate(from uiImage: UIImage) -> AnyPublisher<Template, Swift.Error> {
         Self.logger.info("Creating Template from UIImage...")
-        
+
         return TextProcessing.readText(from: uiImage)
             .subscribe(on: DispatchQueue.global(qos: .userInitiated))
             .flatMap { recognizedText -> AnyPublisher<String, Swift.Error> in
@@ -90,14 +89,14 @@ class TemplateService: ObservableObject {
                     temperature: 0
                 ) { result in
                     switch result {
-                    case .success(let aiResult):
+                    case let .success(aiResult):
                         if let text = aiResult.choices.first?.message?.content {
                             promise(.success(text))
                         } else {
                             Self.logger.error("Failed to generate Template from JSON")
                             promise(.failure(Error.emptyResponse))
                         }
-                    case .failure(let error):
+                    case let .failure(error):
                         Self.logger.error("Failed to generate Template from JSON: \(error)")
                         promise(.failure(error))
                     }
@@ -114,7 +113,7 @@ class TemplateService: ObservableObject {
             .decode(type: TemplateDTO.self, decoder: decoder)
             .eraseToAnyPublisher()
     }
-    
+
     private func createTemplateFromDTO(_ dto: TemplateDTO) -> AnyPublisher<Template, Swift.Error> {
         Self.logger.info("Converting TemplateDTO to Template...")
         let exerciseNames = dto.setGroups.compactMap { $0.exercise.name }
@@ -153,7 +152,7 @@ class TemplateService: ObservableObject {
             }
             .eraseToAnyPublisher()
     }
-    
+
     private func createSetGroupFromDTO(_ dto: TemplateSetGroupDTO, withExercise exercise: Exercise) -> TemplateSetGroup {
         Self.logger.info("Converting TemplateSetGroup from TemmplateSetGroupDTO")
         let setGroup = database.newTemplateSetGroup(createFirstSetAutomatically: false, exercise: exercise)
@@ -180,5 +179,4 @@ class TemplateService: ObservableObject {
                 .eraseToAnyPublisher()
         }
     }
-
 }

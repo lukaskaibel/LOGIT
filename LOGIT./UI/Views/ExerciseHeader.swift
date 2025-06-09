@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ExerciseHeader: View {
-
     // MARK: - Parameters
 
     let exercise: Exercise?

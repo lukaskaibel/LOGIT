@@ -8,11 +8,10 @@
 import Foundation
 
 extension Date {
-
     var startOfWeek: Date {
         return Calendar.current.date(from: Calendar.current.dateComponents([.yearForWeekOfYear, .weekOfYear], from: self)) ?? self
     }
-    
+
     var endOfWeek: Date {
         guard let lastDayOfWeek = Calendar.current.date(byAdding: .day, value: 6, to: startOfWeek) else {
             return self
@@ -20,27 +19,27 @@ extension Date {
         return Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: lastDayOfWeek)?
             .addingTimeInterval(0.999) ?? lastDayOfWeek
     }
-        
+
     var startOfMonth: Date {
         return Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: self)) ?? self
     }
-    
+
     var endOfMonth: Date {
         let startOfNextMonth = Calendar.current.date(byAdding: .month, value: 1, to: startOfMonth)
         return Calendar.current.date(byAdding: .second, value: -1, to: startOfNextMonth ?? self) ?? self
     }
-    
+
     var startOfYear: Date {
         return Calendar.current.date(from: Calendar.current.dateComponents([.year], from: self)) ?? self
     }
-    
+
     var endOfYear: Date {
         let startOfNextYear = Calendar.current.date(byAdding: .year, value: 1, to: startOfYear)
         return Calendar.current.date(byAdding: .second, value: -1, to: startOfNextYear ?? self) ?? self
     }
 
     func inSameWeekOfYear(as date: Date) -> Bool {
-        return self.startOfWeek == date.startOfWeek
+        return startOfWeek == date.startOfWeek
     }
 
     func description(_ style: DateFormatter.Style) -> String {
@@ -56,28 +55,27 @@ extension Date {
         }
         return formatter.string(from: self)
     }
-    
+
     var weekDescription: String {
         if Calendar.current.isDate(self, equalTo: .now, toGranularity: [.weekOfYear, .year]) {
             return NSLocalizedString("thisWeek", comment: "")
         } else if Calendar.current.isDate(self, equalTo: Calendar.current.date(byAdding: .weekOfYear, value: -1, to: .now)!, toGranularity: [.weekOfYear, .year]) {
             return NSLocalizedString("lastWeek", comment: "")
         } else {
-            return "\(self.startOfWeek.formatted(.dateTime.day().month())) - \(self.endOfWeek.formatted(.dateTime.day().month()))"
+            return "\(startOfWeek.formatted(.dateTime.day().month())) - \(endOfWeek.formatted(.dateTime.day().month()))"
         }
     }
 
     var monthDescription: String {
-        return self.formatted(.dateTime.month(.wide).year())
+        return formatted(.dateTime.month(.wide).year())
     }
-    
+
     var yearDescription: String {
-        return self.formatted(.dateTime.year())
+        return formatted(.dateTime.year())
     }
 
     var timeString: String {
         let minute = Calendar.current.component(.minute, from: self)
-        return "\(Calendar.current.component(.hour, from: self)):\(minute/10)\(minute%10)"
+        return "\(Calendar.current.component(.hour, from: self)):\(minute / 10)\(minute % 10)"
     }
-
 }

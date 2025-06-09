@@ -8,8 +8,7 @@
 import CoreData
 import Foundation
 
-struct WorkoutPredicateFactory {
-    
+enum WorkoutPredicateFactory {
     static func getWorkouts(
         nameIncluding nameSubstring: String = "",
         withMuscleGroup muscleGroup: MuscleGroup? = nil,
@@ -39,12 +38,12 @@ struct WorkoutPredicateFactory {
             )
             subpredicates.append(muscleGroupPredicate)
         }
-        
+
         if let startDate = startDate {
             let startDatePredicate = NSPredicate(format: "date >= %@", startDate as NSDate)
             subpredicates.append(startDatePredicate)
         }
-        
+
         if let endDate = endDate {
             let endDatePredicate = NSPredicate(format: "date <= %@", endDate as NSDate)
             subpredicates.append(endDatePredicate)
@@ -63,6 +62,4 @@ struct WorkoutPredicateFactory {
             return NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
         }
     }
-
-    
 }

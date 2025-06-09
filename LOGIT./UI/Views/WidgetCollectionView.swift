@@ -8,17 +8,16 @@
 import SwiftUI
 
 struct WidgetCollectionView<Content: View>: View {
-
     @EnvironmentObject private var database: Database
     @EnvironmentObject private var purchaseManager: PurchaseManager
 
     let type: WidgetCollectionType
     let title: String
     let views: [WidgetView<Content>]
-    
+
     @StateObject private var collection: WidgetCollection
     @State private var isShowingUpgradeToPro = false
-    
+
     init(type: WidgetCollectionType, title: String, views: [WidgetView<Content>], database: Database) {
         self.type = type
         self.title = title
@@ -78,19 +77,21 @@ struct WidgetCollectionView<Content: View>: View {
             .animation(.interactiveSpring())
         }
         .onAppear {
-            views.forEach { createWidgetIfNotExisting(
-                withId: $0.type.rawValue,
-                for: collection,
-                isAdded: $0.isAddedByDefault
-            ) }
+            for view in views {
+                createWidgetIfNotExisting(
+                    withId: view.type.rawValue,
+                    for: collection,
+                    isAdded: view.isAddedByDefault
+                )
+            }
         }
         .sheet(isPresented: $isShowingUpgradeToPro) {
             UpgradeToProScreen()
         }
     }
-    
+
     // MARK: - Supporting Methods
-    
+
     func createWidgetIfNotExisting(
         withId id: String,
         for collection: WidgetCollection,
@@ -102,7 +103,7 @@ struct WidgetCollectionView<Content: View>: View {
         item.isAdded = isAdded
         collection.items.append(item)
     }
-    
+
     @discardableResult
     static func createWidgetCollectionIfNotExisting(withId id: String, in database: Database) -> WidgetCollection {
         let predicate = NSPredicate(format: "id == %@", id)
@@ -114,30 +115,27 @@ struct WidgetCollectionView<Content: View>: View {
         }
         return collection!
     }
-
 }
 
 struct WidgetView<Content: View>: View {
     let type: WidgetType
     let isAddedByDefault: Bool
     let content: Content
-    
+
     var body: some View {
         content
     }
 }
 
 extension View {
-    
     func widget(ofType type: WidgetType, isAddedByDefault: Bool) -> WidgetView<AnyView> {
         WidgetView(type: type, isAddedByDefault: isAddedByDefault, content: AnyView(self))
     }
-    
 }
 
 // MARK: - Preview
 
-//private struct PreviewWrapperView: View {
+// private struct PreviewWrapperView: View {
 //
 //    @State private var items: [WidgetCollectionView.Item] = [.init(id: "1", name: "1", content: AnyView(Text("1")), isAdded: false), .init(id: "2", name: "2", content: AnyView(Text("2")), isAdded: true), .init(id: "3", name: "3", content: AnyView(Text("3")), isAdded: false)]
 //
@@ -145,10 +143,10 @@ extension View {
 //        OverviewView(items: $items)
 //    }
 //
-//}
+// }
 //
-//struct OverviewView_Previews: PreviewProvider {
+// struct OverviewView_Previews: PreviewProvider {
 //    static var previews: some View {
 //        PreviewWrapperView()
 //    }
-//}
+// }

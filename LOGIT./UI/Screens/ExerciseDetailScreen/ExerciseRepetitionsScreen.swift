@@ -9,17 +9,16 @@ import Charts
 import SwiftUI
 
 struct ExerciseRepetitionsScreen: View {
-    
     private enum ChartGranularity {
         case month, year
     }
-        
+
     @StateObject var exercise: Exercise
-    
+
     @State private var chartGranularity: ChartGranularity = .month
     @State private var isShowingCurrentBestInfo = false
     @State private var chartScrollPosition: Date = .now
-    
+
     var body: some View {
         let workoutSets = exercise.sets.sorted { $0.workout?.date ?? .now < $1.workout?.date ?? .now }
         let allDailyMaxRepsSets = allDailyMaxRepetitionsSets(in: workoutSets)
@@ -33,8 +32,7 @@ struct ExerciseRepetitionsScreen: View {
             }
             .pickerStyle(.segmented)
             .padding(.vertical)
-            
-            
+
             VStack(alignment: .leading) {
                 Text("Monthly best")
                     .font(.footnote)
@@ -51,7 +49,7 @@ struct ExerciseRepetitionsScreen: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
+
             Chart {
                 if let firstEntry = allDailyMaxRepsSets.first {
                     LineMark(
@@ -69,7 +67,7 @@ struct ExerciseRepetitionsScreen: View {
                     .foregroundStyle(Gradient(colors: [
                         exerciseMuscleGroupColor.opacity(0.5),
                         exerciseMuscleGroupColor.opacity(0.2),
-                        exerciseMuscleGroupColor.opacity(0.05)
+                        exerciseMuscleGroupColor.opacity(0.05),
                     ]))
                 }
                 ForEach(allDailyMaxRepsSets) { workoutSet in
@@ -98,12 +96,12 @@ struct ExerciseRepetitionsScreen: View {
                     .foregroundStyle(Gradient(colors: [
                         exerciseMuscleGroupColor.opacity(0.5),
                         exerciseMuscleGroupColor.opacity(0.2),
-                        exerciseMuscleGroupColor.opacity(0.05)
+                        exerciseMuscleGroupColor.opacity(0.05),
                     ]))
                 }
             }
             .chartXScale(domain: xDomain(for: workoutSets))
-            .chartYScale(domain: 0...(Double(allTimeRepetitionsPR(in: workoutSets)) * 1.1))
+            .chartYScale(domain: 0 ... (Double(allTimeRepetitionsPR(in: workoutSets)) * 1.1))
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
@@ -155,17 +153,16 @@ struct ExerciseRepetitionsScreen: View {
                         .font(.footnote)
                 }
             }
-            
         }
     }
-    
+
     // MARK: - Private Methods
-    
+
     private func allDailyMaxRepetitionsSets(in workoutSets: [WorkoutSet]) -> [WorkoutSet] {
         let groupedSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
-            .map({ $0.1 })
+            .map { $0.1 }
         let maxSetsPerDay = groupedSets
             .compactMap { setsPerDay -> WorkoutSet? in
                 return setsPerDay.max(by: { $0.maximum(.repetitions, for: exercise) < $1.maximum(.repetitions, for: exercise) })
@@ -173,11 +170,11 @@ struct ExerciseRepetitionsScreen: View {
             .filter { $0.maximum(.repetitions, for: exercise) > 0 }
         return maxSetsPerDay
     }
-    
+
     private var visibleChartDomainInSeconds: Int {
         3600 * 24 * (chartGranularity == .month ? 35 : 365)
     }
-    
+
     private func xDomain(for workoutSets: [WorkoutSet]) -> some ScaleDomain {
         let maxStartDate = Calendar.current.date(
             byAdding: chartGranularity == .month ? .month : .year,
@@ -186,15 +183,15 @@ struct ExerciseRepetitionsScreen: View {
         )!
         let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
         guard let firstSetDate = allDailyMaxRepetitionsSets(in: workoutSets).first?.workout?.date, firstSetDate < maxStartDate
-        else { return maxStartDate...endDate }
+        else { return maxStartDate ... endDate }
         let startDate = chartGranularity == .month ? firstSetDate.startOfMonth : firstSetDate.startOfYear
-        return startDate...endDate
+        return startDate ... endDate
     }
-    
+
     private var exerciseMuscleGroupColor: Color {
         exercise.muscleGroup?.color ?? Color.accentColor
     }
-    
+
     private func xAxisDateString(for date: Date) -> String {
         switch chartGranularity {
         case .month:
@@ -203,8 +200,8 @@ struct ExerciseRepetitionsScreen: View {
             return date.formatted(Date.FormatStyle().month(.narrow))
         }
     }
-    
-    private func isDateNow(_ date: Date, for granularity: ChartGranularity) -> Bool {
+
+    private func isDateNow(_ date: Date, for _: ChartGranularity) -> Bool {
         switch chartGranularity {
         case .month:
             return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.weekOfYear, .yearForWeekOfYear])
@@ -222,7 +219,7 @@ struct ExerciseRepetitionsScreen: View {
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
         }
     }
-    
+
     private func allTimeRepetitionsPR(in workoutSets: [WorkoutSet]) -> Int {
         workoutSets
             .map {
@@ -230,7 +227,7 @@ struct ExerciseRepetitionsScreen: View {
             }
             .max() ?? 0
     }
-    
+
     private func bestRepetitionsInGranularity(in workoutSets: [WorkoutSet]) -> Int? {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         let setsInTimeFrame = workoutSets
@@ -242,17 +239,16 @@ struct ExerciseRepetitionsScreen: View {
         guard !setsInTimeFrame.isEmpty else {
             return workoutSets.first?.maximum(.repetitions, for: exercise)
         }
-        
+
         return setsInTimeFrame
-            .map({ $0.maximum(.repetitions, for: exercise) })
+            .map { $0.maximum(.repetitions, for: exercise) }
             .max()
     }
-    
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationView {
             ExerciseRepetitionsScreen(exercise: database.getExercises().first!)

@@ -1,5 +1,5 @@
 //
-//  CustomTextField.swift
+//  IntegerField.swift
 //  LOGIT.
 //
 //  Created by Lukas Kaibel on 16.01.23.
@@ -9,7 +9,6 @@ import Combine
 import SwiftUI
 
 struct IntegerField: View {
-
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
@@ -40,17 +39,17 @@ struct IntegerField: View {
                         text: $valueString,
                         prompt: Text(String(placeholder)).foregroundStyle(isFocused ? Color(UIColor.systemGray2) : Color.placeholder)
                     )
-                        .focused($isFocused)
-                        .onChange(of: valueString) {
-                            valueString = ($0 == "0" || $0.isEmpty) ? "" : String($0.prefix(4))
-                            if let valueInt = Int64(valueString), valueInt != value {
-                                value = valueInt
-                            } else if valueString.isEmpty && value != 0 {
-                                value = 0
-                            }
+                    .focused($isFocused)
+                    .onChange(of: valueString) {
+                        valueString = ($0 == "0" || $0.isEmpty) ? "" : String($0.prefix(4))
+                        if let valueInt = Int64(valueString), valueInt != value {
+                            value = valueInt
+                        } else if valueString.isEmpty && value != 0 {
+                            value = 0
                         }
-                        .foregroundStyle(isFocused ? Color.black : Color.white)
-                        .keyboardType(.numberPad)
+                    }
+                    .foregroundStyle(isFocused ? Color.black : Color.white)
+                    .keyboardType(.numberPad)
                 } else {
                     Text(valueString)
                         .foregroundColor(isEmpty ? .placeholder : .primary)
@@ -96,9 +95,9 @@ struct IntegerField: View {
     }
 
     // MARK: - Computed Properties
-    
+
     private var isEmpty: Bool {
-         Int(valueString) == 0 || valueString.isEmpty
+        Int(valueString) == 0 || valueString.isEmpty
     }
 
     struct Index: Equatable, Hashable {
@@ -116,9 +115,7 @@ struct IntegerField: View {
             hasher.combine(secondary)
             hasher.combine(tertiary)
         }
-
     }
-
 }
 
 struct IntegerField_Previews: PreviewProvider {

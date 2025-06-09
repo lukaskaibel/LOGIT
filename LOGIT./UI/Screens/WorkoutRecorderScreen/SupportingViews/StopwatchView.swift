@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct StopwatchView: View {
-    
     let startTime: Date
-    
+
     @State private var updater = false
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -18,7 +17,7 @@ struct StopwatchView: View {
     var body: some View {
         if updater || !updater {
             Text(workoutDurationString)
-                .onReceive(timer) { input in
+                .onReceive(timer) { _ in
                     updater.toggle()
                 }
         }
@@ -29,6 +28,6 @@ struct StopwatchView: View {
     }
 
     private var workoutDurationString: String {
-        "\(workoutDuration/3600):\(workoutDuration/60 / 10 % 6 )\(workoutDuration/60 % 10):\(workoutDuration % 60 / 10)\(workoutDuration%60 % 10)"
+        "\(workoutDuration / 3600):\(workoutDuration / 60 / 10 % 6)\(workoutDuration / 60 % 10):\(workoutDuration % 60 / 10)\(workoutDuration % 60 % 10)"
     }
 }

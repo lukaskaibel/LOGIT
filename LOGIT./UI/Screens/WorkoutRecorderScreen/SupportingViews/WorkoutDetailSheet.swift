@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct WorkoutDetailSheet: View {
-    
     @Environment(\.dismiss) var dismiss
-    
+
     @ObservedObject var workout: Workout
     let progress: Float
-    
+
     var body: some View {
         VStack {
             HStack {
@@ -96,9 +95,8 @@ struct WorkoutDetailSheet: View {
 }
 
 private struct WorkoutDetailSheetPreviewWrapper: View {
-    
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         WorkoutDetailSheet(workout: database.testWorkout, progress: 0.3)
     }

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct MuscleGroupGradientModifier: ViewModifier {
-
     let muscleGroups: [MuscleGroup]
 
     func body(content: Content) -> some View {

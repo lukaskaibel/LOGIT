@@ -8,10 +8,10 @@
 import Foundation
 
 extension Workout {
-
     var numberOfSets: Int {
         sets.count
     }
+
     var numberOfSetGroups: Int {
         setGroups.count
     }
@@ -61,7 +61,7 @@ extension Workout {
         let uniqueMuscleGroups = Array(Set(exercises.compactMap { $0.muscleGroup }))
         return uniqueMuscleGroups.sorted {
             guard let leftIndex = MuscleGroup.allCases.firstIndex(of: $0),
-                let rightIndex = MuscleGroup.allCases.firstIndex(of: $1)
+                  let rightIndex = MuscleGroup.allCases.firstIndex(of: $1)
             else {
                 return false
             }
@@ -78,11 +78,11 @@ extension Workout {
     }
 
     var hasEntries: Bool {
-        sets.filter({ !$0.hasEntry }).count != numberOfSets
+        sets.filter { !$0.hasEntry }.count != numberOfSets
     }
 
     var allSetsHaveEntries: Bool {
-        sets.filter({ !$0.hasEntry }).isEmpty
+        sets.filter { !$0.hasEntry }.isEmpty
     }
 
     static func getStandardName(for date: Date) -> String {
@@ -92,13 +92,12 @@ extension Workout {
         let hour = Calendar.current.component(.hour, from: date)
         let daytime: String
         switch hour {
-        case 6..<12: daytime = NSLocalizedString("morning", comment: "")
-        case 12..<14: daytime = NSLocalizedString("noon", comment: "")
-        case 14..<17: daytime = NSLocalizedString("afternoon", comment: "")
-        case 17..<22: daytime = NSLocalizedString("evening", comment: "")
+        case 6 ..< 12: daytime = NSLocalizedString("morning", comment: "")
+        case 12 ..< 14: daytime = NSLocalizedString("noon", comment: "")
+        case 14 ..< 17: daytime = NSLocalizedString("afternoon", comment: "")
+        case 17 ..< 22: daytime = NSLocalizedString("evening", comment: "")
         default: daytime = NSLocalizedString("night", comment: "")
         }
         return "\(weekday) \(daytime) Workout"
     }
-
 }

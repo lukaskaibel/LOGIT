@@ -8,7 +8,6 @@
 import Foundation
 
 extension WidgetCollection {
-
     var type: WidgetCollectionType {
         WidgetCollectionType(rawValue: id!)!
     }
@@ -23,5 +22,4 @@ extension WidgetCollection {
             items_ = NSSet(array: newValue)
         }
     }
-
 }

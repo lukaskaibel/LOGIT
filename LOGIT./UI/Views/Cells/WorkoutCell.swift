@@ -9,9 +9,8 @@ import Charts
 import SwiftUI
 
 struct WorkoutCell: View {
-    
     // MARK: - Environment
-    
+
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
 
     // MARK: - Variables
@@ -25,7 +24,7 @@ struct WorkoutCell: View {
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 12) {
                     Chart {
-                        ForEach(muscleGroupService.getMuscleGroupOccurances(in: workout), id:\.0) { muscleGroupOccurance in
+                        ForEach(muscleGroupService.getMuscleGroupOccurances(in: workout), id: \.0) { muscleGroupOccurance in
                             SectorMark(
                                 angle: .value("Value", muscleGroupOccurance.1),
                                 innerRadius: .ratio(0.65),
@@ -65,12 +64,11 @@ struct WorkoutCell: View {
         }
         return result.isEmpty ? " " : result
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         ScrollView {
             WorkoutCell(workout: database.fetch(Workout.self).first! as! Workout)

@@ -1,5 +1,5 @@
 //
-//  MeasurementEntryController.swift
+//  MeasurementController.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 20.09.23.
@@ -8,7 +8,6 @@
 import Foundation
 
 class MeasurementEntryController: ObservableObject {
-
     // MARK: - Statics
 
     // MARK: - Constants
@@ -63,14 +62,14 @@ class MeasurementEntryController: ObservableObject {
 
         while currentDate < Date() {
             // Randomly decide how much weight to lose (between 200 to 900 grams)
-            let weightLoss = Int.random(in: 1...3)
+            let weightLoss = Int.random(in: 1 ... 3)
             currentWeight -= weightLoss
 
             // Add the measurement entry
             addMeasurementEntry(ofType: .bodyweight, value: currentWeight, onDate: currentDate)
 
             // Randomly decide the next date (within a week, but not exactly 7 days every time)
-            let randomDays = Int.random(in: 7...11)
+            let randomDays = Int.random(in: 7 ... 11)
             currentDate = Calendar.current.date(byAdding: .day, value: randomDays, to: currentDate)!
         }
     }

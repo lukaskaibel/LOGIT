@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ExerciseEditScreen: View {
-
     // MARK: - Environment
 
     @Environment(\.dismiss) var dismiss
@@ -86,7 +85,7 @@ struct ExerciseEditScreen: View {
                         if exerciseName.trimmingCharacters(in: .whitespaces).isEmpty {
                             showingExerciseNameEmptyAlert = true
                         } else if exerciseToEdit == nil
-                                    && !database.getExercises().filter({ $0.name?.lowercased() == exerciseName.lowercased() }).isEmpty
+                            && !database.getExercises().filter({ $0.name?.lowercased() == exerciseName.lowercased() }).isEmpty
                         {
                             showingExerciseExistsAlert = true
                         } else {
@@ -143,7 +142,6 @@ struct ExerciseEditScreen: View {
             set: { muscleGroup = $0 ?? muscleGroup }
         )
     }
-
 }
 
 struct EditExerciseView_Previews: PreviewProvider {

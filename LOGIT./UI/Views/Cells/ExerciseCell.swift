@@ -8,17 +8,16 @@
 import SwiftUI
 
 struct ExerciseCell: View {
-    
     // MARK: - Environment
-    
+
     @EnvironmentObject var database: Database
-    
+
     // MARK: - Parameters
-    
+
     @StateObject var exercise: Exercise
-    
+
     // MARK: - Body
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             Text(exercise.name ?? "")
@@ -30,12 +29,11 @@ struct ExerciseCell: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         ScrollView {
             ExerciseCell(exercise: database.getExercises().first!)

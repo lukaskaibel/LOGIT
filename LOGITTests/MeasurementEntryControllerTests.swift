@@ -10,7 +10,6 @@ import XCTest
 @testable import LOGIT
 
 final class MeasurementEntryControllerTests: XCTestCase {
-
     let database = Database(isPreview: true)
     private lazy var controller = MeasurementEntryController(database: database)
 
@@ -47,5 +46,4 @@ final class MeasurementEntryControllerTests: XCTestCase {
         XCTAssertEqual(chestEntries.first?.value, 50, "Expected chest entry value to be 50")
         XCTAssertEqual(neckEntries.first?.value, 45, "Expected neck entry value to be 45")
     }
-
 }

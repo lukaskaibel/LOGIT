@@ -8,7 +8,6 @@
 import Foundation
 
 extension Calendar {
-    
     func isDate(
         _ date1: Date,
         equalTo date2: Date,
@@ -22,7 +21,6 @@ extension Calendar {
                     toGranularity: $0
                 )
             }
-            .reduce(true, { $0 && $1 })
+            .reduce(true) { $0 && $1 }
     }
-    
 }

@@ -5,30 +5,29 @@
 //  Created by Lukas Kaibel on 03.10.23.
 //
 
-import XCTest
-import OSLog
 import Combine
 @testable import LOGIT
+import OSLog
+import XCTest
 
 final class TemplateServiceTests: XCTestCase {
-    
     let database = Database(isPreview: true)
     lazy var templateService = TemplateService(database: database)
-    
+
     var cancellables = [AnyCancellable]()
-    
+
     func testAthleanXTotalBodyA() throws {
         let expectation = XCTestExpectation(description: "Template creation completion")
-        
+
         let image = getImage("athleanx_total_body_A")
         XCTAssertNotNil(image, "Getting test image failed")
-        
+
         templateService.createTemplate(from: image!)
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
                     break
-                case .failure(let error):
+                case let .failure(error):
                     XCTFail("Failed to create template from image: \(error)")
                 }
             }, receiveValue: { [weak self] template in
@@ -36,18 +35,18 @@ final class TemplateServiceTests: XCTestCase {
                     XCTFail("Self was deallocated before the closure was called!")
                     return
                 }
-                
+
                 XCTAssertEqual(template.name?.lowercased(), "perfect total body workout a", "Template name not matching photo.")
                 XCTAssertEqual(template.setGroups.count, 7, "Number of SetGroups not matching the photo")
-                                
+
                 XCTAssertTrue(self.templateHasSetGroup(
-                    template, 
+                    template,
                     nameContaining: "squat",
                     numberOfSets: [3],
                     repetitions: [5],
                     weight: [0]
                 ))
-                
+
                 XCTAssertTrue(self.templateHasSetGroup(
                     template,
                     nameContaining: "barbell hip thrust",
@@ -55,7 +54,7 @@ final class TemplateServiceTests: XCTestCase {
                     repetitions: [10, 11, 12],
                     weight: [0]
                 ))
-                
+
 //                XCTAssertTrue(self.templateHasSetGroup(
 //                    template,
 //                    nameContaining: "weighted chin ups",
@@ -63,7 +62,7 @@ final class TemplateServiceTests: XCTestCase {
 //                    repetitions: [6, 7, 8, 9, 10],
 //                    weight: [0]
 //                ))
-                
+
                 XCTAssertTrue(self.templateHasSetGroup(
                     template,
                     nameContaining: "carry",
@@ -71,25 +70,24 @@ final class TemplateServiceTests: XCTestCase {
                     repetitions: [50],
                     weight: [0]
                 ))
-                expectation.fulfill()  // Signal that the async work is done
+                expectation.fulfill() // Signal that the async work is done
             })
             .store(in: &cancellables)
-        
+
         // Wait for the expectation to be fulfilled (with a timeout)
-        self.wait(for: [expectation], timeout: 60)
+        wait(for: [expectation], timeout: 60)
     }
 
     private func getImage(_ name: String) -> UIImage? {
         // Access the image directly from the asset catalog
         let image = UIImage(named: name, in: Bundle(for: type(of: self)), compatibleWith: nil)
-        
+
         if image == nil {
             XCTFail("Couldn't find image '\(name)' in WorkoutImages.")
         }
 
         return image
     }
-
 
     private func templateHasSetGroup(
         _ template: Template,
@@ -118,5 +116,4 @@ final class TemplateServiceTests: XCTestCase {
         }
         return result
     }
-
 }

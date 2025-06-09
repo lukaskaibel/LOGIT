@@ -16,7 +16,6 @@ struct TileHeaderModifier: ViewModifier {
 }
 
 struct TileHeaderSecondaryModifier: ViewModifier {
-
     let color: Color?
 
     func body(content: Content) -> some View {
@@ -39,9 +38,11 @@ extension View {
     func tileHeaderStyle() -> some View {
         modifier(TileHeaderModifier())
     }
+
     func tileHeaderSecondaryStyle(color: Color? = nil) -> some View {
         modifier(TileHeaderSecondaryModifier(color: color))
     }
+
     func tileHeaderTertiaryStyle() -> some View {
         modifier(TileHeaderTertiaryModifier())
     }

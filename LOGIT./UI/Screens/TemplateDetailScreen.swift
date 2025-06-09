@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TemplateDetailScreen: View {
-
     // MARK: - Environment
 
     @Environment(\.dismiss) var dismiss
@@ -186,7 +185,7 @@ struct TemplateDetailScreen: View {
                 }
                 if isMuscleGroupExpanded {
                     VStack(spacing: CELL_SPACING) {
-                        ForEach(muscleGroupOccurances, id:\.self.0) { muscleGroupOccurance in
+                        ForEach(muscleGroupOccurances, id: \.self.0) { muscleGroupOccurance in
                             HStack {
                                 Text(muscleGroupOccurance.0.description)
                                     .fontWeight(.bold)
@@ -194,12 +193,11 @@ struct TemplateDetailScreen: View {
                                     .foregroundStyle(muscleGroupOccurance.0.color)
                                 Spacer()
                                 HStack(spacing: 10) {
-
                                     VStack(alignment: .leading) {
                                         Text(NSLocalizedString("exercises", comment: ""))
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
-                                        Text("\(template.setGroups.filter({ $0.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) }).count)")
+                                        Text("\(template.setGroups.filter { $0.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) }.count)")
                                             .fontWeight(.bold)
                                             .fontDesign(.rounded)
                                     }
@@ -208,7 +206,7 @@ struct TemplateDetailScreen: View {
                                         Text(NSLocalizedString("sets", comment: ""))
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
-                                        Text("\(template.sets.filter({ $0.setGroup?.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) ?? false }).count)")
+                                        Text("\(template.sets.filter { $0.setGroup?.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) ?? false }.count)")
                                             .fontWeight(.bold)
                                             .fontDesign(.rounded)
                                     }
@@ -280,11 +278,11 @@ struct TemplateDetailScreen: View {
         template.workouts.first?.date?.description(.medium)
             ?? NSLocalizedString("never", comment: "")
     }
-    
+
     private var amountOfOccurances: Int {
-        muscleGroupService.getMuscleGroupOccurances(in: template).reduce(0, { $0 + $1.1 })
+        muscleGroupService.getMuscleGroupOccurances(in: template).reduce(0) { $0 + $1.1 }
     }
-    
+
     /// Calculates the smallest number of Muscle Groups that combined account for 51% of the overall sets in the timeframe
     /// - Returns: The focused Muscle Groups
     private func getFocusedMuscleGroups() -> [MuscleGroup] {
@@ -299,12 +297,11 @@ struct TemplateDetailScreen: View {
         }
         return []
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationStack {
             TemplateDetailScreen(template: database.testTemplate)

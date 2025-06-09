@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TemplateSetCell: View {
-
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
@@ -122,5 +121,4 @@ struct TemplateSetCell: View {
         guard let setGroup = templateSet.setGroup else { return false }
         return setGroup.sets.firstIndex(of: templateSet) == setGroup.sets.count - 1
     }
-
 }

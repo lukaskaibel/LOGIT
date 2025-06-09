@@ -7,17 +7,16 @@
 
 import Foundation
 
-extension WorkoutSetGroup {
-
-    public enum SetType: String {
+public extension WorkoutSetGroup {
+    enum SetType: String {
         case standard, superSet, dropSet
 
         var description: String {
-            NSLocalizedString(self.rawValue, comment: "")
+            NSLocalizedString(rawValue, comment: "")
         }
     }
 
-    var sets: [WorkoutSet] {
+    internal var sets: [WorkoutSet] {
         get {
             return (setOrder ?? .emptyList)
                 .compactMap { id in (sets_?.allObjects as? [WorkoutSet])?.first { $0.id == id } }
@@ -28,11 +27,11 @@ extension WorkoutSetGroup {
         }
     }
 
-    public var isEmpty: Bool {
+    var isEmpty: Bool {
         sets.isEmpty
     }
 
-    public var numberOfSets: Int {
+    var numberOfSets: Int {
         sets.count
     }
 
@@ -47,7 +46,7 @@ extension WorkoutSetGroup {
         }
     }
 
-    public var exercise: Exercise? {
+    var exercise: Exercise? {
         get {
             exercises.first
         }
@@ -64,7 +63,7 @@ extension WorkoutSetGroup {
         }
     }
 
-    public var secondaryExercise: Exercise? {
+    var secondaryExercise: Exercise? {
         get {
             return exercises.value(at: 1)
         }
@@ -81,12 +80,12 @@ extension WorkoutSetGroup {
             exercises = currentExercises
         }
     }
-    
-    var muscleGroups: [MuscleGroup] {
-        Array(Set(exercises.compactMap({ $0.muscleGroup })))
+
+    internal var muscleGroups: [MuscleGroup] {
+        Array(Set(exercises.compactMap { $0.muscleGroup }))
     }
 
-    public var setType: SetType {
+    var setType: SetType {
         let firstSet = sets.first
         if let _ = firstSet as? DropSet {
             return .dropSet
@@ -97,12 +96,9 @@ extension WorkoutSetGroup {
         }
     }
 
-    public subscript(index: Int) -> WorkoutSet {
-        get { sets[index] }
-    }
+    subscript(index: Int) -> WorkoutSet { sets[index] }
 
-    public func index(of set: WorkoutSet) -> Int? {
+    func index(of set: WorkoutSet) -> Int? {
         sets.firstIndex(of: set)
     }
-
 }

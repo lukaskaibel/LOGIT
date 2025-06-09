@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TipView: View {
-
     struct ButtonAction {
         let title: String
         let action: () -> Void
@@ -29,7 +28,7 @@ struct TipView: View {
         self.title = title
         self.description = description
         self.buttonAction = buttonAction
-        self._isShown = isShown
+        _isShown = isShown
     }
 
     var body: some View {
@@ -67,7 +66,7 @@ struct TipView_Previews: PreviewProvider {
         TipView(
             title: "Lets Work-Out 🏋️",
             description:
-                "You haven't logged any workouts in LOGIT yet. Start your journey by clicking the button below to record your first workout!",
+            "You haven't logged any workouts in LOGIT yet. Start your journey by clicking the button below to record your first workout!",
             buttonAction: .init(title: "Start Workout", action: { print("Create Workout") }),
             isShown: .constant(true)
         )

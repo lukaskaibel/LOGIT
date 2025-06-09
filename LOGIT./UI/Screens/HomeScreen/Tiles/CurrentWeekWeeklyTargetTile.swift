@@ -9,13 +9,12 @@ import Charts
 import SwiftUI
 
 struct CurrentWeekWeeklyTargetTile: View {
-    
     // MARK: - AppStorage
-    
+
     @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = 3
-    
+
     // MARK: - Body
-    
+
     var body: some View {
         FetchRequestWrapper(
             Workout.self,
@@ -47,7 +46,7 @@ struct CurrentWeekWeeklyTargetTile: View {
                     }
                     Spacer()
                     Chart {
-                        ForEach(0..<targetPerWeek, id:\.self) { value in
+                        ForEach(0 ..< targetPerWeek, id: \.self) { value in
                             SectorMark(
                                 angle: .value("Value", 1),
                                 innerRadius: .ratio(0.65),
@@ -71,7 +70,6 @@ struct CurrentWeekWeeklyTargetTile: View {
             .tileStyle()
         }
     }
-    
 }
 
 #Preview {

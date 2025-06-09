@@ -1,15 +1,14 @@
 //
-//  ProfileView.swift
+//  SettingsScreen.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 01.10.21.
 //
 
-import SwiftUI
 import StoreKit
+import SwiftUI
 
 struct SettingsScreen: View {
-    
     @EnvironmentObject private var purchaseManager: PurchaseManager
 
     // MARK: - UserDefaults
@@ -18,9 +17,9 @@ struct SettingsScreen: View {
     @AppStorage("workoutPerWeekTarget") var workoutPerWeekTarget: Int = 3
     @AppStorage("preventAutoLock") var preventAutoLock: Bool = true
     @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
-    
+
     // MARK: - State
-    
+
     @State private var isShowingUpgradeToPro = false
     @State private var isShowingPrivacyPolicy = false
 
@@ -37,7 +36,7 @@ struct SettingsScreen: View {
                             NSLocalizedString("targetPerWeek", comment: ""),
                             selection: $workoutPerWeekTarget
                         ) {
-                            ForEach(1..<10, id: \.self) { i in
+                            ForEach(1 ..< 10, id: \.self) { i in
                                 Text(String(i)).tag(i)
                             }
                         }
@@ -59,7 +58,7 @@ struct SettingsScreen: View {
                     .padding(CELL_PADDING)
                     .tileStyle()
                 }
-                
+
                 VStack(spacing: CELL_SPACING) {
                     VStack(alignment: .leading) {
                         Toggle(NSLocalizedString("preventAutoLock", comment: ""), isOn: $preventAutoLock)
@@ -73,7 +72,7 @@ struct SettingsScreen: View {
                         .padding(CELL_PADDING)
                         .tileStyle()
                 }
-                
+
                 VStack(spacing: CELL_SPACING) {
                     Button {
                         isShowingPrivacyPolicy = true
@@ -95,9 +94,8 @@ struct SettingsScreen: View {
                         .padding(CELL_PADDING)
                         .tileStyle()
                     }
-                    
                 }
-                
+
                 VStack(spacing: SECTION_HEADER_SPACING) {
                     Text(NSLocalizedString("subscription", comment: ""))
                         .sectionHeaderStyle2()
@@ -107,12 +105,12 @@ struct SettingsScreen: View {
                             if purchaseManager.hasUnlockedPro {
                                 Task {
                                     if let window = UIApplication.shared.connectedScenes.first {
-                                       do {
-                                           try  await AppStore.showManageSubscriptions(in: window as! UIWindowScene)
-                                       } catch {
-                                           print("Error:(error)")
-                                       }
-                                   }
+                                        do {
+                                            try await AppStore.showManageSubscriptions(in: window as! UIWindowScene)
+                                        } catch {
+                                            print("Error:(error)")
+                                        }
+                                    }
                                 }
                             } else {
                                 isShowingUpgradeToPro = true
@@ -156,7 +154,6 @@ struct SettingsScreen: View {
             }
         }
     }
-
 }
 
 struct ProfileView_Previews: PreviewProvider {

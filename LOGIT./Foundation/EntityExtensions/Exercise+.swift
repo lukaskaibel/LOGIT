@@ -9,40 +9,35 @@ import CoreData
 import Foundation
 
 extension Exercise {
-
     var muscleGroup: MuscleGroup? {
         get { MuscleGroup(rawValue: muscleGroupString ?? "") }
         set { muscleGroupString = newValue?.rawValue }
     }
 
     var setGroups: [WorkoutSetGroup] {
-        get {
-            return (setGroupOrder ?? .emptyList)
-                .compactMap { id in
-                    (setGroups_?.allObjects as? [WorkoutSetGroup])?
-                        .first { setGroup in
-                            setGroup.id == id
-                        }
-                }
-        }
+        return (setGroupOrder ?? .emptyList)
+            .compactMap { id in
+                (setGroups_?.allObjects as? [WorkoutSetGroup])?
+                    .first { setGroup in
+                        setGroup.id == id
+                    }
+            }
     }
-    
+
     @objc var firstLetterOfName: String {
         guard let name = name, !name.isEmpty else { return " " }
         return name.first!.lowercased()
     }
 
     var templateSetGroups: [TemplateSetGroup] {
-        get {
-            return (templateSetGroupOrder ?? .emptyList)
-                .compactMap { id in
-                    (templateSetGroups_?.allObjects as? [TemplateSetGroup])?
-                        .first {
-                            templateSetGroup in
-                            templateSetGroup.id == id
-                        }
-                }
-        }
+        return (templateSetGroupOrder ?? .emptyList)
+            .compactMap { id in
+                (templateSetGroups_?.allObjects as? [TemplateSetGroup])?
+                    .first {
+                        templateSetGroup in
+                        templateSetGroup.id == id
+                    }
+            }
     }
 
     var sets: [WorkoutSet] {
@@ -105,13 +100,10 @@ extension Exercise {
 
         "Face Pulls",
     ]
-
 }
 
 extension Array: Identifiable where Element: Exercise {
-
     public var id: NSManagedObjectID {
         first?.objectID ?? NSManagedObjectID()
     }
-
 }

@@ -8,9 +8,7 @@
 import CoreData
 import Foundation
 
-
-struct ExercisePredicateFactory {
-    
+enum ExercisePredicateFactory {
     static func getExercises(
         nameIncluding nameSubstring: String = "",
         withMuscleGroup muscleGroup: MuscleGroup? = nil
@@ -28,5 +26,4 @@ struct ExercisePredicateFactory {
             return predicates.first
         }
     }
-    
 }

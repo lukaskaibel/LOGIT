@@ -5,32 +5,31 @@
 //  Created by Lukas Kaibel on 26.10.23.
 //
 
-import SwiftUI
-import Combine
-import Camera_SwiftUI
-import PhotosUI
-import OSLog
 import AVFoundation
+import Camera_SwiftUI
+import Combine
+import OSLog
+import PhotosUI
+import SwiftUI
 
 enum ScanScreenType {
     case template, workout
 }
 
 struct ScanScreen: View {
-    
     @Environment(\.dismiss) private var dismiss
-    
+
     @StateObject private var scanModel = ScanModel()
-    
+
     @State private var isShowingPhotosPicker = false
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var workoutImage: UIImage?
-    
+
     @Binding var selectedImage: UIImage?
     let type: ScanScreenType
-    
+
     var body: some View {
-        GeometryReader { reader in
+        GeometryReader { _ in
             VStack {
                 HStack {
                     if scanModel.photo == nil && workoutImage == nil {
@@ -113,9 +112,9 @@ struct ScanScreen: View {
             photoLibrary: .shared()
         )
     }
-    
+
     // MARK: - Supporting Views
-    
+
     private var flashButton: some View {
         Button(action: {
             scanModel.switchFlash()
@@ -125,7 +124,7 @@ struct ScanScreen: View {
         })
         .accentColor(scanModel.isFlashOn ? .yellow : .white)
     }
-    
+
     private var captureButton: some View {
         Button(action: {
             scanModel.capturePhoto()
@@ -140,7 +139,7 @@ struct ScanScreen: View {
                 )
         })
     }
-    
+
     private var cameraPreview: some View {
         CameraPreview(session: scanModel.session)
             .onAppear {
@@ -160,7 +159,7 @@ struct ScanScreen: View {
             )
             .animation(.easeInOut)
     }
-    
+
     private var dismissImageButton: some View {
         Button {
             scanModel.photo = nil
@@ -173,7 +172,7 @@ struct ScanScreen: View {
                 .clipShape(Circle())
         }
     }
-    
+
     private var cancelButton: some View {
         Button {
             dismiss()
@@ -182,70 +181,68 @@ struct ScanScreen: View {
         }
         .font(.title2)
     }
-    
 }
 
 private final class ScanModel: ObservableObject {
-    
     private let service = CameraService()
-    
+
     @Published var photo: Photo?
-    
+
     @Published var showAlertError = false
-    
+
     @Published var isFlashOn = false
-    
+
     @Published var willCapturePhoto = false
-    
+
     var alertError: AlertError!
-    
+
     var session: AVCaptureSession
-    
+
     private var subscriptions = Set<AnyCancellable>()
-    
+
     init() {
-        self.session = service.session
-        
-        service.$photo.sink { [weak self] (photo) in
+        session = service.session
+
+        service.$photo.sink { [weak self] photo in
             guard let pic = photo else { return }
             self?.photo = pic
         }
-        .store(in: &self.subscriptions)
-        
-        service.$shouldShowAlertView.sink { [weak self] (val) in
+        .store(in: &subscriptions)
+
+        service.$shouldShowAlertView.sink { [weak self] val in
             self?.alertError = self?.service.alertError
             self?.showAlertError = val
         }
-        .store(in: &self.subscriptions)
-        
-        service.$flashMode.sink { [weak self] (mode) in
+        .store(in: &subscriptions)
+
+        service.$flashMode.sink { [weak self] mode in
             self?.isFlashOn = mode == .on
         }
-        .store(in: &self.subscriptions)
-        
-        service.$willCapturePhoto.sink { [weak self] (val) in
+        .store(in: &subscriptions)
+
+        service.$willCapturePhoto.sink { [weak self] val in
             self?.willCapturePhoto = val
         }
-        .store(in: &self.subscriptions)
+        .store(in: &subscriptions)
     }
-    
+
     func configure() {
         service.checkForPermissions()
         service.configure()
     }
-    
+
     func capturePhoto() {
         service.capturePhoto()
     }
-    
+
     func flipCamera() {
         service.changeCamera()
     }
-    
+
     func zoom(with factor: CGFloat) {
         service.set(zoom: factor)
     }
-    
+
     func switchFlash() {
         service.flashMode = service.flashMode == .on ? .off : .on
     }

@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct TemplateListScreen: View {
-
     // MARK: - Environment
-    
+
     @Environment(\.dismiss) var dismiss
 
     @EnvironmentObject private var database: Database
@@ -23,7 +22,7 @@ struct TemplateListScreen: View {
     @State private var selectedMuscleGroup: MuscleGroup? = nil
     @State private var showingTemplateCreation = false
     @State private var isShowingNoTemplatesTip = false
-    
+
     var startWorkoutOnTap: Bool = false
 
     // MARK: - Body
@@ -107,10 +106,8 @@ struct TemplateListScreen: View {
             .popover(isPresented: $showingTemplateCreation) {
                 TemplateEditorScreen(template: database.newTemplate(), isEditingExistingTemplate: false)
             }
-
         }
     }
-    
 }
 
 struct TemplateListView_Previews: PreviewProvider {

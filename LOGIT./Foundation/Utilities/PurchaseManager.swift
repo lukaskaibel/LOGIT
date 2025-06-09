@@ -6,8 +6,8 @@
 //
 
 import OSLog
-import SwiftUI
 import StoreKit
+import SwiftUI
 
 enum PurchaseError: Error {
     case productNotFound
@@ -15,41 +15,40 @@ enum PurchaseError: Error {
 
 @MainActor
 class PurchaseManager: NSObject, ObservableObject {
-
     // MARK: - Constants
-    
+
     private let proSubscriptionMonthlyId = "com.lukaskbl.LOGIT.prosubscriptionmonthly"
 
     // MARK: - Private Variables
-    
+
     private var products: [Product]?
     private var purchasedProductIDs: [String]?
     private var updates: Task<Void, Never>? = nil
-    
+
     // MARK: - Init / Deinit
-    
+
     override init() {
         super.init()
-        self.updates = observeTransactionUpdates()
+        updates = observeTransactionUpdates()
         SKPaymentQueue.default().add(self)
     }
 
     deinit {
         self.updates?.cancel()
     }
-    
+
     // MARK: - Public Methods / Variables
-    
+
     func loadProducts() async throws {
-        self.products = try await Product.products(for: [proSubscriptionMonthlyId])
+        products = try await Product.products(for: [proSubscriptionMonthlyId])
         proSubscriptionMonthlyPriceString = products?.first(where: { $0.id == proSubscriptionMonthlyId })?.displayPrice ?? proSubscriptionMonthlyPriceString
         await updateProExpirationDate()
     }
-    
+
     func restorePurchase() async throws {
         try await AppStore.sync()
     }
-    
+
     var proExpirationDate: Date? {
         get {
             UserDefaults(suiteName: "com.lukaskbl.LOGIT")?.object(forKey: "com.lukaskbl.LOGIT.expirationDate") as? Date
@@ -59,7 +58,7 @@ class PurchaseManager: NSObject, ObservableObject {
             objectWillChange.send()
         }
     }
-    
+
     var proSubscriptionMonthlyPriceString: String {
         get {
             (UserDefaults(suiteName: "com.lukaskbl.LOGIT")?.object(forKey: "com.lukaskbl.LOGIT.proSubscriptionMonthlyPriceString") as? String) ?? "-.--"
@@ -69,21 +68,21 @@ class PurchaseManager: NSObject, ObservableObject {
             objectWillChange.send()
         }
     }
-    
+
     var hasUnlockedPro: Bool {
         if let proExpirationDate = proExpirationDate {
             return proExpirationDate > .now
         }
         return false
     }
-    
+
     func subscribeToProMonthly() async throws {
         guard let proMonthlyProduct = products?.first(where: { $0.id == proSubscriptionMonthlyId }) else {
             throw PurchaseError.productNotFound
         }
         try await purchase(proMonthlyProduct)
     }
-    
+
     // MARK: - Private Methods
 
     private func purchase(_ product: Product) async throws {
@@ -93,7 +92,7 @@ class PurchaseManager: NSObject, ObservableObject {
         case let .success(.verified(transaction)):
             // Successful purchase
             await transaction.finish()
-            await self.updateProExpirationDate()
+            await updateProExpirationDate()
         case let .success(.unverified(_, error)):
             throw error
         case .pending:
@@ -110,7 +109,7 @@ class PurchaseManager: NSObject, ObservableObject {
 
     private func updateProExpirationDate() async {
         for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result, transaction.revocationDate == nil else {
+            guard case let .verified(transaction) = result, transaction.revocationDate == nil else {
                 continue
             }
 
@@ -119,8 +118,6 @@ class PurchaseManager: NSObject, ObservableObject {
         }
         proExpirationDate = nil
     }
-    
-    
 
     private func observeTransactionUpdates() -> Task<Void, Never> {
         Task(priority: .background) { [unowned self] in
@@ -132,11 +129,9 @@ class PurchaseManager: NSObject, ObservableObject {
 }
 
 extension PurchaseManager: SKPaymentTransactionObserver {
-    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-        
-    }
+    func paymentQueue(_: SKPaymentQueue, updatedTransactions _: [SKPaymentTransaction]) {}
 
-    func paymentQueue(_ queue: SKPaymentQueue, shouldAddStorePayment payment: SKPayment, for product: SKProduct) -> Bool {
+    func paymentQueue(_: SKPaymentQueue, shouldAddStorePayment _: SKPayment, for _: SKProduct) -> Bool {
         return true
     }
 }

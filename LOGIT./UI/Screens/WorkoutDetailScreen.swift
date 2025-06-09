@@ -9,10 +9,9 @@ import CoreData
 import SwiftUI
 
 struct WorkoutDetailScreen: View {
-
     enum SheetType: Int, Identifiable {
         case newTemplateFromWorkout, templateDetail, workoutEditor
-        var id: Int { self.rawValue }
+        var id: Int { rawValue }
     }
 
     // MARK: - Environment
@@ -89,7 +88,7 @@ struct WorkoutDetailScreen: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
                     Button(
-                        action: { 
+                        action: {
                             sheetType = .workoutEditor
                         },
                         label: {
@@ -236,7 +235,7 @@ struct WorkoutDetailScreen: View {
                 }
                 if isMuscleGroupExpanded {
                     VStack(spacing: CELL_SPACING) {
-                        ForEach(getMuscleGroupOccurancesInWorkout, id:\.self.0) { muscleGroupOccurance in
+                        ForEach(getMuscleGroupOccurancesInWorkout, id: \.self.0) { muscleGroupOccurance in
                             HStack {
                                 Text(muscleGroupOccurance.0.description)
                                     .fontWeight(.bold)
@@ -248,7 +247,7 @@ struct WorkoutDetailScreen: View {
                                         Text(NSLocalizedString("exercises", comment: ""))
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
-                                        Text("\(workout.setGroups.filter({ $0.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) }).count)")
+                                        Text("\(workout.setGroups.filter { $0.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) }.count)")
                                             .fontWeight(.bold)
                                             .fontDesign(.rounded)
                                     }
@@ -257,7 +256,7 @@ struct WorkoutDetailScreen: View {
                                         Text(NSLocalizedString("sets", comment: ""))
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
-                                        Text("\(workout.sets.filter({ $0.setGroup?.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) ?? false }).count)")
+                                        Text("\(workout.sets.filter { $0.setGroup?.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) ?? false }.count)")
                                             .fontWeight(.bold)
                                             .fontDesign(.rounded)
                                     }
@@ -324,15 +323,15 @@ struct WorkoutDetailScreen: View {
             (Calendar.current.dateComponents([.minute], from: start, to: end).minute ?? 0) % 60
         return "\(hours):\(minutes < 10 ? "0" : "")\(minutes)"
     }
-    
+
     var getMuscleGroupOccurancesInWorkout: [(MuscleGroup, Int)] {
         muscleGroupService.getMuscleGroupOccurances(in: workout)
     }
-    
+
     private var amountOfOccurances: Int {
-        getMuscleGroupOccurancesInWorkout.reduce(0, { $0 + $1.1 })
+        getMuscleGroupOccurancesInWorkout.reduce(0) { $0 + $1.1 }
     }
-    
+
     /// Calculates the smallest number of Muscle Groups that combined account for 51% of the overall sets in the timeframe
     /// - Returns: The focused Muscle Groups
     private func getFocusedMuscleGroups() -> [MuscleGroup] {
@@ -347,9 +346,9 @@ struct WorkoutDetailScreen: View {
         }
         return []
     }
-    
+
     private func volume(for muscleGroup: MuscleGroup, in sets: [WorkoutSet]) -> Int {
-        sets.reduce(0, { currentVolume, currentSet in
+        sets.reduce(0) { currentVolume, currentSet in
             if let standardSet = currentSet as? StandardSet {
                 guard standardSet.exercise?.muscleGroup == muscleGroup else { return currentVolume }
                 return currentVolume + Int(standardSet.repetitions * standardSet.weight)
@@ -370,14 +369,13 @@ struct WorkoutDetailScreen: View {
                 return currentVolume + volumeForFirstExercise + volumeForSecondExercise
             }
             return currentVolume
-        })
+        }
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject var database: Database
-    
+
     var body: some View {
         NavigationStack {
             WorkoutDetailScreen(

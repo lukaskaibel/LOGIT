@@ -1,5 +1,5 @@
 //
-//  Database+WorkoutSetConvert.swift
+//  Database+SetConvert.swift
 //  LOGIT.
 //
 //  Created by Lukas Kaibel on 02.11.22.
@@ -8,7 +8,6 @@
 import Foundation
 
 extension Database {
-
     // MARK: - WorkoutSet Convert Methods
 
     public func convertSetGroupToStandardSets(_ setGroup: WorkoutSetGroup) {
@@ -198,5 +197,4 @@ extension Database {
             delete(templateDropSet)
         }
     }
-
 }

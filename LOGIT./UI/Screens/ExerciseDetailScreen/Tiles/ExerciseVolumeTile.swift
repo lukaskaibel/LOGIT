@@ -1,5 +1,5 @@
 //
-//  Untitled.swift
+//  ExerciseVolumeTile.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 03.12.24.
@@ -9,7 +9,6 @@ import Charts
 import SwiftUI
 
 struct ExerciseVolumeTile: View {
-        
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
 
@@ -22,7 +21,6 @@ struct ExerciseVolumeTile: View {
                 to: .now
             )
         ) { workoutSets in
-            
             let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
             VStack {
                 HStack {
@@ -68,21 +66,19 @@ struct ExerciseVolumeTile: View {
             .tileStyle()
         }
     }
-    
+
     private var xDomain: some ScaleDomain {
         let startDate = Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now)!.startOfWeek
-        return startDate...Date.now.endOfWeek
+        return startDate ... Date.now.endOfWeek
     }
-    
 }
-
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationStack {
-            ExerciseVolumeTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap({ $0.sets }))
+            ExerciseVolumeTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap { $0.sets })
         }
     }
 }

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct MuscleGroupSelector: View {
-
     @Binding var selectedMuscleGroup: MuscleGroup?
     let muscleGroups: [MuscleGroup]
     let canBeNil: Bool
@@ -20,10 +19,10 @@ struct MuscleGroupSelector: View {
         canBeNil: Bool = true,
         withAnimation: Bool = false
     ) {
-        self._selectedMuscleGroup = selectedMuscleGroup
+        _selectedMuscleGroup = selectedMuscleGroup
         self.muscleGroups = muscleGroups
         self.canBeNil = canBeNil
-        self.animation = withAnimation
+        animation = withAnimation
     }
 
     var body: some View {

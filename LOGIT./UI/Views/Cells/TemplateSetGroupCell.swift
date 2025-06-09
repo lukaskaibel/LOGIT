@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TemplateSetGroupCell: View {
-
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
@@ -279,12 +278,11 @@ struct TemplateSetGroupCell: View {
                 )
         }
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -321,7 +319,6 @@ private struct PreviewWrapperView: View {
                     .padding()
                     .canEdit(false)
                 }
-
             }
         }
     }

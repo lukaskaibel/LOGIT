@@ -9,8 +9,7 @@ import Combine
 import CoreData
 import OSLog
 
-class Database: ObservableObject {
-
+public class Database: ObservableObject {
     // MARK: - Constants
 
     private let container: NSPersistentContainer
@@ -18,11 +17,11 @@ class Database: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Properties
-    
+
     @Published var canUndo: Bool = false
     @Published var canRedo: Bool = false
     var isPreview: Bool
-    
+
     // MARK: - Init
 
     init(isPreview: Bool = false) {
@@ -35,7 +34,7 @@ class Database: ObservableObject {
         if isPreview {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+        container.loadPersistentStores(completionHandler: { _, error in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
@@ -53,7 +52,7 @@ class Database: ObservableObject {
     var context: NSManagedObjectContext {
         container.viewContext
     }
-    
+
     var hasUnsavedChanges: Bool {
         context.hasChanges
     }
@@ -72,7 +71,6 @@ class Database: ObservableObject {
         }
     }
 
-    
     func discardUnsavedChanges() {
         guard context.hasChanges else { return }
         context.perform {
@@ -81,7 +79,7 @@ class Database: ObservableObject {
     }
 
     // MARK: - Object Access / Manipulation
-    
+
     func fetch(
         _ type: NSManagedObject.Type,
         sortingKey: String? = nil,
@@ -103,7 +101,7 @@ class Database: ObservableObject {
     func delete(_ object: NSManagedObject?, saveContext: Bool = false) {
         guard let object = object else { return }
         if let workoutSet = object as? WorkoutSet, let setGroup = workoutSet.setGroup,
-            setGroup.numberOfSets <= 1
+           setGroup.numberOfSets <= 1
         {
             delete(setGroup)
         }
@@ -114,13 +112,13 @@ class Database: ObservableObject {
             save()
         }
     }
-    
+
     func managedObjectID(forURIRepresentation url: URL) -> NSManagedObjectID? {
         container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: url)
     }
-    
+
     // MARK: - UndoManager
-    
+
     func undo() {
         guard let undoManager = context.undoManager, undoManager.canUndo else { return }
         context.perform {
@@ -134,7 +132,7 @@ class Database: ObservableObject {
             undoManager.redo()
         }
     }
-    
+
     private func observeUndoManager() {
         guard let undoManager = context.undoManager else { return }
 
@@ -170,7 +168,7 @@ class Database: ObservableObject {
     func unflagAsTemporary(_ object: NSManagedObject) {
         guard
             var temporaryObjectIds = UserDefaults.standard.array(forKey: TEMPORARY_OBJECT_IDS_KEY)
-                as? [String]
+            as? [String]
         else { return }
         temporaryObjectIds = temporaryObjectIds.filter {
             $0 != object.objectID.uriRepresentation().absoluteString
@@ -181,7 +179,7 @@ class Database: ObservableObject {
     func isTemporaryObject(_ object: NSManagedObject) -> Bool {
         guard
             let temporaryObjectIds = UserDefaults.standard.array(forKey: TEMPORARY_OBJECT_IDS_KEY)
-                as? [String]
+            as? [String]
         else { return false }
         let objectIDString = object.objectID.uriRepresentation().absoluteString
         return temporaryObjectIds.contains { $0 == objectIDString }
@@ -190,14 +188,14 @@ class Database: ObservableObject {
     func deleteAllTemporaryObjects() {
         guard
             let temporaryObjectIds = UserDefaults.standard.array(forKey: TEMPORARY_OBJECT_IDS_KEY)
-                as? [String]
+            as? [String]
         else { return }
 
         let coordinator = container.persistentStoreCoordinator
 
         for uriString in temporaryObjectIds {
             if let url = URL(string: uriString),
-                let objectID = coordinator.managedObjectID(forURIRepresentation: url)
+               let objectID = coordinator.managedObjectID(forURIRepresentation: url)
             {
                 if let object = try? context.existingObject(with: objectID) {
                     delete(object)
@@ -207,5 +205,4 @@ class Database: ObservableObject {
 
         UserDefaults.standard.setValue([String](), forKey: TEMPORARY_OBJECT_IDS_KEY)
     }
-
 }

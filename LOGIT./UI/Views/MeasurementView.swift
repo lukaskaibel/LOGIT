@@ -1,5 +1,5 @@
 //
-//  MeasurementEntryView.swift
+//  MeasurementView.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 18.09.23.
@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct MeasurementEntryView: View {
-
     @EnvironmentObject var measurementController: MeasurementEntryController
 
     let measurementType: MeasurementEntryType

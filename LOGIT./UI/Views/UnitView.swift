@@ -12,7 +12,6 @@ enum UnitViewConfiguration {
 }
 
 struct UnitView: View {
-
     let value: String
     let unit: String
     var configuration: UnitViewConfiguration = .normal
@@ -29,7 +28,6 @@ struct UnitView: View {
                 .fontDesign(.rounded)
         }
     }
-
 }
 
 struct UnitView_Previews: PreviewProvider {

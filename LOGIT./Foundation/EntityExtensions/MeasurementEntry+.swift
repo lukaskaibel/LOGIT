@@ -8,7 +8,6 @@
 import Foundation
 
 extension MeasurementEntry {
-
     var type: MeasurementEntryType? {
         get {
             MeasurementEntryType(rawValue: type_ ?? "")
@@ -36,5 +35,4 @@ extension MeasurementEntry {
             }
         }
     }
-
 }

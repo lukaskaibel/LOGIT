@@ -27,6 +27,7 @@ extension View {
     func sectionHeaderStyle2() -> some View {
         modifier(SectionHeaderModifier2())
     }
+
     func sectionHeaderSecondaryStyle() -> some View {
         modifier(SectionHeaderSecondaryModifier())
     }

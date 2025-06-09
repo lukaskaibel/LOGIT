@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TemplateEditorScreen: View {
-
     enum SheetType: Identifiable {
         case exerciseDetail(exercise: Exercise)
         var id: Int {
@@ -33,7 +32,6 @@ struct TemplateEditorScreen: View {
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isRenamingTemplate = false
     @FocusState private var isFocusingRenameTemplateField: Bool
-
 
     // MARK: - Parameters
 
@@ -184,7 +182,7 @@ struct TemplateEditorScreen: View {
                             }
                             isRenamingTemplate = true
                             exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
-                            
+
                         } label: {
                             Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")
                         }
@@ -242,12 +240,11 @@ struct TemplateEditorScreen: View {
     public func moveSetGroups(from source: IndexSet, to destination: Int) {
         template.setGroups.move(fromOffsets: source, toOffset: destination)
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationView {
             TemplateEditorScreen(

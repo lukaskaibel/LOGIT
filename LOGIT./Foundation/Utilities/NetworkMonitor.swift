@@ -11,9 +11,9 @@ import Network
 class NetworkMonitor: ObservableObject {
     private var monitor: NWPathMonitor
     private var queue: DispatchQueue
-    
+
     @Published var isConnected: Bool = false
-    
+
     init() {
         monitor = NWPathMonitor()
         queue = DispatchQueue(label: "NetworkMonitor")

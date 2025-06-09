@@ -8,7 +8,6 @@
 import Foundation
 
 extension Array {
-
     static var emptyList: [Element] { [Element]() }
 
     var second: Element? {
@@ -27,7 +26,7 @@ extension Array {
     /// - Parameter index: Index for the element that should be returned.
     /// - Returns: The value at given index if it is contained in the array. Otherwise returns nil.
     func value(at index: Int) -> Element? {
-        guard self.indices.contains(index) else { return nil }
+        guard indices.contains(index) else { return nil }
         return self[index]
     }
 
@@ -36,16 +35,13 @@ extension Array {
     ///   - index: Index that should be replaced
     ///   - value: New value for the given index
     mutating func replaceValue(at index: Int, with value: Element) {
-        guard self.indices.contains(index) else { return }
+        guard indices.contains(index) else { return }
         self[index] = value
     }
-
 }
 
 extension Array where Element: Comparable {
-
     mutating func remove(_ element: Element) {
-        self = self.filter { $0 != element }
+        self = filter { $0 != element }
     }
-
 }

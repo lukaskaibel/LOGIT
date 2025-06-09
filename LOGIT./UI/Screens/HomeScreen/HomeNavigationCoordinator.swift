@@ -1,5 +1,5 @@
 //
-//  HomeNavigation.swift
+//  HomeNavigationCoordinator.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 21.12.24.
@@ -14,13 +14,13 @@ class HomeNavigationCoordinator: ObservableObject {
 enum HomeNavigationDestinationType: Hashable, Identifiable {
     var id: String {
         switch self {
-        case .exercise(let exercise): return "exercise\(String(describing: exercise.id))"
-        case .template(let template): return "template\(String(describing: template.id))"
-        case .workout(let workout): return "workout\(String(describing: workout.id))"
+        case let .exercise(exercise): return "exercise\(String(describing: exercise.id))"
+        case let .template(template): return "template\(String(describing: template.id))"
+        case let .workout(workout): return "workout\(String(describing: workout.id))"
         default: return String(describing: self)
         }
     }
-    
+
     case exercise(Exercise),
          exerciseList,
          measurements,

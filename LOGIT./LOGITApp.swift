@@ -9,7 +9,6 @@ import SwiftUI
 
 @main
 struct LOGIT: App {
-
     enum TabType: Hashable {
         case home, templates, startWorkout, exercises, settings
     }
@@ -29,7 +28,7 @@ struct LOGIT: App {
     @StateObject private var workoutRecorder: WorkoutRecorder
     @StateObject private var muscleGroupService: MuscleGroupService
     @StateObject private var homeNavigationCoordinator = HomeNavigationCoordinator()
-    
+
     @State private var selectedTab: TabType = .home
     @State private var isShowingPrivacyPolicy = false
     @State private var isShowingWorkoutRecorder = false
@@ -42,20 +41,20 @@ struct LOGIT: App {
 //        #else
         let database = Database()
 //        #endif
-        
-        self._database = StateObject(wrappedValue: database)
-        self._templateService = StateObject(wrappedValue: TemplateService(database: database))
-        self._measurementController = StateObject(wrappedValue: MeasurementEntryController(database: database))
-        self._workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: database))
-        self._muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
-        self._homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
-        
+
+        _database = StateObject(wrappedValue: database)
+        _templateService = StateObject(wrappedValue: TemplateService(database: database))
+        _measurementController = StateObject(wrappedValue: MeasurementEntryController(database: database))
+        _workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: database))
+        _muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
+        _homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
+
         UserDefaults.standard.register(defaults: [
             "weightUnit": WeightUnit.kg.rawValue,
             "workoutPerWeekTarget": 3,
             "setupDone": false,
         ])
-        //Fixes issue with wrong Accent Color in Alerts
+        // Fixes issue with wrong Accent Color in Alerts
         UIView.appearance().tintColor = UIColor(named: "AccentColor")
     }
 
@@ -88,7 +87,7 @@ struct LOGIT: App {
                     .environmentObject(workoutRecorder)
                     .environmentObject(muscleGroupService)
                     .environmentObject(homeNavigationCoordinator)
-                    .environment(\.goHome, { selectedTab = .home })
+                    .environment(\.goHome) { selectedTab = .home }
                     .task {
                         if acceptedPrivacyPolicyVersion != privacyPolicyVersion {
                             isShowingPrivacyPolicy = true
@@ -132,7 +131,7 @@ struct LOGIT: App {
     func testFirstStart() {
         UserDefaults.standard.set(false, forKey: "setupDone")
     }
-    
+
     private var startAndCurrentWorkoutButton: some View {
         ZStack {
             Rectangle()
@@ -145,7 +144,7 @@ struct LOGIT: App {
                                        startPoint: .top,
                                        endPoint: .bottom)
                             .frame(height: 45)
-                        
+
                         Rectangle()
                     }
                 }
@@ -181,7 +180,6 @@ struct LOGIT: App {
         .frame(maxHeight: .infinity, alignment: .bottom)
         .edgesIgnoringSafeArea(.bottom)
     }
-
 }
 
 // MARK: - EnvironmentValues/Keys

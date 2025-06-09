@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct WorkoutListScreen: View {
-
     // MARK: - Environment
 
     @EnvironmentObject private var database: Database
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
 
     // MARK: - State
-    
+
     @State private var searchedText: String = ""
     @State private var selectedMuscleGroup: MuscleGroup? = nil
     @State private var isShowingAddWorkout = false
@@ -34,11 +33,11 @@ struct WorkoutListScreen: View {
             let groupedWorkouts = Dictionary(grouping: workouts, by: { workout in
                 workout.date?.startOfMonth ?? .now
             }).sorted { $0.key > $1.key }
-            
+
             ScrollView {
                 LazyVStack(spacing: SECTION_SPACING) {
                     MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
-                    ForEach(groupedWorkouts, id:\.0) { key, workouts in
+                    ForEach(groupedWorkouts, id: \.0) { key, workouts in
                         VStack(spacing: SECTION_HEADER_SPACING) {
                             Text(key.monthDescription)
                                 .sectionHeaderStyle2()
@@ -85,7 +84,6 @@ struct WorkoutListScreen: View {
             }
         }
     }
-
 }
 
 struct AllWorkoutsView_Previews: PreviewProvider {

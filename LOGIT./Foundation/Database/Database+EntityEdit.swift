@@ -7,9 +7,8 @@
 
 import Foundation
 
-extension Database {
-
-    public func addSet(to setGroup: WorkoutSetGroup) {
+public extension Database {
+    func addSet(to setGroup: WorkoutSetGroup) {
         let lastSet = setGroup.sets.last
         if let _ = lastSet as? DropSet {
             newDropSet(setGroup: setGroup)
@@ -19,8 +18,8 @@ extension Database {
             newStandardSet(setGroup: setGroup)
         }
     }
-    
-    public func duplicateLastSet(from setGroup: WorkoutSetGroup) {
+
+    func duplicateLastSet(from setGroup: WorkoutSetGroup) {
         let lastSet = setGroup.sets.last
         if let standardSet = lastSet as? StandardSet {
             newStandardSet(
@@ -30,8 +29,8 @@ extension Database {
             )
         } else if let dropSet = lastSet as? DropSet {
             newDropSet(
-                repetitions: dropSet.repetitions?.map({ Int($0) }) ?? [0],
-                weights: dropSet.weights?.map({ Int($0) }) ?? [0],
+                repetitions: dropSet.repetitions?.map { Int($0) } ?? [0],
+                weights: dropSet.weights?.map { Int($0) } ?? [0],
                 setGroup: setGroup
             )
         } else if let superSet = lastSet as? SuperSet {
@@ -45,7 +44,7 @@ extension Database {
         }
     }
 
-    public func addSet(to templateSetGroup: TemplateSetGroup) {
+    func addSet(to templateSetGroup: TemplateSetGroup) {
         let lastSet = templateSetGroup.sets.last
         if let _ = lastSet as? TemplateDropSet {
             newTemplateDropSet(templateSetGroup: templateSetGroup)
@@ -55,8 +54,8 @@ extension Database {
             newTemplateStandardSet(setGroup: templateSetGroup)
         }
     }
-    
-    public func duplicateLastSet(from setGroup: TemplateSetGroup) {
+
+    func duplicateLastSet(from setGroup: TemplateSetGroup) {
         let lastSet = setGroup.sets.last
         if let standardSet = lastSet as? TemplateStandardSet {
             newTemplateStandardSet(
@@ -66,8 +65,8 @@ extension Database {
             )
         } else if let dropSet = lastSet as? TemplateDropSet {
             newTemplateDropSet(
-                repetitions: dropSet.repetitions?.map({ Int($0) }) ?? [0],
-                weights: dropSet.weights?.map({ Int($0) }) ?? [0],
+                repetitions: dropSet.repetitions?.map { Int($0) } ?? [0],
+                weights: dropSet.weights?.map { Int($0) } ?? [0],
                 templateSetGroup: setGroup
             )
         } else if let superSet = lastSet as? TemplateSuperSet {
@@ -80,5 +79,4 @@ extension Database {
             )
         }
     }
-
 }

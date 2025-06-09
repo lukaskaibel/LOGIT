@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TemplateDropSetCell: View {
-
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
@@ -23,7 +22,7 @@ struct TemplateDropSetCell: View {
     var body: some View {
         VStack(spacing: 0) {
             if let indexInTemplate = indexInTemplate {
-                ForEach(0..<(dropSet.repetitions?.count ?? 0), id: \.self) { index in
+                ForEach(0 ..< (dropSet.repetitions?.count ?? 0), id: \.self) { index in
                     HStack {
                         IntegerField(
                             placeholder: 0,
@@ -60,27 +59,26 @@ struct TemplateDropSetCell: View {
     private var indexInTemplate: Int? {
         dropSet.setGroup?.workout?.sets.firstIndex(of: dropSet)
     }
-    
+
     private func repetitionsBinding(forIndex index: Int) -> Binding<Int64> {
         Binding(
             get: {
-                return Int64(dropSet.repetitions?.value(at: index) ?? 0)
+                Int64(dropSet.repetitions?.value(at: index) ?? 0)
             },
             set: { newValue in
                 dropSet.repetitions?[index] = newValue
             }
         )
     }
-    
+
     private func weightsBinding(forIndex index: Int) -> Binding<Int64> {
         Binding(
             get: {
-                return Int64(convertWeightForDisplaying(dropSet.weights?.value(at: index) ?? 0))
+                Int64(convertWeightForDisplaying(dropSet.weights?.value(at: index) ?? 0))
             },
             set: { newValue in
                 dropSet.weights?[index] = convertWeightForStoring(newValue)
             }
         )
     }
-
 }

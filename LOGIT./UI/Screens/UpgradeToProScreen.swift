@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct UpgradeToProScreen: View {
-    
     // MARK: - Environment
-    
+
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var networkMonitor: NetworkMonitor
     @Environment(\.dismiss) var dismiss
@@ -27,7 +26,7 @@ struct UpgradeToProScreen: View {
                         .font(.largeTitle)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                    
+
                     VStack(alignment: .leading, spacing: 50) {
                         VStack {
                             HStack(spacing: 30) {
@@ -148,7 +147,6 @@ struct UpgradeToProScreen: View {
             }
         }
     }
-
 }
 
 struct UpgradeToProScreen_Previews: PreviewProvider {

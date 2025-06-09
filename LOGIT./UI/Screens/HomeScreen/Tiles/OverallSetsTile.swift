@@ -1,5 +1,5 @@
 //
-//  WorkoutSetsTile.swift
+//  OverallSetsTile.swift
 //  LOGIT
 //
 //  Created by Volker Kaibel on 06.10.24.
@@ -9,19 +9,17 @@ import Charts
 import SwiftUI
 
 struct OverallSetsTile: View {
-    
     // MARK: - Parameter
-    
+
     let workouts: [Workout]
-        
+
     var body: some View {
-        let workoutsThisWeek = workouts.filter({ $0.date ?? .distantPast >= .now.startOfWeek && $0.date ?? .distantFuture <= .now })
+        let workoutsThisWeek = workouts.filter { $0.date ?? .distantPast >= .now.startOfWeek && $0.date ?? .distantFuture <= .now }
         VStack(spacing: 20) {
             HStack {
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("overallSets", comment: ""))
                         .tileHeaderStyle()
-                    
                 }
                 Spacer()
                 NavigationChevron()
@@ -31,7 +29,7 @@ struct OverallSetsTile: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("thisWeek", comment: ""))
-                    Text("\(workoutsThisWeek.map({ $0.sets }).joined().count)")
+                    Text("\(workoutsThisWeek.map { $0.sets }.joined().count)")
                         .font(.title)
                         .fontWeight(.bold)
                         .fontDesign(.rounded)
@@ -70,7 +68,7 @@ struct OverallSetsTile: View {
             print("OverallSetsTile appeared")
         }
     }
-    
+
     private func setsOfLastWeekGroupedByDay(_ workouts: [Workout]) -> [(date: Date, workoutSets: [WorkoutSet])] {
         var result = [(date: Date, workoutSets: [WorkoutSet])]()
         let allDays = allDaysOfTheWeek
@@ -78,7 +76,7 @@ struct OverallSetsTile: View {
         var groupedByDay: [Date: [WorkoutSet]] = [:]
 
         workouts
-            .map({ $0.sets })
+            .map { $0.sets }
             .joined()
             .forEach { workoutSet in
                 if let setDate = workoutSet.workout?.date {
@@ -87,7 +85,7 @@ struct OverallSetsTile: View {
                 }
             }
 
-        allDays.forEach { day in
+        for day in allDays {
             let startOfDay = Calendar.current.startOfDay(for: day)
             let setsForDay = groupedByDay[startOfDay] ?? []
             result.append((date: startOfDay, workoutSets: setsForDay))
@@ -102,9 +100,8 @@ struct OverallSetsTile: View {
 
         guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: today)?.start else { return [] }
 
-        return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
+        return (0 ..< 7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
     }
-
 }
 
 #Preview {

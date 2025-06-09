@@ -8,8 +8,7 @@
 import CoreData
 import Foundation
 
-struct WorkoutSetGroupPredicateFactory {
-    
+enum WorkoutSetGroupPredicateFactory {
     static func getWorkoutSetGroups(
         withExercise exercise: Exercise? = nil,
         excludeCurrentWorkout: Bool = true
@@ -23,17 +22,16 @@ struct WorkoutSetGroupPredicateFactory {
             )
             subpredicates.append(exercisePredicate)
         }
-        
+
         if excludeCurrentWorkout {
             let excludeCurrentWorkoutPredicate = NSPredicate(format: "workout.isCurrentWorkout == nil OR workout.isCurrentWorkout == NO")
             subpredicates.append(excludeCurrentWorkoutPredicate)
         }
 
         if subpredicates.isEmpty {
-            return nil 
+            return nil
         } else {
             return NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
         }
     }
-    
 }

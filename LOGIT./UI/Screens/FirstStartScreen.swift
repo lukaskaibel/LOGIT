@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct FirstStartScreen: View {
-
     private enum SetupStage {
         case start, weightUnit, weeklyTarget
     }
@@ -97,7 +96,7 @@ struct FirstStartScreen: View {
                         NSLocalizedString("weeklyTarget", comment: ""),
                         selection: $weeklyWorkoutTarget,
                         content: {
-                            ForEach(1..<10, id: \.self) { i in
+                            ForEach(1 ..< 10, id: \.self) { i in
                                 Text(String(i)).tag(i)
                             }
                         }
@@ -139,8 +138,8 @@ struct FirstStartScreen: View {
                         setupStage == .start
                             ? NSLocalizedString("startSetup", comment: "")
                             : setupStage == .weeklyTarget
-                                ? NSLocalizedString("finishSetup", comment: "")
-                                : NSLocalizedString("continue", comment: "")
+                            ? NSLocalizedString("finishSetup", comment: "")
+                            : NSLocalizedString("continue", comment: "")
                     )
                 }
             }
@@ -149,7 +148,6 @@ struct FirstStartScreen: View {
         }
         .padding()
     }
-
 }
 
 struct FirstStartView_Previews: PreviewProvider {

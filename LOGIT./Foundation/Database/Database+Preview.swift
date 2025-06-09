@@ -8,8 +8,7 @@
 import Foundation
 
 extension Database {
-
-    internal func setupPreviewDatabase() {
+    func setupPreviewDatabase() {
         let database = self
 
         (database.fetch(Workout.self) as! [Workout]).forEach { database.delete($0) }
@@ -38,7 +37,7 @@ extension Database {
         let latPulldown = database.newExercise(name: "Lat Pulldown", muscleGroup: .back)
         let crunches = database.newExercise(name: "Crunches", muscleGroup: .abdominals)
 
-        for i in 0..<5 {
+        for i in 0 ..< 5 {
             var date = Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!
             let pullday = database.newWorkout(name: "Pullday", date: date)
             let deadliftGroup = database.newWorkoutSetGroup(
@@ -46,10 +45,10 @@ extension Database {
                 exercise: deadlift,
                 workout: pullday
             )
-            database.newStandardSet(repetitions: 5, weight: 120000, setGroup: deadliftGroup)
-            database.newStandardSet(repetitions: 5, weight: 120000, setGroup: deadliftGroup)
-            database.newStandardSet(repetitions: 5, weight: 100000, setGroup: deadliftGroup)
-            database.newStandardSet(repetitions: 5, weight: 100000, setGroup: deadliftGroup)
+            database.newStandardSet(repetitions: 5, weight: 120_000, setGroup: deadliftGroup)
+            database.newStandardSet(repetitions: 5, weight: 120_000, setGroup: deadliftGroup)
+            database.newStandardSet(repetitions: 5, weight: 100_000, setGroup: deadliftGroup)
+            database.newStandardSet(repetitions: 5, weight: 100_000, setGroup: deadliftGroup)
             let latGroup = database.newWorkoutSetGroup(
                 createFirstSetAutomatically: false,
                 exercise: latPulldown,
@@ -86,31 +85,31 @@ extension Database {
             database.newStandardSet(
                 repetitions: 5,
                 weight: i == 0
-                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                    ? 100_000 : i == 1 ? 100_000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
                 setGroup: benchpressGroup
             )
             database.newStandardSet(
                 repetitions: 5,
                 weight: i == 0
-                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                    ? 100_000 : i == 1 ? 100_000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
                 setGroup: benchpressGroup
             )
             database.newStandardSet(
                 repetitions: 5,
                 weight: i == 0
-                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                    ? 100_000 : i == 1 ? 100_000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
                 setGroup: benchpressGroup
             )
             database.newStandardSet(
                 repetitions: 5,
                 weight: i == 0
-                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                    ? 100_000 : i == 1 ? 100_000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
                 setGroup: benchpressGroup
             )
             database.newStandardSet(
                 repetitions: 5,
                 weight: i == 0
-                    ? 100000 : i == 1 ? 100000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
+                    ? 100_000 : i == 1 ? 100_000 : i == 2 ? 90000 : i == 3 ? 91000 : 86000,
                 setGroup: benchpressGroup
             )
             let overheadPressGroup = database.newWorkoutSetGroup(
@@ -189,7 +188,7 @@ extension Database {
                 setGroup: tricepsShoulderGroup
             )
 
-            if i > 0 && i != 4 {
+            if i > 0, i != 4 {
                 date = Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!
                 let legday = database.newWorkout(name: "Legday", date: date)
                 let squatGroup = database.newWorkoutSetGroup(
@@ -197,10 +196,10 @@ extension Database {
                     exercise: squat,
                     workout: legday
                 )
-                database.newStandardSet(repetitions: 8, weight: 100000, setGroup: squatGroup)
-                database.newStandardSet(repetitions: 8, weight: 100000, setGroup: squatGroup)
-                database.newStandardSet(repetitions: 6, weight: 100000, setGroup: squatGroup)
-                database.newStandardSet(repetitions: 6, weight: 100000, setGroup: squatGroup)
+                database.newStandardSet(repetitions: 8, weight: 100_000, setGroup: squatGroup)
+                database.newStandardSet(repetitions: 8, weight: 100_000, setGroup: squatGroup)
+                database.newStandardSet(repetitions: 6, weight: 100_000, setGroup: squatGroup)
+                database.newStandardSet(repetitions: 6, weight: 100_000, setGroup: squatGroup)
                 let lungesGroup = database.newWorkoutSetGroup(
                     createFirstSetAutomatically: false,
                     exercise: lunges,
@@ -243,7 +242,7 @@ extension Database {
 
         let date = Calendar.current.date(byAdding: .weekOfYear, value: -6, to: .now)!
         let firstBenchWorkout = database.newWorkout(name: "Benchday", date: date)
-        let _ = database.newWorkoutSetGroup(
+        _ = database.newWorkoutSetGroup(
             sets: [database.newStandardSet(repetitions: 12, weight: 78000)],
             exercise: benchpress,
             workout: firstBenchWorkout
@@ -252,7 +251,7 @@ extension Database {
             name: "Benchday",
             date: Calendar.current.date(byAdding: .weekOfYear, value: -7, to: .now)!
         )
-        let _ = database.newWorkoutSetGroup(
+        _ = database.newWorkoutSetGroup(
             sets: [database.newStandardSet(repetitions: 12, weight: 67000)],
             exercise: benchpress,
             workout: secondBenchWorkout
@@ -261,7 +260,7 @@ extension Database {
             name: "Benchday",
             date: Calendar.current.date(byAdding: .weekOfYear, value: -9, to: .now)!
         )
-        let _ = database.newWorkoutSetGroup(
+        _ = database.newWorkoutSetGroup(
             sets: [database.newStandardSet(repetitions: 12, weight: 55000)],
             exercise: benchpress,
             workout: thirdBenchWorkout
@@ -270,7 +269,7 @@ extension Database {
             name: "Benchday",
             date: Calendar.current.date(byAdding: .weekOfYear, value: -12, to: .now)!
         )
-        let _ = database.newWorkoutSetGroup(
+        _ = database.newWorkoutSetGroup(
             sets: [database.newStandardSet(repetitions: 12, weight: 50000)],
             exercise: benchpress,
             workout: fourthBenchWorkout
@@ -285,17 +284,17 @@ extension Database {
 
     var testTemplate: Template {
         let exampleExerciseNames = ["Pushup", "Deadlift", "Squats", "Pushup", "Bar-Bell Curl"]
-        let template = self.newTemplate(name: "Perfect Push-Day")
+        let template = newTemplate(name: "Perfect Push-Day")
         for name in exampleExerciseNames {
-            let exercise = self.newExercise(
+            let exercise = newExercise(
                 name: name,
                 muscleGroup: MuscleGroup.allCases.randomElement()!
             )
-            let setGroup = self.newTemplateSetGroup(exercise: exercise, template: template)
-            for _ in 1..<Int.random(in: 2...5) {
-                self.newTemplateStandardSet(
-                    repetitions: Int.random(in: 0...10),
-                    weight: Int.random(in: 0...150),
+            let setGroup = newTemplateSetGroup(exercise: exercise, template: template)
+            for _ in 1 ..< Int.random(in: 2 ... 5) {
+                newTemplateStandardSet(
+                    repetitions: Int.random(in: 0 ... 10),
+                    weight: Int.random(in: 0 ... 150),
                     setGroup: setGroup
                 )
             }
@@ -303,5 +302,4 @@ extension Database {
         // self.save()
         return template
     }
-
 }

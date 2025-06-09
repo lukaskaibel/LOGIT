@@ -25,7 +25,6 @@ struct OnSwipeDownModifier: ViewModifier {
 
 extension View {
     func onSwipeDown(perform action: @escaping () -> Void) -> some View {
-        self.modifier(OnSwipeDownModifier(onSwipeDown: action))
+        modifier(OnSwipeDownModifier(onSwipeDown: action))
     }
-
 }

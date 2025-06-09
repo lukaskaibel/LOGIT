@@ -7,24 +7,22 @@
 
 import Foundation
 
-extension SuperSet {
-
-    var secondaryExercise: Exercise? {
+public extension SuperSet {
+    internal var secondaryExercise: Exercise? {
         setGroup?.secondaryExercise
     }
 
     // MARK: Overrides from WorkoutSet
 
-    public override var hasEntry: Bool {
+    override var hasEntry: Bool {
         repetitionsFirstExercise > 0 || repetitionsSecondExercise > 0 || weightFirstExercise > 0
             || weightSecondExercise > 0
     }
 
-    public override func clearEntries() {
+    override func clearEntries() {
         repetitionsFirstExercise = 0
         repetitionsSecondExercise = 0
         weightFirstExercise = 0
         weightSecondExercise = 0
     }
-
 }

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct StandardSetCell: View {
-
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
@@ -64,7 +63,7 @@ struct StandardSetCell: View {
     private func repetitionsPlaceholder(for standardSet: StandardSet) -> Int64 {
         guard
             let templateStandardSet = workoutRecorder.templateSet(for: standardSet)
-                as? TemplateStandardSet
+            as? TemplateStandardSet
         else { return 0 }
         return templateStandardSet.repetitions
     }
@@ -72,9 +71,8 @@ struct StandardSetCell: View {
     private func weightPlaceholder(for standardSet: StandardSet) -> Int64 {
         guard
             let templateStandardSet = workoutRecorder.templateSet(for: standardSet)
-                as? TemplateStandardSet
+            as? TemplateStandardSet
         else { return 0 }
         return Int64(convertWeightForDisplaying(templateStandardSet.weight))
     }
-
 }

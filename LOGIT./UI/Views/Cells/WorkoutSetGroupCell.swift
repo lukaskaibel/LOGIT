@@ -1,5 +1,5 @@
 //
-//  WorkoutSetGroupRecorderCell.swift
+//  WorkoutSetGroupCell.swift
 //  LOGIT.
 //
 //  Created by Lukas Kaibel on 28.07.23.
@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct WorkoutSetGroupCell: View {
-
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
@@ -29,7 +28,7 @@ struct WorkoutSetGroupCell: View {
     @State private var isSelectingPrimaryExercise = false
     @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
     @State private var isSelectingSecondaryExercise = false
-    
+
     // MARK: - Body
 
     var body: some View {
@@ -287,11 +286,9 @@ struct WorkoutSetGroupCell: View {
                 )
         }
     }
-
 }
 
 private struct PreviewWrapperView: View {
-
     var body: some View {
         FetchRequestWrapper(
             Workout.self,
@@ -329,7 +326,6 @@ private struct PreviewWrapperView: View {
                         .padding()
                         .canEdit(false)
                     }
-                    
                 }
             }
         }

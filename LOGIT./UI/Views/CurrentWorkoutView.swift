@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct CurrentWorkoutView: View {
-    
     let workoutName: String?
     let workoutDate: Date?
-    
+
     var body: some View {
         HStack {
             Text(workoutHasName ? workoutName! : Workout.getStandardName(for: workoutDate ?? .now))
@@ -30,26 +29,23 @@ struct CurrentWorkoutView: View {
         }
         .padding(20)
     }
-    
+
     private var workoutHasName: Bool {
         !(workoutName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
     }
-    
 }
 
 // MARK: - Preview
 
 private struct PreviewWrapper: View {
-    
     @EnvironmentObject var database: Database
-    
+
     var body: some View {
         CurrentWorkoutView(workoutName: database.testWorkout.name, workoutDate: database.testWorkout.date)
             .previewEnvironmentObjects()
             .padding(.horizontal, 8)
             .padding(.bottom, 2)
     }
-    
 }
 
 #Preview {

@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct FinishConfirmationSheet: View {
-    
     @Environment(\.dismiss) var dismiss
-    
+
     let workout: Workout
     let onEndWorkout: () -> Void
-    
+
     var body: some View {
         VStack {
             Text(NSLocalizedString("areYouSure?", comment: ""))
@@ -22,7 +21,7 @@ struct FinishConfirmationSheet: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             Spacer()
             VStack(spacing: 10) {
-                let setsWithoutEntry = workout.sets.filter({ !$0.hasEntry })
+                let setsWithoutEntry = workout.sets.filter { !$0.hasEntry }
                 Label("\(setsWithoutEntry.count > 0 ? "\(setsWithoutEntry.count)" : "") \(NSLocalizedString("\(setsWithoutEntry.count == 0 ? "allSetsCompleted" : "setsIncomplete")", comment: ""))", systemImage: setsWithoutEntry.count == 0 ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
                     .foregroundStyle(setsWithoutEntry.count == 0 ? Color.accentColor : Color.secondary)
                     .fontWeight(.semibold)
@@ -55,9 +54,8 @@ struct FinishConfirmationSheet: View {
 }
 
 private struct FinishConfirmationSheetPreviewWrapper: View {
-    
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         Rectangle()
             .foregroundStyle(.gray)

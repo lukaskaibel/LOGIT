@@ -9,19 +9,18 @@ import Charts
 import SwiftUI
 
 struct MuscleGroupSplitTile: View {
-    
     // MARK: - Environment
-    
+
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
-    
+
     // MARK: - Parameters
-    
+
     let workouts: [Workout]
-    
+
     // MARK: - Body
-    
+
     var body: some View {
-        let workoutsThisWeek = workouts.filter({ $0.date ?? .distantPast >= .now.startOfWeek && $0.date ?? .distantFuture <= .now })
+        let workoutsThisWeek = workouts.filter { $0.date ?? .distantPast >= .now.startOfWeek && $0.date ?? .distantFuture <= .now }
         let muscleGroupOccurances = muscleGroupService.getMuscleGroupOccurances(in: workoutsThisWeek)
         VStack(spacing: 20) {
             HStack {
@@ -34,31 +33,31 @@ struct MuscleGroupSplitTile: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("focusThisWeek", comment: ""))
-                        let fucusedMuscleGroups = getFocusedMuscleGroups(muscleGroupOccurances)
-                        HStack {
-                            if !fucusedMuscleGroups.isEmpty {
-                                ForEach(fucusedMuscleGroups) { muscleGroup in
-                                    Text(muscleGroup.description)
-                                        .foregroundStyle(muscleGroup.color.gradient)
-                                }
-                            } else {
-                                Text(NSLocalizedString("none", comment: ""))
-                                    .foregroundStyle(Color.secondaryLabel.gradient)
+                    let fucusedMuscleGroups = getFocusedMuscleGroups(muscleGroupOccurances)
+                    HStack {
+                        if !fucusedMuscleGroups.isEmpty {
+                            ForEach(fucusedMuscleGroups) { muscleGroup in
+                                Text(muscleGroup.description)
+                                    .foregroundStyle(muscleGroup.color.gradient)
                             }
+                        } else {
+                            Text(NSLocalizedString("none", comment: ""))
+                                .foregroundStyle(Color.secondaryLabel.gradient)
                         }
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
+                    }
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
                 }
                 Spacer()
                 MuscleGroupOccurancesChart(muscleGroupOccurances: muscleGroupOccurances)
-                .frame(width: 120, height: 80)
+                    .frame(width: 120, height: 80)
             }
         }
         .padding(CELL_PADDING)
         .tileStyle()
     }
-    
+
     // MAKR: - Supporting Methods
 
     /// Calculates the smallest number of Muscle Groups that combined account for 51% of the overall sets in the timeframe
@@ -66,7 +65,7 @@ struct MuscleGroupSplitTile: View {
     private func getFocusedMuscleGroups(_ muscleGroupOccurances: [(MuscleGroup, Int)]) -> [MuscleGroup] {
         var accumulatedPercetange: Float = 0
         var focusedMuscleGroups = [MuscleGroup]()
-        let amountOfOccurances = muscleGroupOccurances.reduce(0, { $0 + $1.1 })
+        let amountOfOccurances = muscleGroupOccurances.reduce(0) { $0 + $1.1 }
         for muscleGroupOccurance in muscleGroupOccurances {
             accumulatedPercetange += Float(muscleGroupOccurance.1) / Float(amountOfOccurances)
             focusedMuscleGroups.append(muscleGroupOccurance.0)
@@ -76,7 +75,6 @@ struct MuscleGroupSplitTile: View {
         }
         return []
     }
-    
 }
 
 #Preview {

@@ -8,7 +8,6 @@
 import SwiftUI
 
 extension Color {
-
     static var label: Color { Color(UIColor.label) }
     static var secondaryLabel: Color { Color(UIColor.secondaryLabel) }
     static var tertiaryLabel: Color { Color(UIColor.tertiaryLabel) }
@@ -33,7 +32,6 @@ extension Color {
     static var secondaryGrouped: Color { Color(UIColor.secondarySystemGroupedBackground) }
     static var tertiaryGrouped: Color { Color(UIColor.tertiarySystemGroupedBackground) }
 
-    var translucentBackground: Color { self.opacity(0.7) }
-    var secondaryTranslucentBackground: Color { self.opacity(0.2) }
-
+    var translucentBackground: Color { opacity(0.7) }
+    var secondaryTranslucentBackground: Color { opacity(0.2) }
 }

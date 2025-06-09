@@ -11,11 +11,10 @@ import PhotosUI
 import SwiftUI
 
 struct CreateTemplateMenu: View {
-
     @EnvironmentObject private var database: Database
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var networkMonitor: NetworkMonitor
-    
+
     @State private var isShowingScanScreen = false
     @State private var isShowingUpgradeToProScreen = false
 

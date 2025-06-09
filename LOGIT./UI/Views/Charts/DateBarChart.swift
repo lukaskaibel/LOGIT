@@ -9,7 +9,6 @@ import Charts
 import SwiftUI
 
 struct DateBarChart: View {
-
     struct Item: Identifiable {
         var id: String { "\(date)\(value)" }
         let date: Date
@@ -57,39 +56,39 @@ struct DateBarChart: View {
             }
         }
         .chartXScale(domain: [
-            minXValue, maxXValue
+            minXValue, maxXValue,
         ])
         .chartYAxis(.hidden)
     }
 
     // MARK: - Computed Properties
-    
+
     private var maxXValue: Date {
         switch dateUnit {
         case .day:
-            guard let startOfNextDay = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: Date().addingTimeInterval(24*60*60)) else {
+            guard let startOfNextDay = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: Date().addingTimeInterval(24 * 60 * 60)) else {
                 fatalError("Failed to calculate start of next day.")
             }
             return startOfNextDay.addingTimeInterval(-1)
-            
+
         case .weekOfYear, .weekOfMonth:
             guard let startOfNextWeek = Calendar.current.date(byAdding: .weekOfYear, value: 1, to: Date().startOfWeek) else {
                 fatalError("Failed to calculate start of next week.")
             }
             return startOfNextWeek.addingTimeInterval(-1)
-            
+
         case .month:
             guard let startOfNextMonth = Calendar.current.date(byAdding: .month, value: 1, to: Date().startOfMonth) else {
                 fatalError("Failed to calculate start of next month.")
             }
             return startOfNextMonth.addingTimeInterval(-1)
-            
+
         case .year:
             guard let startOfNextYear = Calendar.current.date(byAdding: .year, value: 1, to: Date().startOfYear) else {
                 fatalError("Failed to calculate start of next year.")
             }
             return startOfNextYear.addingTimeInterval(-1)
-            
+
         default:
             return Date()
         }
@@ -103,7 +102,7 @@ struct DateBarChart: View {
         ) else {
             fatalError("Failed to calculate dateMinusUnits.")
         }
-        
+
         switch dateUnit {
         case .day:
             return Calendar.current.startOfDay(for: dateMinusUnits)
@@ -132,7 +131,7 @@ struct DateBarChart: View {
             dateUnit == .day || dateUnit == .weekOfYear ? "d.M." : dateUnit == .month ? "MMM" : "MMM YY"
         return formatter.string(from: date).uppercased()
     }
-    
+
     private func isInSameDateUnitAsNow(date: Date) -> Bool {
         switch dateUnit {
         case .day:
@@ -148,17 +147,16 @@ struct DateBarChart: View {
             return false
         }
     }
-
 }
 
 struct DateBarChart_Previews: PreviewProvider {
     static var previews: some View {
         DateBarChart(dateUnit: .weekOfYear) {
-            (1...11)
+            (1 ... 11)
                 .map {
                     .init(
-                        date: Date().addingTimeInterval(-7_882_880 + 788288 * Double($0)),
-                        value: Int.random(in: 0...100)
+                        date: Date().addingTimeInterval(-7_882_880 + 788_288 * Double($0)),
+                        value: Int.random(in: 0 ... 100)
                     )
                 }
         }

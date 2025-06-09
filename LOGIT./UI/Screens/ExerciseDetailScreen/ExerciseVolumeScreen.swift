@@ -9,16 +9,15 @@ import Charts
 import SwiftUI
 
 struct ExerciseVolumeScreen: View {
-    
     private enum ChartGranularity {
         case month, year
     }
-        
+
     @StateObject var exercise: Exercise
-    
+
     @State private var chartGranularity: ChartGranularity = .month
     @State private var chartScrollPosition: Date = .now
-    
+
     var body: some View {
         let workoutSets = exercise.sets
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
@@ -32,7 +31,7 @@ struct ExerciseVolumeScreen: View {
                 }
                 .pickerStyle(.segmented)
                 .padding(.vertical)
-                
+
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("total", comment: ""))
                         .font(.footnote)
@@ -50,9 +49,9 @@ struct ExerciseVolumeScreen: View {
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                
+
                 Chart {
-                    ForEach(groupedWorkoutSets, id:\.0) { key, workoutSets in
+                    ForEach(groupedWorkoutSets, id: \.0) { _, workoutSets in
                         BarMark(
                             x: .value("Day", workoutSets.first?.workout?.date ?? .now, unit: .weekOfYear),
                             y: .value("Volume", volume(for: workoutSets)),
@@ -61,7 +60,7 @@ struct ExerciseVolumeScreen: View {
                         .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
                     }
                 }
-                .chartXScale(domain: xDomain(for: groupedWorkoutSets.map({ $0.1 })))
+                .chartXScale(domain: xDomain(for: groupedWorkoutSets.map { $0.1 }))
                 .chartScrollableAxes(.horizontal)
                 .chartScrollPosition(x: $chartScrollPosition)
                 .chartScrollTargetBehavior(
@@ -91,7 +90,6 @@ struct ExerciseVolumeScreen: View {
                     Text(NSLocalizedString("noData", comment: ""))
                 }
                 .frame(height: 300)
-                
             }
             .padding(.horizontal)
             .padding(.top)
@@ -112,16 +110,15 @@ struct ExerciseVolumeScreen: View {
                         .font(.footnote)
                 }
             }
-            
         }
     }
-    
+
     // MARK: - Private Methods
-    
+
     private var visibleChartDomainInSeconds: Int {
         3600 * 24 * (chartGranularity == .month ? 35 : 365)
     }
-    
+
     private func xDomain(for groupedWorkoutSets: [[WorkoutSet]]) -> some ScaleDomain {
         let maxStartDate = Calendar.current.date(
             byAdding: chartGranularity == .month ? .month : .year,
@@ -130,21 +127,21 @@ struct ExerciseVolumeScreen: View {
         )!
         let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
         guard let firstSetDate = groupedWorkoutSets.first?.first?.workout?.date, firstSetDate < maxStartDate
-        else { return maxStartDate...endDate }
+        else { return maxStartDate ... endDate }
         let startDate = chartGranularity == .month ? firstSetDate.startOfMonth : firstSetDate.startOfYear
-        return startDate...endDate
+        return startDate ... endDate
     }
-    
+
     private func totalVolumeInTimeFrame(_ workoutSets: [WorkoutSet]) -> Int {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= chartScrollPosition && $0.workout?.date ?? .distantFuture <= endDate }
         return volume(for: setsInTimeFrame)
     }
-    
+
     private func volume(for sets: [WorkoutSet]) -> Int {
         convertWeightForDisplaying(getVolume(of: sets, for: exercise))
     }
-    
+
     private func xAxisDateString(for date: Date) -> String {
         switch chartGranularity {
         case .month:
@@ -153,8 +150,8 @@ struct ExerciseVolumeScreen: View {
             return date.formatted(Date.FormatStyle().month(.narrow))
         }
     }
-    
-    private func isDateNow(_ date: Date, for granularity: ChartGranularity) -> Bool {
+
+    private func isDateNow(_ date: Date, for _: ChartGranularity) -> Bool {
         switch chartGranularity {
         case .month:
             return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.weekOfYear, .yearForWeekOfYear])
@@ -162,7 +159,7 @@ struct ExerciseVolumeScreen: View {
             return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.month, .year])
         }
     }
-    
+
     private var visibleDomainDescription: String {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         switch chartGranularity {
@@ -172,12 +169,11 @@ struct ExerciseVolumeScreen: View {
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
         }
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationView {
             ExerciseVolumeScreen(exercise: database.getExercises().first!)

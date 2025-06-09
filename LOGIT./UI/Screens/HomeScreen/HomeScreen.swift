@@ -10,7 +10,6 @@ import SwiftUI
 import WishKit
 
 struct HomeScreen: View {
-
     // MARK: - AppStorage
 
     @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = 3
@@ -110,7 +109,7 @@ struct HomeScreen: View {
                             }
                             .font(.title2)
                             .padding(.horizontal)
-                            
+
                             VStack(spacing: SECTION_HEADER_SPACING) {
                                 Text(NSLocalizedString("summary", comment: ""))
                                     .sectionHeaderStyle2()
@@ -137,11 +136,10 @@ struct HomeScreen: View {
                                             .contentShape(Rectangle())
                                     }
                                     .buttonStyle(TileButtonStyle())
-
                                 }
                             }
                             .padding(.horizontal)
-                            
+
                             VStack(spacing: SECTION_HEADER_SPACING) {
                                 HStack {
                                     Text(NSLocalizedString("recentWorkouts", comment: ""))
@@ -217,24 +215,24 @@ struct HomeScreen: View {
                 }
                 .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
                     switch destination {
-                        case .exercise(let exercise):
-                            ExerciseDetailScreen(exercise: exercise)
-                        case .exerciseList: ExerciseListScreen()
-                        case .measurements: MeasurementsScreen()
-                        case .muscleGroupsOverview:
-                            MuscleGroupSplitScreen()
-                        case .overallSets: OverallSetsScreen()
-                        case .targetPerWeek: TargetPerWeekDetailScreen()
-                        case .template(let template):
-                            TemplateDetailScreen(template: template)
-                        case .templateList: TemplateListScreen()
-                        case .volume: VolumeScreen()
-                        case .workout(let workout):
-                            WorkoutDetailScreen(
-                                workout: workout,
-                                canNavigateToTemplate: true
-                            )
-                        case .workoutList: WorkoutListScreen()
+                    case let .exercise(exercise):
+                        ExerciseDetailScreen(exercise: exercise)
+                    case .exerciseList: ExerciseListScreen()
+                    case .measurements: MeasurementsScreen()
+                    case .muscleGroupsOverview:
+                        MuscleGroupSplitScreen()
+                    case .overallSets: OverallSetsScreen()
+                    case .targetPerWeek: TargetPerWeekDetailScreen()
+                    case let .template(template):
+                        TemplateDetailScreen(template: template)
+                    case .templateList: TemplateListScreen()
+                    case .volume: VolumeScreen()
+                    case let .workout(workout):
+                        WorkoutDetailScreen(
+                            workout: workout,
+                            canNavigateToTemplate: true
+                        )
+                    case .workoutList: WorkoutListScreen()
                     }
                 }
                 .toolbar {
@@ -266,7 +264,7 @@ struct HomeScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
     private var currentWeekWeeklyTargetWidget: some View {
         Button {
             homeNavigationCoordinator.path.append(.targetPerWeek)
@@ -286,7 +284,6 @@ struct HomeScreen: View {
         .padding(CELL_PADDING)
         .tileStyle()
     }
-
 }
 
 struct HomeView_Previews: PreviewProvider {

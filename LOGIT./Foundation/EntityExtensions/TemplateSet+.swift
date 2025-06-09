@@ -7,14 +7,12 @@
 
 import Foundation
 
-extension TemplateSet {
-
-    @objc public var hasEntry: Bool {
+public extension TemplateSet {
+    @objc var hasEntry: Bool {
         fatalError("TemplateSet+: hasEntry must be implemented in subclass of TemplateSet")
     }
 
-    public var exercise: Exercise? {
+    var exercise: Exercise? {
         setGroup?.exercise
     }
-
 }

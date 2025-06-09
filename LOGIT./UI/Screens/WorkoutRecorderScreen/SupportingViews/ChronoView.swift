@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ChronoView: View {
-
     // MARK: - Properties
 
     @ObservedObject var chronograph: Chronograph
@@ -25,7 +24,7 @@ struct ChronoView: View {
     // MARK: - Computed Properties
 
     private var remainingTimeString: String {
-        "\(Int(chronograph.seconds)/60 / 10 % 6 )\(Int(chronograph.seconds)/60 % 10):\(Int(chronograph.seconds) % 60 / 10)\(Int(chronograph.seconds) % 60 % 10)"
+        "\(Int(chronograph.seconds) / 60 / 10 % 6)\(Int(chronograph.seconds) / 60 % 10):\(Int(chronograph.seconds) % 60 / 10)\(Int(chronograph.seconds) % 60 % 10)"
     }
 
     // MARK: - View
@@ -198,7 +197,6 @@ struct ChronoView: View {
                 .clipShape(Circle())
         }
     }
-
 }
 
 struct TimerView_Previews: PreviewProvider {

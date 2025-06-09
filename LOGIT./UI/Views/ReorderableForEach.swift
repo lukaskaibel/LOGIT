@@ -7,10 +7,9 @@
 
 import SwiftUI
 
-public typealias Reorderable = Identifiable & Equatable
+public typealias Reorderable = Equatable & Identifiable
 
 struct ReorderableForEach<Content: View, Item: Reorderable>: View {
-
     // MARK: - Constants
 
     private let itemDragType = ".com.lukaskbl.itemDragType"
@@ -39,9 +38,9 @@ struct ReorderableForEach<Content: View, Item: Reorderable>: View {
         onOrderChanged: (() -> Void)? = nil,
         @ViewBuilder content: @escaping (Item) -> Content
     ) {
-        self._items = items
+        _items = items
         self.canReorder = canReorder
-        self._isReordering = isReordering
+        _isReordering = isReordering
         self.onOrderChanged = onOrderChanged
         self.content = content
     }
@@ -102,23 +101,22 @@ struct ReorderableForEach<Content: View, Item: Reorderable>: View {
 }
 
 struct DropViewDelegate<Item: Reorderable>: DropDelegate {
-
     let destinationItem: Item
     @Binding var items: [Item]
     @Binding var draggedItem: Item?
     @Binding var isDraggingOnValidDropDestination: Bool
     let onOrderChanged: (() -> Void)?
 
-    func dropUpdated(info: DropInfo) -> DropProposal? {
+    func dropUpdated(info _: DropInfo) -> DropProposal? {
         return DropProposal(operation: .move)
     }
 
-    func performDrop(info: DropInfo) -> Bool {
+    func performDrop(info _: DropInfo) -> Bool {
         draggedItem = nil
         return true
     }
 
-    func dropEntered(info: DropInfo) {
+    func dropEntered(info _: DropInfo) {
         isDraggingOnValidDropDestination = true
         // Swap Items
         if let draggedItem {
@@ -127,9 +125,9 @@ struct DropViewDelegate<Item: Reorderable>: DropDelegate {
                 let toIndex = items.firstIndex(of: destinationItem)
                 if let toIndex, fromIndex != toIndex {
                     UISelectionFeedbackGenerator().selectionChanged()
-                    self.items.move(
+                    items.move(
                         fromOffsets: IndexSet(integer: fromIndex),
-                        toOffset: (toIndex > fromIndex ? (toIndex + 1) : toIndex)
+                        toOffset: toIndex > fromIndex ? (toIndex + 1) : toIndex
                     )
                     onOrderChanged?()
                 }
@@ -137,7 +135,7 @@ struct DropViewDelegate<Item: Reorderable>: DropDelegate {
         }
     }
 
-    func dropExited(info: DropInfo) {
+    func dropExited(info _: DropInfo) {
         isDraggingOnValidDropDestination = false
     }
 }
@@ -145,7 +143,6 @@ struct DropViewDelegate<Item: Reorderable>: DropDelegate {
 // MARK: - Preview
 
 private struct PreviewWrapperView: View {
-
     struct Item: Codable, Reorderable {
         var id: Int { value }
         let value: Int

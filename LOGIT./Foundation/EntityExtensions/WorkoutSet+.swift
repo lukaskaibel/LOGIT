@@ -7,34 +7,33 @@
 
 import Foundation
 
-extension WorkoutSet {
-
-    public enum Attribute: String {
+public extension WorkoutSet {
+    enum Attribute: String {
         case repetitions, weight
     }
 
-    public static func == (lhs: WorkoutSet, rhs: WorkoutSet) -> Bool {
+    static func == (lhs: WorkoutSet, rhs: WorkoutSet) -> Bool {
         return lhs.objectID == rhs.objectID
     }
 
-    public var exercise: Exercise? {
+    var exercise: Exercise? {
         setGroup?.exercise
     }
 
-    public var workout: Workout? {
+    var workout: Workout? {
         setGroup?.workout
     }
 
-    public var previousSetInSetGroup: WorkoutSet? {
+    var previousSetInSetGroup: WorkoutSet? {
         setGroup?.sets.value(at: (setGroup?.sets.firstIndex(of: self) ?? 0) - 1)
     }
 
-    func isTraining(_ muscleGroup: MuscleGroup) -> Bool {
+    internal func isTraining(_ muscleGroup: MuscleGroup) -> Bool {
         setGroup?.exercise?.muscleGroup == muscleGroup
             || setGroup?.secondaryExercise?.muscleGroup == muscleGroup
     }
 
-    func maximum(_ attribute: WorkoutSet.Attribute, for exercise: Exercise) -> Int {
+    internal func maximum(_ attribute: WorkoutSet.Attribute, for exercise: Exercise) -> Int {
         if let standardSet = self as? StandardSet, standardSet.exercise == exercise {
             return Int(attribute == .repetitions ? standardSet.repetitions : standardSet.weight)
         }
@@ -44,7 +43,7 @@ extension WorkoutSet {
             )
         }
         if let superSet = self as? SuperSet {
-            var maxValue: Int = 0
+            var maxValue = 0
             if superSet.exercise == exercise {
                 maxValue = Int(
                     attribute == .repetitions
@@ -61,22 +60,22 @@ extension WorkoutSet {
         return 0
     }
 
-    public var isSuperSet: Bool { (self as? SuperSet) != nil }
-    public var isDropSet: Bool { (self as? DropSet) != nil }
+    var isSuperSet: Bool { (self as? SuperSet) != nil }
+    var isDropSet: Bool { (self as? DropSet) != nil }
 
-    public func match(_ templateSet: TemplateSet) {
+    func match(_ templateSet: TemplateSet) {
         if let standardSet = self as? StandardSet,
-            let templateStandardSet = templateSet as? TemplateStandardSet
+           let templateStandardSet = templateSet as? TemplateStandardSet
         {
             standardSet.repetitions = templateStandardSet.repetitions
             standardSet.weight = templateStandardSet.weight
         } else if let dropSet = self as? DropSet,
-            let templateDropSet = templateSet as? TemplateDropSet
+                  let templateDropSet = templateSet as? TemplateDropSet
         {
             dropSet.repetitions = templateDropSet.repetitions
             dropSet.weights = templateDropSet.weights
         } else if let superSet = self as? SuperSet,
-            let templateSuperSet = templateSet as? TemplateSuperSet
+                  let templateSuperSet = templateSet as? TemplateSuperSet
         {
             superSet.repetitionsFirstExercise = templateSuperSet.repetitionsFirstExercise
             superSet.repetitionsSecondExercise = templateSuperSet.repetitionsSecondExercise
@@ -85,9 +84,9 @@ extension WorkoutSet {
         }
     }
 
-    public func match(_ workoutSet: WorkoutSet) {
+    func match(_ workoutSet: WorkoutSet) {
         if let standardSet = self as? StandardSet,
-            let workoutStandardSet = workoutSet as? StandardSet
+           let workoutStandardSet = workoutSet as? StandardSet
         {
             standardSet.repetitions = workoutStandardSet.repetitions
             standardSet.weight = workoutStandardSet.weight
@@ -104,12 +103,11 @@ extension WorkoutSet {
 
     // MARK: Methods to override for subclass
 
-    @objc public var hasEntry: Bool {
+    @objc var hasEntry: Bool {
         fatalError("WorkoutSet+: hasEntry must be implemented in subclass of WorkoutSet")
     }
 
-    @objc public func clearEntries() {
+    @objc func clearEntries() {
         fatalError("WorkoutSet+: clearEntries must be implemented in subclass of WorkoutSet")
     }
-
 }

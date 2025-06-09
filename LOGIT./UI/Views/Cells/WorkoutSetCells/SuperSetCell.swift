@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SuperSetCell: View {
-
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
@@ -114,5 +113,4 @@ struct SuperSetCell: View {
         return [templateSuperSet.weightFirstExercise, templateSuperSet.weightSecondExercise]
             .map { Int64(convertWeightForDisplaying($0)) }
     }
-
 }

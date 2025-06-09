@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TemplateSuperSetCell: View {
-
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
@@ -97,5 +96,4 @@ struct TemplateSuperSetCell: View {
     private var indexInTemplate: Int? {
         superSet.setGroup?.workout?.sets.firstIndex(of: superSet)
     }
-
 }

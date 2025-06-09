@@ -17,9 +17,7 @@ struct KeyboardToolbarButtonModifier: ViewModifier {
 }
 
 extension View {
-
     func keyboardToolbarButtonStyle() -> some View {
         modifier(KeyboardToolbarButtonModifier())
     }
-
 }

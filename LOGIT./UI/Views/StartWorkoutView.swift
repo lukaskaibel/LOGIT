@@ -8,26 +8,25 @@
 import SwiftUI
 
 struct StartWorkoutView: View {
-    
     // MARK: - Environment
-    
+
     @EnvironmentObject var database: Database
     @EnvironmentObject var networkMonitor: NetworkMonitor
     @EnvironmentObject var purchaseManager: PurchaseManager
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
-    
+
     // MARK: - State
-    
+
     @State private var currentWorkoutViewHeight: CGFloat = 0
     @State private var isShowingScanScreen = false
     @State private var isShowingUpgradeToProSheet = false
     @State private var isShowingTemplateListScreen = false
-    
+
     @State private var templateImage: UIImage?
     @State private var generatedTemplate: Template?
-    
+
     // MARK: - Body
-    
+
     var body: some View {
         ZStack {
             CurrentWorkoutView(workoutName: nil, workoutDate: .now)
@@ -35,7 +34,7 @@ struct StartWorkoutView: View {
                 .fixedSize()
             HStack(spacing: 0) {
                 Button {
-                    withAnimation() {
+                    withAnimation {
                         workoutRecorder.startWorkout()
                     }
                 } label: {
@@ -71,26 +70,24 @@ struct StartWorkoutView: View {
                     ZStack {
                         Text(" ")
                             .padding(20)
-                            Image(systemName: "play.fill")
-                                .padding(2)
-                                .overlay {
-                                    GeometryReader { geometry in
-                                        ZStack {
-                                            Circle()
-                                                .fill(.black)
-                                                .frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5)
-                                            Image(systemName: "ellipsis.circle.fill")
-                                                .resizable()
-                                                .frame(width: geometry.size.width * 0.4, height: geometry.size.width * 0.4)
-                                            
-                                        }
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                        Image(systemName: "play.fill")
+                            .padding(2)
+                            .overlay {
+                                GeometryReader { geometry in
+                                    ZStack {
+                                        Circle()
+                                            .fill(.black)
+                                            .frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5)
+                                        Image(systemName: "ellipsis.circle.fill")
+                                            .resizable()
+                                            .frame(width: geometry.size.width * 0.4, height: geometry.size.width * 0.4)
                                     }
-
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                                 }
-                        .padding()
-                        .frame(width: 70)
-                        .font(.title3.weight(.semibold))
+                            }
+                            .padding()
+                            .frame(width: 70)
+                            .font(.title3.weight(.semibold))
                     }
                 }
                 .background(Color.accentColor.secondaryTranslucentBackground)

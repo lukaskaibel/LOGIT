@@ -1,5 +1,5 @@
 //
-//  VolumeCalculator.swift
+//  VolumeCalculating.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 28.09.23.
@@ -71,7 +71,7 @@ public func getVolume(of workoutSets: [WorkoutSet], for muscleGroup: MuscleGroup
         }
         .reduce(0, +)
 }
-    
+
 public func getVolume(of groupedSets: [[WorkoutSet]], for exercise: Exercise) -> [(Date, Int)] {
     return Array(zip(
         groupedSets.map { $0.first?.setGroup?.workout?.date ?? Date.distantPast },

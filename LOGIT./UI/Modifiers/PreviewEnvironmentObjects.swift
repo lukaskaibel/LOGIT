@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct PreviewEnvironmentObjects: ViewModifier {
-    
     @StateObject private var database: Database
     @StateObject private var templateService: TemplateService
     @StateObject private var measurementController: MeasurementEntryController
@@ -17,7 +16,7 @@ struct PreviewEnvironmentObjects: ViewModifier {
     @StateObject private var workoutRecorder: WorkoutRecorder
     @StateObject private var muscleGroupService: MuscleGroupService
     @StateObject private var homeNavigationCoordinator: HomeNavigationCoordinator
-    
+
     init() {
         let db = Database(isPreview: true)
         _database = StateObject(wrappedValue: db)

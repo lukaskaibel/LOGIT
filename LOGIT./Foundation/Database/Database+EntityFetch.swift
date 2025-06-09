@@ -1,5 +1,5 @@
 //
-//  Database+EntityFetching.swift
+//  Database+EntityFetch.swift
 //  LOGIT.
 //
 //  Created by Lukas Kaibel on 02.11.22.
@@ -8,7 +8,6 @@
 import Foundation
 
 extension Database {
-
     // MARK: - Exercise Fetch
 
     func getExercises(
@@ -26,7 +25,6 @@ extension Database {
                     filterText
                 )
         ) as! [Exercise])
-        .filter { muscleGroup == nil || $0.muscleGroup == muscleGroup }
+            .filter { muscleGroup == nil || $0.muscleGroup == muscleGroup }
     }
-
 }

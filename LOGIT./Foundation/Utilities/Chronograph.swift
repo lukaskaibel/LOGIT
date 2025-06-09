@@ -9,7 +9,6 @@ import Combine
 import SwiftUI
 
 class Chronograph: ObservableObject {
-
     // MARK: - Enums
 
     enum Mode {
@@ -62,14 +61,14 @@ class Chronograph: ObservableObject {
                 self.startDate = Date()
             }
         }
-        self.status = .running
+        status = .running
     }
 
     func pause() {
         timer?.invalidate()
         timer = nil
         pauseTime = seconds
-        self.status = .paused
+        status = .paused
     }
 
     func cancel() {
@@ -77,12 +76,12 @@ class Chronograph: ObservableObject {
         timer = nil
         startDate = nil
         seconds = 0
-        self.status = .idle
+        status = .idle
     }
 
     func stop() {
         timer?.invalidate()
         timer = nil
-        self.status = .paused
+        status = .paused
     }
 }

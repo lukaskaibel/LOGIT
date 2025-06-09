@@ -9,7 +9,6 @@ import Combine
 import SwiftUI
 
 struct GenerationScreen: View {
-
     // MARK: - Environment
 
     @Environment(\.dismiss) var dismiss

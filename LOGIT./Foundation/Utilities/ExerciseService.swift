@@ -1,5 +1,5 @@
 //
-//  ExerciseCreator.swift
+//  ExerciseService.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 04.08.23.
@@ -7,11 +7,10 @@
 
 import Combine
 import Foundation
-import OSLog
 import OpenAIKit
+import OSLog
 
 class ExerciseService {
-    
     private static let logger = Logger(subsystem: ".com.lukaskbl.LOGIT", category: "ExerciseService")
 
     enum Error: Swift.Error {
@@ -27,29 +26,29 @@ class ExerciseService {
     // MARK: - Prompts
 
     let createExercisePrompt = """
-            For the following exercise name, return a JSON object with the type of training.
-            enum Type {
-                \((MuscleGroup.allCases.map { $0.rawValue }).joined(separator: ", "))
-            }
-            Return JSON of form:
-            {
-            name: string,
-            type: Type
-            }
-        """
+        For the following exercise name, return a JSON object with the type of training.
+        enum Type {
+            \((MuscleGroup.allCases.map { $0.rawValue }).joined(separator: ", "))
+        }
+        Return JSON of form:
+        {
+        name: string,
+        type: Type
+        }
+    """
 
     lazy var getMatchingExercisePrompt = """
-            Your job is to map a list of words to a list of exercises, if the word refers to the exercise.
-            The word should also be mapped to the exercise, if it just means the exercise in a different language.
-            Do not match exercises with different equipment (e.g. dumbbell != barbell) or execution (e.g. standing != sitting).
-            Return a JSON like this: { matches: [{ word: string, exercise: Exercise | null }] }.
-            enum Exercise {
-                \(database.getExercises().compactMap({ $0.name }).joined(separator: ", "))
-            }
-        """
+        Your job is to map a list of words to a list of exercises, if the word refers to the exercise.
+        The word should also be mapped to the exercise, if it just means the exercise in a different language.
+        Do not match exercises with different equipment (e.g. dumbbell != barbell) or execution (e.g. standing != sitting).
+        Return a JSON like this: { matches: [{ word: string, exercise: Exercise | null }] }.
+        enum Exercise {
+            \(database.getExercises().compactMap { $0.name }.joined(separator: ", "))
+        }
+    """
 
     // MARK: - Public Methods
-    
+
     /// Matches a given list of Exercise names to the corresponding Exercise entity, if one exists.
     /// - Parameter exerciseNames: List of Exercise names.
     /// - Returns: Returns a publisher that publishes a dictionary with the given names as keys and the Exercises, if found, as values (otherwise nil).
@@ -69,16 +68,15 @@ class ExerciseService {
                     temperature: 0
                 ) { result in
                     switch result {
-                    case .success(let aiResult):
+                    case let .success(aiResult):
                         if let text = aiResult.choices.first?.message?.content {
                             promise(.success(text))
                         } else {
                             promise(.failure(Error.emptyResponse))
                         }
-                    case .failure(let error):
+                    case let .failure(error):
                         promise(.failure(error))
                     }
-
                 }
         }
         .flatMap { text -> AnyPublisher<Data, Swift.Error> in
@@ -88,7 +86,7 @@ class ExerciseService {
             return Future<[String: Exercise?], Swift.Error> { [unowned self] promise in
                 guard
                     let json = try? JSONSerialization.jsonObject(with: jsonData, options: [])
-                        as? [String: Any]
+                    as? [String: Any]
                 else {
                     return promise(.failure(Error.jsonParsingError))
                 }
@@ -104,7 +102,7 @@ class ExerciseService {
                 matches?
                     .forEach { match in
                         guard let exerciseNameKey = findKey("word", in: match),
-                            let existingExerciseNameKey = findKey("exercise", in: match)
+                              let existingExerciseNameKey = findKey("exercise", in: match)
                         else {
                             return promise(.failure(Error.keysNotMatching))
                         }
@@ -117,8 +115,8 @@ class ExerciseService {
                             database.getExercises(withNameIncluding: existingExerciseName).first
                         result[exerciseName] = existingExercise
                     }
-                
-                let pairedExercises = zip(result.keys, result.values.map({ $0?.name ?? "nil" })).map { "\($0): \($1)" }.joined(separator: ", ")
+
+                let pairedExercises = zip(result.keys, result.values.map { $0?.name ?? "nil" }).map { "\($0): \($1)" }.joined(separator: ", ")
                 Self.logger.debug("Found matching exercises for names: \(pairedExercises)")
                 promise(.success(result))
             }
@@ -128,13 +126,13 @@ class ExerciseService {
 
         return publisher
     }
-    
+
     /// Creates a new Exercise entity in the database with corresponding Muscle Group (using ChatGPT API).
     /// - Parameter name: Name of the exercise that will be created.
     /// - Returns: Returns a publisher that publishes either the Exercise, or an error.
     func createExercise(for name: String) -> AnyPublisher<Exercise, Swift.Error> {
         Self.logger.info("Creating Exercise for name: \(name)")
-        
+
         let systemMessage = AIMessage(role: .system, content: createExercisePrompt)
         let userMessage = AIMessage(role: .user, content: name)
 
@@ -148,7 +146,7 @@ class ExerciseService {
                     temperature: 0
                 ) { result in
                     switch result {
-                    case .success(let aiResult):
+                    case let .success(aiResult):
                         if let text = aiResult.choices.first?.message?.content {
                             print("Got response for system message: \(systemMessage)")
                             Self.logger.debug("Returned Exercise JSON: \(text)")
@@ -156,7 +154,7 @@ class ExerciseService {
                         } else {
                             promise(.failure(Error.emptyResponse))
                         }
-                    case .failure(let error):
+                    case let .failure(error):
                         promise(.failure(error))
                     }
                 }
@@ -197,5 +195,4 @@ class ExerciseService {
             }
             .eraseToAnyPublisher()
     }
-
 }

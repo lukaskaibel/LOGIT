@@ -9,21 +9,20 @@ import MarkdownUI
 import SwiftUI
 
 struct PrivacyPolicyScreen: View {
-    
     // MARK: - Environment
-    
+
     @Environment(\.dismiss) private var dismiss
-    
+
     // MARK: - Storage
-    
+
     @AppStorage("acceptedPrivacyPolicyVersion") var acceptedVersion: Int?
-    
+
     // MARK: - Parameters
-    
+
     var needsAcceptance = false
-    
+
     // MARK: - Body
-    
+
     var body: some View {
         ScrollView {
             Markdown(getPrivacyPolicyMarkdown())
@@ -51,13 +50,14 @@ struct PrivacyPolicyScreen: View {
             }
         }
     }
-    
+
     // MARK: - Computed Properties
-    
+
     private func getPrivacyPolicyMarkdown() -> String {
         if let url = Bundle.main.url(forResource: "logit_privacy_policy", withExtension: "md"),
            let data = try? Data(contentsOf: url),
-           let markdown = String(data: data, encoding: .utf8) {
+           let markdown = String(data: data, encoding: .utf8)
+        {
             return markdown
         }
         return "Failed to load privacy policy"

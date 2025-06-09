@@ -1,5 +1,5 @@
 //
-//  TextProcessor.swift
+//  TextProcessing.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 03.08.23.
@@ -7,13 +7,12 @@
 
 import Combine
 import Foundation
-import OSLog
 import OpenAIKit
+import OSLog
 import UIKit
 import Vision
 
-struct TextProcessing {
-
+enum TextProcessing {
     enum Error: Swift.Error {
         case emptyResponse, invalidImage, noRecognizedText, failedToFindBoundaries, invalidJSON
     }
@@ -56,19 +55,18 @@ struct TextProcessing {
         return AnyPublisher(publisher)
     }
 
-    static func extractJsonDataFromString(_ inputString: String) -> AnyPublisher<Data, Swift.Error>
-    {
+    static func extractJsonDataFromString(_ inputString: String) -> AnyPublisher<Data, Swift.Error> {
         guard let startRange = inputString.range(of: "{"),
-            let endRange = inputString.range(of: "}", options: .backwards)
+              let endRange = inputString.range(of: "}", options: .backwards)
         else {
             return Fail(error: Error.failedToFindBoundaries).eraseToAnyPublisher()
         }
 
-        let jsonRange = startRange.lowerBound..<endRange.upperBound
+        let jsonRange = startRange.lowerBound ..< endRange.upperBound
         let jsonString = String(inputString[jsonRange])
 
         guard let jsonData = jsonString.data(using: .utf8),
-            (try? JSONSerialization.jsonObject(with: jsonData)) != nil
+              (try? JSONSerialization.jsonObject(with: jsonData)) != nil
         else {
             return Fail(error: Error.invalidJSON).eraseToAnyPublisher()
         }
@@ -77,5 +75,4 @@ struct TextProcessing {
             .setFailureType(to: Swift.Error.self)
             .eraseToAnyPublisher()
     }
-
 }

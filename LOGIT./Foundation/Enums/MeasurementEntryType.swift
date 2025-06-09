@@ -42,17 +42,17 @@ enum MeasurementEntryType {
             return "percentage"
         case .caloriesBurned:
             return "caloriesBurned"
-        case .length(let lengthType):
+        case let .length(lengthType):
             return "length" + lengthType.rawValue.firstLetterUppercased
         }
     }
-    
+
     var title: String {
         switch self {
         case .bodyweight: return NSLocalizedString("bodyweight", comment: "")
         case .percentage: return NSLocalizedString("percentage", comment: "")
         case .caloriesBurned: return NSLocalizedString("caloriesBurned", comment: "")
-        case .length(let lengthType):
+        case let .length(lengthType):
             return NSLocalizedString(lengthType.rawValue, comment: "")
         }
     }
@@ -65,7 +65,7 @@ enum MeasurementEntryType {
             return "%"
         case .caloriesBurned:
             return "kCal"
-        case .length(_):
+        case .length:
             return "cm"
         }
     }
@@ -79,5 +79,5 @@ extension MeasurementEntryType: Equatable {
 
 enum LengthMeasurementEntryType: String, CaseIterable {
     case neck, shoulders, chest, bicepsLeft, bicepsRight, forearmLeft, forearmRight, waist, hips,
-        thighLeft, thighRight, calfLeft, calfRight
+         thighLeft, thighRight, calfLeft, calfRight
 }

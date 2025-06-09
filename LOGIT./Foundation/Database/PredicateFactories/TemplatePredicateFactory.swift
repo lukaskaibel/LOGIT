@@ -8,8 +8,7 @@
 import CoreData
 import Foundation
 
-struct TemplatePredicateFactory {
-    
+enum TemplatePredicateFactory {
     static func getTemplates(
         nameIncluding nameSubstring: String = "",
         withMuscleGroup muscleGroup: MuscleGroup? = nil
@@ -33,13 +32,11 @@ struct TemplatePredicateFactory {
             )
             subpredicates.append(muscleGroupPredicate)
         }
-        
+
         if subpredicates.isEmpty {
             return nil
         } else {
             return NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
         }
     }
-
-    
 }

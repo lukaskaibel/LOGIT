@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct PieGraph<CenterView: View>: View {
-
     enum Configuration {
         case normal, small
     }
@@ -28,7 +27,7 @@ struct PieGraph<CenterView: View>: View {
         hideLegend: Bool = false
     ) {
         self.items = items.filter { showZeroValuesInLegend ? true : $0.amount > 0 }
-        self.circleLineWidth = configuration == .small ? 10 : 15
+        circleLineWidth = configuration == .small ? 10 : 15
         self.configuration = configuration
         self.centerView = centerView
         self.showZeroValuesInLegend = showZeroValuesInLegend
@@ -40,7 +39,7 @@ struct PieGraph<CenterView: View>: View {
             if configuration == .normal && !hideLegend {
                 HStack {
                     Grid(verticalSpacing: 5) {
-                        ForEach(0..<((items.count + 1) / 2), id: \.self) { index in
+                        ForEach(0 ..< ((items.count + 1) / 2), id: \.self) { index in
                             GridRow {
                                 HStack {
                                     itemView(for: items[index * 2])
@@ -50,7 +49,6 @@ struct PieGraph<CenterView: View>: View {
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -104,18 +102,18 @@ struct PieGraph<CenterView: View>: View {
         guard overallAmount > 0 else { return 0.0 }
         return
             items
-            .prefix(items.firstIndex { $0 == item } ?? 0)
-            .map { CGFloat($0.amount) / CGFloat(overallAmount) }
-            .reduce(0, +)
+                .prefix(items.firstIndex { $0 == item } ?? 0)
+                .map { CGFloat($0.amount) / CGFloat(overallAmount) }
+                .reduce(0, +)
     }
 
     private func trimTo(for item: Item) -> CGFloat {
         guard overallAmount > 0 else { return 0.0 }
         return
             items
-            .prefix((items.firstIndex { $0 == item } ?? 0) + 1)
-            .map { CGFloat($0.amount) / CGFloat(overallAmount) }
-            .reduce(0, +)
+                .prefix((items.firstIndex { $0 == item } ?? 0) + 1)
+                .map { CGFloat($0.amount) / CGFloat(overallAmount) }
+                .reduce(0, +)
     }
 
     struct Item: Equatable, Identifiable {

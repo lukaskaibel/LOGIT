@@ -1,5 +1,5 @@
 //
-//  Button.swift
+//  ButtonStyle.swift
 //  LOGIT.
 //
 //  Created by Lukas Kaibel on 28.07.23.
@@ -31,12 +31,11 @@ struct BigButtonStyle: ButtonStyle {
 }
 
 struct SecondaryBigButtonStyle: ButtonStyle {
-    
     var padding: CGFloat = 20
     var maxWidth: CGFloat? = .infinity
     var leadingCornerRadius: CGFloat = 15
     var trailingCornerRadius: CGFloat = 15
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.body, design: .rounded, weight: .bold))
@@ -57,7 +56,6 @@ struct SecondaryBigButtonStyle: ButtonStyle {
 }
 
 struct SelectionButtonStyle: ButtonStyle {
-
     let isSelected: Bool
 
     func makeBody(configuration: Configuration) -> some View {
@@ -75,7 +73,6 @@ struct SelectionButtonStyle: ButtonStyle {
 }
 
 struct CapsuleButtonStyle: ButtonStyle {
-
     let color: Color?
     let isSelected: Bool
 

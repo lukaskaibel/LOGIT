@@ -1,5 +1,5 @@
 //
-//  EmptyPlaceholderModifier.swift
+//  NoDataPlaceholderModifier.swift
 //  LOGIT.
 //
 //  Created by Lukas Kaibel on 30.07.23.
@@ -25,12 +25,10 @@ struct NoDataPlaceholderModifier<Items: Collection>: ViewModifier {
 }
 
 extension View {
-
     func noDataPlaceholder<Items: Collection, PlaceholderView: View>(
         _ items: Items,
         _ placeholder: @escaping () -> PlaceholderView
     ) -> some View {
         modifier(NoDataPlaceholderModifier(items: items, placeholder: AnyView(placeholder())))
     }
-
 }

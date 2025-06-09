@@ -10,7 +10,6 @@ import CoreData
 import SwiftUI
 
 struct ExerciseDetailScreen: View {
-
     enum TimeSpan {
         case threeMonths, year, allTime
     }
@@ -50,32 +49,32 @@ struct ExerciseDetailScreen: View {
                 VStack(spacing: SECTION_SPACING) {
                     header
                         .padding(.horizontal)
-                    
-                    ExercisePersonalBestsTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap({ $0.sets }))
+
+                    ExercisePersonalBestsTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
                         .padding(.horizontal)
-                    
+
                     VStack {
                         Button {
                             isShowingVolumeScreen = true
                         } label: {
-                            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap({ $0.sets }))
+                            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
                         }
                         .buttonStyle(TileButtonStyle())
                         Button {
                             isShowingWeightScreen = true
                         } label: {
-                            ExerciseWeightTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap({ $0.sets }))
+                            ExerciseWeightTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
                         }
                         .buttonStyle(TileButtonStyle())
                         Button {
                             isShowingRepetitionsScreen = true
                         } label: {
-                            ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap({ $0.sets }))
+                            ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
                         }
                         .buttonStyle(TileButtonStyle())
                     }
                     .padding(.horizontal)
-                    
+
                     VStack(spacing: SECTION_HEADER_SPACING) {
                         HStack {
                             Text(NSLocalizedString("recentAttempts", comment: ""))
@@ -99,7 +98,7 @@ struct ExerciseDetailScreen: View {
                                     focusedIntegerFieldIndex: .constant(nil),
                                     isReordering: .constant(false),
                                     supplementaryText:
-                                        "\(setGroup.workout?.date?.description(.short) ?? "")"
+                                    "\(setGroup.workout?.date?.description(.short) ?? "")"
                                 )
                                 .canEdit(false)
                                 .allowsHitTesting(false)
@@ -215,12 +214,11 @@ struct ExerciseDetailScreen: View {
         }
         return 0
     }
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationStack {
             ExerciseDetailScreen(exercise: database.getExercises().first!)

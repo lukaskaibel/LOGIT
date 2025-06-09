@@ -9,18 +9,17 @@ import Combine
 import SwiftUI
 
 struct WorkoutEditorScreen: View {
-    
     enum TextFieldType: Hashable {
         case workoutName, workoutSetEntry(index: IntegerField.Index)
     }
-    
+
     // MARK: - Environment
-    
+
     @EnvironmentObject var database: Database
     @Environment(\.dismiss) var dismiss
-    
+
     // MARK: - State
-    
+
     @State private var cancellable: AnyCancellable?
     @FocusState private var focusedTextField: TextFieldType?
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
@@ -28,14 +27,13 @@ struct WorkoutEditorScreen: View {
     @State private var focusedIntegerFieldIndex: IntegerField.Index?
     @State private var isEditingStartEndDate = false
 
-    
     // MARK: - Parameters
-    
+
     @StateObject var workout: Workout
     let isAddingNewWorkout: Bool
-    
+
     // MARK: - Body
-    
+
     var body: some View {
         NavigationStack {
             if isRenamingWorkout {
@@ -79,7 +77,7 @@ struct WorkoutEditorScreen: View {
                 .cornerRadius(10)
                 .padding(10)
             }
-            ScrollViewReader { scrollable in
+            ScrollViewReader { _ in
                 ScrollView {
                     VStack(spacing: SECTION_SPACING) {
                         VStack(spacing: CELL_SPACING) {
@@ -169,7 +167,7 @@ struct WorkoutEditorScreen: View {
                                     in: ...workoutEnd.wrappedValue,
                                     displayedComponents: [.date, .hourAndMinute]
                                 )
-                                
+
                                 DatePicker(
                                     NSLocalizedString("end", comment: ""),
                                     selection: workoutEnd,
@@ -276,21 +274,21 @@ struct WorkoutEditorScreen: View {
             }
         }
     }
-    
+
     // MARK: - Computed Properties
-    
+
     private var workoutName: Binding<String> {
         Binding(get: { workout.name ?? "" }, set: { workout.name = $0 })
     }
-    
+
     private var workoutStart: Binding<Date> {
         Binding(get: { workout.date ?? .now }, set: { workout.date = $0 })
     }
-    
+
     private var workoutEnd: Binding<Date> {
         Binding(get: { workout.endDate ?? .now }, set: { workout.endDate = $0 })
     }
-    
+
     private var workoutDurationString: String {
         guard let start = workout.date, let end = workout.endDate else { return "0:00" }
         let hours = Calendar.current.dateComponents([.hour], from: start, to: end).hour ?? 0
@@ -298,28 +296,26 @@ struct WorkoutEditorScreen: View {
             (Calendar.current.dateComponents([.minute], from: start, to: end).minute ?? 0) % 60
         return "\(hours):\(minutes < 10 ? "0" : "")\(minutes)"
     }
-    
+
     private var canSaveWorkout: Bool {
         workout.date != nil && workout.endDate != nil && !workout.setGroups.isEmpty
     }
-    
+
     // MARK: - Autosave
-    
+
     private func refreshOnChange() {
         cancellable = NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
             .sink { _ in
                 self.workout.objectWillChange.send()
             }
     }
-    
 }
-
 
 // MARK: - Preview
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         Rectangle()
             .sheet(isPresented: .constant(true)) {

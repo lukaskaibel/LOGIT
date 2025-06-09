@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct DropSetCell: View {
-
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
@@ -24,7 +23,7 @@ struct DropSetCell: View {
     var body: some View {
         VStack(spacing: 0) {
             if let indexInWorkout = indexInWorkout {
-                ForEach(0..<(dropSet.repetitions?.count ?? 0), id: \.self) { index in
+                ForEach(0 ..< (dropSet.repetitions?.count ?? 0), id: \.self) { index in
                     HStack {
                         IntegerField(
                             placeholder: repetitionsPlaceholder(for: dropSet).value(at: index) ?? 0,
@@ -61,22 +60,22 @@ struct DropSetCell: View {
     private var indexInWorkout: Int? {
         dropSet.workout?.sets.firstIndex(of: dropSet)
     }
-    
+
     private func repetitionsBinding(forIndex index: Int) -> Binding<Int64> {
         Binding(
             get: {
-                return Int64(dropSet.repetitions?.value(at: index) ?? 0)
+                Int64(dropSet.repetitions?.value(at: index) ?? 0)
             },
             set: { newValue in
                 dropSet.repetitions?[index] = newValue
             }
         )
     }
-    
+
     private func weightsBinding(forIndex index: Int) -> Binding<Int64> {
         Binding(
             get: {
-                return Int64(convertWeightForDisplaying(dropSet.weights?.value(at: index) ?? 0))
+                Int64(convertWeightForDisplaying(dropSet.weights?.value(at: index) ?? 0))
             },
             set: { newValue in
                 dropSet.weights?[index] = convertWeightForStoring(newValue)
@@ -99,5 +98,4 @@ struct DropSetCell: View {
         }
         return templateDropSet.weights?.map { Int64(convertWeightForDisplaying($0)) } ?? .emptyList
     }
-
 }

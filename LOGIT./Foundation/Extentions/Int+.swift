@@ -8,9 +8,7 @@
 import SwiftUI
 
 extension Int {
-
     var cgFloat: CGFloat {
         CGFloat(self)
     }
-
 }

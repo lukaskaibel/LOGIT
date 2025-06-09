@@ -8,7 +8,6 @@
 import Foundation
 
 extension Database {
-
     // MARK: - Normal Entitiy Creation
 
     @discardableResult
@@ -256,5 +255,4 @@ extension Database {
         setGroup?.sets.append(templateSuperSet)
         return templateSuperSet
     }
-
 }

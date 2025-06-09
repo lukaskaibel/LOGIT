@@ -9,14 +9,13 @@ import Charts
 import SwiftUI
 
 struct VolumeScreen: View {
-    
     private enum ChartGranularity {
         case month, year
     }
-        
+
     @State private var chartGranularity: ChartGranularity = .month
     @State private var selectedMuscleGroup: MuscleGroup?
-    
+
     var body: some View {
         FetchRequestWrapper(
             Workout.self,
@@ -30,7 +29,7 @@ struct VolumeScreen: View {
                 to: .now
             )
         ) { workouts in
-            let workoutSets = workouts.flatMap({ $0.sets })
+            let workoutSets = workouts.flatMap { $0.sets }
             ScrollView {
                 VStack(spacing: SECTION_SPACING) {
                     VStack {
@@ -100,7 +99,7 @@ struct VolumeScreen: View {
                                 }
                             }
                         }
-                        .chartYScale(domain: [0, maxTotalVolume(setsGroupedByGranularity(workoutSets).map({ $0.1 }))])
+                        .chartYScale(domain: [0, maxTotalVolume(setsGroupedByGranularity(workoutSets).map { $0.1 })])
                         .frame(height: 300)
                     }
                     .padding(.horizontal)
@@ -112,10 +111,9 @@ struct VolumeScreen: View {
             .isBlockedWithoutPro()
             .navigationBarTitle(NSLocalizedString("volume", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
-
         }
     }
-    
+
     private func volumeInThisChartGranularity(_ workoutSets: [WorkoutSet]) -> Int {
         if let selectedMuscleGroup = selectedMuscleGroup {
             volume(for: workoutSets, muscleGroup: selectedMuscleGroup)
@@ -123,7 +121,7 @@ struct VolumeScreen: View {
             volume(for: workoutSets)
         }
     }
-    
+
     private func volume(for sets: [WorkoutSet], muscleGroup: MuscleGroup? = nil) -> Int {
         if let muscleGroup = muscleGroup {
             return convertWeightForDisplaying(getVolume(of: sets, for: muscleGroup))
@@ -131,7 +129,7 @@ struct VolumeScreen: View {
             return convertWeightForDisplaying(getVolume(of: sets))
         }
     }
-    
+
     private func xAxisDateString(for date: Date) -> String {
         switch chartGranularity {
         case .month:
@@ -140,8 +138,8 @@ struct VolumeScreen: View {
             return date.formatted(Date.FormatStyle().month(.narrow))
         }
     }
-    
-    private func isDateNow(_ date: Date, for granularity: ChartGranularity) -> Bool {
+
+    private func isDateNow(_ date: Date, for _: ChartGranularity) -> Bool {
         switch chartGranularity {
         case .month:
             return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.weekOfYear, .yearForWeekOfYear])
@@ -149,7 +147,7 @@ struct VolumeScreen: View {
             return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.month, .year])
         }
     }
-    
+
     private func getPeriodStart(for date: Date, granularity: ChartGranularity) -> Date? {
         let calendar = Calendar.current
         switch granularity {
@@ -159,28 +157,28 @@ struct VolumeScreen: View {
             return calendar.dateInterval(of: .month, for: date)?.start
         }
     }
-    
+
     private func setsGroupedByGranularity(_ workoutSets: [WorkoutSet]) -> [(date: Date, workoutSets: [WorkoutSet])] {
         var result = [(date: Date, workoutSets: [WorkoutSet])]()
         let allPeriods = allPeriodsInSelectedGranularity
         var groupedByPeriod: [Date: [WorkoutSet]] = [:]
 
-        workoutSets
-            .forEach { workoutSet in
-                if let setDate = workoutSet.workout?.date,
-                   let periodStart = getPeriodStart(for: setDate, granularity: chartGranularity) {
-                    groupedByPeriod[periodStart, default: []].append(workoutSet)
-                }
+        for workoutSet in workoutSets {
+            if let setDate = workoutSet.workout?.date,
+               let periodStart = getPeriodStart(for: setDate, granularity: chartGranularity)
+            {
+                groupedByPeriod[periodStart, default: []].append(workoutSet)
             }
+        }
 
-        allPeriods.forEach { periodStart in
+        for periodStart in allPeriods {
             let setsForPeriod = groupedByPeriod[periodStart] ?? []
             result.append((date: periodStart, workoutSets: setsForPeriod))
         }
 
         return result
     }
-    
+
     private var allPeriodsInSelectedGranularity: [Date] {
         let calendar = Calendar.current
         let today = Date()
@@ -198,11 +196,11 @@ struct VolumeScreen: View {
             }
         case .year:
             guard let yearStart = calendar.dateInterval(of: .year, for: today)?.start else { return [] }
-            periods = (0..<12).compactMap { calendar.date(byAdding: .month, value: $0, to: yearStart) }
+            periods = (0 ..< 12).compactMap { calendar.date(byAdding: .month, value: $0, to: yearStart) }
         }
         return periods
     }
-    
+
     private func maxTotalVolume(_ groupedWorkoutSets: [[WorkoutSet]]) -> Int {
         groupedWorkoutSets.map { totalVolume(for: $0) }.max() ?? 0
     }
@@ -210,13 +208,11 @@ struct VolumeScreen: View {
     private func totalVolume(for sets: [WorkoutSet]) -> Int {
         return convertWeightForDisplaying(getVolume(of: sets))
     }
-
-
 }
 
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
-    
+
     var body: some View {
         NavigationView {
             VolumeScreen()

@@ -27,12 +27,10 @@ struct EmptyPlaceholderModifier<Items: Collection>: ViewModifier {
 }
 
 extension View {
-
     func emptyPlaceholder<Items: Collection, PlaceholderView: View>(
         _ items: Items,
         _ placeholder: @escaping () -> PlaceholderView
     ) -> some View {
         modifier(EmptyPlaceholderModifier(items: items, placeholder: AnyView(placeholder())))
     }
-
 }

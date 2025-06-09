@@ -9,13 +9,12 @@ import Charts
 import SwiftUI
 
 struct OverallSetsScreen: View {
-    
     private enum ChartGranularity {
         case week, month, year
     }
-        
+
     @State private var chartGranularity: ChartGranularity = .week
-    
+
     var body: some View {
         FetchRequestWrapper(
             Workout.self,
@@ -48,7 +47,7 @@ struct OverallSetsScreen: View {
                                 .textCase(.uppercase)
                                 .foregroundStyle(.secondary)
                             UnitView(
-                                value: "\(workouts.map({ $0.sets }).joined().count)",
+                                value: "\(workouts.map { $0.sets }.joined().count)",
                                 unit: NSLocalizedString("sets", comment: "")
                             )
                             .foregroundStyle(.tint)
@@ -58,7 +57,7 @@ struct OverallSetsScreen: View {
                                 .foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        
+
                         Chart {
                             ForEach(setsGroupedByGranularity(workouts), id: \.date) { data in
                                 BarMark(
@@ -89,7 +88,7 @@ struct OverallSetsScreen: View {
                         .frame(height: 300)
                     }
                     .padding(.horizontal)
-                    
+
                     VStack(spacing: SECTION_HEADER_SPACING) {
                         Text(NSLocalizedString("workouts", comment: ""))
                             .sectionHeaderStyle2()
@@ -117,7 +116,7 @@ struct OverallSetsScreen: View {
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-    
+
     private func xAxisDateString(for date: Date) -> String {
         switch chartGranularity {
         case .week:
@@ -128,8 +127,8 @@ struct OverallSetsScreen: View {
             return date.formatted(Date.FormatStyle().month(.narrow))
         }
     }
-    
-    private func isDateNow(_ date: Date, for granularity: ChartGranularity) -> Bool {
+
+    private func isDateNow(_ date: Date, for _: ChartGranularity) -> Bool {
         switch chartGranularity {
         case .week:
             return Calendar.current.isDateInToday(date)
@@ -139,7 +138,7 @@ struct OverallSetsScreen: View {
             return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.month, .year])
         }
     }
-    
+
     private func getPeriodStart(for date: Date, granularity: ChartGranularity) -> Date? {
         let calendar = Calendar.current
         switch granularity {
@@ -161,12 +160,13 @@ struct OverallSetsScreen: View {
             .flatMap { $0.sets }
             .forEach { workoutSet in
                 if let setDate = workoutSet.workout?.date,
-                   let periodStart = getPeriodStart(for: setDate, granularity: chartGranularity) {
+                   let periodStart = getPeriodStart(for: setDate, granularity: chartGranularity)
+                {
                     groupedByPeriod[periodStart, default: []].append(workoutSet)
                 }
             }
 
-        allPeriods.forEach { periodStart in
+        for periodStart in allPeriods {
             let setsForPeriod = groupedByPeriod[periodStart] ?? []
             result.append((date: periodStart, workoutSets: setsForPeriod))
         }
@@ -182,7 +182,7 @@ struct OverallSetsScreen: View {
         switch chartGranularity {
         case .week:
             guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: today)?.start else { return [] }
-            periods = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
+            periods = (0 ..< 7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
         case .month:
             guard let monthInterval = calendar.dateInterval(of: .month, for: today),
                   let firstWeekStart = getPeriodStart(for: monthInterval.start, granularity: .month) else { return [] }
@@ -194,11 +194,10 @@ struct OverallSetsScreen: View {
             }
         case .year:
             guard let yearStart = calendar.dateInterval(of: .year, for: today)?.start else { return [] }
-            periods = (0..<12).compactMap { calendar.date(byAdding: .month, value: $0, to: yearStart) }
+            periods = (0 ..< 12).compactMap { calendar.date(byAdding: .month, value: $0, to: yearStart) }
         }
         return periods
     }
-
 }
 
 #Preview {

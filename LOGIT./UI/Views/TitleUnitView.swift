@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TitleUnitView: View {
-
     // MARK: - Paramters
 
     let title: String
@@ -28,7 +27,6 @@ struct TitleUnitView: View {
         }
         .frame(minWidth: 80, alignment: .leading)
     }
-
 }
 
 struct TitleUnitView_Previews: PreviewProvider {

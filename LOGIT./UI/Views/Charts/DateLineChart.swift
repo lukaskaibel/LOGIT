@@ -9,7 +9,6 @@ import Charts
 import SwiftUI
 
 struct DateLineChart: View {
-
     struct Item: Identifiable {
         var id: String { "\(date)\(value)" }
         let date: Date
@@ -100,17 +99,16 @@ struct DateLineChart: View {
             dateDomain == .threeMonths || dateDomain == .sixMonths ? "MMM" : "MMM YY"
         return formatter.string(from: date).uppercased()
     }
-
 }
 
 struct DateLineChart_Previews: PreviewProvider {
     static var previews: some View {
         DateLineChart(dateDomain: .sixMonths) {
-            (1...10)
+            (1 ... 10)
                 .map {
                     .init(
-                        date: Date().addingTimeInterval(-7_882_880 + 788288 * Double($0)),
-                        value: Int.random(in: 0...100)
+                        date: Date().addingTimeInterval(-7_882_880 + 788_288 * Double($0)),
+                        value: Int.random(in: 0 ... 100)
                     )
                 }
         }

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct BlockedWithoutProModifier: ViewModifier {
-    
     @EnvironmentObject private var purchaseManager: PurchaseManager
 
     let blocked: Bool
@@ -47,13 +46,10 @@ struct BlockedWithoutProModifier: ViewModifier {
             content
         }
     }
-
 }
 
 extension View {
-
     func isBlockedWithoutPro(_ blocked: Bool = true) -> some View {
-        self.modifier(BlockedWithoutProModifier(blocked: blocked))
+        modifier(BlockedWithoutProModifier(blocked: blocked))
     }
-
 }

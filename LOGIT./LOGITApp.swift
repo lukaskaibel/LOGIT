@@ -71,6 +71,7 @@ struct LOGIT: App {
                     }
                     .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
                         WorkoutRecorderScreen()
+                            .presentationBackground(.clear)
                     }
                     .sheet(isPresented: $isShowingPrivacyPolicy) {
                         NavigationStack {

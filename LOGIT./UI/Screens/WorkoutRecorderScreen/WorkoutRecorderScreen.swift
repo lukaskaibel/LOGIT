@@ -24,6 +24,7 @@ struct WorkoutRecorderScreen: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.goHome) var goHome
     @Environment(\.fullScreenDraggableCoverTopInset) var fullScreenDraggableCoverTopInset
+    @Environment(\.fullScreenDraggableCoverIsDragging) var fullScreenDraggableCoverIsDragging
     @Environment(\.undoManager) var undoManager
 
     @Environment(\.colorScheme) var colorScheme: ColorScheme
@@ -45,6 +46,7 @@ struct WorkoutRecorderScreen: View {
     @State private var isShowingFinishConfirmation = false
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isShowingDetailsSheet = false
+    @State private var isShowingExerciseSelectionSheet = false
 
     @State internal var focusedIntegerFieldIndex: IntegerField.Index?
 
@@ -66,7 +68,6 @@ struct WorkoutRecorderScreen: View {
                                 )
                                 .padding(.horizontal)
                                 .padding(.top, 90)
-                                .padding(.top, fullScreenDraggableCoverTopInset)
                                 .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
                                 .id(1)
                                 .emptyPlaceholder(workout.setGroups) {
@@ -78,8 +79,9 @@ struct WorkoutRecorderScreen: View {
                                 }
                             }
                         }
+                        .fullScreenDraggableCoverTopInset()
                         .scrollIndicators(.hidden)
-                        .sheet(isPresented: .constant(true)) {
+                        .sheet(isPresented: $isShowingExerciseSelectionSheet) {
                             NavigationView {
                                 ExerciseSelectionScreen(
                                     selectedExercise: nil,
@@ -155,11 +157,23 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 }
                             }
+                            .opacity(fullScreenDraggableCoverIsDragging ? 0 : 1)
+                            .animation(.easeOut(duration: 0.2), value: fullScreenDraggableCoverIsDragging)
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
-                            .detentableBottomSheetStyle()
+                            .presentationBackgroundInteraction(.enabled)
+                            .presentationDragIndicator(fullScreenDraggableCoverIsDragging ? .hidden : .visible)
+                            .presentationBackground(fullScreenDraggableCoverIsDragging ? AnyShapeStyle(Color.clear) : AnyShapeStyle(.thickMaterial))
+                            .presentationCornerRadius(30)
+                            .interactiveDismissDisabled()
+                            .onChange(of: fullScreenDraggableCoverIsDragging) {
+                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            }
                         }
                     }
                     .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            isShowingExerciseSelectionSheet = true
+                        }
                         updateProgress()
                     }
                     .onReceive(workoutRecorder.workout?.objectWillChange ?? ObservableObjectPublisher()) {

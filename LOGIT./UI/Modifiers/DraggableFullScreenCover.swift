@@ -27,47 +27,52 @@ struct FullScreenDraggableCover<ScreenContent: View, Background: ShapeStyle>: Vi
     @ViewBuilder
     func body(content: Content) -> some View {
         content
-            .fullScreenCover(isPresented: $isPresented) {
+            .overlay {
                 Group {
                     GeometryReader { geometry in
-                        screenContent()
-                            .environment(\.fullScreenDraggableCoverTopInset, yOffset == 0 ? 1 : yOffset < geometry.safeAreaInsets.top + (geometry.safeAreaInsets.bottom == 0 ? 10 : 0) ? yOffset : geometry.safeAreaInsets.top + (geometry.safeAreaInsets.bottom == 0 ? 10 : 0))
-                            .environment(\.fullScreenDraggableDragChanged, { value in
-                                guard yOffset + value.translation.height > 0 else { yOffset = 0; return}
-                                yOffset = value.translation.height
-                            })
-                            .environment(\.fullScreenDraggableDragEnded, { _ in
-                                if yOffset > geometry.size.height * Y_OFFSET_THRESHOLD_FOR_DISMISS {
-                                    withAnimation(.bouncy(duration: 0.2)) {
-                                        yOffset = geometry.size.height + geometry.safeAreaInsets.top
-                                    } completion: {
-                                        isPresented = false
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        if isPresented {
+                            screenContent()
+                                .environment(\.fullScreenDraggableCoverIsDragging, yOffset != 0 && isPresented)
+                                .environment(\.fullScreenDraggableCoverTopInset, yOffset == 0 ? 1 : yOffset < geometry.safeAreaInsets.top ? yOffset : geometry.safeAreaInsets.top + (geometry.safeAreaInsets.bottom == 0 ? 10 : 0))
+                                .environment(\.fullScreenDraggableDragChanged, { value in
+                                    guard yOffset + value.translation.height > 0 else { yOffset = 0; return}
+                                    yOffset = value.translation.height
+                                })
+                                .environment(\.fullScreenDraggableDragEnded, { _ in
+                                    if yOffset > geometry.size.height * Y_OFFSET_THRESHOLD_FOR_DISMISS {
+                                        withAnimation(.spring(response: 0.2, dampingFraction: 1.0)) {
+                                            yOffset = geometry.size.height + geometry.safeAreaInsets.top
+                                        } completion: {
+                                            isPresented = false
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                                yOffset = 0
+                                            }
+                                        }
+                                    } else {
+                                        withAnimation(.easeOut(duration: 0.2)) {
                                             yOffset = 0
                                         }
                                     }
-                                } else {
-                                    withAnimation(.easeOut(duration: 0.2)) {
-                                        yOffset = 0
-                                    }
-                                }
-                            })
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                            .clipped()
-                            .background(background)
-                            .clipShape(RoundedRectangle(cornerRadius: yOffset != 0 ? UIScreen.main.displayCornerRadius : 0, style: .continuous))
-                            .offset(y: yOffset > 0 ? yOffset : 0)
-                            .ignoresSafeArea(.container, edges: .all)
-                            .ignoresSafeArea(.keyboard)
+                                })
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                                .clipped()
+                                .background(background)
+                                .clipShape(RoundedRectangle(cornerRadius: yOffset != 0 ? UIScreen.main.displayCornerRadius : 0, style: .continuous))
+                                .offset(y: yOffset > 0 ? yOffset : 0)
+                                .ignoresSafeArea(.container, edges: .all)
+                                .ignoresSafeArea(.keyboard)
+                                .transition(.move(edge: .bottom))
+                        }
                     }
+                    .animation(
+                        .spring(response: 0.2, dampingFraction: 1.0),
+                        value: isPresented
+                    )
                 }
-                .presentationBackground(.clear)
             }
-                    
     }
     
 }
-
 
 private struct FullScreenDraggableCoverDragAreaModifier: ViewModifier {
     
@@ -128,7 +133,15 @@ private struct FullScreenDraggableCoverDragEndedKey: EnvironmentKey {
     static let defaultValue: (DragGesture.Value) -> () = { _ in }
 }
 
+private struct FullScreenDraggableCoverIsDragging: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
 extension EnvironmentValues {
+    var fullScreenDraggableCoverIsDragging: Bool {
+        get { self[FullScreenDraggableCoverIsDragging.self] }
+        set { self[FullScreenDraggableCoverIsDragging.self] = newValue }
+    }
     var fullScreenDraggableCoverTopInset: CGFloat {
         get { self[FullScreenDraggableCoverTopInsetKey.self] }
         set { self[FullScreenDraggableCoverTopInsetKey.self] = newValue }
@@ -170,10 +183,10 @@ struct PreviewWrapperr: View {
             
         }
         .fullScreenDraggableCover(isPresented: $isShowingFullScreenCover) {
-            NavigationStack {
                 VStack {
                     Rectangle()
                         .frame(width: 60, height: 60)
+                        .fullScreenDraggableCoverTopInset()
                         .fullScreenDraggableCoverDragArea()
                     Button {
                         isShowingTestSheet = true
@@ -182,13 +195,14 @@ struct PreviewWrapperr: View {
                     }
                     .navigationTitle("Draggable Full Screen")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.clear)
                     .sheet(isPresented: $isShowingTestSheet) {
-                        Text("Sheet")
+                        NavigationView {
+                            Text("Sheet")
+                        }
+                        .presentationBackground(.thinMaterial)
                     }
                 }
-            }
-            .fullScreenDraggableCoverTopInset()
+                .background(.red)
         }
     }
 }

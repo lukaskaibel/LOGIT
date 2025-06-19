@@ -64,9 +64,6 @@ struct OverallSetsTile: View {
         }
         .padding(CELL_PADDING)
         .tileStyle()
-        .onAppear {
-            print("OverallSetsTile appeared")
-        }
     }
 
     private func setsOfLastWeekGroupedByDay(_ workouts: [Workout]) -> [(date: Date, workoutSets: [WorkoutSet])] {

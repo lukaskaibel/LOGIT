@@ -70,10 +70,14 @@ class PurchaseManager: NSObject, ObservableObject {
     }
 
     var hasUnlockedPro: Bool {
+        #if DEBUG
+        return true
+        #else
         if let proExpirationDate = proExpirationDate {
             return proExpirationDate > .now
         }
         return false
+        #endif
     }
 
     func subscribeToProMonthly() async throws {

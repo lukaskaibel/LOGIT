@@ -21,6 +21,8 @@ struct TimerStopwatchView: View {
     ]
     private let opacityOfTimeWhenPaused = 0.7
     
+    @State private var isShowingNotificationNotEnabledAlert = false
+    
     // MARK: - View
     
     var body: some View {
@@ -149,10 +151,25 @@ struct TimerStopwatchView: View {
             chronograph.setSeconds(chronograph.mode == .timer ? Double(lastTimerDuration) + 0.99 : 0)
         }
         .onAppear {
+            checkNotificationPermission()
             if chronograph.mode == .timer, chronograph.status == .idle {
                 chronograph.setSeconds(Double(lastTimerDuration) + 0.99)
             }
         }
+        .alert(Text(NSLocalizedString("notificationsDisabled", comment: "")), isPresented: $isShowingNotificationNotEnabledAlert, actions: {
+            Button(NSLocalizedString("openSettings", comment: "")) {
+                if let url = URL(string: UIApplication.openSettingsURLString),
+                    UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            .fontWeight(.bold)
+            Button(NSLocalizedString("skip", comment: "")) {
+                isShowingNotificationNotEnabledAlert = false
+            }
+        }, message: {
+            Text(NSLocalizedString("notificationsDisabledMessage", comment: ""))
+        })
     }
     
     // MARK: - Subviews
@@ -224,6 +241,32 @@ struct TimerStopwatchView: View {
     
     private func durationSecondsString(seconds: Double) -> String {
         "\(Int(seconds) % 60)"
+    }
+    
+    private func checkNotificationPermission() {
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+              switch settings.authorizationStatus {
+                  case .notDetermined:
+                    center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                      if let error = error {
+                        print("Auth error:", error)
+                      } else if granted {
+                        print("User allowed notifications")
+                      } else {
+                        print("User denied notifications")
+                      }
+                    }
+
+                  case .denied:
+                        DispatchQueue.main.async {
+                            isShowingNotificationNotEnabledAlert = true
+                        }
+
+                  @unknown default:
+                        break
+              }
+        }
     }
 }
 

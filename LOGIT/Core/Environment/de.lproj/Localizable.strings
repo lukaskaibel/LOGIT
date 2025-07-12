@@ -208,6 +208,8 @@
 "noTemplates" = "Keine Vorlagen";
 "noTemplatesTip" = "Plane voraus 📋";
 "noTemplatesTipDescription" = "Nutze Vorlagen, um deine Workouts im Voraus zu organisieren und zu planen. Klicke unten, um deine erste Workout-Vorlage zu erstellen!";
+"notificationsDisabled" = "Benachrichtigungen deaktiviert";
+"notificationsDisabledMessage" = "Damit der Timer einen Ton abspielen und das Ende anzeigen kann, müssen Benachrichtigungen aktiviert sein.";
 "now" = "Jetzt";
 "noWidgetsAdded" = "Keine Widgets hinzugefügt";
 "noWorkouts" = "Keine Workouts";
@@ -223,6 +225,7 @@
 "oldestFirst" = "Älteste zuerst";
 "one" = "Eins";
 "onlyFewSeconds" = "Dies wird nur ein paar Sekunden dauern...";
+"openSettings" = "Einstellungen öffnen";
 "overallSets" = "Gesamte Sätze";
 "overallVolume" = "Gesamtes Volumen";
 "overview" = "Überblick";
@@ -289,6 +292,7 @@
 "showMeasurements" = "Messungen anzeigen";
 "showSubscriptions" = "Abonnements anzeigen";
 "six" = "Sechs";
+"skip" = "Überspringen";
 "sortBy" = "Sortieren nach";
 "standard" = "Standard";
 "start" = "Start";

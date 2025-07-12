@@ -207,6 +207,8 @@
 "noTemplates" = "No Templates";
 "noTemplatesTip" = "Plan Ahead 📋";
 "noTemplatesTipDescription" = "Use Templates to organize and plan your workouts in advance. Click below to create your first workout Template!";
+"notificationsDisabled" = "Notifications Disabled";
+"notificationsDisabledMessage" = "To allow the timer to play a sound and show when it ends, notifications must be enabled.";
 "now" = "Now";
 "noWidgetsAdded" = "No Widgets Added";
 "noWorkouts" = "No Workouts";
@@ -221,6 +223,7 @@
 "oldestFirst" = "Oldest First";
 "one" = "One";
 "onlyFewSeconds" = "This will only take a few seconds...";
+"openSettings" = "Open Settings";
 "overallSets" = "Overall Sets";
 "overallVolume" = "Overall Volume";
 "overview" = "Overview";
@@ -286,6 +289,7 @@
 "showMeasurements" = "Show Measurements";
 "showSubscriptions" = "Show Subscriptions";
 "six" = "Six";
+"skip" = "Skip";
 "sortBy" = "Sort by";
 "standard" = "Standard";
 "start" = "Start";

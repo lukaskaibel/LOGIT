@@ -30,7 +30,7 @@
 		801BBD6D2DF7338A00CDB1FB /* Database+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCC62DF7338A00CDB1FB /* Database+Preview.swift */; };
 		801BBD6E2DF7338A00CDB1FB /* MeasurementEntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCA12DF7338A00CDB1FB /* MeasurementEntryType.swift */; };
 		801BBD6F2DF7338A00CDB1FB /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD512DF7338A00CDB1FB /* InfoView.swift */; };
-		801BBD702DF7338A00CDB1FB /* ChronoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD1E2DF7338A00CDB1FB /* ChronoView.swift */; };
+		801BBD702DF7338A00CDB1FB /* TimerStopwatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD1E2DF7338A00CDB1FB /* TimerStopwatchView.swift */; };
 		801BBD712DF7338A00CDB1FB /* FinishConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD1F2DF7338A00CDB1FB /* FinishConfirmationSheet.swift */; };
 		801BBD722DF7338A00CDB1FB /* TemplatePredicateFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCE32DF7338A00CDB1FB /* TemplatePredicateFactory.swift */; };
 		801BBD732DF7338A00CDB1FB /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCC22DF7338A00CDB1FB /* Database.swift */; };
@@ -181,6 +181,7 @@
 		801BBE042DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCFE2DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift */; };
 		801BBE052DF7338A00CDB1FB /* PrivacyPolicyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD2E2DF7338A00CDB1FB /* PrivacyPolicyScreen.swift */; };
 		801BBE062DF7338A00CDB1FB /* VolumeCalculating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBE2DF7338A00CDB1FB /* VolumeCalculating.swift */; };
+		806DE6202E1DD10A008E162F /* ChronographView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806DE61F2E1DD106008E162F /* ChronographView.swift */; };
 		80750E112DDFCA550037F1FE /* WishKit in Frameworks */ = {isa = PBXBuildFile; productRef = 80750E102DDFCA550037F1FE /* WishKit */; };
 		80EC5D8E2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */; };
 /* End PBXBuildFile section */
@@ -331,7 +332,7 @@
 		801BBD192DF7338A00CDB1FB /* WorkoutSetCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetCell.swift; sourceTree = "<group>"; };
 		801BBD1B2DF7338A00CDB1FB /* WorkoutCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCell.swift; sourceTree = "<group>"; };
 		801BBD1C2DF7338A00CDB1FB /* WorkoutSetGroupCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetGroupCell.swift; sourceTree = "<group>"; };
-		801BBD1E2DF7338A00CDB1FB /* ChronoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronoView.swift; sourceTree = "<group>"; };
+		801BBD1E2DF7338A00CDB1FB /* TimerStopwatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerStopwatchView.swift; sourceTree = "<group>"; };
 		801BBD1F2DF7338A00CDB1FB /* FinishConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishConfirmationSheet.swift; sourceTree = "<group>"; };
 		801BBD202DF7338A00CDB1FB /* StopwatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopwatchView.swift; sourceTree = "<group>"; };
 		801BBD212DF7338A00CDB1FB /* WorkoutDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailSheet.swift; sourceTree = "<group>"; };
@@ -389,6 +390,7 @@
 		801BBD602DF7338A00CDB1FB /* LOGIT 3.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 3.0.xcdatamodel"; sourceTree = "<group>"; };
 		801BBD612DF7338A00CDB1FB /* WorkoutDiary.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = WorkoutDiary.xcdatamodel; sourceTree = "<group>"; };
 		8065AA6B2686667F00F53A5A /* LOGIT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LOGIT.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		806DE61F2E1DD106008E162F /* ChronographView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronographView.swift; sourceTree = "<group>"; };
 		80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetRepositoryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -527,7 +529,6 @@
 		801BBCC02DF7338A00CDB1FB /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				801BBCB72DF7338A00CDB1FB /* Chronograph.swift */,
 				801BBCB82DF7338A00CDB1FB /* ExerciseService.swift */,
 				801BBCB92DF7338A00CDB1FB /* MeasurementController.swift */,
 				801BBCBA2DF7338A00CDB1FB /* NetworkMonitor.swift */,
@@ -752,7 +753,7 @@
 		801BBD222DF7338A00CDB1FB /* SupportingViews */ = {
 			isa = PBXGroup;
 			children = (
-				801BBD1E2DF7338A00CDB1FB /* ChronoView.swift */,
+				801BBD1E2DF7338A00CDB1FB /* TimerStopwatchView.swift */,
 				801BBD1F2DF7338A00CDB1FB /* FinishConfirmationSheet.swift */,
 				801BBD202DF7338A00CDB1FB /* StopwatchView.swift */,
 				801BBD212DF7338A00CDB1FB /* WorkoutDetailSheet.swift */,
@@ -787,6 +788,7 @@
 		801BBD322DF7338A00CDB1FB /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				806546042E22FA2E00ADC88C /* Chronograph */,
 				801BBCF82DF7338A00CDB1FB /* Exercise */,
 				801BBD052DF7338A00CDB1FB /* Home */,
 				801BBD082DF7338A00CDB1FB /* Measurement */,
@@ -898,6 +900,15 @@
 				801BBD5D2DF7338A00CDB1FB /* SharedUI */,
 			);
 			path = LOGIT;
+			sourceTree = "<group>";
+		};
+		806546042E22FA2E00ADC88C /* Chronograph */ = {
+			isa = PBXGroup;
+			children = (
+				801BBCB72DF7338A00CDB1FB /* Chronograph.swift */,
+				806DE61F2E1DD106008E162F /* ChronographView.swift */,
+			);
+			path = Chronograph;
 			sourceTree = "<group>";
 		};
 		8065AA622686667F00F53A5A = {
@@ -1058,7 +1069,7 @@
 				801BBD6D2DF7338A00CDB1FB /* Database+Preview.swift in Sources */,
 				801BBD6E2DF7338A00CDB1FB /* MeasurementEntryType.swift in Sources */,
 				801BBD6F2DF7338A00CDB1FB /* InfoView.swift in Sources */,
-				801BBD702DF7338A00CDB1FB /* ChronoView.swift in Sources */,
+				801BBD702DF7338A00CDB1FB /* TimerStopwatchView.swift in Sources */,
 				801BBD712DF7338A00CDB1FB /* FinishConfirmationSheet.swift in Sources */,
 				801BBD722DF7338A00CDB1FB /* TemplatePredicateFactory.swift in Sources */,
 				801BBD732DF7338A00CDB1FB /* Database.swift in Sources */,
@@ -1207,6 +1218,7 @@
 				801BBE022DF7338A00CDB1FB /* OverallSetsScreen.swift in Sources */,
 				801BBE032DF7338A00CDB1FB /* MeasurementView.swift in Sources */,
 				801BBE042DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift in Sources */,
+				806DE6202E1DD10A008E162F /* ChronographView.swift in Sources */,
 				801BBE052DF7338A00CDB1FB /* PrivacyPolicyScreen.swift in Sources */,
 				801BBE062DF7338A00CDB1FB /* VolumeCalculating.swift in Sources */,
 			);

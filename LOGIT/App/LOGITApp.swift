@@ -28,6 +28,7 @@ struct LOGIT: App {
     @StateObject private var workoutRecorder: WorkoutRecorder
     @StateObject private var muscleGroupService: MuscleGroupService
     @StateObject private var homeNavigationCoordinator = HomeNavigationCoordinator()
+    @StateObject private var chronograph = Chronograph()
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingPrivacyPolicy = false
@@ -87,6 +88,7 @@ struct LOGIT: App {
                     .environmentObject(workoutRecorder)
                     .environmentObject(muscleGroupService)
                     .environmentObject(homeNavigationCoordinator)
+                    .environmentObject(chronograph)
                     .environment(\.goHome) { selectedTab = .home }
                     .task {
                         if acceptedPrivacyPolicyVersion != privacyPolicyVersion {

@@ -169,6 +169,7 @@
 "waist" = "Taille";
 "measurements" = "Messungen";
 "measurementsPromotionDescription" = "Verfolge weitere wichtige Fitnessmetriken, wie Körpergewicht, Kalorien und mehr...";
+"min" = "min";
 "missing" = "Fehlen";
 "month" = "Monat";
 "monthly" = "Monatlich";
@@ -326,6 +327,8 @@
 "timer" = "Timer";
 "timerIsMuted" = "Timer Stummschalten";
 "times" = "mal";
+"timesUp" = "Timer fertig!";
+"timesUpBody" = "Dein Workout-Timer ist abgelaufen.";
 "title" = "Titel";
 "to" = "bis";
 "today" = "Heute";

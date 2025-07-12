@@ -5,10 +5,8 @@
 //  Created by Lukas Kaibel on 24.02.22.
 //
 
-import AVFoundation
 import Combine
 import CoreData
-import OSLog
 import SwiftUI
 import UIKit
 
@@ -16,7 +14,6 @@ struct WorkoutRecorderScreen: View {
     // MARK: - AppStorage
 
     @AppStorage("preventAutoLock") var preventAutoLock: Bool = true
-    @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
 
     // MARK: - Environment
 
@@ -28,17 +25,15 @@ struct WorkoutRecorderScreen: View {
 
     @Environment(\.colorScheme) var colorScheme: ColorScheme
 
-    @EnvironmentObject var database: Database
-    @EnvironmentObject var workoutRecorder: WorkoutRecorder
-    @EnvironmentObject var muscleGroupService: MuscleGroupService
+    @EnvironmentObject private var database: Database
+    @EnvironmentObject internal var workoutRecorder: WorkoutRecorder
+    @EnvironmentObject private var muscleGroupService: MuscleGroupService
+    @EnvironmentObject private var chronograph: Chronograph
 
     // MARK: - State
 
-    @StateObject var chronograph = Chronograph()
     @State var isShowingChronoSheet = false
-    @State private var shouldFlash = false
     @State private var didAppear = false
-    @State private var timerSound: AVAudioPlayer?
     @State private var progress: Float = 0
     @State private var cancellable: AnyCancellable?
 
@@ -122,14 +117,14 @@ struct WorkoutRecorderScreen: View {
                                             Button {
                                                 isShowingChronoSheet = true
                                             } label: {
-                                                Image(systemName: "timer")
+                                                Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
                                             }
                                         }
                                     }
                                 }
                                 .toolbar(.hidden, for: .navigationBar)
                                 .sheet(isPresented: $isShowingChronoSheet) {
-                                    ChronoView(chronograph: chronograph)
+                                    TimerStopwatchView(chronograph: chronograph)
                                         .presentationDetents([.fraction(0.4)])
                                         .presentationCornerRadius(30)
                                         .padding()
@@ -188,23 +183,13 @@ struct WorkoutRecorderScreen: View {
                 ToolbarItemsKeyboard
             }
         }
-        .overlay {
-            FlashView(color: .accentColor, shouldFlash: $shouldFlash)
-                .edgesIgnoringSafeArea(.all)
-                .allowsHitTesting(false)
-        }
         .onAppear {
             // onAppear called twice because of bug
             if !didAppear {
                 didAppear = true
                 setUpAutoSaveForWorkout()
                 exerciseSelectionPresentationDetent = workoutRecorder.workout?.isEmpty ?? true ? .medium : .fraction(BOTTOM_SHEET_SMALL)
-                chronograph.onTimerFired = {
-                    shouldFlash = true
-                    if !timerIsMuted {
-                        playTimerSound()
-                    }
-                }
+                
                 if preventAutoLock {
                     UIApplication.shared.isIdleTimerDisabled = true
                 }
@@ -235,9 +220,18 @@ struct WorkoutRecorderScreen: View {
                                     .font(.footnote.weight(.bold).monospacedDigit())
                             }
                             if chronograph.status != .idle {
-                                Divider()
-                                    .frame(height: 12)
-                                TimeStringView
+                                ChronographView(chronograph: chronograph) { seconds in
+                                    HStack {
+                                        Divider()
+                                            .frame(height: 12)
+                                        HStack {
+                                            Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
+                                            Text("\(Int(seconds) / 60 / 10 % 6)\(Int(seconds) / 60 % 10):\(Int(seconds) % 60 / 10)\(Int(seconds) % 60 % 10)")
+                                        }
+                                        .foregroundColor(chronograph.status == .running ? .accentColor : .secondaryLabel)
+                                        .font(.footnote.weight(.semibold).monospacedDigit())
+                                    }
+                                }
                             }
                         }
                         TextField(
@@ -275,15 +269,6 @@ struct WorkoutRecorderScreen: View {
             .background(.ultraThinMaterial)
             Divider()
         }
-    }
-
-    var TimeStringView: some View {
-        HStack {
-            Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
-            Text(remainingChronoTimeString)
-        }
-        .foregroundColor(chronograph.status == .running ? .accentColor : .secondaryLabel)
-        .font(.footnote.weight(.semibold).monospacedDigit())
     }
 
     // MARK: - Supporting Methods / Computed Properties
@@ -400,22 +385,7 @@ struct WorkoutRecorderScreen: View {
         return nil
     }
 
-    private func playTimerSound() {
-        guard let url = Bundle.main.url(forResource: "timer", withExtension: "wav") else { return }
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
-            try AVAudioSession.sharedInstance().setActive(true)
-            timerSound = try AVAudioPlayer(contentsOf: url)
-            timerSound?.volume = 0.25
-            timerSound?.play()
-        } catch {
-            Logger().error("WorkoutRecorderScreen: Could not find and play the timer sound.")
-        }
-    }
-
-    private var remainingChronoTimeString: String {
-        "\(Int(chronograph.seconds) / 60 / 10 % 6)\(Int(chronograph.seconds) / 60 % 10):\(Int(chronograph.seconds) % 60 / 10)\(Int(chronograph.seconds) % 60 % 10)"
-    }
+    
 
     // MARK: - Autosave
 

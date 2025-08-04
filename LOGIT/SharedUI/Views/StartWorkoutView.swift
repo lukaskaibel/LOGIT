@@ -14,6 +14,7 @@ struct StartWorkoutView: View {
     @EnvironmentObject var networkMonitor: NetworkMonitor
     @EnvironmentObject var purchaseManager: PurchaseManager
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
 
     // MARK: - State
 
@@ -36,6 +37,7 @@ struct StartWorkoutView: View {
                 Button {
                     withAnimation {
                         workoutRecorder.startWorkout()
+                        homeNavigationCoordinator.isPresentingWorkoutRecorder = true
                     }
                 } label: {
                     Label(NSLocalizedString("startWorkout", comment: ""), systemImage: "play.fill")
@@ -109,6 +111,7 @@ struct StartWorkoutView: View {
             if let template = newValue {
                 database.flagAsTemporary(template)
                 workoutRecorder.startWorkout(from: template)
+                homeNavigationCoordinator.isPresentingWorkoutRecorder = true
             }
         }
         .fullScreenCover(isPresented: $isShowingScanScreen) {

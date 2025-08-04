@@ -66,6 +66,7 @@ struct TemplateListScreen: View {
                                 Button {
                                     if startWorkoutOnTap {
                                         workoutRecorder.startWorkout(from: template)
+                                        homeNavigationCoordinator.isPresentingWorkoutRecorder = true
                                         dismiss()
                                     } else {
                                         homeNavigationCoordinator.path.append(.template(template))

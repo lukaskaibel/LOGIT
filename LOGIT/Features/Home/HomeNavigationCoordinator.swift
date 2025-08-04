@@ -9,9 +9,10 @@ import SwiftUI
 
 class HomeNavigationCoordinator: ObservableObject {
     @Published var path: [HomeNavigationDestinationType] = []
+    @Published var isPresentingWorkoutRecorder = false
 }
 
-enum HomeNavigationDestinationType: Hashable, Identifiable {
+enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
     var id: String {
         switch self {
         case let .exercise(exercise): return "exercise\(String(describing: exercise.id))"

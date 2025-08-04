@@ -17,18 +17,17 @@ struct WorkoutRecorderScreen: View {
 
     // MARK: - Environment
 
-    @Environment(\.dismiss) var dismiss
     @Environment(\.goHome) var goHome
     @Environment(\.fullScreenDraggableCoverTopInset) var fullScreenDraggableCoverTopInset
     @Environment(\.fullScreenDraggableCoverIsDragging) var fullScreenDraggableCoverIsDragging
     @Environment(\.undoManager) var undoManager
-
     @Environment(\.colorScheme) var colorScheme: ColorScheme
 
     @EnvironmentObject private var database: Database
     @EnvironmentObject internal var workoutRecorder: WorkoutRecorder
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     @EnvironmentObject private var chronograph: Chronograph
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
 
     // MARK: - State
 
@@ -143,7 +142,7 @@ struct WorkoutRecorderScreen: View {
                                         FinishConfirmationSheet(workout: workout, onEndWorkout: {
                                             UINotificationFeedbackGenerator().notificationOccurred(.success)
                                             workoutRecorder.saveWorkout()
-                                            dismiss()
+                                            homeNavigationCoordinator.isPresentingWorkoutRecorder = false
                                             goHome()
                                         })
                                         .padding([.top, .horizontal])
@@ -249,7 +248,7 @@ struct WorkoutRecorderScreen: View {
                     Button {
                         guard workoutRecorder.workout?.hasEntries ?? false else {
                             workoutRecorder.discardWorkout()
-                            dismiss()
+                            homeNavigationCoordinator.isPresentingWorkoutRecorder = false
                             return
                         }
                         isShowingFinishConfirmation = true

@@ -176,7 +176,8 @@ struct TemplateSetGroupCell: View {
                         isSelectingSecondaryExercise = true
                     },
                     isSuperSet: setGroup.setType == .superSet,
-                    navigationToDetailEnabled: true
+                    navigationToDetailEnabled: true,
+                    shouldShowExerciseDetailInSheet: false
                 )
             }
             Spacer()

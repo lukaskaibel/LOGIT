@@ -32,7 +32,6 @@ struct LOGIT: App {
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingPrivacyPolicy = false
-    @State private var isShowingWorkoutRecorder = false
 
     // MARK: - Init
 
@@ -69,7 +68,7 @@ struct LOGIT: App {
                     .overlay {
                         startAndCurrentWorkoutButton
                     }
-                    .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
+                    .fullScreenDraggableCover(isPresented: $homeNavigationCoordinator.isPresentingWorkoutRecorder) {
                         WorkoutRecorderScreen()
                             .presentationBackground(.clear)
                     }
@@ -108,9 +107,6 @@ struct LOGIT: App {
                         let scenes = UIApplication.shared.connectedScenes
                         guard let scene = scenes.first as? UIWindowScene else { return }
                         scene.keyWindow?.overrideUserInterfaceStyle = .dark
-                    }
-                    .onChange(of: workoutRecorder.workout) { newValue in
-                        isShowingWorkoutRecorder = newValue != nil
                     }
 //                #if targetEnvironment(simulator)
 //                    .statusBarHidden(true)
@@ -152,7 +148,7 @@ struct LOGIT: App {
                 }
             if let workout = workoutRecorder.workout {
                 Button {
-                    isShowingWorkoutRecorder = true
+                    homeNavigationCoordinator.isPresentingWorkoutRecorder = true
                 } label: {
                     CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
                         .frame(maxWidth: .infinity)
@@ -167,7 +163,7 @@ struct LOGIT: App {
                     DragGesture()
                         .onChanged { dragValue in
                             if dragValue.translation.height < 0 {
-                                isShowingWorkoutRecorder = true
+                                homeNavigationCoordinator.isPresentingWorkoutRecorder = true
                             }
                         }
                 )

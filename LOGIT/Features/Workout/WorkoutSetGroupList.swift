@@ -18,6 +18,7 @@ struct WorkoutSetGroupList: View {
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
     let canReorder: Bool
     var reduceShadow: Bool = false
+    var shouldShowExerciseDetailInSheet: Bool = false
 
     // MARK: - State
 
@@ -37,7 +38,8 @@ struct WorkoutSetGroupList: View {
                         setGroup: setGroup,
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         isReordering: $isReordering,
-                        supplementaryText: nil
+                        supplementaryText: nil,
+                        shouldShowExerciseDetailInSheet: shouldShowExerciseDetailInSheet
                     )
                     .shadow(color: .black.opacity(reduceShadow ? 0.5 : 1.0), radius: 5)
                     .zIndex(1)

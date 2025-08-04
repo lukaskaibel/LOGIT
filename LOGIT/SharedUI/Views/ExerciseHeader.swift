@@ -8,6 +8,11 @@
 import SwiftUI
 
 struct ExerciseHeader: View {
+    
+    //MARK: - Environment
+    
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
+    
     // MARK: - Parameters
 
     let exercise: Exercise?
@@ -16,21 +21,40 @@ struct ExerciseHeader: View {
     let noSecondaryExerciseAction: (() -> Void)?
     let isSuperSet: Bool
     let navigationToDetailEnabled: Bool
+    let shouldShowExerciseDetailInSheet: Bool
+    
+    @State private var isShowingNavigationDetailSheet = false
 
     // MARK: - Body
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if let exercise = exercise {
-                NavigationLink(destination: ExerciseDetailScreen(exercise: exercise)) {
+                Button {
+                    if shouldShowExerciseDetailInSheet {
+                        isShowingNavigationDetailSheet = true
+                    } else {
+                        guard homeNavigationCoordinator.path.last != HomeNavigationDestinationType.exercise(exercise) else {
+                            homeNavigationCoordinator.isPresentingWorkoutRecorder = false
+                            return
+                        }
+                        homeNavigationCoordinator.path.append(.exercise(exercise))
+                        homeNavigationCoordinator.isPresentingWorkoutRecorder = false
+                    }
+                } label: {
                     HStack(spacing: 3) {
                         Text(exercise.name ?? NSLocalizedString("noName", comment: ""))
                             .foregroundColor(.label)
                         if navigationToDetailEnabled {
                             NavigationChevron()
                                 .foregroundColor(.secondaryLabel)
+                        } else {
+                            
                         }
                     }
+                }
+                NavigationLink(destination: ExerciseDetailScreen(exercise: exercise)) {
+                    
                 }
             } else {
                 Button(action: noExerciseAction) {
@@ -84,5 +108,10 @@ struct ExerciseHeader: View {
         .font(.title3.weight(.bold))
         .foregroundColor(.label)
         .lineLimit(1)
+        .sheet(isPresented: $isShowingNavigationDetailSheet) {
+            if let exercise = exercise {
+                ExerciseDetailScreen(exercise: exercise)                
+            }
+        }
     }
 }

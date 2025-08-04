@@ -21,6 +21,7 @@ struct WorkoutSetGroupCell: View {
     @Binding var isReordering: Bool
 
     let supplementaryText: String?
+    var shouldShowExerciseDetailInSheet: Bool = false
 
     // MARK: - State
 
@@ -191,7 +192,8 @@ struct WorkoutSetGroupCell: View {
                         isSelectingSecondaryExercise = true
                     },
                     isSuperSet: setGroup.setType == .superSet,
-                    navigationToDetailEnabled: true
+                    navigationToDetailEnabled: true,
+                    shouldShowExerciseDetailInSheet: shouldShowExerciseDetailInSheet
                 )
             }
             Spacer()

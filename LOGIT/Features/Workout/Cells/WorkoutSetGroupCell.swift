@@ -25,6 +25,7 @@ struct WorkoutSetGroupCell: View {
     // MARK: - State
 
     @State private var isReorderingSets = false
+    @State private var isHeaderExpanded = false
     @State private var isSelectingPrimaryExercise = false
     @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
     @State private var isSelectingSecondaryExercise = false
@@ -32,10 +33,12 @@ struct WorkoutSetGroupCell: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: SECTION_HEADER_SPACING) {
+        VStack(spacing: CELL_PADDING) {
             header
+                .padding([.top, .horizontal], CELL_PADDING)
+            
             if !isReordering {
-                VStack(spacing: 8) {
+                VStack(spacing: CELL_PADDING) {
                     VStack(spacing: CELL_SPACING) {
                         ReorderableForEach(
                             $setGroup.sets,
@@ -60,9 +63,10 @@ struct WorkoutSetGroupCell: View {
                             .cornerRadius(15)
                         }
                     }
+                    .padding(.horizontal, CELL_PADDING / 2)
                     .animation(.interactiveSpring())
                     if canEdit {
-                        HStack(spacing: 5) {
+                        HStack(spacing: 8) {
                             Button {
                                 withAnimation(.interactiveSpring()) {
                                     database.addSet(to: setGroup)
@@ -73,8 +77,12 @@ struct WorkoutSetGroupCell: View {
                                     systemImage: "plus.circle.fill"
                                 )
                                 .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                                .font(.system(.body, design: .rounded, weight: .bold))
+                                .padding(.vertical, 15)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.accentColor.secondaryTranslucentBackground)
+                                .clipShape(Capsule())
                             }
-                            .buttonStyle(SecondaryBigButtonStyle(padding: 18, trailingCornerRadius: 5))
                             Button {
                                 withAnimation(.interactiveSpring()) {
                                     database.duplicateLastSet(from: setGroup)
@@ -82,12 +90,15 @@ struct WorkoutSetGroupCell: View {
                             } label: {
                                 Image(systemName: "plus.square.on.square")
                                     .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                                    .font(.system(.body, design: .rounded, weight: .bold))
+                                    .padding(15)
+                                    .background(Color.accentColor.secondaryTranslucentBackground)
+                                    .clipShape(Capsule())
                             }
-                            .buttonStyle(SecondaryBigButtonStyle(padding: 18, maxWidth: 30, leadingCornerRadius: 5))
                         }
+                        .padding(.horizontal, CELL_PADDING)
                     }
                 }
-                .padding(.top, 3)
             }
         }
         .sheet(isPresented: $isSelectingPrimaryExercise) {
@@ -138,6 +149,8 @@ struct WorkoutSetGroupCell: View {
             }
         }
         .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
+        .padding(.bottom, canEdit || isReordering ? CELL_PADDING : CELL_PADDING / 2)
+        .tileStyle()
     }
 
     // MARK: - Supporting Views
@@ -191,8 +204,6 @@ struct WorkoutSetGroupCell: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .font(.title3.weight(.bold))
-        .foregroundColor(.label)
     }
 
     // MARK: - Supporting Views
@@ -303,8 +314,6 @@ private struct PreviewWrapperView: View {
                             isReordering: .constant(false),
                             supplementaryText: ""
                         )
-                        .padding(CELL_PADDING)
-                        .tileStyle()
                         .padding()
                         WorkoutSetGroupCell(
                             setGroup: workouts.first!.setGroups.first!,
@@ -312,8 +321,6 @@ private struct PreviewWrapperView: View {
                             isReordering: .constant(true),
                             supplementaryText: nil
                         )
-                        .padding(CELL_PADDING)
-                        .tileStyle()
                         .padding()
                         WorkoutSetGroupCell(
                             setGroup: workouts.first!.setGroups.first!,
@@ -321,8 +328,6 @@ private struct PreviewWrapperView: View {
                             isReordering: .constant(false),
                             supplementaryText: "Saturday Night Workout"
                         )
-                        .padding(CELL_PADDING)
-                        .tileStyle()
                         .padding()
                         .canEdit(false)
                     }

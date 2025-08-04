@@ -39,8 +39,6 @@ struct WorkoutSetGroupList: View {
                         isReordering: $isReordering,
                         supplementaryText: nil
                     )
-                    .padding(CELL_PADDING)
-                    .tileStyle()
                     .shadow(color: .black.opacity(reduceShadow ? 0.5 : 1.0), radius: 5)
                     .zIndex(1)
                     if workout.setGroups.last != setGroup {

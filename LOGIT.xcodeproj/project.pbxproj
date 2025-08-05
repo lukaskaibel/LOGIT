@@ -183,6 +183,7 @@
 		801BBE062DF7338A00CDB1FB /* VolumeCalculating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBE2DF7338A00CDB1FB /* VolumeCalculating.swift */; };
 		806DE6202E1DD10A008E162F /* ChronographView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806DE61F2E1DD106008E162F /* ChronographView.swift */; };
 		80750E112DDFCA550037F1FE /* WishKit in Frameworks */ = {isa = PBXBuildFile; productRef = 80750E102DDFCA550037F1FE /* WishKit */; };
+		80A640A02E414F4E0053C2C3 /* Transmission in Frameworks */ = {isa = PBXBuildFile; productRef = 80A6409F2E414F4E0053C2C3 /* Transmission */; };
 		80EC5D8E2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -410,6 +411,7 @@
 				79C8FADF2AE3F657001EA5A7 /* OpenAIKit in Frameworks */,
 				7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */,
 				795767812AE706DB0040E327 /* Camera-SwiftUI in Frameworks */,
+				80A640A02E414F4E0053C2C3 /* Transmission in Frameworks */,
 				80750E112DDFCA550037F1FE /* WishKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -970,6 +972,7 @@
 				79C8FADE2AE3F657001EA5A7 /* OpenAIKit */,
 				795767802AE706DB0040E327 /* Camera-SwiftUI */,
 				80750E102DDFCA550037F1FE /* WishKit */,
+				80A6409F2E414F4E0053C2C3 /* Transmission */,
 			);
 			productName = WorkoutDiary;
 			productReference = 8065AA6B2686667F00F53A5A /* LOGIT.app */;
@@ -1009,6 +1012,7 @@
 				79C8FADD2AE3F657001EA5A7 /* XCRemoteSwiftPackageReference "OpenAI" */,
 				7957677F2AE706DB0040E327 /* XCRemoteSwiftPackageReference "Camera-SwiftUI" */,
 				80750E0F2DDFCA550037F1FE /* XCRemoteSwiftPackageReference "wishkit-ios" */,
+				80A6409E2E414F4E0053C2C3 /* XCRemoteSwiftPackageReference "Transmission" */,
 			);
 			productRefGroup = 8065AA6C2686667F00F53A5A /* Products */;
 			projectDirPath = "";
@@ -1530,6 +1534,14 @@
 				minimumVersion = 4.7.0;
 			};
 		};
+		80A6409E2E414F4E0053C2C3 /* XCRemoteSwiftPackageReference "Transmission" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nathantannar4/Transmission";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.8;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1552,6 +1564,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 80750E0F2DDFCA550037F1FE /* XCRemoteSwiftPackageReference "wishkit-ios" */;
 			productName = WishKit;
+		};
+		80A6409F2E414F4E0053C2C3 /* Transmission */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 80A6409E2E414F4E0053C2C3 /* XCRemoteSwiftPackageReference "Transmission" */;
+			productName = Transmission;
 		};
 /* End XCSwiftPackageProductDependency section */
 

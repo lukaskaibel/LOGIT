@@ -1,5 +1,5 @@
 {
-  "originHash" : "eb95902972bd0dfcdc6916399fa26280603ecb798d0fa1f32e77243a74822ab7",
+  "originHash" : "e4359da7992ab309774121a6d315f15c40b1703ddc04008571aa748437bf4f0f",
   "pins" : [
     {
       "identity" : "camera-swiftui",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "a83ad04ec213095e14d71491af8b55e7575a7b40",
         "version" : "0.5.0"
+      }
+    },
+    {
+      "identity" : "engine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nathantannar4/Engine",
+      "state" : {
+        "revision" : "3d7c65095a406b151bbb9f7e168e0145dc4241fb",
+        "version" : "2.1.15"
       }
     },
     {
@@ -35,6 +44,24 @@
       "state" : {
         "revision" : "9a8119b37e09a770367eeb26e05267c75d854053",
         "version" : "2.3.1"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax",
+      "state" : {
+        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
+        "version" : "601.0.1"
+      }
+    },
+    {
+      "identity" : "transmission",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nathantannar4/Transmission",
+      "state" : {
+        "revision" : "936c8428b8e011fec2f48d8d60f0c696c21ef622",
+        "version" : "2.4.8"
       }
     },
     {

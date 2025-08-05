@@ -35,11 +35,15 @@ struct ExerciseHeader: View {
                         isShowingNavigationDetailSheet = true
                     } else {
                         guard homeNavigationCoordinator.path.last != HomeNavigationDestinationType.exercise(exercise) else {
-                            homeNavigationCoordinator.isPresentingWorkoutRecorder = false
+                            withAnimation {
+                                homeNavigationCoordinator.isPresentingWorkoutRecorder = false
+                            }
                             return
                         }
                         homeNavigationCoordinator.path.append(.exercise(exercise))
-                        homeNavigationCoordinator.isPresentingWorkoutRecorder = false
+                        withAnimation{
+                            homeNavigationCoordinator.isPresentingWorkoutRecorder = false                            
+                        }
                     }
                 } label: {
                     HStack(spacing: 3) {

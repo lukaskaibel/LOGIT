@@ -22,6 +22,7 @@ struct WorkoutRecorderScreen: View {
     @Environment(\.fullScreenDraggableCoverIsDragging) var fullScreenDraggableCoverIsDragging
     @Environment(\.undoManager) var undoManager
     @Environment(\.colorScheme) var colorScheme: ColorScheme
+    
 
     @EnvironmentObject private var database: Database
     @EnvironmentObject internal var workoutRecorder: WorkoutRecorder
@@ -72,9 +73,8 @@ struct WorkoutRecorderScreen: View {
                                 }
                             }
                         }
-                        .fullScreenDraggableCoverTopInset()
                         .scrollIndicators(.hidden)
-                        .sheet(isPresented: $isShowingExerciseSelectionSheet) {
+                        .sheet(isPresented: .constant(true)) {
                             NavigationView {
                                 ExerciseSelectionScreen(
                                     selectedExercise: nil,
@@ -150,7 +150,6 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 }
                             }
-                            .opacity(fullScreenDraggableCoverIsDragging ? 0 : 1)
                             .animation(.easeOut(duration: 0.2), value: fullScreenDraggableCoverIsDragging)
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
@@ -164,9 +163,6 @@ struct WorkoutRecorderScreen: View {
                         }
                     }
                     .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            isShowingExerciseSelectionSheet = true
-                        }
                         updateProgress()
                     }
                     .onReceive(workoutRecorder.workout?.objectWillChange ?? ObservableObjectPublisher()) {
@@ -174,7 +170,6 @@ struct WorkoutRecorderScreen: View {
                     }
                 }
                 Header
-                    .fullScreenDraggableCoverDragArea()
                     .frame(maxHeight: .infinity, alignment: .top)
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -264,7 +259,6 @@ struct WorkoutRecorderScreen: View {
             }
             .padding(.horizontal)
             .padding(.bottom, 10)
-            .fullScreenDraggableCoverTopInset()
             .background(.ultraThinMaterial)
             Divider()
         }

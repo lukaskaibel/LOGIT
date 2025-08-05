@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Transmission
 
 @main
 struct LOGIT: App {
@@ -68,9 +69,21 @@ struct LOGIT: App {
                     .overlay {
                         startAndCurrentWorkoutButton
                     }
-                    .fullScreenDraggableCover(isPresented: $homeNavigationCoordinator.isPresentingWorkoutRecorder) {
-                        WorkoutRecorderScreen()
-                            .presentationBackground(.clear)
+                    .presentation(transition: .slide, isPresented: $homeNavigationCoordinator.isPresentingWorkoutRecorder) {
+                        TransitionReader { proxy in
+                            WorkoutRecorderScreen()
+                                .environmentObject(database)
+                                .environmentObject(measurementController)
+                                .environmentObject(templateService)
+                                .environmentObject(purchaseManager)
+                                .environmentObject(networkMonitor)
+                                .environmentObject(workoutRecorder)
+                                .environmentObject(muscleGroupService)
+                                .environmentObject(homeNavigationCoordinator)
+                                .environmentObject(chronograph)
+                                .environment(\.managedObjectContext, database.context)
+                                .environment(\.goHome) { selectedTab = .home }
+                        }
                     }
                     .sheet(isPresented: $isShowingPrivacyPolicy) {
                         NavigationStack {

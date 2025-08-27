@@ -11,6 +11,7 @@ struct ExerciseHeader: View {
     
     //MARK: - Environment
     
+    @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
     
     // MARK: - Parameters
@@ -35,14 +36,18 @@ struct ExerciseHeader: View {
                         isShowingNavigationDetailSheet = true
                     } else {
                         guard homeNavigationCoordinator.path.last != HomeNavigationDestinationType.exercise(exercise) else {
-                            withAnimation {
-                                homeNavigationCoordinator.isPresentingWorkoutRecorder = false
-                            }
+                            dismissWorkoutRecorder()
                             return
                         }
-                        homeNavigationCoordinator.path.append(.exercise(exercise))
-                        withAnimation{
-                            homeNavigationCoordinator.isPresentingWorkoutRecorder = false                            
+                        var transaction = Transaction()
+                        transaction.disablesAnimations = true
+                        withTransaction(transaction) {
+                            homeNavigationCoordinator.path.popLast()
+                        }
+                        DispatchQueue.main.async { dismissWorkoutRecorder() }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            homeNavigationCoordinator.path.append(.exercise(exercise))
+                            homeNavigationCoordinator.objectWillChange.send()
                         }
                     }
                 } label: {

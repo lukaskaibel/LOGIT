@@ -10,11 +10,11 @@ import SwiftUI
 struct StartWorkoutView: View {
     // MARK: - Environment
 
+    @Environment(\.presentWorkoutRecorder) var presentWorkoutRecorder
     @EnvironmentObject var database: Database
     @EnvironmentObject var networkMonitor: NetworkMonitor
     @EnvironmentObject var purchaseManager: PurchaseManager
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
-    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
 
     // MARK: - State
 
@@ -35,10 +35,8 @@ struct StartWorkoutView: View {
                 .fixedSize()
             HStack(spacing: 0) {
                 Button {
-                    withAnimation {
-                        workoutRecorder.startWorkout()
-                        homeNavigationCoordinator.isPresentingWorkoutRecorder = true
-                    }
+                    workoutRecorder.startWorkout()
+                    presentWorkoutRecorder()
                 } label: {
                     Label(NSLocalizedString("startWorkout", comment: ""), systemImage: "play.fill")
                         .font(.body.weight(.bold))
@@ -111,7 +109,7 @@ struct StartWorkoutView: View {
             if let template = newValue {
                 database.flagAsTemporary(template)
                 workoutRecorder.startWorkout(from: template)
-                homeNavigationCoordinator.isPresentingWorkoutRecorder = true
+                presentWorkoutRecorder()
             }
         }
         .fullScreenCover(isPresented: $isShowingScanScreen) {

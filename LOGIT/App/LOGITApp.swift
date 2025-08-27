@@ -33,6 +33,7 @@ struct LOGIT: App {
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingPrivacyPolicy = false
+    @State private var isShowingWorkoutRecorder = false
 
     // MARK: - Init
 
@@ -69,22 +70,25 @@ struct LOGIT: App {
                     .overlay {
                         startAndCurrentWorkoutButton
                     }
-                    .presentation(transition: .slide, isPresented: $homeNavigationCoordinator.isPresentingWorkoutRecorder) {
-                        TransitionReader { proxy in
-                            WorkoutRecorderScreen()
-                                .environmentObject(database)
-                                .environmentObject(measurementController)
-                                .environmentObject(templateService)
-                                .environmentObject(purchaseManager)
-                                .environmentObject(networkMonitor)
-                                .environmentObject(workoutRecorder)
-                                .environmentObject(muscleGroupService)
-                                .environmentObject(homeNavigationCoordinator)
-                                .environmentObject(chronograph)
-                                .environment(\.managedObjectContext, database.context)
-                                .environment(\.goHome) { selectedTab = .home }
-                        }
+                    .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
+                        WorkoutRecorderScreen()
+                            .environmentObject(database)
+                            .environmentObject(measurementController)
+                            .environmentObject(templateService)
+                            .environmentObject(purchaseManager)
+                            .environmentObject(networkMonitor)
+                            .environmentObject(workoutRecorder)
+                            .environmentObject(muscleGroupService)
+                            .environmentObject(homeNavigationCoordinator)
+                            .environmentObject(chronograph)
+                            .environment(\.managedObjectContext, database.context)
+                            .environment(\.goHome) { selectedTab = .home }
+                            .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
                     }
+//                    .presentation(transition: .slide, isPresented: $isShowingWorkoutRecorder) {
+//                        TransitionReader { _ in
+//                        }
+//                    }
                     .sheet(isPresented: $isShowingPrivacyPolicy) {
                         NavigationStack {
                             PrivacyPolicyScreen(needsAcceptance: true)
@@ -161,7 +165,7 @@ struct LOGIT: App {
                 }
             if let workout = workoutRecorder.workout {
                 Button {
-                    homeNavigationCoordinator.isPresentingWorkoutRecorder = true
+                    showWorkoutRecorder()
                 } label: {
                     CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
                         .frame(maxWidth: .infinity)
@@ -176,7 +180,7 @@ struct LOGIT: App {
                     DragGesture()
                         .onChanged { dragValue in
                             if dragValue.translation.height < 0 {
-                                homeNavigationCoordinator.isPresentingWorkoutRecorder = true
+                                showWorkoutRecorder()
                             }
                         }
                 )
@@ -186,10 +190,23 @@ struct LOGIT: App {
                     .shadow(radius: 10)
                     .padding(.horizontal, 12)
                     .padding(.bottom, 5)
+                    .environment(\.presentWorkoutRecorder) { showWorkoutRecorder() }
             }
         }
         .frame(maxHeight: .infinity, alignment: .bottom)
         .edgesIgnoringSafeArea(.bottom)
+    }
+    
+    private func showWorkoutRecorder() {
+        withAnimation {
+            isShowingWorkoutRecorder = true
+        }
+    }
+    
+    private func dismissWorkoutRecorder() {
+        withAnimation {
+            isShowingWorkoutRecorder = false
+        }
     }
 }
 
@@ -199,9 +216,26 @@ struct GoHomeKey: EnvironmentKey {
     static let defaultValue: () -> Void = {}
 }
 
+struct PresentWorkoutRecorderKey: EnvironmentKey {
+    static let defaultValue: () -> Void = {}
+}
+
+struct DismissWorkoutRecorderKey: EnvironmentKey {
+    static let defaultValue: () -> Void = {}
+}
+
 extension EnvironmentValues {
     var goHome: () -> Void {
         get { self[GoHomeKey.self] }
         set { self[GoHomeKey.self] = newValue }
     }
+    var presentWorkoutRecorder: () -> Void {
+        get { self[PresentWorkoutRecorderKey.self] }
+        set { self[PresentWorkoutRecorderKey.self] = newValue }
+    }
+    var dismissWorkoutRecorder: () -> Void {
+        get { self[DismissWorkoutRecorderKey.self] }
+        set { self[DismissWorkoutRecorderKey.self] = newValue }
+    }
 }
+

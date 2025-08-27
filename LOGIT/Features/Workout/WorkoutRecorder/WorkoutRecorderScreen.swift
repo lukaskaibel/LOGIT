@@ -22,13 +22,12 @@ struct WorkoutRecorderScreen: View {
     @Environment(\.fullScreenDraggableCoverIsDragging) var fullScreenDraggableCoverIsDragging
     @Environment(\.undoManager) var undoManager
     @Environment(\.colorScheme) var colorScheme: ColorScheme
-    
+    @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
 
     @EnvironmentObject private var database: Database
     @EnvironmentObject internal var workoutRecorder: WorkoutRecorder
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     @EnvironmentObject private var chronograph: Chronograph
-    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
 
     // MARK: - State
 
@@ -72,6 +71,7 @@ struct WorkoutRecorderScreen: View {
                                         .padding(.top, 30)
                                 }
                             }
+                            .fullScreenDraggableCoverTopInset()
                         }
                         .scrollIndicators(.hidden)
                         .sheet(isPresented: .constant(true)) {
@@ -142,7 +142,7 @@ struct WorkoutRecorderScreen: View {
                                         FinishConfirmationSheet(workout: workout, onEndWorkout: {
                                             UINotificationFeedbackGenerator().notificationOccurred(.success)
                                             workoutRecorder.saveWorkout()
-                                            homeNavigationCoordinator.isPresentingWorkoutRecorder = false
+                                            dismissWorkoutRecorder()
                                             goHome()
                                         })
                                         .padding([.top, .horizontal])
@@ -150,6 +150,7 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 }
                             }
+                            .opacity(fullScreenDraggableCoverIsDragging ? 0 : 1)
                             .animation(.easeOut(duration: 0.2), value: fullScreenDraggableCoverIsDragging)
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
@@ -171,6 +172,7 @@ struct WorkoutRecorderScreen: View {
                 }
                 Header
                     .frame(maxHeight: .infinity, alignment: .top)
+                    .fullScreenDraggableCoverDragArea()
             }
             .toolbar(.hidden, for: .navigationBar)
             .toolbar {
@@ -242,8 +244,10 @@ struct WorkoutRecorderScreen: View {
                     Spacer()
                     Button {
                         guard workoutRecorder.workout?.hasEntries ?? false else {
-                            workoutRecorder.discardWorkout()
-                            homeNavigationCoordinator.isPresentingWorkoutRecorder = false
+                            withAnimation {
+                                workoutRecorder.discardWorkout()
+                                dismissWorkoutRecorder()
+                            }
                             return
                         }
                         isShowingFinishConfirmation = true
@@ -257,6 +261,7 @@ struct WorkoutRecorderScreen: View {
                     }
                 }
             }
+            .fullScreenDraggableCoverTopInset()
             .padding(.horizontal)
             .padding(.bottom, 10)
             .background(.ultraThinMaterial)

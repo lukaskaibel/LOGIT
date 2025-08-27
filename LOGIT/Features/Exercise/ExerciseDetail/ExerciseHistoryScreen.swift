@@ -35,7 +35,6 @@ struct ExerciseHistoryScreen: View {
                                         supplementaryText:
                                         "\(setGroup.workout?.date?.description(.short) ?? "")"
                                     )
-                                    .padding(CELL_PADDING)
                                     .tileStyle()
                                     .canEdit(false)
                                     .allowsHitTesting(false)

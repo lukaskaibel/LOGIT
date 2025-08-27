@@ -102,7 +102,6 @@ struct ExerciseDetailScreen: View {
                                 )
                                 .canEdit(false)
                                 .allowsHitTesting(false)
-                                .padding(CELL_PADDING)
                                 .tileStyle()
                                 .shadow(color: .black.opacity(0.5), radius: 10)
                             }

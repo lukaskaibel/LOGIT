@@ -76,8 +76,8 @@ private struct FullScreenDraggableCoverDragAreaModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .contentShape(Rectangle())
-            .gesture(
+//            .contentShape(Rectangle())
+            .simultaneousGesture(
                 DragGesture(coordinateSpace: .global)
                     .onChanged { value in
                         fullScreenDraggableDragChanged(value)

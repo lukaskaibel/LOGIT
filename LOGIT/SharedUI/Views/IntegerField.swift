@@ -92,6 +92,7 @@ struct IntegerField: View {
         .padding(.horizontal, 8)
         .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.000001))
         .frame(minWidth: 100, alignment: .trailing)
+        .id(index)
     }
 
     // MARK: - Computed Properties

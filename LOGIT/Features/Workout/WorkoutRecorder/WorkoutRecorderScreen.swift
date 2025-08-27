@@ -51,7 +51,7 @@ struct WorkoutRecorderScreen: View {
         NavigationStack {
             ZStack {
                 if let workout = workoutRecorder.workout {
-                    ScrollViewReader { scrollable in
+                    ScrollViewReader { proxy in
                         ScrollView {
                             VStack {
                                 WorkoutSetGroupList(
@@ -69,14 +69,26 @@ struct WorkoutRecorderScreen: View {
                                         .fontWeight(.medium)
                                         .padding(.top, 30)
                                 }
+                                .onChange(of: focusedIntegerFieldIndex) {
+                                    if let id = focusedIntegerFieldIndex {
+                                        withAnimation(.easeOut(duration: 0.25)) {
+                                            proxy.scrollTo(id, anchor: .bottom)
+                                        }
+                                    }
+                                }
                             }
                             .fullScreenDraggableCoverTopInset()
                             .id(1)
                         }
                         .onAppear {
-                            scrollable.scrollTo(1, anchor: .bottom)
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                proxy.scrollTo(1, anchor: .bottom)
+                            }
                         }
                         .scrollIndicators(.hidden)
+                        .safeAreaInset(edge: .bottom) {
+                            Color.clear.frame(height: 100)
+                        }
                         .sheet(isPresented: .constant(true)) {
                             NavigationView {
                                 ExerciseSelectionScreen(
@@ -84,7 +96,7 @@ struct WorkoutRecorderScreen: View {
                                     setExercise: { exercise in
                                         withAnimation {
                                             workoutRecorder.addSetGroup(with: exercise)
-                                            scrollable.scrollTo(1, anchor: .bottom)
+                                            proxy.scrollTo(1, anchor: .bottom)
                                         }
                                     },
                                     forSecondary: false,

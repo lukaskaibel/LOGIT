@@ -144,7 +144,11 @@ struct ExerciseSelectionScreen: View {
                                     .padding(.horizontal)
                                 }
                                 .emptyPlaceholder(groupedExercises) {
-                                    Text(String(format: NSLocalizedString("pressPlusToAdd", comment: ""), searchedText))
+                                    if exercises.isEmpty {
+                                        Text(NSLocalizedString("pressPlusToAddExercise", comment: ""))
+                                    } else {
+                                        Text(String(format: NSLocalizedString("pressPlusToAdd", comment: ""), searchedText))
+                                    }
                                 }
                             }
                             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)

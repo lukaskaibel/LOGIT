@@ -241,6 +241,7 @@
 "perWeek" = "pro Woche";
 "PerWeek" = "Pro Woche";
 "pressPlusToAdd" = "Drücke +, um \"%@\" hinzuzufügen";
+"pressPlusToAddExercise" = "Drücke +, um eine Übung hinzuzufügen";
 "preventAutoLock" = "Bildschirmsperre verhindern";
 "preventAutoLockDescription" = "Verhindert das Abschalten des Bildschirms während des Training.";
 "price" = "Preis";

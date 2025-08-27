@@ -239,6 +239,7 @@
 "perWeek" = "per week";
 "PerWeek" = "Per Week";
 "pressPlusToAdd" = "Press + to add \"%@\"";
+"pressPlusToAddExercise" = "Press + to add an exercise";
 "preventAutoLock" = "Prevent Auto-Lock";
 "preventAutoLockDescription" = "Keeps screen active during workout.";
 "price" = "Price";

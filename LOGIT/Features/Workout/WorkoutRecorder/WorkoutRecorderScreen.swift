@@ -62,7 +62,6 @@ struct WorkoutRecorderScreen: View {
                                 .padding(.horizontal)
                                 .padding(.top, 90)
                                 .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
-                                .id(1)
                                 .emptyPlaceholder(workout.setGroups) {
                                     Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
                                         .foregroundStyle(Color.secondaryLabel)
@@ -72,6 +71,10 @@ struct WorkoutRecorderScreen: View {
                                 }
                             }
                             .fullScreenDraggableCoverTopInset()
+                            .id(1)
+                        }
+                        .onAppear {
+                            scrollable.scrollTo(1, anchor: .bottom)
                         }
                         .scrollIndicators(.hidden)
                         .sheet(isPresented: .constant(true)) {

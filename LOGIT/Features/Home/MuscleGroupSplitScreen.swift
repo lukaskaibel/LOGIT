@@ -178,7 +178,6 @@ struct MuscleGroupSplitScreen: View {
                                 "\(setGroup.workout!.date!.description(.short))  ·  \(setGroup.workout!.name!)"
                             )
                             .canEdit(false)
-                            .padding(CELL_PADDING)
                             .tileStyle()
                             .shadow(color: .black.opacity(0.5), radius: 10)
                         }

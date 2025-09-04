@@ -17,71 +17,94 @@ struct ExerciseRepetitionsTile: View {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
         let maxDailySets = maxRepetitionsDailySets(in: groupedWorkoutSets.map { $0.1 })
-        VStack {
-            HStack {
-                Text(NSLocalizedString("repetitions", comment: ""))
-                    .tileHeaderStyle()
-                Spacer()
-                NavigationChevron()
-                    .foregroundStyle(.secondary)
-            }
-            HStack {
-                VStack(alignment: .leading) {
+        VStack(spacing: 0) {
+            VStack {
+                HStack {
+                    Text(NSLocalizedString("repetitions", comment: ""))
+                        .tileHeaderStyle()
+                    Spacer()
+                    NavigationChevron()
+                        .foregroundStyle(.secondary)
+                }
+                HStack(alignment: .bottom) {
                     VStack(alignment: .leading) {
-                        Text(NSLocalizedString("bestThisMonth", comment: ""))
-                        HStack(alignment: .lastTextBaseline, spacing: 0) {
-                            Text(bestRepetitionsThisMonth(workoutSets) != nil ? String(bestRepetitionsThisMonth(workoutSets)!) : "––")
-                                .font(.title)
-                                .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                            Text(NSLocalizedString("rps", comment: ""))
-                                .textCase(.uppercase)
-                                .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
+                        VStack(alignment: .leading) {
+                            Text(NSLocalizedString("bestThisMonth", comment: ""))
+                                .foregroundStyle(.secondary)
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                            UnitView(
+                                value: bestRepetitionsThisMonth(workoutSets) != nil ? String(bestRepetitionsThisMonth(workoutSets)!) : "––",
+                                unit: NSLocalizedString("rps", comment: ""),
+                                configuration: .large
+                            )
+                            .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
                         }
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
                     }
+                    Spacer()
+                    Chart {
+                        if let firstEntry = maxDailySets.first {
+                            LineMark(
+                                x: .value("Date", Date.distantPast, unit: .day),
+                                y: .value("Max repetitions on day", firstEntry.maximum(.repetitions, for: exercise))
+                            )
+                            .interpolationMethod(.catmullRom)
+                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                            .lineStyle(StrokeStyle(lineWidth: 5, lineCap: .round))
+                        }
+                        ForEach(maxDailySets) { workoutSet in
+                            LineMark(
+                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
+                                y: .value("Max repetitions on day", workoutSet.maximum(.repetitions, for: exercise))
+                            )
+                            .interpolationMethod(.catmullRom)
+                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                            .lineStyle(StrokeStyle(lineWidth: 6))
+                            AreaMark(
+                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
+                                y: .value("Max repetitions on day", workoutSet.maximum(.repetitions, for: exercise))
+                            )
+                            .interpolationMethod(.catmullRom)
+                            .foregroundStyle(Gradient(colors: [
+                                exerciseMuscleGroupColor.opacity(0.3),
+                                exerciseMuscleGroupColor.opacity(0.1),
+                                exerciseMuscleGroupColor.opacity(0),
+                            ]))
+                        }
+                    }
+                    .chartXScale(domain: xDomain)
+                    .chartXAxis {}
+                    .chartYScale(domain: 0 ... (Double(allTimeRepetitionsPREntry(in: workoutSets).0) * 1.1))
+                    .chartYAxis {}
+                    .frame(width: 120, height: 70)
+                    .clipped()
                 }
-                Spacer()
-                Chart {
-                    if let firstEntry = maxDailySets.first {
-                        LineMark(
-                            x: .value("Date", Date.distantPast, unit: .day),
-                            y: .value("Max repetitions on day", firstEntry.maximum(.repetitions, for: exercise))
-                        )
-                        .interpolationMethod(.catmullRom)
-                        .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                        .lineStyle(StrokeStyle(lineWidth: 5, lineCap: .round))
-                    }
-                    ForEach(maxDailySets) { workoutSet in
-                        LineMark(
-                            x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                            y: .value("Max repetitions on day", workoutSet.maximum(.repetitions, for: exercise))
-                        )
-                        .interpolationMethod(.catmullRom)
-                        .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                        .lineStyle(StrokeStyle(lineWidth: 6))
-                        AreaMark(
-                            x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                            y: .value("Max repetitions on day", workoutSet.maximum(.repetitions, for: exercise))
-                        )
-                        .interpolationMethod(.catmullRom)
-                        .foregroundStyle(Gradient(colors: [
-                            exerciseMuscleGroupColor.opacity(0.3),
-                            exerciseMuscleGroupColor.opacity(0.1),
-                            exerciseMuscleGroupColor.opacity(0),
-                        ]))
-                    }
-                }
-                .chartXScale(domain: xDomain)
-                .chartXAxis {}
-                .chartYScale(domain: 0 ... (Double(allTimeRepetitionsPR(in: workoutSets)) * 1.1))
-                .chartYAxis {}
-                .frame(width: 120, height: 80)
-                .clipped()
-                .padding(.horizontal)
             }
+            .padding([.horizontal, .top], CELL_PADDING)
+            .padding(.bottom, CELL_PADDING / 2)
+            Rectangle()
+                .frame(height: 1)
+                .foregroundStyle(.black)
+            HStack {
+                let allTimeRepeitionsPrEntry = allTimeRepetitionsPREntry(in: workoutSets)
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack {
+                        Text(NSLocalizedString("personalBest", comment: ""))
+                            .fontWeight(.semibold)
+                        Spacer()
+                        if let allTimeRepetitionsPRDate = allTimeRepeitionsPrEntry.2 {
+                            Text(allTimeRepetitionsPRDate.formatted(.dateTime.day().month().year()))
+                        }
+                    }
+                    .foregroundStyle(.tertiary)
+                    .font(.caption)
+                    UnitView(value: "\(allTimeRepeitionsPrEntry.0)", unit: NSLocalizedString("rps", comment: ""), unitColor: .tertiaryLabel)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .padding(.horizontal, CELL_PADDING)
+            .padding(.vertical, CELL_PADDING / 2)
         }
-        .padding(CELL_PADDING)
         .tileStyle()
     }
 
@@ -118,12 +141,36 @@ struct ExerciseRepetitionsTile: View {
             .max()
     }
 
-    private func allTimeRepetitionsPR(in workoutSets: [WorkoutSet]) -> Int {
-        workoutSets
-            .map {
-                $0.maximum(.repetitions, for: exercise)
+    private func allTimeRepetitionsPREntry(in workoutSets: [WorkoutSet]) -> (Int, Int, Date?) {
+        let workoutSet = workoutSets
+            .max(by: { $0.maximum(.repetitions, for: exercise) < $1.maximum(.repetitions, for: exercise) })
+        var maxRepetitions: Int64 = 0
+        var weightOfMaxRepetitions: Int64 = 0
+        var maxRepetitionsDate: Date?
+        if let standardSet = workoutSet as? StandardSet {
+            maxRepetitions = standardSet.repetitions
+            weightOfMaxRepetitions = standardSet.weight
+            maxRepetitionsDate = standardSet.workout?.date
+        } else if let superSet = workoutSet as? SuperSet {
+            if superSet.exercise == exercise {
+                maxRepetitions = superSet.repetitionsFirstExercise
+                weightOfMaxRepetitions = superSet.weightFirstExercise
+                maxRepetitionsDate = superSet.workout?.date
             }
-            .max() ?? 0
+            if superSet.secondaryExercise == exercise, superSet.weightSecondExercise > maxRepetitions {
+                maxRepetitions = superSet.repetitionsSecondExercise
+                weightOfMaxRepetitions = superSet.weightSecondExercise
+                maxRepetitionsDate = superSet.workout?.date
+            }
+        } else if let dropSet = workoutSet as? DropSet {
+            for item in zip(dropSet.repetitions ?? [], dropSet.weights ?? []) {
+                let shouldUpdate = item.0 > maxRepetitions
+                maxRepetitions = shouldUpdate ? item.0 : maxRepetitions
+                weightOfMaxRepetitions = shouldUpdate ? item.1 : weightOfMaxRepetitions
+                maxRepetitionsDate = dropSet.workout?.date
+            }
+        }
+        return (Int(maxRepetitions), convertWeightForDisplaying(weightOfMaxRepetitions), maxRepetitionsDate)
     }
 }
 

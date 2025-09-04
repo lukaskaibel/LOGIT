@@ -26,23 +26,23 @@ struct CurrentWeekWeeklyTargetTile: View {
         ) { workouts in
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
-                    Text(NSLocalizedString("Workouts per Week", comment: ""))
-                        .tileHeaderStyle()
+                    HStack {
+                        Image(systemName: "target")
+                        Text(NSLocalizedString("workoutGoal", comment: ""))
+                    }
+                    .tileHeaderStyle()
                     Spacer()
                     NavigationChevron()
                         .foregroundStyle(.secondary)
                 }
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("ThisWeek", comment: ""))
-                        HStack(alignment: .lastTextBaseline) {
-                            Text("\(workouts.count)")
-                                .font(.title)
-                                .fontWeight(.bold)
-                                .foregroundStyle(Color.accentColor.gradient)
-                            Text("\(NSLocalizedString("of", comment: "")) \(targetPerWeek)")
-                                .foregroundStyle(Color.secondaryLabel)
-                        }
+                HStack(alignment: .bottom) {
+                    HStack(alignment: .lastTextBaseline) {
+                        Text("\(workouts.count)")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundStyle(Color.accentColor.gradient)
+                        Text("\(NSLocalizedString("of", comment: "")) \(targetPerWeek)")
+                            .foregroundStyle(Color.secondaryLabel)
                     }
                     Spacer()
                     Chart {
@@ -63,7 +63,7 @@ struct CurrentWeekWeeklyTargetTile: View {
                                 .foregroundStyle(Color.accentColor.gradient)
                         }
                     }
-                    .frame(width: 120, height: 80, alignment: .trailing)
+                    .frame(width: 70, height: 70, alignment: .trailing)
                 }
             }
             .padding(CELL_PADDING)

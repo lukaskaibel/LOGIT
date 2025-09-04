@@ -25,9 +25,8 @@ struct VolumeTile: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            HStack {
+            HStack(alignment: .bottom) {
                 VStack(alignment: .leading) {
-                    Text(NSLocalizedString("thisWeek", comment: ""))
                     let setsThisWeek = workoutSets.filter { Calendar.current.isDate($0.workout?.date ?? .distantPast, equalTo: .now, toGranularity: [.weekOfYear, .year]) }
                     UnitView(
                         value: "\(convertWeightForDisplaying(getVolume(of: setsThisWeek)))",
@@ -50,8 +49,7 @@ struct VolumeTile: View {
                 }
                 .chartXAxis {}
                 .chartYAxis {}
-                .frame(width: 120, height: 80)
-                .padding(.trailing)
+                .frame(width: 120, height: 70)
             }
         }
         .padding(CELL_PADDING)

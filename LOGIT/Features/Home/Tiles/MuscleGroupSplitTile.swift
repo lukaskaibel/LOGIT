@@ -30,9 +30,12 @@ struct MuscleGroupSplitTile: View {
                 NavigationChevron()
                     .foregroundStyle(.secondary)
             }
-            HStack {
+            HStack(alignment: .bottom) {
                 VStack(alignment: .leading) {
-                    Text(NSLocalizedString("focusThisWeek", comment: ""))
+                    Text(NSLocalizedString("focus", comment: ""))
+                        .foregroundStyle(.secondary)
+                        .font(.footnote)
+                        .fontWeight(.semibold)
                     let fucusedMuscleGroups = getFocusedMuscleGroups(muscleGroupOccurances)
                     HStack {
                         if !fucusedMuscleGroups.isEmpty {
@@ -51,7 +54,7 @@ struct MuscleGroupSplitTile: View {
                 }
                 Spacer()
                 MuscleGroupOccurancesChart(muscleGroupOccurances: muscleGroupOccurances)
-                    .frame(width: 120, height: 80)
+                    .frame(width: 70, height: 70)
             }
         }
         .padding(CELL_PADDING)

@@ -50,16 +50,7 @@ struct ExerciseDetailScreen: View {
                     header
                         .padding(.horizontal)
 
-                    ExercisePersonalBestsTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
-                        .padding(.horizontal)
-
                     VStack {
-                        Button {
-                            isShowingVolumeScreen = true
-                        } label: {
-                            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
-                        }
-                        .buttonStyle(TileButtonStyle())
                         Button {
                             isShowingWeightScreen = true
                         } label: {
@@ -70,6 +61,12 @@ struct ExerciseDetailScreen: View {
                             isShowingRepetitionsScreen = true
                         } label: {
                             ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
+                        }
+                        .buttonStyle(TileButtonStyle())
+                        Button {
+                            isShowingVolumeScreen = true
+                        } label: {
+                            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
                         }
                         .buttonStyle(TileButtonStyle())
                     }

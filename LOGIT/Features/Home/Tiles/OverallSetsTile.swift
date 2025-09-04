@@ -26,14 +26,11 @@ struct OverallSetsTile: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("thisWeek", comment: ""))
-                    Text("\(workoutsThisWeek.map { $0.sets }.joined().count)")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
-                        .foregroundStyle(Color.accentColor.gradient)
+            HStack(alignment: .bottom) {
+                HStack(alignment: .lastTextBaseline, spacing: 5) {
+                    let numberOfSetsThisWeek = workoutsThisWeek.map { $0.sets }.joined().count
+                    UnitView(value: "\(numberOfSetsThisWeek)", unit: NSLocalizedString("set\(numberOfSetsThisWeek == 1 ? "" : "s")", comment: ""), configuration: .large)
+                        .foregroundStyle(Color.accentColor)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Chart {
@@ -58,8 +55,7 @@ struct OverallSetsTile: View {
                     }
                 }
                 .chartYAxis {}
-                .frame(width: 120, height: 80)
-                .padding(.trailing)
+                .frame(width: 120, height: 70)
             }
         }
         .padding(CELL_PADDING)

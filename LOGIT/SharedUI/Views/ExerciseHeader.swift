@@ -114,7 +114,7 @@ struct ExerciseHeader: View {
             }
         }
         .textCase(nil)
-        .font(.title3.weight(.bold))
+        .font(.body.weight(.semibold))
         .foregroundColor(.label)
         .lineLimit(1)
         .sheet(isPresented: $isShowingNavigationDetailSheet) {

@@ -13,7 +13,7 @@ struct TileModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(backgroundColor)
-            .cornerRadius(20)
+            .cornerRadius(30)
     }
 }
 
@@ -23,7 +23,7 @@ struct SecondaryTileModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(backgroundColor)
-            .cornerRadius(15)
+            .cornerRadius(25)
     }
 }
 

@@ -180,7 +180,7 @@ struct TargetPerWeekDetailScreen: View {
                         ForEach(workouts) { workout in
                             WorkoutCell(workout: workout)
                                 .padding(CELL_PADDING)
-                                .secondaryTileStyle()
+                                .tileStyle()
                         }
                         .emptyPlaceholder(workouts) {
                             Text(NSLocalizedString("noWorkouts", comment: ""))

@@ -72,8 +72,6 @@ private struct PreviewWrapperView: View {
     var body: some View {
         ScrollView {
             WorkoutCell(workout: database.fetch(Workout.self).first! as! Workout)
-                .padding(CELL_PADDING)
-                .tileStyle()
         }
     }
 }

@@ -10,7 +10,7 @@ import SwiftUI
 struct TileHeaderModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.title3.weight(.bold))
+            .font(.body.weight(.semibold))
             .foregroundColor(.label)
     }
 }

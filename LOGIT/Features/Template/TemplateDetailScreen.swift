@@ -127,16 +127,19 @@ struct TemplateDetailScreen: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("exercises", comment: ""))
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
+                        .font(.footnote)
+                        .fontWeight(.semibold)
                     Text("\(template.numberOfSetGroups)")
                         .font(.system(.title3, design: .rounded, weight: .semibold))
                         .foregroundColor(.primary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                Divider()
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("sets", comment: ""))
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
+                        .font(.footnote)
+                        .fontWeight(.semibold)
                     Text("\(template.sets.count)")
                         .font(.system(.title3, design: .rounded, weight: .semibold))
                         .foregroundColor(.primary)
@@ -159,9 +162,12 @@ struct TemplateDetailScreen: View {
                     .rotationEffect(isMuscleGroupExpanded ? .degrees(90) : .degrees(0))
             }
             VStack(alignment: .leading, spacing: 20) {
-                HStack {
+                HStack(alignment: .bottom) {
                     VStack(alignment: .leading) {
-                        Text(NSLocalizedString("focusedOn", comment: ""))
+                        Text(NSLocalizedString("focus", comment: ""))
+                            .foregroundStyle(.secondary)
+                            .font(.footnote)
+                            .fontWeight(.semibold)
                         HStack {
                             ForEach(getFocusedMuscleGroups()) { muscleGroup in
                                 Text(muscleGroup.description)
@@ -177,11 +183,9 @@ struct TemplateDetailScreen: View {
                             .font(.body)
                             .multilineTextAlignment(.center)
                     }
-                    .frame(maxHeight: 150)
                     Spacer()
                     MuscleGroupOccurancesChart(muscleGroupOccurances: muscleGroupService.getMuscleGroupOccurances(in: template))
-                        .frame(width: 100, height: 100)
-                        .padding(.trailing)
+                        .frame(width: 70, height: 70)
                 }
                 if isMuscleGroupExpanded {
                     VStack(spacing: CELL_SPACING) {

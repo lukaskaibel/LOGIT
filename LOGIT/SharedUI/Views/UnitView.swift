@@ -15,16 +15,18 @@ struct UnitView: View {
     let value: String
     let unit: String
     var configuration: UnitViewConfiguration = .normal
+    var unitColor: Color = .secondaryLabel
 
     var body: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 0) {
+        HStack(alignment: .lastTextBaseline, spacing: 2) {
             Text(value)
                 .font(configuration == .large ? .title : configuration == .small ? .subheadline : .title3)
                 .fontWeight(.bold)
                 .fontDesign(.rounded)
             Text(unit.uppercased())
+                .foregroundStyle(unitColor)
                 .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
-                .fontWeight(.bold)
+                .fontWeight(.semibold)
                 .fontDesign(.rounded)
         }
     }

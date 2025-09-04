@@ -30,19 +30,18 @@ struct ExerciseVolumeTile: View {
                     NavigationChevron()
                         .foregroundStyle(.secondary)
                 }
-                HStack {
+                HStack(alignment: .bottom) {
                     VStack(alignment: .leading) {
                         Text(NSLocalizedString("thisWeek", comment: ""))
-                        HStack(alignment: .lastTextBaseline, spacing: 0) {
-                            Text("\(convertWeightForDisplaying(getVolume(of: groupedWorkoutSets.first?.1 ?? [], for: exercise)))")
-                                .font(.title)
-                                .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                            Text(WeightUnit.used.rawValue)
-                                .textCase(.uppercase)
-                                .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                        }
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
+                            .foregroundStyle(.secondary)
+                            .font(.footnote)
+                            .fontWeight(.semibold)
+                        UnitView(
+                            value: "\(convertWeightForDisplaying(getVolume(of: groupedWorkoutSets.first?.1 ?? [], for: exercise)))",
+                            unit: WeightUnit.used.rawValue,
+                            configuration: .large
+                        )
+                        .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
                     }
                     Spacer()
                     Chart {
@@ -58,8 +57,7 @@ struct ExerciseVolumeTile: View {
                     .chartXScale(domain: xDomain)
                     .chartXAxis {}
                     .chartYAxis {}
-                    .frame(width: 120, height: 80)
-                    .padding(.trailing)
+                    .frame(width: 120, height: 70)
                 }
             }
             .padding(CELL_PADDING)

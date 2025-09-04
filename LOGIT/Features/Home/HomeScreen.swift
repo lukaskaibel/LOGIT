@@ -111,7 +111,7 @@ struct HomeScreen: View {
                             .padding(.horizontal)
 
                             VStack(spacing: SECTION_HEADER_SPACING) {
-                                Text(NSLocalizedString("summary", comment: ""))
+                                Text(NSLocalizedString("thisWeek", comment: ""))
                                     .sectionHeaderStyle2()
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 VStack(spacing: 8) {
@@ -164,7 +164,7 @@ struct HomeScreen: View {
                                         } label: {
                                             WorkoutCell(workout: workout)
                                                 .padding(CELL_PADDING)
-                                                .secondaryTileStyle(backgroundColor: .secondaryBackground)
+                                                .tileStyle()
                                         }
                                         .buttonStyle(TileButtonStyle())
                                     }

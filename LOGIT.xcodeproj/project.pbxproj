@@ -168,7 +168,6 @@
 		801BBDF72DF7338A00CDB1FB /* UpgradeToProScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD312DF7338A00CDB1FB /* UpgradeToProScreen.swift */; };
 		801BBDF82DF7338A00CDB1FB /* ExerciseHistoryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCEF2DF7338A00CDB1FB /* ExerciseHistoryScreen.swift */; };
 		801BBDF92DF7338A00CDB1FB /* PreviewEnvironmentObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD412DF7338A00CDB1FB /* PreviewEnvironmentObjects.swift */; };
-		801BBDFA2DF7338A00CDB1FB /* ExercisePersonalBestsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCE92DF7338A00CDB1FB /* ExercisePersonalBestsTile.swift */; };
 		801BBDFB2DF7338A00CDB1FB /* WorkoutSetGroupPredicateFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCE52DF7338A00CDB1FB /* WorkoutSetGroupPredicateFactory.swift */; };
 		801BBDFC2DF7338A00CDB1FB /* DateLineChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD362DF7338A00CDB1FB /* DateLineChart.swift */; };
 		801BBDFD2DF7338A00CDB1FB /* Chronograph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCB72DF7338A00CDB1FB /* Chronograph.swift */; };
@@ -291,7 +290,6 @@
 		801BBCE42DF7338A00CDB1FB /* WorkoutPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPredicateFactory.swift; sourceTree = "<group>"; };
 		801BBCE52DF7338A00CDB1FB /* WorkoutSetGroupPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetGroupPredicateFactory.swift; sourceTree = "<group>"; };
 		801BBCE62DF7338A00CDB1FB /* WorkoutSetPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetPredicateFactory.swift; sourceTree = "<group>"; };
-		801BBCE92DF7338A00CDB1FB /* ExercisePersonalBestsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisePersonalBestsTile.swift; sourceTree = "<group>"; };
 		801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRepetitionsTile.swift; sourceTree = "<group>"; };
 		801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseVolumeTile.swift; sourceTree = "<group>"; };
 		801BBCEC2DF7338A00CDB1FB /* ExerciseWeightTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseWeightTile.swift; sourceTree = "<group>"; };
@@ -630,7 +628,6 @@
 		801BBCED2DF7338A00CDB1FB /* Tiles */ = {
 			isa = PBXGroup;
 			children = (
-				801BBCE92DF7338A00CDB1FB /* ExercisePersonalBestsTile.swift */,
 				801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */,
 				801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */,
 				801BBCEC2DF7338A00CDB1FB /* ExerciseWeightTile.swift */,
@@ -1211,7 +1208,6 @@
 				801BBDF72DF7338A00CDB1FB /* UpgradeToProScreen.swift in Sources */,
 				801BBDF82DF7338A00CDB1FB /* ExerciseHistoryScreen.swift in Sources */,
 				801BBDF92DF7338A00CDB1FB /* PreviewEnvironmentObjects.swift in Sources */,
-				801BBDFA2DF7338A00CDB1FB /* ExercisePersonalBestsTile.swift in Sources */,
 				801BBDFB2DF7338A00CDB1FB /* WorkoutSetGroupPredicateFactory.swift in Sources */,
 				801BBDFC2DF7338A00CDB1FB /* DateLineChart.swift in Sources */,
 				801BBDFD2DF7338A00CDB1FB /* Chronograph.swift in Sources */,

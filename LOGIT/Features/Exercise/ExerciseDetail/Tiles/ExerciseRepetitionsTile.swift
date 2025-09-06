@@ -50,7 +50,7 @@ struct ExerciseRepetitionsTile: View {
                             )
                             .interpolationMethod(.catmullRom)
                             .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                            .lineStyle(StrokeStyle(lineWidth: 5, lineCap: .round))
+                            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
                         }
                         ForEach(maxDailySets) { workoutSet in
                             LineMark(
@@ -59,7 +59,17 @@ struct ExerciseRepetitionsTile: View {
                             )
                             .interpolationMethod(.catmullRom)
                             .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                            .lineStyle(StrokeStyle(lineWidth: 6))
+                            .lineStyle(StrokeStyle(lineWidth: 3))
+                            .symbol {
+                                Circle()
+                                    .frame(width: 6, height: 6)
+                                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                                    .overlay {
+                                        Circle()
+                                            .frame(width: 2, height: 2)
+                                            .foregroundStyle(Color.black)
+                                    }
+                            }
                             AreaMark(
                                 x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
                                 y: .value("Max repetitions on day", workoutSet.maximum(.repetitions, for: exercise))
@@ -71,6 +81,22 @@ struct ExerciseRepetitionsTile: View {
                                 exerciseMuscleGroupColor.opacity(0),
                             ]))
                         }
+                        if let lastSet = maxDailySets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
+                            let repetitionsDisplayed = lastSet.maximum(.repetitions, for: exercise)
+                            RuleMark(
+                                xStart: .value("Start", lastDate),
+                                xEnd: .value("End", Date()),
+                                y: .value("Max repetitions on day", repetitionsDisplayed)
+                            )
+                            .foregroundStyle(exerciseMuscleGroupColor.opacity(0.45))
+                            .lineStyle(
+                                StrokeStyle(
+                                    lineWidth: 3,
+                                    lineCap: .round,
+                                    dash: [3, 6]
+                                )
+                            )
+                        }
                     }
                     .chartXScale(domain: xDomain)
                     .chartXAxis {}
@@ -78,6 +104,17 @@ struct ExerciseRepetitionsTile: View {
                     .chartYAxis {}
                     .frame(width: 120, height: 70)
                     .clipped()
+                    .mask(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: .clear, location: 0.0),
+                                .init(color: .black, location: 0.1),
+                                .init(color: .black, location: 1.0)
+                            ]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                 }
             }
             .padding([.horizontal, .top], CELL_PADDING)

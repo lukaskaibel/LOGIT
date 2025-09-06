@@ -31,7 +31,7 @@ struct ExerciseVolumeScreen: View {
                 }
                 .pickerStyle(.segmented)
                 .padding(.vertical)
-
+                .padding(.horizontal)
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("total", comment: ""))
                         .font(.footnote)
@@ -49,7 +49,7 @@ struct ExerciseVolumeScreen: View {
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-
+                .padding(.horizontal)
                 Chart {
                     ForEach(groupedWorkoutSets, id: \.0) { _, workoutSets in
                         BarMark(
@@ -84,14 +84,15 @@ struct ExerciseVolumeScreen: View {
                     }
                 }
                 .chartYAxis {
-                    AxisMarks(values: .automatic(desiredCount: 4))
+                    AxisMarks(values: .automatic(desiredCount: 3))
                 }
                 .emptyPlaceholder(groupedWorkoutSets) {
                     Text(NSLocalizedString("noData", comment: ""))
                 }
                 .frame(height: 300)
+                .padding(.leading)
+                .padding(.trailing, 5)
             }
-            .padding(.horizontal)
             .padding(.top)
         }
         .isBlockedWithoutPro()
@@ -164,7 +165,7 @@ struct ExerciseVolumeScreen: View {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         switch chartGranularity {
         case .month:
-            return "\(chartScrollPosition.formatted(.dateTime.day().month())) - \(endDate.formatted(.dateTime.day().month()))"
+            return "\(chartScrollPosition.isInCurrentYear ? chartScrollPosition.formatted(.dateTime.day().month()) : chartScrollPosition.formatted(.dateTime.day().month().year())) - \(endDate.isInCurrentYear ? endDate.formatted(.dateTime.day().month()) : endDate.formatted(.dateTime.day().month().year()))"
         case .year:
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
         }

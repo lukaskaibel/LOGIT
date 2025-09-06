@@ -12,6 +12,8 @@ struct ExerciseRepetitionsScreen: View {
     private enum ChartGranularity {
         case month, year
     }
+    
+    private let yAxisMaxValues = [10, 20, 50, 100, 200]
 
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
@@ -32,7 +34,7 @@ struct ExerciseRepetitionsScreen: View {
             }
             .pickerStyle(.segmented)
             .padding(.vertical)
-
+            .padding(.horizontal)
             VStack(alignment: .leading) {
                 Text("Monthly best")
                     .font(.footnote)
@@ -49,7 +51,7 @@ struct ExerciseRepetitionsScreen: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
+            .padding(.horizontal)
             Chart {
                 if let firstEntry = allDailyMaxRepsSets.first {
                     LineMark(
@@ -99,9 +101,25 @@ struct ExerciseRepetitionsScreen: View {
                         exerciseMuscleGroupColor.opacity(0.05),
                     ]))
                 }
+                if let lastSet = allDailyMaxRepsSets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
+                    let repetitionsDisplayed = lastSet.maximum(.repetitions, for: exercise)
+                    RuleMark(
+                        xStart: .value("Start", lastDate),
+                        xEnd: .value("End", Date()),
+                        y: .value("Max repetitions on day", repetitionsDisplayed)
+                    )
+                    .foregroundStyle(exerciseMuscleGroupColor.opacity(0.45))
+                    .lineStyle(
+                        StrokeStyle(
+                            lineWidth: 5,
+                            lineCap: .round,
+                            dash: [5, 10]
+                        )
+                    )
+                }
             }
             .chartXScale(domain: xDomain(for: workoutSets))
-            .chartYScale(domain: 0 ... (Double(allTimeRepetitionsPR(in: workoutSets)) * 1.1))
+            .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeRepetitionsPR(in: workoutSets)))
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
@@ -125,23 +143,18 @@ struct ExerciseRepetitionsScreen: View {
                 }
             }
             .chartYAxis {
-                AxisMarks(values: .automatic(desiredCount: 4))
-                if let currentBestRepetitions = bestRepsInGranularity {
-                    AxisMarks(values: [currentBestRepetitions]) {
-                        AxisValueLabel()
-                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                            .font(.system(.caption, design: .rounded, weight: .bold))
-                    }
-                }
+                let chartYScaleMax = chartYScaleMax(maxYValue: allTimeRepetitionsPR(in: workoutSets))
+                AxisMarks(values: [0, chartYScaleMax / 2, chartYScaleMax])
             }
             .emptyPlaceholder(allDailyMaxRepsSets) {
                 Text(NSLocalizedString("noData", comment: ""))
             }
             .frame(height: 300)
+            .padding(.leading)
+            .padding(.trailing, 5)
             Spacer()
         }
         .isBlockedWithoutPro()
-        .padding(.horizontal)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -214,7 +227,7 @@ struct ExerciseRepetitionsScreen: View {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         switch chartGranularity {
         case .month:
-            return "\(chartScrollPosition.formatted(.dateTime.day().month())) - \(endDate.formatted(.dateTime.day().month()))"
+            return "\(chartScrollPosition.isInCurrentYear ? chartScrollPosition.formatted(.dateTime.day().month()) : chartScrollPosition.formatted(.dateTime.day().month().year())) - \(endDate.isInCurrentYear ? endDate.formatted(.dateTime.day().month()) : endDate.formatted(.dateTime.day().month().year()))"
         case .year:
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
         }
@@ -243,6 +256,11 @@ struct ExerciseRepetitionsScreen: View {
         return setsInTimeFrame
             .map { $0.maximum(.repetitions, for: exercise) }
             .max()
+    }
+    
+    private func chartYScaleMax(maxYValue: Int) -> Int {
+        let nextBiggerYAxisMaxValue = yAxisMaxValues.filter { $0 > maxYValue }.min()
+        return nextBiggerYAxisMaxValue ?? maxYValue
     }
 }
 

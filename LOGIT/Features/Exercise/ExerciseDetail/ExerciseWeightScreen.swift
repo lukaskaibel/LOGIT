@@ -21,10 +21,7 @@ struct ExerciseWeightScreen: View {
     @State private var chartScrollPosition: Date = .now
 
     var body: some View {
-        let groupedWorkoutSets = Dictionary(grouping: workoutSets) {
-            Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
-        }.sorted { $0.key < $1.key }
-        let allDailyMaxSets = allDailyMaxWeightSets(in: groupedWorkoutSets.map { $0.1 })
+        let allDailyMaxSets = allDailyMaxWeightSets(in: workoutSets)
         let bestVisibleWeight = bestWeightInGranularity(workoutSets)
         VStack {
             Picker("Select Chart Granularity", selection: $chartGranularity) {
@@ -142,10 +139,6 @@ struct ExerciseWeightScreen: View {
             Spacer()
         }
         .isBlockedWithoutPro()
-        .onAppear {
-            let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
-            chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!
-        }
         .padding(.horizontal)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -160,9 +153,13 @@ struct ExerciseWeightScreen: View {
             }
         }
     }
-
-    private func allDailyMaxWeightSets(in groupedWorkoutSets: [[WorkoutSet]]) -> [WorkoutSet] {
-        let maxSetsPerDay = groupedWorkoutSets
+    
+    private func allDailyMaxWeightSets(in workoutSets: [WorkoutSet]) -> [WorkoutSet] {
+        let groupedSets = Dictionary(grouping: workoutSets) {
+            Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
+        }.sorted { $0.key < $1.key }
+            .map { $0.1 }
+        let maxSetsPerDay = groupedSets
             .compactMap { setsPerDay -> WorkoutSet? in
                 return setsPerDay.max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
             }
@@ -181,7 +178,7 @@ struct ExerciseWeightScreen: View {
             to: .now
         )!
         let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
-        guard let firstSetDate = workoutSets.first?.workout?.date, firstSetDate < maxStartDate
+        guard let firstSetDate = allDailyMaxWeightSets(in: workoutSets).first?.workout?.date, firstSetDate < maxStartDate
         else { return maxStartDate ... endDate }
         let startDate = chartGranularity == .month ? firstSetDate.startOfMonth : firstSetDate.startOfYear
         return startDate ... endDate

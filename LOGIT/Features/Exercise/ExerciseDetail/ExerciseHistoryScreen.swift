@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ExerciseHistoryScreen: View {
-    @StateObject var exercise: Exercise
+    let exercise: Exercise
 
     var body: some View {
         FetchRequestWrapper(

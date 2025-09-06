@@ -45,6 +45,7 @@ struct ExerciseDetailScreen: View {
             predicate: WorkoutSetGroupPredicateFactory.getWorkoutSetGroups(withExercise: exercise)
         ) { workoutSetGroups in
             let recentWorkoutSetGroups = workoutSetGroups.prefix(3)
+            let workoutSets = workoutSetGroups.flatMap { $0.sets }
             ScrollView {
                 VStack(spacing: SECTION_SPACING) {
                     header
@@ -54,19 +55,19 @@ struct ExerciseDetailScreen: View {
                         Button {
                             isShowingWeightScreen = true
                         } label: {
-                            ExerciseWeightTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
+                            ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
                         }
                         .buttonStyle(TileButtonStyle())
                         Button {
                             isShowingRepetitionsScreen = true
                         } label: {
-                            ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
+                            ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
                         }
                         .buttonStyle(TileButtonStyle())
                         Button {
                             isShowingVolumeScreen = true
                         } label: {
-                            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSetGroups.flatMap { $0.sets })
+                            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
                         }
                         .buttonStyle(TileButtonStyle())
                     }
@@ -159,13 +160,13 @@ struct ExerciseDetailScreen: View {
                 ExerciseHistoryScreen(exercise: exercise)
             }
             .navigationDestination(isPresented: $isShowingWeightScreen) {
-                ExerciseWeightScreen(exercise: exercise)
+                ExerciseWeightScreen(exercise: exercise, workoutSets: workoutSets)
             }
             .navigationDestination(isPresented: $isShowingRepetitionsScreen) {
-                ExerciseRepetitionsScreen(exercise: exercise)
+                ExerciseRepetitionsScreen(exercise: exercise, workoutSets: workoutSets)
             }
             .navigationDestination(isPresented: $isShowingVolumeScreen) {
-                ExerciseVolumeScreen(exercise: exercise)
+                ExerciseVolumeScreen(exercise: exercise, workoutSets: workoutSets)
             }
         }
     }

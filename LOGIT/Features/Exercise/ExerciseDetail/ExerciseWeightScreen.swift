@@ -13,14 +13,14 @@ struct ExerciseWeightScreen: View {
         case month, year
     }
 
-    @StateObject var exercise: Exercise
+    let exercise: Exercise
+    let workoutSets: [WorkoutSet]
 
     @State private var chartGranularity: ChartGranularity = .month
     @State private var isShowingCurrentBestInfo = false
     @State private var chartScrollPosition: Date = .now
 
     var body: some View {
-        let workoutSets = exercise.sets.sorted { $0.workout?.date ?? .now < $1.workout?.date ?? .now }
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
@@ -35,7 +35,6 @@ struct ExerciseWeightScreen: View {
             }
             .pickerStyle(.segmented)
             .padding(.vertical)
-
             VStack(alignment: .leading) {
                 Text(NSLocalizedString("monthlyBest", comment: ""))
                     .font(.footnote)
@@ -248,8 +247,9 @@ private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
 
     var body: some View {
+        let exercise = database.getExercises().first!
         NavigationView {
-            ExerciseWeightScreen(exercise: database.getExercises().first!)
+            ExerciseWeightScreen(exercise: exercise, workoutSets: exercise.sets)
         }
     }
 }

@@ -13,13 +13,13 @@ struct ExerciseVolumeScreen: View {
         case month, year
     }
 
-    @StateObject var exercise: Exercise
+    let exercise: Exercise
+    let workoutSets: [WorkoutSet]
 
     @State private var chartGranularity: ChartGranularity = .month
     @State private var chartScrollPosition: Date = .now
 
     var body: some View {
-        let workoutSets = exercise.sets
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
         ScrollView {
             VStack {
@@ -175,8 +175,9 @@ private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
 
     var body: some View {
+        let exercise = database.getExercises().first!
         NavigationView {
-            ExerciseVolumeScreen(exercise: database.getExercises().first!)
+            ExerciseVolumeScreen(exercise: exercise, workoutSets: exercise.sets)
         }
     }
 }

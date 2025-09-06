@@ -13,14 +13,14 @@ struct ExerciseRepetitionsScreen: View {
         case month, year
     }
 
-    @StateObject var exercise: Exercise
+    let exercise: Exercise
+    let workoutSets: [WorkoutSet]
 
     @State private var chartGranularity: ChartGranularity = .month
     @State private var isShowingCurrentBestInfo = false
     @State private var chartScrollPosition: Date = .now
 
     var body: some View {
-        let workoutSets = exercise.sets.sorted { $0.workout?.date ?? .now < $1.workout?.date ?? .now }
         let allDailyMaxRepsSets = allDailyMaxRepetitionsSets(in: workoutSets)
         let bestRepsInGranularity: Int? = bestRepetitionsInGranularity(in: workoutSets)
         VStack {
@@ -250,8 +250,9 @@ private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
 
     var body: some View {
+        let exercise = database.getExercises().first!
         NavigationView {
-            ExerciseRepetitionsScreen(exercise: database.getExercises().first!)
+            ExerciseRepetitionsScreen(exercise: exercise, workoutSets: exercise.sets)
         }
     }
 }

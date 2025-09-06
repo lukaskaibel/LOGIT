@@ -60,6 +60,21 @@ public extension WorkoutSetGroup {
                 currentExercises[0] = newExercise
             }
             exercises = currentExercises
+
+            // Ensure inverse ordered relationship on Exercise is kept in sync
+            // (Needed because weight / repetitions screens rely on exercise.sets -> exercise.setGroups order list)
+            if let id = self.id {
+                var order = newExercise.setGroupOrder ?? []
+                if !order.contains(id) { // append if missing
+                    order.append(id)
+                    newExercise.setGroupOrder = order
+                    // also update raw setGroups_ NSSet so Core Data inverse is aware
+                    let existing = (newExercise.setGroups_?.allObjects as? [WorkoutSetGroup]) ?? []
+                    if !existing.contains(where: { $0 == self }) {
+                        newExercise.setGroups_ = NSSet(array: existing + [self])
+                    }
+                }
+            }
         }
     }
 
@@ -78,6 +93,19 @@ public extension WorkoutSetGroup {
                 currentExercises.replaceValue(at: 1, with: exercise)
             }
             exercises = currentExercises
+
+            // Maintain ordered inverse relationship for secondary exercise as well
+            if let id = self.id {
+                var order = exercise.setGroupOrder ?? []
+                if !order.contains(id) {
+                    order.append(id)
+                    exercise.setGroupOrder = order
+                    let existing = (exercise.setGroups_?.allObjects as? [WorkoutSetGroup]) ?? []
+                    if !existing.contains(where: { $0 == self }) {
+                        exercise.setGroups_ = NSSet(array: existing + [self])
+                    }
+                }
+            }
         }
     }
 

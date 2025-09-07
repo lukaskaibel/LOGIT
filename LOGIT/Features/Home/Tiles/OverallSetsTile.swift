@@ -29,8 +29,13 @@ struct OverallSetsTile: View {
             HStack(alignment: .bottom) {
                 HStack(alignment: .lastTextBaseline, spacing: 5) {
                     let numberOfSetsThisWeek = workoutsThisWeek.map { $0.sets }.joined().count
-                    UnitView(value: "\(numberOfSetsThisWeek)", unit: NSLocalizedString("set\(numberOfSetsThisWeek == 1 ? "" : "s")", comment: ""), configuration: .large)
-                        .foregroundStyle(Color.accentColor)
+                    UnitView(
+                        value: "\(numberOfSetsThisWeek)",
+                        unit: NSLocalizedString("set\(numberOfSetsThisWeek == 1 ? "" : "s")", comment: ""),
+                        configuration: .large,
+                        unitColor: .secondaryLabel
+                    )
+                    .foregroundStyle(Color.accentColor)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Chart {

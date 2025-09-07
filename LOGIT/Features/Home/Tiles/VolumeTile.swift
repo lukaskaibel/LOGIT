@@ -40,7 +40,8 @@ struct VolumeTile: View {
                     UnitView(
                         value: "\(convertWeightForDisplaying(getVolume(of: setsThisWeek)))",
                         unit: WeightUnit.used.rawValue,
-                        configuration: .large
+                        configuration: .large,
+                        unitColor: .secondaryLabel
                     )
                     .foregroundStyle(Color.accentColor.gradient)
                 }

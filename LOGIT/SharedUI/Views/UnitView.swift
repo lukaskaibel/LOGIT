@@ -15,7 +15,7 @@ struct UnitView: View {
     let value: String
     let unit: String
     var configuration: UnitViewConfiguration = .normal
-    var unitColor: Color = .secondaryLabel
+    var unitColor: Color?
 
     var body: some View {
         HStack(alignment: .lastTextBaseline, spacing: 2) {
@@ -23,11 +23,18 @@ struct UnitView: View {
                 .font(configuration == .large ? .title : configuration == .small ? .subheadline : .title3)
                 .fontWeight(.bold)
                 .fontDesign(.rounded)
-            Text(unit.uppercased())
-                .foregroundStyle(unitColor)
-                .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
-                .fontWeight(.semibold)
-                .fontDesign(.rounded)
+            if let unitColor = unitColor {
+                Text(unit.uppercased())
+                    .foregroundStyle(unitColor)
+                    .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
+                    .fontWeight(.semibold)
+                    .fontDesign(.rounded)
+            } else {
+                Text(unit.uppercased())
+                    .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
+                    .fontWeight(.semibold)
+                    .fontDesign(.rounded)
+            }
         }
     }
 }

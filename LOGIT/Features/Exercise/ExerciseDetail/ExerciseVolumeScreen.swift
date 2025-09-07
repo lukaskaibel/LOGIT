@@ -65,7 +65,7 @@ struct ExerciseVolumeScreen: View {
                 .chartScrollPosition(x: $chartScrollPosition)
                 .chartScrollTargetBehavior(
                     .valueAligned(
-                        matching: chartGranularity == .month ? DateComponents(weekday: 2) : DateComponents(month: 1, day: 1)
+                        matching: chartGranularity == .month ? DateComponents(weekday: Calendar.current.firstWeekday) : DateComponents(month: 1, day: 1)
                     )
                 )
                 .chartXVisibleDomain(length: visibleChartDomainInSeconds)

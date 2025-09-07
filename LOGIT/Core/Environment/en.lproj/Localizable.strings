@@ -29,6 +29,7 @@
 // MARK: - B
 
 "back" = "Back";
+"best" = "Best";
 "bestPerDay" = "Best per Day";
 "bestThisMonth" = "Best this Month";
 "bestWeightPerDay" = "Best Weight per Day";

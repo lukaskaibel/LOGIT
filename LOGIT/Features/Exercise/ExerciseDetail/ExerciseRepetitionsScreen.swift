@@ -36,7 +36,7 @@ struct ExerciseRepetitionsScreen: View {
             .padding(.vertical)
             .padding(.horizontal)
             VStack(alignment: .leading) {
-                Text("Monthly best")
+                Text(NSLocalizedString("best", comment: ""))
                     .font(.footnote)
                     .fontWeight(.medium)
                     .textCase(.uppercase)
@@ -124,7 +124,7 @@ struct ExerciseRepetitionsScreen: View {
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
                 .valueAligned(
-                    matching: chartGranularity == .month ? DateComponents(weekday: 2) : DateComponents(month: 1, day: 1)
+                    matching: chartGranularity == .month ? DateComponents(weekday: Calendar.current.firstWeekday) : DateComponents(month: 1, day: 1)
                 )
             )
             .chartXVisibleDomain(length: visibleChartDomainInSeconds)
@@ -166,6 +166,10 @@ struct ExerciseRepetitionsScreen: View {
                         .font(.footnote)
                 }
             }
+        }
+        .onAppear {
+            let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
+            chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!
         }
     }
 

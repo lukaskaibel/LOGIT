@@ -26,23 +26,22 @@ struct CurrentWeekWeeklyTargetTile: View {
         ) { workouts in
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
-                    HStack {
-                        Image(systemName: "target")
-                        Text(NSLocalizedString("workoutGoal", comment: ""))
-                    }
-                    .tileHeaderStyle()
+                    Text(NSLocalizedString("workoutGoal", comment: ""))
+                        .tileHeaderStyle()
                     Spacer()
                     NavigationChevron()
                         .foregroundStyle(.secondary)
                 }
                 HStack(alignment: .bottom) {
-                    HStack(alignment: .lastTextBaseline) {
+                    HStack(alignment: .lastTextBaseline, spacing: 3) {
                         Text("\(workouts.count)")
                             .font(.title)
                             .fontWeight(.bold)
                             .foregroundStyle(Color.accentColor.gradient)
                         Text("\(NSLocalizedString("of", comment: "")) \(targetPerWeek)")
                             .foregroundStyle(Color.secondaryLabel)
+                            .fontWeight(.semibold)
+                            .fontDesign(.rounded)
                     }
                     Spacer()
                     Chart {

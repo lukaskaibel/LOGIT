@@ -226,7 +226,7 @@ struct HomeScreen: View {
                     case let .template(template):
                         TemplateDetailScreen(template: template)
                     case .templateList: TemplateListScreen()
-                    case .volume: VolumeScreen()
+                    case .volume: VolumeScreen(workoutSets: workouts.flatMap(\.sets))
                     case let .workout(workout):
                         WorkoutDetailScreen(
                             workout: workout,

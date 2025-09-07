@@ -221,7 +221,7 @@ struct HomeScreen: View {
                     case .measurements: MeasurementsScreen()
                     case .muscleGroupsOverview:
                         MuscleGroupSplitScreen()
-                    case .overallSets: OverallSetsScreen()
+                    case .overallSets: OverallSetsScreen(workouts: workouts)
                     case .targetPerWeek: TargetPerWeekDetailScreen()
                     case let .template(template):
                         TemplateDetailScreen(template: template)

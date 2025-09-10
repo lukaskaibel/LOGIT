@@ -12,12 +12,13 @@ struct OverallSetsScreen: View {
     private enum ChartGranularity {
         case week, month, year
     }
-
+    
     @State private var chartGranularity: ChartGranularity = .week
     @State private var chartScrollPosition: Date = .now
+    @State private var selectedDate: Date?
     
     let workouts: [Workout]
-
+    
     var body: some View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
@@ -31,6 +32,7 @@ struct OverallSetsScreen: View {
                             .tag(ChartGranularity.year)
                     }
                     .pickerStyle(.segmented)
+                    
                     VStack(alignment: .leading) {
                         Text(NSLocalizedString("total", comment: ""))
                             .font(.footnote)
@@ -48,9 +50,34 @@ struct OverallSetsScreen: View {
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-
+                    
                     let grouped = setsGroupedByGranularity(workouts)
                     Chart {
+                        // Single selection rule mark snapped to the start of the selected period
+                        if let selectedDate {
+                            let snapped = getPeriodStart(for: selectedDate)
+                            let selectedCount = grouped.first(where: { $0.date == snapped })?.workoutSets.count ?? 0
+                            RuleMark(x: .value("Selected", snapped, unit: xUnit))
+                                .foregroundStyle(Color.accentColor.opacity(0.35))
+                                .lineStyle(StrokeStyle(lineWidth: 1))
+                                .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                                    VStack(alignment: .leading) {
+                                        UnitView(
+                                            value: "\(selectedCount)",
+                                            unit: NSLocalizedString("sets", comment: "")
+                                        )
+                                        .foregroundStyle(Color.accentColor.gradient)
+                                        Text(domainDescription(for: selectedDate))
+                                            .fontWeight(.bold)
+                                            .fontDesign(.rounded)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
+                                }
+                        }
+                        
                         ForEach(grouped, id: \.date) { data in
                             if data.workoutSets.count > 0 {
                                 BarMark(
@@ -59,6 +86,8 @@ struct OverallSetsScreen: View {
                                     width: .ratio(0.5)
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: 1))
+                                .foregroundStyle(Color.accentColor)
+                                .opacity(selectedDate == nil || isBarSelected(barDate: data.date) ? 1.0 : 0.3)
                             } else {
                                 // Keep spacing with a transparent zero bar (optional)
                                 BarMark(
@@ -78,6 +107,7 @@ struct OverallSetsScreen: View {
                             matching: scrollAlignmentComponents
                         )
                     )
+                    .chartXSelection(value: $selectedDate)
                     .chartXVisibleDomain(length: visibleChartDomainInSeconds)
                     .chartXAxis {
                         AxisMarks(
@@ -115,9 +145,9 @@ struct OverallSetsScreen: View {
             }
         }
     }
-
+    
     // MARK: - Scroll / Domain Helpers
-
+    
     private var visibleChartDomainInSeconds: Int {
         switch chartGranularity {
         case .week: return 3600 * 24 * 7
@@ -125,7 +155,7 @@ struct OverallSetsScreen: View {
         case .year: return 3600 * 24 * 365
         }
     }
-
+    
     private var visibleDomainDescription: String {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         switch chartGranularity {
@@ -139,6 +169,26 @@ struct OverallSetsScreen: View {
         case .year:
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
         }
+    }
+    
+    private func domainDescription(for date: Date) -> String {
+        switch chartGranularity {
+        case .week:
+            return "\(date.formatted(.dateTime.day().month()))"
+        case .month:
+            return "\(date.startOfWeek.formatted(.dateTime.day().month())) - \(date.endOfWeek.formatted(.dateTime.day().month()))"
+        case .year:
+            return "\(date.formatted(.dateTime.month(.wide)))"
+        }
+    }
+    
+    private func isBarSelected(barDate: Date) -> Bool {
+        guard let selectedDate = selectedDate else { return false }
+        return selectedDate >= barDate && selectedDate <= Calendar.current.date(
+            byAdding: chartGranularity == .week ? .day : chartGranularity == .month ? .weekOfYear : .month,
+            value: 1,
+            to: barDate
+        )!
     }
 
     private func totalSetsInTimeFrame(_ workouts: [Workout]) -> Int {

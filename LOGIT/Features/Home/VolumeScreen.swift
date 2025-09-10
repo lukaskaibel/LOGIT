@@ -16,6 +16,7 @@ struct VolumeScreen: View {
     @State private var chartGranularity: ChartGranularity = .month
     @State private var selectedMuscleGroup: MuscleGroup?
     @State private var chartScrollPosition: Date = .now
+    @State private var selectedDate: Date?
     
     let workoutSets: [WorkoutSet]
 
@@ -53,6 +54,43 @@ struct VolumeScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                     Chart {
+                        // Single selection rule mark snapped to the start of the selected period
+            if let selectedDate {
+                            let snapped = getPeriodStart(for: selectedDate)
+                            let selectedVolume: Int = {
+                                switch chartGranularity {
+                                case .month:
+                                    let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
+                                    if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
+                                    return volume(for: sets)
+                case .year:
+                    // Year view still selects per week
+                    let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
+                                    if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
+                                    return volume(for: sets)
+                                }
+                            }()
+                RuleMark(x: .value("Selected", snapped, unit: xUnit))
+                                .foregroundStyle(Color.accentColor.opacity(0.35))
+                                .lineStyle(StrokeStyle(lineWidth: 1))
+                                .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                                    VStack(alignment: .leading) {
+                                        UnitView(
+                                            value: "\(selectedVolume)",
+                                            unit: WeightUnit.used.rawValue
+                                        )
+                                        .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient)
+                                        Text(domainDescription(for: selectedDate))
+                                            .fontWeight(.bold)
+                                            .fontDesign(.rounded)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
+                                }
+                        }
+
                         ForEach(groupedWorkoutSets, id: \.0) { date, workoutSets in
                             if let selectedMuscleGroup = selectedMuscleGroup {
                                 let mgVolume = volume(for: workoutSets, muscleGroup: selectedMuscleGroup)
@@ -63,6 +101,7 @@ struct VolumeScreen: View {
                                         width: .ratio(0.5)
                                     )
                                     .foregroundStyle(selectedMuscleGroup.color.gradient)
+                                    .opacity(selectedDate == nil || isBarSelected(barDate: date) ? 1.0 : 0.3)
                                 }
                             }
                             let total = volume(for: workoutSets)
@@ -74,6 +113,7 @@ struct VolumeScreen: View {
                                     width: .ratio(0.5)
                                 )
                                 .foregroundStyle((selectedMuscleGroup == nil ? Color.accentColor : Color.placeholder).gradient)
+                                .opacity(selectedDate == nil || isBarSelected(barDate: date) ? 1.0 : 0.3)
                             }
                         }
                     }
@@ -85,6 +125,7 @@ struct VolumeScreen: View {
                             matching: chartGranularity == .month ? DateComponents(weekday: Calendar.current.firstWeekday) : DateComponents(month: 1, day: 1)
                         )
                     )
+                    .chartXSelection(value: $selectedDate)
                     .chartXVisibleDomain(length: visibleChartDomainInSeconds)
                     .chartXAxis {
                         AxisMarks(
@@ -140,6 +181,13 @@ struct VolumeScreen: View {
 
     private var visibleChartDomainInSeconds: Int { 3600 * 24 * (chartGranularity == .month ? 35 : 365) }
 
+    private var xUnit: Calendar.Component {
+        switch chartGranularity {
+        case .month: return .weekOfYear
+        case .year: return .weekOfYear // select by week in year view
+        }
+    }
+
     private func xDomain(for groupedWorkoutSets: [[WorkoutSet]]) -> some ScaleDomain {
         let maxStartDate = Calendar.current.date(
             byAdding: chartGranularity == .month ? .month : .year,
@@ -180,6 +228,17 @@ struct VolumeScreen: View {
         }
     }
 
+    private func isBarSelected(barDate: Date) -> Bool {
+        guard let selectedDate = selectedDate else { return false }
+        switch chartGranularity {
+        case .month:
+            return selectedDate >= barDate && selectedDate <= barDate.endOfWeek
+        case .year:
+            // Year view: still select by week
+            return selectedDate >= barDate && selectedDate <= barDate.endOfWeek
+        }
+    }
+
     private func xAxisDateString(for date: Date) -> String {
         switch chartGranularity {
         case .month:
@@ -199,6 +258,23 @@ struct VolumeScreen: View {
     }
 
     // Removed old non-scrollable grouping helpers
+
+    private func getPeriodStart(for date: Date) -> Date {
+        switch chartGranularity {
+        case .month: return date.startOfWeek
+        case .year: return date.startOfWeek // weekly selection in year view
+        }
+    }
+
+    private func domainDescription(for date: Date) -> String {
+        switch chartGranularity {
+        case .month:
+            return "\(date.startOfWeek.formatted(.dateTime.day().month())) - \(date.endOfWeek.formatted(.dateTime.day().month()))"
+        case .year:
+            // Year view: describe the selected week range
+            return "\(date.startOfWeek.formatted(.dateTime.day().month())) - \(date.endOfWeek.formatted(.dateTime.day().month()))"
+        }
+    }
 }
 
 private struct PreviewWrapperView: View {

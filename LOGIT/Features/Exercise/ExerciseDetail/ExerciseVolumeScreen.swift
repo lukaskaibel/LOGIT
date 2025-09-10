@@ -18,6 +18,7 @@ struct ExerciseVolumeScreen: View {
 
     @State private var chartGranularity: ChartGranularity = .month
     @State private var chartScrollPosition: Date = .now
+    @State private var selectedDate: Date?
 
     var body: some View {
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
@@ -51,13 +52,49 @@ struct ExerciseVolumeScreen: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
                 Chart {
-                    ForEach(groupedWorkoutSets, id: \.0) { _, workoutSets in
+                    // Single selection rule mark snapped to the start of the selected period
+                    if let selectedDate {
+                        let snapped = getPeriodStart(for: selectedDate)
+                        let selectedVolume: Int = {
+                            switch chartGranularity {
+                            case .month:
+                                let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
+                                return volume(for: sets)
+                            case .year:
+                                // Year view still selects per week
+                                let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
+                                return volume(for: sets)
+                            }
+                        }()
+                        RuleMark(x: .value("Selected", snapped, unit: xUnit))
+                            .foregroundStyle(Color.accentColor.opacity(0.35))
+                            .lineStyle(StrokeStyle(lineWidth: 1))
+                            .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                                VStack(alignment: .leading) {
+                                    UnitView(
+                                        value: "\(selectedVolume)",
+                                        unit: WeightUnit.used.rawValue
+                                    )
+                                    .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
+                                    Text(domainDescription(for: selectedDate))
+                                        .fontWeight(.bold)
+                                        .fontDesign(.rounded)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
+                            }
+                    }
+
+                    ForEach(groupedWorkoutSets, id: \.0) { date, workoutSets in
                         BarMark(
-                            x: .value("Day", workoutSets.first?.workout?.date ?? .now, unit: .weekOfYear),
+                            x: .value("Day", date, unit: .weekOfYear),
                             y: .value("Volume", volume(for: workoutSets)),
                             width: .ratio(0.5)
                         )
                         .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
+                        .opacity(selectedDate == nil || isBarSelected(barDate: date) ? 1.0 : 0.3)
                     }
                 }
                 .chartXScale(domain: xDomain(for: groupedWorkoutSets.map { $0.1 }))
@@ -68,6 +105,7 @@ struct ExerciseVolumeScreen: View {
                         matching: chartGranularity == .month ? DateComponents(weekday: Calendar.current.firstWeekday) : DateComponents(month: 1, day: 1)
                     )
                 )
+                .chartXSelection(value: $selectedDate)
                 .chartXVisibleDomain(length: visibleChartDomainInSeconds)
                 .chartXAxis {
                     AxisMarks(
@@ -168,6 +206,43 @@ struct ExerciseVolumeScreen: View {
             return "\(chartScrollPosition.isInCurrentYear ? chartScrollPosition.formatted(.dateTime.day().month()) : chartScrollPosition.formatted(.dateTime.day().month().year())) - \(endDate.isInCurrentYear ? endDate.formatted(.dateTime.day().month()) : endDate.formatted(.dateTime.day().month().year()))"
         case .year:
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
+        }
+    }
+
+    // MARK: - Selection helpers
+
+    private var xUnit: Calendar.Component {
+        switch chartGranularity {
+        case .month: return .weekOfYear
+        case .year: return .weekOfYear // select by week in year view
+        }
+    }
+
+    private func getPeriodStart(for date: Date) -> Date {
+        switch chartGranularity {
+        case .month: return date.startOfWeek
+        case .year: return date.startOfWeek // weekly selection in year view
+        }
+    }
+
+    private func isBarSelected(barDate: Date) -> Bool {
+        guard let selectedDate = selectedDate else { return false }
+        switch chartGranularity {
+        case .month:
+            return selectedDate >= barDate && selectedDate <= barDate.endOfWeek
+        case .year:
+            // Year view: still select by week
+            return selectedDate >= barDate && selectedDate <= barDate.endOfWeek
+        }
+    }
+
+    private func domainDescription(for date: Date) -> String {
+        switch chartGranularity {
+        case .month:
+            return "\(date.startOfWeek.formatted(.dateTime.day().month())) - \(date.endOfWeek.formatted(.dateTime.day().month()))"
+        case .year:
+            // Year view: describe the selected week range
+            return "\(date.startOfWeek.formatted(.dateTime.day().month())) - \(date.endOfWeek.formatted(.dateTime.day().month()))"
         }
     }
 }

@@ -71,12 +71,12 @@ class PurchaseManager: NSObject, ObservableObject {
 
     var hasUnlockedPro: Bool {
         #if DEBUG
-        return true
+            return true
         #else
-        if let proExpirationDate = proExpirationDate {
-            return proExpirationDate > .now
-        }
-        return false
+            if let proExpirationDate = proExpirationDate {
+                return proExpirationDate > .now
+            }
+            return false
         #endif
     }
 

@@ -37,7 +37,7 @@ struct WorkoutSetGroupCell: View {
         VStack(spacing: CELL_PADDING) {
             header
                 .padding([.top, .horizontal], CELL_PADDING)
-            
+
             if !isReordering {
                 VStack(spacing: CELL_PADDING) {
                     VStack(spacing: CELL_SPACING) {

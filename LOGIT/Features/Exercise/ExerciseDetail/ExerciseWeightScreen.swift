@@ -12,7 +12,7 @@ struct ExerciseWeightScreen: View {
     private enum ChartGranularity {
         case month, year
     }
-    
+
     private let yAxisMaxValuesKG = [10, 25, 50, 100, 150, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
     private let yAxisMaxValuesLBS = [25, 55, 110, 225, 335, 445, 665, 885, 1105, 1325, 1545, 1765, 1985, 2205]
 
@@ -25,9 +25,9 @@ struct ExerciseWeightScreen: View {
     @State private var selectedDate: Date?
 
     var body: some View {
-    let allDailyMaxSets = allDailyMaxWeightSets(in: workoutSets)
-    // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
-    let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
+        let allDailyMaxSets = allDailyMaxWeightSets(in: workoutSets)
+        // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
+        let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
         let bestVisibleWeight = bestWeightInGranularity(workoutSets)
         VStack {
             Picker("Select Chart Granularity", selection: $chartGranularity) {
@@ -227,7 +227,7 @@ struct ExerciseWeightScreen: View {
             chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: anchor)!
         }
     }
-    
+
     private func allDailyMaxWeightSets(in workoutSets: [WorkoutSet]) -> [WorkoutSet] {
         let groupedSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
@@ -312,7 +312,7 @@ struct ExerciseWeightScreen: View {
             .map { $0.maximum(.weight, for: exercise) }
             .max()
     }
-    
+
     private func chartYScaleMax(maxYValue: Int) -> Int {
         let values = WeightUnit.used == .kg ? yAxisMaxValuesKG : yAxisMaxValuesLBS
         let nextBiggerYAxisMaxValue = values.filter { $0 > maxYValue }.min()

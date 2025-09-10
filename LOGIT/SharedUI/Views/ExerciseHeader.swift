@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct ExerciseHeader: View {
-    
-    //MARK: - Environment
-    
+    // MARK: - Environment
+
     @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
-    
+
     // MARK: - Parameters
 
     let exercise: Exercise?
@@ -23,7 +22,7 @@ struct ExerciseHeader: View {
     let isSuperSet: Bool
     let navigationToDetailEnabled: Bool
     let shouldShowExerciseDetailInSheet: Bool
-    
+
     @State private var isShowingNavigationDetailSheet = false
 
     // MARK: - Body
@@ -57,14 +56,10 @@ struct ExerciseHeader: View {
                         if navigationToDetailEnabled {
                             NavigationChevron()
                                 .foregroundColor(.secondaryLabel)
-                        } else {
-                            
-                        }
+                        } else {}
                     }
                 }
-                NavigationLink(destination: ExerciseDetailScreen(exercise: exercise)) {
-                    
-                }
+                NavigationLink(destination: ExerciseDetailScreen(exercise: exercise)) {}
             } else {
                 Button(action: noExerciseAction) {
                     HStack(spacing: 3) {
@@ -119,7 +114,7 @@ struct ExerciseHeader: View {
         .lineLimit(1)
         .sheet(isPresented: $isShowingNavigationDetailSheet) {
             if let exercise = exercise {
-                ExerciseDetailScreen(exercise: exercise)                
+                ExerciseDetailScreen(exercise: exercise)
             }
         }
     }

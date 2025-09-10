@@ -63,7 +63,7 @@ public extension WorkoutSetGroup {
 
             // Ensure inverse ordered relationship on Exercise is kept in sync
             // (Needed because weight / repetitions screens rely on exercise.sets -> exercise.setGroups order list)
-            if let id = self.id {
+            if let id = id {
                 var order = newExercise.setGroupOrder ?? []
                 if !order.contains(id) { // append if missing
                     order.append(id)
@@ -95,7 +95,7 @@ public extension WorkoutSetGroup {
             exercises = currentExercises
 
             // Maintain ordered inverse relationship for secondary exercise as well
-            if let id = self.id {
+            if let id = id {
                 var order = exercise.setGroupOrder ?? []
                 if !order.contains(id) {
                     order.append(id)

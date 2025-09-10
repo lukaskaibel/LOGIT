@@ -12,13 +12,13 @@ struct OverallSetsScreen: View {
     private enum ChartGranularity {
         case week, month, year
     }
-    
+
     @State private var chartGranularity: ChartGranularity = .week
     @State private var chartScrollPosition: Date = .now
     @State private var selectedDate: Date?
-    
+
     let workouts: [Workout]
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
@@ -32,7 +32,7 @@ struct OverallSetsScreen: View {
                             .tag(ChartGranularity.year)
                     }
                     .pickerStyle(.segmented)
-                    
+
                     VStack(alignment: .leading) {
                         Text(NSLocalizedString("total", comment: ""))
                             .font(.footnote)
@@ -50,7 +50,7 @@ struct OverallSetsScreen: View {
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    
+
                     let grouped = setsGroupedByGranularity(workouts)
                     Chart {
                         ForEach(grouped, id: \.date) { data in
@@ -144,9 +144,9 @@ struct OverallSetsScreen: View {
             }
         }
     }
-    
+
     // MARK: - Scroll / Domain Helpers
-    
+
     private var visibleChartDomainInSeconds: Int {
         switch chartGranularity {
         case .week: return 3600 * 24 * 7
@@ -154,7 +154,7 @@ struct OverallSetsScreen: View {
         case .year: return 3600 * 24 * 365
         }
     }
-    
+
     private var visibleDomainDescription: String {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         switch chartGranularity {
@@ -169,7 +169,7 @@ struct OverallSetsScreen: View {
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
         }
     }
-    
+
     private func domainDescription(for date: Date) -> String {
         switch chartGranularity {
         case .week:
@@ -180,7 +180,7 @@ struct OverallSetsScreen: View {
             return "\(date.formatted(.dateTime.month(.wide)))"
         }
     }
-    
+
     private func isBarSelected(barDate: Date) -> Bool {
         guard let selectedDate = selectedDate else { return false }
         return selectedDate >= barDate && selectedDate <= Calendar.current.date(
@@ -201,8 +201,8 @@ struct OverallSetsScreen: View {
 
     private var scrollAlignmentComponents: DateComponents {
         switch chartGranularity {
-    case .week: return DateComponents(weekday: Calendar.current.firstWeekday) // Align to locale start of week
-    case .month: return DateComponents(weekday: Calendar.current.firstWeekday) // Align to locale start of week
+        case .week: return DateComponents(weekday: Calendar.current.firstWeekday) // Align to locale start of week
+        case .month: return DateComponents(weekday: Calendar.current.firstWeekday) // Align to locale start of week
         case .year: return DateComponents(month: 1, day: 1)
         }
     }
@@ -300,9 +300,7 @@ struct OverallSetsScreen: View {
     }
 }
 
-
-
-//#Preview {
+// #Preview {
 //    OverallSetsScreen(workouts: )
 //        .previewEnvironmentObjects()
-//}
+// }

@@ -17,7 +17,7 @@ struct VolumeScreen: View {
     @State private var selectedMuscleGroup: MuscleGroup?
     @State private var chartScrollPosition: Date = .now
     @State private var selectedDate: Date?
-    
+
     let workoutSets: [WorkoutSet]
 
     var body: some View {
@@ -89,8 +89,8 @@ struct VolumeScreen: View {
                                     if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
                                     return volume(for: sets)
                                 case .year:
-                                // Year view still selects per week
-                                let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
+                                    // Year view still selects per week
+                                    let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
                                     if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
                                     return volume(for: sets)
                                 }

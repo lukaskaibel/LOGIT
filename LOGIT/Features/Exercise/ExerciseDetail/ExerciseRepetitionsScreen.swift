@@ -12,7 +12,7 @@ struct ExerciseRepetitionsScreen: View {
     private enum ChartGranularity {
         case month, year
     }
-    
+
     private let yAxisMaxValues = [10, 20, 50, 100, 200]
 
     let exercise: Exercise
@@ -24,9 +24,9 @@ struct ExerciseRepetitionsScreen: View {
     @State private var selectedDate: Date?
 
     var body: some View {
-    let allDailyMaxRepsSets = allDailyMaxRepetitionsSets(in: workoutSets)
-    // Determine the snapped selected set only when a selection exists; snap to the overall nearest datapoint
-    let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxRepsSets) : nil
+        let allDailyMaxRepsSets = allDailyMaxRepetitionsSets(in: workoutSets)
+        // Determine the snapped selected set only when a selection exists; snap to the overall nearest datapoint
+        let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxRepsSets) : nil
         let bestRepsInGranularity: Int? = bestRepetitionsInGranularity(in: workoutSets)
         VStack {
             Picker("Select Chart Granularity", selection: $chartGranularity) {
@@ -316,7 +316,7 @@ struct ExerciseRepetitionsScreen: View {
             .map { $0.maximum(.repetitions, for: exercise) }
             .max()
     }
-    
+
     private func chartYScaleMax(maxYValue: Int) -> Int {
         let nextBiggerYAxisMaxValue = yAxisMaxValues.filter { $0 > maxYValue }.min()
         return nextBiggerYAxisMaxValue ?? maxYValue

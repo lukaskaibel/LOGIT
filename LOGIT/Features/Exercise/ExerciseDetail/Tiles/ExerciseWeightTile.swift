@@ -109,7 +109,7 @@ struct ExerciseWeightTile: View {
                             gradient: Gradient(stops: [
                                 .init(color: .clear, location: 0.0),
                                 .init(color: .black, location: 0.1),
-                                .init(color: .black, location: 1.0)
+                                .init(color: .black, location: 1.0),
                             ]),
                             startPoint: .leading,
                             endPoint: .trailing
@@ -177,7 +177,7 @@ struct ExerciseWeightTile: View {
             .map { $0.maximum(.weight, for: exercise) }
             .max()
     }
-    
+
     private func allTimeWeightPREntry(in workoutSets: [WorkoutSet]) -> (Int, Int, Date?) {
         let workoutSet = workoutSets
             .max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })

@@ -109,7 +109,7 @@ struct ExerciseRepetitionsTile: View {
                             gradient: Gradient(stops: [
                                 .init(color: .clear, location: 0.0),
                                 .init(color: .black, location: 0.1),
-                                .init(color: .black, location: 1.0)
+                                .init(color: .black, location: 1.0),
                             ]),
                             startPoint: .leading,
                             endPoint: .trailing

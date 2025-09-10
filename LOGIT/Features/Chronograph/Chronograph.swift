@@ -35,14 +35,14 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     private var timer: Timer?
     var startDate: Date?
     private var pauseTime: TimeInterval?
-    
+
     // MARK: - Init
-    
+
     override init() {
         super.init()
         // Ask for permission and set delegate
         UNUserNotificationCenter.current().delegate = self
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, error in
             if let error = error {
                 print("Notification auth error: \(error)")
             }
@@ -56,7 +56,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
             seconds = pauseTime!
             pauseTime = nil
         }
-        
+
         if mode == .timer {
             scheduleTimerNotification(inSeconds: seconds)
         }
@@ -94,16 +94,16 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         status = .paused
         cancelTimerNotification()
     }
-    
+
     func setSeconds(_ seconds: Double) {
         self.seconds = seconds
-        self.objectWillChange.send()
+        objectWillChange.send()
         if status == .running {
             cancelTimerNotification()
             scheduleTimerNotification(inSeconds: seconds)
         }
     }
-    
+
     private func reset() {
         timer?.invalidate()
         timer = nil
@@ -111,7 +111,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         seconds = 0
         status = .idle
     }
-    
+
     private var timesUpNotificationRequest: UNNotificationRequest {
         let content = UNMutableNotificationContent()
         content.title = NSLocalizedString("timesUp", comment: "")
@@ -121,7 +121,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
             content.sound = UNNotificationSound(named: UNNotificationSoundName("timer.wav"))
         }
         content.interruptionLevel = .critical
-        
+
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: seconds - 1, repeats: false)
 
         let request = UNNotificationRequest(
@@ -131,7 +131,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         )
         return request
     }
-    
+
     private func scheduleTimerNotification(inSeconds seconds: TimeInterval) {
         UNUserNotificationCenter.current().add(timesUpNotificationRequest) { error in
             if let error = error {
@@ -141,15 +141,16 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
             }
         }
     }
-    
+
     private func cancelTimerNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["timerFinished"])
         print("Timer notification cancelled.")
     }
-    
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                willPresent notification: UNNotification,
-                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+
+    func userNotificationCenter(_: UNUserNotificationCenter,
+                                willPresent _: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)
+    {
         // Show banner, sound, and badge even when app is in foreground
         completionHandler([.banner, .sound, .badge])
     }

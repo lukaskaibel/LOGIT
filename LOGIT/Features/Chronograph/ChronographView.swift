@@ -1,5 +1,5 @@
 //
-//  TimerView.swift
+//  ChronographView.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 09.07.25.
@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct ChronographView<Content: View>: View {
-    
     @ObservedObject var chronograph: Chronograph
     let content: (_ remainingSeconds: Double) -> Content
-    
+
     private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
-    
+
     @State private var seconds: Double = 120
-    
+
     var body: some View {
         content(seconds)
             .onAppear {
@@ -28,12 +27,11 @@ struct ChronographView<Content: View>: View {
                 seconds = chronograph.seconds
             }
     }
-    
 }
 
 private struct ChronographViewPreviewWrapper: View {
     @StateObject private var chronograph = Chronograph()
-    
+
     var body: some View {
         ChronographView(chronograph: chronograph) { remainingSeconds in
             Text("\(remainingSeconds)")

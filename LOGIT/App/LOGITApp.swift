@@ -196,13 +196,13 @@ struct LOGIT: App {
         .frame(maxHeight: .infinity, alignment: .bottom)
         .edgesIgnoringSafeArea(.bottom)
     }
-    
+
     private func showWorkoutRecorder() {
         withAnimation {
             isShowingWorkoutRecorder = true
         }
     }
-    
+
     private func dismissWorkoutRecorder() {
         withAnimation {
             isShowingWorkoutRecorder = false
@@ -229,13 +229,14 @@ extension EnvironmentValues {
         get { self[GoHomeKey.self] }
         set { self[GoHomeKey.self] = newValue }
     }
+
     var presentWorkoutRecorder: () -> Void {
         get { self[PresentWorkoutRecorderKey.self] }
         set { self[PresentWorkoutRecorderKey.self] = newValue }
     }
+
     var dismissWorkoutRecorder: () -> Void {
         get { self[DismissWorkoutRecorderKey.self] }
         set { self[DismissWorkoutRecorderKey.self] = newValue }
     }
 }
-

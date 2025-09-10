@@ -78,11 +78,11 @@ extension Date {
         let minute = Calendar.current.component(.minute, from: self)
         return "\(Calendar.current.component(.hour, from: self)):\(minute / 10)\(minute % 10)"
     }
-    
+
     var isInCurrentYear: Bool {
         let calendar = Calendar.current
         let currentYear = calendar.component(.year, from: Date())
-        let givenYear   = calendar.component(.year, from: self)
+        let givenYear = calendar.component(.year, from: self)
         return currentYear == givenYear
     }
 }

@@ -25,7 +25,7 @@ struct WorkoutRecorderScreen: View {
     @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
 
     @EnvironmentObject private var database: Database
-    @EnvironmentObject internal var workoutRecorder: WorkoutRecorder
+    @EnvironmentObject var workoutRecorder: WorkoutRecorder
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     @EnvironmentObject private var chronograph: Chronograph
 
@@ -200,7 +200,7 @@ struct WorkoutRecorderScreen: View {
                 didAppear = true
                 setUpAutoSaveForWorkout()
                 exerciseSelectionPresentationDetent = workoutRecorder.workout?.isEmpty ?? true ? .medium : .fraction(BOTTOM_SHEET_SMALL)
-                
+
                 if preventAutoLock {
                     UIApplication.shared.isIdleTimerDisabled = true
                 }
@@ -397,8 +397,6 @@ struct WorkoutRecorderScreen: View {
         }
         return nil
     }
-
-    
 
     // MARK: - Autosave
 

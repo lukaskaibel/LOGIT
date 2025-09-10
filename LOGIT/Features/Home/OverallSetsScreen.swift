@@ -53,31 +53,6 @@ struct OverallSetsScreen: View {
                     
                     let grouped = setsGroupedByGranularity(workouts)
                     Chart {
-                        // Single selection rule mark snapped to the start of the selected period
-                        if let selectedDate {
-                            let snapped = getPeriodStart(for: selectedDate)
-                            let selectedCount = grouped.first(where: { $0.date == snapped })?.workoutSets.count ?? 0
-                            RuleMark(x: .value("Selected", snapped, unit: xUnit))
-                                .foregroundStyle(Color.accentColor.opacity(0.35))
-                                .lineStyle(StrokeStyle(lineWidth: 1))
-                                .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
-                                    VStack(alignment: .leading) {
-                                        UnitView(
-                                            value: "\(selectedCount)",
-                                            unit: NSLocalizedString("sets", comment: "")
-                                        )
-                                        .foregroundStyle(Color.accentColor.gradient)
-                                        Text(domainDescription(for: selectedDate))
-                                            .fontWeight(.bold)
-                                            .fontDesign(.rounded)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 8)
-                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
-                                }
-                        }
-                        
                         ForEach(grouped, id: \.date) { data in
                             if data.workoutSets.count > 0 {
                                 BarMark(
@@ -97,6 +72,30 @@ struct OverallSetsScreen: View {
                                 )
                                 .opacity(0)
                             }
+                        }
+                        // Single selection rule mark snapped to the start of the selected period
+                        if let selectedDate {
+                            let snapped = getPeriodStart(for: selectedDate)
+                            let selectedCount = grouped.first(where: { $0.date == snapped })?.workoutSets.count ?? 0
+                            RuleMark(x: .value("Selected", snapped, unit: xUnit))
+                                .foregroundStyle(Color.accentColor.opacity(0.35))
+                                .lineStyle(StrokeStyle(lineWidth: 2))
+                                .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                                    VStack(alignment: .leading) {
+                                        UnitView(
+                                            value: "\(selectedCount)",
+                                            unit: NSLocalizedString("sets", comment: "")
+                                        )
+                                        .foregroundStyle(Color.accentColor.gradient)
+                                        Text(domainDescription(for: selectedDate))
+                                            .fontWeight(.bold)
+                                            .fontDesign(.rounded)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
+                                }
                         }
                     }
                     .chartXScale(domain: xDomain(for: grouped.map { $0.workoutSets }))

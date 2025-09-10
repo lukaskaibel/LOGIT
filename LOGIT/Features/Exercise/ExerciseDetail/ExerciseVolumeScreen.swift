@@ -52,6 +52,15 @@ struct ExerciseVolumeScreen: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
                 Chart {
+                    ForEach(groupedWorkoutSets, id: \.0) { date, workoutSets in
+                        BarMark(
+                            x: .value("Day", date, unit: .weekOfYear),
+                            y: .value("Volume", volume(for: workoutSets)),
+                            width: .ratio(0.5)
+                        )
+                        .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
+                        .opacity(selectedDate == nil || isBarSelected(barDate: date) ? 1.0 : 0.3)
+                    }
                     // Single selection rule mark snapped to the start of the selected period
                     if let selectedDate {
                         let snapped = getPeriodStart(for: selectedDate)
@@ -67,8 +76,8 @@ struct ExerciseVolumeScreen: View {
                             }
                         }()
                         RuleMark(x: .value("Selected", snapped, unit: xUnit))
-                            .foregroundStyle(Color.accentColor.opacity(0.35))
-                            .lineStyle(StrokeStyle(lineWidth: 1))
+                            .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient.opacity(0.35))
+                            .lineStyle(StrokeStyle(lineWidth: 2))
                             .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                                 VStack(alignment: .leading) {
                                     UnitView(
@@ -85,16 +94,6 @@ struct ExerciseVolumeScreen: View {
                                 .padding(.vertical, 8)
                                 .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
                             }
-                    }
-
-                    ForEach(groupedWorkoutSets, id: \.0) { date, workoutSets in
-                        BarMark(
-                            x: .value("Day", date, unit: .weekOfYear),
-                            y: .value("Volume", volume(for: workoutSets)),
-                            width: .ratio(0.5)
-                        )
-                        .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
-                        .opacity(selectedDate == nil || isBarSelected(barDate: date) ? 1.0 : 0.3)
                     }
                 }
                 .chartXScale(domain: xDomain(for: groupedWorkoutSets.map { $0.1 }))

@@ -54,43 +54,6 @@ struct VolumeScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                     Chart {
-                        // Single selection rule mark snapped to the start of the selected period
-            if let selectedDate {
-                            let snapped = getPeriodStart(for: selectedDate)
-                            let selectedVolume: Int = {
-                                switch chartGranularity {
-                                case .month:
-                                    let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
-                                    if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
-                                    return volume(for: sets)
-                case .year:
-                    // Year view still selects per week
-                    let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
-                                    if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
-                                    return volume(for: sets)
-                                }
-                            }()
-                RuleMark(x: .value("Selected", snapped, unit: xUnit))
-                                .foregroundStyle(Color.accentColor.opacity(0.35))
-                                .lineStyle(StrokeStyle(lineWidth: 1))
-                                .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
-                                    VStack(alignment: .leading) {
-                                        UnitView(
-                                            value: "\(selectedVolume)",
-                                            unit: WeightUnit.used.rawValue
-                                        )
-                                        .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient)
-                                        Text(domainDescription(for: selectedDate))
-                                            .fontWeight(.bold)
-                                            .fontDesign(.rounded)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 8)
-                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
-                                }
-                        }
-
                         ForEach(groupedWorkoutSets, id: \.0) { date, workoutSets in
                             if let selectedMuscleGroup = selectedMuscleGroup {
                                 let mgVolume = volume(for: workoutSets, muscleGroup: selectedMuscleGroup)
@@ -115,6 +78,42 @@ struct VolumeScreen: View {
                                 .foregroundStyle((selectedMuscleGroup == nil ? Color.accentColor : Color.placeholder).gradient)
                                 .opacity(selectedDate == nil || isBarSelected(barDate: date) ? 1.0 : 0.3)
                             }
+                        }
+                        // Single selection rule mark snapped to the start of the selected period
+                        if let selectedDate {
+                            let snapped = getPeriodStart(for: selectedDate)
+                            let selectedVolume: Int = {
+                                switch chartGranularity {
+                                case .month:
+                                    let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
+                                    if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
+                                    return volume(for: sets)
+                                case .year:
+                                // Year view still selects per week
+                                let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
+                                    if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
+                                    return volume(for: sets)
+                                }
+                            }()
+                            RuleMark(x: .value("Selected", snapped, unit: xUnit))
+                                .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient.opacity(0.35))
+                                .lineStyle(StrokeStyle(lineWidth: 2))
+                                .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                                    VStack(alignment: .leading) {
+                                        UnitView(
+                                            value: "\(selectedVolume)",
+                                            unit: WeightUnit.used.rawValue
+                                        )
+                                        .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient)
+                                        Text(domainDescription(for: selectedDate))
+                                            .fontWeight(.bold)
+                                            .fontDesign(.rounded)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
+                                }
                         }
                     }
                     .chartXScale(domain: xDomain(for: groupedWorkoutSets.map { $0.1 }))

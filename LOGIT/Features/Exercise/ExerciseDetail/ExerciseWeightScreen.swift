@@ -22,9 +22,12 @@ struct ExerciseWeightScreen: View {
     @State private var chartGranularity: ChartGranularity = .month
     @State private var isShowingCurrentBestInfo = false
     @State private var chartScrollPosition: Date = .now
+    @State private var selectedDate: Date?
 
     var body: some View {
-        let allDailyMaxSets = allDailyMaxWeightSets(in: workoutSets)
+    let allDailyMaxSets = allDailyMaxWeightSets(in: workoutSets)
+    // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
+    let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
         let bestVisibleWeight = bestWeightInGranularity(workoutSets)
         VStack {
             Picker("Select Chart Granularity", selection: $chartGranularity) {
@@ -54,7 +57,31 @@ struct ExerciseWeightScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal)
             Chart {
-                if let firstEntry = workoutSets.last {
+                // Show selection only when a selection exists, snapped to the nearest datapoint
+                if selectedDate != nil, let selectedSet = snappedSelectedSet, let sDate = selectedSet.workout?.date {
+                    let snapped = Calendar.current.startOfDay(for: sDate)
+                    let valueDisplayed = convertWeightForDisplaying(selectedSet.maximum(.weight, for: exercise))
+                    RuleMark(x: .value("Selected", snapped, unit: .day))
+                        .foregroundStyle(exerciseMuscleGroupColor.opacity(0.35))
+                        .lineStyle(StrokeStyle(lineWidth: 2))
+                        .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                            VStack(alignment: .leading) {
+                                UnitView(
+                                    value: "\(valueDisplayed)",
+                                    unit: WeightUnit.used.rawValue
+                                )
+                                .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                                Text(snapped.formatted(.dateTime.day().month()))
+                                    .fontWeight(.bold)
+                                    .fontDesign(.rounded)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
+                        }
+                }
+                if let firstEntry = allDailyMaxSets.first {
                     LineMark(
                         x: .value("Date", Date.distantPast, unit: .day),
                         y: .value("Max repetitions on day", convertWeightForDisplaying(firstEntry.maximum(.weight, for: exercise)))
@@ -62,6 +89,7 @@ struct ExerciseWeightScreen: View {
                     .interpolationMethod(.monotone)
                     .foregroundStyle(exerciseMuscleGroupColor.gradient)
                     .lineStyle(StrokeStyle(lineWidth: 5))
+                    .opacity(snappedSelectedSet == nil ? 1.0 : 0.3)
                     AreaMark(
                         x: .value("Date", Date.distantPast, unit: .day),
                         y: .value("Max repetitions on day", convertWeightForDisplaying(firstEntry.maximum(.weight, for: exercise)))
@@ -72,6 +100,7 @@ struct ExerciseWeightScreen: View {
                         exerciseMuscleGroupColor.opacity(0.2),
                         exerciseMuscleGroupColor.opacity(0.05),
                     ]))
+                    .opacity(snappedSelectedSet == nil ? 1.0 : 0.3)
                 }
                 ForEach(allDailyMaxSets) { workoutSet in
                     LineMark(
@@ -84,13 +113,24 @@ struct ExerciseWeightScreen: View {
                     .symbol {
                         Circle()
                             .frame(width: 10, height: 10)
-                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                            .foregroundStyle(
+                                exerciseMuscleGroupColor.gradient
+                                    .opacity({
+                                        guard let s = snappedSelectedSet?.workout?.date else { return 1.0 }
+                                        return Calendar.current.isDate(workoutSet.workout?.date ?? .distantPast, inSameDayAs: s) ? 1.0 : 0.3
+                                    }())
+                            )
                             .overlay {
                                 Circle()
                                     .frame(width: 4, height: 4)
                                     .foregroundStyle(Color.black)
                             }
+                            .background(Circle().fill(Color.black))
                     }
+                    .opacity({
+                        guard let s = snappedSelectedSet?.workout?.date else { return 1.0 }
+                        return Calendar.current.isDate(workoutSet.workout?.date ?? .distantPast, inSameDayAs: s) ? 1.0 : 0.3
+                    }())
                     AreaMark(
                         x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
                         y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
@@ -101,8 +141,9 @@ struct ExerciseWeightScreen: View {
                         exerciseMuscleGroupColor.opacity(0.2),
                         exerciseMuscleGroupColor.opacity(0.05),
                     ]))
+                    .opacity(selectedDate == nil ? 1.0 : 0.0)
                 }
-                if let lastSet = allDailyMaxSets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
+                if selectedDate == nil, let lastSet = allDailyMaxSets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
                     let weightDisplayed = convertWeightForDisplaying(lastSet.maximum(.weight, for: exercise))
                     RuleMark(
                         xStart: .value("Start", lastDate),
@@ -128,6 +169,7 @@ struct ExerciseWeightScreen: View {
                     matching: chartGranularity == .month ? DateComponents(weekday: Calendar.current.firstWeekday) : DateComponents(month: 1, day: 1)
                 )
             )
+            .chartXSelection(value: $selectedDate)
             .chartXVisibleDomain(length: visibleChartDomainInSeconds)
             .chartXAxis {
                 AxisMarks(
@@ -171,6 +213,18 @@ struct ExerciseWeightScreen: View {
         .onAppear {
             let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
             chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!
+        }
+        .onChange(of: chartGranularity) { _ in
+            // Re-initialize scroll position when switching granularity to avoid desync with visible window
+            let anchor: Date
+            switch chartGranularity {
+            case .month:
+                anchor = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
+            case .year:
+                // Align right edge roughly to next month for a stable yearly view
+                anchor = Calendar.current.date(byAdding: .month, value: 1, to: .now.startOfMonth)!
+            }
+            chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: anchor)!
         }
     }
     
@@ -263,6 +317,27 @@ struct ExerciseWeightScreen: View {
         let values = WeightUnit.used == .kg ? yAxisMaxValuesKG : yAxisMaxValuesLBS
         let nextBiggerYAxisMaxValue = values.filter { $0 > maxYValue }.min()
         return nextBiggerYAxisMaxValue ?? maxYValue
+    }
+
+    // MARK: - Selection helpers
+
+    private var visibleEndDate: Date {
+        Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
+    }
+
+    private func nearestSet(to date: Date?, in sets: [WorkoutSet]) -> WorkoutSet? {
+        let visibleSets = sets.filter {
+            guard let d = $0.workout?.date else { return false }
+            return d >= chartScrollPosition && d <= visibleEndDate
+        }
+        let candidates = visibleSets.isEmpty ? sets : visibleSets
+        guard !candidates.isEmpty else { return nil }
+        guard let target = date else { return nil }
+        return candidates.min { a, b in
+            let ad = a.workout?.date ?? .distantPast
+            let bd = b.workout?.date ?? .distantPast
+            return abs(ad.timeIntervalSince(target)) < abs(bd.timeIntervalSince(target))
+        }
     }
 }
 

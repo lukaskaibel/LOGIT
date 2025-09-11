@@ -128,6 +128,7 @@
 
 // MARK: - H
 
+"highlights" = "Highlights";
 "hips" = "Hips";
 "history" = "History";
 "home" = "Home";
@@ -139,6 +140,7 @@
 
 // MARK: - L
 
+"lastMonth" = "Last week";
 "lastTenWorkouts" = "In Last 10 Workouts";
 "lastUsed" = "Last used";
 "lastWeek" = "Last week";
@@ -387,3 +389,11 @@
 // MARK: - Z
 
 "zero" = "Zero";
+
+// MARK: - OverallSets Highlights (Comparison Sentences)
+"avgMoreSetsPerWorkoutThisWeekThanLastWeek" = "You're averaging more sets per workout this week than last week.";
+"avgFewerSetsPerWorkoutThisWeekThanLastWeek" = "You're averaging fewer sets per workout this week than last week.";
+"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "You're averaging more sets per workout this month than last month.";
+"avgFewerSetsPerWorkoutThisMonthThanLastMonth" = "You're averaging fewer sets per workout this month than last month.";
+"avgMoreSetsPerWorkoutThisYearThanLastYear" = "You're averaging more sets per workout this year than last year.";
+"avgFewerSetsPerWorkoutThisYearThanLastYear" = "You're averaging fewer sets per workout this year than last year.";

@@ -35,7 +35,7 @@ struct ExerciseWeightTile: View {
                                 .fontWeight(.semibold)
                             UnitView(
                                 value: bestWeightThisMonth(workoutSets) != nil ? String(convertWeightForDisplaying(bestWeightThisMonth(workoutSets)!)) : "––",
-                                unit: WeightUnit.used.rawValue,
+                                unit: WeightUnit.used.rawValue.uppercased(),
                                 configuration: .large
                             )
                             .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
@@ -135,7 +135,7 @@ struct ExerciseWeightTile: View {
                     }
                     .foregroundStyle(.tertiary)
                     .font(.caption)
-                    UnitView(value: "\(allTimeWeightPREntry.0)", unit: WeightUnit.used.rawValue, unitColor: .tertiaryLabel)
+                    UnitView(value: "\(allTimeWeightPREntry.0)", unit: WeightUnit.used.rawValue.uppercased(), unitColor: .tertiaryLabel)
                         .foregroundStyle(.tertiary)
                 }
             }

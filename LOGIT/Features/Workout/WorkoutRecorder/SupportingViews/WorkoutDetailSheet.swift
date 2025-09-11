@@ -81,7 +81,7 @@ struct WorkoutDetailSheet: View {
                     Text(NSLocalizedString("volume", comment: ""))
                     UnitView(
                         value: "\(getVolume(of: workout.sets))",
-                        unit: WeightUnit.used.rawValue
+                        unit: WeightUnit.used.rawValue.uppercased()
                     )
                     .foregroundStyle(Color.accentColor)
                 }

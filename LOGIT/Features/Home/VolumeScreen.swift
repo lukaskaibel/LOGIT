@@ -43,7 +43,7 @@ struct VolumeScreen: View {
                             .foregroundStyle(.secondary)
                         UnitView(
                             value: "\(totalVolumeInTimeFrame(workoutSets))",
-                            unit: WeightUnit.used.rawValue
+                            unit: WeightUnit.used.rawValue.uppercased()
                         )
                         .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient)
                         Text("\(visibleDomainDescription)")
@@ -102,7 +102,7 @@ struct VolumeScreen: View {
                                     VStack(alignment: .leading) {
                                         UnitView(
                                             value: "\(selectedVolume)",
-                                            unit: WeightUnit.used.rawValue
+                                            unit: WeightUnit.used.rawValue.uppercased()
                                         )
                                         .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient)
                                         Text(domainDescription(for: selectedDate))

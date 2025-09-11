@@ -119,7 +119,7 @@ struct MuscleGroupSplitScreen: View {
                                             Divider()
                                             VStack(alignment: .leading) {
                                                 Text(NSLocalizedString("volume", comment: ""))
-                                                UnitView(value: "\(convertWeightForDisplaying(volume(for: selectedMuscleGroup, in: setGroupsInWeekForSelectedMuscleGroup.flatMap { $0.sets })))", unit: WeightUnit.used.rawValue)
+                                                UnitView(value: "\(convertWeightForDisplaying(volume(for: selectedMuscleGroup, in: setGroupsInWeekForSelectedMuscleGroup.flatMap { $0.sets })))", unit: WeightUnit.used.rawValue.uppercased())
                                                     .font(.title3)
                                                     .fontDesign(.rounded)
                                                     .fontWeight(.bold)

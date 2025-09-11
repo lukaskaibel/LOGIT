@@ -164,7 +164,6 @@
 		801BBDF32DF7338A00CDB1FB /* DraggableFullScreenCover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD3C2DF7338A00CDB1FB /* DraggableFullScreenCover.swift */; };
 		801BBDF42DF7338A00CDB1FB /* TextProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBD2DF7338A00CDB1FB /* TextProcessing.swift */; };
 		801BBDF52DF7338A00CDB1FB /* FirstStartScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD2C2DF7338A00CDB1FB /* FirstStartScreen.swift */; };
-		801BBDF62DF7338A00CDB1FB /* TitleUnitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD592DF7338A00CDB1FB /* TitleUnitView.swift */; };
 		801BBDF72DF7338A00CDB1FB /* UpgradeToProScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD312DF7338A00CDB1FB /* UpgradeToProScreen.swift */; };
 		801BBDF82DF7338A00CDB1FB /* ExerciseHistoryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCEF2DF7338A00CDB1FB /* ExerciseHistoryScreen.swift */; };
 		801BBDF92DF7338A00CDB1FB /* PreviewEnvironmentObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD412DF7338A00CDB1FB /* PreviewEnvironmentObjects.swift */; };
@@ -382,7 +381,6 @@
 		801BBD562DF7338A00CDB1FB /* ReorderableForEach.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReorderableForEach.swift; sourceTree = "<group>"; };
 		801BBD572DF7338A00CDB1FB /* StartWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartWorkoutView.swift; sourceTree = "<group>"; };
 		801BBD582DF7338A00CDB1FB /* TipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipView.swift; sourceTree = "<group>"; };
-		801BBD592DF7338A00CDB1FB /* TitleUnitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleUnitView.swift; sourceTree = "<group>"; };
 		801BBD5A2DF7338A00CDB1FB /* UnitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitView.swift; sourceTree = "<group>"; };
 		801BBD5B2DF7338A00CDB1FB /* WidgetCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetCollectionView.swift; sourceTree = "<group>"; };
 		801BBD5F2DF7338A00CDB1FB /* LOGIT 2.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 2.0.xcdatamodel"; sourceTree = "<group>"; };
@@ -868,7 +866,6 @@
 				801BBD562DF7338A00CDB1FB /* ReorderableForEach.swift */,
 				801BBD572DF7338A00CDB1FB /* StartWorkoutView.swift */,
 				801BBD582DF7338A00CDB1FB /* TipView.swift */,
-				801BBD592DF7338A00CDB1FB /* TitleUnitView.swift */,
 				801BBD5A2DF7338A00CDB1FB /* UnitView.swift */,
 				801BBD5B2DF7338A00CDB1FB /* WidgetCollectionView.swift */,
 			);
@@ -1204,7 +1201,6 @@
 				801BBDF32DF7338A00CDB1FB /* DraggableFullScreenCover.swift in Sources */,
 				801BBDF42DF7338A00CDB1FB /* TextProcessing.swift in Sources */,
 				801BBDF52DF7338A00CDB1FB /* FirstStartScreen.swift in Sources */,
-				801BBDF62DF7338A00CDB1FB /* TitleUnitView.swift in Sources */,
 				801BBDF72DF7338A00CDB1FB /* UpgradeToProScreen.swift in Sources */,
 				801BBDF82DF7338A00CDB1FB /* ExerciseHistoryScreen.swift in Sources */,
 				801BBDF92DF7338A00CDB1FB /* PreviewEnvironmentObjects.swift in Sources */,

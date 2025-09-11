@@ -39,7 +39,7 @@ struct VolumeTile: View {
                     let setsThisWeek = groupedWorkoutSets.first?.1 ?? []
                     UnitView(
                         value: "\(convertWeightForDisplaying(getVolume(of: setsThisWeek)))",
-                        unit: WeightUnit.used.rawValue,
+                        unit: WeightUnit.used.rawValue.uppercased(),
                         configuration: .large,
                         unitColor: .secondaryLabel
                     )

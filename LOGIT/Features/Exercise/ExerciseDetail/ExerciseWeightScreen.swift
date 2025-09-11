@@ -47,7 +47,7 @@ struct ExerciseWeightScreen: View {
                     .foregroundStyle(.secondary)
                 UnitView(
                     value: "\(bestVisibleWeight != nil ? String(convertWeightForDisplaying(bestVisibleWeight!)) : "––")",
-                    unit: WeightUnit.used.rawValue
+                    unit: WeightUnit.used.rawValue.uppercased()
                 )
                 .foregroundStyle(exerciseMuscleGroupColor.gradient)
                 Text(chartHeaderTitle)
@@ -68,7 +68,7 @@ struct ExerciseWeightScreen: View {
                             VStack(alignment: .leading) {
                                 UnitView(
                                     value: "\(valueDisplayed)",
-                                    unit: WeightUnit.used.rawValue
+                                    unit: WeightUnit.used.rawValue.uppercased()
                                 )
                                 .foregroundStyle(exerciseMuscleGroupColor.gradient)
                                 Text(snapped.formatted(.dateTime.day().month()))

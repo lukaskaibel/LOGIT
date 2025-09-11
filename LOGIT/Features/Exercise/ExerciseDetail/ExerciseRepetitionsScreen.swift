@@ -46,7 +46,7 @@ struct ExerciseRepetitionsScreen: View {
                     .foregroundStyle(.secondary)
                 UnitView(
                     value: "\(bestRepsInGranularity != nil ? String(bestRepsInGranularity!) : "––")",
-                    unit: NSLocalizedString("rps", comment: "")
+                    unit: NSLocalizedString("rps", comment: "").uppercased()
                 )
                 .foregroundStyle(exerciseMuscleGroupColor.gradient)
                 Text(chartHeaderTitle)
@@ -68,7 +68,7 @@ struct ExerciseRepetitionsScreen: View {
                             VStack(alignment: .leading) {
                                 UnitView(
                                     value: "\(valueDisplayed)",
-                                    unit: NSLocalizedString("rps", comment: "")
+                                    unit: NSLocalizedString("rps", comment: "").uppercased()
                                 )
                                 .foregroundStyle(exerciseMuscleGroupColor.gradient)
                                 Text(snapped.formatted(.dateTime.day().month()))

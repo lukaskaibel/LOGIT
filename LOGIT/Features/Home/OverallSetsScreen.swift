@@ -32,6 +32,10 @@ struct OverallSetsScreen: View {
                             .tag(ChartGranularity.year)
                     }
                     .pickerStyle(.segmented)
+                    .onChange(of: chartGranularity) { _ in
+                        // Keep the right edge showing the current period when switching granularity
+                        chartScrollPosition = initialScrollPosition
+                    }
 
                     VStack(alignment: .leading) {
                         Text(NSLocalizedString("total", comment: ""))
@@ -128,8 +132,84 @@ struct OverallSetsScreen: View {
                     .frame(height: 300)
                 }
                 .padding(.horizontal)
+                VStack(spacing: SECTION_HEADER_SPACING) {
+                    Text(NSLocalizedString("highlights", comment: ""))
+                        .sectionHeaderStyle2()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 14) {
+                        // Minimal helpers used for readability
+                        let ranges = periodRanges()
+                        let currentAvg = averagePerWorkout(in: ranges.current)
+                        let previousAvg = averagePerWorkout(in: ranges.previous)
+                        let summaryKey = headlineKey(isMore: currentAvg >= previousAvg)
+
+                        let currentLabel: String = {
+                            switch chartGranularity {
+                            case .week: return NSLocalizedString("thisWeek", comment: "")
+                            case .month: return NSLocalizedString("thisMonth", comment: "")
+                            case .year: return String(Calendar.current.component(.year, from: Date()))
+                            }
+                        }()
+                        let previousLabel: String = {
+                            switch chartGranularity {
+                            case .week: return NSLocalizedString("lastWeek", comment: "")
+                            case .month: return NSLocalizedString("lastMonth", comment: "")
+                            case .year: return String(Calendar.current.component(.year, from: Date()) - 1)
+                            }
+                        }()
+
+                        let numberFormatter: NumberFormatter = {
+                            let f = NumberFormatter()
+                            f.numberStyle = .decimal
+                            f.maximumFractionDigits = 1
+                            f.minimumFractionDigits = 0
+                            return f
+                        }()
+                        let currentText = numberFormatter.string(from: NSNumber(value: currentAvg)) ?? String(format: "%.1f", currentAvg)
+                        let previousText = numberFormatter.string(from: NSNumber(value: previousAvg)) ?? String(format: "%.1f", previousAvg)
+                        let maxBar = max(max(currentAvg, previousAvg), 1.0)
+
+                        // Headline
+                        Text(NSLocalizedString(summaryKey, comment: "Overall sets comparison headline"))
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        // Current period
+                        VStack(alignment: .leading, spacing: 6) {
+                            UnitView(value: currentText, unit: unitLabel, configuration: .large, unitColor: Color.secondaryLabel)
+                            ComparisonBar(value: currentAvg, maxValue: maxBar, tint: .accentColor)
+                                .frame(height: 30)
+                                .overlay(
+                                    Text(currentLabel)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.black)
+                                        .padding(.horizontal, 10), alignment: .leading
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
+
+                        // Previous period
+                        VStack(alignment: .leading, spacing: 6) {
+                            UnitView(value: previousText, unit: unitLabel, configuration: .large, unitColor: Color.secondaryLabel)
+                            ComparisonBar(value: previousAvg, maxValue: maxBar, tint: .gray.opacity(0.25))
+                                .frame(height: 30)
+                                .overlay(
+                                    Text(previousLabel)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                        .padding(.horizontal, 10), alignment: .leading
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
+                    }
+                    .padding(CELL_PADDING)
+                    .tileStyle()
+                }
+                .padding(.horizontal)
             }
             .padding(.top)
+            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
         .isBlockedWithoutPro()
         .onAppear {
@@ -297,6 +377,71 @@ struct OverallSetsScreen: View {
         let sortedKeys = groupedDict.keys.sorted()
         // Ensure current period dates with zero sets appear (for current week/day granularity) by adding placeholders inside visible domain start
         return sortedKeys.map { ($0, groupedDict[$0] ?? []) }
+    }
+
+    // MARK: - Highlights (helpers kept intentionally minimal)
+
+    private var unitLabel: String { "\(NSLocalizedString("sets", comment: ""))/\(NSLocalizedString("workout", comment: ""))" }
+
+    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
+        switch chartGranularity {
+        case .week:
+            let current = (Date.now.startOfWeek, Date.now.endOfWeek)
+            let lastStart = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: .now.startOfWeek)!
+            let previous = (lastStart, lastStart.endOfWeek)
+            return (current, previous)
+        case .month:
+            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
+            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
+            let previous = (lastStart, lastStart.endOfMonth)
+            return (current, previous)
+        case .year:
+            let current = (Date.now.startOfYear, Date.now.endOfYear)
+            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
+            let previous = (lastStart, lastStart.endOfYear)
+            return (current, previous)
+        }
+    }
+
+    private func averagePerWorkout(in range: (start: Date, end: Date)) -> Double {
+        let s = range.start, e = range.end
+        let sets = workouts.flatMap { $0.sets }.reduce(into: 0) { acc, set in
+            if let d = set.workout?.date, d >= s && d <= e { acc += 1 }
+        }
+        let sessions = workouts.reduce(into: 0) { acc, w in
+            if let d = w.date, d >= s && d <= e { acc += 1 }
+        }
+        return Double(sets) / max(Double(sessions), 1)
+    }
+
+    private func headlineKey(isMore: Bool) -> String {
+        switch chartGranularity {
+        case .week: return isMore ? "avgMoreSetsPerWorkoutThisWeekThanLastWeek" : "avgFewerSetsPerWorkoutThisWeekThanLastWeek"
+        case .month: return isMore ? "avgMoreSetsPerWorkoutThisMonthThanLastMonth" : "avgFewerSetsPerWorkoutThisMonthThanLastMonth"
+        case .year: return isMore ? "avgMoreSetsPerWorkoutThisYearThanLastYear" : "avgFewerSetsPerWorkoutThisYearThanLastYear"
+        }
+    }
+}
+
+// MARK: - Small UI helper for the filled horizontal bar
+
+private struct ComparisonBar: View {
+    let value: Double
+    let maxValue: Double
+    let tint: Color
+
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            let ratio = maxValue > 0 ? CGFloat(min(max(value / maxValue, 0), 1)) : 0
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.secondaryBackground)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(tint)
+                    .frame(width: width * ratio)
+            }
+        }
     }
 }
 

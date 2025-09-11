@@ -24,13 +24,13 @@ struct UnitView: View {
                 .fontWeight(.bold)
                 .fontDesign(.rounded)
             if let unitColor = unitColor {
-                Text(unit.uppercased())
+                Text(unit)
                     .foregroundStyle(unitColor)
                     .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
                     .fontWeight(.semibold)
                     .fontDesign(.rounded)
             } else {
-                Text(unit.uppercased())
+                Text(unit)
                     .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
                     .fontWeight(.semibold)
                     .fontDesign(.rounded)

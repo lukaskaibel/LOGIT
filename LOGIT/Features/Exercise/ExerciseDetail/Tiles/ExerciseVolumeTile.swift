@@ -38,7 +38,7 @@ struct ExerciseVolumeTile: View {
                             .fontWeight(.semibold)
                         UnitView(
                             value: "\(convertWeightForDisplaying(getVolume(of: groupedWorkoutSets.first?.1 ?? [], for: exercise)))",
-                            unit: WeightUnit.used.rawValue,
+                            unit: WeightUnit.used.rawValue.uppercased(),
                             configuration: .large
                         )
                         .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)

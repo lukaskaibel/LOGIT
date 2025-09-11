@@ -33,16 +33,8 @@ struct CurrentWeekWeeklyTargetTile: View {
                         .foregroundStyle(.secondary)
                 }
                 HStack(alignment: .bottom) {
-                    HStack(alignment: .lastTextBaseline, spacing: 3) {
-                        Text("\(workouts.count)")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundStyle(Color.accentColor.gradient)
-                        Text("\(NSLocalizedString("of", comment: "")) \(targetPerWeek)")
-                            .foregroundStyle(Color.secondaryLabel)
-                            .fontWeight(.semibold)
-                            .fontDesign(.rounded)
-                    }
+                    UnitView(value: "\(workouts.count)", unit: "\(NSLocalizedString("of", comment: "")) \(targetPerWeek)", configuration: .large, unitColor: Color.secondaryLabel)
+                        .foregroundStyle(Color.accentColor.gradient)
                     Spacer()
                     Chart {
                         ForEach(0 ..< targetPerWeek, id: \.self) { value in

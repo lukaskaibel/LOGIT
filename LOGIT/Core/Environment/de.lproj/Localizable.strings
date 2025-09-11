@@ -118,6 +118,7 @@
 
 // MARK: - H
 
+"highlights" = "Highlights";
 "hips" = "Hips";
 "history" = "Ausführungen";
 "home" = "Home";
@@ -139,6 +140,7 @@
 
 // MARK: - L
 
+"lastMonth" = "Letzte Woche";
 "lastTenWorkouts" = "In Letzten 10 Workouts";
 "lastUsed" = "Zuletzt benutzt";
 "lastWeek" = "Letzte Woche";
@@ -323,7 +325,7 @@
 "templateNeverUsed" = "Vorlage nie benutzt";
 "templates" = "Vorlagen";
 "this" = "Diese";
-"thisMonth" = "This Month";
+"thisMonth" = "Dieser Monat";
 "thisWeek" = "Diese Woche";
 "ThisWeek" = "Diese Woche";
 "thisYear" = "Dieses Jahr";
@@ -390,3 +392,11 @@
 // MARK: - Z
 
 "zero" = "Null";
+
+// MARK: - OverallSets Highlights (Vergleichssätze)
+"avgMoreSetsPerWorkoutThisWeekThanLastWeek" = "Du machst im Durchschnitt mehr Sätze pro Workout diese Woche als letzte Woche.";
+"avgFewerSetsPerWorkoutThisWeekThanLastWeek" = "Du machst im Durchschnitt weniger Sätze pro Workout diese Woche als letzte Woche.";
+"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "Du machst im Durchschnitt mehr Sätze pro Workout diesen Monat als letzten Monat.";
+"avgFewerSetsPerWorkoutThisMonthThanLastMonth" = "Du machst im Durchschnitt weniger Sätze pro Workout diesen Monat als letzten Monat.";
+"avgMoreSetsPerWorkoutThisYearThanLastYear" = "Du machst im Durchschnitt mehr Sätze pro Workout dieses Jahr als letztes Jahr.";
+"avgFewerSetsPerWorkoutThisYearThanLastYear" = "Du machst im Durchschnitt weniger Sätze pro Workout dieses Jahr als letztes Jahr.";

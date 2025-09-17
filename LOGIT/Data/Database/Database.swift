@@ -60,8 +60,11 @@ public class Database: ObservableObject {
     // MARK: - Context Methods / Properties
 
     func save() {
-        guard context.hasChanges else { return }
+        // Perform the hasChanges check on the context's queue to avoid race conditions
         context.perform {
+            guard self.context.hasChanges else {
+                return
+            }
             do {
                 try self.context.save()
                 os_log("Database: Context saved successfully", type: .info)
@@ -72,8 +75,9 @@ public class Database: ObservableObject {
     }
 
     func discardUnsavedChanges() {
-        guard context.hasChanges else { return }
+        // Perform the hasChanges check on the context's queue to ensure thread safety
         context.perform {
+            guard self.context.hasChanges else { return }
             self.context.rollback()
         }
     }

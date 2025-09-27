@@ -14,6 +14,8 @@
 "add" = "Add";
 "addExercise" = "Add Exercise";
 "addExercisesFromBelow" = "Add exercises from below.";
+"addNote" = "Add Note";
+"addNote..." = "Add Note...";
 "addSet" = "Add Set";
 "addWorkout" = "Add Workout";
 "afternoon" = "Afternoon";
@@ -90,6 +92,7 @@
 "edit" = "Edit";
 "edit" = "Edit";
 "editDateTime" = "Edit Date / Time";
+"editNote" = "Edit Note";
 "editTemplate" = "Edit Template";
 "editTime" = "Edit Time";
 "editWorkout" = "Edit Workout";

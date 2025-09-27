@@ -14,6 +14,8 @@
 "add" = "Hinzufügen";
 "addExercise" = "Übung hinzufügen";
 "addExercisesFromBelow" = "Übungen von unten auswählen.";
+"addNote" = "Notiz hinzufügen";
+"addNote..." = "Notiz hinzufügen...";
 "addSet" = "Satz hinzufügen";
 "addWorkout" = "Workout hinzufügen";
 "afternoon" = "Nachmittag";
@@ -90,6 +92,7 @@
 "edit" = "Bearbeiten";
 "edit" = "Bearbeiten";
 "editDateTime" = "Datum / Zeit bearbeiten";
+"editNote" = "Notiz bearbeiten";
 "editTemplate" = "Vorlagen bearbeiten";
 "editTime" = "Zeit bearbeiten";
 "editWorkout" = "Workout bearbeiten";

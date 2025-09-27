@@ -30,6 +30,8 @@ struct WorkoutSetGroupCell: View {
     @State private var isSelectingPrimaryExercise = false
     @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
     @State private var isSelectingSecondaryExercise = false
+    @State private var isEditingNote = false
+    @FocusState private var isNoteFieldFocused: Bool
 
     // MARK: - Body
 
@@ -157,53 +159,72 @@ struct WorkoutSetGroupCell: View {
     // MARK: - Supporting Views
 
     private var header: some View {
-        HStack {
-            if let indexInWorkout = setGroup.workout?.setGroups.firstIndex(of: setGroup) {
-                Text("\(indexInWorkout + 1)")
-                    .font(.title)
-                    .fontWeight(.medium)
-                    .fontDesign(.rounded)
-                    .foregroundStyle(.secondary)
-                    .padding(.trailing, 5)
-            }
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Text(setGroup.exercise?.muscleGroup?.description ?? "")
-                        .foregroundColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
-                    if setGroup.setType == .superSet {
-                        Text(setGroup.secondaryExercise?.muscleGroup?.description ?? "")
-                            .foregroundColor(setGroup.secondaryExercise?.muscleGroup?.color ?? .accentColor)
-                    }
-                    Spacer()
-                    if !isReordering, let supplementaryText = supplementaryText {
-                        Text(supplementaryText)
-                            .foregroundStyle(.secondary)
-                            .fontWeight(.medium)
-                    }
+        VStack(spacing: 8) {
+            HStack {
+                if let indexInWorkout = setGroup.workout?.setGroups.firstIndex(of: setGroup) {
+                    Text("\(indexInWorkout + 1)")
+                        .font(.title)
+                        .fontWeight(.medium)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(.secondary)
+                        .padding(.trailing, 5)
                 }
-                .font(.system(.footnote, design: .rounded, weight: .bold))
-                ExerciseHeader(
-                    exercise: setGroup.exercise,
-                    secondaryExercise: setGroup.secondaryExercise,
-                    noExerciseAction: {
-                        isSelectingPrimaryExercise = true
-                    },
-                    noSecondaryExerciseAction: {
-                        isSelectingSecondaryExercise = true
-                    },
-                    isSuperSet: setGroup.setType == .superSet,
-                    navigationToDetailEnabled: true,
-                    shouldShowExerciseDetailInSheet: shouldShowExerciseDetailInSheet
-                )
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack {
+                        Text(setGroup.exercise?.muscleGroup?.description ?? "")
+                            .foregroundColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
+                        if setGroup.setType == .superSet {
+                            Text(setGroup.secondaryExercise?.muscleGroup?.description ?? "")
+                                .foregroundColor(setGroup.secondaryExercise?.muscleGroup?.color ?? .accentColor)
+                        }
+                        Spacer()
+                        if !isReordering, let supplementaryText = supplementaryText {
+                            Text(supplementaryText)
+                                .foregroundStyle(.secondary)
+                                .fontWeight(.medium)
+                        }
+                    }
+                    .font(.system(.footnote, design: .rounded, weight: .bold))
+                    ExerciseHeader(
+                        exercise: setGroup.exercise,
+                        secondaryExercise: setGroup.secondaryExercise,
+                        noExerciseAction: {
+                            isSelectingPrimaryExercise = true
+                        },
+                        noSecondaryExerciseAction: {
+                            isSelectingSecondaryExercise = true
+                        },
+                        isSuperSet: setGroup.setType == .superSet,
+                        navigationToDetailEnabled: true,
+                        shouldShowExerciseDetailInSheet: shouldShowExerciseDetailInSheet
+                    )
+                }
+                Spacer()
+                if canEdit && !isReordering {
+                    menu
+                }
+                if isReordering {
+                    Image(systemName: "line.3.horizontal")
+                        .fontWeight(.regular)
+                        .foregroundStyle(.secondary)
+                }
             }
-            Spacer()
-            if canEdit && !isReordering {
-                menu
-            }
-            if isReordering {
-                Image(systemName: "line.3.horizontal")
-                    .fontWeight(.regular)
+            if isEditingNote || !(setGroup.note?.isEmpty ?? true) {
+                TextField("Note", text: Binding(get: { setGroup.note ?? "" }, set: { setGroup.note = $0 }), prompt: Text(NSLocalizedString("addNote...", comment: "")), axis: .vertical)
+                    .focused($isNoteFieldFocused)
+                    .onSubmit(of: .text) {
+                        setGroup.note = (setGroup.note ?? "") + "\n"
+                        isNoteFieldFocused = true
+                    }
+                    .lineLimit(1...5)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
+            }
+        }
+        .onChange(of: isNoteFieldFocused) {
+            if !isNoteFieldFocused {
+                isEditingNote = false
             }
         }
     }
@@ -251,6 +272,14 @@ struct WorkoutSetGroupCell: View {
                         ),
                         systemImage: "arrow.up.arrow.down"
                     )
+                }
+            }
+            Section {
+                Button {
+                    isEditingNote = true
+                    isNoteFieldFocused = true
+                } label: {
+                    Label((setGroup.note?.isEmpty ?? true) ? NSLocalizedString("addNote", comment: "") : NSLocalizedString("editNote", comment: ""), systemImage: "square.and.pencil")
                 }
             }
             Section {

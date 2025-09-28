@@ -244,7 +244,6 @@ struct TemplateDetailScreen: View {
                         isReordering: .constant(false),
                         supplementaryText: nil
                     )
-                    .padding(CELL_PADDING)
                     .tileStyle()
                     .canEdit(false)
                     .shadow(color: .black, radius: 5)

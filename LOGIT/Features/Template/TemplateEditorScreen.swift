@@ -97,7 +97,6 @@ struct TemplateEditorScreen: View {
                                         isReordering: $isReordering,
                                         supplementaryText: nil
                                     )
-                                    .padding(CELL_PADDING)
                                     .tileStyle()
                                     .shadow(color: .black.opacity(0.5), radius: 5)
                                     .zIndex(1)
@@ -191,11 +190,12 @@ struct TemplateEditorScreen: View {
                             Text(templateName.wrappedValue.isEmpty ? NSLocalizedString("newTemplate", comment: "") : templateName.wrappedValue)
                                 .foregroundStyle(templateName.wrappedValue.isEmpty ? Color.placeholder : Color.label)
                                 .fontWeight(.bold)
-                                .lineLimit(1)
+                                .lineLimit(2)
                             Image(systemName: "chevron.down.circle.fill")
                                 .font(.caption)
                                 .foregroundStyle(Color.secondaryLabel)
                         }
+                        .frame(maxWidth: 200)
                     }
                 }
                 if !isRenamingTemplate {

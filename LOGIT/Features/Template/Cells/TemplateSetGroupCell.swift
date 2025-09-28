@@ -33,10 +33,10 @@ struct TemplateSetGroupCell: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: SECTION_HEADER_SPACING) {
+        VStack(spacing: CELL_PADDING) {
             header
             if !isReordering {
-                VStack(spacing: 8) {
+                VStack(spacing: CELL_PADDING) {
                     VStack(spacing: CELL_SPACING) {
                         ReorderableForEach(
                             $setGroup.sets,
@@ -61,9 +61,10 @@ struct TemplateSetGroupCell: View {
                             .cornerRadius(15)
                         }
                     }
+                    .padding(.horizontal, CELL_PADDING / 2)
                     .animation(.interactiveSpring())
                     if canEdit {
-                        HStack(spacing: 5) {
+                        HStack(spacing: 8) {
                             Button {
                                 withAnimation(.interactiveSpring()) {
                                     database.addSet(to: setGroup)
@@ -73,17 +74,27 @@ struct TemplateSetGroupCell: View {
                                     NSLocalizedString("addSet", comment: ""),
                                     systemImage: "plus.circle.fill"
                                 )
+                                .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                                .font(.system(.body, design: .rounded, weight: .bold))
+                                .padding(.vertical, 15)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.accentColor.secondaryTranslucentBackground)
+                                .clipShape(Capsule())
                             }
-                            .buttonStyle(SecondaryBigButtonStyle(padding: 18, trailingCornerRadius: 5))
                             Button {
                                 withAnimation(.interactiveSpring()) {
                                     database.duplicateLastSet(from: setGroup)
                                 }
                             } label: {
                                 Image(systemName: "plus.square.on.square")
+                                    .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                                    .font(.system(.body, design: .rounded, weight: .bold))
+                                    .padding(15)
+                                    .background(Color.accentColor.secondaryTranslucentBackground)
+                                    .clipShape(Capsule())
                             }
-                            .buttonStyle(SecondaryBigButtonStyle(padding: 18, maxWidth: 30, leadingCornerRadius: 5))
                         }
+                        .padding(.horizontal, CELL_PADDING)
                     }
                 }
             }
@@ -135,63 +146,58 @@ struct TemplateSetGroupCell: View {
                 }
             }
         }
-        .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
+    .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
+    .padding(.bottom, canEdit || isReordering ? CELL_PADDING : CELL_PADDING / 2)
     }
 
     // MARK: - Supporting Views
 
     private var header: some View {
-        HStack {
-            if let indexInWorkout = setGroup.workout?.setGroups.firstIndex(of: setGroup) {
-                Text("\(indexInWorkout + 1)")
-                    .font(.title)
-                    .fontWeight(.medium)
-                    .fontDesign(.rounded)
-                    .foregroundStyle(.secondary)
-                    .padding(.trailing, 5)
-            }
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Text(setGroup.exercise?.muscleGroup?.description ?? "")
-                        .foregroundColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
-                    if setGroup.setType == .superSet {
-                        Text(setGroup.secondaryExercise?.muscleGroup?.description ?? "")
-                            .foregroundColor(setGroup.secondaryExercise?.muscleGroup?.color ?? .accentColor)
-                    }
-                    Spacer()
-                    if !isReordering, let supplementaryText = supplementaryText {
-                        Text(supplementaryText)
-                            .foregroundStyle(.secondary)
-                            .fontWeight(.medium)
-                    }
+        VStack(spacing: 8) {
+            HStack(spacing: 10) {
+                if let indexInWorkout = setGroup.workout?.setGroups.firstIndex(of: setGroup) {
+                    Text("\(indexInWorkout + 1)")
+                        .font(.title)
+                        .fontWeight(.medium)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(.secondary)
                 }
-                .font(.system(.footnote, design: .rounded, weight: .bold))
-                ExerciseHeader(
-                    exercise: setGroup.exercise,
-                    secondaryExercise: setGroup.secondaryExercise,
-                    noExerciseAction: {
-                        isSelectingPrimaryExercise = true
-                    },
-                    noSecondaryExerciseAction: {
-                        isSelectingSecondaryExercise = true
-                    },
-                    isSuperSet: setGroup.setType == .superSet,
-                    navigationToDetailEnabled: true,
-                    shouldShowExerciseDetailInSheet: false
-                )
-            }
-            Spacer()
-            if canEdit && !isReordering {
-                menu
-            }
-            if isReordering {
-                Image(systemName: "line.3.horizontal")
-                    .fontWeight(.regular)
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 0) {
+                    ExerciseHeader(
+                        exercise: setGroup.exercise,
+                        secondaryExercise: setGroup.secondaryExercise,
+                        noExerciseAction: { isSelectingPrimaryExercise = true },
+                        noSecondaryExerciseAction: { isSelectingSecondaryExercise = true },
+                        isSuperSet: setGroup.setType == .superSet,
+                        navigationToDetailEnabled: true,
+                        shouldShowExerciseDetailInSheet: false
+                    )
+                    HStack {
+                        Text(setGroup.exercise?.muscleGroup?.description ?? "")
+                            .foregroundColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
+                        if setGroup.setType == .superSet {
+                            Text(setGroup.secondaryExercise?.muscleGroup?.description ?? "")
+                                .foregroundColor(setGroup.secondaryExercise?.muscleGroup?.color ?? .accentColor)
+                        }
+                        Spacer()
+                        if !isReordering, let supplementaryText = supplementaryText {
+                            Text(supplementaryText)
+                                .foregroundStyle(.secondary)
+                                .fontWeight(.medium)
+                        }
+                    }
+                    .font(.system(.footnote, design: .rounded, weight: .bold))
+                }
+                Spacer()
+                if canEdit && !isReordering { menu }
+                if isReordering {
+                    Image(systemName: "line.3.horizontal")
+                        .fontWeight(.regular)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
-        .font(.title3.weight(.bold))
-        .foregroundColor(.label)
+        .padding([.top, .horizontal], CELL_PADDING)
     }
 
     // MARK: - Supporting Views

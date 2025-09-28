@@ -19,12 +19,12 @@ struct ExerciseCell: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 0) {
             Text(exercise.name ?? "")
                 .font(.body.weight(.bold))
                 .foregroundColor(.primary)
             Text(exercise.muscleGroup?.description ?? "")
-                .font(.system(.body, design: .rounded, weight: .bold))
+                .font(.system(.footnote, design: .rounded, weight: .bold))
                 .foregroundStyle(exercise.muscleGroup?.color.gradient ?? Color.primary.gradient)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

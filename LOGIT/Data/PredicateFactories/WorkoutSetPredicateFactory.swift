@@ -13,6 +13,7 @@ enum WorkoutSetPredicateFactory {
         with exercise: Exercise? = nil,
         from startDate: Date? = nil,
         to endDate: Date? = nil,
+        in workout: Workout? = nil,
         excludeCurrentWorkout: Bool = true
     ) -> NSPredicate? {
         var subpredicates = [NSPredicate]()
@@ -30,6 +31,11 @@ enum WorkoutSetPredicateFactory {
         if let endDate = endDate {
             let endDatePredicate = NSPredicate(format: "setGroup.workout.date <= %@", endDate as NSDate)
             subpredicates.append(endDatePredicate)
+        }
+        
+        if let workoutId = workout?.id {
+            let workoutPredicate = NSPredicate(format: "setGroup.workout.id == %@", workoutId.uuidString)
+            subpredicates.append(workoutPredicate)
         }
 
         if excludeCurrentWorkout {

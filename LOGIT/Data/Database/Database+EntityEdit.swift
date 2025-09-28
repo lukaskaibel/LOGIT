@@ -17,6 +17,7 @@ public extension Database {
         } else {
             newStandardSet(setGroup: setGroup)
         }
+        setGroup.workout?.objectWillChange.send()
     }
 
     func duplicateLastSet(from setGroup: WorkoutSetGroup) {
@@ -42,6 +43,7 @@ public extension Database {
                 setGroup: setGroup
             )
         }
+        setGroup.workout?.objectWillChange.send()
     }
 
     func addSet(to templateSetGroup: TemplateSetGroup) {

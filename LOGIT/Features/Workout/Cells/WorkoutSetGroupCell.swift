@@ -160,16 +160,28 @@ struct WorkoutSetGroupCell: View {
 
     private var header: some View {
         VStack(spacing: 8) {
-            HStack {
+            HStack(spacing: 10) {
                 if let indexInWorkout = setGroup.workout?.setGroups.firstIndex(of: setGroup) {
                     Text("\(indexInWorkout + 1)")
                         .font(.title)
                         .fontWeight(.medium)
                         .fontDesign(.rounded)
                         .foregroundStyle(.secondary)
-                        .padding(.trailing, 5)
                 }
                 VStack(alignment: .leading, spacing: 0) {
+                    ExerciseHeader(
+                        exercise: setGroup.exercise,
+                        secondaryExercise: setGroup.secondaryExercise,
+                        noExerciseAction: {
+                            isSelectingPrimaryExercise = true
+                        },
+                        noSecondaryExerciseAction: {
+                            isSelectingSecondaryExercise = true
+                        },
+                        isSuperSet: setGroup.setType == .superSet,
+                        navigationToDetailEnabled: true,
+                        shouldShowExerciseDetailInSheet: shouldShowExerciseDetailInSheet
+                    )
                     HStack {
                         Text(setGroup.exercise?.muscleGroup?.description ?? "")
                             .foregroundColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
@@ -185,19 +197,6 @@ struct WorkoutSetGroupCell: View {
                         }
                     }
                     .font(.system(.footnote, design: .rounded, weight: .bold))
-                    ExerciseHeader(
-                        exercise: setGroup.exercise,
-                        secondaryExercise: setGroup.secondaryExercise,
-                        noExerciseAction: {
-                            isSelectingPrimaryExercise = true
-                        },
-                        noSecondaryExerciseAction: {
-                            isSelectingSecondaryExercise = true
-                        },
-                        isSuperSet: setGroup.setType == .superSet,
-                        navigationToDetailEnabled: true,
-                        shouldShowExerciseDetailInSheet: shouldShowExerciseDetailInSheet
-                    )
                 }
                 Spacer()
                 if canEdit && !isReordering {
@@ -219,7 +218,7 @@ struct WorkoutSetGroupCell: View {
                     .lineLimit(1...5)
                     .fixedSize(horizontal: false, vertical: true)
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.tertiary)
             }
         }
         .onChange(of: isNoteFieldFocused) {

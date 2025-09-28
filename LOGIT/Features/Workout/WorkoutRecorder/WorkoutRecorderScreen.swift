@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 24.02.22.
 //
 
+import Charts
 import Combine
 import CoreData
 import SwiftUI
@@ -223,6 +224,10 @@ struct WorkoutRecorderScreen: View {
                     .clipShape(Capsule())
                     .opacity(exerciseSelectionPresentationDetent == .large ? 0 : 1)
                 HStack {
+                    if let workout = workoutRecorder.workout {
+                        WorkoutMuscleGroupChart(workout: workout)
+                            .transition(.move(edge: .leading))
+                    }
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 10) {
                             if let workoutStartTime = workoutRecorder.workout?.date {
@@ -406,6 +411,28 @@ struct WorkoutRecorderScreen: View {
                 self.workoutRecorder.workout?.objectWillChange.send()
                 self.database.save()
             }
+    }
+}
+
+struct WorkoutMuscleGroupChart: View {
+    @ObservedObject var workout: Workout
+    @EnvironmentObject private var muscleGroupService: MuscleGroupService
+
+    var body: some View {
+        let sets = workout.sets   // Assuming this is an ordered relationship
+        if !sets.isEmpty {
+            Chart {
+                ForEach(muscleGroupService.getMuscleGroupOccurances(in: sets), id: \.0) { occ in
+                    SectorMark(
+                        angle: .value("Value", occ.1),
+                        innerRadius: .ratio(0.65),
+                        angularInset: 1
+                    )
+                    .foregroundStyle(occ.0.color.gradient)
+                }
+            }
+            .frame(width: 40, height: 40)
+        }
     }
 }
 

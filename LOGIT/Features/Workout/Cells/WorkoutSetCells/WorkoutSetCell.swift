@@ -24,7 +24,10 @@ struct WorkoutSetCell: View {
         VStack(spacing: 0) {
             if let indexInSetGroup = indexInSetGroup {
                 HStack {
-                    Text("\(NSLocalizedString("set", comment: "")) \(indexInSetGroup + 1)")
+                    Text("\(indexInSetGroup + 1).")
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(.secondary)
                     Spacer()
                     if let standardSet = workoutSet as? StandardSet {
                         StandardSetCell(

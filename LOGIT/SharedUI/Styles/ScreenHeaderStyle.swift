@@ -17,7 +17,7 @@ struct ScreenHeaderModifier: ViewModifier {
 struct ScreenHeaderSecondaryModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(.title2, design: .rounded, weight: .semibold))
+            .font(.system(.body, design: .rounded, weight: .semibold))
     }
 }
 

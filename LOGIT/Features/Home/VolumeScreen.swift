@@ -42,7 +42,7 @@ struct VolumeScreen: View {
                             .textCase(.uppercase)
                             .foregroundStyle(.secondary)
                         UnitView(
-                            value: "\(totalVolumeInTimeFrame(workoutSets))",
+                            value: totalVolumeInTimeFrame(workoutSets),
                             unit: WeightUnit.used.rawValue.uppercased()
                         )
                         .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient)
@@ -82,17 +82,17 @@ struct VolumeScreen: View {
                         // Single selection rule mark snapped to the start of the selected period
                         if let selectedDate {
                             let snapped = getPeriodStart(for: selectedDate)
-                            let selectedVolume: Int = {
+                            let selectedVolume: String = {
                                 switch chartGranularity {
                                 case .month:
                                     let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
-                                    if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
-                                    return volume(for: sets)
+                                    if let mg = selectedMuscleGroup { return volumeFormatted(for: sets, muscleGroup: mg) }
+                                    return volumeFormatted(for: sets)
                                 case .year:
                                     // Year view still selects per week
                                     let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
-                                    if let mg = selectedMuscleGroup { return volume(for: sets, muscleGroup: mg) }
-                                    return volume(for: sets)
+                                    if let mg = selectedMuscleGroup { return volumeFormatted(for: sets, muscleGroup: mg) }
+                                    return volumeFormatted(for: sets)
                                 }
                             }()
                             RuleMark(x: .value("Selected", snapped, unit: xUnit))
@@ -101,7 +101,7 @@ struct VolumeScreen: View {
                                 .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                                     VStack(alignment: .leading) {
                                         UnitView(
-                                            value: "\(selectedVolume)",
+                                            value: selectedVolume,
                                             unit: WeightUnit.used.rawValue.uppercased()
                                         )
                                         .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient)
@@ -200,13 +200,13 @@ struct VolumeScreen: View {
         return startDate ... endDate
     }
 
-    private func totalVolumeInTimeFrame(_ workoutSets: [WorkoutSet]) -> Int {
+    private func totalVolumeInTimeFrame(_ workoutSets: [WorkoutSet]) -> String {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= chartScrollPosition && $0.workout?.date ?? .distantFuture <= endDate }
         if let selectedMuscleGroup = selectedMuscleGroup {
-            return volume(for: setsInTimeFrame, muscleGroup: selectedMuscleGroup)
+            return volumeFormatted(for: setsInTimeFrame, muscleGroup: selectedMuscleGroup)
         }
-        return volume(for: setsInTimeFrame)
+        return volumeFormatted(for: setsInTimeFrame)
     }
 
     private var visibleDomainDescription: String {
@@ -219,11 +219,19 @@ struct VolumeScreen: View {
         }
     }
 
-    private func volume(for sets: [WorkoutSet], muscleGroup: MuscleGroup? = nil) -> Int {
+    private func volume(for sets: [WorkoutSet], muscleGroup: MuscleGroup? = nil) -> Double {
         if let muscleGroup = muscleGroup {
-            return convertWeightForDisplaying(getVolume(of: sets, for: muscleGroup))
+            return convertWeightForDisplayingDecimal(getVolume(of: sets, for: muscleGroup))
         } else {
-            return convertWeightForDisplaying(getVolume(of: sets))
+            return convertWeightForDisplayingDecimal(getVolume(of: sets))
+        }
+    }
+    
+    private func volumeFormatted(for sets: [WorkoutSet], muscleGroup: MuscleGroup? = nil) -> String {
+        if let muscleGroup = muscleGroup {
+            return formatWeightForDisplay(getVolume(of: sets, for: muscleGroup))
+        } else {
+            return formatWeightForDisplay(getVolume(of: sets))
         }
     }
 

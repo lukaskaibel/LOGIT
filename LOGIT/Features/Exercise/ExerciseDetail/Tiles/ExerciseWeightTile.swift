@@ -34,7 +34,7 @@ struct ExerciseWeightTile: View {
                                 .font(.footnote)
                                 .fontWeight(.semibold)
                             UnitView(
-                                value: bestWeightThisMonth(workoutSets) != nil ? String(convertWeightForDisplaying(bestWeightThisMonth(workoutSets)!)) : "––",
+                                value: bestWeightThisMonth(workoutSets) != nil ? formatWeightForDisplay(bestWeightThisMonth(workoutSets)!) : "––",
                                 unit: WeightUnit.used.rawValue.uppercased(),
                                 configuration: .large
                             )
@@ -47,7 +47,7 @@ struct ExerciseWeightTile: View {
                             if maxDailySets.first == workoutSet {
                                 LineMark(
                                     x: .value("Date", Date.distantPast, unit: .day),
-                                    y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
+                                    y: .value("Max weight on day", convertWeightForDisplayingDecimal(workoutSet.maximum(.weight, for: exercise)))
                                 )
                                 .interpolationMethod(.catmullRom)
                                 .foregroundStyle(exerciseMuscleGroupColor.gradient)
@@ -55,7 +55,7 @@ struct ExerciseWeightTile: View {
                             }
                             LineMark(
                                 x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
+                                y: .value("Max weight on day", convertWeightForDisplayingDecimal(workoutSet.maximum(.weight, for: exercise)))
                             )
                             .interpolationMethod(.catmullRom)
                             .foregroundStyle(exerciseMuscleGroupColor.gradient)
@@ -72,7 +72,7 @@ struct ExerciseWeightTile: View {
                             }
                             AreaMark(
                                 x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
+                                y: .value("Max weight on day", convertWeightForDisplayingDecimal(workoutSet.maximum(.weight, for: exercise)))
                             )
                             .interpolationMethod(.catmullRom)
                             .foregroundStyle(Gradient(colors: [
@@ -82,7 +82,7 @@ struct ExerciseWeightTile: View {
                             ]))
                         }
                         if let lastSet = maxDailySets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
-                            let weightDisplayed = convertWeightForDisplaying(lastSet.maximum(.weight, for: exercise))
+                            let weightDisplayed = convertWeightForDisplayingDecimal(lastSet.maximum(.weight, for: exercise))
                             RuleMark(
                                 xStart: .value("Start", lastDate),
                                 xEnd: .value("End", Date()),
@@ -99,7 +99,7 @@ struct ExerciseWeightTile: View {
                         }
                     }
                     .chartXScale(domain: xDomain)
-                    .chartYScale(domain: 0 ... (Double(allTimeWeightPREntry(in: workoutSets).0) * 1.1))
+                    .chartYScale(domain: 0 ... ((Double(allTimeWeightPREntry(in: workoutSets).0) ?? 0) * 1.1))
                     .chartXAxis {}
                     .chartYAxis {}
                     .frame(width: 120, height: 70)
@@ -135,7 +135,7 @@ struct ExerciseWeightTile: View {
                     }
                     .foregroundStyle(.tertiary)
                     .font(.caption)
-                    UnitView(value: "\(allTimeWeightPREntry.0)", unit: WeightUnit.used.rawValue.uppercased(), unitColor: .tertiaryLabel)
+                    UnitView(value: allTimeWeightPREntry.0, unit: WeightUnit.used.rawValue.uppercased(), unitColor: .tertiaryLabel)
                         .foregroundStyle(.tertiary)
                 }
             }
@@ -178,7 +178,7 @@ struct ExerciseWeightTile: View {
             .max()
     }
 
-    private func allTimeWeightPREntry(in workoutSets: [WorkoutSet]) -> (Int, Int, Date?) {
+    private func allTimeWeightPREntry(in workoutSets: [WorkoutSet]) -> (String, Int, Date?) {
         let workoutSet = workoutSets
             .max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
         var maxWeight: Int64 = 0
@@ -207,7 +207,7 @@ struct ExerciseWeightTile: View {
                 maxWeightDate = dropSet.workout?.date
             }
         }
-        return (convertWeightForDisplaying(maxWeight), Int(repetitionsOfMaxWeight), maxWeightDate)
+        return (formatWeightForDisplay(maxWeight), Int(repetitionsOfMaxWeight), maxWeightDate)
     }
 }
 

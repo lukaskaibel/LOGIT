@@ -34,13 +34,14 @@ struct TemplateStandardSetCell: View {
                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                     unit: NSLocalizedString("reps", comment: "")
                 )
-                IntegerField(
+                DecimalField(
                     placeholder: 0,
                     value: Binding(
-                        get: { Int64(convertWeightForDisplaying(standardSet.weight)) },
+                        get: { convertWeightForDisplayingDecimal(standardSet.weight) },
                         set: { standardSet.weight = convertWeightForStoring($0) }
                     ),
                     maxDigits: 4,
+                    decimalPlaces: 3,
                     index: IntegerField.Index(
                         primary: indexInTemplate,
                         secondary: 0,

@@ -37,7 +37,7 @@ struct ExerciseVolumeTile: View {
                             .font(.footnote)
                             .fontWeight(.semibold)
                         UnitView(
-                            value: "\(convertWeightForDisplaying(getVolume(of: groupedWorkoutSets.first?.1 ?? [], for: exercise)))",
+                            value: "\(formatWeightForDisplay(getVolume(of: groupedWorkoutSets.first?.1 ?? [], for: exercise)))",
                             unit: WeightUnit.used.rawValue.uppercased(),
                             configuration: .large
                         )
@@ -48,7 +48,7 @@ struct ExerciseVolumeTile: View {
                         ForEach(groupedWorkoutSets, id: \.0) { key, workoutSets in
                             BarMark(
                                 x: .value("Weeks before now", key, unit: .weekOfYear),
-                                y: .value("Volume in week", convertWeightForDisplaying(getVolume(of: workoutSets, for: exercise))),
+                                y: .value("Volume in week", convertWeightForDisplayingDecimal(getVolume(of: workoutSets, for: exercise))),
                                 width: .ratio(0.5)
                             )
                             .foregroundStyle(Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill)

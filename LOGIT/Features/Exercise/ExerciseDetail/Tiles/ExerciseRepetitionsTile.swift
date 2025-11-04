@@ -178,7 +178,7 @@ struct ExerciseRepetitionsTile: View {
             .max()
     }
 
-    private func allTimeRepetitionsPREntry(in workoutSets: [WorkoutSet]) -> (Int, Int, Date?) {
+    private func allTimeRepetitionsPREntry(in workoutSets: [WorkoutSet]) -> (Int, String, Date?) {
         let workoutSet = workoutSets
             .max(by: { $0.maximum(.repetitions, for: exercise) < $1.maximum(.repetitions, for: exercise) })
         var maxRepetitions: Int64 = 0
@@ -207,7 +207,7 @@ struct ExerciseRepetitionsTile: View {
                 maxRepetitionsDate = dropSet.workout?.date
             }
         }
-        return (Int(maxRepetitions), convertWeightForDisplaying(weightOfMaxRepetitions), maxRepetitionsDate)
+        return (Int(maxRepetitions), formatWeightForDisplay(weightOfMaxRepetitions), maxRepetitionsDate)
     }
 }
 

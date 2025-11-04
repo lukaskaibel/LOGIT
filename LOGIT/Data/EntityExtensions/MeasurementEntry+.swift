@@ -35,4 +35,23 @@ extension MeasurementEntry {
             }
         }
     }
+    
+    var decimalValue: Double {
+        get {
+            switch type {
+            case .bodyweight: return convertWeightForDisplayingDecimal(value_)
+            case .percentage, .caloriesBurned: return Double(value_) / 1000.0
+            case .length: return Double(value_) / 10.0
+            case .none: return Double(value_)
+            }
+        }
+        set {
+            switch type {
+            case .bodyweight: value_ = convertWeightForStoring(newValue)
+            case .percentage, .caloriesBurned: value_ = Int64(newValue * 1000)
+            case .length: value_ = Int64(newValue * 10)
+            case .none: value_ = Int64(newValue)
+            }
+        }
+    }
 }

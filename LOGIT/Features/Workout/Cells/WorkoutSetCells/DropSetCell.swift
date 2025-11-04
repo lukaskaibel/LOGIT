@@ -37,10 +37,11 @@ struct DropSetCell: View {
                             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                             unit: NSLocalizedString("reps", comment: "")
                         )
-                        IntegerField(
-                            placeholder: weightsPlaceholder(for: dropSet).value(at: index) ?? 0,
-                            value: weightsBinding(forIndex: index),
+                        DecimalField(
+                            placeholder: weightsPlaceholderDecimal(for: dropSet).value(at: index) ?? 0,
+                            value: weightsBindingDecimal(forIndex: index),
                             maxDigits: 4,
+                            decimalPlaces: 3,
                             index: IntegerField.Index(
                                 primary: indexInWorkout,
                                 secondary: index,
@@ -82,6 +83,17 @@ struct DropSetCell: View {
             }
         )
     }
+    
+    private func weightsBindingDecimal(forIndex index: Int) -> Binding<Double> {
+        Binding(
+            get: {
+                convertWeightForDisplayingDecimal(dropSet.weights?.value(at: index) ?? 0)
+            },
+            set: { newValue in
+                dropSet.weights?[index] = convertWeightForStoring(newValue)
+            }
+        )
+    }
 
     private func repetitionsPlaceholder(for dropSet: DropSet) -> [Int64] {
         guard let templateDropSet = workoutRecorder.templateSet(for: dropSet) as? TemplateDropSet
@@ -97,5 +109,13 @@ struct DropSetCell: View {
             return [0]
         }
         return templateDropSet.weights?.map { Int64(convertWeightForDisplaying($0)) } ?? .emptyList
+    }
+    
+    private func weightsPlaceholderDecimal(for dropSet: DropSet) -> [Double] {
+        guard let templateDropSet = workoutRecorder.templateSet(for: dropSet) as? TemplateDropSet
+        else {
+            return [0]
+        }
+        return templateDropSet.weights?.map { convertWeightForDisplayingDecimal($0) } ?? .emptyList
     }
 }

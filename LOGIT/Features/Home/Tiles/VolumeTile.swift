@@ -38,7 +38,7 @@ struct VolumeTile: View {
                         .fontWeight(.semibold)
                     let setsThisWeek = groupedWorkoutSets.first?.1 ?? []
                     UnitView(
-                        value: "\(convertWeightForDisplaying(getVolume(of: setsThisWeek)))",
+                        value: "\(formatWeightForDisplay(getVolume(of: setsThisWeek)))",
                         unit: WeightUnit.used.rawValue.uppercased(),
                         configuration: .large,
                         unitColor: .secondaryLabel
@@ -50,7 +50,7 @@ struct VolumeTile: View {
                     ForEach(groupedWorkoutSets, id: \.0) { key, workoutSets in
                         BarMark(
                             x: .value("Weeks before now", key, unit: .weekOfYear),
-                            y: .value("Volume in week", convertWeightForDisplaying(getVolume(of: workoutSets))),
+                            y: .value("Volume in week", convertWeightForDisplayingDecimal(getVolume(of: workoutSets))),
                             width: .ratio(0.5)
                         )
                         .foregroundStyle(Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? Color.accentColor : Color.fill)

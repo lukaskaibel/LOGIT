@@ -35,13 +35,14 @@ struct StandardSetCell: View {
                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                     unit: NSLocalizedString("reps", comment: "")
                 )
-                IntegerField(
-                    placeholder: weightPlaceholder(for: standardSet),
+                DecimalField(
+                    placeholder: weightPlaceholderDecimal(for: standardSet),
                     value: Binding(
-                        get: { Int64(convertWeightForDisplaying(standardSet.weight)) },
+                        get: { convertWeightForDisplayingDecimal(standardSet.weight) },
                         set: { standardSet.weight = convertWeightForStoring($0) }
                     ),
                     maxDigits: 4,
+                    decimalPlaces: 3,
                     index: IntegerField.Index(
                         primary: indexInWorkout,
                         secondary: 0,
@@ -74,5 +75,13 @@ struct StandardSetCell: View {
             as? TemplateStandardSet
         else { return 0 }
         return Int64(convertWeightForDisplaying(templateStandardSet.weight))
+    }
+    
+    private func weightPlaceholderDecimal(for standardSet: StandardSet) -> Double {
+        guard
+            let templateStandardSet = workoutRecorder.templateSet(for: standardSet)
+            as? TemplateStandardSet
+        else { return 0 }
+        return convertWeightForDisplayingDecimal(templateStandardSet.weight)
     }
 }

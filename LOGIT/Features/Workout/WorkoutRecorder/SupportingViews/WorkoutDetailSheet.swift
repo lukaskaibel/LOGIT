@@ -80,7 +80,7 @@ struct WorkoutDetailSheet: View {
                 VStack(alignment: .leading) {
                     Text(NSLocalizedString("volume", comment: ""))
                     UnitView(
-                        value: "\(getVolume(of: workout.sets))",
+                        value: "\(formatWeightForDisplay(getVolume(of: workout.sets)))",
                         unit: WeightUnit.used.rawValue.uppercased()
                     )
                     .foregroundStyle(Color.accentColor)

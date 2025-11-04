@@ -38,13 +38,14 @@ struct TemplateSuperSetCell: View {
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         unit: NSLocalizedString("reps", comment: "")
                     )
-                    IntegerField(
+                    DecimalField(
                         placeholder: 0,
                         value: Binding(
-                            get: { Int64(convertWeightForDisplaying(superSet.weightFirstExercise)) },
+                            get: { convertWeightForDisplayingDecimal(superSet.weightFirstExercise) },
                             set: { superSet.weightFirstExercise = convertWeightForStoring($0) }
                         ),
                         maxDigits: 4,
+                        decimalPlaces: 3,
                         index: IntegerField.Index(
                             primary: indexInTemplate,
                             secondary: 0,
@@ -70,13 +71,14 @@ struct TemplateSuperSetCell: View {
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         unit: NSLocalizedString("reps", comment: "")
                     )
-                    IntegerField(
+                    DecimalField(
                         placeholder: 0,
                         value: Binding(
-                            get: { Int64(convertWeightForDisplaying(superSet.weightSecondExercise)) },
+                            get: { convertWeightForDisplayingDecimal(superSet.weightSecondExercise) },
                             set: { superSet.weightSecondExercise = convertWeightForStoring($0) }
                         ),
                         maxDigits: 4,
+                        decimalPlaces: 3,
                         index: IntegerField.Index(
                             primary: indexInTemplate,
                             secondary: 1,

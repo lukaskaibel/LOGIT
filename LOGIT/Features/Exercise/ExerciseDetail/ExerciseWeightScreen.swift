@@ -46,7 +46,7 @@ struct ExerciseWeightScreen: View {
                     .textCase(.uppercase)
                     .foregroundStyle(.secondary)
                 UnitView(
-                    value: "\(bestVisibleWeight != nil ? String(convertWeightForDisplaying(bestVisibleWeight!)) : "––")",
+                    value: "\(bestVisibleWeight != nil ? formatWeightForDisplay(bestVisibleWeight!) : "––")",
                     unit: WeightUnit.used.rawValue.uppercased()
                 )
                 .foregroundStyle(exerciseMuscleGroupColor.gradient)
@@ -60,7 +60,7 @@ struct ExerciseWeightScreen: View {
                 // Show selection only when a selection exists, snapped to the nearest datapoint
                 if selectedDate != nil, let selectedSet = snappedSelectedSet, let sDate = selectedSet.workout?.date {
                     let snapped = Calendar.current.startOfDay(for: sDate)
-                    let valueDisplayed = convertWeightForDisplaying(selectedSet.maximum(.weight, for: exercise))
+                    let valueDisplayed = formatWeightForDisplay(selectedSet.maximum(.weight, for: exercise))
                     RuleMark(x: .value("Selected", snapped, unit: .day))
                         .foregroundStyle(exerciseMuscleGroupColor.opacity(0.35))
                         .lineStyle(StrokeStyle(lineWidth: 2))
@@ -84,7 +84,7 @@ struct ExerciseWeightScreen: View {
                 if let firstEntry = allDailyMaxSets.first {
                     LineMark(
                         x: .value("Date", Date.distantPast, unit: .day),
-                        y: .value("Max repetitions on day", convertWeightForDisplaying(firstEntry.maximum(.weight, for: exercise)))
+                        y: .value("Max repetitions on day", convertWeightForDisplayingDecimal(firstEntry.maximum(.weight, for: exercise)))
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(exerciseMuscleGroupColor.gradient)
@@ -92,7 +92,7 @@ struct ExerciseWeightScreen: View {
                     .opacity(snappedSelectedSet == nil ? 1.0 : 0.3)
                     AreaMark(
                         x: .value("Date", Date.distantPast, unit: .day),
-                        y: .value("Max repetitions on day", convertWeightForDisplaying(firstEntry.maximum(.weight, for: exercise)))
+                        y: .value("Max repetitions on day", convertWeightForDisplayingDecimal(firstEntry.maximum(.weight, for: exercise)))
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(Gradient(colors: [
@@ -105,7 +105,7 @@ struct ExerciseWeightScreen: View {
                 ForEach(allDailyMaxSets) { workoutSet in
                     LineMark(
                         x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                        y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
+                        y: .value("Max weight on day", convertWeightForDisplayingDecimal(workoutSet.maximum(.weight, for: exercise)))
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(exerciseMuscleGroupColor.gradient)
@@ -133,7 +133,7 @@ struct ExerciseWeightScreen: View {
                     }())
                     AreaMark(
                         x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                        y: .value("Max weight on day", convertWeightForDisplaying(workoutSet.maximum(.weight, for: exercise)))
+                        y: .value("Max weight on day", convertWeightForDisplayingDecimal(workoutSet.maximum(.weight, for: exercise)))
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(Gradient(colors: [
@@ -144,7 +144,7 @@ struct ExerciseWeightScreen: View {
                     .opacity(selectedDate == nil ? 1.0 : 0.0)
                 }
                 if selectedDate == nil, let lastSet = allDailyMaxSets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
-                    let weightDisplayed = convertWeightForDisplaying(lastSet.maximum(.weight, for: exercise))
+                    let weightDisplayed = convertWeightForDisplayingDecimal(lastSet.maximum(.weight, for: exercise))
                     RuleMark(
                         xStart: .value("Start", lastDate),
                         xEnd: .value("End", Date()),

@@ -36,10 +36,11 @@ struct TemplateDropSetCell: View {
                             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                             unit: NSLocalizedString("reps", comment: "")
                         )
-                        IntegerField(
+                        DecimalField(
                             placeholder: 0,
-                            value: weightsBinding(forIndex: index),
+                            value: weightsBindingDecimal(forIndex: index),
                             maxDigits: 4,
+                            decimalPlaces: 3,
                             index: IntegerField.Index(
                                 primary: indexInTemplate,
                                 secondary: index,
@@ -75,6 +76,17 @@ struct TemplateDropSetCell: View {
         Binding(
             get: {
                 Int64(convertWeightForDisplaying(dropSet.weights?.value(at: index) ?? 0))
+            },
+            set: { newValue in
+                dropSet.weights?[index] = convertWeightForStoring(newValue)
+            }
+        )
+    }
+    
+    private func weightsBindingDecimal(forIndex index: Int) -> Binding<Double> {
+        Binding(
+            get: {
+                convertWeightForDisplayingDecimal(dropSet.weights?.value(at: index) ?? 0)
             },
             set: { newValue in
                 dropSet.weights?[index] = convertWeightForStoring(newValue)

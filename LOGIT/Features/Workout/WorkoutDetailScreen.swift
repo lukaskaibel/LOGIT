@@ -273,7 +273,7 @@ struct WorkoutDetailScreen: View {
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                         UnitView(
-                                            value: "\(convertWeightForDisplaying(volume(for: muscleGroupOccurance.0, in: workout.sets)))",
+                                            value: "\(formatWeightForDisplay(volume(for: muscleGroupOccurance.0, in: workout.sets)))",
                                             unit: WeightUnit.used.rawValue.uppercased()
                                         )
                                     }

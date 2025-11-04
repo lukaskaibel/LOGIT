@@ -40,7 +40,7 @@ struct ExerciseVolumeScreen: View {
                         .textCase(.uppercase)
                         .foregroundStyle(.secondary)
                     UnitView(
-                        value: "\(totalVolumeInTimeFrame(workoutSets))",
+                        value: totalVolumeInTimeFrame(workoutSets),
                         unit: WeightUnit.used.rawValue.uppercased()
                     )
                     .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
@@ -64,15 +64,15 @@ struct ExerciseVolumeScreen: View {
                     // Single selection rule mark snapped to the start of the selected period
                     if let selectedDate {
                         let snapped = getPeriodStart(for: selectedDate)
-                        let selectedVolume: Int = {
+                        let selectedVolume: String = {
                             switch chartGranularity {
                             case .month:
                                 let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
-                                return volume(for: sets)
+                                return volumeFormatted(for: sets)
                             case .year:
                                 // Year view still selects per week
                                 let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
-                                return volume(for: sets)
+                                return volumeFormatted(for: sets)
                             }
                         }()
                         RuleMark(x: .value("Selected", snapped, unit: xUnit))
@@ -81,7 +81,7 @@ struct ExerciseVolumeScreen: View {
                             .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                                 VStack(alignment: .leading) {
                                     UnitView(
-                                        value: "\(selectedVolume)",
+                                        value: selectedVolume,
                                         unit: WeightUnit.used.rawValue.uppercased()
                                     )
                                     .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
@@ -170,14 +170,18 @@ struct ExerciseVolumeScreen: View {
         return startDate ... endDate
     }
 
-    private func totalVolumeInTimeFrame(_ workoutSets: [WorkoutSet]) -> Int {
+    private func totalVolumeInTimeFrame(_ workoutSets: [WorkoutSet]) -> String {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= chartScrollPosition && $0.workout?.date ?? .distantFuture <= endDate }
-        return volume(for: setsInTimeFrame)
+        return volumeFormatted(for: setsInTimeFrame)
     }
 
-    private func volume(for sets: [WorkoutSet]) -> Int {
-        convertWeightForDisplaying(getVolume(of: sets, for: exercise))
+    private func volume(for sets: [WorkoutSet]) -> Double {
+        convertWeightForDisplayingDecimal(getVolume(of: sets, for: exercise))
+    }
+    
+    private func volumeFormatted(for sets: [WorkoutSet]) -> String {
+        formatWeightForDisplay(getVolume(of: sets, for: exercise))
     }
 
     private func xAxisDateString(for date: Date) -> String {

@@ -39,13 +39,14 @@ struct SuperSetCell: View {
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         unit: NSLocalizedString("reps", comment: "")
                     )
-                    IntegerField(
-                        placeholder: weightsPlaceholder(for: superSet).first!,
+                    DecimalField(
+                        placeholder: weightsPlaceholderDecimal(for: superSet).first!,
                         value: Binding(
-                            get: { Int64(convertWeightForDisplaying(superSet.weightFirstExercise)) },
+                            get: { convertWeightForDisplayingDecimal(superSet.weightFirstExercise) },
                             set: { superSet.weightFirstExercise = convertWeightForStoring($0) }
                         ),
                         maxDigits: 4,
+                        decimalPlaces: 3,
                         index: IntegerField.Index(
                             primary: indexInWorkout,
                             secondary: 0,
@@ -71,13 +72,14 @@ struct SuperSetCell: View {
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         unit: NSLocalizedString("reps", comment: "")
                     )
-                    IntegerField(
-                        placeholder: weightsPlaceholder(for: superSet).second!,
+                    DecimalField(
+                        placeholder: weightsPlaceholderDecimal(for: superSet).second!,
                         value: Binding(
-                            get: { Int64(convertWeightForDisplaying(superSet.weightSecondExercise)) },
+                            get: { convertWeightForDisplayingDecimal(superSet.weightSecondExercise) },
                             set: { superSet.weightSecondExercise = convertWeightForStoring($0) }
                         ),
                         maxDigits: 4,
+                        decimalPlaces: 3,
                         index: IntegerField.Index(
                             primary: indexInWorkout,
                             secondary: 1,
@@ -112,5 +114,12 @@ struct SuperSetCell: View {
         else { return [0, 0] }
         return [templateSuperSet.weightFirstExercise, templateSuperSet.weightSecondExercise]
             .map { Int64(convertWeightForDisplaying($0)) }
+    }
+    
+    private func weightsPlaceholderDecimal(for superSet: SuperSet) -> [Double] {
+        guard let templateSuperSet = workoutRecorder.templateSet(for: superSet) as? TemplateSuperSet
+        else { return [0, 0] }
+        return [templateSuperSet.weightFirstExercise, templateSuperSet.weightSecondExercise]
+            .map { convertWeightForDisplayingDecimal($0) }
     }
 }

@@ -182,6 +182,7 @@
 		806DE6202E1DD10A008E162F /* ChronographView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806DE61F2E1DD106008E162F /* ChronographView.swift */; };
 		80750E112DDFCA550037F1FE /* WishKit in Frameworks */ = {isa = PBXBuildFile; productRef = 80750E102DDFCA550037F1FE /* WishKit */; };
 		80A640A02E414F4E0053C2C3 /* Transmission in Frameworks */ = {isa = PBXBuildFile; productRef = 80A6409F2E414F4E0053C2C3 /* Transmission */; };
+		80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387BA2EBA187100AD7EFC /* DecimalField.swift */; };
 		80EC5D8E2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -389,6 +390,7 @@
 		8034A7EC2E83073700834A32 /* LOGIT 4.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 4.0.xcdatamodel"; sourceTree = "<group>"; };
 		8065AA6B2686667F00F53A5A /* LOGIT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LOGIT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		806DE61F2E1DD106008E162F /* ChronographView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronographView.swift; sourceTree = "<group>"; };
+		80B387BA2EBA187100AD7EFC /* DecimalField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalField.swift; sourceTree = "<group>"; };
 		80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetRepositoryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -869,6 +871,7 @@
 				801BBD582DF7338A00CDB1FB /* TipView.swift */,
 				801BBD5A2DF7338A00CDB1FB /* UnitView.swift */,
 				801BBD5B2DF7338A00CDB1FB /* WidgetCollectionView.swift */,
+				80B387BA2EBA187100AD7EFC /* DecimalField.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1173,6 +1176,7 @@
 				801BBDD62DF7338A00CDB1FB /* TipView.swift in Sources */,
 				801BBDD72DF7338A00CDB1FB /* TemplateSetCell.swift in Sources */,
 				801BBDD82DF7338A00CDB1FB /* PurchaseManager.swift in Sources */,
+				80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */,
 				801BBDD92DF7338A00CDB1FB /* View+.swift in Sources */,
 				801BBDDA2DF7338A00CDB1FB /* DateBarChart.swift in Sources */,
 				801BBDDB2DF7338A00CDB1FB /* WorkoutCell.swift in Sources */,

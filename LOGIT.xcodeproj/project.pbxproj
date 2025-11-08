@@ -144,7 +144,6 @@
 		801BBDDF2DF7338A00CDB1FB /* WidgetCollection+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCDC2DF7338A00CDB1FB /* WidgetCollection+.swift */; };
 		801BBDE02DF7338A00CDB1FB /* MuscleGroupOccurancesChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD372DF7338A00CDB1FB /* MuscleGroupOccurancesChart.swift */; };
 		801BBDE12DF7338A00CDB1FB /* WorkoutSetGroup+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCDF2DF7338A00CDB1FB /* WorkoutSetGroup+.swift */; };
-		801BBDE22DF7338A00CDB1FB /* DetentableBottomSheetStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD462DF7338A00CDB1FB /* DetentableBottomSheetStyle.swift */; };
 		801BBDE32DF7338A00CDB1FB /* MuscleGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCA22DF7338A00CDB1FB /* MuscleGroup.swift */; };
 		801BBDE42DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD3E2DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift */; };
 		801BBDE52DF7338A00CDB1FB /* WeightConverting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBF2DF7338A00CDB1FB /* WeightConverting.swift */; };
@@ -364,7 +363,6 @@
 		801BBD422DF7338A00CDB1FB /* RequiresNetworkConnectionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequiresNetworkConnectionModifier.swift; sourceTree = "<group>"; };
 		801BBD432DF7338A00CDB1FB /* TemplateGenerationModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateGenerationModifier.swift; sourceTree = "<group>"; };
 		801BBD452DF7338A00CDB1FB /* ButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyle.swift; sourceTree = "<group>"; };
-		801BBD462DF7338A00CDB1FB /* DetentableBottomSheetStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetentableBottomSheetStyle.swift; sourceTree = "<group>"; };
 		801BBD472DF7338A00CDB1FB /* KeyboardToolbarButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardToolbarButtonStyle.swift; sourceTree = "<group>"; };
 		801BBD482DF7338A00CDB1FB /* MuscleGroupGradientStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupGradientStyle.swift; sourceTree = "<group>"; };
 		801BBD492DF7338A00CDB1FB /* ScreenHeaderStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenHeaderStyle.swift; sourceTree = "<group>"; };
@@ -844,7 +842,6 @@
 			isa = PBXGroup;
 			children = (
 				801BBD452DF7338A00CDB1FB /* ButtonStyle.swift */,
-				801BBD462DF7338A00CDB1FB /* DetentableBottomSheetStyle.swift */,
 				801BBD472DF7338A00CDB1FB /* KeyboardToolbarButtonStyle.swift */,
 				801BBD482DF7338A00CDB1FB /* MuscleGroupGradientStyle.swift */,
 				801BBD492DF7338A00CDB1FB /* ScreenHeaderStyle.swift */,
@@ -1186,7 +1183,6 @@
 				801BBDDF2DF7338A00CDB1FB /* WidgetCollection+.swift in Sources */,
 				801BBDE02DF7338A00CDB1FB /* MuscleGroupOccurancesChart.swift in Sources */,
 				801BBDE12DF7338A00CDB1FB /* WorkoutSetGroup+.swift in Sources */,
-				801BBDE22DF7338A00CDB1FB /* DetentableBottomSheetStyle.swift in Sources */,
 				801BBDE32DF7338A00CDB1FB /* MuscleGroup.swift in Sources */,
 				801BBDE42DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift in Sources */,
 				801BBDE52DF7338A00CDB1FB /* WeightConverting.swift in Sources */,
@@ -1420,7 +1416,7 @@
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = LOGIT/App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LOGIT;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1450,7 +1446,7 @@
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = LOGIT/App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LOGIT;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

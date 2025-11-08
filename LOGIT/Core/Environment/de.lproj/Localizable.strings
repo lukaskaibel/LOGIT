@@ -197,6 +197,7 @@
 "newExercise" = "Neue Übung";
 "newTemplate" = "Vorlage erstellen";
 "newTemplateFromWorkout" = "Als Vorlage verwenden...";
+"newWorkout" = "Neues Workout";
 "night" = "Nacht";
 "nine" = "Neun";
 "noAttempts" = "Keine Ausführungen";
@@ -277,6 +278,7 @@
 "saveTime" = "Spare Zeit";
 "scanATemplate" = "Scanne eine Vorlage";
 "scanAWorkout" = "Scanne einen Workout";
+"scanWorkout" = "Workout einscannen";
 "scanAWorkoutPromotionText" = "Mache aus einem Foto blitzschnell eine Workout-Vorlage!";
 "searchExercises" = "In Übungen suchen";
 "searchWorkouts" = "In Workouts suchen";
@@ -359,6 +361,7 @@
 "update" = "Update";
 "upgradeTo" = "Upgraden zu";
 "useDefaultExercises" = "Standard Übungen benutzen";
+"useTemplate" = "Vorlage benutzen";
 
 // MARK: - W
 "volume" = "Volumen";

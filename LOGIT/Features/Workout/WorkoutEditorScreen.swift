@@ -74,8 +74,8 @@ struct WorkoutEditorScreen: View {
                 }
                 .padding(10)
                 .background(Color.secondaryBackground)
-                .cornerRadius(10)
-                .padding(10)
+                .clipShape(ConcentricRectangle(corners: .concentric, isUniform: true))
+                .padding()
             }
             ScrollViewReader { _ in
                 ScrollView {
@@ -103,23 +103,23 @@ struct WorkoutEditorScreen: View {
                 }
                 .sheet(isPresented: .constant(true)) {
                     NavigationView {
-                        ExerciseSelectionScreen(
-                            selectedExercise: nil,
-                            setExercise: { exercise in
-                                database.newWorkoutSetGroup(
-                                    createFirstSetAutomatically: true,
-                                    exercise: exercise,
-                                    workout: workout
-                                )
-                            },
-                            forSecondary: false,
-                            presentationDetentSelection: $exerciseSelectionPresentationDetent
-                        )
-                        .padding(.top)
-                        .toolbar {
+                        VStack(spacing: 0) {
+                            ExerciseSelectionScreen(
+                                selectedExercise: nil,
+                                setExercise: { exercise in
+                                    database.newWorkoutSetGroup(
+                                        createFirstSetAutomatically: true,
+                                        exercise: exercise,
+                                        workout: workout
+                                    )
+                                },
+                                forSecondary: false,
+                                presentationDetentSelection: $exerciseSelectionPresentationDetent
+                            )
+                            .padding(.top)
+                            .toolbar(.hidden, for: .navigationBar)
                             if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
-                                ToolbarItemGroup(placement: .bottomBar) {
-                                    Spacer()
+                                HStack {
                                     Button {
                                         database.undo()
                                     } label: {
@@ -134,13 +134,19 @@ struct WorkoutEditorScreen: View {
                                     }
                                     .disabled(!database.canRedo)
                                     Spacer()
+                                    Spacer()
+                                    Spacer()
                                 }
+                                .tint(Color.label)
+                                .font(.title2)
+                                .padding(.horizontal, 30)
+                                .padding(.bottom, 5)
                             }
                         }
-                        .toolbar(.hidden, for: .navigationBar)
                     }
                     .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
-                    .detentableBottomSheetStyle()
+                    .presentationBackgroundInteraction(.enabled)
+                    .interactiveDismissDisabled()
                     .sheet(isPresented: $isEditingStartEndDate) {
                         VStack(spacing: 30) {
                             HStack {
@@ -194,7 +200,7 @@ struct WorkoutEditorScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarHidden(isRenamingWorkout)
             .interactiveDismissDisabled(true)
-            .presentationBackground(Color.background)
+            .presentationBackground(.thickMaterial)
             .scrollDismissesKeyboard(.interactively)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -232,6 +238,7 @@ struct WorkoutEditorScreen: View {
                                 .font(.caption)
                                 .foregroundStyle(Color.secondaryLabel)
                         }
+                        .frame(maxWidth: 200)
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -322,7 +329,6 @@ private struct PreviewWrapperView: View {
                 NavigationView {
                     WorkoutEditorScreen(workout: database.testWorkout, isAddingNewWorkout: true)
                 }
-                .presentationBackground(Color.black)
             }
     }
 }

@@ -92,21 +92,49 @@ struct WorkoutRecorderScreen: View {
                         }
                         .sheet(isPresented: .constant(true)) {
                             NavigationView {
-                                ExerciseSelectionScreen(
-                                    selectedExercise: nil,
-                                    setExercise: { exercise in
-                                        withAnimation {
-                                            workoutRecorder.addSetGroup(with: exercise)
-                                            proxy.scrollTo(1, anchor: .bottom)
+                                VStack(spacing: 0) {
+                                    ExerciseSelectionScreen(
+                                        selectedExercise: nil,
+                                        setExercise: { exercise in
+                                            withAnimation {
+                                                workoutRecorder.addSetGroup(with: exercise)
+                                                proxy.scrollTo(1, anchor: .bottom)
+                                            }
+                                        },
+                                        forSecondary: false,
+                                        presentationDetentSelection: $exerciseSelectionPresentationDetent
+                                    )
+                                    .padding(.top)
+                                    .toolbar(.hidden, for: .navigationBar)
+                                    .sheet(isPresented: $isShowingChronoSheet) {
+                                        TimerStopwatchView(chronograph: chronograph)
+                                            .presentationDetents([.fraction(0.4)])
+                                            .presentationCornerRadius(30)
+                                            .padding()
+                                            .frame(maxHeight: .infinity, alignment: .top)
+                                    }
+                                    .sheet(isPresented: $isShowingDetailsSheet) {
+                                        if let workout = workoutRecorder.workout {
+                                            WorkoutDetailSheet(workout: workout, progress: progress)
+                                                .padding()
+                                                .presentationDetents([.fraction(0.4)])
+                                                .presentationCornerRadius(30)
                                         }
-                                    },
-                                    forSecondary: false,
-                                    presentationDetentSelection: $exerciseSelectionPresentationDetent
-                                )
-                                .padding(.top)
-                                .toolbar {
+                                    }
+                                    .sheet(isPresented: $isShowingFinishConfirmation) {
+                                        if let workout = workoutRecorder.workout {
+                                            FinishConfirmationSheet(workout: workout, onEndWorkout: {
+                                                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                                                workoutRecorder.saveWorkout()
+                                                dismissWorkoutRecorder()
+                                                goHome()
+                                            })
+                                            .padding([.top, .horizontal])
+                                            .presentationDetents([.fraction(0.4)])
+                                        }
+                                    }
                                     if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
-                                        ToolbarItemGroup(placement: .bottomBar) {
+                                        HStack {
                                             Button {
                                                 database.undo()
                                             } label: {
@@ -121,12 +149,6 @@ struct WorkoutRecorderScreen: View {
                                             }
                                             .disabled(!database.canRedo)
                                             Spacer()
-                                            // TODO: Think about info button. Maybe not needed. Maybe something else ?
-//                                            Button {
-//                                                isShowingDetailsSheet = true
-//                                            } label: {
-//                                                Image(systemName: "info.circle")
-//                                            }
                                             Spacer()
                                             Spacer()
                                             Button {
@@ -135,34 +157,10 @@ struct WorkoutRecorderScreen: View {
                                                 Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
                                             }
                                         }
-                                    }
-                                }
-                                .toolbar(.hidden, for: .navigationBar)
-                                .sheet(isPresented: $isShowingChronoSheet) {
-                                    TimerStopwatchView(chronograph: chronograph)
-                                        .presentationDetents([.fraction(0.4)])
-                                        .presentationCornerRadius(30)
-                                        .padding()
-                                        .frame(maxHeight: .infinity, alignment: .top)
-                                }
-                                .sheet(isPresented: $isShowingDetailsSheet) {
-                                    if let workout = workoutRecorder.workout {
-                                        WorkoutDetailSheet(workout: workout, progress: progress)
-                                            .padding()
-                                            .presentationDetents([.fraction(0.4)])
-                                            .presentationCornerRadius(30)
-                                    }
-                                }
-                                .sheet(isPresented: $isShowingFinishConfirmation) {
-                                    if let workout = workoutRecorder.workout {
-                                        FinishConfirmationSheet(workout: workout, onEndWorkout: {
-                                            UINotificationFeedbackGenerator().notificationOccurred(.success)
-                                            workoutRecorder.saveWorkout()
-                                            dismissWorkoutRecorder()
-                                            goHome()
-                                        })
-                                        .padding([.top, .horizontal])
-                                        .presentationDetents([.fraction(0.4)])
+                                        .tint(Color.label)
+                                        .font(.title2)
+                                        .padding(.horizontal, 30)
+                                        .padding(.bottom, 5)
                                     }
                                 }
                             }
@@ -171,8 +169,6 @@ struct WorkoutRecorderScreen: View {
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
                             .presentationDragIndicator(fullScreenDraggableCoverIsDragging ? .hidden : .visible)
-                            .presentationBackground(fullScreenDraggableCoverIsDragging ? AnyShapeStyle(Color.clear) : AnyShapeStyle(.thickMaterial))
-                            .presentationCornerRadius(30)
                             .interactiveDismissDisabled()
                             .onChange(of: fullScreenDraggableCoverIsDragging) {
                                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)

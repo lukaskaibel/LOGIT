@@ -106,6 +106,7 @@ struct TemplateListScreen: View {
             }
             .popover(isPresented: $showingTemplateCreation) {
                 TemplateEditorScreen(template: database.newTemplate(), isEditingExistingTemplate: false)
+                    .presentationBackground(Color.black)
             }
         }
     }

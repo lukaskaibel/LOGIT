@@ -38,77 +38,81 @@ struct HomeScreen: View {
             NavigationStack(path: $homeNavigationCoordinator.path) {
                 ScrollView {
                     VStack(spacing: 5) {
-                        header
-                            .padding([.top, .horizontal])
+                        if #unavailable(iOS 26.0) {
+                            header
+                                .padding([.top, .horizontal])
+                        }
                         VStack(spacing: SECTION_SPACING) {
                             if showNoWorkoutTip {
                                 noWorkoutTip
                                     .padding(.horizontal)
                             }
-                            VStack(spacing: 0) {
-                                Button {
-                                    homeNavigationCoordinator.path.append(.exerciseList)
-                                } label: {
-                                    HStack {
+                            if #unavailable(iOS 26.0) {
+                                VStack(spacing: 0) {
+                                    Button {
+                                        homeNavigationCoordinator.path.append(.exerciseList)
+                                    } label: {
                                         HStack {
-                                            Image(systemName: "dumbbell")
-                                                .frame(width: 40)
-                                                .foregroundStyle(Color.accentColor)
-                                            Text(NSLocalizedString("exercises", comment: ""))
-                                                .foregroundStyle(.white)
+                                            HStack {
+                                                Image(systemName: "dumbbell")
+                                                    .frame(width: 40)
+                                                    .foregroundStyle(Color.accentColor)
+                                                Text(NSLocalizedString("exercises", comment: ""))
+                                                    .foregroundStyle(.white)
+                                            }
+                                            Spacer()
+                                            NavigationChevron()
+                                                .foregroundStyle(Color.secondaryLabel)
                                         }
-                                        Spacer()
-                                        NavigationChevron()
-                                            .foregroundStyle(Color.secondaryLabel)
+                                        .padding(.trailing)
+                                        .padding(.vertical, 12)
                                     }
-                                    .padding(.trailing)
-                                    .padding(.vertical, 12)
-                                }
-                                Divider()
-                                    .padding(.leading, 45)
-                                Button {
-                                    homeNavigationCoordinator.path.append(.templateList)
-                                } label: {
-                                    HStack {
+                                    Divider()
+                                        .padding(.leading, 45)
+                                    Button {
+                                        homeNavigationCoordinator.path.append(.templateList)
+                                    } label: {
                                         HStack {
-                                            Image(systemName: "list.bullet.rectangle.portrait")
-                                                .frame(width: 40)
-                                                .foregroundStyle(Color.accentColor)
-                                            Text(NSLocalizedString("templates", comment: ""))
-                                                .foregroundStyle(.white)
+                                            HStack {
+                                                Image(systemName: "list.bullet.rectangle.portrait")
+                                                    .frame(width: 40)
+                                                    .foregroundStyle(Color.accentColor)
+                                                Text(NSLocalizedString("templates", comment: ""))
+                                                    .foregroundStyle(.white)
+                                            }
+                                            Spacer()
+                                            NavigationChevron()
+                                                .foregroundStyle(Color.secondaryLabel)
                                         }
-                                        Spacer()
-                                        NavigationChevron()
-                                            .foregroundStyle(Color.secondaryLabel)
+                                        .padding(.trailing)
+                                        .padding(.vertical, 12)
                                     }
-                                    .padding(.trailing)
-                                    .padding(.vertical, 12)
-                                }
-                                Divider()
-                                    .padding(.leading, 45)
-                                Button {
-                                    homeNavigationCoordinator.path.append(.measurements)
-                                } label: {
-                                    HStack {
+                                    Divider()
+                                        .padding(.leading, 45)
+                                    Button {
+                                        homeNavigationCoordinator.path.append(.measurements)
+                                    } label: {
                                         HStack {
-                                            Image(systemName: "ruler")
-                                                .frame(width: 40)
-                                                .foregroundStyle(Color.accentColor)
-                                            Text(NSLocalizedString("measurements", comment: ""))
-                                                .foregroundStyle(.white)
+                                            HStack {
+                                                Image(systemName: "ruler")
+                                                    .frame(width: 40)
+                                                    .foregroundStyle(Color.accentColor)
+                                                Text(NSLocalizedString("measurements", comment: ""))
+                                                    .foregroundStyle(.white)
+                                            }
+                                            Spacer()
+                                            NavigationChevron()
+                                                .foregroundStyle(Color.secondaryLabel)
                                         }
-                                        Spacer()
-                                        NavigationChevron()
-                                            .foregroundStyle(Color.secondaryLabel)
+                                        .padding(.trailing)
+                                        .padding(.vertical, 12)
                                     }
-                                    .padding(.trailing)
-                                    .padding(.vertical, 12)
+                                    Divider()
+                                        .padding(.leading, 45)
                                 }
-                                Divider()
-                                    .padding(.leading, 45)
+                                .font(.title2)
+                                .padding(.horizontal)
                             }
-                            .font(.title2)
-                            .padding(.horizontal)
 
                             VStack(spacing: SECTION_HEADER_SPACING) {
                                 Text(NSLocalizedString("thisWeek", comment: ""))
@@ -186,6 +190,7 @@ struct HomeScreen: View {
                             .padding(.top, 30)
                         }
                         .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                        .padding(.top)
                     }
                 }
                 .onAppear {
@@ -244,6 +249,7 @@ struct HomeScreen: View {
                         }
                     }
                 }
+                .navigationTitle("Summary")
             }
         }
     }

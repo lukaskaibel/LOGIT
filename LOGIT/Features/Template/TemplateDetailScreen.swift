@@ -106,6 +106,7 @@ struct TemplateDetailScreen: View {
         }
         .sheet(isPresented: $showingTemplateEditor) {
             TemplateEditorScreen(template: template, isEditingExistingTemplate: true)
+                .presentationBackground(Color.black)
         }
     }
 

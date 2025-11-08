@@ -74,7 +74,7 @@ struct ExerciseSelectionScreen: View {
                     .padding(.vertical, 10)
                     .padding(.horizontal, 10)
                     .background(Color(.systemGray5))
-                    .cornerRadius(15)
+                    .clipShape(ConcentricRectangle(corners: .concentric, isUniform: true))
                     if presentationDetentSelection != .fraction(BOTTOM_SHEET_SMALL) {
                         Button {
                             sheetType = .addExercise

@@ -10,8 +10,9 @@ import SwiftUI
 struct SectionHeaderModifier2: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.title2.weight(.bold))
+            .font(.title3.weight(.bold))
             .foregroundColor(.label)
+            .padding(.leading)
     }
 }
 

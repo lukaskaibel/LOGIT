@@ -33,27 +33,21 @@ struct StartWorkoutView: View {
             CurrentWorkoutView(workoutName: nil, workoutDate: .now)
                 .opacity(0.0001)
                 .fixedSize()
-            HStack(spacing: 0) {
+            Menu {
                 Button {
                     workoutRecorder.startWorkout()
                     presentWorkoutRecorder()
                 } label: {
-                    Label(NSLocalizedString("startWorkout", comment: ""), systemImage: "play.fill")
+                    Label(NSLocalizedString("newWorkout", comment: ""), systemImage: "play.fill")
                         .font(.body.weight(.bold))
                         .padding(20)
                         .frame(maxWidth: .infinity)
                 }
-                .foregroundStyle(.black)
-                .background(Color.accentColor.opacity(0.9))
-                .clipShape(UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 15, bottomLeading: 15, bottomTrailing: 5, topTrailing: 5)))
-                Rectangle()
-                    .foregroundStyle(.clear)
-                    .frame(width: 5)
-                Menu {
+                ControlGroup {
                     Button {
                         isShowingTemplateListScreen = true
                     } label: {
-                        Label("startFromTemplate", systemImage: "list.bullet.rectangle.portrait")
+                        Label("useTemplate", systemImage: "list.bullet.rectangle.portrait")
                     }
                     Button {
                         if purchaseManager.hasUnlockedPro {
@@ -63,36 +57,18 @@ struct StartWorkoutView: View {
                             isShowingUpgradeToProSheet = true
                         }
                     } label: {
-                        Label("startFromScan", systemImage: purchaseManager.hasUnlockedPro ? "camera.fill" : "crown.fill")
+                        Label("scanWorkout", systemImage: purchaseManager.hasUnlockedPro ? "camera.viewfinder" : "crown.fill")
                     }
                     .requiresNetworkConnection()
-                } label: {
-                    ZStack {
-                        Text(" ")
-                            .padding(20)
-                        Image(systemName: "play.fill")
-                            .padding(2)
-                            .overlay {
-                                GeometryReader { geometry in
-                                    ZStack {
-                                        Circle()
-                                            .fill(.black)
-                                            .frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5)
-                                        Image(systemName: "ellipsis.circle.fill")
-                                            .resizable()
-                                            .frame(width: geometry.size.width * 0.4, height: geometry.size.width * 0.4)
-                                    }
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                                }
-                            }
-                            .padding()
-                            .frame(width: 70)
-                            .font(.title3.weight(.semibold))
-                    }
                 }
-                .background(Color.accentColor.secondaryTranslucentBackground)
-                .clipShape(UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 5, bottomLeading: 5, bottomTrailing: 15, topTrailing: 15)))
+            } label: {
+                Label(NSLocalizedString("startWorkout", comment: ""), systemImage: "play.fill")
+                    .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity)
+                    .fontWeight(.semibold)
             }
+            .tint(Color.label)
+            .labelStyle(.titleAndIcon)
             .frame(height: currentWorkoutViewHeight)
         }
         .background {

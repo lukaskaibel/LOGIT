@@ -47,8 +47,6 @@ struct CreateTemplateMenu: View {
             .requiresNetworkConnection()
         } label: {
             Image(systemName: "plus")
-                .font(.title2)
-                .foregroundStyle(.tint)
         }
         .templateGeneration(from: $templateImage, to: $newTemplate)
         .onChange(of: newTemplate) { newValue in
@@ -60,6 +58,7 @@ struct CreateTemplateMenu: View {
                 template: template,
                 isEditingExistingTemplate: false
             )
+            .presentationBackground(Color.black)
         }
         .sheet(isPresented: $isShowingUpgradeToProScreen) {
             UpgradeToProScreen()

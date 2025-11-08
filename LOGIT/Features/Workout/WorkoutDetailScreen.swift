@@ -125,6 +125,7 @@ struct WorkoutDetailScreen: View {
                     template: database.newTemplate(from: workout),
                     isEditingExistingTemplate: false
                 )
+                .presentationBackground(Color.black)
             case .templateDetail:
                 NavigationStack {
                     TemplateDetailScreen(template: workout.template!)

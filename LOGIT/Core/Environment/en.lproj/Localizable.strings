@@ -196,6 +196,7 @@
 "newExercise" = "New Exercise";
 "newTemplate" = "New Template";
 "newTemplateFromWorkout" = "Use as Template...";
+"newWorkout" = "New Workout";
 "night" = "Night";
 "nine" = "Nine";
 "noAttempts" = "No Attempts";
@@ -275,6 +276,7 @@
 "saveTime" = "Save Time";
 "scanATemplate" = "Scan a Template";
 "scanAWorkout" = "Scan a Workout";
+"scanWorkout" = "Scan Workout";
 "scanAWorkoutPromotionText" = "Convert a photo into a workout and start training instantly!";
 "searchExercises" = "Search in Exercises";
 "searchWorkouts" = "Search in Workouts";
@@ -356,6 +358,7 @@
 "update" = "Update";
 "upgradeTo" = "Upgrade to";
 "useDefaultExercises" = "Use Default Exercises";
+"useTemplate" = "Use Template";
 
 // MARK: - W
 "volume" = "Volume";

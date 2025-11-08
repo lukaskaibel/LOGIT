@@ -65,11 +65,46 @@ struct LOGIT: App {
     var body: some Scene {
         WindowGroup {
             if setupDone {
-                HomeScreen()
-                    .zIndex(0)
-                    .overlay {
-                        startAndCurrentWorkoutButton
+                if #available(iOS 26.0, *) {
+                    TabView {
+                        Tab("summary", systemImage: "house") {
+                            HomeScreen()
+            //                #if targetEnvironment(simulator)
+            //                    .statusBarHidden(true)
+            //                #endif
+                        }
+                        Tab(NSLocalizedString("exercises", comment: ""), systemImage: "dumbbell") {
+                            NavigationStack {
+                                ExerciseListScreen()
+                            }
+                        }
+                        Tab(NSLocalizedString("templates", comment: ""), systemImage: "list.bullet.rectangle.portrait") {
+                            NavigationStack {
+                                TemplateListScreen()
+                            }
+                        }
+                        Tab(NSLocalizedString("measurements", comment: ""), systemImage: "ruler") {
+                            NavigationStack {
+                                MeasurementsScreen()
+                            }
+                        }
                     }
+                    .tabBarMinimizeBehavior(.onScrollDown)
+                    .tabViewBottomAccessory {
+                        startAndCurrentWorkoutButton
+                            .frame(maxWidth: .infinity)
+                    }
+                    .environment(\.managedObjectContext, database.context)
+                    .environmentObject(database)
+                    .environmentObject(measurementController)
+                    .environmentObject(templateService)
+                    .environmentObject(purchaseManager)
+                    .environmentObject(networkMonitor)
+                    .environmentObject(workoutRecorder)
+                    .environmentObject(muscleGroupService)
+                    .environmentObject(homeNavigationCoordinator)
+                    .environmentObject(chronograph)
+                    .environment(\.goHome) { selectedTab = .home }
                     .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
                         WorkoutRecorderScreen()
                             .environmentObject(database)
@@ -95,17 +130,6 @@ struct LOGIT: App {
                         }
                         .interactiveDismissDisabled()
                     }
-                    .environment(\.managedObjectContext, database.context)
-                    .environmentObject(database)
-                    .environmentObject(measurementController)
-                    .environmentObject(templateService)
-                    .environmentObject(purchaseManager)
-                    .environmentObject(networkMonitor)
-                    .environmentObject(workoutRecorder)
-                    .environmentObject(muscleGroupService)
-                    .environmentObject(homeNavigationCoordinator)
-                    .environmentObject(chronograph)
-                    .environment(\.goHome) { selectedTab = .home }
                     .task {
                         if acceptedPrivacyPolicyVersion != privacyPolicyVersion {
                             isShowingPrivacyPolicy = true
@@ -125,9 +149,71 @@ struct LOGIT: App {
                         guard let scene = scenes.first as? UIWindowScene else { return }
                         scene.keyWindow?.overrideUserInterfaceStyle = .dark
                     }
-//                #if targetEnvironment(simulator)
-//                    .statusBarHidden(true)
-//                #endif
+                } else {
+                    HomeScreen()
+                        .zIndex(0)
+                        .overlay {
+                            startAndCurrentWorkoutButton
+                        }
+                        .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
+                            WorkoutRecorderScreen()
+                                .environmentObject(database)
+                                .environmentObject(measurementController)
+                                .environmentObject(templateService)
+                                .environmentObject(purchaseManager)
+                                .environmentObject(networkMonitor)
+                                .environmentObject(workoutRecorder)
+                                .environmentObject(muscleGroupService)
+                                .environmentObject(homeNavigationCoordinator)
+                                .environmentObject(chronograph)
+                                .environment(\.managedObjectContext, database.context)
+                                .environment(\.goHome) { selectedTab = .home }
+                                .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
+                        }
+    //                    .presentation(transition: .slide, isPresented: $isShowingWorkoutRecorder) {
+    //                        TransitionReader { _ in
+    //                        }
+    //                    }
+                        .sheet(isPresented: $isShowingPrivacyPolicy) {
+                            NavigationStack {
+                                PrivacyPolicyScreen(needsAcceptance: true)
+                            }
+                            .interactiveDismissDisabled()
+                        }
+                        .environment(\.managedObjectContext, database.context)
+                        .environmentObject(database)
+                        .environmentObject(measurementController)
+                        .environmentObject(templateService)
+                        .environmentObject(purchaseManager)
+                        .environmentObject(networkMonitor)
+                        .environmentObject(workoutRecorder)
+                        .environmentObject(muscleGroupService)
+                        .environmentObject(homeNavigationCoordinator)
+                        .environmentObject(chronograph)
+                        .environment(\.goHome) { selectedTab = .home }
+                        .task {
+                            if acceptedPrivacyPolicyVersion != privacyPolicyVersion {
+                                isShowingPrivacyPolicy = true
+                            }
+                            Task {
+                                do {
+                                    try await purchaseManager.loadProducts()
+                                } catch {
+                                    print(error)
+                                }
+                            }
+                        }
+                        .preferredColorScheme(.dark)
+                        .onAppear {
+                            // Fixes issue with Alerts and Confirmation Dialogs not in dark mode
+                            let scenes = UIApplication.shared.connectedScenes
+                            guard let scene = scenes.first as? UIWindowScene else { return }
+                            scene.keyWindow?.overrideUserInterfaceStyle = .dark
+                        }
+    //                #if targetEnvironment(simulator)
+    //                    .statusBarHidden(true)
+    //                #endif
+                }
             } else {
                 FirstStartScreen()
                     .environmentObject(database)
@@ -148,53 +234,91 @@ struct LOGIT: App {
     }
 
     private var startAndCurrentWorkoutButton: some View {
-        ZStack {
-            Rectangle()
-                .fill(.bar)
-                .frame(height: 140)
-                .mask {
-                    VStack(spacing: 0) {
-                        LinearGradient(colors: [Color.black.opacity(0),
-                                                Color.black],
-                                       startPoint: .top,
-                                       endPoint: .bottom)
-                            .frame(height: 45)
-
-                        Rectangle()
-                    }
-                }
+        if #available(iOS 26.0, *) {
             if let workout = workoutRecorder.workout {
-                Button {
-                    showWorkoutRecorder()
-                } label: {
-                    CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
+                AnyView(
+                    Button {
+                        showWorkoutRecorder()
+                    } label: {
+                        CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
+                            .frame(maxWidth: .infinity)
+    //                        .background(.regularMaterial)
+    //                        .clipShape(RoundedRectangle(cornerRadius: 15))
+    //                        .shadow(radius: 10)
+    //                        .padding(.horizontal, 12)
+    //                        .padding(.bottom, 5)
+                    }
+                    .buttonStyle(TileButtonStyle())
+                    .gesture(
+                        DragGesture()
+                            .onChanged { dragValue in
+                                if dragValue.translation.height < 0 {
+                                    showWorkoutRecorder()
+                                }
+                            }
+                    )
+                )
+            } else {
+                AnyView(
+                    StartWorkoutView()
                         .frame(maxWidth: .infinity)
-                        .background(.regularMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 15))
-                        .shadow(radius: 10)
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 5)
-                }
-                .buttonStyle(TileButtonStyle())
-                .gesture(
-                    DragGesture()
-                        .onChanged { dragValue in
-                            if dragValue.translation.height < 0 {
-                                showWorkoutRecorder()
+                )
+//                    .shadow(radius: 10)
+//                    .padding(.horizontal, 12)
+//                    .padding(.bottom, 5)
+//                    .environment(\.presentWorkoutRecorder) { showWorkoutRecorder() }
+            }
+        } else {
+            AnyView(
+                ZStack {
+                    Rectangle()
+                        .fill(.bar)
+                        .frame(height: 140)
+                        .mask {
+                            VStack(spacing: 0) {
+                                LinearGradient(colors: [Color.black.opacity(0),
+                                                        Color.black],
+                                               startPoint: .top,
+                                               endPoint: .bottom)
+                                    .frame(height: 45)
+
+                                Rectangle()
                             }
                         }
-                )
-                .transition(.move(edge: .bottom))
-            } else {
-                StartWorkoutView()
-                    .shadow(radius: 10)
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 5)
-                    .environment(\.presentWorkoutRecorder) { showWorkoutRecorder() }
-            }
+                    if let workout = workoutRecorder.workout {
+                        Button {
+                            showWorkoutRecorder()
+                        } label: {
+                            CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
+                                .frame(maxWidth: .infinity)
+                                .background(.regularMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 15))
+                                .shadow(radius: 10)
+                                .padding(.horizontal, 12)
+                                .padding(.bottom, 5)
+                        }
+                        .buttonStyle(TileButtonStyle())
+                        .gesture(
+                            DragGesture()
+                                .onChanged { dragValue in
+                                    if dragValue.translation.height < 0 {
+                                        showWorkoutRecorder()
+                                    }
+                                }
+                        )
+                        .transition(.move(edge: .bottom))
+                    } else {
+                        StartWorkoutView()
+                            .shadow(radius: 10)
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 5)
+                            .environment(\.presentWorkoutRecorder) { showWorkoutRecorder() }
+                    }
+                }
+                .frame(maxHeight: .infinity, alignment: .bottom)
+                .edgesIgnoringSafeArea(.bottom)
+            )
         }
-        .frame(maxHeight: .infinity, alignment: .bottom)
-        .edgesIgnoringSafeArea(.bottom)
     }
 
     private func showWorkoutRecorder() {

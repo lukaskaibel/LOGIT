@@ -7,89 +7,62 @@
 
 import SwiftUI
 
+private struct SizePreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+
 struct OnDeleteModifier: ViewModifier {
     let action: () -> Void
-
-    @State var offset: CGSize = .zero
-    @State var initialOffset: CGSize = .zero
-    @State var contentWidth: CGFloat = 0.0
-    @State var willDeleteIfReleased = false
+    
+    @State private var size: CGSize = .zero
+    @State private var hasLoaded = false
 
     func body(content: Content) -> some View {
-        content
-            .background(
-                GeometryReader { geometry in
-                    ZStack {
-                        Rectangle()
-                            .foregroundColor(.red)
-                        Image(systemName: "trash")
-                            .foregroundColor(.white)
-                            .font(.title2.bold())
-                            .layoutPriority(-1)
+        ZStack {
+            content
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(key: SizePreferenceKey.self, value: proxy.size)
                     }
-                    .frame(width: -offset.width)
-                    .clipped()
-                    .offset(x: geometry.size.width)
-                    .onAppear {
-                        contentWidth = geometry.size.width
-                    }
-                    .gesture(
-                        TapGesture()
-                            .onEnded {
-                                delete()
-                            }
-                    )
+                )
+                .suppressIntegerFieldFocus(true)
+                .onPreferenceChange(SizePreferenceKey.self) { newSize in
+                    size = newSize
                 }
-            )
-            .offset(x: offset.width, y: 0)
-            .simultaneousGesture(
-                DragGesture()
-                    .onChanged { gesture in
-                        if gesture.translation.width + initialOffset.width <= 0 {
-                            self.offset.width = gesture.translation.width + initialOffset.width
+                .opacity(0.000001)
+                .allowsHitTesting(false)
+                .disabled(true)
+                .accessibilityHidden(true)
+            List {
+                ForEach([0], id:\.self) { _ in
+                    content
+                        .buttonStyle(BorderlessButtonStyle())
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                action()
+                            } label: {
+                                Label(NSLocalizedString("delete", comment: ""), systemImage: "trash")
+                            }
                         }
-                        if self.offset.width < -deletionDistance, !willDeleteIfReleased {
-                            hapticFeedback()
-                            willDeleteIfReleased.toggle()
-                        } else if offset.width > -deletionDistance, willDeleteIfReleased {
-                            hapticFeedback()
-                            willDeleteIfReleased.toggle()
-                        }
-                    }
-                    .onEnded { _ in
-                        if offset.width < -deletionDistance {
-                            delete()
-                        } else if offset.width < -halfDeletionDistance {
-                            offset.width = -tappableDeletionWidth
-                            initialOffset.width = -tappableDeletionWidth
-                        } else {
-                            offset = .zero
-                            initialOffset = .zero
-                        }
-                    }
-            )
-            .animation(.interactiveSpring())
+                }
+            }
+            .contentMargins(.top, 0)
+            .listStyle(.plain)
+            .scrollDisabled(true)
+            .frame(height: size == .zero ? nil : size.height)
+        }
     }
-
-    private func delete() {
-        offset.width = -contentWidth
-        action()
-    }
-
-    private func hapticFeedback() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-    }
-
-    // MARK: Constants
-
-    let deletionDistance = CGFloat(200)
-    let halfDeletionDistance = CGFloat(50)
-    let tappableDeletionWidth = CGFloat(100)
 }
 
 extension View {
-    func onDelete(disabled: Bool = false, perform action: @escaping () -> Void) -> some View {
+    func onDeleteView(disabled: Bool = false, perform action: @escaping () -> Void) -> some View {
         Group {
             if disabled {
                 self

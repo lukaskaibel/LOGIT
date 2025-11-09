@@ -53,17 +53,17 @@ struct WorkoutSetGroupCell: View {
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex
                             )
                             .contentShape(Rectangle())
-                            .onDelete(disabled: !canEdit) {
-                                withAnimation(.interactiveSpring()) {
-                                    database.delete(workoutSet)
-                                }
-                            }
                             .background(
                                 RoundedRectangle(cornerRadius: 15)
                                     .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
                                     .foregroundStyle(Color.secondaryBackground)
                             )
                             .cornerRadius(15)
+                            .onDeleteView(disabled: !canEdit) {
+                                withAnimation(.interactiveSpring()) {
+                                    database.delete(workoutSet)
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal, CELL_PADDING / 2)

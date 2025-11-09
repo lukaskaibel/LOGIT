@@ -147,7 +147,7 @@ struct MeasurementEntryView: View {
                                     .fontWeight(.semibold)
                                 }
                                 .padding(CELL_PADDING)
-                                .onDelete {
+                                .onDeleteView {
                                     withAnimation {
                                         measurementController.deleteMeasurementEntry(
                                             measurementEntry

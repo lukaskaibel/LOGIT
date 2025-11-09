@@ -104,13 +104,26 @@ public class Database: ObservableObject {
 
     func delete(_ object: NSManagedObject?, saveContext: Bool = false) {
         guard let object = object else { return }
-        if let workoutSet = object as? WorkoutSet, let setGroup = workoutSet.setGroup,
-           setGroup.numberOfSets <= 1
+        if let workoutSet = object as? WorkoutSet,
+           let setGroup = workoutSet.setGroup
         {
-            delete(setGroup)
-        }
-        context.perform {
-            self.context.delete(object)
+            context.perform {
+                var updatedSets = setGroup.sets
+                if let index = updatedSets.firstIndex(of: workoutSet) {
+                    updatedSets.remove(at: index)
+                    setGroup.sets = updatedSets
+                }
+                if setGroup.numberOfSets == 0 {
+                    self.context.delete(setGroup)
+                } else {
+                    self.context.delete(workoutSet)
+                }
+                self.objectWillChange.send()
+            }
+        } else {
+            context.perform {
+                self.context.delete(object)
+            }
         }
         if saveContext {
             save()

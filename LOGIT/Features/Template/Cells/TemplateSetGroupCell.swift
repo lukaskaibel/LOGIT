@@ -48,7 +48,7 @@ struct TemplateSetGroupCell: View {
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex
                             )
                             .contentShape(Rectangle())
-                            .onDelete(disabled: !canEdit) {
+                            .onDeleteView(disabled: !canEdit) {
                                 withAnimation(.interactiveSpring()) {
                                     database.delete(templateSet)
                                 }

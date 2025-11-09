@@ -91,6 +91,7 @@ struct WorkoutSetCell: View {
                             .font(.body.weight(.medium).monospacedDigit())
                             .foregroundStyle(.primary)
                         Button {
+                            print("add drop")
                             UISelectionFeedbackGenerator().selectionChanged()
                             dropSet.addDrop()
                         } label: {

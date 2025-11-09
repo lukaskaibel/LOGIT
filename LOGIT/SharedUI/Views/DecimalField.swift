@@ -13,6 +13,7 @@ struct DecimalField: View {
 
     @Environment(\.canEdit) var canEdit: Bool
     @EnvironmentObject var database: Database
+    @Environment(\.isIntegerFieldFocusSuppressed) private var isFocusSuppressed: Bool
 
     // MARK: - Parameters
 
@@ -66,12 +67,14 @@ struct DecimalField: View {
         }
         .fixedSize()
         .onTapGesture {
+            guard !isFocusSuppressed else { return }
             isFocused = true
         }
         .onAppear {
             valueString = formatNumber(value)
         }
         .onChange(of: focusedIntegerFieldIndex) { newValue in
+            guard !isFocusSuppressed else { return }
             guard isFocused != (newValue == index) else { return }
             // Solution, because otherwise moving down wasnt working, since it would first focus on the new field, while the old one was still focused, which caused the focus to get lost.
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
@@ -79,6 +82,7 @@ struct DecimalField: View {
             isFocused = true
         }
         .onChange(of: isFocused) { newValue in
+            guard !isFocusSuppressed else { return }
             if newValue {
                 UISelectionFeedbackGenerator().selectionChanged()
             }

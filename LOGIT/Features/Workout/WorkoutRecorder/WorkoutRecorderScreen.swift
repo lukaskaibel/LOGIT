@@ -41,6 +41,7 @@ struct WorkoutRecorderScreen: View {
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isShowingDetailsSheet = false
     @State private var isShowingExerciseSelectionSheet = false
+    @State private var isShowingReorderSheet = false
 
     @State var focusedIntegerFieldIndex: IntegerField.Index?
 
@@ -133,6 +134,46 @@ struct WorkoutRecorderScreen: View {
                                             .presentationDetents([.fraction(0.4)])
                                         }
                                     }
+                                    .sheet(isPresented: $isShowingReorderSheet) {
+                                        NavigationStack {
+                                            List {
+                                                ForEach(workout.setGroups) { setGroup in
+                                                    HStack {
+                                                        VStack(alignment: .leading) {
+                                                            Text(setGroup.exercise?.name ?? "")
+                                                            if (setGroup.sets.first as? SuperSet) != nil,
+                                                               let secondaryExercise = setGroup.secondaryExercise {
+                                                                HStack {
+                                                                    Image(systemName: "arrow.turn.down.right")
+                                                                    Text(secondaryExercise.name ?? "")
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                .onDelete {
+                                                    workout.setGroups.remove(atOffsets: $0)
+                                                    workout.setGroups.forEach { $0.objectWillChange.send() }
+                                                }
+                                                .onMove { source, destination in
+                                                    workout.setGroups.move(fromOffsets: source, toOffset: destination)
+                                                    workout.setGroups.forEach { $0.objectWillChange.send() }
+                                                }
+                                            }
+                                            .environment(\.editMode, .constant(.active))
+                                            .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
+                                            .navigationBarTitleDisplayMode(.inline)
+                                            .toolbar {
+                                                ToolbarItem(placement: .topBarTrailing) {
+                                                    Button {
+                                                        isShowingReorderSheet = false
+                                                    } label: {
+                                                        Text(NSLocalizedString("done", comment: ""))
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                     if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
                                         HStack {
                                             Button {
@@ -149,7 +190,11 @@ struct WorkoutRecorderScreen: View {
                                             }
                                             .disabled(!database.canRedo)
                                             Spacer()
-                                            Spacer()
+                                            Button {
+                                                isShowingReorderSheet = true
+                                            } label: {
+                                                Image(systemName: "arrow.up.arrow.down")
+                                            }
                                             Spacer()
                                             Button {
                                                 isShowingChronoSheet = true

@@ -93,6 +93,8 @@ struct LOGIT: App {
                     .tabViewBottomAccessory {
                         startAndCurrentWorkoutButton
                             .frame(maxWidth: .infinity)
+                            .background(.white)
+                            .foregroundStyle(.black)
                     }
                     .environment(\.managedObjectContext, database.context)
                     .environmentObject(database)

@@ -49,31 +49,6 @@ struct WorkoutSetGroupList: View {
                 .transition(.scale)
                 .id(setGroup)
             }
-//            ReorderableForEach(
-//                $workout.setGroups,
-//                canReorder: canReorder,
-//                isReordering: $isReordering
-//            ) { setGroup in
-//                VStack(spacing: 0) {
-//                    WorkoutSetGroupCell(
-//                        setGroup: setGroup,
-//                        focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-//                        isReordering: $isReordering,
-//                        supplementaryText: nil,
-//                        shouldShowExerciseDetailInSheet: shouldShowExerciseDetailInSheet
-//                    )
-//                    .shadow(color: .black.opacity(reduceShadow ? 0.5 : 1.0), radius: 5)
-//                    .zIndex(1)
-//                    if workout.setGroups.last != setGroup {
-//                        Rectangle()
-//                            .foregroundStyle(.secondary)
-//                            .frame(width: 3, height: SECTION_SPACING)
-//                            .zIndex(0)
-//                    }
-//                }
-//                .transition(.scale)
-//                .id(setGroup)
-//            }
         }
     }
 }

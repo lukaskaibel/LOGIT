@@ -241,11 +241,18 @@ struct HomeScreen: View {
                     }
                 }
                 .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            isShowingSettings = true
-                        } label: {
-                            Image(systemName: "gear")
+                    ToolbarItem(placement: .largeTitle) {
+                        HStack {
+                            Text(NSLocalizedString("summary", comment: ""))
+                                .font(.largeTitle.bold())
+                            Spacer()
+                            Button {
+                                isShowingSettings = true
+                            } label: {
+                                Image(systemName: "person.circle")
+                            }
+                            .font(.title)
+                            .foregroundStyle(.tint)
                         }
                     }
                 }

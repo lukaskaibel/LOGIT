@@ -261,17 +261,6 @@ struct WorkoutSetGroupCell: View {
                         )
                     }
                 }
-                Button {
-                    isReordering.toggle()
-                } label: {
-                    Label(
-                        NSLocalizedString(
-                            isReordering ? "reorderingDone" : "reorderExercises",
-                            comment: ""
-                        ),
-                        systemImage: "arrow.up.arrow.down"
-                    )
-                }
             }
             Section {
                 Button {

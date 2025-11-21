@@ -8,9 +8,6 @@
 import SwiftUI
 
 struct ExerciseListScreen: View {
-    // MARK: - Environment
-
-    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
 
     // MARK: - State
 
@@ -18,6 +15,7 @@ struct ExerciseListScreen: View {
     @State private var selectedMuscleGroup: MuscleGroup? = nil
     @State private var showingAddExercise = false
     @State private var isShowingNoExercisesTip = false
+    @State private var selectedExercise: Exercise?
 
     // MARK: - Body
 
@@ -53,7 +51,7 @@ struct ExerciseListScreen: View {
                             VStack(spacing: CELL_SPACING) {
                                 ForEach(exercises) { exercise in
                                     Button {
-                                        homeNavigationCoordinator.path.append(.exercise(exercise))
+                                        selectedExercise = exercise
                                     } label: {
                                         HStack {
                                             ExerciseCell(exercise: exercise)
@@ -93,6 +91,9 @@ struct ExerciseListScreen: View {
             }
             .sheet(isPresented: $showingAddExercise) {
                 ExerciseEditScreen(initialMuscleGroup: selectedMuscleGroup ?? .chest)
+            }
+            .navigationDestination(item: $selectedExercise) { exercise in
+                ExerciseDetailScreen(exercise: exercise)
             }
         }
     }

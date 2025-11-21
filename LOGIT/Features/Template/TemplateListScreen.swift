@@ -11,9 +11,9 @@ struct TemplateListScreen: View {
     // MARK: - Environment
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.presentWorkoutRecorder) var presentWorkoutRecorder
 
     @EnvironmentObject private var database: Database
-    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
     @EnvironmentObject private var workoutRecorder: WorkoutRecorder
 
     // MARK: - State
@@ -22,6 +22,7 @@ struct TemplateListScreen: View {
     @State private var selectedMuscleGroup: MuscleGroup? = nil
     @State private var showingTemplateCreation = false
     @State private var isShowingNoTemplatesTip = false
+    @State private var selectedTemplate: Template?
 
     var startWorkoutOnTap: Bool = false
 
@@ -66,10 +67,10 @@ struct TemplateListScreen: View {
                                 Button {
                                     if startWorkoutOnTap {
                                         workoutRecorder.startWorkout(from: template)
-                                        homeNavigationCoordinator.isPresentingWorkoutRecorder = true
+                                        presentWorkoutRecorder()
                                         dismiss()
                                     } else {
-                                        homeNavigationCoordinator.path.append(.template(template))
+                                        selectedTemplate = template
                                     }
                                 } label: {
                                     VStack {
@@ -107,6 +108,9 @@ struct TemplateListScreen: View {
             .popover(isPresented: $showingTemplateCreation) {
                 TemplateEditorScreen(template: database.newTemplate(), isEditingExistingTemplate: false)
                     .presentationBackground(Color.black)
+            }
+            .navigationDestination(item: $selectedTemplate) { template in
+                TemplateDetailScreen(template: template)
             }
         }
     }

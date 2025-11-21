@@ -34,6 +34,7 @@ struct LOGIT: App {
     @State private var selectedTab: TabType = .home
     @State private var isShowingPrivacyPolicy = false
     @State private var isShowingWorkoutRecorder = false
+    @State private var isShowingStartWorkoutSheet = false
 
     // MARK: - Init
 
@@ -65,124 +66,48 @@ struct LOGIT: App {
     var body: some Scene {
         WindowGroup {
             if setupDone {
-                if #available(iOS 26.0, *) {
-                    TabView {
-                        Tab("summary", systemImage: "house") {
-                            HomeScreen()
-            //                #if targetEnvironment(simulator)
-            //                    .statusBarHidden(true)
-            //                #endif
-                        }
-                        Tab(NSLocalizedString("exercises", comment: ""), systemImage: "dumbbell") {
-                            NavigationStack {
-                                ExerciseListScreen()
-                            }
-                        }
-                        Tab(NSLocalizedString("templates", comment: ""), systemImage: "list.bullet.rectangle.portrait") {
-                            NavigationStack {
-                                TemplateListScreen()
-                            }
-                        }
-                        Tab(NSLocalizedString("measurements", comment: ""), systemImage: "ruler") {
-                            NavigationStack {
-                                MeasurementsScreen()
-                            }
-                        }
+                TabView {
+                    Tab("summary", systemImage: "house") {
+                        HomeScreen()
+        //                #if targetEnvironment(simulator)
+        //                    .statusBarHidden(true)
+        //                #endif
                     }
-                    .tabBarMinimizeBehavior(.onScrollDown)
-                    .tabViewBottomAccessory {
-                        startAndCurrentWorkoutButton
-                            .frame(maxWidth: .infinity)
-                            .background(.white)
-                            .foregroundStyle(.black)
-                    }
-                    .environment(\.managedObjectContext, database.context)
-                    .environmentObject(database)
-                    .environmentObject(measurementController)
-                    .environmentObject(templateService)
-                    .environmentObject(purchaseManager)
-                    .environmentObject(networkMonitor)
-                    .environmentObject(workoutRecorder)
-                    .environmentObject(muscleGroupService)
-                    .environmentObject(homeNavigationCoordinator)
-                    .environmentObject(chronograph)
-                    .environment(\.goHome) { selectedTab = .home }
-                    .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
-                        WorkoutRecorderScreen()
-                            .environmentObject(database)
-                            .environmentObject(measurementController)
-                            .environmentObject(templateService)
-                            .environmentObject(purchaseManager)
-                            .environmentObject(networkMonitor)
-                            .environmentObject(workoutRecorder)
-                            .environmentObject(muscleGroupService)
-                            .environmentObject(homeNavigationCoordinator)
-                            .environmentObject(chronograph)
-                            .environment(\.managedObjectContext, database.context)
-                            .environment(\.goHome) { selectedTab = .home }
-                            .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
-                    }
-//                    .presentation(transition: .slide, isPresented: $isShowingWorkoutRecorder) {
-//                        TransitionReader { _ in
-//                        }
-//                    }
-                    .sheet(isPresented: $isShowingPrivacyPolicy) {
+                    Tab(NSLocalizedString("exercises", comment: ""), systemImage: "dumbbell") {
                         NavigationStack {
-                            PrivacyPolicyScreen(needsAcceptance: true)
-                        }
-                        .interactiveDismissDisabled()
-                    }
-                    .task {
-                        if acceptedPrivacyPolicyVersion != privacyPolicyVersion {
-                            isShowingPrivacyPolicy = true
-                        }
-                        Task {
-                            do {
-                                try await purchaseManager.loadProducts()
-                            } catch {
-                                print(error)
-                            }
+                            ExerciseListScreen()
                         }
                     }
-                    .preferredColorScheme(.dark)
-                    .onAppear {
-                        // Fixes issue with Alerts and Confirmation Dialogs not in dark mode
-                        let scenes = UIApplication.shared.connectedScenes
-                        guard let scene = scenes.first as? UIWindowScene else { return }
-                        scene.keyWindow?.overrideUserInterfaceStyle = .dark
+                    Tab(NSLocalizedString("templates", comment: ""), systemImage: "list.bullet.rectangle.portrait") {
+                        NavigationStack {
+                            TemplateListScreen()
+                        }
                     }
-                } else {
-                    HomeScreen()
-                        .zIndex(0)
-                        .overlay {
-                            startAndCurrentWorkoutButton
+                    Tab(NSLocalizedString("measurements", comment: ""), systemImage: "ruler") {
+                        NavigationStack {
+                            MeasurementsScreen()
                         }
-                        .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
-                            WorkoutRecorderScreen()
-                                .environmentObject(database)
-                                .environmentObject(measurementController)
-                                .environmentObject(templateService)
-                                .environmentObject(purchaseManager)
-                                .environmentObject(networkMonitor)
-                                .environmentObject(workoutRecorder)
-                                .environmentObject(muscleGroupService)
-                                .environmentObject(homeNavigationCoordinator)
-                                .environmentObject(chronograph)
-                                .environment(\.managedObjectContext, database.context)
-                                .environment(\.goHome) { selectedTab = .home }
-                                .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
-                        }
-    //                    .presentation(transition: .slide, isPresented: $isShowingWorkoutRecorder) {
-    //                        TransitionReader { _ in
-    //                        }
-    //                    }
-                        .sheet(isPresented: $isShowingPrivacyPolicy) {
-                            NavigationStack {
-                                PrivacyPolicyScreen(needsAcceptance: true)
-                            }
-                            .interactiveDismissDisabled()
-                        }
-                        .environment(\.managedObjectContext, database.context)
+                    }
+                }
+                .tabBarMinimizeBehavior(.onScrollDown)
+                .tabViewBottomAccessory {
+                    startAndCurrentWorkoutButton
+                        .frame(maxWidth: .infinity)
+                }
+                .environment(\.managedObjectContext, database.context)
+                .environmentObject(database)
+                .environmentObject(measurementController)
+                .environmentObject(templateService)
+                .environmentObject(purchaseManager)
+                .environmentObject(networkMonitor)
+                .environmentObject(workoutRecorder)
+                .environmentObject(muscleGroupService)
+                .environmentObject(homeNavigationCoordinator)
+                .environmentObject(chronograph)
+                .environment(\.goHome) { selectedTab = .home }
+                .environment(\.presentWorkoutRecorder, showWorkoutRecorder)
+                .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
+                    WorkoutRecorderScreen()
                         .environmentObject(database)
                         .environmentObject(measurementController)
                         .environmentObject(templateService)
@@ -192,29 +117,38 @@ struct LOGIT: App {
                         .environmentObject(muscleGroupService)
                         .environmentObject(homeNavigationCoordinator)
                         .environmentObject(chronograph)
+                        .environment(\.managedObjectContext, database.context)
                         .environment(\.goHome) { selectedTab = .home }
-                        .task {
-                            if acceptedPrivacyPolicyVersion != privacyPolicyVersion {
-                                isShowingPrivacyPolicy = true
-                            }
-                            Task {
-                                do {
-                                    try await purchaseManager.loadProducts()
-                                } catch {
-                                    print(error)
-                                }
-                            }
+                        .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
+                }
+//                    .presentation(transition: .slide, isPresented: $isShowingWorkoutRecorder) {
+//                        TransitionReader { _ in
+//                        }
+//                    }
+                .sheet(isPresented: $isShowingPrivacyPolicy) {
+                    NavigationStack {
+                        PrivacyPolicyScreen(needsAcceptance: true)
+                    }
+                    .interactiveDismissDisabled()
+                }
+                .task {
+                    if acceptedPrivacyPolicyVersion != privacyPolicyVersion {
+                        isShowingPrivacyPolicy = true
+                    }
+                    Task {
+                        do {
+                            try await purchaseManager.loadProducts()
+                        } catch {
+                            print(error)
                         }
-                        .preferredColorScheme(.dark)
-                        .onAppear {
-                            // Fixes issue with Alerts and Confirmation Dialogs not in dark mode
-                            let scenes = UIApplication.shared.connectedScenes
-                            guard let scene = scenes.first as? UIWindowScene else { return }
-                            scene.keyWindow?.overrideUserInterfaceStyle = .dark
-                        }
-    //                #if targetEnvironment(simulator)
-    //                    .statusBarHidden(true)
-    //                #endif
+                    }
+                }
+                .preferredColorScheme(.dark)
+                .onAppear {
+                    // Fixes issue with Alerts and Confirmation Dialogs not in dark mode
+                    let scenes = UIApplication.shared.connectedScenes
+                    guard let scene = scenes.first as? UIWindowScene else { return }
+                    scene.keyWindow?.overrideUserInterfaceStyle = .dark
                 }
             } else {
                 FirstStartScreen()

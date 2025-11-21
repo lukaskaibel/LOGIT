@@ -64,10 +64,6 @@ struct IntegerField: View {
                 .foregroundColor(isFocused ? (isEmpty ? Color(UIColor.systemGray) : Color(UIColor.systemGray3)) : isEmpty ? .placeholder : .secondary)
         }
         .fixedSize()
-        .onTapGesture {
-            guard !isFocusSuppressed else { return }
-            isFocused = true
-        }
         .onAppear {
             valueString = String(value)
         }
@@ -96,6 +92,10 @@ struct IntegerField: View {
         .padding(.horizontal, 8)
         .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.000001))
         .frame(minWidth: 100, alignment: .trailing)
+        .onTapGesture {
+            guard !isFocusSuppressed else { return }
+            isFocused = true
+        }
         .id(index)
     }
 

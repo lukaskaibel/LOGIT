@@ -66,10 +66,6 @@ struct DecimalField: View {
                 .fixedSize()
         }
         .fixedSize()
-        .onTapGesture {
-            guard !isFocusSuppressed else { return }
-            isFocused = true
-        }
         .onAppear {
             valueString = formatNumber(value)
         }
@@ -100,6 +96,10 @@ struct DecimalField: View {
         .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.000001))
         .frame(minWidth: 100, alignment: .trailing)
         .fixedSize(horizontal: true, vertical: false)
+        .onTapGesture {
+            guard !isFocusSuppressed else { return }
+            isFocused = true
+        }
         .id(index)
     }
 

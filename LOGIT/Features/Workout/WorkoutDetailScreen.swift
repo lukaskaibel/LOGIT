@@ -106,16 +106,16 @@ struct WorkoutDetailScreen: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
-            }
-        }
-        .confirmationDialog(
-            NSLocalizedString("deleteWorkoutDescription", comment: ""),
-            isPresented: $isShowingDeleteWorkoutAlert,
-            titleVisibility: .visible
-        ) {
-            Button(NSLocalizedString("deleteWorkout", comment: ""), role: .destructive) {
-                database.delete(workout, saveContext: true)
-                dismiss()
+                .confirmationDialog(
+                    NSLocalizedString("deleteWorkoutDescription", comment: ""),
+                    isPresented: $isShowingDeleteWorkoutAlert,
+                    titleVisibility: .visible
+                ) {
+                    Button(NSLocalizedString("deleteWorkout", comment: ""), role: .destructive) {
+                        database.delete(workout, saveContext: true)
+                        dismiss()
+                    }
+                }
             }
         }
         .sheet(item: $sheetType) { type in

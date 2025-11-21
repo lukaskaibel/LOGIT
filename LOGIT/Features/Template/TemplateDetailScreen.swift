@@ -87,6 +87,16 @@ struct TemplateDetailScreen: View {
                 }) {
                     Image(systemName: "ellipsis.circle")
                 }
+                .confirmationDialog(
+                    NSLocalizedString("deleteTemplateMsg", comment: ""),
+                    isPresented: $showingDeletionAlert,
+                    titleVisibility: .visible
+                ) {
+                    Button(NSLocalizedString("deleteTemplate", comment: ""), role: .destructive) {
+                        database.delete(template, saveContext: true)
+                        dismiss()
+                    }
+                }
             }
         }
         .alert(
@@ -95,15 +105,6 @@ struct TemplateDetailScreen: View {
             actions: {},
             message: { Text(NSLocalizedString("templateExplanation", comment: "")) }
         )
-        .confirmationDialog(
-            NSLocalizedString("deleteTemplateMsg", comment: ""),
-            isPresented: $showingDeletionAlert
-        ) {
-            Button(NSLocalizedString("deleteTemplate", comment: ""), role: .destructive) {
-                database.delete(template, saveContext: true)
-                dismiss()
-            }
-        }
         .sheet(isPresented: $showingTemplateEditor) {
             TemplateEditorScreen(template: template, isEditingExistingTemplate: true)
                 .presentationBackground(Color.black)

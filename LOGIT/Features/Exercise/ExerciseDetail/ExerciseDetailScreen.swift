@@ -137,21 +137,21 @@ struct ExerciseDetailScreen: View {
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
-                }
-            }
-            .confirmationDialog(
-                Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
-                isPresented: $showDeletionAlert,
-                titleVisibility: .visible
-            ) {
-                Button(
-                    "\(NSLocalizedString("delete", comment: ""))",
-                    role: .destructive,
-                    action: {
-                        database.delete(exercise, saveContext: true)
-                        dismiss()
+                    .confirmationDialog(
+                        Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
+                        isPresented: $showDeletionAlert,
+                        titleVisibility: .visible
+                    ) {
+                        Button(
+                            "\(NSLocalizedString("delete", comment: ""))",
+                            role: .destructive,
+                            action: {
+                                database.delete(exercise, saveContext: true)
+                                dismiss()
+                            }
+                        )
                     }
-                )
+                }
             }
             .sheet(isPresented: $showingEditExercise) {
                 ExerciseEditScreen(exerciseToEdit: exercise)

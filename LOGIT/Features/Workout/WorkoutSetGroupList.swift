@@ -50,6 +50,7 @@ struct WorkoutSetGroupList: View {
                 .id(setGroup)
             }
         }
+        .animation(.interactiveSpring(), value: workout.setGroups.count)
     }
 }
 

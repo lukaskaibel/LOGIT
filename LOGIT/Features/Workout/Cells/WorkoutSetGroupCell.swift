@@ -98,6 +98,29 @@ struct WorkoutSetGroupCell: View {
                                     .background(Color.accentColor.secondaryTranslucentBackground)
                                     .clipShape(Capsule())
                             }
+                            .contextMenu {
+                                Button {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.duplicateLastWeight(from: setGroup)
+                                    }
+                                } label: {
+                                    Label(NSLocalizedString("copyWeight", comment: ""), systemImage: "scalemass")
+                                }
+                                Button {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.duplicateLastRepetitions(from: setGroup)
+                                    }
+                                } label: {
+                                    Label(NSLocalizedString("copyRepetitions", comment: ""), systemImage: "repeat.circle")
+                                }
+                                Button {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.duplicateLastSet(from: setGroup)
+                                    }
+                                } label: {
+                                    Label(NSLocalizedString("copySet", comment: ""), systemImage: "plus.square.on.square")
+                                }
+                            }
                         }
                         .padding(.horizontal, CELL_PADDING)
                     }
@@ -236,7 +259,7 @@ struct WorkoutSetGroupCell: View {
                 Button(
                     role: .destructive,
                     action: {
-                        withAnimation {
+                        withAnimation(.interactiveSpring()) {
                             database.delete(setGroup)
                         }
                     }

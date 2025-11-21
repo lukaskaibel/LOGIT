@@ -48,17 +48,17 @@ struct TemplateSetGroupCell: View {
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex
                             )
                             .contentShape(Rectangle())
-                            .onDeleteView(disabled: !canEdit) {
-                                withAnimation(.interactiveSpring()) {
-                                    database.delete(templateSet)
-                                }
-                            }
                             .background(
                                 RoundedRectangle(cornerRadius: 15)
                                     .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
                                     .foregroundStyle(Color.secondaryBackground)
                             )
                             .cornerRadius(15)
+                            .onDeleteView(disabled: !canEdit) {
+                                withAnimation(.interactiveSpring()) {
+                                    database.delete(templateSet)
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal, CELL_PADDING / 2)
@@ -148,6 +148,7 @@ struct TemplateSetGroupCell: View {
         }
     .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
     .padding(.bottom, canEdit || isReordering ? CELL_PADDING : CELL_PADDING / 2)
+    .tileStyle()
     }
 
     // MARK: - Supporting Views
@@ -208,7 +209,7 @@ struct TemplateSetGroupCell: View {
                 Button(
                     role: .destructive,
                     action: {
-                        withAnimation {
+                        withAnimation(.interactiveSpring()) {
                             database.delete(setGroup)
                         }
                     }

@@ -97,7 +97,6 @@ struct TemplateEditorScreen: View {
                                         isReordering: $isReordering,
                                         supplementaryText: nil
                                     )
-                                    .tileStyle()
                                     .shadow(color: .black.opacity(0.5), radius: 5)
                                     .zIndex(1)
                                     if template.setGroups.last != setGroup {
@@ -107,10 +106,12 @@ struct TemplateEditorScreen: View {
                                             .zIndex(0)
                                     }
                                 }
+                                .transition(.scale)
+                                .id(setGroup)
                             }
                         }
                         .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
-                        .animation(.interactiveSpring())
+                        .animation(.interactiveSpring(), value: template.setGroups.count)
                     }
                     .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                     .padding(.horizontal)

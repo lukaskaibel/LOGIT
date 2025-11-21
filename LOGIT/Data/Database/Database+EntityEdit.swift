@@ -45,6 +45,60 @@ public extension Database {
         }
         setGroup.workout?.objectWillChange.send()
     }
+    
+    func duplicateLastWeight(from setGroup: WorkoutSetGroup) {
+        guard let lastSet = setGroup.sets.last else { return }
+        if let standardSet = lastSet as? StandardSet {
+            newStandardSet(
+                repetitions: 0,
+                weight: Int(standardSet.weight),
+                setGroup: setGroup
+            )
+        } else if let dropSet = lastSet as? DropSet {
+            let previousWeights = dropSet.weights?.map { Int($0) } ?? [0]
+            newDropSet(
+                repetitions: previousWeights.map { _ in 0 },
+                weights: previousWeights,
+                setGroup: setGroup
+            )
+        } else if let superSet = lastSet as? SuperSet {
+            newSuperSet(
+                repetitionsFirstExercise: 0,
+                repetitionsSecondExercise: 0,
+                weightFirstExercise: Int(superSet.weightFirstExercise),
+                weightSecondExercise: Int(superSet.weightSecondExercise),
+                setGroup: setGroup
+            )
+        }
+        setGroup.workout?.objectWillChange.send()
+    }
+    
+    func duplicateLastRepetitions(from setGroup: WorkoutSetGroup) {
+        guard let lastSet = setGroup.sets.last else { return }
+        if let standardSet = lastSet as? StandardSet {
+            newStandardSet(
+                repetitions: Int(standardSet.repetitions),
+                weight: 0,
+                setGroup: setGroup
+            )
+        } else if let dropSet = lastSet as? DropSet {
+            let previousReps = dropSet.repetitions?.map { Int($0) } ?? [0]
+            newDropSet(
+                repetitions: previousReps,
+                weights: previousReps.map { _ in 0 },
+                setGroup: setGroup
+            )
+        } else if let superSet = lastSet as? SuperSet {
+            newSuperSet(
+                repetitionsFirstExercise: Int(superSet.repetitionsFirstExercise),
+                repetitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
+                weightFirstExercise: 0,
+                weightSecondExercise: 0,
+                setGroup: setGroup
+            )
+        }
+        setGroup.workout?.objectWillChange.send()
+    }
 
     func addSet(to templateSetGroup: TemplateSetGroup) {
         let lastSet = templateSetGroup.sets.last

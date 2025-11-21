@@ -56,6 +56,9 @@
 "completed" = "Geschafft";
 "continue" = "Weiter";
 "continueWorkout" = "Workout fortführen";
+"copyRepetitions" = "Wiederholungen kopieren";
+"copySet" = "Satz kopieren";
+"copyWeight" = "Gewicht kopieren";
 "coreMetrics" = "Basis";
 "create" = "Create";
 "createExercise" = "Übung erstellen";

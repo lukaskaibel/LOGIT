@@ -268,6 +268,7 @@ struct WorkoutRecorderScreen: View {
                     if let workout = workoutRecorder.workout {
                         WorkoutMuscleGroupChart(workout: workout)
                             .transition(.move(edge: .leading))
+                            .animation(.interactiveSpring, value: workout.sets)
                     }
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 10) {

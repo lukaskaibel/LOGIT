@@ -14,12 +14,15 @@
 "add" = "Add";
 "addExercise" = "Add Exercise";
 "addExercisesFromBelow" = "Add exercises from below.";
+"addMeasurement" = "Add Measurement";
+"addMeasurements" = "Add Measurements";
 "addNote" = "Add Note";
 "addNote..." = "Add Note...";
 "addSet" = "Add Set";
 "addWorkout" = "Add Workout";
 "afternoon" = "Afternoon";
 "all" = "All";
+"allEntries" = "All Entries";
 "allSetsCompleted" = "All sets completed";
 "allTime" = "All Time";
 "alreadyExists" = "already exists.";
@@ -38,6 +41,8 @@
 "bestRepetitionsPerDay" = "Best Reps per Day";
 "biceps" = "Biceps";
 "bicepsLeft" = "Biceps Left";
+"bicepsRight" = "Biceps Right";
+"bodyFatPercentage" = "Body Fat";
 "bodyParts" = "Body Parts";
 "bodyweight" = "Bodyweight";
 
@@ -139,6 +144,10 @@
 "history" = "History";
 "home" = "Home";
 
+// MARK: - H (continued)
+
+"hidden" = "Hidden";
+
 // MARK: - I
 
 "incompleteSetsWillNotBeSaved" = "Incomplete sets will not be saved.";
@@ -146,6 +155,7 @@
 
 // MARK: - L
 
+"latest" = "Latest";
 "lastMonth" = "Last week";
 "lastTenWorkouts" = "In Last 10 Workouts";
 "lastUsed" = "Last used";
@@ -187,6 +197,7 @@
 "muscleGroups" = "Muscle Groups";
 "muscleGroupsInLastTen" = "Muscle Group Overview";
 "muscleGroupSplit" = "Muscle Group Split";
+"muscleMass" = "Muscle Mass";
 "myTemplates" = "My Templates";
 
 // MARK: - N
@@ -245,6 +256,7 @@
 "performed" = "Performed";
 "personalBest" = "Personal Best";
 "perDay" = "per Day";
+"pinned" = "Pinned";
 "PerDay" = "Per Day";
 "PerMonth" = "Per Month";
 "perWeek" = "per week";
@@ -298,6 +310,7 @@
 "seven" = "Seven";
 "shoulders" = "Shoulders";
 "showAll" = "Show All";
+"showAllMeasurements" = "Show All Measurements";
 "showDetails" = "Show Details";
 "showMeasurements" = "Show Measurements";
 "showSubscriptions" = "Show Subscriptions";
@@ -357,6 +370,7 @@
 
 "unit" = "Unit";
 "unitDescription" = "Select the unit you want to use. Any previous entries will be converted on change.";
+"unpinned" = "Unpinned";
 "unused" = "Unused";
 "update" = "Update";
 "upgradeTo" = "Upgrade to";
@@ -388,6 +402,11 @@
 "workouts" = "Workouts";
 "workoutTarget" = "Workout target";
 
+// MARK: - V (continued)
+
+"value" = "Value";
+"visible" = "Visible";
+
 // MARK: - Y
 
 "year" = "Year";
@@ -398,6 +417,14 @@
 // MARK: - Z
 
 "zero" = "Zero";
+
+// MARK: - Measurements Edit Sheet
+
+"editMeasurements" = "Edit Measurements";
+"editPinnedMeasurements" = "Edit Pinned";
+"dragToReorder" = "Drag to reorder measurements";
+"noMeasurementsSelected" = "No measurements selected";
+"noDate" = "No Date";
 
 // MARK: - OverallSets Highlights (Comparison Sentences)
 "avgMoreSetsPerWorkoutThisWeekThanLastWeek" = "You're averaging more sets per workout this week than last week.";

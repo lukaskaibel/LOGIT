@@ -14,12 +14,14 @@ struct HomeScreen: View {
     // MARK: - AppStorage
 
     @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = 3
+    @AppStorage("pinnedMeasurements") private var pinnedMeasurementsData: Data = Data()
 
     // MARK: - Environment
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var workoutRecorder: WorkoutRecorder
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
+    @EnvironmentObject private var measurementController: MeasurementEntryController
 
     // MARK: - State
 
@@ -27,6 +29,7 @@ struct HomeScreen: View {
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingSettings = false
     @State private var isShowingWishkit = false
+    @State private var isShowingMeasurementsEditSheet = false
 
     // MARK: - Body
 
@@ -88,28 +91,6 @@ struct HomeScreen: View {
                                         .padding(.trailing)
                                         .padding(.vertical, 12)
                                     }
-                                    Divider()
-                                        .padding(.leading, 45)
-                                    Button {
-                                        homeNavigationCoordinator.path.append(.measurements)
-                                    } label: {
-                                        HStack {
-                                            HStack {
-                                                Image(systemName: "ruler")
-                                                    .frame(width: 40)
-                                                    .foregroundStyle(Color.accentColor)
-                                                Text(NSLocalizedString("measurements", comment: ""))
-                                                    .foregroundStyle(.white)
-                                            }
-                                            Spacer()
-                                            NavigationChevron()
-                                                .foregroundStyle(Color.secondaryLabel)
-                                        }
-                                        .padding(.trailing)
-                                        .padding(.vertical, 12)
-                                    }
-                                    Divider()
-                                        .padding(.leading, 45)
                                 }
                                 .font(.title2)
                                 .padding(.horizontal)
@@ -179,6 +160,10 @@ struct HomeScreen: View {
                                 }
                             }
                             .padding(.horizontal)
+
+                            measurementsSection
+                                .padding(.horizontal)
+
                             VStack {
                                 Button {
                                     isShowingWishkit = true
@@ -219,11 +204,19 @@ struct HomeScreen: View {
                             WishKit.config.buttons.saveButton.textColor = .setBoth(to: .black)
                         }
                 }
+                .sheet(isPresented: $isShowingMeasurementsEditSheet) {
+                    MeasurementsEditSheet(pinnedMeasurements: Binding(
+                        get: { pinnedMeasurements },
+                        set: { setPinnedMeasurements($0) }
+                    ))
+                }
                 .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
                     switch destination {
                     case let .exercise(exercise):
                         ExerciseDetailScreen(exercise: exercise)
                     case .exerciseList: ExerciseListScreen()
+                    case let .measurementDetail(measurementType):
+                        MeasurementDetailScreen(measurementType: measurementType)
                     case .measurements: MeasurementsScreen()
                     case .muscleGroupsOverview:
                         MuscleGroupSplitScreen()
@@ -319,6 +312,71 @@ struct HomeScreen: View {
         )
         .padding(CELL_PADDING)
         .tileStyle()
+    }
+
+    // MARK: - Measurements Section
+
+    private var pinnedMeasurements: [MeasurementEntryType] {
+        guard let decoded = try? JSONDecoder().decode([String].self, from: pinnedMeasurementsData) else {
+            return [.bodyweight]
+        }
+        return decoded.compactMap { MeasurementEntryType(rawValue: $0) }
+    }
+
+    private func setPinnedMeasurements(_ newValue: [MeasurementEntryType]) {
+        if let encoded = try? JSONEncoder().encode(newValue.map { $0.rawValue }) {
+            pinnedMeasurementsData = encoded
+        }
+    }
+
+    @ViewBuilder
+    private var measurementsSection: some View {
+        VStack(spacing: SECTION_HEADER_SPACING) {
+            HStack {
+                Text(NSLocalizedString("measurements", comment: ""))
+                    .sectionHeaderStyle2()
+                Spacer()
+                Button {
+                    isShowingMeasurementsEditSheet = true
+                } label: {
+                    Text(NSLocalizedString("edit", comment: ""))
+                }
+                .fontWeight(.semibold)
+            }
+            VStack(spacing: 8) {
+                ForEach(pinnedMeasurements, id: \.rawValue) { measurementType in
+                    Button {
+                        homeNavigationCoordinator.path.append(.measurementDetail(measurementType))
+                    } label: {
+                        MeasurementTile(measurementType: measurementType)
+                    }
+                    .buttonStyle(TileButtonStyle())
+                }
+                
+                Button {
+                    homeNavigationCoordinator.path.append(.measurements)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "ruler")
+                            .font(.title2)
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 32, height: 32)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.accentColor.opacity(0.15))
+                            )
+                        Text(NSLocalizedString("showAllMeasurements", comment: ""))
+                            .foregroundStyle(Color.label)
+                        Spacer()
+                        NavigationChevron()
+                            .foregroundStyle(Color.secondaryLabel)
+                    }
+                    .padding(CELL_PADDING)
+                    .tileStyle()
+                }
+                .buttonStyle(TileButtonStyle())
+            }
+        }
     }
 }
 

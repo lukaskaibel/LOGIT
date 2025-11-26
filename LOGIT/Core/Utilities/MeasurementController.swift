@@ -43,6 +43,16 @@ class MeasurementEntryController: ObservableObject {
         objectWillChange.send()
     }
 
+    func addMeasurementEntry(ofType type: MeasurementEntryType, decimalValue: Double, onDate date: Date) {
+        let measurement = MeasurementEntry(context: database.context)
+        measurement.id = UUID()
+        measurement.type = type
+        measurement.decimalValue = decimalValue
+        measurement.date = date
+        save()
+        objectWillChange.send()
+    }
+
     func deleteMeasurementEntry(_ measurement: MeasurementEntry) {
         database.delete(measurement, saveContext: true)
         objectWillChange.send()

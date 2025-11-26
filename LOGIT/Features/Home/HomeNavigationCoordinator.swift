@@ -16,6 +16,7 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
     var id: String {
         switch self {
         case let .exercise(exercise): return "exercise\(String(describing: exercise.id))"
+        case let .measurementDetail(type): return "measurementDetail\(type.rawValue)"
         case let .template(template): return "template\(String(describing: template.id))"
         case let .workout(workout): return "workout\(String(describing: workout.id))"
         default: return String(describing: self)
@@ -24,6 +25,7 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
 
     case exercise(Exercise),
          exerciseList,
+         measurementDetail(MeasurementEntryType),
          measurements,
          muscleGroupsOverview,
          overallSets,

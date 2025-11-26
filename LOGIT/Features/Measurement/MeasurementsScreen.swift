@@ -13,38 +13,28 @@ struct MeasurementsScreen: View {
     @EnvironmentObject var database: Database
     @EnvironmentObject var measurementController: MeasurementEntryController
 
+    // MARK: - Properties
+
+    private let allMeasurements: [MeasurementEntryType] = {
+        var measurements: [MeasurementEntryType] = [.bodyweight, .bodyFatPercentage, .muscleMass]
+        measurements.append(contentsOf: LengthMeasurementEntryType.allCases.map { .length($0) })
+        return measurements
+    }()
+
     var body: some View {
         ScrollView {
-            VStack(spacing: SECTION_SPACING) {
-                WidgetCollectionView(
-                    type: .baseMeasurements,
-                    title: NSLocalizedString("coreMetrics", comment: ""),
-                    views: [
-                        MeasurementEntryView(measurementType: .bodyweight)
-                            .padding(CELL_PADDING)
-                            .tileStyle()
-                            .widget(ofType: .measurement(.bodyweight), isAddedByDefault: true),
-                        MeasurementEntryView(measurementType: .caloriesBurned)
-                            .padding(CELL_PADDING)
-                            .tileStyle()
-                            .widget(ofType: .measurement(.caloriesBurned), isAddedByDefault: false),
-                    ],
-                    database: database
-                )
-
-                WidgetCollectionView(
-                    type: .circumferenceMeasurements,
-                    title: NSLocalizedString("bodyParts", comment: ""),
-                    views: LengthMeasurementEntryType.allCases.map {
-                        MeasurementEntryView(measurementType: .length($0))
-                            .padding(CELL_PADDING)
-                            .tileStyle()
-                            .widget(ofType: .measurement(.length($0)), isAddedByDefault: false)
-                    },
-                    database: database
-                )
+            VStack(spacing: 8) {
+                ForEach(allMeasurements, id: \.rawValue) { measurementType in
+                    NavigationLink {
+                        MeasurementDetailScreen(measurementType: measurementType)
+                    } label: {
+                        MeasurementTile(measurementType: measurementType)
+                    }
+                    .buttonStyle(TileButtonStyle())
+                }
             }
             .padding(.horizontal)
+            .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
         .navigationTitle(NSLocalizedString("measurements", comment: ""))

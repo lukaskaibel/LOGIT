@@ -9,6 +9,8 @@ import Foundation
 
 enum MeasurementEntryType {
     case bodyweight
+    case bodyFatPercentage
+    case muscleMass
     case percentage
     case caloriesBurned
     case length(LengthMeasurementEntryType)
@@ -25,6 +27,10 @@ enum MeasurementEntryType {
         switch rawValue {
         case "bodyweight":
             self = .bodyweight
+        case "bodyFatPercentage":
+            self = .bodyFatPercentage
+        case "muscleMass":
+            self = .muscleMass
         case "percentage":
             self = .percentage
         case "caloriesBurned":
@@ -38,6 +44,10 @@ enum MeasurementEntryType {
         switch self {
         case .bodyweight:
             return "bodyweight"
+        case .bodyFatPercentage:
+            return "bodyFatPercentage"
+        case .muscleMass:
+            return "muscleMass"
         case .percentage:
             return "percentage"
         case .caloriesBurned:
@@ -50,6 +60,8 @@ enum MeasurementEntryType {
     var title: String {
         switch self {
         case .bodyweight: return NSLocalizedString("bodyweight", comment: "")
+        case .bodyFatPercentage: return NSLocalizedString("bodyFatPercentage", comment: "")
+        case .muscleMass: return NSLocalizedString("muscleMass", comment: "")
         case .percentage: return NSLocalizedString("percentage", comment: "")
         case .caloriesBurned: return NSLocalizedString("caloriesBurned", comment: "")
         case let .length(lengthType):
@@ -59,9 +71,9 @@ enum MeasurementEntryType {
 
     var unit: String {
         switch self {
-        case .bodyweight:
+        case .bodyweight, .muscleMass:
             return WeightUnit.used.rawValue
-        case .percentage:
+        case .bodyFatPercentage, .percentage:
             return "%"
         case .caloriesBurned:
             return "kCal"
@@ -69,15 +81,36 @@ enum MeasurementEntryType {
             return "cm"
         }
     }
-}
 
-extension MeasurementEntryType: Equatable {
-    static func == (lhs: MeasurementEntryType, rhs: MeasurementEntryType) -> Bool {
-        lhs.rawValue == rhs.rawValue
+    var systemImage: String {
+        switch self {
+        case .bodyweight:
+            return "scalemass"
+        case .bodyFatPercentage:
+            return "percent"
+        case .muscleMass:
+            return "figure.strengthtraining.traditional"
+        case .percentage:
+            return "percent"
+        case .caloriesBurned:
+            return "flame"
+        case .length:
+            return "ruler"
+        }
     }
 }
 
-enum LengthMeasurementEntryType: String, CaseIterable {
+extension MeasurementEntryType: Equatable, Hashable {
+    static func == (lhs: MeasurementEntryType, rhs: MeasurementEntryType) -> Bool {
+        lhs.rawValue == rhs.rawValue
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(rawValue)
+    }
+}
+
+enum LengthMeasurementEntryType: String, CaseIterable, Hashable {
     case neck, shoulders, chest, bicepsLeft, bicepsRight, forearmLeft, forearmRight, waist, hips,
          thighLeft, thighRight, calfLeft, calfRight
 }

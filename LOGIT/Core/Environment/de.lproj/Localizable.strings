@@ -14,12 +14,15 @@
 "add" = "Hinzufügen";
 "addExercise" = "Übung hinzufügen";
 "addExercisesFromBelow" = "Übungen von unten auswählen.";
+"addMeasurement" = "Messung hinzufügen";
+"addMeasurements" = "Messungen hinzufügen";
 "addNote" = "Notiz hinzufügen";
 "addNote..." = "Notiz hinzufügen...";
 "addSet" = "Satz hinzufügen";
 "addWorkout" = "Workout hinzufügen";
 "afternoon" = "Nachmittag";
 "all" = "Alle";
+"allEntries" = "Alle Einträge";
 "allSetsCompleted" = "Alle Sätze vollständig";
 "allTime" = "Aller Zeiten";
 "alreadyExists" = "existiert schon.";
@@ -38,6 +41,8 @@
 "bestRepetitionsPerDay" = "Höchste Wdh. pro Tag";
 "biceps" = "Bizeps";
 "bicepsLeft" = "Linker Bizeps";
+"bicepsRight" = "Rechter Bizeps";
+"bodyFatPercentage" = "Körperfett";
 "bodyParts" = "Körperteile";
 "bodyweight" = "Körpergewicht";
 
@@ -124,6 +129,7 @@
 
 // MARK: - H
 
+"hidden" = "Ausgeblendet";
 "highlights" = "Highlights";
 "hips" = "Hips";
 "history" = "Ausführungen";
@@ -146,6 +152,7 @@
 
 // MARK: - L
 
+"latest" = "Aktuell";
 "lastMonth" = "Letzte Woche";
 "lastTenWorkouts" = "In Letzten 10 Workouts";
 "lastUsed" = "Zuletzt benutzt";
@@ -188,6 +195,7 @@
 "muscleGroups" = "Muskelgruppen";
 "muscleGroupsInLastTen" = "Muskelgruppen Übersicht";
 "muscleGroupSplit" = "Muskelgruppen Aufteilung";
+"muscleMass" = "Muskelmasse";
 "myTemplates" = "Meine Vorlagen";
 
 // MARK: - N
@@ -251,6 +259,7 @@
 "PerMonth" = "Pro Monat";
 "perWeek" = "pro Woche";
 "PerWeek" = "Pro Woche";
+"pinned" = "Angepinnt";
 "pressPlusToAdd" = "Drücke +, um \"%@\" hinzuzufügen";
 "pressPlusToAddExercise" = "Drücke +, um eine Übung hinzuzufügen";
 "preventAutoLock" = "Bildschirmsperre verhindern";
@@ -301,6 +310,7 @@
 "seven" = "Sieben";
 "shoulders" = "Schultern";
 "showAll" = "Alle anzeigen";
+"showAllMeasurements" = "Alle Messungen anzeigen";
 "showDetails" = "Details anzeigen";
 "showMeasurements" = "Messungen anzeigen";
 "showSubscriptions" = "Abonnements anzeigen";
@@ -360,6 +370,7 @@
 
 "unit" = "Einheit";
 "unitDescription" = "Wähle eine Einheit. Alle vorherigen Eingaben werden konvertiert.";
+"unpinned" = "Nicht Angepinnt";
 "unused" = "Unbenutzt";
 "update" = "Update";
 "upgradeTo" = "Upgraden zu";
@@ -391,6 +402,11 @@
 "workouts" = "Workouts";
 "workoutTarget" = "Workout Ziel";
 
+// MARK: - V (fortgesetzt)
+
+"value" = "Wert";
+"visible" = "Sichtbar";
+
 // MARK: - Y
 
 "year" = "Jahr";
@@ -401,6 +417,14 @@
 // MARK: - Z
 
 "zero" = "Null";
+
+// MARK: - Measurements Edit Sheet
+
+"editMeasurements" = "Messungen bearbeiten";
+"editPinnedMeasurements" = "Angepinnte bearbeiten";
+"dragToReorder" = "Ziehen zum Sortieren";
+"noMeasurementsSelected" = "Keine Messungen ausgewählt";
+"noDate" = "Kein Datum";
 
 // MARK: - OverallSets Highlights (Vergleichssätze)
 "avgMoreSetsPerWorkoutThisWeekThanLastWeek" = "Du machst im Durchschnitt mehr Sätze pro Workout diese Woche als letzte Woche.";

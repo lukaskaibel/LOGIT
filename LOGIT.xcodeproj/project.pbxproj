@@ -184,6 +184,9 @@
 		80A640A02E414F4E0053C2C3 /* Transmission in Frameworks */ = {isa = PBXBuildFile; productRef = 80A6409F2E414F4E0053C2C3 /* Transmission */; };
 		80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387BA2EBA187100AD7EFC /* DecimalField.swift */; };
 		80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = 80C2B98E2EC9362A00118FE2 /* ColorfulX */; };
+		80CBE1D52ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */; };
+		80CBE1D62ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */; };
+		80CBE1D72ED7AFD500DDE1C5 /* MeasurementTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D42ED7AFD500DDE1C5 /* MeasurementTile.swift */; };
 		80EC5D8E2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -392,6 +395,9 @@
 		806DE61F2E1DD106008E162F /* ChronographView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronographView.swift; sourceTree = "<group>"; };
 		806F87E42ED0D7E7001E8B8B /* Logit.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Logit.icon; sourceTree = "<group>"; };
 		80B387BA2EBA187100AD7EFC /* DecimalField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalField.swift; sourceTree = "<group>"; };
+		80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementDetailScreen.swift; sourceTree = "<group>"; };
+		80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementsEditSheet.swift; sourceTree = "<group>"; };
+		80CBE1D42ED7AFD500DDE1C5 /* MeasurementTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementTile.swift; sourceTree = "<group>"; };
 		80EC5D8D2D3A9D3400AFAE9A /* WorkoutSetRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetRepositoryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -693,6 +699,9 @@
 		801BBD082DF7338A00CDB1FB /* Measurement */ = {
 			isa = PBXGroup;
 			children = (
+				80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */,
+				80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */,
+				80CBE1D42ED7AFD500DDE1C5 /* MeasurementTile.swift */,
 				801BBD062DF7338A00CDB1FB /* MeasurementsScreen.swift */,
 				801BBD072DF7338A00CDB1FB /* MeasurementView.swift */,
 			);
@@ -1222,6 +1231,9 @@
 				801BBE012DF7338A00CDB1FB /* Database+EntityCreation.swift in Sources */,
 				801BBE022DF7338A00CDB1FB /* OverallSetsScreen.swift in Sources */,
 				801BBE032DF7338A00CDB1FB /* MeasurementView.swift in Sources */,
+				80CBE1D52ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift in Sources */,
+				80CBE1D62ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift in Sources */,
+				80CBE1D72ED7AFD500DDE1C5 /* MeasurementTile.swift in Sources */,
 				801BBE042DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift in Sources */,
 				806DE6202E1DD10A008E162F /* ChronographView.swift in Sources */,
 				801BBE052DF7338A00CDB1FB /* PrivacyPolicyScreen.swift in Sources */,

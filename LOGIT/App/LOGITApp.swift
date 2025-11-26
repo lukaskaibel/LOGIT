@@ -83,11 +83,6 @@ struct LOGIT: App {
                             TemplateListScreen()
                         }
                     }
-                    Tab(NSLocalizedString("measurements", comment: ""), systemImage: "ruler") {
-                        NavigationStack {
-                            MeasurementsScreen()
-                        }
-                    }
                 }
                 .tabBarMinimizeBehavior(.onScrollDown)
                 .tabViewBottomAccessory {

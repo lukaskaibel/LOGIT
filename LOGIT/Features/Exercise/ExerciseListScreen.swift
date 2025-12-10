@@ -22,7 +22,7 @@ struct ExerciseListScreen: View {
     var body: some View {
         FetchRequestWrapper(
             Exercise.self,
-            sortDescriptors: [SortDescriptor(\.firstLetterOfName), SortDescriptor(\.name)],
+            sortDescriptors: [SortDescriptor(\.name)],
             predicate: ExercisePredicateFactory.getExercises(
                 nameIncluding: "",
                 withMuscleGroup: selectedMuscleGroup
@@ -31,7 +31,8 @@ struct ExerciseListScreen: View {
             let exercises = searchedText.isEmpty ? allExercises : allExercises.filter { exercise in
                 exercise.displayName.localizedCaseInsensitiveContains(searchedText)
             }
-            let groupedExercises = Dictionary(grouping: exercises, by: {
+            let sortedExercises = exercises.sorted { $0.displayName.localizedCompare($1.displayName) == .orderedAscending }
+            let groupedExercises = Dictionary(grouping: sortedExercises, by: {
                 $0.displayNameFirstLetter
             }).sorted { $0.key < $1.key }
             ScrollView {

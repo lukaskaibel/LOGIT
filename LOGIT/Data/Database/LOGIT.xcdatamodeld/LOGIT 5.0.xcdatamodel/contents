@@ -7,7 +7,7 @@
     <entity name="Exercise" representedClassName="Exercise" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="muscleGroupString" optional="YES" attributeType="String" customClassName="MuscleGroup"/>
-        <attribute name="name" optional="YES" attributeType="String" elementID="name"/>
+        <attribute name="name_" optional="YES" attributeType="String" elementID="name"/>
         <attribute name="setGroupOrder" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[UUID]"/>
         <attribute name="templateSetGroupOrder" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[UUID]"/>
         <relationship name="setGroups_" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="WorkoutSetGroup" inverseName="exercises_" inverseEntity="WorkoutSetGroup"/>

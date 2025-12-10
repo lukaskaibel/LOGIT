@@ -181,6 +181,8 @@
 		806DE6202E1DD10A008E162F /* ChronographView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806DE61F2E1DD106008E162F /* ChronographView.swift */; };
 		806F87E52ED0D7E7001E8B8B /* Logit.icon in Resources */ = {isa = PBXBuildFile; fileRef = 806F87E42ED0D7E7001E8B8B /* Logit.icon */; };
 		80750E112DDFCA550037F1FE /* WishKit in Frameworks */ = {isa = PBXBuildFile; productRef = 80750E102DDFCA550037F1FE /* WishKit */; };
+		8085497B2EE9A34400761706 /* DefaultExerciseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8085497A2EE9A34400761706 /* DefaultExerciseService.swift */; };
+		8085497F2EE9A37C00761706 /* default_exercises.json in Resources */ = {isa = PBXBuildFile; fileRef = 8085497D2EE9A37C00761706 /* default_exercises.json */; };
 		80A1D97B2EDC91B2004EE258 /* PinnedExerciseTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97A2EDC91B2004EE258 /* PinnedExerciseTile.swift */; };
 		80A1D97C2EDC91B2004EE258 /* ExercisesPinEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D9792EDC91B2004EE258 /* ExercisesPinEditSheet.swift */; };
 		80A1D9802EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */; };
@@ -399,6 +401,9 @@
 		8065AA6B2686667F00F53A5A /* LOGIT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LOGIT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		806DE61F2E1DD106008E162F /* ChronographView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronographView.swift; sourceTree = "<group>"; };
 		806F87E42ED0D7E7001E8B8B /* Logit.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Logit.icon; sourceTree = "<group>"; };
+		8085497A2EE9A34400761706 /* DefaultExerciseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultExerciseService.swift; sourceTree = "<group>"; };
+		8085497D2EE9A37C00761706 /* default_exercises.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = default_exercises.json; sourceTree = "<group>"; };
+		808549802EE9AA2600761706 /* LOGIT 5.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 5.0.xcdatamodel"; sourceTree = "<group>"; };
 		80A1D9792EDC91B2004EE258 /* ExercisesPinEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesPinEditSheet.swift; sourceTree = "<group>"; };
 		80A1D97A2EDC91B2004EE258 /* PinnedExerciseTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseTile.swift; sourceTree = "<group>"; };
 		80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseRepetitionsTile.swift; sourceTree = "<group>"; };
@@ -834,6 +839,7 @@
 		801BBD342DF7338A00CDB1FB /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				8085497A2EE9A34400761706 /* DefaultExerciseService.swift */,
 				801BBD332DF7338A00CDB1FB /* MuscleGroupService.swift */,
 			);
 			path = Services;
@@ -916,6 +922,7 @@
 		801BBD5E2DF7338A00CDB1FB /* LOGIT */ = {
 			isa = PBXGroup;
 			children = (
+				8085497E2EE9A37C00761706 /* Resources */,
 				801BBC972DF7338A00CDB1FB /* App */,
 				801BBC9C2DF7338A00CDB1FB /* Assets */,
 				801BBCA02DF7338A00CDB1FB /* Config */,
@@ -954,6 +961,14 @@
 				79E849072A7EA28000C0DF95 /* LOGITTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		8085497E2EE9A37C00761706 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8085497D2EE9A37C00761706 /* default_exercises.json */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1069,6 +1084,7 @@
 				801BBD632DF7338A00CDB1FB /* Launch Screen.storyboard in Resources */,
 				801BBD652DF7338A00CDB1FB /* timer.wav in Resources */,
 				801BBD662DF7338A00CDB1FB /* Localizable.strings in Resources */,
+				8085497F2EE9A37C00761706 /* default_exercises.json in Resources */,
 				801BBD672DF7338A00CDB1FB /* Assets.xcassets in Resources */,
 				801BBD682DF7338A00CDB1FB /* logit_privacy_policy.md in Resources */,
 			);
@@ -1181,6 +1197,7 @@
 				801BBDB92DF7338A00CDB1FB /* ExerciseListScreen.swift in Sources */,
 				801BBDBA2DF7338A00CDB1FB /* StandardSet+.swift in Sources */,
 				801BBDBB2DF7338A00CDB1FB /* ExerciseDTO.swift in Sources */,
+				8085497B2EE9A34400761706 /* DefaultExerciseService.swift in Sources */,
 				801BBDBC2DF7338A00CDB1FB /* MuscleGroupService.swift in Sources */,
 				801BBDBD2DF7338A00CDB1FB /* Int+.swift in Sources */,
 				801BBDBE2DF7338A00CDB1FB /* WidgetCollectionView.swift in Sources */,
@@ -1622,12 +1639,13 @@
 		801BBCC92DF7338A00CDB1FB /* LOGIT.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				808549802EE9AA2600761706 /* LOGIT 5.0.xcdatamodel */,
 				8034A7EC2E83073700834A32 /* LOGIT 4.0.xcdatamodel */,
 				801BBD5F2DF7338A00CDB1FB /* LOGIT 2.0.xcdatamodel */,
 				801BBD602DF7338A00CDB1FB /* LOGIT 3.0.xcdatamodel */,
 				801BBD612DF7338A00CDB1FB /* WorkoutDiary.xcdatamodel */,
 			);
-			currentVersion = 8034A7EC2E83073700834A32 /* LOGIT 4.0.xcdatamodel */;
+			currentVersion = 808549802EE9AA2600761706 /* LOGIT 5.0.xcdatamodel */;
 			path = LOGIT.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

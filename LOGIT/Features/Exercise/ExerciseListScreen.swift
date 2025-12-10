@@ -105,7 +105,7 @@ struct ExerciseListScreen: View {
     // MARK: - Methods / Computed Properties
 
     private func getLetter(for group: [Exercise]) -> String {
-        String(group.first?.name?.first ?? Character(" "))
+        String(group.first?.name.first ?? Character(" "))
     }
 }
 

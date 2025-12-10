@@ -111,6 +111,7 @@
 "evening" = "Abend";
 "exercise" = "Übung";
 "exerciseName" = "Übungsname";
+"exerciseNameCantStartWithDefault" = "Übungsname darf nicht mit \"_default\" beginnen. Dieses Präfix ist für eingebaute Übungen reserviert.";
 "exerciseNameDescription" = "Gib den Namen der Übung ein.";
 "exercises" = "Übungen";
 

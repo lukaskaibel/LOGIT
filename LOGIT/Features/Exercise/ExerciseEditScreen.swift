@@ -19,6 +19,8 @@ struct ExerciseEditScreen: View {
     @State private var muscleGroup: MuscleGroup
     @State private var showingExerciseExistsAlert: Bool = false
     @State private var showingExerciseNameEmptyAlert: Bool = false
+    @State private var showingInvalidNameAlert: Bool = false
+    @State private var invalidNameMessage: String = ""
     @FocusState private var nameFieldIsFocused: Bool
 
     // MARK: - Variables
@@ -82,12 +84,25 @@ struct ExerciseEditScreen: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(NSLocalizedString("save", comment: "")) {
-                        if exerciseName.trimmingCharacters(in: .whitespaces).isEmpty {
+                        let trimmedName = exerciseName.trimmingCharacters(in: .whitespaces)
+                        
+                        if trimmedName.isEmpty {
                             showingExerciseNameEmptyAlert = true
-                        } else if exerciseToEdit == nil
-                            && !database.getExercises().filter({ $0.name?.lowercased() == exerciseName.lowercased() }).isEmpty
-                        {
-                            showingExerciseExistsAlert = true
+                        } else if trimmedName.hasPrefix("_default") {
+                            invalidNameMessage = NSLocalizedString("exerciseNameCantStartWithDefault", comment: "")
+                            showingInvalidNameAlert = true
+                        } else if exerciseToEdit == nil {
+                            // Check if name matches any existing exercise's display name or internal name
+                            let allExercises = database.getExercises()
+                            let nameExists = allExercises.contains { exercise in
+                                exercise.name?.lowercased() == trimmedName.lowercased() ||
+                                exercise.displayName.lowercased() == trimmedName.lowercased()
+                            }
+                            if nameExists {
+                                showingExerciseExistsAlert = true
+                            } else {
+                                saveExercise()
+                            }
                         } else {
                             saveExercise()
                         }
@@ -109,6 +124,14 @@ struct ExerciseEditScreen: View {
             ) {
                 Button(NSLocalizedString("ok", comment: "")) {
                     showingExerciseNameEmptyAlert = false
+                }
+            }
+            .alert(
+                invalidNameMessage,
+                isPresented: $showingInvalidNameAlert
+            ) {
+                Button(NSLocalizedString("ok", comment: "")) {
+                    showingInvalidNameAlert = false
                 }
             }
         }

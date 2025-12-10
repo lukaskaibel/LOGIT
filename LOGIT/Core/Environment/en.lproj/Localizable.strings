@@ -111,6 +111,7 @@
 "evening" = "Evening";
 "exercise" = "Exercise";
 "exerciseName" = "Exercise Name";
+"exerciseNameCantStartWithDefault" = "Exercise name cannot start with \"_default\". This prefix is reserved for built-in exercises.";
 "exerciseNameDescription" = "Enter the name for the exercise.";
 "exercises" = "Exercises";
 

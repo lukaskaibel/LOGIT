@@ -30,6 +30,7 @@ struct LOGIT: App {
     @StateObject private var muscleGroupService: MuscleGroupService
     @StateObject private var homeNavigationCoordinator = HomeNavigationCoordinator()
     @StateObject private var chronograph = Chronograph()
+    @StateObject private var defaultExerciseService: DefaultExerciseService
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingPrivacyPolicy = false
@@ -51,6 +52,7 @@ struct LOGIT: App {
         _workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: database))
         _muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
         _homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
+        _defaultExerciseService = StateObject(wrappedValue: DefaultExerciseService(database: database))
 
         UserDefaults.standard.register(defaults: [
             "weightUnit": WeightUnit.kg.rawValue,
@@ -130,6 +132,7 @@ struct LOGIT: App {
                     if acceptedPrivacyPolicyVersion != privacyPolicyVersion {
                         isShowingPrivacyPolicy = true
                     }
+                    defaultExerciseService.loadDefaultExercisesIfNeeded()
                     Task {
                         do {
                             try await purchaseManager.loadProducts()

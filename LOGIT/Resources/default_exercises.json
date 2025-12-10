@@ -1,0 +1,1005 @@
+{
+  "version": 1,
+  "exercises": [
+    {
+      "id": "default_001",
+      "nameKey": "_default.exercise.pushups",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_002",
+      "nameKey": "_default.exercise.barbellBenchPress",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_003",
+      "nameKey": "_default.exercise.dumbbellBenchPress",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_004",
+      "nameKey": "_default.exercise.inclinedBarbellBenchPress",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_005",
+      "nameKey": "_default.exercise.inclinedDumbbellBenchPress",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_006",
+      "nameKey": "_default.exercise.dumbbellFly",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_007",
+      "nameKey": "_default.exercise.cableCrossovers",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_008",
+      "nameKey": "_default.exercise.declineBenchPress",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_009",
+      "nameKey": "_default.exercise.chestDips",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_010",
+      "nameKey": "_default.exercise.pecDeckFly",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_011",
+      "nameKey": "_default.exercise.pullups",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_012",
+      "nameKey": "_default.exercise.chinups",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_013",
+      "nameKey": "_default.exercise.australianPullups",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_014",
+      "nameKey": "_default.exercise.latPulldowns",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_015",
+      "nameKey": "_default.exercise.barbellRows",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_016",
+      "nameKey": "_default.exercise.dumbbellRows",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_017",
+      "nameKey": "_default.exercise.seatedCableRows",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_018",
+      "nameKey": "_default.exercise.tBarRows",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_019",
+      "nameKey": "_default.exercise.deadlift",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_020",
+      "nameKey": "_default.exercise.sumoDeadlift",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_021",
+      "nameKey": "_default.exercise.romanianDeadlift",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_022",
+      "nameKey": "_default.exercise.facePulls",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_023",
+      "nameKey": "_default.exercise.squats",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_024",
+      "nameKey": "_default.exercise.frontSquats",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_025",
+      "nameKey": "_default.exercise.legPress",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_026",
+      "nameKey": "_default.exercise.walkingLunges",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_027",
+      "nameKey": "_default.exercise.barbellLunges",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_028",
+      "nameKey": "_default.exercise.dumbbellLunges",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_029",
+      "nameKey": "_default.exercise.legExtension",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_030",
+      "nameKey": "_default.exercise.legCurls",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_031",
+      "nameKey": "_default.exercise.calfRaises",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_032",
+      "nameKey": "_default.exercise.seatedCalfRaises",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_033",
+      "nameKey": "_default.exercise.bulgarianSplitSquats",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_034",
+      "nameKey": "_default.exercise.hackSquats",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_035",
+      "nameKey": "_default.exercise.gobletSquats",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_036",
+      "nameKey": "_default.exercise.legPressCalfRaise",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_037",
+      "nameKey": "_default.exercise.hipThrust",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_038",
+      "nameKey": "_default.exercise.handstandPushups",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_039",
+      "nameKey": "_default.exercise.militaryPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_040",
+      "nameKey": "_default.exercise.shoulderPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_041",
+      "nameKey": "_default.exercise.dumbbellShoulderPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_042",
+      "nameKey": "_default.exercise.uprightRows",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_043",
+      "nameKey": "_default.exercise.lateralRaises",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_044",
+      "nameKey": "_default.exercise.frontRaises",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_045",
+      "nameKey": "_default.exercise.rearDeltRaise",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_046",
+      "nameKey": "_default.exercise.arnoldPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_047",
+      "nameKey": "_default.exercise.cableRaises",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_048",
+      "nameKey": "_default.exercise.dips",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_049",
+      "nameKey": "_default.exercise.tricepPushdowns",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_050",
+      "nameKey": "_default.exercise.overheadTricepExtension",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_051",
+      "nameKey": "_default.exercise.closeGripBenchPress",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_052",
+      "nameKey": "_default.exercise.tricepKickbacks",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_053",
+      "nameKey": "_default.exercise.skullCrushers",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_054",
+      "nameKey": "_default.exercise.diamondPushups",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_055",
+      "nameKey": "_default.exercise.ropeTricepExtensions",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_056",
+      "nameKey": "_default.exercise.barbellCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_057",
+      "nameKey": "_default.exercise.dumbbellCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_058",
+      "nameKey": "_default.exercise.hammerCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_059",
+      "nameKey": "_default.exercise.preacherCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_060",
+      "nameKey": "_default.exercise.concentrationCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_061",
+      "nameKey": "_default.exercise.cableCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_062",
+      "nameKey": "_default.exercise.inclineDumbbellCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_063",
+      "nameKey": "_default.exercise.ezBarCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_064",
+      "nameKey": "_default.exercise.situps",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_065",
+      "nameKey": "_default.exercise.crunches",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_066",
+      "nameKey": "_default.exercise.bicycles",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_067",
+      "nameKey": "_default.exercise.legRaises",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_068",
+      "nameKey": "_default.exercise.hangingKneeRaises",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_069",
+      "nameKey": "_default.exercise.plank",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_070",
+      "nameKey": "_default.exercise.sidePlank",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_071",
+      "nameKey": "_default.exercise.russianTwists",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_072",
+      "nameKey": "_default.exercise.mountainClimbers",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_073",
+      "nameKey": "_default.exercise.abWheelRollout",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_074",
+      "nameKey": "_default.exercise.hangingLegRaises",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_075",
+      "nameKey": "_default.exercise.cableCrunches",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_076",
+      "nameKey": "_default.exercise.running",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_077",
+      "nameKey": "_default.exercise.cycling",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_078",
+      "nameKey": "_default.exercise.rowing",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_079",
+      "nameKey": "_default.exercise.jumpRope",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_080",
+      "nameKey": "_default.exercise.elliptical",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_081",
+      "nameKey": "_default.exercise.stairClimber",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_082",
+      "nameKey": "_default.exercise.swimming",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_083",
+      "nameKey": "_default.exercise.burpees",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_084",
+      "nameKey": "_default.exercise.boxJumps",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_085",
+      "nameKey": "_default.exercise.battleRopes",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_086",
+      "nameKey": "_default.exercise.barbellShrugs",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_087",
+      "nameKey": "_default.exercise.dumbbellShrugs",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_088",
+      "nameKey": "_default.exercise.widegripPullups",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_089",
+      "nameKey": "_default.exercise.closegripPullups",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_090",
+      "nameKey": "_default.exercise.assistedPullups",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_091",
+      "nameKey": "_default.exercise.chestSupportedRows",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_092",
+      "nameKey": "_default.exercise.pendlayRows",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_093",
+      "nameKey": "_default.exercise.landmineRows",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_094",
+      "nameKey": "_default.exercise.cablePulldowns",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_095",
+      "nameKey": "_default.exercise.seatedRowMachine",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_096",
+      "nameKey": "_default.exercise.reverseFly",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_097",
+      "nameKey": "_default.exercise.goodMornings",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_098",
+      "nameKey": "_default.exercise.backExtensions",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_099",
+      "nameKey": "_default.exercise.hyperextensions",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_100",
+      "nameKey": "_default.exercise.reverseHyperextensions",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_101",
+      "nameKey": "_default.exercise.dumbbellPullover",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_102",
+      "nameKey": "_default.exercise.machineFly",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_103",
+      "nameKey": "_default.exercise.landminePress",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_104",
+      "nameKey": "_default.exercise.inclineCableFly",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_105",
+      "nameKey": "_default.exercise.singleArmCablePress",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_106",
+      "nameKey": "_default.exercise.dumbbellFloorPress",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_107",
+      "nameKey": "_default.exercise.pistolSquats",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_108",
+      "nameKey": "_default.exercise.boxSquats",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_109",
+      "nameKey": "_default.exercise.sissySquats",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_110",
+      "nameKey": "_default.exercise.zercherSquats",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_111",
+      "nameKey": "_default.exercise.legPressWideStance",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_112",
+      "nameKey": "_default.exercise.legPressNarrowStance",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_113",
+      "nameKey": "_default.exercise.nordics",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_114",
+      "nameKey": "_default.exercise.gluteHamRaise",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_115",
+      "nameKey": "_default.exercise.seatedLegCurls",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_116",
+      "nameKey": "_default.exercise.standingLegCurls",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_117",
+      "nameKey": "_default.exercise.lyingLegCurls",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_118",
+      "nameKey": "_default.exercise.singleLegDeadlift",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_119",
+      "nameKey": "_default.exercise.cableKickbacks",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_120",
+      "nameKey": "_default.exercise.abductorMachine",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_121",
+      "nameKey": "_default.exercise.adductorMachine",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_122",
+      "nameKey": "_default.exercise.stepUps",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_123",
+      "nameKey": "_default.exercise.reverseGripBenchPress",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_124",
+      "nameKey": "_default.exercise.reverseCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_125",
+      "nameKey": "_default.exercise.spiderCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_126",
+      "nameKey": "_default.exercise.zottmanCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_127",
+      "nameKey": "_default.exercise.seatedInclineCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_128",
+      "nameKey": "_default.exercise.cableHammerCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_129",
+      "nameKey": "_default.exercise.dragCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_130",
+      "nameKey": "_default.exercise.wristCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_131",
+      "nameKey": "_default.exercise.reverseWristCurls",
+      "muscleGroup": "biceps"
+    },
+    {
+      "id": "default_132",
+      "nameKey": "_default.exercise.seatedTricepPress",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_133",
+      "nameKey": "_default.exercise.oneArmTricepExtension",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_134",
+      "nameKey": "_default.exercise.tricepDips",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_135",
+      "nameKey": "_default.exercise.benchDips",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_136",
+      "nameKey": "_default.exercise.reverseGripTricepPushdowns",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_137",
+      "nameKey": "_default.exercise.jmPress",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_138",
+      "nameKey": "_default.exercise.tatePress",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_139",
+      "nameKey": "_default.exercise.seatedDumbbellPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_140",
+      "nameKey": "_default.exercise.machineShoulderPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_141",
+      "nameKey": "_default.exercise.pikePushups",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_142",
+      "nameKey": "_default.exercise.behindTheNeckPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_143",
+      "nameKey": "_default.exercise.dumbbellScaption",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_144",
+      "nameKey": "_default.exercise.cableLateralRaises",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_145",
+      "nameKey": "_default.exercise.bentOverLateralRaises",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_146",
+      "nameKey": "_default.exercise.reverseDeclineFly",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_147",
+      "nameKey": "_default.exercise.seatedBentOverLateralRaises",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_148",
+      "nameKey": "_default.exercise.plateFrontRaise",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_149",
+      "nameKey": "_default.exercise.barbellFrontRaise",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_150",
+      "nameKey": "_default.exercise.highPulls",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_151",
+      "nameKey": "_default.exercise.vUps",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_152",
+      "nameKey": "_default.exercise.reverseCrunches",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_153",
+      "nameKey": "_default.exercise.flutterKicks",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_154",
+      "nameKey": "_default.exercise.scissorKicks",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_155",
+      "nameKey": "_default.exercise.deadBug",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_156",
+      "nameKey": "_default.exercise.birdDog",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_157",
+      "nameKey": "_default.exercise.hollowBodyHold",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_158",
+      "nameKey": "_default.exercise.toesToBar",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_159",
+      "nameKey": "_default.exercise.lSit",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_160",
+      "nameKey": "_default.exercise.dragonFlags",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_161",
+      "nameKey": "_default.exercise.windshieldWipers",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_162",
+      "nameKey": "_default.exercise.paloffPress",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_163",
+      "nameKey": "_default.exercise.woodchops",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_164",
+      "nameKey": "_default.exercise.obliqueCrunches",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_165",
+      "nameKey": "_default.exercise.sprints",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_166",
+      "nameKey": "_default.exercise.hiitTraining",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_167",
+      "nameKey": "_default.exercise.assaultBike",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_168",
+      "nameKey": "_default.exercise.rowingMachine",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_169",
+      "nameKey": "_default.exercise.skiErg",
+      "muscleGroup": "cardio"
+    },
+    {
+      "id": "default_170",
+      "nameKey": "_default.exercise.farmersWalk",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_171",
+      "nameKey": "_default.exercise.rackPulls",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_172",
+      "nameKey": "_default.exercise.snatchGripDeadlift",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_173",
+      "nameKey": "_default.exercise.deficitDeadlift",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_174",
+      "nameKey": "_default.exercise.trapBarDeadlift",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_175",
+      "nameKey": "_default.exercise.cleanAndPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_176",
+      "nameKey": "_default.exercise.powerClean",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_177",
+      "nameKey": "_default.exercise.hangClean",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_178",
+      "nameKey": "_default.exercise.snatch",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_179",
+      "nameKey": "_default.exercise.hangSnatch",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_180",
+      "nameKey": "_default.exercise.pushPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_181",
+      "nameKey": "_default.exercise.pushJerk",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_182",
+      "nameKey": "_default.exercise.splitJerk",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_183",
+      "nameKey": "_default.exercise.thrusters",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_184",
+      "nameKey": "_default.exercise.wallBalls",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_185",
+      "nameKey": "_default.exercise.turkishGetUp",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_186",
+      "nameKey": "_default.exercise.kettlebellSwings",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_187",
+      "nameKey": "_default.exercise.kettlebellSnatch",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_188",
+      "nameKey": "_default.exercise.kettlebellClean",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_189",
+      "nameKey": "_default.exercise.gobletSquatWithKettlebell",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_190",
+      "nameKey": "_default.exercise.singleArmKettlebellPress",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_191",
+      "nameKey": "_default.exercise.ropeClimbs",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_192",
+      "nameKey": "_default.exercise.sledPush",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_193",
+      "nameKey": "_default.exercise.sledPull",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_194",
+      "nameKey": "_default.exercise.tireFlips",
+      "muscleGroup": "legs"
+    },
+    {
+      "id": "default_195",
+      "nameKey": "_default.exercise.medicineBallSlams",
+      "muscleGroup": "abdominals"
+    },
+    {
+      "id": "default_196",
+      "nameKey": "_default.exercise.wallClimbs",
+      "muscleGroup": "shoulders"
+    },
+    {
+      "id": "default_197",
+      "nameKey": "_default.exercise.muscleUps",
+      "muscleGroup": "back"
+    },
+    {
+      "id": "default_198",
+      "nameKey": "_default.exercise.ringDips",
+      "muscleGroup": "triceps"
+    },
+    {
+      "id": "default_199",
+      "nameKey": "_default.exercise.ringPushups",
+      "muscleGroup": "chest"
+    },
+    {
+      "id": "default_200",
+      "nameKey": "_default.exercise.ringRows",
+      "muscleGroup": "back"
+    }
+  ]
+}

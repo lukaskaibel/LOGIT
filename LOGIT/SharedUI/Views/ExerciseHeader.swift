@@ -51,7 +51,7 @@ struct ExerciseHeader: View {
                     }
                 } label: {
                     HStack(spacing: 3) {
-                        Text(exercise.name ?? NSLocalizedString("noName", comment: ""))
+                        Text(exercise.displayName)
                             .foregroundColor(.label)
                         if navigationToDetailEnabled {
                             NavigationChevron()
@@ -82,10 +82,7 @@ struct ExerciseHeader: View {
                             destination: ExerciseDetailScreen(exercise: secondaryExercise)
                         ) {
                             HStack(spacing: 3) {
-                                Text(
-                                    secondaryExercise.name
-                                        ?? NSLocalizedString("noName", comment: "")
-                                )
+                                Text(secondaryExercise.displayName)
                                 if navigationToDetailEnabled {
                                     NavigationChevron()
                                         .foregroundColor(.secondaryLabel)

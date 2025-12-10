@@ -56,7 +56,7 @@ struct ExerciseHistoryScreen: View {
                     VStack {
                         Text("\(NSLocalizedString("history", comment: ""))")
                             .font(.headline)
-                        Text(exercise.name ?? "")
+                        Text(exercise.displayName)
                             .foregroundStyle(.secondary)
                             .font(.footnote)
                     }

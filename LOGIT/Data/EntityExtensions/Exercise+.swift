@@ -9,6 +9,16 @@ import CoreData
 import Foundation
 
 extension Exercise {
+    var displayName: String {
+        guard let name = name, !name.isEmpty else { 
+            return NSLocalizedString("noName", comment: "")
+        }
+        if name.hasPrefix("_default.") {
+            return NSLocalizedString(name, comment: "")
+        }
+        return name
+    }
+    
     var muscleGroup: MuscleGroup? {
         get { MuscleGroup(rawValue: muscleGroupString ?? "") }
         set { muscleGroupString = newValue?.rawValue }

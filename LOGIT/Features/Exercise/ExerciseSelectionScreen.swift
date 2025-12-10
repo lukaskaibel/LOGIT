@@ -41,14 +41,17 @@ struct ExerciseSelectionScreen: View {
     var body: some View {
         FetchRequestWrapper(
             Exercise.self,
-            sortDescriptors: [SortDescriptor(\.name)],
+            sortDescriptors: [SortDescriptor(\.firstLetterOfName), SortDescriptor(\.name)],
             predicate: ExercisePredicateFactory.getExercises(
-                nameIncluding: searchedText,
+                nameIncluding: "",
                 withMuscleGroup: selectedMuscleGroup
             )
-        ) { exercises in
+        ) { allExercises in
+            let exercises = searchedText.isEmpty ? allExercises : allExercises.filter { exercise in
+                exercise.displayName.localizedCaseInsensitiveContains(searchedText)
+            }
             let groupedExercises = Dictionary(grouping: exercises, by: {
-                $0.name?.prefix(1) ?? ""
+                $0.displayNameFirstLetter
             }).sorted { $0.key < $1.key }
             VStack(spacing: 12) {
                 HStack(spacing: 12) {

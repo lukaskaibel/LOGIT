@@ -19,6 +19,11 @@ extension Exercise {
         return name
     }
     
+    var displayNameFirstLetter: String {
+        let display = displayName
+        return display.isEmpty ? " " : String(display.prefix(1).uppercased())
+    }
+    
     var muscleGroup: MuscleGroup? {
         get { MuscleGroup(rawValue: muscleGroupString ?? "") }
         set { muscleGroupString = newValue?.rawValue }
@@ -35,8 +40,7 @@ extension Exercise {
     }
 
     @objc var firstLetterOfName: String {
-        guard let name = name, !name.isEmpty else { return " " }
-        return name.first!.lowercased()
+        return displayNameFirstLetter
     }
 
     var templateSetGroups: [TemplateSetGroup] {

@@ -73,9 +73,9 @@ struct LOGIT: App {
         //                    .statusBarHidden(true)
         //                #endif
                     }
-                    Tab(NSLocalizedString("exercises", comment: ""), systemImage: "dumbbell") {
+                    Tab(NSLocalizedString("history", comment: ""), systemImage: "clock.arrow.circlepath") {
                         NavigationStack {
-                            ExerciseListScreen()
+                            WorkoutListScreen()
                         }
                     }
                     Tab(NSLocalizedString("templates", comment: ""), systemImage: "list.bullet.rectangle.portrait") {

@@ -35,6 +35,7 @@
 
 "back" = "Rücken";
 "best" = "Max";
+"bestLastMonth" = "Max letzten Monat";
 "bestPerDay" = "Höchstes pro Tag";
 "bestThisMonth" = "Max diesen Monat";
 "bestWeightPerDay" = "Höchstes Gewicht pro Tag";
@@ -153,7 +154,7 @@
 // MARK: - L
 
 "latest" = "Aktuell";
-"lastMonth" = "Letzte Woche";
+"lastMonth" = "Letzter Monat";
 "lastTenWorkouts" = "In Letzten 10 Workouts";
 "lastUsed" = "Zuletzt benutzt";
 "lastWeek" = "Letzte Woche";
@@ -259,6 +260,7 @@
 "PerMonth" = "Pro Monat";
 "perWeek" = "pro Woche";
 "PerWeek" = "Pro Woche";
+"pinExercises" = "Übungen anpinnen";
 "pinned" = "Angepinnt";
 "pressPlusToAdd" = "Drücke +, um \"%@\" hinzuzufügen";
 "pressPlusToAddExercise" = "Drücke +, um eine Übung hinzuzufügen";
@@ -310,6 +312,7 @@
 "seven" = "Sieben";
 "shoulders" = "Schultern";
 "showAll" = "Alle anzeigen";
+"showAllExercises" = "Alle Übungen anzeigen";
 "showAllMeasurements" = "Alle Messungen anzeigen";
 "showDetails" = "Details anzeigen";
 "showMeasurements" = "Messungen anzeigen";
@@ -379,6 +382,7 @@
 
 // MARK: - W
 "volume" = "Volumen";
+"volumeThisWeek" = "Volumen diese Woche";
 
 // MARK: - W
 

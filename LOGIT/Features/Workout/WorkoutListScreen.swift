@@ -11,13 +11,13 @@ struct WorkoutListScreen: View {
     // MARK: - Environment
 
     @EnvironmentObject private var database: Database
-    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
 
     // MARK: - State
 
     @State private var searchedText: String = ""
     @State private var selectedMuscleGroup: MuscleGroup? = nil
     @State private var isShowingAddWorkout = false
+    @State private var selectedWorkout: Workout?
 
     // MARK: - Body
 
@@ -46,7 +46,7 @@ struct WorkoutListScreen: View {
                                 ForEach(workouts) {
                                     workout in
                                     Button {
-                                        homeNavigationCoordinator.path.append(.workout(workout))
+                                        selectedWorkout = workout
                                     } label: {
                                         WorkoutCell(workout: workout)
                                             .padding(CELL_PADDING)
@@ -82,6 +82,9 @@ struct WorkoutListScreen: View {
             .sheet(isPresented: $isShowingAddWorkout) {
                 WorkoutEditorScreen(workout: database.newWorkout(), isAddingNewWorkout: true)
             }
+        }
+        .navigationDestination(item: $selectedWorkout) { workout in
+            WorkoutDetailScreen(workout: workout, canNavigateToTemplate: true)
         }
     }
 }

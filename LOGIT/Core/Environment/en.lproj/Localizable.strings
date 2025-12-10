@@ -35,6 +35,7 @@
 
 "back" = "Back";
 "best" = "Best";
+"bestLastMonth" = "Best Last Month";
 "bestPerDay" = "Best per Day";
 "bestThisMonth" = "Best this Month";
 "bestWeightPerDay" = "Best Weight per Day";
@@ -156,7 +157,7 @@
 // MARK: - L
 
 "latest" = "Latest";
-"lastMonth" = "Last week";
+"lastMonth" = "Last month";
 "lastTenWorkouts" = "In Last 10 Workouts";
 "lastUsed" = "Last used";
 "lastWeek" = "Last week";
@@ -256,6 +257,7 @@
 "performed" = "Performed";
 "personalBest" = "Personal Best";
 "perDay" = "per Day";
+"pinExercises" = "Pin Exercises";
 "pinned" = "Pinned";
 "PerDay" = "Per Day";
 "PerMonth" = "Per Month";
@@ -310,6 +312,7 @@
 "seven" = "Seven";
 "shoulders" = "Shoulders";
 "showAll" = "Show All";
+"showAllExercises" = "Show All Exercises";
 "showAllMeasurements" = "Show All Measurements";
 "showDetails" = "Show Details";
 "showMeasurements" = "Show Measurements";
@@ -379,6 +382,7 @@
 
 // MARK: - W
 "volume" = "Volume";
+"volumeThisWeek" = "Volume this Week";
 
 // MARK: - W
 

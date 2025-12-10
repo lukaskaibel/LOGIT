@@ -15,6 +15,7 @@ struct HomeScreen: View {
 
     @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = 3
     @AppStorage("pinnedMeasurements") private var pinnedMeasurementsData: Data = Data()
+    @AppStorage("pinnedExercises") private var pinnedExercisesData: Data = Data()
 
     // MARK: - Environment
 
@@ -22,6 +23,7 @@ struct HomeScreen: View {
     @EnvironmentObject private var workoutRecorder: WorkoutRecorder
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
     @EnvironmentObject private var measurementController: MeasurementEntryController
+    @EnvironmentObject private var database: Database
 
     // MARK: - State
 
@@ -30,6 +32,7 @@ struct HomeScreen: View {
     @State private var isShowingSettings = false
     @State private var isShowingWishkit = false
     @State private var isShowingMeasurementsEditSheet = false
+    @State private var isShowingExercisesPinEditSheet = false
 
     // MARK: - Body
 
@@ -126,42 +129,10 @@ struct HomeScreen: View {
                             }
                             .padding(.horizontal)
 
-                            VStack(spacing: SECTION_HEADER_SPACING) {
-                                HStack {
-                                    Text(NSLocalizedString("recentWorkouts", comment: ""))
-                                        .sectionHeaderStyle2()
-                                    Spacer()
-                                    Button {
-                                        homeNavigationCoordinator.path.append(.workoutList)
-                                    } label: {
-                                        HStack {
-                                            Text(NSLocalizedString("all", comment: ""))
-                                            Image(systemName: "chevron.right")
-                                                .font(.footnote)
-                                        }
-                                    }
-                                    .fontWeight(.semibold)
-                                }
-                                VStack(spacing: CELL_SPACING) {
-                                    let recentWorkouts = workouts.prefix(3)
-                                    ForEach(recentWorkouts) { workout in
-                                        Button {
-                                            homeNavigationCoordinator.path.append(.workout(workout))
-                                        } label: {
-                                            WorkoutCell(workout: workout)
-                                                .padding(CELL_PADDING)
-                                                .tileStyle()
-                                        }
-                                        .buttonStyle(TileButtonStyle())
-                                    }
-                                    .emptyPlaceholder(recentWorkouts) {
-                                        Text(NSLocalizedString("noWorkouts", comment: ""))
-                                    }
-                                }
-                            }
-                            .padding(.horizontal)
-
                             measurementsSection
+                                .padding(.horizontal)
+
+                            exercisesSection
                                 .padding(.horizontal)
 
                             VStack {
@@ -208,6 +179,12 @@ struct HomeScreen: View {
                     MeasurementsEditSheet(pinnedMeasurements: Binding(
                         get: { pinnedMeasurements },
                         set: { setPinnedMeasurements($0) }
+                    ))
+                }
+                .sheet(isPresented: $isShowingExercisesPinEditSheet) {
+                    ExercisesPinEditSheet(pinnedTiles: Binding(
+                        get: { pinnedExerciseTiles },
+                        set: { setPinnedExerciseTiles($0) }
                     ))
                 }
                 .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
@@ -357,14 +334,11 @@ struct HomeScreen: View {
                     homeNavigationCoordinator.path.append(.measurements)
                 } label: {
                     HStack(spacing: 12) {
-                        Image(systemName: "ruler")
-                            .font(.title2)
+                        Image(systemName: "ruler.fill")
+                            .font(.title3)
                             .foregroundStyle(Color.accentColor)
+                            .rotationEffect(.degrees(-45))
                             .frame(width: 32, height: 32)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.accentColor.opacity(0.15))
-                            )
                         Text(NSLocalizedString("showAllMeasurements", comment: ""))
                             .foregroundStyle(Color.label)
                         Spacer()
@@ -376,6 +350,88 @@ struct HomeScreen: View {
                 }
                 .buttonStyle(TileButtonStyle())
             }
+        }
+    }
+    
+    // MARK: - Exercises Section
+    
+    private var pinnedExerciseTiles: [PinnedExerciseTile] {
+        guard let decoded = try? JSONDecoder().decode([PinnedExerciseTile].self, from: pinnedExercisesData) else {
+            return []
+        }
+        return decoded
+    }
+    
+    private func setPinnedExerciseTiles(_ newValue: [PinnedExerciseTile]) {
+        if let encoded = try? JSONEncoder().encode(newValue) {
+            pinnedExercisesData = encoded
+        }
+    }
+    
+    @ViewBuilder
+    private var exercisesSection: some View {
+        VStack(spacing: SECTION_HEADER_SPACING) {
+            HStack {
+                Text(NSLocalizedString("exercises", comment: ""))
+                    .sectionHeaderStyle2()
+                Spacer()
+                Button {
+                    isShowingExercisesPinEditSheet = true
+                } label: {
+                    Text(NSLocalizedString("edit", comment: ""))
+                }
+                .fontWeight(.semibold)
+            }
+            VStack(spacing: 8) {
+                ForEach(pinnedExerciseTiles, id: \.id) { pinnedTile in
+                    if let exercise = database.getExercise(byID: pinnedTile.exerciseID) {
+                        pinnedExerciseTileView(for: exercise, tileType: pinnedTile.tileType)
+                    }
+                }
+                
+                Button {
+                    homeNavigationCoordinator.path.append(.exerciseList)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "figure.strengthtraining.traditional")
+                            .font(.title3)
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 32, height: 32)
+                        Text(NSLocalizedString("showAllExercises", comment: ""))
+                            .foregroundStyle(Color.label)
+                        Spacer()
+                        NavigationChevron()
+                            .foregroundStyle(Color.secondaryLabel)
+                    }
+                    .padding(CELL_PADDING)
+                    .tileStyle()
+                }
+                .buttonStyle(TileButtonStyle())
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func pinnedExerciseTileView(for exercise: Exercise, tileType: ExerciseTileType) -> some View {
+        FetchRequestWrapper(
+            WorkoutSetGroup.self,
+            sortDescriptors: [SortDescriptor(\.workout?.date, order: .reverse)],
+            predicate: WorkoutSetGroupPredicateFactory.getWorkoutSetGroups(withExercise: exercise)
+        ) { workoutSetGroups in
+            let workoutSets = workoutSetGroups.flatMap { $0.sets }
+            Button {
+                homeNavigationCoordinator.path.append(.exercise(exercise))
+            } label: {
+                switch tileType {
+                case .weight:
+                    PinnedExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
+                case .repetitions:
+                    PinnedExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
+                case .volume:
+                    PinnedExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
+                }
+            }
+            .buttonStyle(TileButtonStyle())
         }
     }
 }

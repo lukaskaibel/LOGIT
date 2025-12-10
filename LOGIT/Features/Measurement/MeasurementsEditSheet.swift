@@ -13,7 +13,10 @@ struct MeasurementsEditSheet: View {
 
     private let allMeasurements: [MeasurementEntryType] = {
         var measurements: [MeasurementEntryType] = [.bodyweight, .bodyFatPercentage, .muscleMass]
-        measurements.append(contentsOf: LengthMeasurementEntryType.allCases.map { .length($0) })
+        let sortedLengthMeasurements = LengthMeasurementEntryType.allCases
+            .map { MeasurementEntryType.length($0) }
+            .sorted { $0.title < $1.title }
+        measurements.append(contentsOf: sortedLengthMeasurements)
         return measurements
     }()
 

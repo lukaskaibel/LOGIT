@@ -27,4 +27,12 @@ extension Database {
         ) as! [Exercise])
             .filter { muscleGroup == nil || $0.muscleGroup == muscleGroup }
     }
+    
+    func getExercise(byID id: UUID) -> Exercise? {
+        let exercises = fetch(
+            Exercise.self,
+            predicate: NSPredicate(format: "id == %@", id as CVarArg)
+        ) as! [Exercise]
+        return exercises.first
+    }
 }

@@ -72,7 +72,7 @@ struct MeasurementDetailScreen: View {
     @ViewBuilder
     private var chartSection: some View {
         let snappedSelectedEntry = selectedDate != nil ? nearestEntry(to: selectedDate) : nil
-        let bestVisibleValue = bestValueInGranularity()
+        let latestEntry = entries.first
 
         VStack {
             Picker("Select Chart Granularity", selection: $chartGranularity) {
@@ -85,14 +85,14 @@ struct MeasurementDetailScreen: View {
             .padding(.vertical)
 
             VStack(alignment: .leading) {
-                Text(NSLocalizedString("best", comment: ""))
+                Text(NSLocalizedString("latest", comment: ""))
                     .font(.footnote)
                     .fontWeight(.medium)
                     .textCase(.uppercase)
                     .foregroundStyle(.secondary)
-                if let bestVisibleValue = bestVisibleValue {
+                if let latestEntry = latestEntry {
                     UnitView(
-                        value: formatDecimal(bestVisibleValue),
+                        value: formatDecimal(latestEntry.decimalValue),
                         unit: measurementType.unit.uppercased()
                     )
                     .foregroundStyle(Color.accentColor.gradient)
@@ -407,19 +407,6 @@ struct MeasurementDetailScreen: View {
         case .year:
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
         }
-    }
-
-    private func bestValueInGranularity() -> Double? {
-        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
-        let entriesInTimeFrame = entries.filter { ($0.date ?? .distantPast) >= chartScrollPosition && ($0.date ?? .distantFuture) <= endDate }
-
-        guard !entriesInTimeFrame.isEmpty else {
-            return entries.first.map { $0.decimalValue }
-        }
-
-        return entriesInTimeFrame
-            .map { $0.decimalValue }
-            .max()
     }
 
     private var visibleEndDate: Date {

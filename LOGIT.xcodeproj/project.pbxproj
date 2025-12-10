@@ -181,6 +181,11 @@
 		806DE6202E1DD10A008E162F /* ChronographView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806DE61F2E1DD106008E162F /* ChronographView.swift */; };
 		806F87E52ED0D7E7001E8B8B /* Logit.icon in Resources */ = {isa = PBXBuildFile; fileRef = 806F87E42ED0D7E7001E8B8B /* Logit.icon */; };
 		80750E112DDFCA550037F1FE /* WishKit in Frameworks */ = {isa = PBXBuildFile; productRef = 80750E102DDFCA550037F1FE /* WishKit */; };
+		80A1D97B2EDC91B2004EE258 /* PinnedExerciseTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97A2EDC91B2004EE258 /* PinnedExerciseTile.swift */; };
+		80A1D97C2EDC91B2004EE258 /* ExercisesPinEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D9792EDC91B2004EE258 /* ExercisesPinEditSheet.swift */; };
+		80A1D9802EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */; };
+		80A1D9812EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */; };
+		80A1D9822EDC98E6004EE258 /* PinnedExerciseWeightTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */; };
 		80A640A02E414F4E0053C2C3 /* Transmission in Frameworks */ = {isa = PBXBuildFile; productRef = 80A6409F2E414F4E0053C2C3 /* Transmission */; };
 		80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387BA2EBA187100AD7EFC /* DecimalField.swift */; };
 		80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = 80C2B98E2EC9362A00118FE2 /* ColorfulX */; };
@@ -394,6 +399,11 @@
 		8065AA6B2686667F00F53A5A /* LOGIT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LOGIT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		806DE61F2E1DD106008E162F /* ChronographView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronographView.swift; sourceTree = "<group>"; };
 		806F87E42ED0D7E7001E8B8B /* Logit.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Logit.icon; sourceTree = "<group>"; };
+		80A1D9792EDC91B2004EE258 /* ExercisesPinEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesPinEditSheet.swift; sourceTree = "<group>"; };
+		80A1D97A2EDC91B2004EE258 /* PinnedExerciseTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseTile.swift; sourceTree = "<group>"; };
+		80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseRepetitionsTile.swift; sourceTree = "<group>"; };
+		80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseVolumeTile.swift; sourceTree = "<group>"; };
+		80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseWeightTile.swift; sourceTree = "<group>"; };
 		80B387BA2EBA187100AD7EFC /* DecimalField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalField.swift; sourceTree = "<group>"; };
 		80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementDetailScreen.swift; sourceTree = "<group>"; };
 		80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementsEditSheet.swift; sourceTree = "<group>"; };
@@ -666,6 +676,8 @@
 				801BBCF52DF7338A00CDB1FB /* ExerciseEditScreen.swift */,
 				801BBCF62DF7338A00CDB1FB /* ExerciseListScreen.swift */,
 				801BBCF72DF7338A00CDB1FB /* ExerciseSelectionScreen.swift */,
+				80A1D9792EDC91B2004EE258 /* ExercisesPinEditSheet.swift */,
+				80A1D97A2EDC91B2004EE258 /* PinnedExerciseTile.swift */,
 			);
 			path = Exercise;
 			sourceTree = "<group>";
@@ -677,6 +689,9 @@
 				801BBCFA2DF7338A00CDB1FB /* MuscleGroupSplitTile.swift */,
 				801BBCFB2DF7338A00CDB1FB /* OverallSetsTile.swift */,
 				801BBCFC2DF7338A00CDB1FB /* VolumeTile.swift */,
+				80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */,
+				80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */,
+				80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */,
 			);
 			path = Tiles;
 			sourceTree = "<group>";
@@ -1101,6 +1116,9 @@
 				801BBD7D2DF7338A00CDB1FB /* Workout+.swift in Sources */,
 				801BBD7E2DF7338A00CDB1FB /* WorkoutSetCell.swift in Sources */,
 				801BBD7F2DF7338A00CDB1FB /* ReorderableForEach.swift in Sources */,
+				80A1D9802EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift in Sources */,
+				80A1D9812EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift in Sources */,
+				80A1D9822EDC98E6004EE258 /* PinnedExerciseWeightTile.swift in Sources */,
 				801BBD802DF7338A00CDB1FB /* TileStyle.swift in Sources */,
 				801BBD812DF7338A00CDB1FB /* ExerciseWeightScreen.swift in Sources */,
 				801BBD822DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift in Sources */,
@@ -1120,6 +1138,8 @@
 				801BBD902DF7338A00CDB1FB /* CanEditModifier.swift in Sources */,
 				801BBD912DF7338A00CDB1FB /* GenerationScreen.swift in Sources */,
 				801BBD922DF7338A00CDB1FB /* SettingsScreen.swift in Sources */,
+				80A1D97B2EDC91B2004EE258 /* PinnedExerciseTile.swift in Sources */,
+				80A1D97C2EDC91B2004EE258 /* ExercisesPinEditSheet.swift in Sources */,
 				801BBD932DF7338A00CDB1FB /* Date+.swift in Sources */,
 				801BBD942DF7338A00CDB1FB /* SectionHeaderStyle.swift in Sources */,
 				801BBD952DF7338A00CDB1FB /* LOGITApp.swift in Sources */,

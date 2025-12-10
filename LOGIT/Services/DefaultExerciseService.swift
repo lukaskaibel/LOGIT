@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import Combine
 
 struct DefaultExerciseData: Codable {
     let version: Int
@@ -19,7 +20,7 @@ struct DefaultExercise: Codable {
     let muscleGroup: String
 }
 
-class DefaultExerciseService {
+class DefaultExerciseService: ObservableObject {
     private let database: Database
     private let defaults = UserDefaults.standard
     private let lastLoadedVersionKey = "lastLoadedDefaultExercisesVersion"

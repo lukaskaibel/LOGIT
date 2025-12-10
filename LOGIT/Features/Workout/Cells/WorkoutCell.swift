@@ -58,7 +58,7 @@ struct WorkoutCell: View {
     private var exercisesString: String {
         var result = ""
         for exercise in workout.exercises {
-            let name = exercise.displayName
+            let name = exercise.name
             if !name.isEmpty {
                 result += (!result.isEmpty ? ", " : "") + name
             }

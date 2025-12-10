@@ -38,7 +38,7 @@ struct ExerciseEditScreen: View {
     ) {
         self.exerciseToEdit = exerciseToEdit
         self.onEditFinished = onEditFinished
-        _exerciseName = State(initialValue: initialExerciseName ?? exerciseToEdit?.name ?? "")
+        _exerciseName = State(initialValue: initialExerciseName ?? exerciseToEdit?.name_ ?? "")
         _muscleGroup = State(initialValue: exerciseToEdit?.muscleGroup ?? initialMuscleGroup)
     }
 
@@ -92,11 +92,11 @@ struct ExerciseEditScreen: View {
                             invalidNameMessage = NSLocalizedString("exerciseNameCantStartWithDefault", comment: "")
                             showingInvalidNameAlert = true
                         } else if exerciseToEdit == nil {
-                            // Check if name matches any existing exercise's display name or internal name
+                            // Check if name matches any existing exercise's name_ (internal) or name (computed/localized)
                             let allExercises = database.getExercises()
                             let nameExists = allExercises.contains { exercise in
-                                exercise.name?.lowercased() == trimmedName.lowercased() ||
-                                exercise.displayName.lowercased() == trimmedName.lowercased()
+                                exercise.name_?.lowercased() == trimmedName.lowercased() ||
+                                exercise.name.lowercased() == trimmedName.lowercased()
                             }
                             if nameExists {
                                 showingExerciseExistsAlert = true
@@ -145,7 +145,7 @@ struct ExerciseEditScreen: View {
     private func saveExercise() {
         let exercise: Exercise
         if let exerciseToEdit = exerciseToEdit {
-            exerciseToEdit.name = exerciseName.trimmingCharacters(in: .whitespacesAndNewlines)
+            exerciseToEdit.name_ = exerciseName.trimmingCharacters(in: .whitespacesAndNewlines)
             exerciseToEdit.muscleGroup = muscleGroup
             exercise = exerciseToEdit
         } else {

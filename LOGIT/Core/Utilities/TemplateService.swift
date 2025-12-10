@@ -167,7 +167,7 @@ class TemplateService: ObservableObject {
     > {
         Self.logger.info("Creating or fetching existing exercise matching name: \(name)")
         if let existingExercise = database.getExercises(withNameIncluding: name).first {
-            Self.logger.debug("Found existing Exercise with name: \(existingExercise.name ?? "nil")")
+            Self.logger.debug("Found existing Exercise with name: \(existingExercise.name)")
             return Just(existingExercise)
                 .setFailureType(to: Swift.Error.self)
                 .eraseToAnyPublisher()

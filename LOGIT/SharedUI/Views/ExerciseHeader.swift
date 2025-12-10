@@ -51,7 +51,7 @@ struct ExerciseHeader: View {
                     }
                 } label: {
                     HStack(spacing: 3) {
-                        Text(exercise.displayName)
+                        Text(exercise.name)
                             .foregroundColor(.label)
                         if navigationToDetailEnabled {
                             NavigationChevron()
@@ -82,7 +82,7 @@ struct ExerciseHeader: View {
                             destination: ExerciseDetailScreen(exercise: secondaryExercise)
                         ) {
                             HStack(spacing: 3) {
-                                Text(secondaryExercise.displayName)
+                                Text(secondaryExercise.name)
                                 if navigationToDetailEnabled {
                                     NavigationChevron()
                                         .foregroundColor(.secondaryLabel)

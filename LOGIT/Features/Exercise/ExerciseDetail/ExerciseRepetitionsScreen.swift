@@ -204,7 +204,7 @@ struct ExerciseRepetitionsScreen: View {
                 VStack {
                     Text("\(NSLocalizedString("repetitions", comment: ""))")
                         .font(.headline)
-                    Text(exercise.displayName)
+                    Text(exercise.name)
                         .foregroundStyle(.secondary)
                         .font(.footnote)
                 }

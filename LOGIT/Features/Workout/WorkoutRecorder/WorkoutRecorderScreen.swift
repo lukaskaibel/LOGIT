@@ -140,12 +140,12 @@ struct WorkoutRecorderScreen: View {
                                                 ForEach(workout.setGroups) { setGroup in
                                                     HStack {
                                                         VStack(alignment: .leading) {
-                                                            Text(setGroup.exercise?.displayName ?? "")
+                                                            Text(setGroup.exercise?.name ?? "")
                                                             if (setGroup.sets.first as? SuperSet) != nil,
                                                                let secondaryExercise = setGroup.secondaryExercise {
                                                                 HStack {
                                                                     Image(systemName: "arrow.turn.down.right")
-                                                                    Text(secondaryExercise.displayName)
+                                                                    Text(secondaryExercise.name)
                                                                 }
                                                             }
                                                         }

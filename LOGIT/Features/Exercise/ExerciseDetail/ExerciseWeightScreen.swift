@@ -204,7 +204,7 @@ struct ExerciseWeightScreen: View {
                 VStack {
                     Text("\(NSLocalizedString("weight", comment: ""))")
                         .font(.headline)
-                    Text(exercise.displayName)
+                    Text(exercise.name)
                         .foregroundStyle(.secondary)
                         .font(.footnote)
                 }

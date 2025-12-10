@@ -9,19 +9,19 @@ import CoreData
 import Foundation
 
 extension Exercise {
-    var displayName: String {
-        guard let name = name, !name.isEmpty else { 
+    var name: String {
+        guard let name_ = name_, !name_.isEmpty else { 
             return NSLocalizedString("noName", comment: "")
         }
-        if name.hasPrefix("_default.") {
-            return NSLocalizedString(name, comment: "")
+        if name_.hasPrefix("_default.") {
+            return NSLocalizedString(name_, comment: "")
         }
-        return name
+        return name_
     }
     
-    var displayNameFirstLetter: String {
-        let display = displayName
-        return display.isEmpty ? " " : String(display.prefix(1).uppercased())
+    var nameFirstLetter: String {
+        let n = name
+        return n.isEmpty ? " " : String(n.prefix(1).uppercased())
     }
     
     var muscleGroup: MuscleGroup? {
@@ -40,7 +40,7 @@ extension Exercise {
     }
 
     @objc var firstLetterOfName: String {
-        return displayNameFirstLetter
+        return nameFirstLetter
     }
 
     var templateSetGroups: [TemplateSetGroup] {

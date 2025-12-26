@@ -16,7 +16,7 @@ extension Database {
     ) -> [Exercise] {
         (fetch(
             Exercise.self,
-            sortingKey: "name",
+            sortingKey: "name_",
             ascending: true,
             predicate: filterText.isEmpty
                 ? nil

@@ -10,7 +10,8 @@ import Foundation
 
 extension Exercise {
     var name: String {
-        guard let name_ = name_, !name_.isEmpty else { 
+        print(self.name_)
+        guard let name_ = name_, !name_.isEmpty else {
             return NSLocalizedString("noName", comment: "")
         }
         if name_.hasPrefix("_default.") {

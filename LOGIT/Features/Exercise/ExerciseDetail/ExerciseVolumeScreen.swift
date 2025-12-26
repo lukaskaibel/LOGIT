@@ -143,7 +143,7 @@ struct ExerciseVolumeScreen: View {
                 VStack {
                     Text("\(NSLocalizedString("volume", comment: ""))")
                         .font(.headline)
-                    Text(exercise.name)
+                    Text(exercise.displayName)
                         .foregroundStyle(.secondary)
                         .font(.footnote)
                 }

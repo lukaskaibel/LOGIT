@@ -50,14 +50,14 @@ class DefaultExerciseService: ObservableObject {
     private func createOrUpdateDefaultExercises(_ exercises: [DefaultExercise]) {
         for exerciseData in exercises {
             if let existingExercise = fetchExerciseByDefaultId(exerciseData.id) {
-                existingExercise.name_ = exerciseData.nameKey
+                existingExercise.name = exerciseData.nameKey
                 if let muscleGroup = MuscleGroup(rawValue: exerciseData.muscleGroup) {
                     existingExercise.muscleGroup = muscleGroup
                 }
             } else {
                 let exercise = Exercise(context: database.context)
                 exercise.id = generateUUID(from: exerciseData.id)
-                exercise.name_ = exerciseData.nameKey
+                exercise.name = exerciseData.nameKey
                 if let muscleGroup = MuscleGroup(rawValue: exerciseData.muscleGroup) {
                     exercise.muscleGroup = muscleGroup
                 }

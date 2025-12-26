@@ -175,7 +175,7 @@ struct ExerciseDetailScreen: View {
 
     private var header: some View {
         VStack(alignment: .leading) {
-            Text(exercise.name)
+            Text(exercise.displayName)
                 .screenHeaderStyle()
                 .lineLimit(2)
             Text(exercise.muscleGroup?.description.capitalized ?? "")

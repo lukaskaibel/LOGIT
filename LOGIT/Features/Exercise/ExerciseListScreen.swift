@@ -22,18 +22,18 @@ struct ExerciseListScreen: View {
     var body: some View {
         FetchRequestWrapper(
             Exercise.self,
-            sortDescriptors: [SortDescriptor(\.name_)],
+            sortDescriptors: [SortDescriptor(\.name)],
             predicate: ExercisePredicateFactory.getExercises(
                 nameIncluding: "",
                 withMuscleGroup: selectedMuscleGroup
             )
         ) { allExercises in
             let exercises = searchedText.isEmpty ? allExercises : allExercises.filter { exercise in
-                exercise.name.localizedCaseInsensitiveContains(searchedText)
+                exercise.displayName.localizedCaseInsensitiveContains(searchedText)
             }
-            let sortedExercises = exercises.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+            let sortedExercises = exercises.sorted { $0.displayName.localizedCompare($1.displayName) == .orderedAscending }
             let groupedExercises = Dictionary(grouping: sortedExercises, by: {
-                $0.nameFirstLetter
+                $0.displayNameFirstLetter
             }).sorted { $0.key < $1.key }
             ScrollView {
                 LazyVStack(spacing: SECTION_SPACING) {
@@ -105,7 +105,7 @@ struct ExerciseListScreen: View {
     // MARK: - Methods / Computed Properties
 
     private func getLetter(for group: [Exercise]) -> String {
-        String(group.first?.name.first ?? Character(" "))
+        String(group.first?.name?.first ?? Character(" "))
     }
 }
 

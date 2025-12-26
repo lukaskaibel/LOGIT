@@ -119,7 +119,7 @@ extension Database {
     ) -> Exercise {
         let exercise = Exercise(context: context)
         exercise.id = UUID()
-        exercise.name_ = name
+        exercise.name = name
         exercise.muscleGroup = muscleGroup
         setGroups.forEach { $0.exercise = exercise }
         return exercise

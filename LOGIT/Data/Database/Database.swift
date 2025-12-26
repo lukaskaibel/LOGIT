@@ -39,47 +39,12 @@ public class Database: ObservableObject {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
-        
-        // Migrate old 'name' data to 'name_' if needed
-        if !isPreview {
-            migrateExerciseNamesIfNeeded()
-        }
-        
         if isPreview {
             setupPreviewDatabase()
         }
 
         container.viewContext.undoManager = UndoManager()
         observeUndoManager()
-    }
-    
-    private func migrateExerciseNamesIfNeeded() {
-        let context = container.viewContext
-        let request = Exercise.fetchRequest()
-        
-        do {
-            let exercises = try context.fetch(request)
-            var needsSave = false
-            
-            for exercise in exercises {
-                // Check if name_ is nil but we might have old data
-                if exercise.name_ == nil || exercise.name_.isEmpty {
-                    // Try to get the value from the old 'name' attribute using KVC
-                    if let oldName = exercise.value(forKey: "name") as? String, !oldName.isEmpty {
-                        exercise.name_ = oldName
-                        needsSave = true
-                        print("Migrated exercise: \(oldName)")
-                    }
-                }
-            }
-            
-            if needsSave {
-                try context.save()
-                print("✅ Successfully migrated \(exercises.count) exercises from 'name' to 'name_'")
-            }
-        } catch {
-            print("❌ Migration failed: \(error)")
-        }
     }
 
     // MARK: - Computed Properties

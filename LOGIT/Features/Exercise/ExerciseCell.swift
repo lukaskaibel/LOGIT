@@ -20,7 +20,7 @@ struct ExerciseCell: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(exercise.name)
+            Text(exercise.displayName)
                 .font(.body.weight(.bold))
                 .foregroundColor(.primary)
             Text(exercise.muscleGroup?.description ?? "")

@@ -7,6 +7,17 @@
 
 import CoreData
 import Foundation
+import Ifrit
+
+// MARK: - Searchable Conformance
+
+extension Exercise: Searchable {
+    public var properties: [FuseProp] {
+        [FuseProp(displayName, weight: 1.0)]
+    }
+}
+
+// MARK: - Exercise Extension
 
 extension Exercise {
     var displayName: String {

@@ -1,0 +1,132 @@
+{
+  "originHash" : "1da4ff1f6113bcc0d8fb5764e0e9af35fc70e6286e4250c2a5ed4a48a7a8a379",
+  "pins" : [
+    {
+      "identity" : "camera-swiftui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/rorodriguez116/Camera-SwiftUI.git",
+      "state" : {
+        "revision" : "a83ad04ec213095e14d71491af8b55e7575a7b40",
+        "version" : "0.5.0"
+      }
+    },
+    {
+      "identity" : "colorfulx",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/ColorfulX.git",
+      "state" : {
+        "revision" : "761719a44175e7279a5c3123ce1c19dbd861bb4e",
+        "version" : "6.0.1"
+      }
+    },
+    {
+      "identity" : "colorvector",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/ColorVector.git",
+      "state" : {
+        "revision" : "6da8726bf38d68eb943d0f2139ac2a1fac70e65b",
+        "version" : "1.0.4"
+      }
+    },
+    {
+      "identity" : "engine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nathantannar4/Engine",
+      "state" : {
+        "revision" : "3d7c65095a406b151bbb9f7e168e0145dc4241fb",
+        "version" : "2.1.15"
+      }
+    },
+    {
+      "identity" : "ifrit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ukushu/Ifrit",
+      "state" : {
+        "branch" : "main",
+        "revision" : "24a23272e896756655421c6f0f16980cf3ab453c"
+      }
+    },
+    {
+      "identity" : "msdisplaylink",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/MSDisplayLink.git",
+      "state" : {
+        "revision" : "ebf5823cb5fc1326639d9a05bc06d16bbe82989f",
+        "version" : "2.0.8"
+      }
+    },
+    {
+      "identity" : "networkimage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/gonzalezreal/NetworkImage",
+      "state" : {
+        "revision" : "7aff8d1b31148d32c5933d75557d42f6323ee3d1",
+        "version" : "6.0.0"
+      }
+    },
+    {
+      "identity" : "openai",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FuturraGroup/OpenAI.git",
+      "state" : {
+        "revision" : "0f50bc2531639e1093d93d5a02dc2a99e0697ef5",
+        "version" : "1.9.3"
+      }
+    },
+    {
+      "identity" : "springinterpolation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/SpringInterpolation.git",
+      "state" : {
+        "revision" : "f9ae95ece5d6b7cdceafd4381f1d5f0f9494e5d2",
+        "version" : "1.3.1"
+      }
+    },
+    {
+      "identity" : "swift-markdown-ui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/gonzalezreal/swift-markdown-ui",
+      "state" : {
+        "revision" : "9a8119b37e09a770367eeb26e05267c75d854053",
+        "version" : "2.3.1"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax",
+      "state" : {
+        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
+        "version" : "601.0.1"
+      }
+    },
+    {
+      "identity" : "transmission",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nathantannar4/Transmission",
+      "state" : {
+        "revision" : "936c8428b8e011fec2f48d8d60f0c696c21ef622",
+        "version" : "2.4.8"
+      }
+    },
+    {
+      "identity" : "wishkit-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wishkit/wishkit-ios.git",
+      "state" : {
+        "revision" : "951b17b6b683c72d36627de77e8e26afcfbde6ae",
+        "version" : "4.7.0"
+      }
+    },
+    {
+      "identity" : "wishkit-ios-shared",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wishkit/wishkit-ios-shared.git",
+      "state" : {
+        "revision" : "cd184932bcdbdc8766137ef8ecac63c424be93a7",
+        "version" : "1.5.0"
+      }
+    }
+  ],
+  "version" : 3
+}

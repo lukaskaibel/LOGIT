@@ -28,13 +28,14 @@ struct ExerciseListScreen: View {
                 withMuscleGroup: selectedMuscleGroup
             )
         ) { allExercises in
-            let exercises = searchedText.isEmpty ? allExercises : allExercises.filter { exercise in
-                exercise.displayName.localizedCaseInsensitiveContains(searchedText)
-            }
-            let sortedExercises = exercises.sorted { $0.displayName.localizedCompare($1.displayName) == .orderedAscending }
+            let exercises = FuzzySearchService.shared.searchExercises(searchedText, in: allExercises)
+            let sortedExercises = searchedText.isEmpty 
+                ? exercises.sorted { $0.displayName.localizedCompare($1.displayName) == .orderedAscending }
+                : exercises // Keep fuzzy search order when searching
             let groupedExercises = Dictionary(grouping: sortedExercises, by: {
                 $0.displayNameFirstLetter
             }).sorted { $0.key < $1.key }
+            let isSearching = !searchedText.isEmpty
             ScrollView {
                 LazyVStack(spacing: SECTION_SPACING) {
                     MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
@@ -47,36 +48,62 @@ struct ExerciseListScreen: View {
                             .tileStyle()
                             .padding(.horizontal)
                     }
-                    ForEach(groupedExercises, id: \.0) { key, exercises in
-                        VStack(spacing: SECTION_HEADER_SPACING) {
-                            Text(key)
-                                .sectionHeaderStyle2()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(spacing: CELL_SPACING) {
-                                ForEach(exercises) { exercise in
-                                    Button {
-                                        selectedExercise = exercise
-                                    } label: {
-                                        HStack {
-                                            ExerciseCell(exercise: exercise)
-                                            Spacer()
-                                            NavigationChevron()
-                                                .foregroundColor(
-                                                    exercise.muscleGroup?.color ?? .secondaryLabel
-                                                )
-                                        }
-                                        .padding(CELL_PADDING)
-                                        .tileStyle()
+                    if isSearching {
+                        // Flat list when searching - results ordered by relevance
+                        VStack(spacing: CELL_SPACING) {
+                            ForEach(sortedExercises) { exercise in
+                                Button {
+                                    selectedExercise = exercise
+                                } label: {
+                                    HStack {
+                                        ExerciseCell(exercise: exercise)
+                                        Spacer()
+                                        NavigationChevron()
+                                            .foregroundColor(
+                                                exercise.muscleGroup?.color ?? .secondaryLabel
+                                            )
                                     }
-                                    .buttonStyle(TileButtonStyle())
+                                    .padding(CELL_PADDING)
+                                    .tileStyle()
                                 }
+                                .buttonStyle(TileButtonStyle())
                             }
                         }
                         .padding(.horizontal)
+                    } else {
+                        // Grouped by first letter when not searching
+                        ForEach(groupedExercises, id: \.0) { key, exercises in
+                            VStack(spacing: SECTION_HEADER_SPACING) {
+                                Text(key)
+                                    .sectionHeaderStyle2()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                VStack(spacing: CELL_SPACING) {
+                                    ForEach(exercises) { exercise in
+                                        Button {
+                                            selectedExercise = exercise
+                                        } label: {
+                                            HStack {
+                                                ExerciseCell(exercise: exercise)
+                                                Spacer()
+                                                NavigationChevron()
+                                                    .foregroundColor(
+                                                        exercise.muscleGroup?.color ?? .secondaryLabel
+                                                    )
+                                            }
+                                            .padding(CELL_PADDING)
+                                            .tileStyle()
+                                        }
+                                        .buttonStyle(TileButtonStyle())
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
                     }
-                    .emptyPlaceholder(exercises) {
-                        Text(NSLocalizedString("noExercises", comment: ""))
-                    }
+                    EmptyView()
+                        .emptyPlaceholder(exercises) {
+                            Text(NSLocalizedString("noExercises", comment: ""))
+                        }
                 }
                 .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
             }

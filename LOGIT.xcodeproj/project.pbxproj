@@ -17,6 +17,9 @@
 		79C07B302ABA566E000BF879 /* MeasurementEntryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C07B2F2ABA566E000BF879 /* MeasurementEntryControllerTests.swift */; };
 		79C8FADF2AE3F657001EA5A7 /* OpenAIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 79C8FADE2AE3F657001EA5A7 /* OpenAIKit */; };
 		79FF97B72AA29E680070015E /* ExerciseServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E849092A7EA28000C0DF95 /* ExerciseServiceTests.swift */; };
+		80036CDC2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80036CDA2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift */; };
+		80036CDE2EFEF9CE00B7C7B4 /* FuzzySearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80036CDD2EFEF9CE00B7C7B4 /* FuzzySearchService.swift */; };
+		80036CE12EFEFFD100B7C7B4 /* Ifrit in Frameworks */ = {isa = PBXBuildFile; productRef = 80036CE02EFEFFD100B7C7B4 /* Ifrit */; };
 		801BBD622DF7338A00CDB1FB /* LOGITStoreKit.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC9E2DF7338A00CDB1FB /* LOGITStoreKit.storekit */; };
 		801BBD632DF7338A00CDB1FB /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC942DF7338A00CDB1FB /* Launch Screen.storyboard */; };
 		801BBD652DF7338A00CDB1FB /* timer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC982DF7338A00CDB1FB /* timer.wav */; };
@@ -231,6 +234,8 @@
 		79C07B2F2ABA566E000BF879 /* MeasurementEntryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementEntryControllerTests.swift; sourceTree = "<group>"; };
 		79E849072A7EA28000C0DF95 /* LOGITTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LOGITTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		79E849092A7EA28000C0DF95 /* ExerciseServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseServiceTests.swift; sourceTree = "<group>"; };
+		80036CDA2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalSearchScreen.swift; sourceTree = "<group>"; };
+		80036CDD2EFEF9CE00B7C7B4 /* FuzzySearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzySearchService.swift; sourceTree = "<group>"; };
 		801BBC932DF7338A00CDB1FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		801BBC942DF7338A00CDB1FB /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		801BBC952DF7338A00CDB1FB /* LOGIT.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LOGIT.entitlements; sourceTree = "<group>"; };
@@ -427,6 +432,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80036CE12EFEFFD100B7C7B4 /* Ifrit in Frameworks */,
 				80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */,
 				791347B62AE2BEB100D20BB7 /* MarkdownUI in Frameworks */,
 				79C8FADF2AE3F657001EA5A7 /* OpenAIKit in Frameworks */,
@@ -470,6 +476,14 @@
 				7959F4CE2ACD8F5B0038B222 /* WorkoutImages.xcassets */,
 			);
 			path = LOGITTests;
+			sourceTree = "<group>";
+		};
+		80036CDB2EFEF98C00B7C7B4 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				80036CDA2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift */,
+			);
+			path = Search;
 			sourceTree = "<group>";
 		};
 		801BBC972DF7338A00CDB1FB /* App */ = {
@@ -819,6 +833,7 @@
 		801BBD322DF7338A00CDB1FB /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				80036CDB2EFEF98C00B7C7B4 /* Search */,
 				806546042E22FA2E00ADC88C /* Chronograph */,
 				801BBCF82DF7338A00CDB1FB /* Exercise */,
 				801BBD052DF7338A00CDB1FB /* Home */,
@@ -838,6 +853,7 @@
 		801BBD342DF7338A00CDB1FB /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				80036CDD2EFEF9CE00B7C7B4 /* FuzzySearchService.swift */,
 				8085497A2EE9A34400761706 /* DefaultExerciseService.swift */,
 				801BBD332DF7338A00CDB1FB /* MuscleGroupService.swift */,
 			);
@@ -1012,6 +1028,7 @@
 				80750E102DDFCA550037F1FE /* WishKit */,
 				80A6409F2E414F4E0053C2C3 /* Transmission */,
 				80C2B98E2EC9362A00118FE2 /* ColorfulX */,
+				80036CE02EFEFFD100B7C7B4 /* Ifrit */,
 			);
 			productName = WorkoutDiary;
 			productReference = 8065AA6B2686667F00F53A5A /* LOGIT.app */;
@@ -1053,6 +1070,7 @@
 				80750E0F2DDFCA550037F1FE /* XCRemoteSwiftPackageReference "wishkit-ios" */,
 				80A6409E2E414F4E0053C2C3 /* XCRemoteSwiftPackageReference "Transmission" */,
 				80C2B98D2EC9362A00118FE2 /* XCRemoteSwiftPackageReference "ColorfulX" */,
+				80036CDF2EFEFFD100B7C7B4 /* XCRemoteSwiftPackageReference "Ifrit" */,
 			);
 			productRefGroup = 8065AA6C2686667F00F53A5A /* Products */;
 			projectDirPath = "";
@@ -1211,6 +1229,7 @@
 				801BBDC72DF7338A00CDB1FB /* RequiresNetworkConnectionModifier.swift in Sources */,
 				801BBDC82DF7338A00CDB1FB /* ExerciseDetailScreen.swift in Sources */,
 				801BBDC92DF7338A00CDB1FB /* OnSwipeDownModifier.swift in Sources */,
+				80036CDE2EFEF9CE00B7C7B4 /* FuzzySearchService.swift in Sources */,
 				801BBDCA2DF7338A00CDB1FB /* WorkoutSet+.swift in Sources */,
 				801BBDCB2DF7338A00CDB1FB /* MeasurementsScreen.swift in Sources */,
 				801BBDCC2DF7338A00CDB1FB /* DropSet+.swift in Sources */,
@@ -1249,6 +1268,7 @@
 				801BBDED2DF7338A00CDB1FB /* TemplateSuperSet+.swift in Sources */,
 				801BBDEE2DF7338A00CDB1FB /* KeyboardToolbarButtonStyle.swift in Sources */,
 				801BBDEF2DF7338A00CDB1FB /* CurrentWorkoutView.swift in Sources */,
+				80036CDC2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift in Sources */,
 				801BBDF02DF7338A00CDB1FB /* TemplateListScreen.swift in Sources */,
 				801BBDF12DF7338A00CDB1FB /* TemplateStandardSetCell.swift in Sources */,
 				801BBDF22DF7338A00CDB1FB /* WidgetCollectionType.swift in Sources */,
@@ -1575,6 +1595,14 @@
 				minimumVersion = 1.5.0;
 			};
 		};
+		80036CDF2EFEFFD100B7C7B4 /* XCRemoteSwiftPackageReference "Ifrit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ukushu/Ifrit";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		80750E0F2DDFCA550037F1FE /* XCRemoteSwiftPackageReference "wishkit-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/wishkit/wishkit-ios.git";
@@ -1616,6 +1644,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 79C8FADD2AE3F657001EA5A7 /* XCRemoteSwiftPackageReference "OpenAI" */;
 			productName = OpenAIKit;
+		};
+		80036CE02EFEFFD100B7C7B4 /* Ifrit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 80036CDF2EFEFFD100B7C7B4 /* XCRemoteSwiftPackageReference "Ifrit" */;
+			productName = Ifrit;
 		};
 		80750E102DDFCA550037F1FE /* WishKit */ = {
 			isa = XCSwiftPackageProductDependency;

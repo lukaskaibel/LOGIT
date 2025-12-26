@@ -296,8 +296,15 @@
 "scanAWorkout" = "Scan a Workout";
 "scanWorkout" = "Scan Workout";
 "scanAWorkoutPromotionText" = "Convert a photo into a workout and start training instantly!";
+"search" = "Search";
+"searchEverything" = "Search exercises, workouts, templates...";
+"searchPrompt" = "Search Everything";
+"searchPromptDescription" = "Search across all your exercises, workouts, and templates in one place.";
 "searchExercises" = "Search in Exercises";
 "searchWorkouts" = "Search in Workouts";
+"noSearchResults" = "No Results Found";
+"noSearchResultsFor" = "No results found for \"%@\"";
+"showMoreResults" = "Show %d more results";
 "sec" = "sec";
 "selectDuration" = "Select Duration";
 "selectExercise" = "Select Exercise";

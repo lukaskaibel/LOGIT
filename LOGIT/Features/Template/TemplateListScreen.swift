@@ -33,13 +33,18 @@ struct TemplateListScreen: View {
             Template.self,
             sortDescriptors: [SortDescriptor(\.name)],
             predicate: TemplatePredicateFactory.getTemplates(
-                nameIncluding: searchedText,
+                nameIncluding: "",
                 withMuscleGroup: selectedMuscleGroup
             )
-        ) { templates in
-            let groupedTemplates = Dictionary(grouping: templates, by: {
-                $0.name?.prefix(1) ?? ""
+        ) { allTemplates in
+            let templates = FuzzySearchService.shared.searchTemplates(searchedText, in: allTemplates)
+            let sortedTemplates = searchedText.isEmpty
+                ? templates.sorted { ($0.name ?? "").localizedCompare($1.name ?? "") == .orderedAscending }
+                : templates // Keep fuzzy search order when searching
+            let groupedTemplates = Dictionary(grouping: sortedTemplates, by: {
+                String($0.name?.prefix(1) ?? "")
             }).sorted { $0.key < $1.key }
+            let isSearching = !searchedText.isEmpty
             ScrollView {
                 LazyVStack(spacing: SECTION_SPACING) {
                     MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
@@ -57,13 +62,10 @@ struct TemplateListScreen: View {
                         .tileStyle()
                         .padding(.horizontal)
                     }
-                    ForEach(groupedTemplates, id: \.0) { key, templates in
+                    if isSearching {
+                        // Flat list when searching - results ordered by relevance
                         VStack(spacing: CELL_SPACING) {
-                            Text(key)
-                                .sectionHeaderStyle2()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            ForEach(templates) {
-                                template in
+                            ForEach(sortedTemplates) { template in
                                 Button {
                                     if startWorkoutOnTap {
                                         workoutRecorder.startWorkout(from: template)
@@ -86,11 +88,45 @@ struct TemplateListScreen: View {
                                 .buttonStyle(TileButtonStyle())
                             }
                         }
+                        .padding(.horizontal)
+                    } else {
+                        // Grouped by first letter when not searching
+                        ForEach(groupedTemplates, id: \.0) { key, templates in
+                            VStack(spacing: CELL_SPACING) {
+                                Text(key)
+                                    .sectionHeaderStyle2()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                ForEach(templates) {
+                                    template in
+                                    Button {
+                                        if startWorkoutOnTap {
+                                            workoutRecorder.startWorkout(from: template)
+                                            presentWorkoutRecorder()
+                                            dismiss()
+                                        } else {
+                                            selectedTemplate = template
+                                        }
+                                    } label: {
+                                        VStack {
+                                            HStack {
+                                                TemplateCell(template: template)
+                                                NavigationChevron()
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                        }
+                                        .padding(CELL_PADDING)
+                                        .tileStyle()
+                                    }
+                                    .buttonStyle(TileButtonStyle())
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
                     }
-                    .emptyPlaceholder(groupedTemplates) {
-                        Text(NSLocalizedString("noTemplates", comment: ""))
-                    }
-                    .padding(.horizontal)
+                    EmptyView()
+                        .emptyPlaceholder(templates) {
+                            Text(NSLocalizedString("noTemplates", comment: ""))
+                        }
                 }
                 .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
             }

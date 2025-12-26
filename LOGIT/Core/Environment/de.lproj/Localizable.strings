@@ -295,8 +295,15 @@
 "scanAWorkout" = "Scanne einen Workout";
 "scanWorkout" = "Workout einscannen";
 "scanAWorkoutPromotionText" = "Mache aus einem Foto blitzschnell eine Workout-Vorlage!";
+"search" = "Suche";
+"searchEverything" = "Übungen, Workouts, Vorlagen suchen...";
+"searchPrompt" = "Alles durchsuchen";
+"searchPromptDescription" = "Suche in all deinen Übungen, Workouts und Vorlagen an einem Ort.";
 "searchExercises" = "In Übungen suchen";
 "searchWorkouts" = "In Workouts suchen";
+"noSearchResults" = "Keine Ergebnisse";
+"noSearchResultsFor" = "Keine Ergebnisse für \"%@\"";
+"showMoreResults" = "%d weitere Ergebnisse anzeigen";
 "sec" = "sek";
 "selectDuration" = "Dauer auswählen";
 "selectExercise" = "Übung auswählen";

@@ -47,13 +47,14 @@ struct ExerciseSelectionScreen: View {
                 withMuscleGroup: selectedMuscleGroup
             )
         ) { allExercises in
-            let exercises = searchedText.isEmpty ? allExercises : allExercises.filter { exercise in
-                exercise.displayName.localizedCaseInsensitiveContains(searchedText)
-            }
-            let sortedExercises = exercises.sorted { $0.displayName.localizedCompare($1.displayName) == .orderedAscending }
+            let exercises = FuzzySearchService.shared.searchExercises(searchedText, in: allExercises)
+            let sortedExercises = searchedText.isEmpty 
+                ? exercises.sorted { $0.displayName.localizedCompare($1.displayName) == .orderedAscending }
+                : exercises // Keep fuzzy search order when searching
             let groupedExercises = Dictionary(grouping: sortedExercises, by: {
                 $0.displayNameFirstLetter
             }).sorted { $0.key < $1.key }
+            let isSearching = !searchedText.isEmpty
             VStack(spacing: 12) {
                 HStack(spacing: 12) {
                     HStack(spacing: 5) {
@@ -108,52 +109,89 @@ struct ExerciseSelectionScreen: View {
                                     .tileStyle()
                                     .padding(.horizontal)
                                 }
-                                ForEach(groupedExercises, id: \.0) { key, exercises in
-                                    VStack(spacing: SECTION_HEADER_SPACING) {
-                                        Text(key)
-                                            .textCase(.uppercase)
-                                            .sectionHeaderStyle2()
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                        VStack(spacing: CELL_SPACING) {
-                                            ForEach(exercises) { exercise in
-                                                Button {
-                                                    setExercise(exercise)
-                                                    presentationDetentSelection = .fraction(BOTTOM_SHEET_SMALL)
-                                                } label: {
-                                                    HStack {
-                                                        ExerciseCell(exercise: exercise)
-                                                        Spacer()
-                                                        if exercise == selectedExercise {
-                                                            Image(systemName: "checkmark")
-                                                                .fontWeight(.semibold)
-                                                                .foregroundColor(exercise.muscleGroup?.color)
-                                                        }
-                                                        Button {
-                                                            selectedExerciseForDetail = exercise
-                                                        } label: {
-                                                            Image(systemName: "info.circle")
-                                                                .font(.title3)
-                                                        }
-                                                        .buttonStyle(TileButtonStyle())
-                                                        .foregroundColor(exercise.muscleGroup?.color)
+                                if isSearching {
+                                    // Flat list when searching - results ordered by relevance
+                                    VStack(spacing: CELL_SPACING) {
+                                        ForEach(sortedExercises) { exercise in
+                                            Button {
+                                                setExercise(exercise)
+                                                presentationDetentSelection = .fraction(BOTTOM_SHEET_SMALL)
+                                            } label: {
+                                                HStack {
+                                                    ExerciseCell(exercise: exercise)
+                                                    Spacer()
+                                                    if exercise == selectedExercise {
+                                                        Image(systemName: "checkmark")
+                                                            .fontWeight(.semibold)
+                                                            .foregroundColor(exercise.muscleGroup?.color)
                                                     }
-                                                    .padding(CELL_PADDING)
-                                                    .tileStyle()
-                                                    .contentShape(Rectangle())
+                                                    Button {
+                                                        selectedExerciseForDetail = exercise
+                                                    } label: {
+                                                        Image(systemName: "info.circle")
+                                                            .font(.title3)
+                                                    }
+                                                    .buttonStyle(TileButtonStyle())
+                                                    .foregroundColor(exercise.muscleGroup?.color)
                                                 }
-                                                .buttonStyle(TileButtonStyle())
+                                                .padding(CELL_PADDING)
+                                                .tileStyle()
+                                                .contentShape(Rectangle())
                                             }
+                                            .buttonStyle(TileButtonStyle())
                                         }
                                     }
                                     .padding(.horizontal)
-                                }
-                                .emptyPlaceholder(groupedExercises) {
-                                    if exercises.isEmpty {
-                                        Text(NSLocalizedString("pressPlusToAddExercise", comment: ""))
-                                    } else {
-                                        Text(String(format: NSLocalizedString("pressPlusToAdd", comment: ""), searchedText))
+                                } else {
+                                    // Grouped by first letter when not searching
+                                    ForEach(groupedExercises, id: \.0) { key, exercises in
+                                        VStack(spacing: SECTION_HEADER_SPACING) {
+                                            Text(key)
+                                                .textCase(.uppercase)
+                                                .sectionHeaderStyle2()
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                            VStack(spacing: CELL_SPACING) {
+                                                ForEach(exercises) { exercise in
+                                                    Button {
+                                                        setExercise(exercise)
+                                                        presentationDetentSelection = .fraction(BOTTOM_SHEET_SMALL)
+                                                    } label: {
+                                                        HStack {
+                                                            ExerciseCell(exercise: exercise)
+                                                            Spacer()
+                                                            if exercise == selectedExercise {
+                                                                Image(systemName: "checkmark")
+                                                                    .fontWeight(.semibold)
+                                                                    .foregroundColor(exercise.muscleGroup?.color)
+                                                            }
+                                                            Button {
+                                                                selectedExerciseForDetail = exercise
+                                                            } label: {
+                                                                Image(systemName: "info.circle")
+                                                                    .font(.title3)
+                                                            }
+                                                            .buttonStyle(TileButtonStyle())
+                                                            .foregroundColor(exercise.muscleGroup?.color)
+                                                        }
+                                                        .padding(CELL_PADDING)
+                                                        .tileStyle()
+                                                        .contentShape(Rectangle())
+                                                    }
+                                                    .buttonStyle(TileButtonStyle())
+                                                }
+                                            }
+                                        }
+                                        .padding(.horizontal)
                                     }
                                 }
+                                EmptyView()
+                                    .emptyPlaceholder(exercises) {
+                                        if exercises.isEmpty {
+                                            Text(NSLocalizedString("pressPlusToAddExercise", comment: ""))
+                                        } else {
+                                            Text(String(format: NSLocalizedString("pressPlusToAdd", comment: ""), searchedText))
+                                        }
+                                    }
                             }
                             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                         }

@@ -6,6 +6,18 @@
 //
 
 import Foundation
+import Ifrit
+
+// MARK: - Searchable Conformance
+
+extension MeasurementEntry: Searchable {
+    public var properties: [FuseProp] {
+        let typeDescription = type?.title ?? ""
+        return [FuseProp(typeDescription, weight: 1.0)]
+    }
+}
+
+// MARK: - MeasurementEntry Extension
 
 extension MeasurementEntry {
     var type: MeasurementEntryType? {

@@ -36,6 +36,7 @@ struct LOGIT: App {
     @State private var isShowingPrivacyPolicy = false
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingStartWorkoutSheet = false
+    @State private var globalSearchText: String = ""
 
     // MARK: - Init
 
@@ -85,7 +86,11 @@ struct LOGIT: App {
                             TemplateListScreen()
                         }
                     }
+                    Tab(NSLocalizedString("search", comment: ""), systemImage: "magnifyingglass", role: .search) {
+                        GlobalSearchScreen(searchText: $globalSearchText)
+                    }
                 }
+                .searchable(text: $globalSearchText, prompt: NSLocalizedString("searchEverything", comment: ""))
                 .tabBarMinimizeBehavior(.onScrollDown)
                 .tabViewBottomAccessory {
                     startAndCurrentWorkoutButton

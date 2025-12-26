@@ -26,41 +26,62 @@ struct WorkoutListScreen: View {
             Workout.self,
             sortDescriptors: [SortDescriptor(\Workout.date, order: .reverse)],
             predicate: WorkoutPredicateFactory.getWorkouts(
-                nameIncluding: searchedText,
+                nameIncluding: "",
                 withMuscleGroup: selectedMuscleGroup
             )
-        ) { workouts in
+        ) { allWorkouts in
+            let workouts = FuzzySearchService.shared.searchWorkouts(searchedText, in: allWorkouts)
             let groupedWorkouts = Dictionary(grouping: workouts, by: { workout in
                 workout.date?.startOfMonth ?? .now
             }).sorted { $0.key > $1.key }
+            let isSearching = !searchedText.isEmpty
 
             ScrollView {
                 LazyVStack(spacing: SECTION_SPACING) {
                     MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
-                    ForEach(groupedWorkouts, id: \.0) { key, workouts in
-                        VStack(spacing: SECTION_HEADER_SPACING) {
-                            Text(key.monthDescription)
-                                .sectionHeaderStyle2()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(spacing: CELL_SPACING) {
-                                ForEach(workouts) {
-                                    workout in
-                                    Button {
-                                        selectedWorkout = workout
-                                    } label: {
-                                        WorkoutCell(workout: workout)
-                                            .padding(CELL_PADDING)
-                                            .tileStyle()
-                                    }
-                                    .buttonStyle(TileButtonStyle())
+                    if isSearching {
+                        // Flat list when searching - results ordered by relevance
+                        VStack(spacing: CELL_SPACING) {
+                            ForEach(workouts) { workout in
+                                Button {
+                                    homeNavigationCoordinator.path.append(.workout(workout))
+                                } label: {
+                                    WorkoutCell(workout: workout)
+                                        .padding(CELL_PADDING)
+                                        .tileStyle()
                                 }
+                                .buttonStyle(TileButtonStyle())
                             }
                         }
                         .padding(.horizontal)
+                    } else {
+                        // Grouped by month when not searching
+                        ForEach(groupedWorkouts, id: \.0) { key, workouts in
+                            VStack(spacing: SECTION_HEADER_SPACING) {
+                                Text(key.monthDescription)
+                                    .sectionHeaderStyle2()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                VStack(spacing: CELL_SPACING) {
+                                    ForEach(workouts) {
+                                        workout in
+                                        Button {
+                                            homeNavigationCoordinator.path.append(.workout(workout))
+                                        } label: {
+                                            WorkoutCell(workout: workout)
+                                                .padding(CELL_PADDING)
+                                                .tileStyle()
+                                        }
+                                        .buttonStyle(TileButtonStyle())
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
                     }
-                    .emptyPlaceholder(groupedWorkouts) {
-                        Text(NSLocalizedString("noWorkouts", comment: ""))
-                    }
+                    EmptyView()
+                        .emptyPlaceholder(workouts) {
+                            Text(NSLocalizedString("noWorkouts", comment: ""))
+                        }
                 }
                 .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
             }

@@ -6,6 +6,25 @@
 //
 
 import Foundation
+import Ifrit
+
+// MARK: - Searchable Conformance
+
+extension Template: Searchable {
+    public var properties: [FuseProp] {
+        var props: [FuseProp] = []
+        if let name = name {
+            props.append(FuseProp(name, weight: 1.0))
+        }
+        let exerciseNames = exercises.compactMap { $0.displayName }.joined(separator: " ")
+        if !exerciseNames.isEmpty {
+            props.append(FuseProp(exerciseNames, weight: 0.5))
+        }
+        return props.isEmpty ? [FuseProp("")] : props
+    }
+}
+
+// MARK: - Template Extension
 
 extension Template {
     var workouts: [Workout] {

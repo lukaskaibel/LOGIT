@@ -38,6 +38,10 @@ struct GlobalSearchScreen: View {
     @State private var selectedExercise: Exercise?
     @State private var selectedWorkout: Workout?
     @State private var selectedTemplate: Template?
+    @State private var isNavigatedToExerciseList = false
+    @State private var isNavigatedToWorkoutList = false
+    @State private var isNavigatedToTemplateList = false
+    @State private var isNavigatedToMeasurementList = false
     
     // MARK: - Body
     
@@ -61,26 +65,101 @@ struct GlobalSearchScreen: View {
             .navigationDestination(item: $selectedTemplate) { template in
                 TemplateDetailScreen(template: template)
             }
+            .navigationDestination(isPresented: $isNavigatedToExerciseList) {
+                ExerciseListScreen()
+            }
+            .navigationDestination(isPresented: $isNavigatedToWorkoutList) {
+                WorkoutListScreen()
+            }
+            .navigationDestination(isPresented: $isNavigatedToTemplateList) {
+                TemplateListScreen()
+            }
+            .navigationDestination(isPresented: $isNavigatedToMeasurementList) {
+                MeasurementsScreen()
+            }
         }
     }
     
     // MARK: - Views
     
     private var emptySearchView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 60))
-                .foregroundStyle(.secondary)
-            Text(NSLocalizedString("searchPrompt", comment: ""))
-                .font(.headline)
-                .foregroundStyle(.secondary)
-            Text(NSLocalizedString("searchPromptDescription", comment: ""))
-                .font(.subheadline)
-                .foregroundStyle(.tertiary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+        ScrollView {
+            VStack(spacing: 10) {
+                VStack(spacing: 20) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 60))
+                        .foregroundStyle(.secondary)
+                    Text(NSLocalizedString("searchPrompt", comment: ""))
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                    Text(NSLocalizedString("searchPromptDescription", comment: ""))
+                        .font(.subheadline)
+                        .foregroundStyle(.tertiary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
+                .padding(.vertical, 60)
+                Button {
+                    isNavigatedToExerciseList = true
+                } label: {
+                    HStack {
+                        Image(systemName: "figure.strengthtraining.traditional")
+                            .foregroundStyle(.tint)
+                            .frame(minWidth: 30)
+                        Text(NSLocalizedString("exercises", comment: ""))
+                            .foregroundStyle(Color.label)
+                        Spacer()
+                        NavigationChevron()
+                    }
+                }
+                Divider()
+                Button {
+                    isNavigatedToWorkoutList = true
+                } label: {
+                    HStack {
+                        Image(systemName: "figure.run")
+                            .foregroundStyle(.tint)
+                            .frame(minWidth: 30)
+                        Text(NSLocalizedString("workouts", comment: ""))
+                            .foregroundStyle(Color.label)
+                        Spacer()
+                        NavigationChevron()
+                    }
+                }
+                Divider()
+                Button {
+                    isNavigatedToTemplateList = true
+                } label: {
+                    HStack {
+                        Image(systemName: "list.bullet.rectangle.portrait.fill")
+                            .foregroundStyle(.tint)
+                            .frame(minWidth: 30)
+                        Text(NSLocalizedString("templates", comment: ""))
+                            .foregroundStyle(Color.label)
+                        Spacer()
+                        NavigationChevron()
+                    }
+                }
+                Divider()
+                Button {
+                    isNavigatedToMeasurementList = true
+                } label: {
+                    HStack {
+                        Image(systemName: "ruler.fill")
+                            .foregroundStyle(.tint)
+                            .frame(minWidth: 30)
+                            .rotationEffect(.degrees(-45))
+                        Text(NSLocalizedString("measurements", comment: ""))
+                            .foregroundStyle(Color.label)
+                        Spacer()
+                        NavigationChevron()
+                    }
+                }
+            }
+            .font(.title2)
+            .padding([.top, .horizontal])
+            .frame(maxHeight: .infinity, alignment: .top)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var searchResultsView: some View {

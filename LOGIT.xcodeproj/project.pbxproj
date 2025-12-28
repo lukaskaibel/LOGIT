@@ -20,6 +20,7 @@
 		80036CDC2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80036CDA2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift */; };
 		80036CDE2EFEF9CE00B7C7B4 /* FuzzySearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80036CDD2EFEF9CE00B7C7B4 /* FuzzySearchService.swift */; };
 		80036CE12EFEFFD100B7C7B4 /* Ifrit in Frameworks */ = {isa = PBXBuildFile; productRef = 80036CE02EFEFFD100B7C7B4 /* Ifrit */; };
+		80036CE42EFF166000B7C7B4 /* Ifrit in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 80036CE02EFEFFD100B7C7B4 /* Ifrit */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		801BBD622DF7338A00CDB1FB /* LOGITStoreKit.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC9E2DF7338A00CDB1FB /* LOGITStoreKit.storekit */; };
 		801BBD632DF7338A00CDB1FB /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC942DF7338A00CDB1FB /* Launch Screen.storyboard */; };
 		801BBD652DF7338A00CDB1FB /* timer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC982DF7338A00CDB1FB /* timer.wav */; };
@@ -219,6 +220,17 @@
 			files = (
 			);
 			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		80036CE52EFF166000B7C7B4 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				80036CE42EFF166000B7C7B4 /* Ifrit in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -1015,6 +1027,7 @@
 				8065AA682686667F00F53A5A /* Frameworks */,
 				8065AA692686667F00F53A5A /* Resources */,
 				792D523927F1160A00B08813 /* Embed Foundation Extensions */,
+				80036CE52EFF166000B7C7B4 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

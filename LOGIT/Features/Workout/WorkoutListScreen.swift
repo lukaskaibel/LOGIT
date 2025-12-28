@@ -44,7 +44,7 @@ struct WorkoutListScreen: View {
                         VStack(spacing: CELL_SPACING) {
                             ForEach(workouts) { workout in
                                 Button {
-                                    homeNavigationCoordinator.path.append(.workout(workout))
+                                    selectedWorkout = workout
                                 } label: {
                                     WorkoutCell(workout: workout)
                                         .padding(CELL_PADDING)
@@ -65,7 +65,7 @@ struct WorkoutListScreen: View {
                                     ForEach(workouts) {
                                         workout in
                                         Button {
-                                            homeNavigationCoordinator.path.append(.workout(workout))
+                                            selectedWorkout = workout
                                         } label: {
                                             WorkoutCell(workout: workout)
                                                 .padding(CELL_PADDING)

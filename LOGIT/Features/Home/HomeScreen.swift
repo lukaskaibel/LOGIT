@@ -150,6 +150,18 @@ struct HomeScreen: View {
                         .padding(.top)
                     }
                 }
+                .background(
+                    VStack {
+                        ColorfulView(color: workouts.flatMap({ $0.muscleGroups.map({ $0.color })}), speed: .constant(0.1))
+                            .mask(
+                                LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
+                                
+                            )
+                            .frame(height: 300)
+                        Spacer()
+                    }
+                    .ignoresSafeArea(.all)
+                )
                 .onAppear {
                     showNoWorkoutTip = workouts.isEmpty
                 }

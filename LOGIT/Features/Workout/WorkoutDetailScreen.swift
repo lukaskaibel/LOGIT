@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 20.12.21.
 //
 
+import ColorfulX
 import CoreData
 import SwiftUI
 
@@ -39,7 +40,7 @@ struct WorkoutDetailScreen: View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 workoutHeader
-
+                
                 VStack(spacing: SECTION_HEADER_SPACING) {
                     Text(NSLocalizedString("overview", comment: ""))
                         .sectionHeaderStyle2()
@@ -53,7 +54,7 @@ struct WorkoutDetailScreen: View {
                             .tileStyle()
                     }
                 }
-
+                
                 VStack(spacing: SECTION_HEADER_SPACING) {
                     Text(NSLocalizedString("exercises", comment: ""))
                         .sectionHeaderStyle2()
@@ -69,6 +70,18 @@ struct WorkoutDetailScreen: View {
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
             .padding(.horizontal)
         }
+        .background(
+            VStack {
+                ColorfulView(color: workout.muscleGroups.map({ $0.color }), speed: .constant(0.1))
+                    .mask(
+                        LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
+                        
+                    )
+                    .frame(height: 300)
+                Spacer()
+            }
+            .ignoresSafeArea(.all)
+        )
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

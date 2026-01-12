@@ -290,6 +290,7 @@
 // MARK: - S
 
 "save" = "Speichern";
+"saveAsTemplate" = "Als Vorlage speichern";
 "saveTime" = "Spare Zeit";
 "scanATemplate" = "Scanne eine Vorlage";
 "scanAWorkout" = "Scanne einen Workout";
@@ -388,7 +389,8 @@
 "useDefaultExercises" = "Standard Übungen benutzen";
 "useTemplate" = "Vorlage benutzen";
 
-// MARK: - W
+// MARK: - V
+"viewTemplate" = "Vorlage anzeigen";
 "volume" = "Volumen";
 "volumeThisWeek" = "Volumen diese Woche";
 

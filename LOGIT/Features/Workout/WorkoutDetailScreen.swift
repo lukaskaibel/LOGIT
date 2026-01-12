@@ -10,7 +10,7 @@ import SwiftUI
 
 struct WorkoutDetailScreen: View {
     enum SheetType: Int, Identifiable {
-        case newTemplateFromWorkout, templateDetail, workoutEditor
+        case newTemplateFromWorkout, workoutEditor
         var id: Int { rawValue }
     }
 
@@ -26,6 +26,7 @@ struct WorkoutDetailScreen: View {
     @State private var sheetType: SheetType? = nil
     @State private var selectedMuscleGroup: MuscleGroup? = nil
     @State private var isMuscleGroupExpanded: Bool = false
+    @State private var selectedTemplate: Template?
 
     // MARK: - Variables
 
@@ -64,21 +65,6 @@ struct WorkoutDetailScreen: View {
                     )
                     .canEdit(false)
                 }
-
-                if canNavigateToTemplate {
-                    VStack(spacing: SECTION_HEADER_SPACING) {
-                        Text(NSLocalizedString("template", comment: ""))
-                            .sectionHeaderStyle2()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        templateButton
-                        Text(NSLocalizedString("templateExplanation", comment: ""))
-                            .font(.footnote)
-                            .foregroundColor(.secondaryLabel)
-                            .padding(.vertical, 10)
-                            .padding(.horizontal)
-                    }
-                    .buttonStyle(BigButtonStyle())
-                }
             }
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
             .padding(.horizontal)
@@ -87,6 +73,19 @@ struct WorkoutDetailScreen: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
+                    if let template = workout.template, canNavigateToTemplate {
+                        Button {
+                            selectedTemplate = template
+                        } label: {
+                            Label(NSLocalizedString("viewTemplate", comment: ""), systemImage: "list.bullet.rectangle.portrait")
+                        }
+                    } else {
+                        Button {
+                            sheetType = .newTemplateFromWorkout
+                        } label: {
+                            Label(NSLocalizedString("saveAsTemplate", comment: ""), systemImage: "plus.square.on.square")
+                        }
+                    }
                     Button(
                         action: {
                             sheetType = .workoutEditor
@@ -126,19 +125,13 @@ struct WorkoutDetailScreen: View {
                     isEditingExistingTemplate: false
                 )
                 .presentationBackground(Color.black)
-            case .templateDetail:
-                NavigationStack {
-                    TemplateDetailScreen(template: workout.template!)
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button(NSLocalizedString("navBack", comment: "")) {
-                                    sheetType = nil
-                                }
-                            }
-                        }
-                }
             case .workoutEditor:
                 WorkoutEditorScreen(workout: workout, isAddingNewWorkout: false)
+            }
+        }
+        .navigationDestination(item: $selectedTemplate) { template in
+            NavigationStack {
+                TemplateDetailScreen(template: template)
             }
         }
     }
@@ -296,32 +289,6 @@ struct WorkoutDetailScreen: View {
         }
     }
 
-    private var templateButton: some View {
-        Button {
-            sheetType = workout.template != nil ? .templateDetail : .newTemplateFromWorkout
-        } label: {
-            HStack {
-                if workout.template == nil {
-                    Image(systemName: "plus")
-                        .font(.body.weight(.medium))
-                }
-                Text(
-                    workout.template?.name
-                        ?? NSLocalizedString("newTemplateFromWorkout", comment: "")
-                )
-                .fontWeight(.medium)
-                .lineLimit(1)
-                if workout.template != nil {
-                    Spacer()
-                    NavigationChevron()
-                } else {
-                    Spacer()
-                }
-            }
-            .contentShape(Rectangle())
-        }
-    }
-
     // MARK: - Computed Properties
 
     private var workoutDurationString: String {
@@ -388,7 +355,7 @@ private struct PreviewWrapperView: View {
         NavigationStack {
             WorkoutDetailScreen(
                 workout: database.testWorkout,
-                canNavigateToTemplate: false
+                canNavigateToTemplate: true
             )
         }
     }

@@ -291,6 +291,7 @@
 // MARK: - S
 
 "save" = "Save";
+"saveAsTemplate" = "Save as Template";
 "saveTime" = "Save Time";
 "scanATemplate" = "Scan a Template";
 "scanAWorkout" = "Scan a Workout";
@@ -389,6 +390,7 @@
 "useTemplate" = "Use Template";
 
 // MARK: - W
+"viewTemplate" = "View Template";
 "volume" = "Volume";
 "volumeThisWeek" = "Volume this Week";
 

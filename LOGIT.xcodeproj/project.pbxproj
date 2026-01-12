@@ -182,6 +182,7 @@
 		801BBE042DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCFE2DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift */; };
 		801BBE052DF7338A00CDB1FB /* PrivacyPolicyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD2E2DF7338A00CDB1FB /* PrivacyPolicyScreen.swift */; };
 		801BBE062DF7338A00CDB1FB /* VolumeCalculating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBE2DF7338A00CDB1FB /* VolumeCalculating.swift */; };
+		8068AEBC2F1500380007FA8F /* WorkoutStartSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8068AEBB2F1500380007FA8F /* WorkoutStartSheet.swift */; };
 		806DE6202E1DD10A008E162F /* ChronographView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806DE61F2E1DD106008E162F /* ChronographView.swift */; };
 		806F87E52ED0D7E7001E8B8B /* Logit.icon in Resources */ = {isa = PBXBuildFile; fileRef = 806F87E42ED0D7E7001E8B8B /* Logit.icon */; };
 		80750E112DDFCA550037F1FE /* WishKit in Frameworks */ = {isa = PBXBuildFile; productRef = 80750E102DDFCA550037F1FE /* WishKit */; };
@@ -416,6 +417,7 @@
 		801BBD612DF7338A00CDB1FB /* WorkoutDiary.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = WorkoutDiary.xcdatamodel; sourceTree = "<group>"; };
 		8034A7EC2E83073700834A32 /* LOGIT 4.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 4.0.xcdatamodel"; sourceTree = "<group>"; };
 		8065AA6B2686667F00F53A5A /* LOGIT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LOGIT.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8068AEBB2F1500380007FA8F /* WorkoutStartSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStartSheet.swift; sourceTree = "<group>"; };
 		806DE61F2E1DD106008E162F /* ChronographView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronographView.swift; sourceTree = "<group>"; };
 		806F87E42ED0D7E7001E8B8B /* Logit.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Logit.icon; sourceTree = "<group>"; };
 		8085497A2EE9A34400761706 /* DefaultExerciseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultExerciseService.swift; sourceTree = "<group>"; };
@@ -838,6 +840,7 @@
 				801BBD282DF7338A00CDB1FB /* WorkoutEditorScreen.swift */,
 				801BBD292DF7338A00CDB1FB /* WorkoutListScreen.swift */,
 				801BBD2A2DF7338A00CDB1FB /* WorkoutSetGroupList.swift */,
+				8068AEBB2F1500380007FA8F /* WorkoutStartSheet.swift */,
 			);
 			path = Workout;
 			sourceTree = "<group>";
@@ -1291,6 +1294,7 @@
 				801BBDF72DF7338A00CDB1FB /* UpgradeToProScreen.swift in Sources */,
 				801BBDF82DF7338A00CDB1FB /* ExerciseHistoryScreen.swift in Sources */,
 				801BBDF92DF7338A00CDB1FB /* PreviewEnvironmentObjects.swift in Sources */,
+				8068AEBC2F1500380007FA8F /* WorkoutStartSheet.swift in Sources */,
 				801BBDFB2DF7338A00CDB1FB /* WorkoutSetGroupPredicateFactory.swift in Sources */,
 				801BBDFC2DF7338A00CDB1FB /* DateLineChart.swift in Sources */,
 				801BBDFD2DF7338A00CDB1FB /* Chronograph.swift in Sources */,

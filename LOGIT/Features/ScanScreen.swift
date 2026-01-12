@@ -17,81 +17,84 @@ enum ScanScreenType {
 }
 
 struct ScanScreen: View {
-    @Environment(\.dismiss) private var dismiss
-
     @StateObject private var scanModel = ScanModel()
 
-    @State private var isShowingPhotosPicker = false
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var workoutImage: UIImage?
 
     @Binding var selectedImage: UIImage?
+    @Binding var isShowingPhotosPicker: Bool
     let type: ScanScreenType
 
     var body: some View {
-        GeometryReader { _ in
-            VStack {
-                HStack {
-                    if scanModel.photo == nil && workoutImage == nil {
-                        cancelButton
-                        Spacer()
-                        Text(NSLocalizedString(type == .workout ? "scanAWorkout" : "scanATemplate", comment: ""))
-                        Spacer()
-                        flashButton
-                    } else {
-                        dismissImageButton
-                        Spacer()
-                    }
+        ZStack {
+            // Background
+            Color.black.ignoresSafeArea()
+            
+            // Camera preview or captured image
+            Group {
+                if let image = scanModel.photo?.image ?? workoutImage {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    cameraPreview
+                        .ignoresSafeArea()
                 }
-                .padding(.horizontal)
-                Spacer()
-                Group {
-                    if let image = scanModel.photo?.image ?? workoutImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                    } else {
-                        cameraPreview
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                Spacer()
-                Group {
-                    if let image = scanModel.photo?.image ?? workoutImage {
-                        HStack {
-                            Button {
-                                selectedImage = image
-                                dismiss()
-                            } label: {
-                                Label(NSLocalizedString(type == .workout ? "generateWorkout" : "generateTemplate", comment: ""), systemImage: "gearshape.2.fill")
-                            }
-                            .buttonStyle(BigButtonStyle())
-                        }
-                    } else {
-                        HStack {
-                            Button {
-                                isShowingPhotosPicker = true
-                            } label: {
-                                Image(systemName: "photo.on.rectangle")
-                            }
-                            .buttonStyle(CapsuleButtonStyle())
-                            Spacer()
-                            captureButton
-                            Spacer()
-                            Button {
-                                isShowingPhotosPicker = true
-                            } label: {
-                                Image(systemName: "photo.on.rectangle")
-                            }
-                            .buttonStyle(CapsuleButtonStyle())
-                            .disabled(true)
-                            .hidden()
-                        }
-                    }
-                }
-                .padding(.horizontal)
             }
-            .padding(.vertical)
+            
+            // Controls overlay
+            VStack {
+                Spacer()
+                
+                // Bottom controls
+                Group {
+                    if scanModel.photo?.image != nil || workoutImage != nil {
+                        VStack(spacing: 12) {
+                            Button {
+                                selectedImage = scanModel.photo?.image ?? workoutImage
+                            } label: {
+                                HStack {
+                                    Spacer()
+                                    Label(NSLocalizedString(type == .workout ? "useThisPhoto" : "useThisPhoto", comment: ""), systemImage: "sparkles")
+                                        .fontWeight(.semibold)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 14)
+                                .foregroundStyle(.black)
+                            }
+                            .buttonStyle(.glassProminent)
+                            
+                            Button {
+                                scanModel.photo = nil
+                                workoutImage = nil
+                            } label: {
+                                HStack {
+                                    Spacer()
+                                    Text(NSLocalizedString("retakePhoto", comment: ""))
+                                        .fontWeight(.medium)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 14)
+                            }
+                            .buttonStyle(.glass)
+                        }
+                    } else {
+                        ZStack {
+                            captureButton
+                            
+                            HStack {
+                                Spacer()
+                                flashButton
+                                    .frame(width: 44)
+                                    .padding(.trailing, 30)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 30)
+            }
         }
         .onChange(of: photoPickerItem) { _ in
             Task {
@@ -120,7 +123,8 @@ struct ScanScreen: View {
             scanModel.switchFlash()
         }, label: {
             Image(systemName: scanModel.isFlashOn ? "bolt.fill" : "bolt.slash.fill")
-                .font(.system(size: 20, weight: .medium, design: .default))
+                .font(.system(size: 24, weight: .medium, design: .default))
+                .frame(width: 44, height: 44)
         })
         .accentColor(scanModel.isFlashOn ? .yellow : .white)
     }
@@ -158,28 +162,6 @@ struct ScanScreen: View {
                 }
             )
             .animation(.easeInOut)
-    }
-
-    private var dismissImageButton: some View {
-        Button {
-            scanModel.photo = nil
-            workoutImage = nil
-        } label: {
-            Image(systemName: "xmark")
-                .font(.title3.weight(.semibold))
-                .padding(7)
-                .background(Color.fill)
-                .clipShape(Circle())
-        }
-    }
-
-    private var cancelButton: some View {
-        Button {
-            dismiss()
-        } label: {
-            Image(systemName: "xmark")
-        }
-        .font(.title2)
     }
 }
 
@@ -249,5 +231,5 @@ private final class ScanModel: ObservableObject {
 }
 
 #Preview {
-    ScanScreen(selectedImage: .constant(nil), type: .workout)
+    ScanScreen(selectedImage: .constant(nil), isShowingPhotosPicker: .constant(false), type: .workout)
 }

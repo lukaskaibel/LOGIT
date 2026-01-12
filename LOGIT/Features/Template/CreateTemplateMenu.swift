@@ -17,6 +17,7 @@ struct CreateTemplateMenu: View {
 
     @State private var isShowingScanScreen = false
     @State private var isShowingUpgradeToProScreen = false
+    @State private var isShowingPhotosPicker = false
 
     @State private var templateImage: UIImage?
     @State private var newTemplate: Template?
@@ -64,7 +65,35 @@ struct CreateTemplateMenu: View {
             UpgradeToProScreen()
         }
         .fullScreenCover(isPresented: $isShowingScanScreen) {
-            ScanScreen(selectedImage: $templateImage, type: .template)
+            NavigationStack {
+                ScanScreen(selectedImage: $templateImage, isShowingPhotosPicker: $isShowingPhotosPicker, type: .template)
+                    .ignoresSafeArea()
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbarBackground(.hidden, for: .navigationBar)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                isShowingPhotosPicker = true
+                            } label: {
+                                Image(systemName: "photo.on.rectangle")
+                                    .font(.body.weight(.medium))
+                            }
+                            .tint(.white)
+                        }
+                        ToolbarItem(placement: .principal) {
+                            Text(NSLocalizedString("scanATemplate", comment: ""))
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                        }
+                        ToolbarItem(placement: .primaryAction) {
+                            Button(role: .close) {
+                                isShowingScanScreen = false
+                            }
+                            .buttonStyle(.plain)
+                            .tint(.white)
+                        }
+                    }
+            }
         }
     }
 }

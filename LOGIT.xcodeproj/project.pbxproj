@@ -83,7 +83,6 @@
 		801BBD9E2DF7338A00CDB1FB /* TileHeaderStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD4B2DF7338A00CDB1FB /* TileHeaderStyle.swift */; };
 		801BBD9F2DF7338A00CDB1FB /* TemplateGenerationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD432DF7338A00CDB1FB /* TemplateGenerationModifier.swift */; };
 		801BBDA02DF7338A00CDB1FB /* WidgetType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCA52DF7338A00CDB1FB /* WidgetType.swift */; };
-		801BBDA12DF7338A00CDB1FB /* StartWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD572DF7338A00CDB1FB /* StartWorkoutView.swift */; };
 		801BBDA22DF7338A00CDB1FB /* TemplateSet+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCD72DF7338A00CDB1FB /* TemplateSet+.swift */; };
 		801BBDA32DF7338A00CDB1FB /* FlashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD502DF7338A00CDB1FB /* FlashView.swift */; };
 		801BBDA42DF7338A00CDB1FB /* TemplateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBC2DF7338A00CDB1FB /* TemplateService.swift */; };
@@ -408,7 +407,6 @@
 		801BBD542DF7338A00CDB1FB /* MuscleGroupSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupSelector.swift; sourceTree = "<group>"; };
 		801BBD552DF7338A00CDB1FB /* NavigationChevron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationChevron.swift; sourceTree = "<group>"; };
 		801BBD562DF7338A00CDB1FB /* ReorderableForEach.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReorderableForEach.swift; sourceTree = "<group>"; };
-		801BBD572DF7338A00CDB1FB /* StartWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartWorkoutView.swift; sourceTree = "<group>"; };
 		801BBD582DF7338A00CDB1FB /* TipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipView.swift; sourceTree = "<group>"; };
 		801BBD5A2DF7338A00CDB1FB /* UnitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitView.swift; sourceTree = "<group>"; };
 		801BBD5B2DF7338A00CDB1FB /* WidgetCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetCollectionView.swift; sourceTree = "<group>"; };
@@ -929,7 +927,6 @@
 				801BBD542DF7338A00CDB1FB /* MuscleGroupSelector.swift */,
 				801BBD552DF7338A00CDB1FB /* NavigationChevron.swift */,
 				801BBD562DF7338A00CDB1FB /* ReorderableForEach.swift */,
-				801BBD572DF7338A00CDB1FB /* StartWorkoutView.swift */,
 				801BBD582DF7338A00CDB1FB /* TipView.swift */,
 				801BBD5A2DF7338A00CDB1FB /* UnitView.swift */,
 				801BBD5B2DF7338A00CDB1FB /* WidgetCollectionView.swift */,
@@ -1203,7 +1200,6 @@
 				801BBD9E2DF7338A00CDB1FB /* TileHeaderStyle.swift in Sources */,
 				801BBD9F2DF7338A00CDB1FB /* TemplateGenerationModifier.swift in Sources */,
 				801BBDA02DF7338A00CDB1FB /* WidgetType.swift in Sources */,
-				801BBDA12DF7338A00CDB1FB /* StartWorkoutView.swift in Sources */,
 				801BBDA22DF7338A00CDB1FB /* TemplateSet+.swift in Sources */,
 				801BBDA32DF7338A00CDB1FB /* FlashView.swift in Sources */,
 				801BBDA42DF7338A00CDB1FB /* TemplateService.swift in Sources */,

@@ -199,13 +199,21 @@ struct LOGIT: App {
                 )
             } else {
                 AnyView(
-                    StartWorkoutView()
+                    Button {
+                        isShowingStartWorkoutSheet = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "play.fill")
+                            Text(NSLocalizedString("startWorkout", comment: ""))
+                        }
                         .frame(maxWidth: .infinity)
+                        .fontWeight(.semibold)
+                    }
+                    .tint(Color.label)
+                    .sheet(isPresented: $isShowingStartWorkoutSheet) {
+                        WorkoutStartSheet()
+                    }
                 )
-//                    .shadow(radius: 10)
-//                    .padding(.horizontal, 12)
-//                    .padding(.bottom, 5)
-//                    .environment(\.presentWorkoutRecorder) { showWorkoutRecorder() }
             }
         } else {
             AnyView(
@@ -247,11 +255,26 @@ struct LOGIT: App {
                         )
                         .transition(.move(edge: .bottom))
                     } else {
-                        StartWorkoutView()
+                        Button {
+                            isShowingStartWorkoutSheet = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "play.fill")
+                                Text(NSLocalizedString("startWorkout", comment: ""))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .fontWeight(.semibold)
+                            .padding()
+                            .background(.regularMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 15))
                             .shadow(radius: 10)
                             .padding(.horizontal, 12)
                             .padding(.bottom, 5)
-                            .environment(\.presentWorkoutRecorder) { showWorkoutRecorder() }
+                        }
+                        .tint(Color.label)
+                        .sheet(isPresented: $isShowingStartWorkoutSheet) {
+                            WorkoutStartSheet()
+                        }
                     }
                 }
                 .frame(maxHeight: .infinity, alignment: .bottom)

@@ -213,6 +213,7 @@
 "newTemplate" = "New Template";
 "newTemplateFromWorkout" = "Use as Template...";
 "newWorkout" = "New Workout";
+"newWorkoutDescription" = "Build your workout from scratch.";
 "night" = "Night";
 "nine" = "Nine";
 "noAttempts" = "No Attempts";
@@ -296,6 +297,7 @@
 "scanATemplate" = "Scan a Template";
 "scanAWorkout" = "Scan a Workout";
 "scanWorkout" = "Scan Workout";
+"scanWorkoutDescription" = "Import exercises from a photo.";
 "scanAWorkoutPromotionText" = "Convert a photo into a workout and start training instantly!";
 "search" = "Search";
 "searchEverything" = "Search";
@@ -337,6 +339,7 @@
 "startSetup" = "Start Setup";
 "starttime" = "Start Time";
 "startWorkout" = "Start Workout";
+"workoutStartSheetDescription" = "Choose how you'd like to begin.";
 "stop" = "Stop";
 "stopwatch" = "Stopwatch";
 "subscription" = "Subscription";
@@ -388,6 +391,11 @@
 "upgradeTo" = "Upgrade to";
 "useDefaultExercises" = "Use Default Exercises";
 "useTemplate" = "Use Template";
+"useTemplateDescription" = "Start with a saved workout routine.";
+"useThisPhoto" = "Use This Photo";
+
+// MARK: - R (continued)
+"retakePhoto" = "Retake";
 
 // MARK: - W
 "viewTemplate" = "View Template";

@@ -134,11 +134,13 @@ struct TemplateListScreen: View {
             .onAppear {
                 isShowingNoTemplatesTip = groupedTemplates.isEmpty
             }
-            .navigationBarTitleDisplayMode(.large)
-            .navigationTitle(NSLocalizedString(startWorkoutOnTap ? "selectTemplate" : "templates", comment: ""))
+            .navigationBarTitleDisplayMode(startWorkoutOnTap ? .inline : .large)
+            .navigationTitle(startWorkoutOnTap ? "" : NSLocalizedString("templates", comment: ""))
             .toolbar {
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    CreateTemplateMenu()
+                if !startWorkoutOnTap {
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        CreateTemplateMenu()
+                    }
                 }
             }
             .popover(isPresented: $showingTemplateCreation) {

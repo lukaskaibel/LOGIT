@@ -211,6 +211,7 @@
 "newTemplate" = "Vorlage erstellen";
 "newTemplateFromWorkout" = "Als Vorlage verwenden...";
 "newWorkout" = "Neues Workout";
+"newWorkoutDescription" = "Workout von Grund auf erstellen.";
 "night" = "Nacht";
 "nine" = "Neun";
 "noAttempts" = "Keine Ausführungen";
@@ -295,6 +296,7 @@
 "scanATemplate" = "Scanne eine Vorlage";
 "scanAWorkout" = "Scanne einen Workout";
 "scanWorkout" = "Workout einscannen";
+"scanWorkoutDescription" = "Übungen aus einem Foto importieren.";
 "scanAWorkoutPromotionText" = "Mache aus einem Foto blitzschnell eine Workout-Vorlage!";
 "search" = "Suche";
 "searchEverything" = "Suchen";
@@ -337,6 +339,7 @@
 "startSetup" = "Set-Up starten";
 "starttime" = "Startzeit";
 "startWorkout" = "Workout starten";
+"workoutStartSheetDescription" = "Wähle, wie du beginnen möchtest.";
 "stop" = "Stop";
 "stopwatch" = "Stoppuhr";
 "subscription" = "Abonnement";
@@ -388,6 +391,11 @@
 "upgradeTo" = "Upgraden zu";
 "useDefaultExercises" = "Standard Übungen benutzen";
 "useTemplate" = "Vorlage benutzen";
+"useTemplateDescription" = "Mit einer gespeicherten Vorlage beginnen.";
+"useThisPhoto" = "Foto verwenden";
+
+// MARK: - R (continued)
+"retakePhoto" = "Wiederholen";
 
 // MARK: - V
 "viewTemplate" = "Vorlage anzeigen";

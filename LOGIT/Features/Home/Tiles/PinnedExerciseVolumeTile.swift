@@ -24,7 +24,7 @@ struct PinnedExerciseVolumeTile: View {
             let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
             VStack {
                 HStack {
-                    Text(exercise.name ?? "")
+                    Text(exercise.displayName)
                         .tileHeaderStyle()
                     Spacer()
                     NavigationChevron()

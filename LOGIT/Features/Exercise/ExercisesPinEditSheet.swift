@@ -13,7 +13,7 @@ struct ExercisesPinEditSheet: View {
     @EnvironmentObject var database: Database
     
     @State private var editMode: EditMode = .active
-    @State private var expandedExerciseIDs: Set<UUID> = []
+    @State private var searchText: String = ""
     
     var body: some View {
         NavigationStack {
@@ -21,19 +21,11 @@ struct ExercisesPinEditSheet: View {
                 Section {
                     ForEach(Array(pinnedTiles.enumerated()), id: \.offset) { index, pinnedTile in
                         if let exercise = database.getExercise(byID: pinnedTile.exerciseID) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(exercise.name ?? "")
-                                    Text(pinnedTile.tileType.title)
-                                        .font(.footnote)
-                                        .foregroundStyle(Color.secondaryLabel)
-                                }
-                                Spacer()
-                                if let muscleGroup = exercise.muscleGroup {
-                                    Text(muscleGroup.description)
-                                        .font(.footnote)
-                                        .foregroundStyle(Color.secondaryLabel)
-                                }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(exercise.displayName)
+                                Text(pinnedTile.tileType.title)
+                                    .font(.footnote)
+                                    .foregroundStyle(Color.secondaryLabel)
                             }
                         }
                     }
@@ -47,7 +39,7 @@ struct ExercisesPinEditSheet: View {
                 
                 if !unpinnedExercises.isEmpty {
                     Section {
-                        ForEach(unpinnedExercises, id: \.objectID) { exercise in
+                        ForEach(filteredUnpinnedExercises, id: \.objectID) { exercise in
                             exerciseRow(for: exercise)
                         }
                     } header: {
@@ -56,6 +48,7 @@ struct ExercisesPinEditSheet: View {
                 }
             }
             .environment(\.editMode, $editMode)
+            .searchable(text: $searchText, prompt: NSLocalizedString("searchExercises", comment: ""))
             .navigationTitle(NSLocalizedString("pinExercises", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -71,7 +64,7 @@ struct ExercisesPinEditSheet: View {
     
     private var allExercises: [Exercise] {
         database.getExercises(withNameIncluding: "", for: nil)
-            .sorted { ($0.name ?? "") < ($1.name ?? "") }
+            .sorted { $0.displayName < $1.displayName }
     }
     
     private var unpinnedExercises: [Exercise] {
@@ -83,71 +76,43 @@ struct ExercisesPinEditSheet: View {
         }
     }
     
+    private var filteredUnpinnedExercises: [Exercise] {
+        if searchText.isEmpty {
+            return unpinnedExercises
+        }
+        return FuzzySearchService.shared.searchExercises(searchText, in: unpinnedExercises)
+    }
+    
     @ViewBuilder
     private func exerciseRow(for exercise: Exercise) -> some View {
         if let exerciseID = exercise.id {
-            let isExpanded = expandedExerciseIDs.contains(exerciseID)
             let unpinnedTileTypes = ExerciseTileType.allCases.filter { tileType in
                 !pinnedTiles.contains(PinnedExerciseTile(exerciseID: exerciseID, tileType: tileType))
             }
             
-            VStack(spacing: 0) {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        if isExpanded {
-                            expandedExerciseIDs.remove(exerciseID)
-                        } else {
-                            expandedExerciseIDs.insert(exerciseID)
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(.green)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(exercise.name ?? "")
-                                .foregroundStyle(Color.label)
-                            if let muscleGroup = exercise.muscleGroup {
-                                Text(muscleGroup.description)
-                                    .font(.footnote)
-                                    .foregroundStyle(Color.secondaryLabel)
+            Menu {
+                Section(exercise.displayName) {
+                    ForEach(unpinnedTileTypes, id: \.self) { tileType in
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                pinnedTiles.append(PinnedExerciseTile(exerciseID: exerciseID, tileType: tileType))
                             }
-                        }
-                        Spacer()
-                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                
-                if isExpanded {
-                    VStack(spacing: 0) {
-                        ForEach(unpinnedTileTypes, id: \.self) { tileType in
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.15)) {
-                                    pinnedTiles.append(PinnedExerciseTile(exerciseID: exerciseID, tileType: tileType))
-                                }
-                            } label: {
-                                HStack {
-                                    Image(systemName: "plus.circle.fill")
-                                        .foregroundStyle(.green)
-                                    Text(tileType.title)
-                                        .foregroundStyle(Color.label)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 8)
-                                .padding(.leading, 24)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
+                        } label: {
+                            Label(tileType.title, systemImage: "pin")
                         }
                     }
-                    .padding(.top, 8)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
+            } label: {
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundStyle(.green)
+                    Text(exercise.displayName)
+                        .foregroundStyle(Color.label)
+                    Spacer()
+                }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
         }
     }
     

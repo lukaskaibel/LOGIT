@@ -20,7 +20,7 @@ struct PinnedExerciseRepetitionsTile: View {
         VStack(spacing: 0) {
             VStack {
                 HStack {
-                    Text(exercise.name ?? "")
+                    Text(exercise.displayName)
                         .tileHeaderStyle()
                     Spacer()
                     NavigationChevron()

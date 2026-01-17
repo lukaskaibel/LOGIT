@@ -170,6 +170,17 @@ public class Database: ObservableObject {
     // MARK: - Temporary Objects
 
     func flagAsTemporary(_ object: NSManagedObject) {
+        // Obtain a permanent ID if the object has a temporary ID
+        // This is necessary because uriRepresentation() crashes on temporary object IDs
+        if object.objectID.isTemporaryID {
+            do {
+                try context.obtainPermanentIDs(for: [object])
+            } catch {
+                os_log("Database: Failed to obtain permanent ID: %@", type: .error, error.localizedDescription)
+                return
+            }
+        }
+        
         var temporaryObjectIds: [String]
         if let previousTemporaryObjectIds = UserDefaults.standard.array(
             forKey: TEMPORARY_OBJECT_IDS_KEY
@@ -183,6 +194,12 @@ public class Database: ObservableObject {
     }
 
     func unflagAsTemporary(_ object: NSManagedObject) {
+        // If the object still has a temporary ID, it was never properly saved,
+        // so we can't unflag it properly
+        if object.objectID.isTemporaryID {
+            return
+        }
+        
         guard
             var temporaryObjectIds = UserDefaults.standard.array(forKey: TEMPORARY_OBJECT_IDS_KEY)
             as? [String]
@@ -194,6 +211,11 @@ public class Database: ObservableObject {
     }
 
     func isTemporaryObject(_ object: NSManagedObject) -> Bool {
+        // If the object has a temporary ID, it can't be in our stored list
+        if object.objectID.isTemporaryID {
+            return false
+        }
+        
         guard
             let temporaryObjectIds = UserDefaults.standard.array(forKey: TEMPORARY_OBJECT_IDS_KEY)
             as? [String]

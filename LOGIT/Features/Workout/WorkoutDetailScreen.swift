@@ -72,7 +72,7 @@ struct WorkoutDetailScreen: View {
         }
         .background(
             VStack {
-                ColorfulView(color: workout.muscleGroups.map({ $0.color }), speed: .constant(0.1))
+                ColorfulView(color: workout.muscleGroups.map({ $0.color }), speed: .constant(0))
                     .mask(
                         LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
                         

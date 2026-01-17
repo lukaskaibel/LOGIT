@@ -85,7 +85,8 @@ struct WorkoutEditorScreen: View {
                                 workout: workout,
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                 canReorder: true,
-                                reduceShadow: true
+                                reduceShadow: true,
+                                showDetailAsSheet: true
                             )
                             .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
                             .id(1)

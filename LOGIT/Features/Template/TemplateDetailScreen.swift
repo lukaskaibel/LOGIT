@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 08.04.22.
 //
 
+import ColorfulX
 import SwiftUI
 
 struct TemplateDetailScreen: View {
@@ -61,6 +62,17 @@ struct TemplateDetailScreen: View {
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
             .padding(.horizontal)
         }
+        .background(
+            VStack {
+                ColorfulView(color: template.muscleGroups.map({ $0.color }), speed: .constant(0))
+                    .mask(
+                        LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
+                    )
+                    .frame(height: 300)
+                Spacer()
+            }
+            .ignoresSafeArea(.all)
+        )
         .edgesIgnoringSafeArea(.bottom)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $selectedWorkout) { workout in

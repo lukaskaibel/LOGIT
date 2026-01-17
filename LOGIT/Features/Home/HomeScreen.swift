@@ -152,7 +152,7 @@ struct HomeScreen: View {
                 }
                 .background(
                     VStack {
-                        ColorfulView(color: workouts.flatMap({ $0.muscleGroups.map({ $0.color })}), speed: .constant(0.1))
+                        ColorfulView(color: workouts.flatMap({ $0.muscleGroups.map({ $0.color })}), speed: .constant(0))
                             .mask(
                                 LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
                                 

@@ -22,6 +22,7 @@ struct TemplateSetGroupCell: View {
     @Binding var isReordering: Bool
 
     let supplementaryText: String?
+    var showDetailAsSheet: Bool = false
 
     // MARK: - State
 
@@ -171,7 +172,7 @@ struct TemplateSetGroupCell: View {
                         noSecondaryExerciseAction: { isSelectingSecondaryExercise = true },
                         isSuperSet: setGroup.setType == .superSet,
                         navigationToDetailEnabled: true,
-                        shouldShowExerciseDetailInSheet: false
+                        showDetailAsSheet: showDetailAsSheet
                     )
                     HStack {
                         Text(setGroup.exercise?.muscleGroup?.description ?? "")

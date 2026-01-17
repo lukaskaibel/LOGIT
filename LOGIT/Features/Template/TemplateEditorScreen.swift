@@ -95,7 +95,8 @@ struct TemplateEditorScreen: View {
                                         focusedIntegerFieldIndex: .constant(nil),
                                         sheetType: $sheetType,
                                         isReordering: $isReordering,
-                                        supplementaryText: nil
+                                        supplementaryText: nil,
+                                        showDetailAsSheet: true
                                     )
                                     .shadow(color: .black.opacity(0.5), radius: 5)
                                     .zIndex(1)

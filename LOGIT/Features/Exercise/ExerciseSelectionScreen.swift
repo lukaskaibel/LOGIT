@@ -222,13 +222,9 @@ struct ExerciseSelectionScreen: View {
             }
             .sheet(item: $selectedExerciseForDetail) { exercise in
                 NavigationStack {
-                    ExerciseDetailScreen(exercise: exercise)
-                        .toolbar(.hidden, for: .navigationBar)
-                        .padding(.top)
+                    ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
                 }
                 .presentationDragIndicator(.visible)
-                .presentationDetents([.medium])
-                .presentationCornerRadius(30)
             }
             .sheet(item: $sheetType) { type in
                 switch type {
@@ -243,14 +239,7 @@ struct ExerciseSelectionScreen: View {
                     )
                 case let .exerciseDetail(exercise):
                     NavigationStack {
-                        ExerciseDetailScreen(exercise: exercise)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button(NSLocalizedString("dismiss", comment: "")) {
-                                        sheetType = nil
-                                    }
-                                }
-                            }
+                        ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
                     }
                 }
             }

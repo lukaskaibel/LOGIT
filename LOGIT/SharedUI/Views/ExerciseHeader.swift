@@ -8,11 +8,6 @@
 import SwiftUI
 
 struct ExerciseHeader: View {
-    // MARK: - Environment
-
-    @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
-    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
-
     // MARK: - Parameters
 
     let exercise: Exercise?
@@ -21,45 +16,33 @@ struct ExerciseHeader: View {
     let noSecondaryExerciseAction: (() -> Void)?
     let isSuperSet: Bool
     let navigationToDetailEnabled: Bool
-    let shouldShowExerciseDetailInSheet: Bool
+    var showDetailAsSheet: Bool = false
 
-    @State private var isShowingNavigationDetailSheet = false
+    // MARK: - State
+
+    @State private var isShowingExerciseDetailSheet = false
+    @State private var isShowingSecondaryExerciseDetailSheet = false
+    @State private var isNavigatingToExerciseDetail = false
+    @State private var isNavigatingToSecondaryExerciseDetail = false
 
     // MARK: - Body
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if let exercise = exercise {
-                Button {
-                    if shouldShowExerciseDetailInSheet {
-                        isShowingNavigationDetailSheet = true
-                    } else {
-                        guard homeNavigationCoordinator.path.last != HomeNavigationDestinationType.exercise(exercise) else {
-                            dismissWorkoutRecorder()
-                            return
-                        }
-                        var transaction = Transaction()
-                        transaction.disablesAnimations = true
-                        withTransaction(transaction) {
-                            homeNavigationCoordinator.path.popLast()
-                        }
-                        DispatchQueue.main.async { dismissWorkoutRecorder() }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            homeNavigationCoordinator.path.append(.exercise(exercise))
-                            homeNavigationCoordinator.objectWillChange.send()
-                        }
+                if showDetailAsSheet {
+                    Button {
+                        isShowingExerciseDetailSheet = true
+                    } label: {
+                        exerciseLabel(exercise)
                     }
-                } label: {
-                    HStack(spacing: 3) {
-                        Text(exercise.displayName)
-                            .foregroundColor(.label)
-                        if navigationToDetailEnabled {
-                            NavigationChevron()
-                                .foregroundColor(.secondaryLabel)
-                        } else {}
+                } else {
+                    Button {
+                        isNavigatingToExerciseDetail = true
+                    } label: {
+                        exerciseLabel(exercise)
                     }
                 }
-                NavigationLink(destination: ExerciseDetailScreen(exercise: exercise)) {}
             } else {
                 Button(action: noExerciseAction) {
                     HStack(spacing: 3) {
@@ -78,15 +61,17 @@ struct ExerciseHeader: View {
                         .font(.body.weight(.medium))
                         .padding(.leading)
                     if let secondaryExercise = secondaryExercise {
-                        NavigationLink(
-                            destination: ExerciseDetailScreen(exercise: secondaryExercise)
-                        ) {
-                            HStack(spacing: 3) {
-                                Text(secondaryExercise.displayName)
-                                if navigationToDetailEnabled {
-                                    NavigationChevron()
-                                        .foregroundColor(.secondaryLabel)
-                                }
+                        if showDetailAsSheet {
+                            Button {
+                                isShowingSecondaryExerciseDetailSheet = true
+                            } label: {
+                                secondaryExerciseLabel(secondaryExercise)
+                            }
+                        } else {
+                            Button {
+                                isNavigatingToSecondaryExerciseDetail = true
+                            } label: {
+                                secondaryExerciseLabel(secondaryExercise)
                             }
                         }
                     } else if let noSecondaryExerciseAction = noSecondaryExerciseAction {
@@ -109,9 +94,53 @@ struct ExerciseHeader: View {
         .font(.body.weight(.semibold))
         .foregroundColor(.label)
         .lineLimit(1)
-        .sheet(isPresented: $isShowingNavigationDetailSheet) {
+        .sheet(isPresented: $isShowingExerciseDetailSheet) {
+            if let exercise = exercise {
+                NavigationStack {
+                    ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
+                }
+                .presentationDragIndicator(.visible)
+            }
+        }
+        .sheet(isPresented: $isShowingSecondaryExerciseDetailSheet) {
+            if let secondaryExercise = secondaryExercise {
+                NavigationStack {
+                    ExerciseDetailScreen(exercise: secondaryExercise, isShowingAsSheet: true)
+                }
+                .presentationDragIndicator(.visible)
+            }
+        }
+        .navigationDestination(isPresented: $isNavigatingToExerciseDetail) {
             if let exercise = exercise {
                 ExerciseDetailScreen(exercise: exercise)
+            }
+        }
+        .navigationDestination(isPresented: $isNavigatingToSecondaryExerciseDetail) {
+            if let secondaryExercise = secondaryExercise {
+                ExerciseDetailScreen(exercise: secondaryExercise)
+            }
+        }
+    }
+
+    // MARK: - Helper Views
+
+    private func exerciseLabel(_ exercise: Exercise) -> some View {
+        HStack(spacing: 3) {
+            Text(exercise.displayName)
+                .foregroundColor(.label)
+            if navigationToDetailEnabled {
+                NavigationChevron()
+                    .foregroundColor(.secondaryLabel)
+            }
+        }
+    }
+
+    private func secondaryExerciseLabel(_ exercise: Exercise) -> some View {
+        HStack(spacing: 3) {
+            Text(exercise.displayName)
+            if navigationToDetailEnabled {
+                NavigationChevron()
+                    .foregroundColor(.secondaryLabel)
             }
         }
     }

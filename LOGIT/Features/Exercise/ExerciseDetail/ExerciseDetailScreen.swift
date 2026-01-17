@@ -6,6 +6,7 @@
 //
 
 import Charts
+import ColorfulX
 import CoreData
 import SwiftUI
 
@@ -35,6 +36,7 @@ struct ExerciseDetailScreen: View {
     // MARK: - Variables
 
     @StateObject var exercise: Exercise
+    var isShowingAsSheet: Bool = false
 
     // MARK: - Body
 
@@ -115,8 +117,32 @@ struct ExerciseDetailScreen: View {
                 }
                 .animation(.easeInOut)
             }
+            .background(
+                VStack {
+                    ColorfulView(color: [exercise.muscleGroup?.color ?? .accentColor, .black], speed: .constant(0))
+                        .mask(
+                            LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
+                        )
+                        .frame(height: 300)
+                    Spacer()
+                }
+                .ignoresSafeArea(.all)
+            )
             .edgesIgnoringSafeArea(.bottom)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if isShowingAsSheet {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                        }
+                    }
+                }
+            }
             .tint(exercise.muscleGroup?.color ?? .accentColor)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

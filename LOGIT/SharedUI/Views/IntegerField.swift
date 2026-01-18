@@ -69,19 +69,29 @@ struct IntegerField: View {
         }
         .onChange(of: focusedIntegerFieldIndex) { newValue in
             guard !isFocusSuppressed else { return }
-            guard isFocused != (newValue == index) else { return }
-            // Solution, because otherwise moving down wasnt working, since it would first focus on the new field, while the old one was still focused, which caused the focus to get lost.
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-            guard newValue == index else { return }
-            isFocused = true
+            let shouldBeFocused = newValue == index
+            guard isFocused != shouldBeFocused else { return }
+            if shouldBeFocused {
+                // Set focus directly - don't resign first responder first
+                // This allows UIKit to handle the responder chain transfer smoothly
+                isFocused = true
+            } else if newValue == nil && isFocused {
+                // Explicitly dismiss keyboard when focusedIntegerFieldIndex is set to nil
+                isFocused = false
+            }
+            // When transferring to another field (newValue != nil && newValue != index),
+            // don't explicitly set isFocused = false; the new field's focus will take over
         }
         .onChange(of: isFocused) { newValue in
             guard !isFocusSuppressed else { return }
             if newValue {
                 UISelectionFeedbackGenerator().selectionChanged()
+                // Only update binding if we're gaining focus and not already set
+                if focusedIntegerFieldIndex != index {
+                    focusedIntegerFieldIndex = index
+                }
             }
-            guard newValue != (focusedIntegerFieldIndex == index) else { return }
-            focusedIntegerFieldIndex = index
+            // When losing focus, don't update the binding - another field is taking over
         }
         .onChange(of: value) { newValue in
             if String(newValue) != valueString {
@@ -91,6 +101,8 @@ struct IntegerField: View {
         .padding(.vertical, 5)
         .padding(.horizontal, 8)
         .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.000001))
+        .scaleEffect(isFocused ? 1.05 : 1.0)
+        .animation(.spring(response: 0.35, dampingFraction: 0.6, blendDuration: 0), value: isFocused)
         .frame(minWidth: 100, alignment: .trailing)
         .onTapGesture {
             guard !isFocusSuppressed else { return }

@@ -82,40 +82,40 @@ struct ExerciseDetailScreen: View {
                             Text(NSLocalizedString("recentAttempts", comment: ""))
                                 .sectionHeaderStyle2()
                             Spacer()
-                            Button {
-                                isShowingExerciseHistoryScreen = true
-                            } label: {
-                                HStack {
-                                    Text(NSLocalizedString("all", comment: ""))
-                                    Image(systemName: "chevron.right")
-                                        .font(.footnote)
-                                }
-                                .fontWeight(.semibold)
-                            }
                         }
-                        VStack(spacing: CELL_SPACING) {
+                        VStack(spacing: CELL_SPACING + 5) {
                             ForEach(recentWorkoutSetGroups) { setGroup in
-                                WorkoutSetGroupCell(
-                                    setGroup: setGroup,
-                                    focusedIntegerFieldIndex: .constant(nil),
-                                    isReordering: .constant(false),
-                                    supplementaryText:
-                                    "\(setGroup.workout?.date?.description(.short) ?? "")"
-                                )
-                                .canEdit(false)
-                                .allowsHitTesting(false)
-                                .tileStyle()
-                                .shadow(color: .black.opacity(0.5), radius: 10)
+                                ExerciseAttemptCell(setGroup: setGroup)
                             }
                             .emptyPlaceholder(recentWorkoutSetGroups) {
                                 Text(NSLocalizedString("noAttempts", comment: ""))
                             }
+                            
+                            if !recentWorkoutSetGroups.isEmpty {
+                                Button {
+                                    isShowingExerciseHistoryScreen = true
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "clock.arrow.circlepath")
+                                            .font(.title3)
+                                            .foregroundStyle((exercise.muscleGroup?.color ?? .accentColor).gradient)
+                                            .frame(width: 32, height: 32)
+                                        Text(NSLocalizedString("showAllAttempts", comment: ""))
+                                            .foregroundStyle(Color.label)
+                                        Spacer()
+                                        NavigationChevron()
+                                            .foregroundStyle(Color.secondaryLabel)
+                                    }
+                                    .padding(CELL_PADDING)
+                                    .tileStyle()
+                                }
+                                .buttonStyle(TileButtonStyle())
+                            }
                         }
                         .padding(.top, 5)
                     }
-                    .padding()
+                    .padding(.horizontal)
                     .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                    .background(Color.secondaryBackground)
                 }
                 .animation(.easeInOut)
             }
@@ -321,7 +321,7 @@ struct ExerciseInstructionsSheet: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 8)
                             }
-                            .buttonStyle(.prominentGlass(color: exercise.muscleGroup?.color ?? .accentColor))
+                            .buttonStyle(BigButtonStyle())
                             .padding(.vertical, 32)
                         }
                     }

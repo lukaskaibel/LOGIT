@@ -26,18 +26,9 @@ struct ExerciseHistoryScreen: View {
                             Text(key.monthDescription)
                                 .sectionHeaderStyle2()
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            VStack(spacing: CELL_SPACING) {
+                            VStack(spacing: CELL_SPACING + 5) {
                                 ForEach(workoutSetGroups) { setGroup in
-                                    WorkoutSetGroupCell(
-                                        setGroup: setGroup,
-                                        focusedIntegerFieldIndex: .constant(nil),
-                                        isReordering: .constant(false),
-                                        supplementaryText:
-                                        "\(setGroup.workout?.date?.description(.short) ?? "")"
-                                    )
-                                    .tileStyle()
-                                    .canEdit(false)
-                                    .allowsHitTesting(false)
+                                    ExerciseAttemptCell(setGroup: setGroup)
                                 }
                             }
                         }

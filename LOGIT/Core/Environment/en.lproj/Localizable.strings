@@ -154,6 +154,7 @@
 
 "incompleteSetsWillNotBeSaved" = "Incomplete sets will not be saved.";
 "inSelectedWeek" = "In Selected Week";
+"instructions" = "Instructions";
 
 // MARK: - L
 
@@ -167,6 +168,7 @@
 "letsGetStarted" = "Let's get started";
 "letsGetStartedDescription" = "Before you can start working out we need to do a quick setup to optimise your experience.";
 "licenceAgreement" = "Licence Agreement";
+"lookupExercise" = "Look up %@";
 
 // MARK: - M
 
@@ -326,6 +328,7 @@
 "showAllExercises" = "Show All Exercises";
 "showAllMeasurements" = "Show All Measurements";
 "showDetails" = "Show Details";
+"showInstructions" = "Show Instructions";
 "showMeasurements" = "Show Measurements";
 "showSubscriptions" = "Show Subscriptions";
 "six" = "Six";

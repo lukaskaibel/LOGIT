@@ -18,6 +18,7 @@ struct DefaultExercise: Codable {
     let id: String
     let nameKey: String
     let muscleGroup: String
+    let instructions: [String]?
 }
 
 class DefaultExerciseService: ObservableObject {
@@ -54,6 +55,7 @@ class DefaultExerciseService: ObservableObject {
                 if let muscleGroup = MuscleGroup(rawValue: exerciseData.muscleGroup) {
                     existingExercise.muscleGroup = muscleGroup
                 }
+                existingExercise.instructions = exerciseData.instructions
             } else {
                 let exercise = Exercise(context: database.context)
                 exercise.id = generateUUID(from: exerciseData.id)
@@ -61,6 +63,7 @@ class DefaultExerciseService: ObservableObject {
                 if let muscleGroup = MuscleGroup(rawValue: exerciseData.muscleGroup) {
                     exercise.muscleGroup = muscleGroup
                 }
+                exercise.instructions = exerciseData.instructions
             }
         }
     }

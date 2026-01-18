@@ -35,6 +35,7 @@ struct ExerciseWeightTile: View {
                             .foregroundStyle(.secondary)
                         Spacer()
                     }
+                    .padding(.bottom, 8)
                 } else {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading) {
@@ -128,6 +129,7 @@ struct ExerciseWeightTile: View {
                     }
                 }
             }
+            .frame(minHeight: 100)
             .padding([.horizontal, .top], CELL_PADDING)
             .padding(.bottom, CELL_PADDING / 2)
             if !workoutSets.isEmpty {

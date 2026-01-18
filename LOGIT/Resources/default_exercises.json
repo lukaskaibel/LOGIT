@@ -1,1005 +1,2555 @@
 {
-  "version": 1,
+  "version": 4,
   "exercises": [
     {
       "id": "default_001",
       "nameKey": "_default.exercise.pushups",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Place your hands on the floor slightly wider than shoulder-width apart.",
+        "Extend your legs behind you, balancing on your toes with your body forming a straight line from head to heels.",
+        "Engage your core and keep your hips level throughout the movement.",
+        "Lower your body by bending your elbows until your chest nearly touches the floor.",
+        "Push through your palms to extend your arms and return to the starting position.",
+        "Keep your elbows at roughly a 45-degree angle to your body as you move."
+      ]
     },
     {
       "id": "default_002",
       "nameKey": "_default.exercise.barbellBenchPress",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Lie flat on a bench with your feet firmly planted on the floor.",
+        "Grip the barbell with hands slightly wider than shoulder-width apart.",
+        "Unrack the bar and hold it directly above your chest with arms fully extended.",
+        "Lower the bar in a controlled manner until it lightly touches your mid-chest.",
+        "Press the bar back up by extending your arms, driving through your chest and triceps.",
+        "Keep your shoulder blades squeezed together and maintain a slight arch in your lower back."
+      ]
     },
     {
       "id": "default_003",
       "nameKey": "_default.exercise.dumbbellBenchPress",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Lie flat on a bench holding a dumbbell in each hand at chest level.",
+        "Plant your feet firmly on the floor and squeeze your shoulder blades together.",
+        "Press the dumbbells upward until your arms are fully extended above your chest.",
+        "Lower the dumbbells slowly, allowing your elbows to bend and flare slightly outward.",
+        "Stop when your upper arms are parallel to the floor or slightly below.",
+        "Push back up through your chest and repeat the movement."
+      ]
     },
     {
       "id": "default_004",
       "nameKey": "_default.exercise.inclinedBarbellBenchPress",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Set the bench to a 30 to 45-degree incline and lie back with your feet flat on the floor.",
+        "Grip the barbell with hands slightly wider than shoulder-width apart.",
+        "Unrack the bar and hold it above your upper chest with arms extended.",
+        "Lower the bar slowly until it touches your upper chest, just below the collarbone.",
+        "Press the bar back up by driving through your chest and shoulders.",
+        "Keep your core tight and maintain contact between your back and the bench."
+      ]
     },
     {
       "id": "default_005",
       "nameKey": "_default.exercise.inclinedDumbbellBenchPress",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Set the bench to a 30 to 45-degree incline and sit back holding a dumbbell in each hand.",
+        "Rest the dumbbells on your thighs, then kick them up to shoulder level as you lie back.",
+        "Press the dumbbells up until your arms are fully extended above your upper chest.",
+        "Lower the weights slowly, keeping your elbows at a 45-degree angle to your body.",
+        "Stop when you feel a stretch in your chest, then press back up.",
+        "Maintain a stable core and keep your feet planted throughout."
+      ]
     },
     {
       "id": "default_006",
       "nameKey": "_default.exercise.dumbbellFly",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Lie flat on a bench holding a dumbbell in each hand above your chest, palms facing each other.",
+        "Keep a slight bend in your elbows throughout the entire movement.",
+        "Lower the dumbbells out to your sides in a wide arc until you feel a stretch in your chest.",
+        "Keep your shoulder blades pulled back and pressed into the bench.",
+        "Bring the dumbbells back together above your chest in a controlled motion, squeezing your pecs at the top."
+      ]
     },
     {
       "id": "default_007",
       "nameKey": "_default.exercise.cableCrossovers",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Set both cable pulleys to the highest position and attach single handles.",
+        "Stand in the center with one foot slightly forward for balance.",
+        "Grab a handle in each hand and step forward to create tension in the cables.",
+        "With a slight bend in your elbows, bring your hands together in front of your body in a sweeping arc.",
+        "Squeeze your chest at the bottom of the movement when your hands meet.",
+        "Slowly return your arms to the starting position, controlling the resistance."
+      ]
     },
     {
       "id": "default_008",
       "nameKey": "_default.exercise.declineBenchPress",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Set the bench to a decline angle and secure your legs under the pads.",
+        "Lie back and grip the barbell with hands slightly wider than shoulder-width apart.",
+        "Unrack the bar and hold it above your lower chest with arms extended.",
+        "Lower the bar slowly until it touches your lower chest.",
+        "Press the bar back up by driving through your chest muscles.",
+        "Keep your core engaged and your back flat against the bench."
+      ]
     },
     {
       "id": "default_009",
       "nameKey": "_default.exercise.chestDips",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Grip the parallel bars and lift yourself up with arms fully extended.",
+        "Lean your torso forward slightly to emphasize the chest muscles.",
+        "Lower your body by bending your elbows until your upper arms are parallel to the floor or slightly below.",
+        "Keep your elbows pointing slightly outward as you descend.",
+        "Push through your palms to raise your body back to the starting position in a controlled motion."
+      ]
     },
     {
       "id": "default_010",
       "nameKey": "_default.exercise.pecDeckFly",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Adjust the seat height so the handles are at chest level.",
+        "Sit with your back firmly against the pad and grasp the handles.",
+        "Keep a slight bend in your elbows throughout the movement.",
+        "Bring the handles together in front of your chest in a controlled motion.",
+        "Squeeze your chest muscles at the peak of the contraction.",
+        "Slowly return to the starting position, allowing a full stretch in your chest."
+      ]
     },
     {
       "id": "default_011",
       "nameKey": "_default.exercise.pullups",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Grip the bar with your palms facing away from you, hands slightly wider than shoulder-width apart.",
+        "Hang with your arms fully extended and your feet off the ground.",
+        "Engage your back muscles and pull your body upward until your chin clears the bar.",
+        "Focus on driving your elbows down and back as you pull.",
+        "Lower yourself slowly back to the starting position with control, avoiding any swinging."
+      ]
     },
     {
       "id": "default_012",
       "nameKey": "_default.exercise.chinups",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Grip the bar with your palms facing toward you, hands about shoulder-width apart.",
+        "Hang with your arms fully extended and your core engaged.",
+        "Pull your body upward by engaging your biceps and back until your chin is above the bar.",
+        "Keep your chest up and shoulders pulled back as you lift.",
+        "Lower yourself slowly with control to the starting position, maintaining a steady tempo."
+      ]
     },
     {
       "id": "default_013",
       "nameKey": "_default.exercise.australianPullups",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Set a bar at about waist height and grip it with hands shoulder-width apart.",
+        "Walk your feet forward until your body is at an angle beneath the bar.",
+        "Keep your body straight from head to heels throughout the movement.",
+        "Pull your chest up toward the bar by squeezing your shoulder blades together.",
+        "Lower yourself back down with control until your arms are fully extended.",
+        "Adjust the difficulty by changing your body angle—more horizontal is harder."
+      ]
     },
     {
       "id": "default_014",
       "nameKey": "_default.exercise.latPulldowns",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Sit at the lat pulldown machine and adjust the thigh pad to secure your legs.",
+        "Grip the bar with hands slightly wider than shoulder-width apart, palms facing away.",
+        "Lean back slightly and pull the bar down toward your upper chest.",
+        "Focus on driving your elbows down and squeezing your shoulder blades together.",
+        "Slowly release the bar back up with control, fully extending your arms without excessive leaning."
+      ]
     },
     {
       "id": "default_015",
       "nameKey": "_default.exercise.barbellRows",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand with feet shoulder-width apart, holding a barbell with an overhand grip.",
+        "Hinge at your hips and bend your knees slightly, keeping your back flat.",
+        "Let the barbell hang at arm's length in front of your shins.",
+        "Pull the bar toward your lower chest or upper abdomen by driving your elbows back.",
+        "Squeeze your shoulder blades together at the top of the movement.",
+        "Lower the bar slowly and repeat, maintaining the hinged position throughout."
+      ]
     },
     {
       "id": "default_016",
       "nameKey": "_default.exercise.dumbbellRows",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Place one knee and the same-side hand on a flat bench for support.",
+        "Hold a dumbbell in the opposite hand with your arm hanging straight down.",
+        "Keep your back flat and parallel to the floor.",
+        "Pull the dumbbell up toward your hip, driving your elbow toward the ceiling.",
+        "Squeeze your back muscles at the top of the movement.",
+        "Lower the weight slowly and repeat before switching sides."
+      ]
     },
     {
       "id": "default_017",
       "nameKey": "_default.exercise.seatedCableRows",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Sit at the cable row machine with your feet on the footpads and knees slightly bent.",
+        "Grab the handle and sit up tall with your arms extended in front of you.",
+        "Pull the handle toward your abdomen by driving your elbows straight back.",
+        "Keep your chest up and squeeze your shoulder blades together at the end of the pull.",
+        "Slowly extend your arms back to the starting position with control, avoiding excessive leaning."
+      ]
     },
     {
       "id": "default_018",
       "nameKey": "_default.exercise.tBarRows",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Straddle the T-bar machine or landmine setup with your feet about shoulder-width apart.",
+        "Hinge at your hips and grab the handles with both hands.",
+        "Keep your back flat and your core braced throughout the movement.",
+        "Pull the weight toward your chest by driving your elbows back.",
+        "Squeeze your back muscles at the top, then lower the weight with control while maintaining the hinged position."
+      ]
     },
     {
       "id": "default_019",
       "nameKey": "_default.exercise.deadlift",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand with feet hip-width apart, with the barbell over the middle of your feet.",
+        "Hinge at your hips and bend your knees to grip the bar just outside your legs.",
+        "Keep your back flat, chest up, and shoulders slightly in front of the bar.",
+        "Drive through your heels and extend your hips and knees simultaneously to lift the bar.",
+        "Stand tall at the top with your shoulders back and hips fully extended.",
+        "Lower the bar by hinging at the hips first, then bending your knees as the bar passes them."
+      ]
     },
     {
       "id": "default_020",
       "nameKey": "_default.exercise.sumoDeadlift",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand with a wide stance, toes pointed outward at roughly 45 degrees.",
+        "Position the barbell over the middle of your feet.",
+        "Hinge at your hips and grip the bar with your hands inside your knees.",
+        "Keep your chest up, back flat, and engage your core.",
+        "Drive through your heels and push your hips forward to lift the bar.",
+        "At the top, stand tall with shoulders back, then reverse the movement to lower the weight."
+      ]
     },
     {
       "id": "default_021",
       "nameKey": "_default.exercise.romanianDeadlift",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand holding a barbell or dumbbells in front of your thighs with feet hip-width apart.",
+        "Keep a slight bend in your knees that remains fixed throughout the movement.",
+        "Hinge at your hips and push them back as you lower the weight along your legs.",
+        "Keep your back flat and the weight close to your body.",
+        "Lower until you feel a stretch in your hamstrings, typically around mid-shin level.",
+        "Drive your hips forward to return to standing, squeezing your glutes at the top."
+      ]
     },
     {
       "id": "default_022",
       "nameKey": "_default.exercise.facePulls",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Set a cable machine to face height and attach a rope handle.",
+        "Grip the rope with palms facing each other and step back to create tension.",
+        "Stand with a slight bend in your knees and engage your core.",
+        "Pull the rope toward your face, separating your hands as you pull.",
+        "Focus on squeezing your rear delts and upper back at the end of the movement.",
+        "Slowly return to the starting position with control."
+      ]
     },
     {
       "id": "default_023",
       "nameKey": "_default.exercise.squats",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Position the barbell on your upper back, resting on your traps, and grip the bar with both hands.",
+        "Stand with feet shoulder-width apart, toes slightly pointed outward.",
+        "Unrack the bar and take a step back to clear the rack.",
+        "Brace your core and descend by bending your knees and pushing your hips back.",
+        "Lower until your thighs are at least parallel to the floor.",
+        "Drive through your heels to stand back up, keeping your chest up and knees tracking over your toes."
+      ]
     },
     {
       "id": "default_024",
       "nameKey": "_default.exercise.frontSquats",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Position the barbell in front of your shoulders, resting on your fingertips with elbows high.",
+        "Stand with feet shoulder-width apart, toes slightly pointed outward.",
+        "Keep your elbows lifted throughout the movement to prevent the bar from sliding forward.",
+        "Descend by bending your knees and sitting your hips back while keeping your torso upright.",
+        "Lower until your thighs are at least parallel to the floor.",
+        "Push through your heels to return to standing, maintaining an upright posture."
+      ]
     },
     {
       "id": "default_025",
       "nameKey": "_default.exercise.legPress",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit in the leg press machine with your back and head flat against the pad.",
+        "Place your feet shoulder-width apart on the platform, about midway up.",
+        "Release the safety handles and straighten your legs without fully locking your knees.",
+        "Lower the platform by bending your knees toward your chest in a controlled manner.",
+        "Stop when your knees are at about 90 degrees or slightly deeper.",
+        "Push through your heels to extend your legs back to the starting position."
+      ]
     },
     {
       "id": "default_026",
       "nameKey": "_default.exercise.walkingLunges",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand upright with your feet together, arms at your sides or holding weights.",
+        "Take a large step forward with one leg and lower your body until both knees are bent at 90 degrees.",
+        "Keep your front knee aligned over your ankle, not extending past your toes.",
+        "Push off your back foot and bring it forward to take the next step.",
+        "Continue alternating legs as you walk forward.",
+        "Keep your torso upright and core engaged throughout the movement."
+      ]
     },
     {
       "id": "default_027",
       "nameKey": "_default.exercise.barbellLunges",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Position a barbell across your upper back, similar to a back squat setup.",
+        "Stand with feet hip-width apart and step one foot forward into a lunge.",
+        "Lower your body until your front thigh is parallel to the floor and your back knee nearly touches the ground.",
+        "Keep your torso upright and core braced.",
+        "Push through your front heel to return to the starting position.",
+        "Repeat on the same side or alternate legs."
+      ]
     },
     {
       "id": "default_028",
       "nameKey": "_default.exercise.dumbbellLunges",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand holding a dumbbell in each hand at your sides.",
+        "Step forward with one leg and lower your body into a lunge position.",
+        "Both knees should bend to approximately 90 degrees.",
+        "Keep your front knee tracking over your toes and your back knee hovering just above the floor.",
+        "Push through your front heel to return to the starting position.",
+        "Alternate legs or complete all reps on one side before switching."
+      ]
     },
     {
       "id": "default_029",
       "nameKey": "_default.exercise.legExtension",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit on the leg extension machine with your back against the pad.",
+        "Adjust the pad so it rests on your lower shins, just above your ankles.",
+        "Grip the handles on either side for stability.",
+        "Extend your legs by straightening your knees until they are fully extended.",
+        "Squeeze your quadriceps at the top of the movement.",
+        "Lower the weight slowly with control back to the starting position."
+      ]
     },
     {
       "id": "default_030",
       "nameKey": "_default.exercise.legCurls",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Lie face down on the leg curl machine with the pad positioned just above your ankles.",
+        "Grip the handles and keep your hips pressed into the bench.",
+        "Curl your legs up by bending your knees and bringing your heels toward your glutes.",
+        "Squeeze your hamstrings at the top of the movement.",
+        "Lower the weight slowly with control, keeping your hips down and legs fully extending."
+      ]
     },
     {
       "id": "default_031",
       "nameKey": "_default.exercise.calfRaises",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand on a raised surface with the balls of your feet on the edge and heels hanging off.",
+        "Hold onto something for balance if needed.",
+        "Lower your heels below the platform level to get a full stretch in your calves.",
+        "Push through the balls of your feet to raise your heels as high as possible.",
+        "Squeeze your calves at the top of the movement.",
+        "Lower slowly and repeat in a controlled manner."
+      ]
     },
     {
       "id": "default_032",
       "nameKey": "_default.exercise.seatedCalfRaises",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit on the seated calf raise machine with the pads resting on your lower thighs.",
+        "Place the balls of your feet on the platform with your heels hanging off.",
+        "Release the safety lever and lower your heels to feel a stretch.",
+        "Push through the balls of your feet to raise your heels as high as possible.",
+        "Hold the contraction briefly at the top.",
+        "Lower your heels slowly and repeat."
+      ]
     },
     {
       "id": "default_033",
       "nameKey": "_default.exercise.bulgarianSplitSquats",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand a few feet in front of a bench, facing away from it.",
+        "Place the top of one foot on the bench behind you.",
+        "Hold dumbbells at your sides or place your hands on your hips.",
+        "Lower your body by bending your front knee until your thigh is parallel to the floor.",
+        "Keep your front knee aligned with your toes and your torso upright.",
+        "Push through your front heel to return to the starting position."
+      ]
     },
     {
       "id": "default_034",
       "nameKey": "_default.exercise.hackSquats",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Position yourself in the hack squat machine with your back against the pad.",
+        "Place your feet shoulder-width apart on the platform.",
+        "Release the safety handles and stand to take the weight.",
+        "Lower your body by bending your knees, keeping your back pressed against the pad.",
+        "Descend until your thighs are at least parallel to the platform.",
+        "Push through your heels to extend your legs and return to the starting position."
+      ]
     },
     {
       "id": "default_035",
       "nameKey": "_default.exercise.gobletSquats",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Hold a dumbbell or kettlebell vertically at chest level, gripping it with both hands.",
+        "Stand with feet slightly wider than shoulder-width apart, toes slightly turned out.",
+        "Keep your elbows pointing down and close to your body.",
+        "Descend by bending your knees and pushing your hips back.",
+        "Lower until your thighs are parallel to the floor or deeper.",
+        "Push through your heels to stand back up while keeping your chest lifted."
+      ]
     },
     {
       "id": "default_036",
       "nameKey": "_default.exercise.legPressCalfRaise",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit in the leg press machine and place just the balls of your feet on the lower edge of the platform.",
+        "Keep your legs straight but do not lock your knees.",
+        "Push through the balls of your feet to extend your ankles as far as possible.",
+        "Hold the contraction at the top briefly.",
+        "Slowly lower your heels to feel a stretch in your calves.",
+        "Repeat in a controlled manner without bouncing."
+      ]
     },
     {
       "id": "default_037",
       "nameKey": "_default.exercise.hipThrust",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit on the floor with your upper back against a bench and a barbell across your hips.",
+        "Plant your feet flat on the floor about hip-width apart.",
+        "Drive through your heels and squeeze your glutes to lift your hips until your body forms a straight line from shoulders to knees.",
+        "Keep your chin tucked and avoid overarching your lower back at the top.",
+        "Lower your hips back down with control.",
+        "Pause briefly at the bottom before the next rep."
+      ]
     },
     {
       "id": "default_038",
       "nameKey": "_default.exercise.handstandPushups",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Kick up into a handstand position against a wall with your hands about shoulder-width apart.",
+        "Keep your core tight and your body in a straight line.",
+        "Lower yourself by bending your elbows until the top of your head lightly touches the floor.",
+        "Press through your palms to push yourself back up to the starting position.",
+        "Keep your body controlled and avoid excessive arching.",
+        "If needed, use an ab mat or pad under your head for comfort."
+      ]
     },
     {
       "id": "default_039",
       "nameKey": "_default.exercise.militaryPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand with feet shoulder-width apart, holding a barbell at shoulder height with an overhand grip.",
+        "Keep your core braced and avoid leaning back excessively.",
+        "Press the bar straight overhead until your arms are fully extended.",
+        "Keep the bar path close to your face as it travels upward.",
+        "Lower the bar slowly back to shoulder height.",
+        "Maintain a neutral spine throughout the movement."
+      ]
     },
     {
       "id": "default_040",
       "nameKey": "_default.exercise.shoulderPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Sit or stand with a barbell or dumbbells at shoulder height.",
+        "Grip the weight with palms facing forward.",
+        "Press the weight directly overhead until your arms are fully extended.",
+        "Keep your core tight and avoid arching your lower back.",
+        "Lower the weight slowly back to shoulder level.",
+        "Repeat in a controlled manner."
+      ]
     },
     {
       "id": "default_041",
       "nameKey": "_default.exercise.dumbbellShoulderPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Sit on a bench with back support or stand with feet shoulder-width apart.",
+        "Hold a dumbbell in each hand at shoulder height with palms facing forward.",
+        "Press both dumbbells overhead until your arms are fully extended.",
+        "Keep your core engaged and avoid leaning back.",
+        "Lower the dumbbells slowly with control back to shoulder level."
+      ]
     },
     {
       "id": "default_042",
       "nameKey": "_default.exercise.uprightRows",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand holding a barbell or dumbbells in front of your thighs with an overhand grip.",
+        "Keep your feet shoulder-width apart and your core engaged.",
+        "Pull the weight straight up along your body, leading with your elbows.",
+        "Raise the weight until your elbows are at or above shoulder height.",
+        "Keep the weight close to your body throughout the movement.",
+        "Lower the weight slowly back to the starting position."
+      ]
     },
     {
       "id": "default_043",
       "nameKey": "_default.exercise.lateralRaises",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand with feet shoulder-width apart, holding a dumbbell in each hand at your sides.",
+        "Keep a slight bend in your elbows throughout the movement.",
+        "Raise your arms out to the sides until they reach shoulder height.",
+        "Lead with your elbows and keep your palms facing down or slightly forward.",
+        "Pause briefly at the top, then lower the weights slowly with control."
+      ]
     },
     {
       "id": "default_044",
       "nameKey": "_default.exercise.frontRaises",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand with feet shoulder-width apart, holding a dumbbell in each hand in front of your thighs.",
+        "Keep your core engaged and a slight bend in your elbows.",
+        "Raise one or both arms in front of you until they reach shoulder height.",
+        "Keep your palms facing down or toward each other.",
+        "Lower the weight slowly back to the starting position.",
+        "Alternate arms or perform with both simultaneously."
+      ]
     },
     {
       "id": "default_045",
       "nameKey": "_default.exercise.rearDeltRaise",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Bend forward at your hips until your torso is nearly parallel to the floor.",
+        "Hold a dumbbell in each hand with your arms hanging straight down, palms facing each other.",
+        "Keep a slight bend in your elbows throughout the movement.",
+        "Raise both arms out to the sides, squeezing your rear delts at the top.",
+        "Lower the weights slowly with control, keeping your core tight."
+      ]
     },
     {
       "id": "default_046",
       "nameKey": "_default.exercise.arnoldPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Sit or stand holding dumbbells at shoulder height with palms facing your body.",
+        "Begin by pressing the dumbbells upward while rotating your palms to face forward.",
+        "Complete the press with arms fully extended overhead and palms facing away from you.",
+        "Reverse the motion by lowering the dumbbells while rotating your palms back toward your body.",
+        "Return to the starting position with palms facing you.",
+        "Perform the movement in a smooth, controlled manner."
+      ]
     },
     {
       "id": "default_047",
       "nameKey": "_default.exercise.cableRaises",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Set the cable pulley to the lowest position and attach a single handle.",
+        "Stand sideways to the machine and grab the handle with the far hand.",
+        "Keep a slight bend in your elbow and your core engaged.",
+        "Raise your arm out to the side until it reaches shoulder height.",
+        "Lower slowly with control back to the starting position.",
+        "Complete all reps on one side before switching."
+      ]
     },
     {
       "id": "default_048",
       "nameKey": "_default.exercise.dips",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Grip the parallel bars and lift yourself up with arms fully extended.",
+        "Keep your torso upright to emphasize the triceps.",
+        "Lower your body by bending your elbows until your upper arms are parallel to the floor.",
+        "Keep your elbows close to your body as you descend.",
+        "Push through your palms to extend your arms and return to the top in a controlled motion."
+      ]
     },
     {
       "id": "default_049",
       "nameKey": "_default.exercise.tricepPushdowns",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Attach a straight bar or rope to a high cable pulley.",
+        "Stand facing the machine and grip the attachment with both hands.",
+        "Keep your elbows tucked at your sides and your upper arms stationary.",
+        "Push the handle down by extending your elbows until your arms are straight.",
+        "Squeeze your triceps at the bottom of the movement.",
+        "Slowly return to the starting position without letting your elbows drift forward."
+      ]
     },
     {
       "id": "default_050",
       "nameKey": "_default.exercise.overheadTricepExtension",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Stand or sit holding a dumbbell with both hands above your head.",
+        "Keep your upper arms close to your ears and elbows pointing forward.",
+        "Lower the weight behind your head by bending your elbows.",
+        "Descend until you feel a stretch in your triceps.",
+        "Extend your elbows to press the weight back up overhead.",
+        "Keep your core engaged and avoid arching your back."
+      ]
     },
     {
       "id": "default_051",
       "nameKey": "_default.exercise.closeGripBenchPress",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Lie on a flat bench and grip the barbell with hands about shoulder-width apart.",
+        "Unrack the bar and hold it above your chest with arms extended.",
+        "Lower the bar to your chest, keeping your elbows close to your body.",
+        "Touch the bar lightly to your lower chest or upper abdomen.",
+        "Press the bar back up by extending your arms, focusing on the triceps.",
+        "Keep your shoulder blades squeezed together throughout."
+      ]
     },
     {
       "id": "default_052",
       "nameKey": "_default.exercise.tricepKickbacks",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Hold a dumbbell in one hand and place your opposite knee and hand on a bench.",
+        "Keep your back flat and parallel to the floor.",
+        "Bring your upper arm parallel to your body with your elbow bent at 90 degrees.",
+        "Extend your arm backward until it is straight, squeezing your tricep.",
+        "Lower the weight back to the starting position with control.",
+        "Complete all reps on one side before switching."
+      ]
     },
     {
       "id": "default_053",
       "nameKey": "_default.exercise.skullCrushers",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Lie on a flat bench holding an EZ bar or dumbbells with arms extended above your chest.",
+        "Keep your upper arms perpendicular to the floor throughout the movement.",
+        "Lower the weight toward your forehead by bending your elbows.",
+        "Stop just before the weight reaches your forehead.",
+        "Extend your elbows to press the weight back to the starting position.",
+        "Keep the movement controlled and avoid flaring your elbows."
+      ]
     },
     {
       "id": "default_054",
       "nameKey": "_default.exercise.diamondPushups",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Get into a pushup position with your hands close together, forming a diamond shape with your thumbs and index fingers.",
+        "Keep your body in a straight line from head to heels.",
+        "Lower your chest toward your hands by bending your elbows.",
+        "Keep your elbows close to your body as you descend.",
+        "Push through your palms to extend your arms and return to the top, keeping your core engaged."
+      ]
     },
     {
       "id": "default_055",
       "nameKey": "_default.exercise.ropeTricepExtensions",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Attach a rope handle to a high cable pulley.",
+        "Grip the rope with both hands and stand facing the machine.",
+        "Keep your elbows tucked at your sides and your upper arms stationary.",
+        "Push the rope down and spread it apart at the bottom of the movement.",
+        "Squeeze your triceps hard at the bottom.",
+        "Slowly return to the starting position with control."
+      ]
     },
     {
       "id": "default_056",
       "nameKey": "_default.exercise.barbellCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Stand with feet shoulder-width apart, holding a barbell with an underhand grip.",
+        "Let the bar hang at arm's length in front of your thighs.",
+        "Keep your elbows close to your sides throughout the movement.",
+        "Curl the bar up by flexing your biceps until it reaches shoulder height.",
+        "Squeeze your biceps at the top of the movement.",
+        "Lower the bar slowly back to the starting position."
+      ]
     },
     {
       "id": "default_057",
       "nameKey": "_default.exercise.dumbbellCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Stand or sit holding a dumbbell in each hand at arm's length, palms facing forward.",
+        "Keep your elbows close to your sides throughout the movement.",
+        "Curl the dumbbells up by flexing your biceps.",
+        "Raise the weights until your forearms are vertical and biceps fully contracted.",
+        "Lower the weights slowly with control.",
+        "Perform with both arms simultaneously or alternate sides."
+      ]
     },
     {
       "id": "default_058",
       "nameKey": "_default.exercise.hammerCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Stand holding a dumbbell in each hand with palms facing your body (neutral grip).",
+        "Keep your elbows close to your sides throughout the movement.",
+        "Curl the dumbbells up while maintaining the neutral grip.",
+        "Raise the weights until your forearms are vertical.",
+        "Squeeze your biceps and forearms at the top.",
+        "Lower the weights slowly with control."
+      ]
     },
     {
       "id": "default_059",
       "nameKey": "_default.exercise.preacherCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Sit at a preacher curl bench with your upper arms resting on the pad.",
+        "Grip an EZ bar or dumbbells with an underhand grip.",
+        "Start with your arms fully extended over the pad.",
+        "Curl the weight up toward your shoulders by flexing your biceps.",
+        "Squeeze your biceps at the top of the movement.",
+        "Lower the weight slowly, fully extending your arms."
+      ]
     },
     {
       "id": "default_060",
       "nameKey": "_default.exercise.concentrationCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Sit on a bench with your legs spread and a dumbbell in one hand.",
+        "Rest your elbow against the inside of your thigh for support.",
+        "Start with your arm fully extended toward the floor.",
+        "Curl the weight up toward your shoulder, keeping your upper arm stationary.",
+        "Squeeze your bicep at the top of the movement.",
+        "Lower the weight slowly and repeat before switching arms."
+      ]
     },
     {
       "id": "default_061",
       "nameKey": "_default.exercise.cableCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Attach a straight bar or EZ bar to a low cable pulley.",
+        "Stand facing the machine and grip the bar with an underhand grip.",
+        "Keep your elbows at your sides and your upper arms stationary.",
+        "Curl the bar up toward your shoulders by flexing your biceps.",
+        "Squeeze your biceps at the top of the movement.",
+        "Lower the bar slowly with control."
+      ]
     },
     {
       "id": "default_062",
       "nameKey": "_default.exercise.inclineDumbbellCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Set a bench to a 45 to 60-degree incline and sit back holding a dumbbell in each hand.",
+        "Let your arms hang straight down toward the floor, palms facing forward.",
+        "Keep your elbows stationary and curl the dumbbells up toward your shoulders.",
+        "Squeeze your biceps at the top of the movement.",
+        "Lower the weights slowly, feeling the stretch as your arms fully extend."
+      ]
     },
     {
       "id": "default_063",
       "nameKey": "_default.exercise.ezBarCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Stand holding an EZ curl bar with an underhand grip on the angled portions.",
+        "Keep your feet shoulder-width apart and your elbows close to your sides.",
+        "Curl the bar up by flexing your biceps until it reaches shoulder height.",
+        "Squeeze your biceps at the top of the movement.",
+        "Lower the bar slowly back to the starting position with control."
+      ]
     },
     {
       "id": "default_064",
       "nameKey": "_default.exercise.situps",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with your knees bent and feet flat on the floor.",
+        "Place your hands behind your head or cross them over your chest.",
+        "Engage your core and lift your entire torso off the ground toward your knees.",
+        "Sit up until your chest approaches your thighs, keeping your hands light on your head.",
+        "Lower yourself back down with control."
+      ]
     },
     {
       "id": "default_065",
       "nameKey": "_default.exercise.crunches",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with your knees bent and feet flat on the floor.",
+        "Place your hands behind your head or cross them over your chest.",
+        "Engage your abs and curl your shoulders off the ground.",
+        "Focus on bringing your ribcage toward your pelvis.",
+        "Hold briefly at the top, squeezing your abs.",
+        "Lower back down slowly without fully relaxing."
+      ]
     },
     {
       "id": "default_066",
       "nameKey": "_default.exercise.bicycles",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with your hands behind your head and legs raised.",
+        "Lift your shoulders off the ground.",
+        "Bring one knee toward your chest while extending the other leg.",
+        "Rotate your torso to bring the opposite elbow toward the bent knee.",
+        "Switch sides in a pedaling motion.",
+        "Keep the movement controlled and your lower back pressed into the floor."
+      ]
     },
     {
       "id": "default_067",
       "nameKey": "_default.exercise.legRaises",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie flat on your back with your legs straight and arms at your sides.",
+        "Press your lower back into the floor to engage your core.",
+        "Raise your legs together toward the ceiling, keeping them straight.",
+        "Lift until your legs are perpendicular to the floor.",
+        "Lower your legs slowly back toward the floor without letting them touch.",
+        "Keep your movements controlled and avoid arching your back."
+      ]
     },
     {
       "id": "default_068",
       "nameKey": "_default.exercise.hangingKneeRaises",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Hang from a pull-up bar with your arms fully extended.",
+        "Engage your core and keep your body still.",
+        "Raise your knees toward your chest by curling your pelvis upward.",
+        "Pause briefly at the top of the movement.",
+        "Lower your legs slowly with control, avoiding any swinging."
+      ]
     },
     {
       "id": "default_069",
       "nameKey": "_default.exercise.plank",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Start in a forearm plank position with your elbows directly under your shoulders.",
+        "Extend your legs behind you, balancing on your toes.",
+        "Keep your body in a straight line from head to heels.",
+        "Engage your core, glutes, and quads throughout the hold.",
+        "Do not let your hips sag or pike up.",
+        "Hold the position for the desired duration while breathing steadily."
+      ]
     },
     {
       "id": "default_070",
       "nameKey": "_default.exercise.sidePlank",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your side with your elbow directly under your shoulder.",
+        "Stack your feet on top of each other or stagger them for more stability.",
+        "Lift your hips off the ground to form a straight line from head to feet.",
+        "Keep your core engaged and your top hip lifted.",
+        "Hold the position for the desired duration.",
+        "Lower with control and repeat on the other side."
+      ]
     },
     {
       "id": "default_071",
       "nameKey": "_default.exercise.russianTwists",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Sit on the floor with your knees bent and feet flat or slightly elevated.",
+        "Lean back slightly to engage your core while keeping your back straight.",
+        "Clasp your hands together or hold a weight in front of your chest.",
+        "Rotate your torso to one side, bringing your hands toward the floor beside your hip.",
+        "Rotate to the opposite side in a controlled motion.",
+        "Continue alternating sides while keeping your core tight."
+      ]
     },
     {
       "id": "default_072",
       "nameKey": "_default.exercise.mountainClimbers",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Start in a high plank position with your hands directly under your shoulders.",
+        "Keep your body in a straight line from head to heels.",
+        "Drive one knee toward your chest while keeping the other leg extended.",
+        "Quickly switch legs, bringing the opposite knee forward.",
+        "Continue alternating legs in a running motion.",
+        "Keep your hips low and your core engaged throughout."
+      ]
     },
     {
       "id": "default_073",
       "nameKey": "_default.exercise.abWheelRollout",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Kneel on the floor holding an ab wheel with both hands.",
+        "Position the wheel directly under your shoulders.",
+        "Roll the wheel forward slowly, extending your body as far as you can control.",
+        "Keep your core tight and avoid letting your lower back sag.",
+        "Roll the wheel back toward your knees by contracting your abs.",
+        "Keep the movement slow and controlled throughout."
+      ]
     },
     {
       "id": "default_074",
       "nameKey": "_default.exercise.hangingLegRaises",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Hang from a pull-up bar with your arms fully extended.",
+        "Keep your legs straight and together.",
+        "Raise your legs by hinging at the hips until they are parallel to the floor or higher.",
+        "Focus on curling your pelvis upward to engage your lower abs.",
+        "Lower your legs slowly with control, avoiding any swinging or momentum."
+      ]
     },
     {
       "id": "default_075",
       "nameKey": "_default.exercise.cableCrunches",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Attach a rope handle to a high cable pulley.",
+        "Kneel facing the machine and hold the rope at the sides of your head.",
+        "Keep your hips stationary throughout the movement.",
+        "Crunch downward by contracting your abs and bringing your elbows toward your thighs.",
+        "Squeeze your abs at the bottom of the movement.",
+        "Return to the starting position slowly with control."
+      ]
     },
     {
       "id": "default_076",
       "nameKey": "_default.exercise.running",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Warm up with a light jog or brisk walk for a few minutes.",
+        "Maintain an upright posture with a slight forward lean.",
+        "Land on the mid-foot and push off with your toes.",
+        "Keep your arms bent at 90 degrees and swing them naturally.",
+        "Breathe rhythmically and find a sustainable pace.",
+        "Cool down with a slower jog or walk afterward."
+      ]
     },
     {
       "id": "default_077",
       "nameKey": "_default.exercise.cycling",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Adjust the seat height so your leg has a slight bend at the bottom of the pedal stroke.",
+        "Grip the handlebars lightly and keep your shoulders relaxed.",
+        "Pedal in smooth, circular motions.",
+        "Keep your core engaged to maintain stability.",
+        "Adjust resistance or gears to match your desired intensity.",
+        "Maintain a steady cadence throughout your session."
+      ]
     },
     {
       "id": "default_078",
       "nameKey": "_default.exercise.rowing",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Sit on the rowing machine with your feet secured on the footpads.",
+        "Grip the handle with both hands and sit upright.",
+        "Push through your legs first to initiate the drive.",
+        "Lean back slightly and pull the handle to your lower chest.",
+        "Extend your arms, hinge forward at the hips, and bend your knees to return.",
+        "Keep the movement fluid and maintain a steady rhythm."
+      ]
     },
     {
       "id": "default_079",
       "nameKey": "_default.exercise.jumpRope",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Hold the handles at hip height with the rope behind you.",
+        "Swing the rope overhead and jump as it passes under your feet.",
+        "Land softly on the balls of your feet with knees slightly bent.",
+        "Keep your elbows close to your sides and use your wrists to turn the rope.",
+        "Jump just high enough to clear the rope.",
+        "Find a steady rhythm and breathe consistently."
+      ]
     },
     {
       "id": "default_080",
       "nameKey": "_default.exercise.elliptical",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Stand on the pedals and grip the handles lightly.",
+        "Begin moving your legs in an elliptical motion, pushing and pulling with your legs.",
+        "Keep your back straight and core engaged.",
+        "Push and pull the moving handles to engage your upper body.",
+        "Adjust resistance to match your desired intensity.",
+        "Maintain a steady pace throughout your workout."
+      ]
     },
     {
       "id": "default_081",
       "nameKey": "_default.exercise.stairClimber",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Step onto the machine and grip the handrails lightly for balance.",
+        "Begin stepping, alternating legs at a steady pace.",
+        "Keep your back straight and avoid leaning heavily on the rails.",
+        "Drive through your heels to engage your glutes and hamstrings.",
+        "Adjust the speed and resistance to match your fitness level.",
+        "Maintain a consistent rhythm throughout the session."
+      ]
     },
     {
       "id": "default_082",
       "nameKey": "_default.exercise.swimming",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Warm up with a few easy laps to prepare your body.",
+        "Choose your stroke and focus on proper technique.",
+        "Keep your body streamlined and your core engaged.",
+        "Breathe rhythmically, turning your head or lifting it as needed for your stroke.",
+        "Use your entire body to propel yourself through the water.",
+        "Cool down with slower laps at the end of your session."
+      ]
     },
     {
       "id": "default_083",
       "nameKey": "_default.exercise.burpees",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Start standing with feet shoulder-width apart.",
+        "Squat down and place your hands on the floor in front of you.",
+        "Jump your feet back into a plank position.",
+        "Perform a pushup (optional), then jump your feet back toward your hands.",
+        "Explode upward into a jump, reaching your arms overhead.",
+        "Land softly and immediately begin the next rep."
+      ]
     },
     {
       "id": "default_084",
       "nameKey": "_default.exercise.boxJumps",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Stand facing a sturdy box or platform with feet shoulder-width apart.",
+        "Bend your knees and swing your arms back to prepare.",
+        "Jump explosively onto the box, swinging your arms forward.",
+        "Land softly with both feet fully on the box, knees slightly bent.",
+        "Stand fully upright at the top.",
+        "Step or jump back down and repeat."
+      ]
     },
     {
       "id": "default_085",
       "nameKey": "_default.exercise.battleRopes",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Hold one end of the rope in each hand at arm's length.",
+        "Stand with feet shoulder-width apart and knees slightly bent.",
+        "Alternate raising and lowering each arm rapidly to create waves in the rope.",
+        "Keep your core engaged and your back straight.",
+        "Vary the movement with double waves, slams, or circles.",
+        "Maintain intensity for the desired duration."
+      ]
     },
     {
       "id": "default_086",
       "nameKey": "_default.exercise.barbellShrugs",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand holding a barbell in front of your thighs with an overhand grip.",
+        "Keep your feet shoulder-width apart and your arms straight.",
+        "Shrug your shoulders straight up toward your ears without rolling them.",
+        "Squeeze your traps at the top of the movement.",
+        "Lower your shoulders slowly back to the starting position with arms remaining straight."
+      ]
     },
     {
       "id": "default_087",
       "nameKey": "_default.exercise.dumbbellShrugs",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand holding a dumbbell in each hand at your sides.",
+        "Keep your feet shoulder-width apart and your arms straight.",
+        "Shrug your shoulders straight up toward your ears without rolling them.",
+        "Squeeze your traps at the top of the movement.",
+        "Lower your shoulders slowly with control, avoiding momentum."
+      ]
     },
     {
       "id": "default_088",
       "nameKey": "_default.exercise.widegripPullups",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Grip the bar with hands significantly wider than shoulder-width apart, palms facing away.",
+        "Hang with arms fully extended and shoulders engaged.",
+        "Pull your body upward by driving your elbows down and out.",
+        "Raise yourself until your chin clears the bar.",
+        "Lower yourself slowly with control, avoiding any kipping or momentum."
+      ]
     },
     {
       "id": "default_089",
       "nameKey": "_default.exercise.closegripPullups",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Grip the bar with hands about shoulder-width apart or narrower, palms facing away.",
+        "Hang with arms fully extended and core engaged.",
+        "Pull your body upward by driving your elbows straight down.",
+        "Raise yourself until your chin clears the bar.",
+        "Lower yourself slowly with control, keeping your body steady without swinging."
+      ]
     },
     {
       "id": "default_090",
       "nameKey": "_default.exercise.assistedPullups",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Set the assisted pull-up machine to your desired weight assistance.",
+        "Grip the bar with hands shoulder-width apart or wider, palms facing away.",
+        "Place your knees or feet on the assistance pad.",
+        "Pull your body upward until your chin clears the bar, engaging your back muscles.",
+        "Lower yourself slowly with control."
+      ]
     },
     {
       "id": "default_091",
       "nameKey": "_default.exercise.chestSupportedRows",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Adjust an incline bench to about 30 to 45 degrees and lie face down on it.",
+        "Hold a dumbbell in each hand with arms hanging straight down.",
+        "Pull the dumbbells up toward your hips by driving your elbows back.",
+        "Squeeze your shoulder blades together at the top.",
+        "Lower the weights slowly with control.",
+        "Keep your chest pressed against the bench throughout."
+      ]
     },
     {
       "id": "default_092",
       "nameKey": "_default.exercise.pendlayRows",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand over a barbell with feet shoulder-width apart.",
+        "Hinge at your hips until your torso is parallel to the floor.",
+        "Grip the bar with hands just outside shoulder width.",
+        "Pull the bar explosively to your lower chest, keeping your back flat.",
+        "Lower the bar completely to the floor with each rep.",
+        "Reset your position between reps to maintain strict form."
+      ]
     },
     {
       "id": "default_093",
       "nameKey": "_default.exercise.landmineRows",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Set up a barbell in a landmine attachment or secure it in a corner.",
+        "Straddle the bar and grip the end with both hands or a V-grip handle.",
+        "Hinge at your hips with a slight bend in your knees.",
+        "Pull the bar toward your chest, squeezing your back muscles.",
+        "Lower the bar slowly with control.",
+        "Keep your core braced and avoid rounding your back."
+      ]
     },
     {
       "id": "default_094",
       "nameKey": "_default.exercise.cablePulldowns",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Sit at the cable machine with thighs secured under the pad.",
+        "Grip the bar with the desired grip width and hand position.",
+        "Pull the bar down toward your upper chest while leaning back slightly.",
+        "Focus on driving your elbows down and squeezing your lats.",
+        "Return the bar slowly to the starting position with control, avoiding momentum."
+      ]
     },
     {
       "id": "default_095",
       "nameKey": "_default.exercise.seatedRowMachine",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Sit at the machine with your chest against the pad.",
+        "Grip the handles and start with arms extended.",
+        "Pull the handles toward your torso by driving your elbows back.",
+        "Squeeze your shoulder blades together at the end of the movement.",
+        "Return to the starting position with control.",
+        "Keep your chest pressed against the pad throughout."
+      ]
     },
     {
       "id": "default_096",
       "nameKey": "_default.exercise.reverseFly",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Bend forward at your hips until your torso is nearly parallel to the floor.",
+        "Hold a dumbbell in each hand with arms hanging straight down.",
+        "Keep a slight bend in your elbows throughout the movement.",
+        "Raise both arms out to the sides, squeezing your rear delts and upper back.",
+        "Lower the weights slowly with control, keeping your core tight."
+      ]
     },
     {
       "id": "default_097",
       "nameKey": "_default.exercise.goodMornings",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Position a barbell across your upper back, similar to a back squat.",
+        "Stand with feet shoulder-width apart.",
+        "Hinge at your hips and push them back while keeping your back flat.",
+        "Lower your torso until it is nearly parallel to the floor.",
+        "Drive your hips forward to return to standing.",
+        "Keep a slight bend in your knees throughout."
+      ]
     },
     {
       "id": "default_098",
       "nameKey": "_default.exercise.backExtensions",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Position yourself on a back extension bench with your hips on the pad.",
+        "Cross your arms over your chest or place your hands behind your head.",
+        "Lower your torso by bending at the hips.",
+        "Raise your torso back up until your body forms a straight line.",
+        "Squeeze your lower back and glutes at the top without hyperextending."
+      ]
     },
     {
       "id": "default_099",
       "nameKey": "_default.exercise.hyperextensions",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Position yourself face down on a hyperextension bench with your hips on the pad.",
+        "Secure your ankles under the footpads.",
+        "Cross your arms over your chest or place them behind your head.",
+        "Lower your upper body by bending at the hips.",
+        "Raise your torso until your body is in a straight line.",
+        "Hold briefly at the top, then lower with control."
+      ]
     },
     {
       "id": "default_100",
       "nameKey": "_default.exercise.reverseHyperextensions",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Lie face down on a bench or reverse hyperextension machine with your hips at the edge.",
+        "Grip the bench or handles for stability.",
+        "Let your legs hang down toward the floor.",
+        "Raise your legs by squeezing your glutes and lower back until they are in line with your body.",
+        "Lower your legs slowly with control, avoiding any swinging or momentum."
+      ]
     },
     {
       "id": "default_101",
       "nameKey": "_default.exercise.dumbbellPullover",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Lie on a flat bench with only your upper back supported and feet flat on the floor.",
+        "Hold a single dumbbell with both hands above your chest, arms extended.",
+        "Lower the weight in an arc behind your head while keeping a slight bend in your elbows.",
+        "Feel a stretch through your chest and lats at the bottom.",
+        "Pull the weight back to the starting position using your chest and lats.",
+        "Keep your hips stable and core engaged throughout."
+      ]
     },
     {
       "id": "default_102",
       "nameKey": "_default.exercise.machineFly",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Adjust the seat so the handles are at chest height.",
+        "Sit with your back flat against the pad and grip the handles.",
+        "Start with arms extended to the sides at chest level.",
+        "Bring your arms together in front of your chest in a hugging motion.",
+        "Squeeze your chest at the peak of the movement.",
+        "Return slowly to the starting position with control."
+      ]
     },
     {
       "id": "default_103",
       "nameKey": "_default.exercise.landminePress",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Secure one end of a barbell in a landmine attachment or corner.",
+        "Stand or kneel and grip the free end of the bar at chest height.",
+        "Press the bar up and forward in an arc.",
+        "Fully extend your arm at the top of the movement.",
+        "Lower the bar back to your chest with control.",
+        "Perform all reps on one side before switching if doing single arm."
+      ]
     },
     {
       "id": "default_104",
       "nameKey": "_default.exercise.inclineCableFly",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Set an adjustable bench to a 30 to 45-degree incline between two low cable pulleys.",
+        "Grip a handle in each hand and lie back on the bench.",
+        "Start with arms extended to the sides with a slight bend in your elbows.",
+        "Bring your hands together above your chest in a wide arcing motion.",
+        "Squeeze your chest at the top of the movement.",
+        "Lower your arms slowly back to the starting position."
+      ]
     },
     {
       "id": "default_105",
       "nameKey": "_default.exercise.singleArmCablePress",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Set the cable pulley to chest height and stand sideways to the machine.",
+        "Grip the handle with the hand closest to the machine.",
+        "Stagger your stance for balance and lean slightly forward.",
+        "Press the handle forward and across your body.",
+        "Fully extend your arm while squeezing your chest.",
+        "Return slowly to the starting position and repeat before switching sides."
+      ]
     },
     {
       "id": "default_106",
       "nameKey": "_default.exercise.dumbbellFloorPress",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Lie on the floor holding a dumbbell in each hand.",
+        "Bend your knees with feet flat on the floor for stability.",
+        "Press the dumbbells up until your arms are fully extended.",
+        "Lower the weights until your upper arms touch the floor.",
+        "Pause briefly at the bottom, then press back up.",
+        "Keep your wrists straight and core engaged throughout."
+      ]
     },
     {
       "id": "default_107",
       "nameKey": "_default.exercise.pistolSquats",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand on one leg with the other leg extended straight in front of you.",
+        "Extend your arms forward for balance.",
+        "Lower yourself by bending your standing leg while keeping the other leg off the ground.",
+        "Descend as low as possible while maintaining balance.",
+        "Drive through your heel to stand back up.",
+        "Complete all reps on one leg before switching."
+      ]
     },
     {
       "id": "default_108",
       "nameKey": "_default.exercise.boxSquats",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Position a box or bench behind you at knee height or slightly below.",
+        "Stand with the barbell on your upper back, feet shoulder-width apart.",
+        "Push your hips back and lower yourself until you sit on the box.",
+        "Pause briefly on the box without fully relaxing.",
+        "Drive through your heels to stand back up explosively.",
+        "Keep your back straight and core tight throughout."
+      ]
     },
     {
       "id": "default_109",
       "nameKey": "_default.exercise.sissySquats",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand near a wall or rack for balance support if needed.",
+        "Rise onto the balls of your feet.",
+        "Lean your torso back while bending your knees and lowering your body.",
+        "Keep your hips forward and body in a straight line from knees to shoulders.",
+        "Lower until you feel a strong stretch in your quads.",
+        "Push through your toes to return to standing."
+      ]
     },
     {
       "id": "default_110",
       "nameKey": "_default.exercise.zercherSquats",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Hold the barbell in the crooks of your elbows with arms bent.",
+        "Stand with feet shoulder-width apart.",
+        "Squat down by pushing your hips back and bending your knees.",
+        "Keep your torso upright and core braced.",
+        "Descend until your thighs are parallel to the floor or lower.",
+        "Drive through your heels to return to standing."
+      ]
     },
     {
       "id": "default_111",
       "nameKey": "_default.exercise.legPressWideStance",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit on the leg press machine with your back flat against the pad.",
+        "Place your feet high and wide on the platform, toes pointed slightly outward.",
+        "Release the safety handles and lower the weight toward your chest.",
+        "Lower until your knees are bent at about 90 degrees.",
+        "Press through your heels to extend your legs.",
+        "Do not lock out your knees completely at the top."
+      ]
     },
     {
       "id": "default_112",
       "nameKey": "_default.exercise.legPressNarrowStance",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit on the leg press machine with your back flat against the pad.",
+        "Place your feet close together in the center of the platform.",
+        "Release the safety handles and lower the weight toward your chest.",
+        "Lower until your knees are bent at about 90 degrees.",
+        "Press through your feet to extend your legs.",
+        "Do not lock out your knees completely at the top."
+      ]
     },
     {
       "id": "default_113",
       "nameKey": "_default.exercise.nordics",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Kneel on a pad with your feet secured under a fixed object or held by a partner.",
+        "Keep your body straight from knees to head.",
+        "Lower your torso toward the ground by extending at the knees.",
+        "Control the descent as long as possible using your hamstrings.",
+        "Catch yourself with your hands and push back up to the starting position."
+      ]
     },
     {
       "id": "default_114",
       "nameKey": "_default.exercise.gluteHamRaise",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Position yourself on a glute-ham developer with your thighs on the pad.",
+        "Secure your feet between the rollers.",
+        "Start with your torso perpendicular to the floor.",
+        "Lower your torso toward the floor by extending at the knees.",
+        "Pull yourself back up by contracting your hamstrings and glutes.",
+        "Keep your back straight throughout the movement."
+      ]
     },
     {
       "id": "default_115",
       "nameKey": "_default.exercise.seatedLegCurls",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit on the machine with your back against the pad and legs extended.",
+        "Position the pad just above your heels.",
+        "Curl your legs back by bending your knees.",
+        "Squeeze your hamstrings at the bottom of the movement.",
+        "Slowly return to the starting position with control."
+      ]
     },
     {
       "id": "default_116",
       "nameKey": "_default.exercise.standingLegCurls",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand at the machine and position the pad behind your ankle.",
+        "Hold the handles for stability.",
+        "Curl your leg back by bending your knee.",
+        "Squeeze your hamstring at the top of the movement.",
+        "Lower your leg slowly with control.",
+        "Complete all reps on one leg before switching."
+      ]
     },
     {
       "id": "default_117",
       "nameKey": "_default.exercise.lyingLegCurls",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Lie face down on the machine with your ankles under the pad.",
+        "Keep your hips pressed against the bench.",
+        "Curl your legs up by bending your knees.",
+        "Squeeze your hamstrings at the top of the movement.",
+        "Lower your legs slowly with control, keeping your hips on the pad."
+      ]
     },
     {
       "id": "default_118",
       "nameKey": "_default.exercise.singleLegDeadlift",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand on one leg holding a dumbbell or kettlebell in the opposite hand.",
+        "Hinge at your hips while extending your free leg straight behind you.",
+        "Lower the weight toward the floor while keeping your back flat.",
+        "Keep a slight bend in your standing leg.",
+        "Return to standing by driving your hips forward.",
+        "Complete all reps on one side before switching."
+      ]
     },
     {
       "id": "default_119",
       "nameKey": "_default.exercise.cableKickbacks",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Attach an ankle strap to a low cable pulley.",
+        "Face the machine and secure the strap around your ankle.",
+        "Hold the machine for stability and lean forward slightly.",
+        "Kick your leg straight back by squeezing your glutes.",
+        "Keep your leg straight and avoid arching your lower back.",
+        "Return slowly and repeat before switching legs."
+      ]
     },
     {
       "id": "default_120",
       "nameKey": "_default.exercise.abductorMachine",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit on the machine with your back against the pad.",
+        "Place your legs against the pads with knees bent.",
+        "Push your legs outward against the resistance.",
+        "Squeeze your outer thighs at the widest point.",
+        "Return slowly to the starting position.",
+        "Keep your back pressed against the pad throughout."
+      ]
     },
     {
       "id": "default_121",
       "nameKey": "_default.exercise.adductorMachine",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Sit on the machine with your back against the pad.",
+        "Place your legs against the pads with legs spread apart.",
+        "Squeeze your legs together against the resistance.",
+        "Hold briefly at the closest point.",
+        "Return slowly to the starting position.",
+        "Keep your movements controlled throughout."
+      ]
     },
     {
       "id": "default_122",
       "nameKey": "_default.exercise.stepUps",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand facing a sturdy box or bench at knee height.",
+        "Place one foot entirely on the box.",
+        "Drive through your front heel to step up onto the box.",
+        "Bring your trailing leg up and stand fully upright.",
+        "Step back down with the trailing leg first.",
+        "Complete all reps on one leg before switching."
+      ]
     },
     {
       "id": "default_123",
       "nameKey": "_default.exercise.reverseGripBenchPress",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Lie on a flat bench and grip the bar with palms facing you.",
+        "Position your hands slightly wider than shoulder width.",
+        "Unrack the bar and hold it above your chest with arms extended.",
+        "Lower the bar to your lower chest with elbows tucked.",
+        "Press the bar back up to the starting position.",
+        "Keep your wrists straight and movements controlled."
+      ]
     },
     {
       "id": "default_124",
       "nameKey": "_default.exercise.reverseCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Stand holding a barbell or EZ bar with an overhand grip.",
+        "Keep your elbows close to your sides.",
+        "Curl the bar up by flexing your forearms and biceps.",
+        "Raise the bar to shoulder height, engaging your forearms.",
+        "Lower the bar slowly with control."
+      ]
     },
     {
       "id": "default_125",
       "nameKey": "_default.exercise.spiderCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Lie face down on an incline bench with your arms hanging straight down.",
+        "Hold a barbell or dumbbells with an underhand grip.",
+        "Curl the weight up toward your shoulders.",
+        "Keep your upper arms perpendicular to the floor.",
+        "Squeeze your biceps at the top of the movement.",
+        "Lower the weight slowly with control."
+      ]
     },
     {
       "id": "default_126",
       "nameKey": "_default.exercise.zottmanCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Stand holding dumbbells at your sides with palms facing forward.",
+        "Curl the weights up toward your shoulders.",
+        "At the top, rotate your wrists so palms face down.",
+        "Lower the weights slowly with the overhand grip to engage your forearms.",
+        "At the bottom, rotate your wrists back to palms forward and repeat."
+      ]
     },
     {
       "id": "default_127",
       "nameKey": "_default.exercise.seatedInclineCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Set an incline bench to 45 to 60 degrees and sit back with dumbbells.",
+        "Let your arms hang straight down toward the floor.",
+        "Curl the weights up while keeping your upper arms stationary.",
+        "Squeeze your biceps at the top of the movement.",
+        "Lower the weights slowly with control, feeling the stretch at the bottom."
+      ]
     },
     {
       "id": "default_128",
       "nameKey": "_default.exercise.cableHammerCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Attach a rope handle to a low cable pulley.",
+        "Stand facing the machine and grip the rope with a neutral grip.",
+        "Keep your elbows close to your sides.",
+        "Curl the rope up toward your shoulders.",
+        "Squeeze your biceps and forearms at the top.",
+        "Lower slowly with control."
+      ]
     },
     {
       "id": "default_129",
       "nameKey": "_default.exercise.dragCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Stand holding a barbell with an underhand grip at arm's length.",
+        "Curl the bar up while pulling your elbows back behind your body.",
+        "Keep the bar close to your body, dragging it up your torso.",
+        "Squeeze your biceps hard at the top of the movement.",
+        "Lower the bar by reversing the motion with control."
+      ]
     },
     {
       "id": "default_130",
       "nameKey": "_default.exercise.wristCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Sit on a bench and rest your forearms on your thighs, palms facing up.",
+        "Hold a barbell or dumbbells with your wrists hanging off your knees.",
+        "Lower the weight by extending your wrists.",
+        "Curl the weight up by flexing your wrists, squeezing your forearms.",
+        "Keep the movement slow and controlled."
+      ]
     },
     {
       "id": "default_131",
       "nameKey": "_default.exercise.reverseWristCurls",
-      "muscleGroup": "biceps"
+      "muscleGroup": "biceps",
+      "instructions": [
+        "Sit on a bench and rest your forearms on your thighs, palms facing down.",
+        "Hold a barbell or dumbbells with your wrists hanging off your knees.",
+        "Lower the weight by flexing your wrists downward.",
+        "Raise the weight by extending your wrists upward, engaging your forearm extensors.",
+        "Keep the movement slow and controlled."
+      ]
     },
     {
       "id": "default_132",
       "nameKey": "_default.exercise.seatedTricepPress",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Sit on a bench with back support holding a dumbbell with both hands overhead.",
+        "Grip the dumbbell by the weight, not the handle.",
+        "Lower the weight behind your head by bending your elbows.",
+        "Keep your upper arms close to your head and stationary.",
+        "Extend your arms to press the weight back overhead.",
+        "Squeeze your triceps at the top."
+      ]
     },
     {
       "id": "default_133",
       "nameKey": "_default.exercise.oneArmTricepExtension",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Stand or sit holding a dumbbell in one hand overhead.",
+        "Keep your upper arm close to your head and stationary.",
+        "Lower the weight behind your head by bending your elbow.",
+        "Extend your arm to raise the weight back overhead.",
+        "Squeeze your tricep at the top of the movement.",
+        "Complete all reps on one arm before switching."
+      ]
     },
     {
       "id": "default_134",
       "nameKey": "_default.exercise.tricepDips",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Grip the parallel bars and lift yourself up with arms extended.",
+        "Keep your torso upright to emphasize the triceps.",
+        "Lower your body by bending your elbows.",
+        "Descend until your upper arms are parallel to the floor.",
+        "Press back up by extending your arms, keeping your torso upright."
+      ]
     },
     {
       "id": "default_135",
       "nameKey": "_default.exercise.benchDips",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Sit on a bench and place your hands beside your hips.",
+        "Slide your hips off the bench with legs extended or bent.",
+        "Lower your body by bending your elbows to about 90 degrees.",
+        "Keep your back close to the bench.",
+        "Press back up by extending your arms.",
+        "Keep your shoulders down and away from your ears."
+      ]
     },
     {
       "id": "default_136",
       "nameKey": "_default.exercise.reverseGripTricepPushdowns",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Attach a straight bar to a high cable pulley.",
+        "Grip the bar with palms facing up.",
+        "Keep your elbows tucked at your sides.",
+        "Push the bar down by extending your arms.",
+        "Squeeze your triceps at the bottom.",
+        "Return slowly to the starting position."
+      ]
     },
     {
       "id": "default_137",
       "nameKey": "_default.exercise.jmPress",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Lie on a flat bench holding a barbell with a close grip.",
+        "Lower the bar toward your chin by bending your elbows.",
+        "Keep your elbows pointed forward, not flared.",
+        "Stop when your forearms touch your biceps.",
+        "Press the bar back up by extending your arms, squeezing your triceps."
+      ]
     },
     {
       "id": "default_138",
       "nameKey": "_default.exercise.tatePress",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Lie on a flat bench holding dumbbells above your chest.",
+        "Point your elbows outward with dumbbells touching.",
+        "Lower the dumbbells toward your chest by bending your elbows.",
+        "Keep your upper arms in position throughout.",
+        "Press the dumbbells back up by extending your arms.",
+        "Squeeze your triceps at the top."
+      ]
     },
     {
       "id": "default_139",
       "nameKey": "_default.exercise.seatedDumbbellPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Sit on a bench with back support holding dumbbells at shoulder height.",
+        "Keep your palms facing forward and elbows out to the sides.",
+        "Press the dumbbells overhead until your arms are fully extended.",
+        "Bring the dumbbells together at the top.",
+        "Lower the weights back to shoulder height with control.",
+        "Keep your core engaged and back against the pad."
+      ]
     },
     {
       "id": "default_140",
       "nameKey": "_default.exercise.machineShoulderPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Adjust the seat so the handles are at shoulder height.",
+        "Sit with your back against the pad and grip the handles.",
+        "Press the handles overhead until your arms are extended but not locked.",
+        "Lower the handles back to the starting position with control.",
+        "Keep your back pressed against the pad throughout."
+      ]
     },
     {
       "id": "default_141",
       "nameKey": "_default.exercise.pikePushups",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Start in a pushup position and walk your feet toward your hands.",
+        "Raise your hips high to form an inverted V shape.",
+        "Keep your legs and arms as straight as possible.",
+        "Lower your head toward the floor by bending your elbows.",
+        "Push back up to the starting position in a controlled motion."
+      ]
     },
     {
       "id": "default_142",
       "nameKey": "_default.exercise.behindTheNeckPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Sit or stand with a barbell resting on your upper back.",
+        "Grip the bar wider than shoulder-width apart.",
+        "Press the bar straight up overhead.",
+        "Lower the bar behind your head to ear level with control.",
+        "Keep your core tight and avoid excessive arching."
+      ]
     },
     {
       "id": "default_143",
       "nameKey": "_default.exercise.dumbbellScaption",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand holding dumbbells at your sides.",
+        "Raise your arms forward at a 30 to 45-degree angle from your body.",
+        "Keep your thumbs pointing upward throughout.",
+        "Lift to shoulder height or slightly higher.",
+        "Lower the weights slowly with control, avoiding swinging."
+      ]
     },
     {
       "id": "default_144",
       "nameKey": "_default.exercise.cableLateralRaises",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand sideways to a low cable pulley.",
+        "Grip the handle with the arm furthest from the machine.",
+        "Keep a slight bend in your elbow.",
+        "Raise your arm out to the side until it reaches shoulder height.",
+        "Lower slowly with control.",
+        "Complete all reps before switching sides."
+      ]
     },
     {
       "id": "default_145",
       "nameKey": "_default.exercise.bentOverLateralRaises",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand with feet shoulder-width apart holding dumbbells.",
+        "Bend forward at your hips until your torso is nearly parallel to the floor.",
+        "Let the dumbbells hang straight down with a slight bend in your elbows.",
+        "Raise both arms out to the sides until they reach shoulder height.",
+        "Squeeze your rear delts at the top.",
+        "Lower slowly with control."
+      ]
     },
     {
       "id": "default_146",
       "nameKey": "_default.exercise.reverseDeclineFly",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Lie face down on a decline bench holding dumbbells.",
+        "Let your arms hang straight down with a slight bend in your elbows.",
+        "Raise both arms out to the sides until they reach shoulder height.",
+        "Squeeze your rear delts and upper back at the top.",
+        "Lower the weights slowly with control.",
+        "Keep your chest against the bench throughout."
+      ]
     },
     {
       "id": "default_147",
       "nameKey": "_default.exercise.seatedBentOverLateralRaises",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Sit on a bench and lean forward with your chest toward your thighs.",
+        "Hold dumbbells with your arms hanging straight down.",
+        "Keep a slight bend in your elbows.",
+        "Raise both arms out to the sides until they reach shoulder height.",
+        "Squeeze your rear delts at the top.",
+        "Lower slowly with control."
+      ]
     },
     {
       "id": "default_148",
       "nameKey": "_default.exercise.plateFrontRaise",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand holding a weight plate at the sides with both hands.",
+        "Hold the plate in front of your thighs with arms slightly bent.",
+        "Raise the plate in front of you to shoulder height.",
+        "Keep your arms straight or slightly bent throughout.",
+        "Lower the plate slowly with control, avoiding momentum."
+      ]
     },
     {
       "id": "default_149",
       "nameKey": "_default.exercise.barbellFrontRaise",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand holding a barbell in front of your thighs with an overhand grip.",
+        "Keep your arms straight with a slight bend in your elbows.",
+        "Raise the bar in front of you to shoulder height.",
+        "Keep your core engaged and avoid leaning back.",
+        "Lower the bar slowly with control."
+      ]
     },
     {
       "id": "default_150",
       "nameKey": "_default.exercise.highPulls",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand with feet shoulder-width apart holding a barbell with an overhand grip.",
+        "Start with the bar at thigh level.",
+        "Pull the bar up explosively toward your chin.",
+        "Lead with your elbows, keeping them higher than your wrists.",
+        "Lower the bar with control.",
+        "Use your legs and hips to generate power."
+      ]
     },
     {
       "id": "default_151",
       "nameKey": "_default.exercise.vUps",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie flat on your back with arms extended overhead.",
+        "Keep your legs straight and together.",
+        "Simultaneously lift your legs and torso, reaching for your toes.",
+        "Form a V shape with your body at the top.",
+        "Lower your arms and legs back down with control, stopping just before they touch the ground."
+      ]
     },
     {
       "id": "default_152",
       "nameKey": "_default.exercise.reverseCrunches",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with your arms at your sides.",
+        "Lift your legs with knees bent at 90 degrees.",
+        "Curl your hips off the floor toward your chest.",
+        "Focus on using your lower abs to lift, not momentum.",
+        "Lower your hips back down slowly.",
+        "Keep your upper back on the floor throughout."
+      ]
     },
     {
       "id": "default_153",
       "nameKey": "_default.exercise.flutterKicks",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with your hands under your hips for support.",
+        "Lift both legs a few inches off the ground.",
+        "Alternate kicking your legs up and down in small, controlled movements.",
+        "Keep your legs straight and core engaged.",
+        "Press your lower back into the floor.",
+        "Continue for the desired duration or rep count."
+      ]
     },
     {
       "id": "default_154",
       "nameKey": "_default.exercise.scissorKicks",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with your hands under your hips.",
+        "Lift both legs a few inches off the ground.",
+        "Cross one leg over the other in a scissor motion.",
+        "Alternate which leg crosses on top in controlled movements.",
+        "Keep your core tight and lower back pressed into the floor."
+      ]
     },
     {
       "id": "default_155",
       "nameKey": "_default.exercise.deadBug",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with arms extended toward the ceiling.",
+        "Lift your legs with knees bent at 90 degrees.",
+        "Lower your right arm and left leg toward the floor simultaneously.",
+        "Keep your lower back pressed into the floor.",
+        "Return to the starting position and switch sides.",
+        "Move slowly with control throughout the exercise."
+      ]
     },
     {
       "id": "default_156",
       "nameKey": "_default.exercise.birdDog",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Start on all fours with hands under shoulders and knees under hips.",
+        "Extend your right arm forward and left leg back simultaneously.",
+        "Keep your hips and shoulders square to the floor.",
+        "Hold briefly at full extension.",
+        "Return to the starting position and switch sides.",
+        "Keep your core tight and avoid arching your back."
+      ]
     },
     {
       "id": "default_157",
       "nameKey": "_default.exercise.hollowBodyHold",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with arms extended overhead.",
+        "Press your lower back into the floor.",
+        "Lift your arms, head, shoulders, and legs a few inches off the ground.",
+        "Form a slight banana shape with your body.",
+        "Keep your core fully engaged throughout the hold.",
+        "Hold for the desired duration while breathing steadily."
+      ]
     },
     {
       "id": "default_158",
       "nameKey": "_default.exercise.toesToBar",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Hang from a pull-up bar with arms fully extended.",
+        "Engage your core and initiate a slight swing if needed.",
+        "Raise your legs by flexing at the hips.",
+        "Touch your toes to the bar between your hands.",
+        "Lower your legs with control, minimizing excessive swing."
+      ]
     },
     {
       "id": "default_159",
       "nameKey": "_default.exercise.lSit",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Support yourself on parallel bars, parallettes, or the floor.",
+        "Keep your arms straight and locked.",
+        "Lift your legs until they are parallel to the floor.",
+        "Keep your legs straight and together.",
+        "Engage your core and hip flexors to maintain the position.",
+        "Hold for the desired duration."
+      ]
     },
     {
       "id": "default_160",
       "nameKey": "_default.exercise.dragonFlags",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on a bench and grip behind your head for stability.",
+        "Lift your entire body from shoulders to toes into a straight line.",
+        "Lower your body slowly toward the bench, keeping it rigid.",
+        "Stop just before your lower back touches the bench.",
+        "Raise your body back up using your core.",
+        "Keep the movement slow and controlled."
+      ]
     },
     {
       "id": "default_161",
       "nameKey": "_default.exercise.windshieldWipers",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with arms extended out to the sides.",
+        "Lift your legs straight up toward the ceiling.",
+        "Lower both legs to one side while keeping them straight.",
+        "Stop before your legs touch the ground.",
+        "Return to center and lower to the other side.",
+        "Keep your shoulders pressed into the floor."
+      ]
     },
     {
       "id": "default_162",
       "nameKey": "_default.exercise.paloffPress",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Set a cable machine to chest height and stand sideways to it.",
+        "Hold the handle at your chest with both hands.",
+        "Press the handle straight out in front of you.",
+        "Resist the rotation by engaging your core.",
+        "Hold briefly, then return the handle to your chest.",
+        "Complete all reps before switching sides."
+      ]
     },
     {
       "id": "default_163",
       "nameKey": "_default.exercise.woodchops",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Set a cable machine to a high position and stand sideways.",
+        "Grip the handle with both hands above your shoulder.",
+        "Pull the handle diagonally across your body toward your opposite hip.",
+        "Rotate your torso and pivot your feet as you move.",
+        "Return slowly to the starting position.",
+        "Complete all reps before switching sides."
+      ]
     },
     {
       "id": "default_164",
       "nameKey": "_default.exercise.obliqueCrunches",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back with knees bent and feet flat on the floor.",
+        "Place your hands behind your head.",
+        "Lift your shoulders off the ground and rotate to one side.",
+        "Bring your elbow toward the opposite knee, squeezing your obliques.",
+        "Lower back down and repeat on the same side or alternate."
+      ]
     },
     {
       "id": "default_165",
       "nameKey": "_default.exercise.sprints",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Start with a brief warm-up jog.",
+        "Set a distance or time for your sprint intervals.",
+        "Sprint at maximum effort for the set distance or duration.",
+        "Focus on driving your arms and lifting your knees.",
+        "Rest or walk between sprints to recover.",
+        "Cool down with a light jog or walk afterward."
+      ]
     },
     {
       "id": "default_166",
       "nameKey": "_default.exercise.hiitTraining",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Choose exercises that target different muscle groups.",
+        "Perform each exercise at high intensity for a set period.",
+        "Rest briefly between exercises.",
+        "Cycle through all exercises to complete one round.",
+        "Rest between rounds and repeat for the desired number of rounds while maintaining proper form."
+      ]
     },
     {
       "id": "default_167",
       "nameKey": "_default.exercise.assaultBike",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Sit on the bike and grip the handles.",
+        "Push and pull the handles while pedaling with your legs.",
+        "Maintain an upright posture with core engaged.",
+        "Adjust the intensity by varying your speed.",
+        "Use both your arms and legs to generate power.",
+        "Maintain a consistent pace or interval pattern."
+      ]
     },
     {
       "id": "default_168",
       "nameKey": "_default.exercise.rowingMachine",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Sit on the rower with feet secured on the footpads.",
+        "Grip the handle with both hands.",
+        "Push through your legs first to initiate the drive.",
+        "Lean back slightly and pull the handle to your lower chest.",
+        "Extend arms, hinge forward, and bend knees to return.",
+        "Keep the movement fluid and maintain a steady rhythm."
+      ]
     },
     {
       "id": "default_169",
       "nameKey": "_default.exercise.skiErg",
-      "muscleGroup": "cardio"
+      "muscleGroup": "cardio",
+      "instructions": [
+        "Stand facing the machine and grip both handles.",
+        "Raise your arms overhead to start.",
+        "Pull the handles down explosively while hinging at the hips.",
+        "Drive your arms past your hips.",
+        "Stand back up and raise your arms to repeat.",
+        "Maintain a powerful rhythm throughout."
+      ]
     },
     {
       "id": "default_170",
       "nameKey": "_default.exercise.farmersWalk",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Pick up heavy dumbbells or farmer's walk handles.",
+        "Stand tall with shoulders back and core engaged.",
+        "Walk forward with controlled, steady steps.",
+        "Keep your grip tight and arms at your sides.",
+        "Walk for the desired distance or time.",
+        "Set the weights down with control."
+      ]
     },
     {
       "id": "default_171",
       "nameKey": "_default.exercise.rackPulls",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Set up a barbell on safety pins at knee height or above.",
+        "Stand with feet hip-width apart and grip the bar.",
+        "Drive through your heels and extend your hips and knees.",
+        "Pull the bar up while keeping your back flat.",
+        "Squeeze your glutes and upper back at the top.",
+        "Lower the bar back to the pins with control."
+      ]
     },
     {
       "id": "default_172",
       "nameKey": "_default.exercise.snatchGripDeadlift",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand over a barbell with feet hip-width apart.",
+        "Grip the bar with a very wide snatch grip.",
+        "Push your hips back and bend your knees to lower to the bar.",
+        "Keep your chest up and back flat.",
+        "Drive through your heels to stand, pulling the bar up.",
+        "Lower the bar with control, keeping it close to your body."
+      ]
     },
     {
       "id": "default_173",
       "nameKey": "_default.exercise.deficitDeadlift",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand on a platform or weight plates to create a deficit.",
+        "Set up as you would for a conventional deadlift.",
+        "Grip the bar and keep your back flat.",
+        "Drive through your heels to lift the bar.",
+        "Extend your hips and knees to stand fully.",
+        "Lower the bar with control back to the floor."
+      ]
     },
     {
       "id": "default_174",
       "nameKey": "_default.exercise.trapBarDeadlift",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Step inside the trap bar and stand with feet hip-width apart.",
+        "Grip the handles at your sides.",
+        "Push your hips back and bend your knees to lower down.",
+        "Keep your chest up and back flat.",
+        "Drive through your heels to stand up.",
+        "Lower the bar with control and repeat."
+      ]
     },
     {
       "id": "default_175",
       "nameKey": "_default.exercise.cleanAndPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand with a barbell on the floor in front of you.",
+        "Clean the bar to your shoulders by pulling it explosively and catching it in a front rack position.",
+        "Dip slightly at the knees then press the bar overhead.",
+        "Lock out your arms fully at the top.",
+        "Lower the bar back to your shoulders then to the floor.",
+        "Reset and repeat."
+      ]
     },
     {
       "id": "default_176",
       "nameKey": "_default.exercise.powerClean",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand over a barbell with feet hip-width apart.",
+        "Grip the bar just outside your legs.",
+        "Pull the bar explosively from the floor by extending your hips and knees.",
+        "Shrug your shoulders and pull yourself under the bar.",
+        "Catch the bar in a front rack position with a quarter squat.",
+        "Stand fully and lower the bar with control."
+      ]
     },
     {
       "id": "default_177",
       "nameKey": "_default.exercise.hangClean",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Hold a barbell at hip height with arms extended.",
+        "Hinge slightly at the hips to lower the bar to just above your knees.",
+        "Explosively extend your hips and pull the bar upward.",
+        "Shrug and pull yourself under the bar.",
+        "Catch the bar in a front rack position.",
+        "Stand fully and reset to the hang position."
+      ]
     },
     {
       "id": "default_178",
       "nameKey": "_default.exercise.snatch",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand over a barbell with a wide snatch grip.",
+        "Lower your hips with your chest up and back flat.",
+        "Pull the bar explosively from the floor.",
+        "As the bar rises, pull yourself under and catch it overhead with arms locked.",
+        "Stand fully with the bar overhead.",
+        "Lower the bar with control."
+      ]
     },
     {
       "id": "default_179",
       "nameKey": "_default.exercise.hangSnatch",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Hold a barbell at hip height with a wide snatch grip.",
+        "Hinge at your hips to lower the bar to just above your knees.",
+        "Explosively extend your hips and pull the bar upward.",
+        "Pull yourself under the bar and catch it overhead with arms locked.",
+        "Stand fully with the bar overhead.",
+        "Lower the bar and reset to the hang position."
+      ]
     },
     {
       "id": "default_180",
       "nameKey": "_default.exercise.pushPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Hold a barbell in a front rack position at your shoulders.",
+        "Dip slightly by bending your knees.",
+        "Explosively extend your legs and press the bar overhead.",
+        "Lock out your arms fully at the top.",
+        "Lower the bar back to your shoulders with control.",
+        "Reset and repeat."
+      ]
     },
     {
       "id": "default_181",
       "nameKey": "_default.exercise.pushJerk",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Hold a barbell in a front rack position at your shoulders.",
+        "Dip by bending your knees.",
+        "Drive the bar up explosively and drop under it.",
+        "Catch the bar overhead with a partial squat.",
+        "Stand fully to complete the lift.",
+        "Lower the bar back to your shoulders."
+      ]
     },
     {
       "id": "default_182",
       "nameKey": "_default.exercise.splitJerk",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Hold a barbell in a front rack position at your shoulders.",
+        "Dip by bending your knees.",
+        "Drive the bar up explosively and split your legs front and back.",
+        "Catch the bar overhead with one foot forward and one back.",
+        "Bring your feet together while keeping the bar locked out.",
+        "Lower the bar back to your shoulders."
+      ]
     },
     {
       "id": "default_183",
       "nameKey": "_default.exercise.thrusters",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Hold a barbell in a front rack position at your shoulders.",
+        "Squat down until your thighs are parallel to the floor.",
+        "Drive up explosively and press the bar overhead in one fluid motion.",
+        "Lock out your arms at the top.",
+        "Lower the bar back to your shoulders as you descend into the next squat.",
+        "Keep the movement continuous and rhythmic."
+      ]
     },
     {
       "id": "default_184",
       "nameKey": "_default.exercise.wallBalls",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand facing a wall holding a medicine ball at your chest.",
+        "Squat down until your thighs are parallel to the floor.",
+        "Drive up explosively using your legs and throw the ball to a target on the wall.",
+        "Catch the ball as it returns and immediately descend into the next squat.",
+        "Keep the movement fluid and continuous."
+      ]
     },
     {
       "id": "default_185",
       "nameKey": "_default.exercise.turkishGetUp",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Lie on your back holding a kettlebell with one arm extended toward the ceiling.",
+        "Roll onto your opposite elbow while keeping the weight overhead.",
+        "Push up to your hand and lift your hips off the ground.",
+        "Sweep your leg back and come to a kneeling position.",
+        "Stand fully while keeping the weight locked out overhead.",
+        "Reverse the movement to return to the starting position."
+      ]
     },
     {
       "id": "default_186",
       "nameKey": "_default.exercise.kettlebellSwings",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand with feet wider than shoulder-width, holding a kettlebell with both hands.",
+        "Hinge at your hips and swing the kettlebell between your legs.",
+        "Drive your hips forward explosively to swing the kettlebell up.",
+        "Let the kettlebell rise to shoulder height with arms extended.",
+        "Control the descent and immediately swing back between your legs.",
+        "Keep your core tight and back flat throughout."
+      ]
     },
     {
       "id": "default_187",
       "nameKey": "_default.exercise.kettlebellSnatch",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Stand with a kettlebell between your feet.",
+        "Hinge at your hips and grip the kettlebell with one hand.",
+        "Swing the kettlebell back and then explosively drive your hips forward.",
+        "Pull the kettlebell up close to your body and punch through at the top.",
+        "Lock out your arm overhead with the kettlebell resting on your forearm.",
+        "Lower with control and repeat before switching arms."
+      ]
     },
     {
       "id": "default_188",
       "nameKey": "_default.exercise.kettlebellClean",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Stand with a kettlebell between your feet.",
+        "Hinge at your hips and grip the kettlebell with one hand.",
+        "Swing the kettlebell back then drive your hips forward to pull it up.",
+        "Guide the kettlebell to the rack position at your shoulder.",
+        "Keep your elbow close to your body and the kettlebell resting on your forearm.",
+        "Lower with control and repeat before switching arms."
+      ]
     },
     {
       "id": "default_189",
       "nameKey": "_default.exercise.gobletSquatWithKettlebell",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Hold a kettlebell by the horns at your chest.",
+        "Stand with feet shoulder-width apart, toes slightly out.",
+        "Push your hips back and bend your knees to squat down.",
+        "Keep your chest up and elbows inside your knees.",
+        "Descend until your thighs are at least parallel to the floor.",
+        "Drive through your heels to stand back up."
+      ]
     },
     {
       "id": "default_190",
       "nameKey": "_default.exercise.singleArmKettlebellPress",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Clean a kettlebell to the rack position at your shoulder.",
+        "Keep your core tight and feet shoulder-width apart.",
+        "Press the kettlebell straight overhead.",
+        "Lock out your arm fully at the top.",
+        "Lower the kettlebell back to the rack position with control.",
+        "Complete all reps on one arm before switching."
+      ]
     },
     {
       "id": "default_191",
       "nameKey": "_default.exercise.ropeClimbs",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Grip the rope high with both hands.",
+        "Jump and wrap the rope around one foot, securing it with the other.",
+        "Stand on the rope to create a brake.",
+        "Reach up with your hands and repeat the foot wrap.",
+        "Continue climbing using your legs and arms.",
+        "Descend by lowering hand over hand while controlling with your feet."
+      ]
     },
     {
       "id": "default_192",
       "nameKey": "_default.exercise.sledPush",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Load the sled with the appropriate weight.",
+        "Grip the handles and lean forward at an angle.",
+        "Drive through your legs to push the sled forward.",
+        "Keep your arms extended and core braced.",
+        "Take short, powerful steps.",
+        "Push for the desired distance then rest and repeat."
+      ]
     },
     {
       "id": "default_193",
       "nameKey": "_default.exercise.sledPull",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Attach a rope or strap to the sled.",
+        "Face the sled and grip the rope with both hands.",
+        "Lean back and pull the sled toward you hand over hand.",
+        "Keep your core tight and use your back and arms.",
+        "Continue until the sled reaches you.",
+        "Reset and repeat for the desired sets."
+      ]
     },
     {
       "id": "default_194",
       "nameKey": "_default.exercise.tireFlips",
-      "muscleGroup": "legs"
+      "muscleGroup": "legs",
+      "instructions": [
+        "Stand facing a large tire with feet shoulder-width apart.",
+        "Squat down and grip the underside of the tire.",
+        "Drive through your legs to lift the tire up.",
+        "As the tire rises, push it forward and flip it over.",
+        "Step forward and repeat.",
+        "Keep your back flat and use your legs for power."
+      ]
     },
     {
       "id": "default_195",
       "nameKey": "_default.exercise.medicineBallSlams",
-      "muscleGroup": "abdominals"
+      "muscleGroup": "abdominals",
+      "instructions": [
+        "Stand with feet shoulder-width apart holding a medicine ball overhead.",
+        "Engage your core and bring the ball down explosively.",
+        "Slam the ball into the ground in front of you.",
+        "Squat down to pick up the ball.",
+        "Stand and raise the ball overhead to repeat.",
+        "Use your whole body to generate power."
+      ]
     },
     {
       "id": "default_196",
       "nameKey": "_default.exercise.wallClimbs",
-      "muscleGroup": "shoulders"
+      "muscleGroup": "shoulders",
+      "instructions": [
+        "Start in a pushup position with your feet against a wall.",
+        "Walk your feet up the wall while walking your hands toward the wall.",
+        "Continue until your chest is close to the wall in a handstand position.",
+        "Walk your hands back out and your feet down the wall.",
+        "Return to the pushup position.",
+        "Keep your core tight throughout the movement."
+      ]
     },
     {
       "id": "default_197",
       "nameKey": "_default.exercise.muscleUps",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Hang from a pull-up bar with hands slightly wider than shoulder width.",
+        "Pull yourself up explosively, bringing your chest to the bar.",
+        "Transition by rotating your wrists over the bar.",
+        "Push down to extend your arms above the bar.",
+        "Lower yourself back through the transition to hanging.",
+        "Control the descent and repeat."
+      ]
     },
     {
       "id": "default_198",
       "nameKey": "_default.exercise.ringDips",
-      "muscleGroup": "triceps"
+      "muscleGroup": "triceps",
+      "instructions": [
+        "Grip the rings and support yourself with arms locked out.",
+        "Turn the rings outward to stabilize at the top.",
+        "Lower yourself by bending your elbows.",
+        "Descend until your shoulders are below your elbows.",
+        "Press back up by extending your arms.",
+        "Keep the rings steady and close to your body throughout."
+      ]
     },
     {
       "id": "default_199",
       "nameKey": "_default.exercise.ringPushups",
-      "muscleGroup": "chest"
+      "muscleGroup": "chest",
+      "instructions": [
+        "Set the rings to hang just above the floor.",
+        "Grip the rings and assume a pushup position.",
+        "Keep your body straight from head to heels.",
+        "Lower yourself by bending your elbows.",
+        "Keep the rings stable and close to your body.",
+        "Press back up to the starting position."
+      ]
     },
     {
       "id": "default_200",
       "nameKey": "_default.exercise.ringRows",
-      "muscleGroup": "back"
+      "muscleGroup": "back",
+      "instructions": [
+        "Set the rings at waist height and grip them with arms extended.",
+        "Lean back with your body straight, heels on the ground.",
+        "Pull yourself up by driving your elbows back.",
+        "Bring your chest to the rings while squeezing your back.",
+        "Lower yourself slowly with control.",
+        "Keep your body straight throughout the movement."
+      ]
     }
   ]
 }

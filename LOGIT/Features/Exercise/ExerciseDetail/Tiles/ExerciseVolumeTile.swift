@@ -60,6 +60,7 @@ struct ExerciseVolumeTile: View {
                     .frame(width: 120, height: 70)
                 }
             }
+            .frame(minHeight: 100)
             .padding(CELL_PADDING)
             .tileStyle()
         }

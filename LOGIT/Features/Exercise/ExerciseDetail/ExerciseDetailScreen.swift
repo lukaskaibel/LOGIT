@@ -8,6 +8,7 @@
 import Charts
 import ColorfulX
 import CoreData
+import SafariServices
 import SwiftUI
 
 struct ExerciseDetailScreen: View {
@@ -32,6 +33,7 @@ struct ExerciseDetailScreen: View {
     @State private var isShowingWeightScreen = false
     @State private var isShowingRepetitionsScreen = false
     @State private var isShowingVolumeScreen = false
+    @State private var isShowingInstructions = false
 
     // MARK: - Variables
 
@@ -146,7 +148,16 @@ struct ExerciseDetailScreen: View {
             .tint(exercise.muscleGroup?.color ?? .accentColor)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
+                    HStack(spacing: 16) {
+                        if let instructions = exercise.instructions, !instructions.isEmpty {
+                            Button {
+                                isShowingInstructions = true
+                            } label: {
+                                Image(systemName: "info.circle")
+                            }
+                        }
+                        if !exercise.isDefaultExercise {
+                        Menu {
                         Button(
                             action: { showingEditExercise.toggle() },
                             label: {
@@ -177,10 +188,15 @@ struct ExerciseDetailScreen: View {
                             }
                         )
                     }
+                        }
+                    }
                 }
             }
             .sheet(isPresented: $showingEditExercise) {
                 ExerciseEditScreen(exerciseToEdit: exercise)
+            }
+            .sheet(isPresented: $isShowingInstructions) {
+                ExerciseInstructionsSheet(exercise: exercise)
             }
             .navigationDestination(isPresented: $isShowingExerciseHistoryScreen) {
                 ExerciseHistoryScreen(exercise: exercise)
@@ -254,4 +270,93 @@ struct ExerciseDetailView_Previews: PreviewProvider {
         PreviewWrapperView()
             .previewEnvironmentObjects()
     }
+}
+
+// MARK: - Exercise Instructions Sheet
+
+struct ExerciseInstructionsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var safariURL: URL?
+    
+    let exercise: Exercise
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    if let instructions = exercise.instructions, !instructions.isEmpty {
+                        ForEach(Array(instructions.enumerated()), id: \.offset) { index, instruction in
+                            HStack(alignment: .top, spacing: 16) {
+                                Text("\(index + 1)")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(exercise.muscleGroup?.color ?? .accentColor)
+                                    .frame(width: 32, alignment: .leading)
+                                
+                                Text(instruction)
+                                    .font(.body)
+                                    .foregroundStyle(.primary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .padding(.vertical, 16)
+                            
+                            if index < instructions.count - 1 {
+                                Divider()
+                            }
+                        }
+                        
+                        Divider()
+                            .padding(.top, 16)
+                        
+                        let exerciseName = exercise.displayName
+                        if let searchQuery = exerciseName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                           let url = URL(string: "https://www.google.com/search?q=\(searchQuery)+\(NSLocalizedString("exercise", comment: ""))") {
+                            Button {
+                                safariURL = url
+                            } label: {
+                                HStack {
+                                    Image(systemName: "magnifyingglass")
+                                    Text(String(format: NSLocalizedString("lookupExercise", comment: ""), exerciseName))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                            }
+                            .buttonStyle(.prominentGlass(color: exercise.muscleGroup?.color ?? .accentColor))
+                            .padding(.vertical, 32)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .navigationTitle(NSLocalizedString("instructions", comment: ""))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(NSLocalizedString("done", comment: "")) {
+                        dismiss()
+                    }
+                }
+            }
+            .sheet(item: $safariURL) { url in
+                SafariView(url: url)
+                    .ignoresSafeArea()
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+    
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        SFSafariViewController(url: url)
+    }
+    
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+}
+
+extension URL: @retroactive Identifiable {
+    public var id: String { absoluteString }
 }

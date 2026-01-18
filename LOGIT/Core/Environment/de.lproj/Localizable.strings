@@ -151,6 +151,7 @@
 
 "incompleteSetsWillNotBeSaved" = "Unvollständige Sätze werden nicht gespeichert.";
 "inSelectedWeek" = "In Ausgewählter Woche";
+"instructions" = "Anleitung";
 
 // MARK: - L
 
@@ -164,6 +165,7 @@
 "letsGetStarted" = "Los gehts";
 "letsGetStartedDescription" = "Bevor du trainieren kannst müssen wir ein kurzen Set-Up machen.";
 "licenceAgreement" = "Lizenzvereinbarung";
+"lookupExercise" = "%@ nachschlagen";
 
 // MARK: - M
 
@@ -326,6 +328,7 @@
 "showAllExercises" = "Alle Übungen anzeigen";
 "showAllMeasurements" = "Alle Messungen anzeigen";
 "showDetails" = "Details anzeigen";
+"showInstructions" = "Anleitung anzeigen";
 "showMeasurements" = "Messungen anzeigen";
 "showSubscriptions" = "Abonnements anzeigen";
 "six" = "Sechs";

@@ -20,40 +20,98 @@ struct WorkoutCell: View {
     // MARK: Body
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 12) {
-                    Chart {
-                        ForEach(muscleGroupService.getMuscleGroupOccurances(in: workout), id: \.0) { muscleGroupOccurance in
-                            SectorMark(
-                                angle: .value("Value", muscleGroupOccurance.1),
-                                innerRadius: .ratio(0.65),
-                                angularInset: 1
-                            )
-                            .foregroundStyle(muscleGroupOccurance.0.color.gradient)
-                        }
-                    }
-                    .frame(width: 40, height: 40)
-                    VStack(alignment: .leading) {
-                        Text(
-                            "\(workout.date?.description(.short) ?? "")  \(workout.date?.formatted(.dateTime.hour().minute()) ?? "")"
-                        )
-                        .font(.footnote.weight(.medium))
-                        .foregroundColor(.secondaryLabel)
-                        Text(workout.name ?? NSLocalizedString("noName", comment: ""))
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    NavigationChevron()
-                        .foregroundStyle(.secondary)
+        HStack(spacing: 14) {
+            // Muscle group pie chart
+            Chart {
+                ForEach(muscleGroupService.getMuscleGroupOccurances(in: workout), id: \.0) { muscleGroupOccurance in
+                    SectorMark(
+                        angle: .value("Value", muscleGroupOccurance.1),
+                        innerRadius: .ratio(0.6),
+                        angularInset: 1.5
+                    )
+                    .foregroundStyle(muscleGroupOccurance.0.color.gradient)
                 }
             }
+            .frame(width: 50, height: 50)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                // Workout name
+                Text(workout.name ?? NSLocalizedString("noName", comment: ""))
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                
+                // Date and time
+                Text(formattedDateTime)
+                    .font(.subheadline)
+                    .foregroundColor(.secondaryLabel)
+                
+                // Stats row
+                HStack(spacing: 16) {
+                    // Duration
+                    if let durationString = workoutDurationString {
+                        Label {
+                            Text(durationString)
+                        } icon: {
+                            Image(systemName: "clock")
+                        }
+                    }
+                    
+                    // Exercises count
+                    Label {
+                        Text("\(workout.numberOfSetGroups)")
+                    } icon: {
+                        Image(systemName: "figure.strengthtraining.traditional")
+                    }
+                }
+                .font(.caption)
+                .foregroundColor(.tertiaryLabel)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            NavigationChevron()
+                .foregroundStyle(Color.secondaryLabel)
         }
     }
 
-    // MARK: - Computed UI Properties
+    // MARK: - Computed Properties
+    
+    private var formattedDateTime: String {
+        guard let date = workout.date else { return "" }
+        
+        let calendar = Calendar.current
+        let now = Date()
+        
+        if calendar.isDateInToday(date) {
+            return NSLocalizedString("today", comment: "") + ", " + date.formatted(.dateTime.hour().minute())
+        } else if calendar.isDateInYesterday(date) {
+            return NSLocalizedString("yesterday", comment: "") + ", " + date.formatted(.dateTime.hour().minute())
+        } else if let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: now), date < oneYearAgo {
+            return date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().year()) + ", " + date.formatted(.dateTime.hour().minute())
+        } else {
+            return date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()) + ", " + date.formatted(.dateTime.hour().minute())
+        }
+    }
+    
+    private var workoutDurationString: String? {
+        guard let start = workout.date, let end = workout.endDate else { return nil }
+        let totalMinutes = Calendar.current.dateComponents([.minute], from: start, to: end).minute ?? 0
+        
+        if totalMinutes < 1 {
+            return nil
+        } else if totalMinutes < 60 {
+            return "\(totalMinutes) min"
+        } else {
+            let hours = totalMinutes / 60
+            let minutes = totalMinutes % 60
+            if minutes == 0 {
+                return "\(hours)h"
+            } else {
+                return "\(hours)h \(minutes)m"
+            }
+        }
+    }
 
     private var exercisesString: String {
         var result = ""

@@ -152,7 +152,7 @@ struct HomeScreen: View {
                 }
                 .background(
                     VStack {
-                        ColorfulView(color: workouts.flatMap({ $0.muscleGroups.map({ $0.color })}), speed: .constant(0))
+                        ColorfulView(color: MuscleGroup.allCases.map({ $0.color }), speed: .constant(0))
                             .mask(
                                 LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
                                 
@@ -240,27 +240,6 @@ struct HomeScreen: View {
                     }
                 }
                 .navigationTitle("Summary")
-//                .background(
-//                    GeometryReader { geometry in
-//                        ColorfulView(color: [Color.black, Color("AccentColor"), Color.black], speed: .constant(0.2))
-//                            .ignoresSafeArea()
-//                            .mask(
-//                                LinearGradient(
-//                                    gradient: Gradient(stops: [
-//                                        .init(color: .white, location: 0.0),   // fully visible at top
-//                                        .init(color: .white, location: 0.25),  // keep full strength to 25%
-//                                        .init(color: .clear, location: 0.7),   // fade out between 25–70%
-//                                        .init(color: .clear, location: 1.0)    // fully gone at bottom
-//                                    ]),
-//                                    startPoint: .top,
-//                                    endPoint: .bottom
-//                                )
-//                            )
-//                            .opacity(0.7)
-//                            .frame(height: geometry.size.height * 2/5)
-//                    }
-//                    .edgesIgnoringSafeArea(.all)
-//                )
             }
             .scrollContentBackground(.hidden)
         }

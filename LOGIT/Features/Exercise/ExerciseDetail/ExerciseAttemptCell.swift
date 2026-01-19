@@ -83,9 +83,9 @@ private struct SetEntryRow: View {
         HStack(spacing: 0) {
             // Set number indicator
             Text("\(setNumber)")
-                .font(.system(.caption, design: .rounded, weight: .bold))
+                .font(.system(.title3, design: .rounded, weight: .bold))
                 .foregroundStyle(Color.tertiaryLabel)
-                .frame(width: 20)
+                .frame(width: 30, alignment: .leading)
             
             Spacer()
             
@@ -96,12 +96,14 @@ private struct SetEntryRow: View {
                 superSetContent(superSet)
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        .padding(.vertical, CELL_PADDING)
+        .padding(.horizontal, CELL_PADDING)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tertiaryBackground)
+            RoundedRectangle(cornerRadius: 15)
+                .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                .foregroundStyle(Color.tertiaryBackground)
         )
+        .cornerRadius(15)
     }
     
     // MARK: - Standard Set Content
@@ -112,18 +114,18 @@ private struct SetEntryRow: View {
             UnitView(
                 value: "\(standardSet.repetitions)",
                 unit: NSLocalizedString("reps", comment: "").uppercased(),
-                configuration: .small,
+                configuration: .normal,
                 unitColor: .secondaryLabel
             )
-            .frame(width: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+            .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
             
             UnitView(
                 value: formattedWeight(standardSet.weight),
                 unit: WeightUnit.used.rawValue.uppercased(),
-                configuration: .small,
+                configuration: .normal,
                 unitColor: .secondaryLabel
             )
-            .frame(width: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+            .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
         }
     }
     
@@ -140,18 +142,18 @@ private struct SetEntryRow: View {
             UnitView(
                 value: "\(repetitions)",
                 unit: NSLocalizedString("reps", comment: "").uppercased(),
-                configuration: .small,
+                configuration: .normal,
                 unitColor: .secondaryLabel
             )
-            .frame(width: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+            .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
             
             UnitView(
                 value: formattedWeight(weight),
                 unit: WeightUnit.used.rawValue.uppercased(),
-                configuration: .small,
+                configuration: .normal,
                 unitColor: .secondaryLabel
             )
-            .frame(width: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+            .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
         }
     }
     
@@ -180,9 +182,9 @@ private struct DropSetEntryRows: View {
                 HStack(spacing: 0) {
                     // Set number indicator (only show on first drop)
                     Text(dropIndex == 0 ? "\(setNumber)" : "")
-                        .font(.system(.caption, design: .rounded, weight: .bold))
+                        .font(.system(.title3, design: .rounded, weight: .bold))
                         .foregroundStyle(Color.tertiaryLabel)
-                        .frame(width: 20)
+                        .frame(width: 30, alignment: .leading)
                     
                     Spacer()
                     
@@ -190,28 +192,30 @@ private struct DropSetEntryRows: View {
                         UnitView(
                             value: "\(item.0)",
                             unit: NSLocalizedString("reps", comment: "").uppercased(),
-                            configuration: .small,
+                            configuration: .normal,
                             unitColor: .secondaryLabel
                         )
-                        .frame(width: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+                        .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
                         
                         UnitView(
                             value: formattedWeight(item.1),
                             unit: WeightUnit.used.rawValue.uppercased(),
-                            configuration: .small,
+                            configuration: .normal,
                             unitColor: .secondaryLabel
                         )
-                        .frame(width: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+                        .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
                     }
                 }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 12)
+                .padding(.vertical, CELL_PADDING)
+                .padding(.horizontal, CELL_PADDING)
             }
         }
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.tertiaryBackground)
+            RoundedRectangle(cornerRadius: 15)
+                .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                .foregroundStyle(Color.tertiaryBackground)
         )
+        .cornerRadius(15)
     }
     
     private func formattedWeight(_ weight: Int64) -> String {

@@ -56,7 +56,7 @@ struct WorkoutSetGroupCell: View {
                             .background(
                                 RoundedRectangle(cornerRadius: 15)
                                     .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
-                                    .foregroundStyle(Color.secondaryBackground)
+                                    .foregroundStyle(Color.tertiaryBackground)
                             )
                             .cornerRadius(15)
                             .onDeleteView(disabled: !canEdit) {

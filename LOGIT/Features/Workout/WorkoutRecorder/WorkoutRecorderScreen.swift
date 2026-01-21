@@ -59,7 +59,8 @@ struct WorkoutRecorderScreen: View {
                                 WorkoutSetGroupList(
                                     workout: workout,
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                                    canReorder: true
+                                    canReorder: true,
+                                    showDetailAsSheet: true
                                 )
                                 .padding(.horizontal)
                                 .padding(.top, 90)

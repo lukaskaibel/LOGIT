@@ -143,7 +143,7 @@ struct FirstStartScreen: View {
                     )
                 }
             }
-            .buttonStyle(BigButtonStyle())
+            .buttonStyle(PrimaryButtonStyle())
             .padding(.bottom, 50)
         }
         .padding()

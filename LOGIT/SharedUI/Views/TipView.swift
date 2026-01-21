@@ -54,7 +54,7 @@ struct TipView: View {
                 } label: {
                     Text(buttonAction.title)
                 }
-                .buttonStyle(BigButtonStyle())
+                .buttonStyle(PrimaryButtonStyle())
                 .padding(.top)
             }
         }

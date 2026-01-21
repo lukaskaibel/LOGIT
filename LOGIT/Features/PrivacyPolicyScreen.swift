@@ -38,7 +38,7 @@ struct PrivacyPolicyScreen: View {
                 } label: {
                     Text(NSLocalizedString("acceptPrivacyPolicy", comment: ""))
                 }
-                .buttonStyle(BigButtonStyle())
+                .buttonStyle(PrimaryButtonStyle())
                 .padding()
                 .frame(maxWidth: .infinity)
                 .background {

@@ -10,16 +10,16 @@ import SwiftUI
 private let MIN_BUTTON_SCALE: CGFloat = 0.97
 private let SCALE_ANIMATION_TIME: CGFloat = 0.2
 
-struct BigButtonStyle: ButtonStyle {
+
+struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.body, design: .rounded, weight: .bold))
             .foregroundColor(.background)
             .frame(maxWidth: .infinity)
-            .padding(20)
+            .padding(.vertical, 14)
             .background(Color.accentColor)
-            .listRowBackground(Color.clear)
-            .cornerRadius(15)
+            .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? MIN_BUTTON_SCALE : 1.0)
             .onChange(of: configuration.isPressed) { isPressed in
                 if isPressed {
@@ -30,21 +30,15 @@ struct BigButtonStyle: ButtonStyle {
     }
 }
 
-struct SecondaryBigButtonStyle: ButtonStyle {
-    var padding: CGFloat = 20
-    var maxWidth: CGFloat? = .infinity
-    var leadingCornerRadius: CGFloat = 15
-    var trailingCornerRadius: CGFloat = 15
-
+struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.body, design: .rounded, weight: .bold))
             .foregroundColor(.accentColor)
-            .frame(maxWidth: maxWidth)
-            .padding(padding)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
             .background(Color.accentColor.secondaryTranslucentBackground)
-            .listRowBackground(Color.clear)
-            .clipShape(UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: leadingCornerRadius, bottomLeading: leadingCornerRadius, bottomTrailing: trailingCornerRadius, topTrailing: trailingCornerRadius)))
+            .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? MIN_BUTTON_SCALE : 1.0)
             .onChange(of: configuration.isPressed) { isPressed in
                 if isPressed {

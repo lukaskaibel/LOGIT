@@ -47,7 +47,7 @@ struct GenerationScreen: View {
             } label: {
                 Text(NSLocalizedString("cancel", comment: ""))
             }
-            .buttonStyle(BigButtonStyle())
+            .buttonStyle(PrimaryButtonStyle())
             .padding(.bottom, 50)
             .padding(.horizontal)
         }

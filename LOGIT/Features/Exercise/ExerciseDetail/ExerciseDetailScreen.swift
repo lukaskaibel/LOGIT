@@ -325,10 +325,9 @@ struct ExerciseInstructionsSheet: View {
                                 Text(String(format: NSLocalizedString("lookupExercise", comment: ""), exerciseName))
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
                         }
-                        .buttonStyle(BigButtonStyle())
-                        .padding(.vertical, hasInstructions ? 32 : 16)
+                        .buttonStyle(PrimaryButtonStyle())
+                        .padding(.top, 20)
                     }
                 }
                 .padding(.horizontal)

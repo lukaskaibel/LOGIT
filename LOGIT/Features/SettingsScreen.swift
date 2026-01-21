@@ -127,7 +127,7 @@ struct SettingsScreen: View {
                                 }
                             }
                         }
-                        .buttonStyle(BigButtonStyle())
+                        .buttonStyle(PrimaryButtonStyle())
                     }
                 }
             }

@@ -168,7 +168,7 @@ struct TargetPerWeekDetailScreen: View {
                     } label: {
                         Label("Change Goal", systemImage: "plusminus.circle")
                     }
-                    .buttonStyle(SecondaryBigButtonStyle())
+                    .buttonStyle(SecondaryButtonStyle())
                 }
                 .padding(.horizontal)
                 .padding(.bottom)

@@ -141,7 +141,7 @@ struct HomeScreen: View {
                                 } label: {
                                     Label(NSLocalizedString("whatsStillMissing", comment: ""), systemImage: "questionmark.bubble.fill")
                                 }
-                                .buttonStyle(SecondaryBigButtonStyle())
+                                .buttonStyle(SecondaryButtonStyle())
                             }
                             .padding(.horizontal)
                             .padding(.top, 30)

@@ -48,7 +48,7 @@ struct FinishConfirmationSheet: View {
                     } label: {
                         Text(NSLocalizedString("continue", comment: ""))
                     }
-                    .buttonStyle(BigButtonStyle())
+                    .buttonStyle(PrimaryButtonStyle())
                     Button {
                         onEndWorkout()
                         if !wasPromptedToRateApp && workouts.count > 1 {
@@ -58,7 +58,7 @@ struct FinishConfirmationSheet: View {
                     } label: {
                         Text(NSLocalizedString("endWorkout", comment: ""))
                     }
-                    .buttonStyle(SecondaryBigButtonStyle())
+                    .buttonStyle(SecondaryButtonStyle())
                 }
                 Spacer()
             }

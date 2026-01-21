@@ -64,7 +64,7 @@ struct ChangeWeeklyWorkoutGoalScreen: View {
             } label: {
                 Label(NSLocalizedString("changeGoal", comment: ""), systemImage: "checkmark")
             }
-            .buttonStyle(BigButtonStyle())
+            .buttonStyle(PrimaryButtonStyle())
             Spacer()
         }
         .padding()

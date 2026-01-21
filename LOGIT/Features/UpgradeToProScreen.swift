@@ -118,7 +118,7 @@ struct UpgradeToProScreen: View {
                             .environment(\.colorScheme, .light)
                     }
                 }
-                .buttonStyle(BigButtonStyle())
+                .buttonStyle(PrimaryButtonStyle())
                 .requiresNetworkConnection()
                 Button {
                     Task {

@@ -149,12 +149,10 @@ struct ExerciseDetailScreen: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 16) {
-                        if let instructions = exercise.instructions, !instructions.isEmpty {
-                            Button {
-                                isShowingInstructions = true
-                            } label: {
-                                Image(systemName: "info.circle")
-                            }
+                        Button {
+                            isShowingInstructions = true
+                        } label: {
+                            Image(systemName: "info.circle")
                         }
                         if !exercise.isDefaultExercise {
                         Menu {
@@ -280,6 +278,13 @@ struct ExerciseInstructionsSheet: View {
     
     let exercise: Exercise
     
+    private var hasInstructions: Bool {
+        if let instructions = exercise.instructions, !instructions.isEmpty {
+            return true
+        }
+        return false
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -307,28 +312,28 @@ struct ExerciseInstructionsSheet: View {
                         
                         Divider()
                             .padding(.top, 16)
-                        
-                        let exerciseName = exercise.displayName
-                        if let searchQuery = exerciseName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                           let url = URL(string: "https://www.google.com/search?q=\(searchQuery)+\(NSLocalizedString("exercise", comment: ""))") {
-                            Button {
-                                safariURL = url
-                            } label: {
-                                HStack {
-                                    Image(systemName: "magnifyingglass")
-                                    Text(String(format: NSLocalizedString("lookupExercise", comment: ""), exerciseName))
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
+                    }
+                    
+                    let exerciseName = exercise.displayName
+                    if let searchQuery = exerciseName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                       let url = URL(string: "https://www.google.com/search?q=\(searchQuery)+\(NSLocalizedString("exercise", comment: ""))") {
+                        Button {
+                            safariURL = url
+                        } label: {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                Text(String(format: NSLocalizedString("lookupExercise", comment: ""), exerciseName))
                             }
-                            .buttonStyle(BigButtonStyle())
-                            .padding(.vertical, 32)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
                         }
+                        .buttonStyle(BigButtonStyle())
+                        .padding(.vertical, hasInstructions ? 32 : 16)
                     }
                 }
                 .padding(.horizontal)
             }
-            .navigationTitle(NSLocalizedString("instructions", comment: ""))
+            .navigationTitle(hasInstructions ? NSLocalizedString("instructions", comment: "") : exercise.displayName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

@@ -93,8 +93,9 @@ struct ExerciseSelectionScreen: View {
                 if presentationDetentSelection != .fraction(BOTTOM_SHEET_SMALL) {
                     Group {
                         MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
-                        ScrollView {
-                            LazyVStack(spacing: SECTION_SPACING) {
+                        ScrollViewReader { scrollProxy in
+                            ScrollView {
+                                LazyVStack(spacing: SECTION_SPACING) {
                                 if isShowingNoExercisesTip {
                                     TipView(
                                         title: NSLocalizedString("noExercisesTip", comment: ""),
@@ -125,14 +126,8 @@ struct ExerciseSelectionScreen: View {
                                                             .fontWeight(.semibold)
                                                             .foregroundColor(exercise.muscleGroup?.color)
                                                     }
-                                                    Button {
-                                                        selectedExerciseForDetail = exercise
-                                                    } label: {
-                                                        Image(systemName: "info.circle")
-                                                            .font(.title3)
-                                                    }
-                                                    .buttonStyle(TileButtonStyle())
-                                                    .foregroundColor(exercise.muscleGroup?.color)
+                                                    NavigationChevron()
+                                                        .foregroundStyle(.secondary)
                                                 }
                                                 .padding(CELL_PADDING)
                                                 .tileStyle()
@@ -160,24 +155,19 @@ struct ExerciseSelectionScreen: View {
                                                             ExerciseCell(exercise: exercise)
                                                             Spacer()
                                                             if exercise == selectedExercise {
-                                                                Image(systemName: "checkmark")
-                                                                    .fontWeight(.semibold)
-                                                                    .foregroundColor(exercise.muscleGroup?.color)
+                                                                Image(systemName: "checkmark.circle.fill")
+                                                                    .font(.title2)
+                                                                    .foregroundStyle(exercise.muscleGroup?.color ?? .accentColor)
                                                             }
-                                                            Button {
-                                                                selectedExerciseForDetail = exercise
-                                                            } label: {
-                                                                Image(systemName: "info.circle")
-                                                                    .font(.title3)
-                                                            }
-                                                            .buttonStyle(TileButtonStyle())
-                                                            .foregroundColor(exercise.muscleGroup?.color)
+                                                            NavigationChevron()
+                                                                .foregroundStyle(.secondary)
                                                         }
                                                         .padding(CELL_PADDING)
                                                         .tileStyle()
                                                         .contentShape(Rectangle())
                                                     }
                                                     .buttonStyle(TileButtonStyle())
+                                                    .id(exercise.objectID)
                                                 }
                                             }
                                         }
@@ -194,6 +184,16 @@ struct ExerciseSelectionScreen: View {
                                     }
                             }
                             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+                        }
+                        .onAppear {
+                            if let selected = selectedExercise {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    withAnimation {
+                                        scrollProxy.scrollTo(selected.objectID, anchor: .center)
+                                    }
+                                }
+                            }
+                        }
                         }
                     }
                     .transition(.opacity)
@@ -250,7 +250,7 @@ struct ExerciseSelectionScreen: View {
 // MARK: - Preview
 
 private struct ExerciseSelectionScreenPreviewWrapper: View {
-    @State private var presentationDetent: PresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
+    @State private var presentationDetent: PresentationDetent = .medium
 
     var body: some View {
         Rectangle()

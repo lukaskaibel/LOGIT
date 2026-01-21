@@ -152,7 +152,9 @@
 "incompleteSetsWillNotBeSaved" = "Unvollständige Sätze werden nicht gespeichert.";
 "inSelectedWeek" = "In Ausgewählter Woche";
 "instructions" = "Anleitung";
+// MARK: - K
 
+"keepTrackingForComparison" = "Weiter tracken, um Zeiträume zu vergleichen.";
 // MARK: - L
 
 "latest" = "Aktuell";
@@ -662,3 +664,33 @@
 "_default.exercise.ringDips" = "Ring Dips";
 "_default.exercise.ringPushups" = "Ring Liegestütze";
 "_default.exercise.ringRows" = "Ring Rudern";
+
+// MARK: - Volume Highlights
+"avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "Du bewegst im Durchschnitt mehr Volumen pro Workout diesen Monat als letzten Monat.";
+"avgLessVolumePerWorkoutThisMonthThanLastMonth" = "Du bewegst im Durchschnitt weniger Volumen pro Workout diesen Monat als letzten Monat.";
+"avgMoreVolumePerWorkoutThisYearThanLastYear" = "Du bewegst im Durchschnitt mehr Volumen pro Workout dieses Jahr als letztes Jahr.";
+"avgLessVolumePerWorkoutThisYearThanLastYear" = "Du bewegst im Durchschnitt weniger Volumen pro Workout dieses Jahr als letztes Jahr.";
+
+// MARK: - Exercise Volume Highlights
+"avgMoreExerciseVolumeThisMonthThanLastMonth" = "Du bewegst im Durchschnitt mehr Volumen für diese Übung diesen Monat als letzten Monat.";
+"avgLessExerciseVolumeThisMonthThanLastMonth" = "Du bewegst im Durchschnitt weniger Volumen für diese Übung diesen Monat als letzten Monat.";
+"avgMoreExerciseVolumeThisYearThanLastYear" = "Du bewegst im Durchschnitt mehr Volumen für diese Übung dieses Jahr als letztes Jahr.";
+"avgLessExerciseVolumeThisYearThanLastYear" = "Du bewegst im Durchschnitt weniger Volumen für diese Übung dieses Jahr als letztes Jahr.";
+
+// MARK: - Exercise Weight Highlights
+"higherMaxWeightThisMonthThanLastMonth" = "Dein bestes Gewicht diesen Monat ist höher als letzten Monat.";
+"lowerMaxWeightThisMonthThanLastMonth" = "Dein bestes Gewicht diesen Monat ist niedriger als letzten Monat.";
+"higherMaxWeightThisYearThanLastYear" = "Dein bestes Gewicht dieses Jahr ist höher als letztes Jahr.";
+"lowerMaxWeightThisYearThanLastYear" = "Dein bestes Gewicht dieses Jahr ist niedriger als letztes Jahr.";
+
+// MARK: - Exercise Repetitions Highlights
+"higherMaxRepsThisMonthThanLastMonth" = "Deine besten Wiederholungen diesen Monat sind höher als letzten Monat.";
+"lowerMaxRepsThisMonthThanLastMonth" = "Deine besten Wiederholungen diesen Monat sind niedriger als letzten Monat.";
+"higherMaxRepsThisYearThanLastYear" = "Deine besten Wiederholungen dieses Jahr sind höher als letztes Jahr.";
+"lowerMaxRepsThisYearThanLastYear" = "Deine besten Wiederholungen dieses Jahr sind niedriger als letztes Jahr.";
+
+// MARK: - Measurement Highlights
+"measurementHigherThisMonthThanLastMonth" = "Dein Durchschnitt diesen Monat ist höher als letzten Monat.";
+"measurementLowerThisMonthThanLastMonth" = "Dein Durchschnitt diesen Monat ist niedriger als letzten Monat.";
+"measurementHigherThisYearThanLastYear" = "Dein Durchschnitt dieses Jahr ist höher als letztes Jahr.";
+"measurementLowerThisYearThanLastYear" = "Dein Durchschnitt dieses Jahr ist niedriger als letztes Jahr.";

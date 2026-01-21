@@ -132,81 +132,9 @@ struct OverallSetsScreen: View {
                     .frame(height: 300)
                 }
                 .padding(.horizontal)
-                VStack(spacing: SECTION_HEADER_SPACING) {
-                    Text(NSLocalizedString("highlights", comment: ""))
-                        .sectionHeaderStyle2()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    VStack(alignment: .leading, spacing: 14) {
-                        // Minimal helpers used for readability
-                        let ranges = periodRanges()
-                        let currentAvg = averagePerWorkout(in: ranges.current)
-                        let previousAvg = averagePerWorkout(in: ranges.previous)
-                        let summaryKey = headlineKey(isMore: currentAvg >= previousAvg)
-
-                        let currentLabel: String = {
-                            switch chartGranularity {
-                            case .week: return NSLocalizedString("thisWeek", comment: "")
-                            case .month: return NSLocalizedString("thisMonth", comment: "")
-                            case .year: return String(Calendar.current.component(.year, from: Date()))
-                            }
-                        }()
-                        let previousLabel: String = {
-                            switch chartGranularity {
-                            case .week: return NSLocalizedString("lastWeek", comment: "")
-                            case .month: return NSLocalizedString("lastMonth", comment: "")
-                            case .year: return String(Calendar.current.component(.year, from: Date()) - 1)
-                            }
-                        }()
-
-                        let numberFormatter: NumberFormatter = {
-                            let f = NumberFormatter()
-                            f.numberStyle = .decimal
-                            f.maximumFractionDigits = 1
-                            f.minimumFractionDigits = 0
-                            return f
-                        }()
-                        let currentText = numberFormatter.string(from: NSNumber(value: currentAvg)) ?? String(format: "%.1f", currentAvg)
-                        let previousText = numberFormatter.string(from: NSNumber(value: previousAvg)) ?? String(format: "%.1f", previousAvg)
-                        let maxBar = max(max(currentAvg, previousAvg), 1.0)
-
-                        // Headline
-                        Text(NSLocalizedString(summaryKey, comment: "Overall sets comparison headline"))
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        // Current period
-                        VStack(alignment: .leading, spacing: 6) {
-                            UnitView(value: currentText, unit: unitLabel, configuration: .large, unitColor: Color.secondaryLabel)
-                            ComparisonBar(value: currentAvg, maxValue: maxBar, tint: .accentColor)
-                                .frame(height: 30)
-                                .overlay(
-                                    Text(currentLabel)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(.black)
-                                        .padding(.horizontal, 10), alignment: .leading
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        }
-
-                        // Previous period
-                        VStack(alignment: .leading, spacing: 6) {
-                            UnitView(value: previousText, unit: unitLabel, configuration: .large, unitColor: Color.secondaryLabel)
-                            ComparisonBar(value: previousAvg, maxValue: maxBar, tint: .gray.opacity(0.25))
-                                .frame(height: 30)
-                                .overlay(
-                                    Text(previousLabel)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(.primary)
-                                        .padding(.horizontal, 10), alignment: .leading
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        }
-                    }
-                    .padding(CELL_PADDING)
-                    .tileStyle()
-                }
-                .padding(.horizontal)
+                
+                // MARK: - Highlights Section
+                highlightsSection
             }
             .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
@@ -421,27 +349,33 @@ struct OverallSetsScreen: View {
         case .year: return isMore ? "avgMoreSetsPerWorkoutThisYearThanLastYear" : "avgFewerSetsPerWorkoutThisYearThanLastYear"
         }
     }
-}
 
-// MARK: - Small UI helper for the filled horizontal bar
+    // MARK: - Highlights
 
-private struct ComparisonBar: View {
-    let value: Double
-    let maxValue: Double
-    let tint: Color
-
-    var body: some View {
-        GeometryReader { geo in
-            let width = geo.size.width
-            let ratio = maxValue > 0 ? CGFloat(min(max(value / maxValue, 0), 1)) : 0
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.secondaryBackground)
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(tint)
-                    .frame(width: width * ratio)
+    @ViewBuilder
+    private var highlightsSection: some View {
+        let ranges = periodRanges()
+        let currentAvg = averagePerWorkout(in: ranges.current)
+        let previousAvg = averagePerWorkout(in: ranges.previous)
+        let headlineKey = headlineKey(isMore: currentAvg >= previousAvg)
+        let granularity: HighlightView.Granularity = {
+            switch chartGranularity {
+            case .week: return .week
+            case .month: return .month
+            case .year: return .year
             }
-        }
+        }()
+
+        HighlightView(
+            headline: NSLocalizedString(headlineKey, comment: ""),
+            currentValue: HighlightView.formatNumber(currentAvg),
+            previousValue: HighlightView.formatNumber(previousAvg),
+            unit: unitLabel,
+            currentNumericValue: currentAvg,
+            previousNumericValue: previousAvg,
+            granularity: granularity
+        )
+        .padding(.horizontal)
     }
 }
 

@@ -156,6 +156,10 @@
 "inSelectedWeek" = "In Selected Week";
 "instructions" = "Instructions";
 
+// MARK: - K
+
+"keepTrackingForComparison" = "Keep tracking to compare periods.";
+
 // MARK: - L
 
 "latest" = "Latest";
@@ -662,3 +666,33 @@
 "_default.exercise.ringDips" = "Ring Dips";
 "_default.exercise.ringPushups" = "Ring Push-ups";
 "_default.exercise.ringRows" = "Ring Rows";
+
+// MARK: - Volume Highlights
+"avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "You're averaging more volume per workout this month than last month.";
+"avgLessVolumePerWorkoutThisMonthThanLastMonth" = "You're averaging less volume per workout this month than last month.";
+"avgMoreVolumePerWorkoutThisYearThanLastYear" = "You're averaging more volume per workout this year than last year.";
+"avgLessVolumePerWorkoutThisYearThanLastYear" = "You're averaging less volume per workout this year than last year.";
+
+// MARK: - Exercise Volume Highlights
+"avgMoreExerciseVolumeThisMonthThanLastMonth" = "You're averaging more volume for this exercise this month than last month.";
+"avgLessExerciseVolumeThisMonthThanLastMonth" = "You're averaging less volume for this exercise this month than last month.";
+"avgMoreExerciseVolumeThisYearThanLastYear" = "You're averaging more volume for this exercise this year than last year.";
+"avgLessExerciseVolumeThisYearThanLastYear" = "You're averaging less volume for this exercise this year than last year.";
+
+// MARK: - Exercise Weight Highlights
+"higherMaxWeightThisMonthThanLastMonth" = "Your best weight this month is higher than last month.";
+"lowerMaxWeightThisMonthThanLastMonth" = "Your best weight this month is lower than last month.";
+"higherMaxWeightThisYearThanLastYear" = "Your best weight this year is higher than last year.";
+"lowerMaxWeightThisYearThanLastYear" = "Your best weight this year is lower than last year.";
+
+// MARK: - Exercise Repetitions Highlights
+"higherMaxRepsThisMonthThanLastMonth" = "Your best reps this month are higher than last month.";
+"lowerMaxRepsThisMonthThanLastMonth" = "Your best reps this month are lower than last month.";
+"higherMaxRepsThisYearThanLastYear" = "Your best reps this year are higher than last year.";
+"lowerMaxRepsThisYearThanLastYear" = "Your best reps this year are lower than last year.";
+
+// MARK: - Measurement Highlights
+"measurementHigherThisMonthThanLastMonth" = "Your average this month is higher than last month.";
+"measurementLowerThisMonthThanLastMonth" = "Your average this month is lower than last month.";
+"measurementHigherThisYearThanLastYear" = "Your average this year is higher than last year.";
+"measurementLowerThisYearThanLastYear" = "Your average this year is lower than last year.";

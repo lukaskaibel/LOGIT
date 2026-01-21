@@ -28,8 +28,10 @@ struct ExerciseRepetitionsScreen: View {
         // Determine the snapped selected set only when a selection exists; snap to the overall nearest datapoint
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxRepsSets) : nil
         let bestRepsInGranularity: Int? = bestRepetitionsInGranularity(in: workoutSets)
-        VStack {
-            Picker("Select Chart Granularity", selection: $chartGranularity) {
+        ScrollView {
+            VStack(spacing: SECTION_SPACING) {
+                VStack {
+                    Picker("Select Chart Granularity", selection: $chartGranularity) {
                 Text(NSLocalizedString("month", comment: ""))
                     .tag(ChartGranularity.month)
                 Text(NSLocalizedString("year", comment: ""))
@@ -192,10 +194,16 @@ struct ExerciseRepetitionsScreen: View {
             .emptyPlaceholder(allDailyMaxRepsSets) {
                 Text(NSLocalizedString("noData", comment: ""))
             }
-            .frame(height: 300)
-            .padding(.leading)
-            .padding(.trailing, 5)
-            Spacer()
+                .frame(height: 300)
+                .padding(.leading)
+                .padding(.trailing, 5)
+                }
+                
+                // MARK: - Highlights Section
+                highlightsSection(allDailyMaxRepsSets: allDailyMaxRepsSets)
+            }
+            .padding(.top)
+            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
         .isBlockedWithoutPro()
         .navigationBarTitleDisplayMode(.inline)
@@ -340,6 +348,60 @@ struct ExerciseRepetitionsScreen: View {
             let ad = a.workout?.date ?? .distantPast
             let bd = b.workout?.date ?? .distantPast
             return abs(ad.timeIntervalSince(target)) < abs(bd.timeIntervalSince(target))
+        }
+    }
+
+    // MARK: - Highlights
+
+    @ViewBuilder
+    private func highlightsSection(allDailyMaxRepsSets: [WorkoutSet]) -> some View {
+        let ranges = periodRanges()
+        let currentMax = maxReps(in: ranges.current, sets: allDailyMaxRepsSets)
+        let previousMax = maxReps(in: ranges.previous, sets: allDailyMaxRepsSets)
+        let headlineKey = repsHeadlineKey(isHigher: currentMax >= previousMax)
+        let unit = NSLocalizedString("rps", comment: "")
+
+        HighlightView(
+            headline: NSLocalizedString(headlineKey, comment: ""),
+            currentValue: currentMax > 0 ? String(currentMax) : "––",
+            previousValue: previousMax > 0 ? String(previousMax) : "––",
+            unit: unit,
+            currentNumericValue: Double(currentMax),
+            previousNumericValue: Double(previousMax),
+            granularity: chartGranularity == .month ? .month : .year,
+            accentColor: exerciseMuscleGroupColor
+        )
+        .padding(.horizontal)
+    }
+
+    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
+        switch chartGranularity {
+        case .month:
+            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
+            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
+            let previous = (lastStart, lastStart.endOfMonth)
+            return (current, previous)
+        case .year:
+            let current = (Date.now.startOfYear, Date.now.endOfYear)
+            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
+            let previous = (lastStart, lastStart.endOfYear)
+            return (current, previous)
+        }
+    }
+
+    private func maxReps(in range: (start: Date, end: Date), sets: [WorkoutSet]) -> Int {
+        let s = range.start, e = range.end
+        let setsInRange = sets.filter {
+            guard let d = $0.workout?.date else { return false }
+            return d >= s && d <= e
+        }
+        return setsInRange.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
+    }
+
+    private func repsHeadlineKey(isHigher: Bool) -> String {
+        switch chartGranularity {
+        case .month: return isHigher ? "higherMaxRepsThisMonthThanLastMonth" : "lowerMaxRepsThisMonthThanLastMonth"
+        case .year: return isHigher ? "higherMaxRepsThisYearThanLastYear" : "lowerMaxRepsThisYearThanLastYear"
         }
     }
 }

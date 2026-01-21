@@ -32,6 +32,7 @@ struct MeasurementDetailScreen: View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 chartSection
+                highlightsSection
                 entriesListSection
             }
             .padding(.horizontal)
@@ -242,6 +243,60 @@ struct MeasurementDetailScreen: View {
             .padding(.trailing, 5)
         }
         .isBlockedWithoutPro()
+    }
+
+    // MARK: - Highlights Section
+
+    @ViewBuilder
+    private var highlightsSection: some View {
+        let ranges = periodRanges()
+        let currentAvg = averageValue(in: ranges.current)
+        let previousAvg = averageValue(in: ranges.previous)
+        let headlineKey = measurementHeadlineKey(isHigher: currentAvg >= previousAvg)
+        let unit = measurementType.unit
+
+        HighlightView(
+            headline: NSLocalizedString(headlineKey, comment: ""),
+            currentValue: currentAvg > 0 ? formatDecimal(currentAvg) : "––",
+            previousValue: previousAvg > 0 ? formatDecimal(previousAvg) : "––",
+            unit: unit,
+            currentNumericValue: currentAvg,
+            previousNumericValue: previousAvg,
+            granularity: chartGranularity == .month ? .month : .year
+        )
+    }
+
+    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
+        switch chartGranularity {
+        case .month:
+            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
+            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
+            let previous = (lastStart, lastStart.endOfMonth)
+            return (current, previous)
+        case .year:
+            let current = (Date.now.startOfYear, Date.now.endOfYear)
+            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
+            let previous = (lastStart, lastStart.endOfYear)
+            return (current, previous)
+        }
+    }
+
+    private func averageValue(in range: (start: Date, end: Date)) -> Double {
+        let s = range.start, e = range.end
+        let entriesInRange = entries.filter {
+            guard let d = $0.date else { return false }
+            return d >= s && d <= e
+        }
+        guard !entriesInRange.isEmpty else { return 0 }
+        let total = entriesInRange.reduce(0.0) { $0 + $1.decimalValue }
+        return total / Double(entriesInRange.count)
+    }
+
+    private func measurementHeadlineKey(isHigher: Bool) -> String {
+        switch chartGranularity {
+        case .month: return isHigher ? "measurementHigherThisMonthThanLastMonth" : "measurementLowerThisMonthThanLastMonth"
+        case .year: return isHigher ? "measurementHigherThisYearThanLastYear" : "measurementLowerThisYearThanLastYear"
+        }
     }
 
     // MARK: - Entries List Section

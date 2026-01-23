@@ -48,14 +48,14 @@ public enum MuscleGroup: String, Decodable, Identifiable, CaseIterable, Comparab
 
     var color: Color {
         switch self {
-        case .chest: return Color(red: 156 / 255.0, green: 199 / 255.0, blue: 109 / 255.0) // Teal/Blue
-        case .triceps: return Color(red: 18 / 255.0, green: 226 / 255.0, blue: 241 / 255.0) // Magenta
-        case .shoulders: return Color(red: 252 / 255.0, green: 159 / 255.0, blue: 91 / 255.0) // Cyan
-        case .biceps: return Color(red: 45 / 255.0, green: 255 / 255.0, blue: 223 / 255.0) // Navy Blue
-        case .back: return Color(red: 77 / 255.0, green: 134 / 255.0, blue: 165 / 255.0) // Orange
-        case .legs: return Color(red: 214 / 255.0, green: 11 / 255.0, blue: 45 / 255.0) // Red
-        case .abdominals: return Color(red: 62 / 255.0, green: 81 / 255.0, blue: 122 / 255.0) // Bright Green (unchanged)
-        case .cardio: return Color(red: 195 / 255.0, green: 196 / 255.0, blue: 233 / 255.0) // Grayish (unchanged)
+        case .chest: return Color(red: 160 / 255.0, green: 210 / 255.0, blue: 120 / 255.0) // Sage green
+        case .triceps: return Color(red: 100 / 255.0, green: 200 / 255.0, blue: 255 / 255.0) // Sky blue
+        case .shoulders: return Color(red: 255 / 255.0, green: 170 / 255.0, blue: 100 / 255.0) // Warm peach
+        case .biceps: return Color(red: 64 / 255.0, green: 224 / 255.0, blue: 208 / 255.0) // Turquoise
+        case .back: return Color(red: 90 / 255.0, green: 150 / 255.0, blue: 200 / 255.0) // Steel blue
+        case .legs: return Color(red: 255 / 255.0, green: 112 / 255.0, blue: 100 / 255.0) // Coral
+        case .abdominals: return Color(red: 140 / 255.0, green: 120 / 255.0, blue: 200 / 255.0) // Soft violet
+        case .cardio: return Color(red: 180 / 255.0, green: 160 / 255.0, blue: 220 / 255.0) // Lavender
         }
     }
 }

@@ -309,12 +309,14 @@ struct HomeScreen: View {
                 Text(NSLocalizedString("measurements", comment: ""))
                     .sectionHeaderStyle2()
                 Spacer()
-                Button {
-                    isShowingMeasurementsEditSheet = true
-                } label: {
-                    Text(NSLocalizedString("edit", comment: ""))
+                if purchaseManager.hasUnlockedPro {
+                    Button {
+                        isShowingMeasurementsEditSheet = true
+                    } label: {
+                        Text(NSLocalizedString("edit", comment: ""))
+                    }
+                    .fontWeight(.semibold)
                 }
-                .fontWeight(.semibold)
             }
             VStack(spacing: 8) {
                 if pinnedMeasurements.isEmpty && isShowingMeasurementsTip {
@@ -357,6 +359,7 @@ struct HomeScreen: View {
                 }
                 .buttonStyle(TileButtonStyle())
             }
+            .isBlockedWithoutPro()
         }
     }
     

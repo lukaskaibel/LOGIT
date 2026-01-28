@@ -38,6 +38,7 @@ struct MeasurementDetailScreen: View {
             .padding(.horizontal)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
+        .isBlockedWithoutPro()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -242,7 +243,6 @@ struct MeasurementDetailScreen: View {
             .frame(height: 300)
             .padding(.trailing, 5)
         }
-        .isBlockedWithoutPro()
     }
 
     // MARK: - Highlights Section

@@ -37,6 +37,7 @@ struct MeasurementsScreen: View {
             .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
+        .isBlockedWithoutPro()
         .navigationTitle(NSLocalizedString("measurements", comment: ""))
     }
 }

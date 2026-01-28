@@ -40,13 +40,8 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
 
     override init() {
         super.init()
-        // Ask for permission and set delegate
+        // Set delegate for handling notifications when app is in foreground
         UNUserNotificationCenter.current().delegate = self
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, error in
-            if let error = error {
-                print("Notification auth error: \(error)")
-            }
-        }
     }
 
     // MARK: - Methods

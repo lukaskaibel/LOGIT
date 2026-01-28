@@ -8,150 +8,124 @@
 import SwiftUI
 
 struct FirstStartScreen: View {
-    private enum SetupStage {
-        case start, weightUnit, weeklyTarget
-    }
-
+    // MARK: - Environment
+    
+    @Environment(\.dismiss) var dismiss
+    
     // MARK: - AppStorage
 
-    @AppStorage("weightUnit") var weightUnit: WeightUnit = .kg
-    @AppStorage("workoutPerWeekTarget") var weeklyWorkoutTarget: Int = 3
     @AppStorage("setupDone") var setupDone: Bool = false
-
-    // MARK: - State
-
-    @State private var setupStage: SetupStage = .start
-    @State private var useStandardExercises: Bool = true
 
     // MARK: - Body
 
     var body: some View {
-        VStack {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("welcomeTo", comment: ""))
-                        .font(.title2.weight(.medium))
-                    Text("LOGIT.")
-                        .font(.system(size: 50, weight: .bold, design: .default))
-                }
-                Spacer()
-            }
-            .padding(.top, 30)
-            Spacer()
-            if setupStage == .start {
-                VStack(spacing: SECTION_HEADER_SPACING) {
-                    Text("\(NSLocalizedString("letsGetStarted", comment: "")) 💪")
-                        .tileHeaderStyle()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(NSLocalizedString("letsGetStartedDescription", comment: ""))
-                        .foregroundColor(.secondaryLabel)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .padding(CELL_PADDING)
-                .tileStyle()
-                .transition(
-                    AnyTransition.asymmetric(
-                        insertion: .move(edge: .trailing),
-                        removal: .move(edge: .leading)
-                    )
-                )
-            } else if setupStage == .weightUnit {
-                VStack(spacing: SECTION_HEADER_SPACING) {
-                    Text("\(NSLocalizedString("weightUnit", comment: "")) ⚖️")
-                        .tileHeaderStyle()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(NSLocalizedString("weightUnitDescription", comment: ""))
-                        .foregroundColor(.secondaryLabel)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Divider()
-                    Picker(
-                        NSLocalizedString("weightUnit", comment: ""),
-                        selection: $weightUnit,
-                        content: {
-                            ForEach([WeightUnit.kg, .lbs]) { unit in
-                                Text(unit.rawValue).tag(unit)
-                            }
-                        }
-                    )
-                    .pickerStyle(.wheel)
-                }
-                .padding(CELL_PADDING)
-                .tileStyle()
-                .transition(
-                    AnyTransition.asymmetric(
-                        insertion: .move(edge: .trailing),
-                        removal: .move(edge: .leading)
-                    )
-                )
-            } else {
-                VStack(spacing: SECTION_HEADER_SPACING) {
-                    Text("\(NSLocalizedString("weeklyTarget", comment: "")) 🗓")
-                        .tileHeaderStyle()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(NSLocalizedString("weeklyTargetDescription", comment: ""))
-                        .foregroundColor(.secondaryLabel)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Divider()
-                    Picker(
-                        NSLocalizedString("weeklyTarget", comment: ""),
-                        selection: $weeklyWorkoutTarget,
-                        content: {
-                            ForEach(1 ..< 10, id: \.self) { i in
-                                Text(String(i)).tag(i)
-                            }
-                        }
-                    )
-                    .pickerStyle(.wheel)
-                }
-                .padding(CELL_PADDING)
-                .tileStyle()
-                .transition(
-                    AnyTransition.asymmetric(
-                        insertion: .move(edge: .trailing),
-                        removal: .move(edge: .leading)
-                    )
-                )
-            }
-            Spacer()
-            Button(action: {
-                switch setupStage {
-                case .start:
-                    withAnimation {
-                        setupStage = .weightUnit
+        VStack(spacing: 0) {
+            Capsule()
+                .foregroundStyle(.tertiary)
+                .frame(width: 40, height: 5)
+                .padding(.top, 8)
+            
+            ScrollView {
+                VStack(spacing: SECTION_SPACING) {
+                    // MARK: - Header
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(NSLocalizedString("welcomeTo", comment: ""))
+                            .font(.title2.weight(.medium))
+                            .foregroundStyle(.secondary)
+                        Text("LOGIT")
+                            .font(.system(size: 44, weight: .bold, design: .default))
                     }
-                case .weightUnit:
-                    withAnimation {
-                        setupStage = .weeklyTarget
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 24)
+                    
+                    // MARK: - Feature Rows
+                    VStack(alignment: .leading, spacing: 40) {
+                        featureRow(
+                            icon: "dumbbell.fill",
+                            category: NSLocalizedString("track", comment: ""),
+                            title: NSLocalizedString("workouts", comment: ""),
+                            description: NSLocalizedString("welcomeWorkoutsDescription", comment: "")
+                        )
+                        
+                        featureRow(
+                            icon: "chart.line.uptrend.xyaxis",
+                            category: NSLocalizedString("visualise", comment: ""),
+                            title: NSLocalizedString("progress", comment: ""),
+                            description: NSLocalizedString("welcomeProgressDescription", comment: "")
+                        )
+                        
+                        featureRow(
+                            icon: "list.bullet.rectangle.portrait",
+                            category: NSLocalizedString("create", comment: ""),
+                            title: NSLocalizedString("templates", comment: ""),
+                            description: NSLocalizedString("welcomeTemplatesDescription", comment: "")
+                        )
+                        
+                        featureRow(
+                            icon: "target",
+                            category: NSLocalizedString("set", comment: ""),
+                            title: NSLocalizedString("goals", comment: ""),
+                            description: NSLocalizedString("welcomeGoalsDescription", comment: "")
+                        )
                     }
-                case .weeklyTarget:
-                    withAnimation {
-                        setupDone = true
-                    }
+                    .padding(.top, 16)
                 }
-            }) {
-                HStack {
-                    Image(
-                        systemName: setupStage == .weeklyTarget
-                            ? "checkmark.circle.fill" : "arrow.right.circle.fill"
-                    )
-                    Text(
-                        setupStage == .start
-                            ? NSLocalizedString("startSetup", comment: "")
-                            : setupStage == .weeklyTarget
-                            ? NSLocalizedString("finishSetup", comment: "")
-                            : NSLocalizedString("continue", comment: "")
-                    )
-                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 120)
             }
-            .buttonStyle(PrimaryButtonStyle())
-            .padding(.bottom, 50)
+            .scrollIndicators(.hidden)
         }
-        .padding()
+        .overlay(alignment: .bottom) {
+            VStack(spacing: 0) {
+                Button {
+                    setupDone = true
+                    dismiss()
+                } label: {
+                    HStack {
+                        Text(NSLocalizedString("getStarted", comment: ""))
+                    }
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+            }
+            .background {
+                Rectangle()
+                    .foregroundStyle(.ultraThinMaterial)
+                    .ignoresSafeArea()
+            }
+        }
+    }
+    
+    // MARK: - Feature Row
+    
+    private func featureRow(icon: String, category: String, title: String, description: String) -> some View {
+        HStack(spacing: 20) {
+            Image(systemName: icon)
+                .font(.system(size: 32))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 50)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(category.uppercased())
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text(title)
+                    .font(.title3.weight(.bold))
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-struct FirstStartView_Previews: PreviewProvider {
-    static var previews: some View {
-        FirstStartScreen()
-    }
+#Preview {
+    Rectangle()
+        .sheet(isPresented: .constant(true)) {
+            FirstStartScreen()
+                .preferredColorScheme(.dark)
+        }
 }

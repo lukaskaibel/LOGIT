@@ -16,7 +16,6 @@ struct LOGIT: App {
 
     // MARK: - AppStorage
 
-    @AppStorage("acceptedPrivacyPolicyVersion") var acceptedPrivacyPolicyVersion: Int?
     @AppStorage("setupDone") var setupDone: Bool = false
 
     // MARK: - State
@@ -33,7 +32,7 @@ struct LOGIT: App {
     @StateObject private var defaultExerciseService: DefaultExerciseService
 
     @State private var selectedTab: TabType = .home
-    @State private var isShowingPrivacyPolicy = false
+    @State private var isShowingWelcome = false
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingStartWorkoutSheet = false
 
@@ -55,8 +54,8 @@ struct LOGIT: App {
         _defaultExerciseService = StateObject(wrappedValue: DefaultExerciseService(database: database))
 
         UserDefaults.standard.register(defaults: [
-            "weightUnit": WeightUnit.kg.rawValue,
-            "workoutPerWeekTarget": 3,
+            "weightUnit": WeightUnit.defaultFromLocale.rawValue,
+            "workoutPerWeekTarget": -1,
             "setupDone": false,
         ])
         // Fixes issue with wrong Accent Color in Alerts
@@ -67,8 +66,7 @@ struct LOGIT: App {
 
     var body: some Scene {
         WindowGroup {
-            if setupDone {
-                TabView {
+            TabView {
                     Tab("summary", systemImage: "house") {
                         HomeScreen()
         //                #if targetEnvironment(simulator)
@@ -125,15 +123,13 @@ struct LOGIT: App {
 //                        TransitionReader { _ in
 //                        }
 //                    }
-                .sheet(isPresented: $isShowingPrivacyPolicy) {
-                    NavigationStack {
-                        PrivacyPolicyScreen(needsAcceptance: true)
-                    }
-                    .interactiveDismissDisabled()
+                .sheet(isPresented: $isShowingWelcome) {
+                    FirstStartScreen()
+                        .interactiveDismissDisabled()
                 }
                 .task {
-                    if acceptedPrivacyPolicyVersion != privacyPolicyVersion {
-                        isShowingPrivacyPolicy = true
+                    if !setupDone {
+                        isShowingWelcome = true
                     }
                     defaultExerciseService.loadDefaultExercisesIfNeeded()
                     Task {
@@ -151,11 +147,6 @@ struct LOGIT: App {
                     guard let scene = scenes.first as? UIWindowScene else { return }
                     scene.keyWindow?.overrideUserInterfaceStyle = .dark
                 }
-            } else {
-                FirstStartScreen()
-                    .environmentObject(database)
-                    .preferredColorScheme(.dark)
-            }
         }
     }
 

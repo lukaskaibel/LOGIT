@@ -236,6 +236,9 @@
 "noTemplatesTipDescription" = "Nutze Vorlagen, um deine Workouts im Voraus zu organisieren und zu planen. Klicke unten, um deine erste Workout-Vorlage zu erstellen!";
 "notificationsDisabled" = "Benachrichtigungen deaktiviert";
 "notificationsDisabledMessage" = "Damit der Timer einen Ton abspielen und das Ende anzeigen kann, müssen Benachrichtigungen aktiviert sein.";
+"enableTimerNotifications" = "Timer-Benachrichtigungen aktivieren";
+"enableTimerNotificationsMessage" = "Werde benachrichtigt, wenn dein Pausentimer endet, auch wenn die App im Hintergrund ist. So bleibst du während deines Trainings auf Kurs.";
+"notNow" = "Nicht jetzt";
 "now" = "Jetzt";
 "noWidgetsAdded" = "Keine Widgets hinzugefügt";
 "noWorkouts" = "Keine Workouts";
@@ -695,3 +698,14 @@
 "measurementLowerThisMonthThanLastMonth" = "Dein Durchschnitt diesen Monat ist niedriger als letzten Monat.";
 "measurementHigherThisYearThanLastYear" = "Dein Durchschnitt dieses Jahr ist höher als letztes Jahr.";
 "measurementLowerThisYearThanLastYear" = "Dein Durchschnitt dieses Jahr ist niedriger als letztes Jahr.";
+
+// MARK: - Welcome Screen
+"track" = "Tracke";
+"goals" = "Ziele";
+"getStarted" = "Los geht's";
+"welcomeWorkoutsDescription" = "Protokolliere deine Übungen, Sätze und Wiederholungen, um jedes Training im Blick zu behalten.";
+"welcomeProgressDescription" = "Sieh deine Fortschritte mit detaillierten Diagrammen und Statistiken.";
+"welcomeTemplatesDescription" = "Speichere deine Lieblingsroutinen und starte Workouts mit einem Fingertipp.";
+"welcomeGoalsDescription" = "Setze wöchentliche Ziele und bleib motiviert, deine Fitnessziele zu erreichen.";
+"noGoalSet" = "Noch kein Ziel gesetzt";
+"setGoal" = "Ziel setzen";

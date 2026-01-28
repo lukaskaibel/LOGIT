@@ -13,6 +13,7 @@ struct TimerStopwatchView: View {
     @ObservedObject var chronograph: Chronograph
 
     @AppStorage("lastTimerDuration") private var lastTimerDuration: Int = 30
+    @AppStorage("hasRequestedNotificationPermission") private var hasRequestedNotificationPermission: Bool = false
 
     // MARK: - Constants
 
@@ -22,6 +23,7 @@ struct TimerStopwatchView: View {
     private let opacityOfTimeWhenPaused = 0.7
 
     @State private var isShowingNotificationNotEnabledAlert = false
+    @State private var isShowingNotificationExplanationAlert = false
 
     // MARK: - View
 
@@ -171,6 +173,17 @@ struct TimerStopwatchView: View {
         }, message: {
             Text(NSLocalizedString("notificationsDisabledMessage", comment: ""))
         })
+        .alert(Text(NSLocalizedString("enableTimerNotifications", comment: "")), isPresented: $isShowingNotificationExplanationAlert, actions: {
+            Button(NSLocalizedString("continue", comment: "")) {
+                requestNotificationPermission()
+            }
+            .fontWeight(.bold)
+            Button(NSLocalizedString("notNow", comment: ""), role: .cancel) {
+                hasRequestedNotificationPermission = true
+            }
+        }, message: {
+            Text(NSLocalizedString("enableTimerNotificationsMessage", comment: ""))
+        })
     }
 
     // MARK: - Subviews
@@ -247,25 +260,36 @@ struct TimerStopwatchView: View {
     private func checkNotificationPermission() {
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
-            switch settings.authorizationStatus {
-            case .notDetermined:
-                center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-                    if let error = error {
-                        print("Auth error:", error)
-                    } else if granted {
-                        print("User allowed notifications")
-                    } else {
-                        print("User denied notifications")
+            DispatchQueue.main.async {
+                switch settings.authorizationStatus {
+                case .notDetermined:
+                    if !hasRequestedNotificationPermission {
+                        isShowingNotificationExplanationAlert = true
                     }
-                }
 
-            case .denied:
-                DispatchQueue.main.async {
+                case .denied:
                     isShowingNotificationNotEnabledAlert = true
-                }
 
-            @unknown default:
-                break
+                case .authorized, .provisional, .ephemeral:
+                    // Notifications are enabled, nothing to do
+                    break
+
+                @unknown default:
+                    break
+                }
+            }
+        }
+    }
+    
+    private func requestNotificationPermission() {
+        hasRequestedNotificationPermission = true
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error = error {
+                print("Notification auth error: \(error)")
+            } else if granted {
+                print("User allowed notifications")
+            } else {
+                print("User denied notifications")
             }
         }
     }

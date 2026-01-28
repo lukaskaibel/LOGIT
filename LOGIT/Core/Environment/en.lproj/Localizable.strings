@@ -240,6 +240,9 @@
 "noTemplatesTipDescription" = "Use Templates to organize and plan your workouts in advance. Click below to create your first workout Template!";
 "notificationsDisabled" = "Notifications Disabled";
 "notificationsDisabledMessage" = "To allow the timer to play a sound and show when it ends, notifications must be enabled.";
+"enableTimerNotifications" = "Enable Timer Notifications";
+"enableTimerNotificationsMessage" = "Get notified when your rest timer ends, even when the app is in the background. This helps you stay on track during your workout.";
+"notNow" = "Not Now";
 "now" = "Now";
 "noWidgetsAdded" = "No Widgets Added";
 "noWorkouts" = "No Workouts";
@@ -697,3 +700,14 @@
 "measurementLowerThisMonthThanLastMonth" = "Your average this month is lower than last month.";
 "measurementHigherThisYearThanLastYear" = "Your average this year is higher than last year.";
 "measurementLowerThisYearThanLastYear" = "Your average this year is lower than last year.";
+
+// MARK: - Welcome Screen
+"track" = "Track";
+"goals" = "Goals";
+"getStarted" = "Get Started";
+"welcomeWorkoutsDescription" = "Log your exercises, sets, and reps to keep track of every session.";
+"welcomeProgressDescription" = "See your improvements over time with detailed charts and statistics.";
+"welcomeTemplatesDescription" = "Save your favorite routines and start workouts with a single tap.";
+"welcomeGoalsDescription" = "Set weekly targets and stay motivated to reach your fitness goals.";
+"noGoalSet" = "No goal set yet";
+"setGoal" = "Set Goal";

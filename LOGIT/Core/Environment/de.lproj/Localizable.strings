@@ -272,7 +272,12 @@
 "perWeek" = "pro Woche";
 "PerWeek" = "Pro Woche";
 "pinExercises" = "Übungen anpinnen";
+"pinExercisesTip" = "Übungen anpinnen";
+"pinExercisesTipDescription" = "Pinne Übungen an, um deinen Fortschritt schnell zu sehen.";
+"pinMeasurementsTip" = "Messungen anpinnen";
+"pinMeasurementsTipDescription" = "Pinne Messungen an, um Veränderungen zu beobachten.";
 "pinned" = "Angepinnt";
+"addPin" = "Anpinnen";
 "planAhead" = "Vorausplanen";
 "pressPlusToAdd" = "Drücke +, um \"%@\" hinzuzufügen";
 "pressPlusToAddExercise" = "Drücke +, um eine Übung hinzuzufügen";

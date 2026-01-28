@@ -271,7 +271,12 @@
 "personalBest" = "Personal Best";
 "perDay" = "per Day";
 "pinExercises" = "Pin Exercises";
+"pinExercisesTip" = "Pin Exercises";
+"pinExercisesTipDescription" = "Pin exercises to quickly view your progress.";
+"pinMeasurementsTip" = "Pin Measurements";
+"pinMeasurementsTipDescription" = "Pin measurements to monitor changes over time.";
 "pinned" = "Pinned";
+"addPin" = "Add Pin";
 "PerDay" = "Per Day";
 "PerMonth" = "Per Month";
 "perWeek" = "per week";

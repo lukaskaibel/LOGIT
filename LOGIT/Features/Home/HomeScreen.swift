@@ -32,6 +32,8 @@ struct HomeScreen: View {
     @State private var isShowingWishkit = false
     @State private var isShowingMeasurementsEditSheet = false
     @State private var isShowingExercisesPinEditSheet = false
+    @State private var isShowingMeasurementsTip = true
+    @State private var isShowingExercisesTip = true
 
     // MARK: - Body
 
@@ -289,7 +291,7 @@ struct HomeScreen: View {
 
     private var pinnedMeasurements: [MeasurementEntryType] {
         guard let decoded = try? JSONDecoder().decode([String].self, from: pinnedMeasurementsData) else {
-            return [.bodyweight]
+            return []
         }
         return decoded.compactMap { MeasurementEntryType(rawValue: $0) }
     }
@@ -315,6 +317,17 @@ struct HomeScreen: View {
                 .fontWeight(.semibold)
             }
             VStack(spacing: 8) {
+                if pinnedMeasurements.isEmpty && isShowingMeasurementsTip {
+                    TipView(
+                        title: NSLocalizedString("pinMeasurementsTip", comment: ""),
+                        description: NSLocalizedString("pinMeasurementsTipDescription", comment: ""),
+                        buttonAction: .init(
+                            title: NSLocalizedString("addPin", comment: ""),
+                            action: { isShowingMeasurementsEditSheet = true }
+                        ),
+                        isShown: $isShowingMeasurementsTip
+                    )
+                }
                 ForEach(pinnedMeasurements, id: \.rawValue) { measurementType in
                     Button {
                         homeNavigationCoordinator.path.append(.measurementDetail(measurementType))
@@ -377,6 +390,17 @@ struct HomeScreen: View {
                 .fontWeight(.semibold)
             }
             VStack(spacing: 8) {
+                if pinnedExerciseTiles.isEmpty && isShowingExercisesTip {
+                    TipView(
+                        title: NSLocalizedString("pinExercisesTip", comment: ""),
+                        description: NSLocalizedString("pinExercisesTipDescription", comment: ""),
+                        buttonAction: .init(
+                            title: NSLocalizedString("addPin", comment: ""),
+                            action: { isShowingExercisesPinEditSheet = true }
+                        ),
+                        isShown: $isShowingExercisesTip
+                    )
+                }
                 ForEach(pinnedExerciseTiles, id: \.id) { pinnedTile in
                     if let exercise = database.getExercise(byID: pinnedTile.exerciseID) {
                         pinnedExerciseTileView(for: exercise, tileType: pinnedTile.tileType)

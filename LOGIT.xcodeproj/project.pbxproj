@@ -181,6 +181,7 @@
 		801BBE042DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCFE2DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift */; };
 		801BBE052DF7338A00CDB1FB /* PrivacyPolicyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD2E2DF7338A00CDB1FB /* PrivacyPolicyScreen.swift */; };
 		801BBE062DF7338A00CDB1FB /* VolumeCalculating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBE2DF7338A00CDB1FB /* VolumeCalculating.swift */; };
+		8031D04C2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8031D04B2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift */; };
 		8054E6B42F1D9581003F150D /* ExerciseAttemptCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8054E6B32F1D9581003F150D /* ExerciseAttemptCell.swift */; };
 		8054E6B72F1DB513003F150D /* ComparisonBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8054E6B52F1DB513003F150D /* ComparisonBar.swift */; };
 		8054E6B82F1DB513003F150D /* HighlightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8054E6B62F1DB513003F150D /* HighlightView.swift */; };
@@ -196,6 +197,7 @@
 		80A1D9812EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */; };
 		80A1D9822EDC98E6004EE258 /* PinnedExerciseWeightTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */; };
 		80A640A02E414F4E0053C2C3 /* Transmission in Frameworks */ = {isa = PBXBuildFile; productRef = 80A6409F2E414F4E0053C2C3 /* Transmission */; };
+		80A7A0D12F2E6C5C00112233 /* logit_terms_and_conditions.md in Resources */ = {isa = PBXBuildFile; fileRef = 80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */; };
 		80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387BA2EBA187100AD7EFC /* DecimalField.swift */; };
 		80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = 80C2B98E2EC9362A00118FE2 /* ColorfulX */; };
 		80CBE1D52ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */; };
@@ -416,6 +418,7 @@
 		801BBD5F2DF7338A00CDB1FB /* LOGIT 2.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 2.0.xcdatamodel"; sourceTree = "<group>"; };
 		801BBD602DF7338A00CDB1FB /* LOGIT 3.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 3.0.xcdatamodel"; sourceTree = "<group>"; };
 		801BBD612DF7338A00CDB1FB /* WorkoutDiary.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = WorkoutDiary.xcdatamodel; sourceTree = "<group>"; };
+		8031D04B2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsAndConditionsScreen.swift; sourceTree = "<group>"; };
 		8034A7EC2E83073700834A32 /* LOGIT 4.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 4.0.xcdatamodel"; sourceTree = "<group>"; };
 		8054E6B02F1CC5F9003F150D /* LOGIT 5.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 5.0.xcdatamodel"; sourceTree = "<group>"; };
 		8054E6B32F1D9581003F150D /* ExerciseAttemptCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseAttemptCell.swift; sourceTree = "<group>"; };
@@ -432,6 +435,7 @@
 		80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseRepetitionsTile.swift; sourceTree = "<group>"; };
 		80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseVolumeTile.swift; sourceTree = "<group>"; };
 		80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseWeightTile.swift; sourceTree = "<group>"; };
+		80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions.md; sourceTree = "<group>"; };
 		80B387BA2EBA187100AD7EFC /* DecimalField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalField.swift; sourceTree = "<group>"; };
 		80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementDetailScreen.swift; sourceTree = "<group>"; };
 		80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementsEditSheet.swift; sourceTree = "<group>"; };
@@ -531,6 +535,7 @@
 				801BBC9A2DF7338A00CDB1FB /* Assets.xcassets */,
 				806F87E42ED0D7E7001E8B8B /* Logit.icon */,
 				801BBC9B2DF7338A00CDB1FB /* logit_privacy_policy.md */,
+				80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */,
 			);
 			path = Assets;
 			sourceTree = "<group>";
@@ -854,6 +859,7 @@
 		801BBD322DF7338A00CDB1FB /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				8031D04B2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift */,
 				80036CDB2EFEF98C00B7C7B4 /* Search */,
 				806546042E22FA2E00ADC88C /* Chronograph */,
 				801BBCF82DF7338A00CDB1FB /* Exercise */,
@@ -1127,6 +1133,7 @@
 				8085497F2EE9A37C00761706 /* default_exercises.json in Resources */,
 				801BBD672DF7338A00CDB1FB /* Assets.xcassets in Resources */,
 				801BBD682DF7338A00CDB1FB /* logit_privacy_policy.md in Resources */,
+				80A7A0D12F2E6C5C00112233 /* logit_terms_and_conditions.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1270,6 +1277,7 @@
 				801BBDD72DF7338A00CDB1FB /* TemplateSetCell.swift in Sources */,
 				801BBDD82DF7338A00CDB1FB /* PurchaseManager.swift in Sources */,
 				80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */,
+				8031D04C2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift in Sources */,
 				801BBDD92DF7338A00CDB1FB /* View+.swift in Sources */,
 				801BBDDA2DF7338A00CDB1FB /* DateBarChart.swift in Sources */,
 				801BBDDB2DF7338A00CDB1FB /* WorkoutCell.swift in Sources */,

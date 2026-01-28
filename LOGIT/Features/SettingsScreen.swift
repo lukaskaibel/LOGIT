@@ -22,6 +22,7 @@ struct SettingsScreen: View {
 
     @State private var isShowingUpgradeToPro = false
     @State private var isShowingPrivacyPolicy = false
+    @State private var isShowingTermsAndConditions = false
 
     // MARK: - Body
 
@@ -79,6 +80,17 @@ struct SettingsScreen: View {
                     } label: {
                         HStack {
                             Text(NSLocalizedString("privacyPolicy", comment: ""))
+                            Spacer()
+                            NavigationChevron()
+                        }
+                        .padding(CELL_PADDING)
+                        .tileStyle()
+                    }
+                    Button {
+                        isShowingTermsAndConditions = true
+                    } label: {
+                        HStack {
+                            Text(NSLocalizedString("termsAndConditions", comment: ""))
                             Spacer()
                             NavigationChevron()
                         }
@@ -145,6 +157,21 @@ struct SettingsScreen: View {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button {
                                 isShowingPrivacyPolicy = false
+                            } label: {
+                                Text(NSLocalizedString("done", comment: ""))
+                            }
+                        }
+                    }
+                    .navigationBarTitleDisplayMode(.large)
+            }
+        }
+        .sheet(isPresented: $isShowingTermsAndConditions) {
+            NavigationStack {
+                TermsAndConditionsScreen()
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                isShowingTermsAndConditions = false
                             } label: {
                                 Text(NSLocalizedString("done", comment: ""))
                             }

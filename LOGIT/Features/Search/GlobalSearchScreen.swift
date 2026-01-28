@@ -28,11 +28,9 @@ struct GlobalSearchScreen: View {
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
     @Environment(\.isSearching) private var isSearching
     
-    // MARK: - Binding (passed from parent for iOS 26 search tab integration)
-    
-    @Binding var searchText: String
-    
     // MARK: - State
+    
+    @State private var searchText: String = ""
     
     @State private var selectedResultType: SearchResultType = .all
     @State private var selectedExercise: Exercise?
@@ -54,6 +52,7 @@ struct GlobalSearchScreen: View {
                     searchResultsView
                 }
             }
+            .searchable(text: $searchText, prompt: NSLocalizedString("searchEverything", comment: ""))
             .navigationTitle(NSLocalizedString("search", comment: ""))
             .navigationBarTitleDisplayMode(.large)
             .navigationDestination(item: $selectedExercise) { exercise in
@@ -409,7 +408,7 @@ struct GlobalSearchScreen: View {
 
 struct GlobalSearchScreen_Previews: PreviewProvider {
     static var previews: some View {
-        GlobalSearchScreen(searchText: .constant("test"))
+        GlobalSearchScreen()
             .previewEnvironmentObjects()
     }
 }

@@ -41,14 +41,12 @@ struct WorkoutListScreen: View {
                     MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
                     if isSearching {
                         // Flat list when searching - results ordered by relevance
-                        VStack(spacing: CELL_SPACING) {
+                        VStack(spacing: 8) {
                             ForEach(workouts) { workout in
                                 Button {
                                     selectedWorkout = workout
                                 } label: {
                                     WorkoutCell(workout: workout)
-                                        .padding(CELL_PADDING)
-                                        .tileStyle()
                                 }
                                 .buttonStyle(TileButtonStyle())
                             }
@@ -61,15 +59,13 @@ struct WorkoutListScreen: View {
                                 Text(key.monthDescription)
                                     .sectionHeaderStyle2()
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                VStack(spacing: CELL_SPACING) {
+                                VStack(spacing: 8) {
                                     ForEach(workouts) {
                                         workout in
                                         Button {
                                             selectedWorkout = workout
                                         } label: {
                                             WorkoutCell(workout: workout)
-                                                .padding(CELL_PADDING)
-                                                .tileStyle()
                                         }
                                         .buttonStyle(TileButtonStyle())
                                     }

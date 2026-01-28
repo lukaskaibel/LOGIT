@@ -303,8 +303,6 @@ struct GlobalSearchScreen: View {
                         selectedWorkout = workout
                     } label: {
                         WorkoutCell(workout: workout)
-                            .padding(CELL_PADDING)
-                            .tileStyle()
                     }
                     .buttonStyle(TileButtonStyle())
                 }

@@ -37,9 +37,14 @@ extension Database {
         let latPulldown = database.newExercise(name: "Lat Pulldown", muscleGroup: .back)
         let crunches = database.newExercise(name: "Crunches", muscleGroup: .abdominals)
 
+        // Create workouts with realistic durations (50-75 minutes)
+        let workoutDurations = [65, 58, 72, 55, 68] // minutes
+        
         for i in 0 ..< 5 {
             var date = Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!
-            let pullday = database.newWorkout(name: "Pullday", date: date)
+            let pullday = database.newWorkout(name: "Pull Day", date: date)
+            pullday.endDate = Calendar.current.date(byAdding: .minute, value: workoutDurations[i], to: date)
+            
             let deadliftGroup = database.newWorkoutSetGroup(
                 createFirstSetAutomatically: false,
                 exercise: deadlift,
@@ -75,8 +80,10 @@ extension Database {
             database.newStandardSet(repetitions: 12, weight: 30000, setGroup: curlGroup)
             database.newStandardSet(repetitions: 12, weight: 30000, setGroup: curlGroup)
 
-            date = Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!
-            let pushday = database.newWorkout(name: "Pushday", date: date)
+            date = Calendar.current.date(byAdding: .day, value: -2, to: Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!)!
+            let pushday = database.newWorkout(name: "Push Day", date: date)
+            pushday.endDate = Calendar.current.date(byAdding: .minute, value: [62, 70, 54, 66, 59][i], to: date)
+            
             let benchpressGroup = database.newWorkoutSetGroup(
                 createFirstSetAutomatically: false,
                 exercise: benchpress,
@@ -189,8 +196,10 @@ extension Database {
             )
 
             if i > 0, i != 4 {
-                date = Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!
-                let legday = database.newWorkout(name: "Legday", date: date)
+                date = Calendar.current.date(byAdding: .day, value: -4, to: Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!)!
+                let legday = database.newWorkout(name: "Leg Day", date: date)
+                legday.endDate = Calendar.current.date(byAdding: .minute, value: [0, 75, 68, 71][i-1], to: date)
+                
                 let squatGroup = database.newWorkoutSetGroup(
                     createFirstSetAutomatically: false,
                     exercise: squat,
@@ -241,34 +250,38 @@ extension Database {
         }
 
         let date = Calendar.current.date(byAdding: .weekOfYear, value: -6, to: .now)!
-        let firstBenchWorkout = database.newWorkout(name: "Benchday", date: date)
+        let firstBenchWorkout = database.newWorkout(name: "Quick Bench Session", date: date)
+        firstBenchWorkout.endDate = Calendar.current.date(byAdding: .minute, value: 30, to: date)
         _ = database.newWorkoutSetGroup(
             sets: [database.newStandardSet(repetitions: 12, weight: 78000)],
             exercise: benchpress,
             workout: firstBenchWorkout
         )
         let secondBenchWorkout = database.newWorkout(
-            name: "Benchday",
+            name: "Bench Focus",
             date: Calendar.current.date(byAdding: .weekOfYear, value: -7, to: .now)!
         )
+        secondBenchWorkout.endDate = Calendar.current.date(byAdding: .minute, value: 28, to: secondBenchWorkout.date!)
         _ = database.newWorkoutSetGroup(
             sets: [database.newStandardSet(repetitions: 12, weight: 67000)],
             exercise: benchpress,
             workout: secondBenchWorkout
         )
         let thirdBenchWorkout = database.newWorkout(
-            name: "Benchday",
+            name: "Morning Bench",
             date: Calendar.current.date(byAdding: .weekOfYear, value: -9, to: .now)!
         )
+        thirdBenchWorkout.endDate = Calendar.current.date(byAdding: .minute, value: 25, to: thirdBenchWorkout.date!)
         _ = database.newWorkoutSetGroup(
             sets: [database.newStandardSet(repetitions: 12, weight: 55000)],
             exercise: benchpress,
             workout: thirdBenchWorkout
         )
         let fourthBenchWorkout = database.newWorkout(
-            name: "Benchday",
+            name: "Bench & Accessories",
             date: Calendar.current.date(byAdding: .weekOfYear, value: -12, to: .now)!
         )
+        fourthBenchWorkout.endDate = Calendar.current.date(byAdding: .minute, value: 45, to: fourthBenchWorkout.date!)
         _ = database.newWorkoutSetGroup(
             sets: [database.newStandardSet(repetitions: 12, weight: 50000)],
             exercise: benchpress,

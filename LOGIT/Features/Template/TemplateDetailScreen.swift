@@ -280,8 +280,6 @@ struct TemplateDetailScreen: View {
             } label: {
                 WorkoutCell(workout: workout)
             }
-            .padding(CELL_PADDING)
-            .tileStyle()
             .buttonStyle(TileButtonStyle())
         }
         .emptyPlaceholder(template.workouts) {

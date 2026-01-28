@@ -179,8 +179,6 @@ struct TargetPerWeekDetailScreen: View {
                     VStack(spacing: CELL_SPACING) {
                         ForEach(workouts) { workout in
                             WorkoutCell(workout: workout)
-                                .padding(CELL_PADDING)
-                                .tileStyle()
                         }
                         .emptyPlaceholder(workouts) {
                             Text(NSLocalizedString("noWorkouts", comment: ""))

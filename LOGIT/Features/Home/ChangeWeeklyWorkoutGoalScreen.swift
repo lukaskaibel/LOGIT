@@ -78,7 +78,8 @@ struct ChangeWeeklyWorkoutGoalScreen: View {
             }
         }
         .onAppear {
-            selectedValue = targetPerWeek
+            // Default to 3 if no goal has been set yet (-1 means unset)
+            selectedValue = targetPerWeek > 0 ? targetPerWeek : 3
         }
     }
 }

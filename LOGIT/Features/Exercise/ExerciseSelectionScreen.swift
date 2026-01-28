@@ -98,6 +98,7 @@ struct ExerciseSelectionScreen: View {
                                 LazyVStack(spacing: SECTION_SPACING) {
                                 if isShowingNoExercisesTip {
                                     TipView(
+                                        category: NSLocalizedString("exerciseLibrary", comment: ""),
                                         title: NSLocalizedString("noExercisesTip", comment: ""),
                                         description: NSLocalizedString("noExercisesTipDescription", comment: ""),
                                         buttonAction: .init(
@@ -106,8 +107,6 @@ struct ExerciseSelectionScreen: View {
                                         ),
                                         isShown: $isShowingNoExercisesTip
                                     )
-                                    .padding(CELL_PADDING)
-                                    .tileStyle()
                                     .padding(.horizontal)
                                 }
                                 if isSearching {

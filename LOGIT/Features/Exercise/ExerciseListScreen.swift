@@ -40,13 +40,14 @@ struct ExerciseListScreen: View {
                 LazyVStack(spacing: SECTION_SPACING) {
                     MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
                     if isShowingNoExercisesTip {
-                        TipView(title: NSLocalizedString("noExercisesTip", comment: ""),
-                                description: NSLocalizedString("noExercisesTipDescription", comment: ""),
-                                buttonAction: .init(title: NSLocalizedString("createExercise", comment: ""), action: { showingAddExercise = true }),
-                                isShown: $isShowingNoExercisesTip)
-                            .padding(CELL_PADDING)
-                            .tileStyle()
-                            .padding(.horizontal)
+                        TipView(
+                            category: NSLocalizedString("exerciseLibrary", comment: ""),
+                            title: NSLocalizedString("noExercisesTip", comment: ""),
+                            description: NSLocalizedString("noExercisesTipDescription", comment: ""),
+                            buttonAction: .init(title: NSLocalizedString("createExercise", comment: ""), action: { showingAddExercise = true }),
+                            isShown: $isShowingNoExercisesTip
+                        )
+                        .padding(.horizontal)
                     }
                     if isSearching {
                         // Flat list when searching - results ordered by relevance

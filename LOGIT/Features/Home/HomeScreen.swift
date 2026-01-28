@@ -13,7 +13,7 @@ import WishKit
 struct HomeScreen: View {
     // MARK: - AppStorage
 
-    @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = 3
+    @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = -1
     @AppStorage("pinnedMeasurements") private var pinnedMeasurementsData: Data = Data()
     @AppStorage("pinnedExercises") private var pinnedExercisesData: Data = Data()
 
@@ -27,7 +27,6 @@ struct HomeScreen: View {
 
     // MARK: - State
 
-    @State private var showNoWorkoutTip = false
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingSettings = false
     @State private var isShowingWishkit = false
@@ -50,10 +49,6 @@ struct HomeScreen: View {
                                 .padding([.top, .horizontal])
                         }
                         VStack(spacing: SECTION_SPACING) {
-                            if showNoWorkoutTip {
-                                noWorkoutTip
-                                    .padding(.horizontal)
-                            }
                             if #unavailable(iOS 26.0) {
                                 VStack(spacing: 0) {
                                     Button {
@@ -162,9 +157,6 @@ struct HomeScreen: View {
                     }
                     .ignoresSafeArea(.all)
                 )
-                .onAppear {
-                    showNoWorkoutTip = workouts.isEmpty
-                }
                 .sheet(isPresented: $isShowingSettings) {
                     NavigationStack {
                         SettingsScreen()
@@ -262,24 +254,35 @@ struct HomeScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var currentWeekWeeklyTargetWidget: some View {
-        Button {
-            homeNavigationCoordinator.path.append(.targetPerWeek)
-        } label: {
-            CurrentWeekWeeklyTargetTile()
-        }
-        .buttonStyle(TileButtonStyle())
-    }
+    @State private var isShowingWorkoutGoalSheet = false
 
-    private var noWorkoutTip: some View {
-        TipView(
-            title: NSLocalizedString("noWorkoutsTip", comment: ""),
-            description: NSLocalizedString("noWorkoutsTipDescription", comment: ""),
-            buttonAction: nil,
-            isShown: $showNoWorkoutTip
-        )
-        .padding(CELL_PADDING)
-        .tileStyle()
+    private var currentWeekWeeklyTargetWidget: some View {
+        Group {
+            if targetPerWeek > 0 {
+                Button {
+                    homeNavigationCoordinator.path.append(.targetPerWeek)
+                } label: {
+                    CurrentWeekWeeklyTargetTile()
+                }
+                .buttonStyle(TileButtonStyle())
+            } else {
+                TipView(
+                    title: NSLocalizedString("noWeeklyGoalTip", comment: ""),
+                    description: NSLocalizedString("noWeeklyGoalTipDescription", comment: ""),
+                    buttonAction: .init(
+                        title: NSLocalizedString("setGoal", comment: ""),
+                        action: { isShowingWorkoutGoalSheet = true }
+                    ),
+                    showDismissButton: false,
+                    isShown: .constant(true)
+                )
+                .sheet(isPresented: $isShowingWorkoutGoalSheet) {
+                    NavigationStack {
+                        ChangeWeeklyWorkoutGoalScreen()
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Measurements Section

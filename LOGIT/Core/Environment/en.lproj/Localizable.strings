@@ -114,6 +114,7 @@
 "exerciseNameCantStartWithDefault" = "Exercise name cannot start with \"_default\". This prefix is reserved for built-in exercises.";
 "exerciseNameDescription" = "Enter the name for the exercise.";
 "exercises" = "Exercises";
+"exerciseLibrary" = "Exercise Library";
 
 // MARK: - F
 
@@ -137,6 +138,7 @@
 "generatingWorkout" = "Generating Workout";
 "generatingWorkoutFailed" = "Generating Workout Failed";
 "generatingWorkoutFailedText" = "Make sure the photo contains a workout and try again.";
+"gettingStarted" = "Getting Started";
 "goal" = "Goal";
 
 // MARK: - H
@@ -227,8 +229,8 @@
 "noEntriesConfirmation" = "This workout has no entries. Discard it?";
 "noExercises" = "No Exercises";
 "noExercisesInWeek" = "No Exercise in Week";
-"noExercisesTip" = "Exercise Library 🏋️";
-"noExercisesTipDescription" = "Craft your personal Exercise library and categorize by muscle group. Click below to start adding your first Exercise!";
+"noExercisesTip" = "No Exercises Yet";
+"noExercisesTipDescription" = "Build your personal exercise library to get started.";
 "noHistory" = "No History";
 "noMeasurements" = "No Measurements";
 "noName" = "No Name";
@@ -236,8 +238,8 @@
 "noon" = "Noon";
 "normalset" = "Normal";
 "noTemplates" = "No Templates";
-"noTemplatesTip" = "Plan Ahead 📋";
-"noTemplatesTipDescription" = "Use Templates to organize and plan your workouts in advance. Click below to create your first workout Template!";
+"noTemplatesTip" = "No Templates Yet";
+"noTemplatesTipDescription" = "Save your favorite routines for quick access.";
 "notificationsDisabled" = "Notifications Disabled";
 "notificationsDisabledMessage" = "To allow the timer to play a sound and show when it ends, notifications must be enabled.";
 "enableTimerNotifications" = "Enable Timer Notifications";
@@ -248,8 +250,8 @@
 "noWorkouts" = "No Workouts";
 "noWorkoutsInWeek" = "No Workouts in Week";
 "noWorkoutsThisWeek" = "No Workouts this Week";
-"noWorkoutsTip" = "Lets Work-Out 💪";
-"noWorkoutsTipDescription" = "You haven't logged any Workouts in LOGIT yet. Start your journey by clicking the button at the bottom of the screen to record your first Workout!";
+"noWorkoutsTip" = "No Workouts Yet";
+"noWorkoutsTipDescription" = "Start logging your training to track your progress.";
 
 // MARK: - O
 
@@ -274,6 +276,7 @@
 "PerMonth" = "Per Month";
 "perWeek" = "per week";
 "PerWeek" = "Per Week";
+"planAhead" = "Plan Ahead";
 "pressPlusToAdd" = "Press + to add \"%@\"";
 "pressPlusToAddExercise" = "Press + to add an exercise";
 "preventAutoLock" = "Prevent Auto-Lock";
@@ -378,6 +381,7 @@
 "threeMonths" = "3 Months";
 "threeWeeksAgo" = "Three weeks ago";
 "time" = "time";
+"tip" = "Tip";
 "timer" = "Timer";
 "timerIsMuted" = "Timer Muted";
 "times" = "times";
@@ -710,4 +714,6 @@
 "welcomeTemplatesDescription" = "Save your favorite routines and start workouts with a single tap.";
 "welcomeGoalsDescription" = "Set weekly targets and stay motivated to reach your fitness goals.";
 "noGoalSet" = "No goal set yet";
+"noWeeklyGoalTip" = "No Weekly Goal";
+"noWeeklyGoalTipDescription" = "Set a target to track your weekly workout progress.";
 "setGoal" = "Set Goal";

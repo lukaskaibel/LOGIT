@@ -14,7 +14,6 @@ struct SettingsScreen: View {
     // MARK: - UserDefaults
 
     @AppStorage("weightUnit") var weightUnit: WeightUnit = .kg
-    @AppStorage("workoutPerWeekTarget") var workoutPerWeekTarget: Int = 3
     @AppStorage("preventAutoLock") var preventAutoLock: Bool = true
     @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
 
@@ -30,20 +29,6 @@ struct SettingsScreen: View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack(spacing: CELL_SPACING) {
-                    HStack {
-                        Text(NSLocalizedString("targetPerWeek", comment: ""))
-                        Spacer()
-                        Picker(
-                            NSLocalizedString("targetPerWeek", comment: ""),
-                            selection: $workoutPerWeekTarget
-                        ) {
-                            ForEach(1 ..< 10, id: \.self) { i in
-                                Text(String(i)).tag(i)
-                            }
-                        }
-                    }
-                    .padding(CELL_PADDING)
-                    .tileStyle()
                     HStack {
                         Text(NSLocalizedString("unit", comment: ""))
                         Spacer()

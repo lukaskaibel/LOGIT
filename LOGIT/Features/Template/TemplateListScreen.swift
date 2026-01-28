@@ -50,6 +50,7 @@ struct TemplateListScreen: View {
                     MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
                     if isShowingNoTemplatesTip {
                         TipView(
+                            category: NSLocalizedString("planAhead", comment: ""),
                             title: NSLocalizedString("noTemplatesTip", comment: ""),
                             description: NSLocalizedString("noTemplatesTipDescription", comment: ""),
                             buttonAction: .init(
@@ -58,8 +59,6 @@ struct TemplateListScreen: View {
                             ),
                             isShown: $isShowingNoTemplatesTip
                         )
-                        .padding(CELL_PADDING)
-                        .tileStyle()
                         .padding(.horizontal)
                     }
                     if isSearching {

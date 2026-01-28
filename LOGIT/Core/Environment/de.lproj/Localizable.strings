@@ -114,6 +114,7 @@
 "exerciseNameCantStartWithDefault" = "Übungsname darf nicht mit \"_default\" beginnen. Dieses Präfix ist für eingebaute Übungen reserviert.";
 "exerciseNameDescription" = "Gib den Namen der Übung ein.";
 "exercises" = "Übungen";
+"exerciseLibrary" = "Übungsbibliothek";
 
 // MARK: - F
 
@@ -145,6 +146,7 @@
 "generatingWorkout" = "Workout wird erstellt";
 "generatingWorkoutFailed" = "Workout erstellen fehlgeschlagen";
 "generatingWorkoutFailedText" = "Stelle sicher, dass das Foto ein Workout enthält und versuche es erneut.";
+"gettingStarted" = "Erste Schritte";
 "goal" = "Ziel";
 
 // MARK: - I
@@ -223,8 +225,8 @@
 "noEntriesConfirmation" = "Das Workout hat kein Einträge. Workout verwerfen?";
 "noExercises" = "Keine Übungen";
 "noExercisesInWeek" = "Keine Übungen in der Woche";
-"noExercisesTip" = "Übungsbibliothek 🏋️";
-"noExercisesTipDescription" = "Erstelle deine persönliche Übungsbibliothek und kategorisiere nach Muskelgruppen. Klicke unten, um deine erste Übung hinzuzufügen!";
+"noExercisesTip" = "Noch keine Übungen";
+"noExercisesTipDescription" = "Erstelle deine persönliche Übungsbibliothek.";
 "noHistory" = "Keine Ausführungen";
 "noMeasurements" = "Keine Messungen";
 "noName" = "Ohne Namen";
@@ -232,8 +234,8 @@
 "noon" = "Mittag";
 "normalset" = "Normal";
 "noTemplates" = "Keine Vorlagen";
-"noTemplatesTip" = "Plane voraus 📋";
-"noTemplatesTipDescription" = "Nutze Vorlagen, um deine Workouts im Voraus zu organisieren und zu planen. Klicke unten, um deine erste Workout-Vorlage zu erstellen!";
+"noTemplatesTip" = "Noch keine Vorlagen";
+"noTemplatesTipDescription" = "Speichere deine Lieblingsroutinen für schnellen Zugriff.";
 "notificationsDisabled" = "Benachrichtigungen deaktiviert";
 "notificationsDisabledMessage" = "Damit der Timer einen Ton abspielen und das Ende anzeigen kann, müssen Benachrichtigungen aktiviert sein.";
 "enableTimerNotifications" = "Timer-Benachrichtigungen aktivieren";
@@ -244,8 +246,8 @@
 "noWorkouts" = "Keine Workouts";
 "noWorkoutsInWeek" = "Keine Workouts in der Woche";
 "noWorkoutsThisWeek" = "Keine Workouts in dieser Woche";
-"noWorkoutsTip" = "Lass uns trainieren 💪";
-"noWorkoutsTipDescription" = "Du hast bisher keine Workouts in LOGIT eingetragen. Klicke den Button unten auf dem Screen, um dein erstes Training zu erfassen!";
+"noWorkoutsTip" = "Noch keine Workouts";
+"noWorkoutsTipDescription" = "Beginne mit dem Tracking, um deinen Fortschritt zu verfolgen.";
 
 
 // MARK: - O
@@ -271,6 +273,7 @@
 "PerWeek" = "Pro Woche";
 "pinExercises" = "Übungen anpinnen";
 "pinned" = "Angepinnt";
+"planAhead" = "Vorausplanen";
 "pressPlusToAdd" = "Drücke +, um \"%@\" hinzuzufügen";
 "pressPlusToAddExercise" = "Drücke +, um eine Übung hinzuzufügen";
 "preventAutoLock" = "Bildschirmsperre verhindern";
@@ -376,6 +379,7 @@
 "threeMonths" = "3 Monate";
 "threeWeeksAgo" = "Vor 3 Wochen";
 "time" = "mal";
+"tip" = "Tipp";
 "timer" = "Timer";
 "timerIsMuted" = "Timer Stummschalten";
 "times" = "mal";
@@ -708,4 +712,6 @@
 "welcomeTemplatesDescription" = "Speichere deine Lieblingsroutinen und starte Workouts mit einem Fingertipp.";
 "welcomeGoalsDescription" = "Setze wöchentliche Ziele und bleib motiviert, deine Fitnessziele zu erreichen.";
 "noGoalSet" = "Noch kein Ziel gesetzt";
+"noWeeklyGoalTip" = "Kein Wochenziel";
+"noWeeklyGoalTipDescription" = "Setze ein Ziel, um deinen wöchentlichen Trainingsfortschritt zu verfolgen.";
 "setGoal" = "Ziel setzen";

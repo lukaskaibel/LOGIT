@@ -223,7 +223,7 @@ struct WorkoutEditorScreen: View {
                     } label: {
                         HStack {
                             VStack {
-                                Text(workout.name ?? "")
+                                Text((workout.name?.isEmpty ?? true) ? Workout.getStandardName(for: workout.date ?? .now) : workout.name!)
                                     .foregroundStyle(Color.label)
                                     .fontWeight(.bold)
                                     .lineLimit(1)

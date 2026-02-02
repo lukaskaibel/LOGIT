@@ -27,10 +27,11 @@ public func getVolume(of workoutSets: [WorkoutSet]) -> Int {
 public func getVolume(of workoutSets: [WorkoutSet], for exercise: Exercise) -> Int {
     workoutSets
         .map { workoutSet in
-            if let standardSet = workoutSet as? StandardSet {
+            if let standardSet = workoutSet as? StandardSet, standardSet.exercise == exercise {
                 return Int(standardSet.repetitions * standardSet.weight)
             }
-            if let dropSet = workoutSet as? DropSet, let repetitions = dropSet.repetitions, let weights = dropSet.weights {
+            if let dropSet = workoutSet as? DropSet, dropSet.exercise == exercise,
+               let repetitions = dropSet.repetitions, let weights = dropSet.weights {
                 return Int(zip(repetitions, weights).map(*).reduce(0, +))
             }
             if let superSet = workoutSet as? SuperSet {

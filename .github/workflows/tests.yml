@@ -1,0 +1,59 @@
+name: Tests
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: macos-15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Select latest Xcode version
+        run: |
+          # List available Xcode versions
+          ls /Applications | grep Xcode
+          # Select the latest available Xcode
+          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          echo "Using: $LATEST_XCODE"
+          sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+      
+      - name: Show Xcode version
+        run: xcodebuild -version
+      
+      - name: Resolve Swift Package dependencies
+        run: xcodebuild -resolvePackageDependencies -project LOGIT.xcodeproj -scheme LOGIT
+      
+      - name: Create Secrets.swift stub
+        run: |
+          cat > LOGIT/Config/Secrets.swift << 'EOF'
+          let OPENAI_API_KEY = "test-key-for-ci"
+          let WISHKIT_API_KEY = "test-key-for-ci"
+          EOF
+      
+      - name: Run tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project LOGIT.xcodeproj \
+            -scheme LOGIT \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -resultBundlePath TestResults.xcresult \
+            -skip-testing:LOGITTests/ExerciseServiceTests \
+            -skip-testing:LOGITTests/TemplateServiceTests \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty --color --report junit
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults.xcresult

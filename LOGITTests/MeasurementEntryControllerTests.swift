@@ -99,9 +99,13 @@ final class MeasurementEntryControllerTests: XCTestCase {
         
         controller.deleteMeasurementEntry(entryToDelete!)
         
-        // Force Core Data context to process changes synchronously
-        try? database.context.save()
-        database.context.refreshAllObjects()
+        // Database.delete uses context.perform which is async
+        // Use performAndWait to ensure deletion completes before checking
+        let expectation = self.expectation(description: "Delete completed")
+        database.context.perform {
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 5.0)
         
         entries = controller.getMeasurementEntries(ofType: .bodyweight)
         let stillExists = entries.contains { $0.value == uniqueValue }

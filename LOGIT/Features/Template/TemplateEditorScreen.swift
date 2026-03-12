@@ -36,6 +36,7 @@ struct TemplateEditorScreen: View {
     // MARK: - Parameters
 
     let isEditingExistingTemplate: Bool
+    var isImportedTemplate: Bool = false
 
     // MARK: - Body
 
@@ -84,6 +85,15 @@ struct TemplateEditorScreen: View {
             ScrollViewReader { scrollable in
                 ScrollView {
                     VStack {
+                        // Shared with you banner for imported templates
+                        if isImportedTemplate {
+                            SharedWithYouBanner(
+                                title: NSLocalizedString("sharedTemplate", comment: ""),
+                                subtitle: NSLocalizedString("sharedTemplateDescription", comment: "")
+                            )
+                            .padding(.bottom, SECTION_SPACING)
+                        }
+                        
                         VStack(spacing: 0) {
                             ReorderableForEach(
                                 $template.setGroups,
@@ -203,12 +213,12 @@ struct TemplateEditorScreen: View {
                                 .font(.caption)
                                 .foregroundStyle(Color.secondaryLabel)
                         }
-                        .frame(maxWidth: 200)
+                        .frame(maxWidth: isImportedTemplate ? 140 : 200)
                     }
                 }
                 if !isRenamingTemplate {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button(NSLocalizedString("save", comment: "")) {
+                        Button(isImportedTemplate ? NSLocalizedString("saveTemplate", comment: "") : NSLocalizedString("save", comment: "")) {
                             template.name = template.name?.isEmpty ?? true ? NSLocalizedString("newTemplate", comment: "") : template.name
                             template.exercises.forEach { database.unflagAsTemporary($0) }
                             database.unflagAsTemporary(template)

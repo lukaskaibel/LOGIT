@@ -22,6 +22,7 @@
 "addSetAfter" = "Add Set After";
 "addSetBefore" = "Add Set Before";
 "addWorkout" = "Add Workout";
+"addToHistory" = "Add to History";
 "afternoon" = "Afternoon";
 "all" = "All";
 "allEntries" = "All Entries";
@@ -157,8 +158,10 @@
 // MARK: - I
 
 "incompleteSetsWillNotBeSaved" = "Incomplete sets will not be saved.";
+"importError" = "Import Error";
 "inSelectedWeek" = "In Selected Week";
 "instructions" = "Instructions";
+"inviteToWorkout" = "Invite to Workout";
 
 // MARK: - K
 
@@ -317,6 +320,7 @@
 
 "save" = "Save";
 "saveAsTemplate" = "Save as Template";
+"saveTemplate" = "Save Template";
 "saveTime" = "Save Time";
 "scanATemplate" = "Scan a Template";
 "scanAWorkout" = "Scan a Workout";
@@ -346,6 +350,12 @@
 "settings" = "Settings";
 "seven" = "Seven";
 "shoulders" = "Shoulders";
+"shareAsTemplate" = "Share as Template";
+"sharedTemplate" = "Shared Template";
+"sharedTemplateDescription" = "Review and save this template to your collection.";
+"sharedWorkout" = "Shared Workout";
+"sharedWorkoutDescription" = "Someone invited you to add this workout to your history.";
+"shareTemplate" = "Share Template";
 "showAll" = "Show All";
 "showAllAttempts" = "Show All Attempts";
 "showAllExercises" = "Show All Exercises";
@@ -426,6 +436,7 @@
 "unitDescription" = "Select the unit you want to use. Any previous entries will be converted on change.";
 "unpinned" = "Unpinned";
 "unused" = "Unused";
+"unsupportedFileType" = "This file type is not supported.";
 "update" = "Update";
 "upgradeTo" = "Upgrade to";
 "useDefaultExercises" = "Use Default Exercises";

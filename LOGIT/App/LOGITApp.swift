@@ -35,6 +35,12 @@ struct LOGIT: App {
     @State private var isShowingWelcome = false
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingStartWorkoutSheet = false
+    
+    // Import handling state
+    @State private var importedWorkout: Workout?
+    @State private var importedTemplate: Template?
+    @State private var showingImportError = false
+    @State private var importErrorMessage = ""
 
     // MARK: - Init
 
@@ -146,6 +152,65 @@ struct LOGIT: App {
                     let scenes = UIApplication.shared.connectedScenes
                     guard let scene = scenes.first as? UIWindowScene else { return }
                     scene.keyWindow?.overrideUserInterfaceStyle = .dark
+                }
+                .onOpenURL { url in
+                    handleIncomingFile(url: url)
+                }
+                .sheet(item: $importedWorkout) { workout in
+                    NavigationStack {
+                        WorkoutEditorScreen(
+                            workout: workout,
+                            isAddingNewWorkout: false,
+                            isImportedWorkout: true
+                        )
+                    }
+                    .environmentObject(database)
+                    .environmentObject(measurementController)
+                    .environmentObject(templateService)
+                    .environmentObject(purchaseManager)
+                    .environmentObject(networkMonitor)
+                    .environmentObject(workoutRecorder)
+                    .environmentObject(muscleGroupService)
+                    .environmentObject(homeNavigationCoordinator)
+                    .environmentObject(chronograph)
+                    .interactiveDismissDisabled()
+                    .onDisappear {
+                        // Clean up if dismissed without saving
+                        if database.isTemporaryObject(workout) {
+                            database.deleteAllTemporaryObjects()
+                        }
+                    }
+                }
+                .sheet(item: $importedTemplate) { template in
+                    TemplateEditorScreen(
+                        template: template,
+                        isEditingExistingTemplate: false,
+                        isImportedTemplate: true
+                    )
+                    .environmentObject(database)
+                    .environmentObject(measurementController)
+                    .environmentObject(templateService)
+                    .environmentObject(purchaseManager)
+                    .environmentObject(networkMonitor)
+                    .environmentObject(workoutRecorder)
+                    .environmentObject(muscleGroupService)
+                    .environmentObject(homeNavigationCoordinator)
+                    .environmentObject(chronograph)
+                    .presentationBackground(Color.black)
+                    .onDisappear {
+                        // Clean up if dismissed without saving
+                        if database.isTemporaryObject(template) {
+                            database.deleteAllTemporaryObjects()
+                        }
+                    }
+                }
+                .alert(
+                    NSLocalizedString("importError", comment: ""),
+                    isPresented: $showingImportError
+                ) {
+                    Button(NSLocalizedString("ok", comment: ""), role: .cancel) {}
+                } message: {
+                    Text(importErrorMessage)
                 }
         }
     }
@@ -281,6 +346,34 @@ struct LOGIT: App {
     private func dismissWorkoutRecorder() {
         withAnimation {
             isShowingWorkoutRecorder = false
+        }
+    }
+    
+    private func handleIncomingFile(url: URL) {
+        let sharingService = WorkoutSharingService(database: database)
+        
+        let fileExtension = url.pathExtension.lowercased()
+        
+        switch fileExtension {
+        case "logitworkout":
+            do {
+                let workout = try sharingService.importWorkout(from: url)
+                importedWorkout = workout
+            } catch {
+                importErrorMessage = error.localizedDescription
+                showingImportError = true
+            }
+        case "logittemplate":
+            do {
+                let template = try sharingService.importTemplate(from: url)
+                importedTemplate = template
+            } catch {
+                importErrorMessage = error.localizedDescription
+                showingImportError = true
+            }
+        default:
+            importErrorMessage = NSLocalizedString("unsupportedFileType", comment: "")
+            showingImportError = true
         }
     }
 }

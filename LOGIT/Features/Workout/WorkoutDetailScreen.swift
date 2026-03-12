@@ -28,11 +28,19 @@ struct WorkoutDetailScreen: View {
     @State private var selectedMuscleGroup: MuscleGroup? = nil
     @State private var isMuscleGroupExpanded: Bool = false
     @State private var selectedTemplate: Template?
+    @State private var workoutShareFileURL: URL?
+    @State private var templateShareFileURL: URL?
 
     // MARK: - Variables
 
     @StateObject var workout: Workout
     let canNavigateToTemplate: Bool
+    
+    // MARK: - Sharing Service
+    
+    private var sharingService: WorkoutSharingService {
+        WorkoutSharingService(database: database)
+    }
 
     // MARK: - Body
 
@@ -86,6 +94,21 @@ struct WorkoutDetailScreen: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
+                    // Share Section
+                    Section {
+                        Button {
+                            workoutShareFileURL = sharingService.exportWorkout(workout)
+                        } label: {
+                            Label(NSLocalizedString("inviteToWorkout", comment: ""), systemImage: "person.badge.plus")
+                        }
+                        Button {
+                            templateShareFileURL = sharingService.exportWorkoutAsTemplate(workout)
+                        } label: {
+                            Label(NSLocalizedString("shareAsTemplate", comment: ""), systemImage: "square.and.arrow.up")
+                        }
+                    }
+                    
+                    // Template Section
                     if let template = workout.template, canNavigateToTemplate {
                         Button {
                             selectedTemplate = template
@@ -129,6 +152,12 @@ struct WorkoutDetailScreen: View {
                     }
                 }
             }
+        }
+        .sheet(item: $workoutShareFileURL) { url in
+            ShareSheet(activityItems: [WorkoutActivityItemSource(fileURL: url, title: workout.name ?? NSLocalizedString("workout", comment: ""))])
+        }
+        .sheet(item: $templateShareFileURL) { url in
+            ShareSheet(activityItems: [WorkoutActivityItemSource(fileURL: url, title: workout.name ?? NSLocalizedString("template", comment: ""))])
         }
         .sheet(item: $sheetType) { type in
             switch type {

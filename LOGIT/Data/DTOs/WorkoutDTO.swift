@@ -1,22 +1,62 @@
 //
-//  TemplateSetDTO.swift
+//  WorkoutDTO.swift
 //  LOGIT
 //
-//  Created by Lukas Kaibel on 05.10.23.
+//  Created by Lukas Kaibel on 04.02.26.
 //
 
 import Foundation
 
-struct TemplateSetDTO: Codable {
+/// Data Transfer Object for sharing workouts between users
+struct WorkoutDTO: Codable {
+    /// Format version for future compatibility
+    static let formatVersion = 1
+    
+    let formatVersion: Int
+    let name: String?
+    let date: Date?
+    let endDate: Date?
+    let setGroups: [WorkoutSetGroupDTO]
+    
+    /// App Store URL for users who don't have the app installed
+    let appStoreURL: String
+    
+    init(from workout: Workout) {
+        self.formatVersion = Self.formatVersion
+        self.name = workout.name
+        self.date = workout.date
+        self.endDate = workout.endDate
+        self.setGroups = workout.setGroups.map { WorkoutSetGroupDTO(from: $0) }
+        self.appStoreURL = "https://apps.apple.com/app/logit-track-your-workouts/id6444813640"
+    }
+}
+
+/// Data Transfer Object for workout set groups
+struct WorkoutSetGroupDTO: Codable {
+    let exercise: ExerciseDTO
+    let secondaryExercise: ExerciseDTO?
+    let setType: String
+    let sets: [WorkoutSetDTO]
+    
+    init(from setGroup: WorkoutSetGroup) {
+        self.exercise = ExerciseDTO(from: setGroup.exercise)
+        self.secondaryExercise = setGroup.secondaryExercise.map { ExerciseDTO(from: $0) }
+        self.setType = setGroup.setType.rawValue
+        self.sets = setGroup.sets.map { WorkoutSetDTO(from: $0) }
+    }
+}
+
+/// Data Transfer Object for workout sets (polymorphic)
+struct WorkoutSetDTO: Codable {
     enum SetType: String, Codable {
         case standard
         case superSet
         case dropSet
     }
     
-    let type: SetType?
+    let type: SetType
     
-    // StandardSet fields (also used for backward compatibility)
+    // StandardSet fields
     let repetitions: Int?
     let weight: Int?
     
@@ -30,9 +70,8 @@ struct TemplateSetDTO: Codable {
     let dropSetRepetitions: [Int]?
     let dropSetWeights: [Int]?
     
-    /// Initialize from a Core Data TemplateSet entity for sharing
-    init(from templateSet: TemplateSet) {
-        if let standardSet = templateSet as? TemplateStandardSet {
+    init(from workoutSet: WorkoutSet) {
+        if let standardSet = workoutSet as? StandardSet {
             self.type = .standard
             self.repetitions = Int(standardSet.repetitions)
             self.weight = Int(standardSet.weight)
@@ -42,7 +81,7 @@ struct TemplateSetDTO: Codable {
             self.weightSecondExercise = nil
             self.dropSetRepetitions = nil
             self.dropSetWeights = nil
-        } else if let superSet = templateSet as? TemplateSuperSet {
+        } else if let superSet = workoutSet as? SuperSet {
             self.type = .superSet
             self.repetitions = nil
             self.weight = nil
@@ -52,7 +91,7 @@ struct TemplateSetDTO: Codable {
             self.weightSecondExercise = Int(superSet.weightSecondExercise)
             self.dropSetRepetitions = nil
             self.dropSetWeights = nil
-        } else if let dropSet = templateSet as? TemplateDropSet {
+        } else if let dropSet = workoutSet as? DropSet {
             self.type = .dropSet
             self.repetitions = nil
             self.weight = nil
@@ -74,29 +113,5 @@ struct TemplateSetDTO: Codable {
             self.dropSetRepetitions = nil
             self.dropSetWeights = nil
         }
-    }
-    
-    /// Initialize for decoding (used by AI generation and import)
-    /// Backward compatible: if only repetitions/weight provided, assumes standard set
-    init(
-        repetitions: Int? = nil,
-        weight: Int? = nil,
-        type: SetType? = nil,
-        repetitionsFirstExercise: Int? = nil,
-        repetitionsSecondExercise: Int? = nil,
-        weightFirstExercise: Int? = nil,
-        weightSecondExercise: Int? = nil,
-        dropSetRepetitions: [Int]? = nil,
-        dropSetWeights: [Int]? = nil
-    ) {
-        self.type = type
-        self.repetitions = repetitions
-        self.weight = weight
-        self.repetitionsFirstExercise = repetitionsFirstExercise
-        self.repetitionsSecondExercise = repetitionsSecondExercise
-        self.weightFirstExercise = weightFirstExercise
-        self.weightSecondExercise = weightSecondExercise
-        self.dropSetRepetitions = dropSetRepetitions
-        self.dropSetWeights = dropSetWeights
     }
 }

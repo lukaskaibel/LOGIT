@@ -22,6 +22,7 @@
 "addSetAfter" = "Satz danach hinzufügen";
 "addSetBefore" = "Satz davor hinzufügen";
 "addWorkout" = "Workout hinzufügen";
+"addToHistory" = "Zum Verlauf hinzufügen";
 "afternoon" = "Nachmittag";
 "all" = "Alle";
 "allEntries" = "Alle Einträge";
@@ -154,8 +155,10 @@
 // MARK: - I
 
 "incompleteSetsWillNotBeSaved" = "Unvollständige Sätze werden nicht gespeichert.";
+"importError" = "Importfehler";
 "inSelectedWeek" = "In Ausgewählter Woche";
 "instructions" = "Anleitung";
+"inviteToWorkout" = "Zum Workout einladen";
 // MARK: - K
 
 "keepTrackingForComparison" = "Weiter tracken, um Zeiträume zu vergleichen.";
@@ -314,6 +317,7 @@
 
 "save" = "Speichern";
 "saveAsTemplate" = "Als Vorlage speichern";
+"saveTemplate" = "Vorlage speichern";
 "saveTime" = "Spare Zeit";
 "scanATemplate" = "Scanne eine Vorlage";
 "scanAWorkout" = "Scanne einen Workout";
@@ -344,6 +348,12 @@
 "settings" = "Einstellungen";
 "seven" = "Sieben";
 "shoulders" = "Schultern";
+"shareAsTemplate" = "Als Vorlage teilen";
+"sharedTemplate" = "Geteilte Vorlage";
+"sharedTemplateDescription" = "Überprüfe und speichere diese Vorlage in deiner Sammlung.";
+"sharedWorkout" = "Geteiltes Workout";
+"sharedWorkoutDescription" = "Jemand hat dich eingeladen, dieses Workout deinem Verlauf hinzuzufügen.";
+"shareTemplate" = "Vorlage teilen";
 "showAll" = "Alle anzeigen";
 "showAllAttempts" = "Alle Versuche anzeigen";
 "showAllExercises" = "Alle Übungen anzeigen";
@@ -424,6 +434,7 @@
 "unitDescription" = "Wähle eine Einheit. Alle vorherigen Eingaben werden konvertiert.";
 "unpinned" = "Nicht Angepinnt";
 "unused" = "Unbenutzt";
+"unsupportedFileType" = "Dieser Dateityp wird nicht unterstützt.";
 "update" = "Update";
 "upgradeTo" = "Upgraden zu";
 "useDefaultExercises" = "Standard Übungen benutzen";

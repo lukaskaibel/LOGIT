@@ -31,6 +31,7 @@ struct WorkoutEditorScreen: View {
 
     @StateObject var workout: Workout
     let isAddingNewWorkout: Bool
+    var isImportedWorkout: Bool = false
 
     // MARK: - Body
 
@@ -80,6 +81,14 @@ struct WorkoutEditorScreen: View {
             ScrollViewReader { _ in
                 ScrollView {
                     VStack(spacing: SECTION_SPACING) {
+                        // Shared with you banner for imported workouts
+                        if isImportedWorkout {
+                            SharedWithYouBanner(
+                                title: NSLocalizedString("sharedWorkout", comment: ""),
+                                subtitle: NSLocalizedString("sharedWorkoutDescription", comment: "")
+                            )
+                        }
+                        
                         VStack(spacing: CELL_SPACING) {
                             WorkoutSetGroupList(
                                 workout: workout,
@@ -239,13 +248,18 @@ struct WorkoutEditorScreen: View {
                                 .font(.caption)
                                 .foregroundStyle(Color.secondaryLabel)
                         }
-                        .frame(maxWidth: 200)
+                        .frame(maxWidth: isImportedWorkout ? 140 : 200)
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("save", comment: "")) {
+                    Button(isImportedWorkout ? NSLocalizedString("addToHistory", comment: "") : NSLocalizedString("save", comment: "")) {
                         if workout.name?.isEmpty ?? true || workout.name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "" == "", let date = workout.date {
                             workout.name = Workout.getStandardName(for: date)
+                        }
+                        // Unflag exercises and workout if this is an imported workout
+                        if isImportedWorkout {
+                            workout.exercises.forEach { database.unflagAsTemporary($0) }
+                            database.unflagAsTemporary(workout)
                         }
                         database.save()
                         dismiss()

@@ -92,10 +92,21 @@ struct DecimalField: View {
                 if focusedIntegerFieldIndex != index {
                     focusedIntegerFieldIndex = index
                 }
+            } else {
+                // Losing focus – sync valueString with the canonical stored value
+                // so the display shows the clean round-tripped number.
+                let formatted = formatNumber(value)
+                if formatted != valueString {
+                    valueString = formatted
+                }
             }
-            // When losing focus, don't update the binding - another field is taking over
         }
         .onChange(of: value) { newValue in
+            // Only sync from the model when the field is NOT focused.
+            // While the user is typing, valueString is the source of truth;
+            // overwriting it causes rounding artefacts from the
+            // display → grams → display round-trip (especially for lbs).
+            guard !isFocused else { return }
             let formatted = formatNumber(newValue)
             if formatted != valueString {
                 valueString = formatted

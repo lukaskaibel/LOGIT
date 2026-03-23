@@ -126,7 +126,9 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
                 initialTimerSeconds = timerTotalSecondsOverride
             } else if preservingElapsed {
                 initialTimerSeconds = elapsedBeforeUpdate + seconds
-            } else if status == .idle || status == .running || status == .paused {
+            } else {
+                // When not overriding and not preserving elapsed, treat `seconds` as the new total
+                // timer duration, regardless of whether the timer is idle, running, or paused.
                 initialTimerSeconds = seconds
             }
         }

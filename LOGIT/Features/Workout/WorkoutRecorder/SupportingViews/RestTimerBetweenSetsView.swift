@@ -60,7 +60,7 @@ struct RestTimerBetweenSetsView: View {
             HStack(spacing: 4) {
                 Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
                     .font(.caption.weight(.semibold))
-                Text(restTimeString(seconds: max(0, Int(seconds.rounded(.down)))))
+                Text(max(0, Int(seconds.rounded(.down))).restTimeString)
                     .font(.caption.weight(.semibold).monospacedDigit())
             }
             .foregroundStyle(activeTimerTint)

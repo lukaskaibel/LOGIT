@@ -47,7 +47,7 @@ struct RestDurationEditorSheet: View {
             }
 
             VStack(spacing: 10) {
-                Text(restTimeString(seconds: workoutSet.restDurationSeconds))
+                Text(workoutSet.restDurationSeconds.restTimeString)
                     .font(.system(size: 56, weight: .regular).monospacedDigit())
                     .fontDesign(.rounded)
                     .foregroundStyle(themeColor)
@@ -89,7 +89,7 @@ struct RestDurationEditorSheet: View {
                         UISelectionFeedbackGenerator().selectionChanged()
                         workoutSet.restDurationSeconds = seconds
                     } label: {
-                        Text(restTimeString(seconds: seconds))
+                        Text(seconds.restTimeString)
                             .font(.body.weight(.semibold).monospacedDigit())
                             .foregroundStyle(
                                 workoutSet.restDurationSeconds == seconds

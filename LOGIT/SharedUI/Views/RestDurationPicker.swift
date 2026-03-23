@@ -30,7 +30,7 @@ struct RestDurationPicker: View {
                                 restDurationSeconds = seconds
                             }
                         } label: {
-                            Text(restTimeString(seconds: seconds))
+                            Text(seconds.restTimeString)
                                 .font(.caption.weight(.semibold))
                                 .monospacedDigit()
                                 .padding(.horizontal, 8)
@@ -79,16 +79,9 @@ struct RestDurationLabel: View {
         HStack(spacing: 4) {
             Image(systemName: iconName)
                 .font(iconFont)
-            Text(restTimeString(seconds: seconds))
+            Text(seconds.restTimeString)
                 .font(textFont.monospacedDigit())
         }
         .foregroundStyle(foregroundColor)
     }
-}
-
-/// Formats seconds into a compact rest time string (e.g. "1:30", "0:30", "3:00")
-func restTimeString(seconds: Int) -> String {
-    let m = seconds / 60
-    let s = seconds % 60
-    return "\(m):\(String(format: "%02d", s))"
 }

@@ -128,9 +128,9 @@ struct WorkoutRecorderFloatingTimerButton: View {
     private func timeText(for displayState: DisplayState) -> String? {
         switch displayState {
         case let .activeTimer(seconds), let .activeStopwatch(seconds):
-            return restTimeString(seconds: seconds)
+            return seconds.restTimeString
         case let .idleAutoTimer(duration):
-            return restTimeString(seconds: duration)
+            return duration.restTimeString
         case .idleManual, .idleAutoStopwatch:
             return nil
         }
@@ -152,15 +152,15 @@ struct WorkoutRecorderFloatingTimerButton: View {
     private func accessibilityLabel(for displayState: DisplayState) -> String {
         switch displayState {
         case let .activeTimer(seconds):
-            return "\(NSLocalizedString("timer", comment: "")), \(restTimeString(seconds: seconds))"
+            return "\(NSLocalizedString("timer", comment: "")), \(seconds.restTimeString)"
         case let .activeStopwatch(seconds):
-            return "\(NSLocalizedString("stopwatch", comment: "")), \(restTimeString(seconds: seconds))"
+            return "\(NSLocalizedString("stopwatch", comment: "")), \(seconds.restTimeString)"
         case .idleManual(.timer):
             return NSLocalizedString("timer", comment: "")
         case .idleManual(.stopwatch):
             return NSLocalizedString("stopwatch", comment: "")
         case let .idleAutoTimer(duration):
-            return "\(NSLocalizedString("autoRestTimer", comment: "")), \(restTimeString(seconds: duration))"
+            return "\(NSLocalizedString("autoRestTimer", comment: "")), \(duration.restTimeString)"
         case .idleAutoStopwatch:
             return NSLocalizedString("autoRestStopwatch", comment: "")
         }

@@ -389,7 +389,7 @@
 "manualTimer" = "Manueller Timer";
 "manualTimerDescription" = "Nutze eine eigene Dauer, wann immer du sie brauchst.";
 "autoRestTimerDescription" = "Startet automatisch, sobald die Wiederholungen eines Satzes eingetragen wurden.";
-"autoRestStopwatchDescription" = "Startet automatisch nach einem abgeschlossenen Satz und speichert die verstrichene Zeit als Pausendauer.";
+"autoRestStopwatchDescription" = "Startet automatisch und speichert die verstrichene Zeit als Pausendauer.";
 "ready" = "Bereit";
 "running" = "Laeuft";
 "paused" = "Pausiert";

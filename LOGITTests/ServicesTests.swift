@@ -508,9 +508,42 @@ final class WorkoutRecorderTests: XCTestCase {
         XCTAssertEqual(trigger.triggerSet, lastSet)
         XCTAssertEqual(trigger.repetitionEntrySetIDs, Set([setGroup.sets.first!.objectID, lastSet.objectID]))
     }
+
+    func testEndStopwatchPersistsElapsedForActiveRestSet() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let workoutSet = database.newStandardSet(setGroup: setGroup)
+        let chronograph = Chronograph()
+
+        workoutRecorder.activeRestTimerSet = workoutSet
+        chronograph.mode = .stopwatch
+        chronograph.setSeconds(18)
+        chronograph.status = .running
+
+        workoutRecorder.endStopwatch(using: chronograph)
+
+        XCTAssertEqual(workoutSet.restDurationSeconds, 18)
+        XCTAssertNil(workoutRecorder.activeRestTimerSet)
+        XCTAssertEqual(chronograph.status, .idle)
+        XCTAssertEqual(chronograph.seconds, 0, accuracy: 0.001)
+    }
 }
 
 final class ChronographTests: XCTestCase {
+    private let modeStorageKey = "selectedChronographMode"
+
+    override func setUp() {
+        super.setUp()
+        UserDefaults.standard.removeObject(forKey: modeStorageKey)
+    }
+
+    override func tearDown() {
+        UserDefaults.standard.removeObject(forKey: modeStorageKey)
+        super.tearDown()
+    }
 
     func testSetSecondsPreservingElapsedKeepsElapsedProgress() {
         let chronograph = Chronograph()
@@ -522,5 +555,24 @@ final class ChronographTests: XCTestCase {
 
         XCTAssertEqual(Int(chronograph.initialTimerSeconds.rounded(.down)), 45)
         XCTAssertEqual(chronograph.initialTimerSeconds - chronograph.seconds, 20, accuracy: 0.02)
+    }
+
+    func testInitializesWithPersistedMode() {
+        UserDefaults.standard.set(Chronograph.Mode.stopwatch.rawValue, forKey: modeStorageKey)
+
+        let chronograph = Chronograph()
+
+        XCTAssertEqual(chronograph.mode, .stopwatch)
+    }
+
+    func testPersistingModeSelectionUpdatesDefaults() {
+        let chronograph = Chronograph()
+
+        chronograph.mode = .stopwatch
+
+        XCTAssertEqual(
+            UserDefaults.standard.string(forKey: modeStorageKey),
+            Chronograph.Mode.stopwatch.rawValue
+        )
     }
 }

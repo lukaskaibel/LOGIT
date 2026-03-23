@@ -36,20 +36,21 @@ private struct WorkoutRecorderFloatingTimerButton: View {
                     GeometryReader { proxy in
                         ZStack(alignment: .leading) {
                             Capsule()
-                                .fill(Color.secondaryBackground)
+                                .fill(.ultraThinMaterial)
 
                             if let progress = timerProgress(for: seconds) {
                                 Rectangle()
-                                    .fill(timerTint.opacity(0.22))
+                                    .fill(timerTint.opacity(0.24))
                                     .frame(width: proxy.size.width * progress)
                             }
 
                             Capsule()
-                                .stroke(Color.separator.opacity(0.15), lineWidth: 1)
+                                .strokeBorder(Color.white.opacity(0.28), lineWidth: 0.9)
                         }
                     }
                 }
                 .clipShape(Capsule())
+                .shadow(color: Color.black.opacity(0.12), radius: 18, y: 8)
             }
             .buttonStyle(.plain)
         }
@@ -78,6 +79,35 @@ private struct WorkoutRecorderFloatingTimerButton: View {
         guard totalSeconds > 0 else { return nil }
 
         return min(max(CGFloat(seconds / totalSeconds), 0), 1)
+    }
+}
+
+private struct WorkoutRecorderFloatingStopwatchStopButton: View {
+    @ObservedObject var workoutRecorder: WorkoutRecorder
+
+    let action: () -> Void
+
+    private let buttonSize: CGFloat = 43
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "stop.fill")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(buttonTint)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .buttonStyle(.glassProminent)
+        .buttonBorderShape(.circle)
+        .tint(buttonTint.secondaryTranslucentBackground)
+        .frame(width: buttonSize, height: buttonSize)
+    }
+
+    private var buttonTint: Color {
+        if let exerciseColor = workoutRecorder.activeRestTimerSet?.exercise?.muscleGroup?.color {
+            return exerciseColor
+        }
+
+        return .accentColor
     }
 }
 
@@ -198,15 +228,12 @@ struct WorkoutRecorderScreen: View {
                                     .toolbar(.hidden, for: .navigationBar)
                                     .sheet(isPresented: $isShowingChronoSheet) {
                                         TimerStopwatchView(chronograph: chronograph)
-                                            .presentationDetents([.fraction(0.5)])
-                                            .presentationCornerRadius(30)
-                                            .padding()
-                                            .frame(maxHeight: .infinity, alignment: .top)
+                                            .presentationDetents([.fraction(0.7)])
+                                            .presentationDragIndicator(.visible)
                                     }
                                     .sheet(item: $selectedRestDurationSet) { workoutSet in
                                         RestDurationEditorSheet(workoutSet: workoutSet)
-                                            .presentationDetents([.fraction(0.45)])
-                                            .presentationCornerRadius(30)
+                                            .presentationDetents([.fraction(0.65)])
                                             .padding()
                                             .frame(maxHeight: .infinity, alignment: .top)
                                     }
@@ -215,7 +242,6 @@ struct WorkoutRecorderScreen: View {
                                             WorkoutDetailSheet(workout: workout, progress: progress)
                                                 .padding()
                                                 .presentationDetents([.fraction(0.4)])
-                                                .presentationCornerRadius(30)
                                         }
                                     }
                                     .sheet(isPresented: $isShowingFinishConfirmation) {
@@ -334,11 +360,19 @@ struct WorkoutRecorderScreen: View {
                         }
                         .overlay(alignment: .bottomTrailing) {
                             if shouldShowFloatingTimerButton {
-                                WorkoutRecorderFloatingTimerButton(
-                                    chronograph: chronograph,
-                                    workoutRecorder: workoutRecorder,
-                                    action: { isShowingChronoSheet = true }
-                                )
+                                HStack {
+                                    WorkoutRecorderFloatingTimerButton(
+                                        chronograph: chronograph,
+                                        workoutRecorder: workoutRecorder,
+                                        action: { isShowingChronoSheet = true }
+                                    )
+                                    if shouldShowFloatingStopwatchStopButton {
+                                        WorkoutRecorderFloatingStopwatchStopButton(
+                                            workoutRecorder: workoutRecorder,
+                                            action: stopStopwatch
+                                        )
+                                    }
+                                }
                                 .opacity(toolbarOpacity)
                                 .offset(y: -sheetHeight)
                                 .padding(.trailing, 15)
@@ -465,6 +499,11 @@ struct WorkoutRecorderScreen: View {
             && !isShowingChronoSheet
     }
 
+    private var shouldShowFloatingStopwatchStopButton: Bool {
+        chronograph.mode == .stopwatch
+            && chronograph.status == .running
+    }
+
     // MARK: - Supporting Methods / Computed Properties
 
     private var workoutName: Binding<String> {
@@ -550,6 +589,12 @@ struct WorkoutRecorderScreen: View {
             chronograph.onTimerFired = nil
             chronograph.start()
         }
+    }
+
+    private func stopStopwatch() {
+        guard chronograph.mode == .stopwatch else { return }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        workoutRecorder.endStopwatch(using: chronograph)
     }
 
     private var progressInWorkout: Float {

@@ -391,7 +391,7 @@
 "manualTimer" = "Manual Timer";
 "manualTimerDescription" = "Use a custom duration whenever you need it.";
 "autoRestTimerDescription" = "Starts automatically once the repetitions of a set have been entered.";
-"autoRestStopwatchDescription" = "Starts automatically after a completed set and saves the elapsed time as the rest duration.";
+"autoRestStopwatchDescription" = "Starts automatically and saves the elapsed time as the rest duration.";
 "ready" = "Ready";
 "running" = "Running";
 "paused" = "Paused";

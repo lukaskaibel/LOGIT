@@ -25,6 +25,9 @@ struct TimerStopwatchView: View {
         0, 10, 15, 30, 45, 60, 90, 120, 150, 180, 240, 300, 360, 420, 480, 540, 600,
     ]
     private let opacityOfTimeWhenPaused = 0.7
+    private let transportButtonSize: CGFloat = 70
+    private let transportButtonIconSize: CGFloat = 20
+    private let controlSectionHeight: CGFloat = 96
 
     @State private var isShowingNotificationNotEnabledAlert = false
     @State private var isShowingNotificationExplanationAlert = false
@@ -59,8 +62,6 @@ struct TimerStopwatchView: View {
                 }
             }
 
-            Spacer(minLength: 12)
-
             if let activeExerciseName, isWorkoutRestChronographActive {
                 HStack(spacing: 6) {
                     Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
@@ -71,21 +72,39 @@ struct TimerStopwatchView: View {
                 .foregroundStyle(themeColor)
                 .padding(.bottom, 6)
             }
+            
+            Spacer()
 
-            HStack {
-                Spacer()
-                if chronograph.mode == .timer {
-                    timerDecreaseButton
-                }
-                Spacer()
-                VStack(spacing: 12) {
-                    if chronograph.mode == .timer, chronograph.status != .idle {
-                        // Keep the countdown vertically stable once the duration helper appears.
-                        Text(timeString(seconds: Double(lastTimerDuration)))
-                            .foregroundStyle(.secondary)
-                            .font(.body.monospacedDigit())
-                            .opacity(0)
+            VStack {
+                HStack {
+                    let minutes = lastTimerDuration / 60
+                    let seconds = lastTimerDuration % 60
+                    if minutes > 0 {
+                        HStack(alignment: .lastTextBaseline, spacing: 2) {
+                            Text("\(minutes)")
+                                .font(.body.monospacedDigit())
+                            Text(NSLocalizedString("min", comment: ""))
+                                .font(.footnote)
+                        }
                     }
+                    if seconds > 0 {
+                        HStack(alignment: .lastTextBaseline, spacing: 2) {
+                            Text("\(seconds)")
+                                .font(.body.monospacedDigit())
+                            Text(NSLocalizedString("sec", comment: ""))
+                                .font(.footnote)
+                        }
+                    }
+                }
+                .foregroundStyle(.secondary)
+                .opacity(chronograph.mode == .timer && chronograph.status != .idle ? 1 : 0)
+                
+                HStack(alignment: .center) {
+                    Spacer()
+                    timerDecreaseButton
+                        .opacity(chronograph.mode == .timer ? 1 : 0)
+                        .allowsHitTesting(chronograph.mode == .timer)
+                    Spacer()
                     ChronographView(chronograph: chronograph) { seconds in
                         Text(timeString(seconds: seconds))
                             .font(.system(size: 70, weight: .regular).monospacedDigit())
@@ -96,89 +115,25 @@ struct TimerStopwatchView: View {
                             .minimumScaleFactor(1)
                             .contentTransition(.numericText())
                     }
-                    muteButton
-                    if chronograph.mode == .timer, chronograph.status != .idle {
-                        HStack {
-                            let minutes = lastTimerDuration / 60
-                            let seconds = lastTimerDuration % 60
-                            if minutes > 0 {
-                                HStack(alignment: .lastTextBaseline, spacing: 2) {
-                                    Text("\(minutes)")
-                                        .font(.body.monospacedDigit())
-                                    Text(NSLocalizedString("min", comment: ""))
-                                        .font(.footnote)
-                                }
-                            }
-                            if seconds > 0 {
-                                HStack(alignment: .lastTextBaseline, spacing: 2) {
-                                    Text("\(seconds)")
-                                        .font(.body.monospacedDigit())
-                                    Text(NSLocalizedString("sec", comment: ""))
-                                        .font(.footnote)
-                                }
-                            }
-                        }
-                        .foregroundStyle(.secondary)
-                    } else {
-                        Color.clear
-                            .frame(height: 20)
-                    }
-                }
-                Spacer()
-                if chronograph.mode == .timer {
+                    Spacer()
                     timerIncreaseButton
+                        .opacity(chronograph.mode == .timer ? 1 : 0)
+                        .allowsHitTesting(chronograph.mode == .timer)
+                    Spacer()
                 }
-                Spacer()
+                muteButton
             }
 
-            Spacer(minLength: 8)
-
-            HStack {
-                Spacer()
-                Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    if chronograph.mode == .timer {
-                        if chronograph.status == .running {
-                            chronograph.setSeconds(Double(lastTimerDuration) + 0.99)
-                        } else {
-                            finishActiveRestIfNeeded(shouldPersistElapsed: false)
-                            chronograph.cancel()
-                        }
-                    } else {
-                        finishActiveRestIfNeeded(shouldPersistElapsed: true)
-                        chronograph.cancel()
-                    }
-                } label: {
-                    Image(systemName: chronograph.status == .idle ? "xmark" : "arrow.trianglehead.counterclockwise")
-                        .resizable()
-                        .frame(width: 20, height: 20)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color.label)
-                        .padding(25)
-                        .background(Color.fill)
-                        .clipShape(Circle())
-                }
-                .disabled(Int(chronograph.seconds) == 0)
-                Spacer()
-                Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    if chronograph.mode == .timer, chronograph.status == .idle {
-                        lastTimerDuration = Int(chronograph.seconds)
-                    }
-                    chronograph.status == .running ? chronograph.stop() : chronograph.start()
-                } label: {
-                    Image(systemName: chronograph.status == .running ? "pause.fill" : "play.fill")
-                        .resizable()
-                        .frame(width: 20, height: 20)
-                        .fontWeight(.bold)
-                        .foregroundStyle(themeColor)
-                        .padding(25)
-                        .background(themeColor.secondaryTranslucentBackground)
-                        .clipShape(Circle())
-                }
-                .disabled(chronograph.mode == .timer && Int(chronograph.seconds) == 0)
-                Spacer()
+            Spacer()
+            
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                transportControls
+                Spacer(minLength: 0)
             }
+            .frame(height: controlSectionHeight)
+            
+            Spacer()
 
             autoTimerSection
         }
@@ -251,7 +206,12 @@ struct TimerStopwatchView: View {
             }
             .tint(themeColor)
         }
-        .padding(.top, 8)
+        .padding(16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.08), lineWidth: 0.8)
+        }
     }
 
     @ViewBuilder
@@ -263,21 +223,21 @@ struct TimerStopwatchView: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: timerIsMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                        .font(.body.weight(.semibold))
+                        .font(.footnote.weight(.semibold))
                     Text(
                         timerIsMuted
                             ? NSLocalizedString("timerIsMuted", comment: "")
                             : NSLocalizedString("timerSoundOn", comment: "")
                     )
-                    .font(.callout.weight(.semibold))
+                    .font(.footnote.weight(.medium))
                 }
-                .foregroundStyle(timerIsMuted ? themeColor : .secondary)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                .foregroundStyle(timerIsMuted ? themeColor.opacity(0.8) : .secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
                 .background(
                     timerIsMuted
-                        ? themeColor.secondaryTranslucentBackground
-                        : Color.fill,
+                        ? themeColor.secondaryTranslucentBackground.opacity(0.7)
+                        : Color.fill.opacity(0.5),
                     in: Capsule()
                 )
             }
@@ -286,19 +246,30 @@ struct TimerStopwatchView: View {
         }
     }
 
+    private var transportControls: some View {
+        HStack(spacing: 24) {
+            Spacer()
+            if showsLeadingTransportButton {
+                leadingTransportButton
+                Spacer()
+            }
+            playPauseButton
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+
     private var timerDecreaseButton: some View {
         Button {
             UISelectionFeedbackGenerator().selectionChanged()
             guard
                 let currentTimerValueIndex = timerValues.lastIndex(where: {
-                    $0 <= currentTimerDuration
+                    $0 <= currentDisplayedTimerDuration
                 }), currentTimerValueIndex > 0
             else { return }
             let updatedDuration = timerValues[currentTimerValueIndex - 1]
-            let durationDelta = updatedDuration - currentTimerDuration
-            let updatedSeconds = max(0.99, chronograph.seconds + Double(durationDelta))
             lastTimerDuration = updatedDuration
-            chronograph.setSeconds(updatedSeconds, preservingElapsed: chronograph.status != .idle)
+            chronograph.setSeconds(Double(updatedDuration) + 0.99)
         } label: {
             Image(systemName: "minus")
                 .resizable()
@@ -318,14 +289,12 @@ struct TimerStopwatchView: View {
             UISelectionFeedbackGenerator().selectionChanged()
             guard
                 let firstLargerTimerValueIndex = timerValues.firstIndex(where: {
-                    $0 > currentTimerDuration
+                    $0 > currentDisplayedTimerDuration
                 })
             else { return }
             let updatedDuration = timerValues[firstLargerTimerValueIndex]
-            let durationDelta = updatedDuration - currentTimerDuration
-            let updatedSeconds = chronograph.seconds + Double(durationDelta)
             lastTimerDuration = updatedDuration
-            chronograph.setSeconds(updatedSeconds, preservingElapsed: chronograph.status != .idle)
+            chronograph.setSeconds(Double(updatedDuration) + 0.99)
         } label: {
             Image(systemName: "plus")
                 .resizable()
@@ -339,6 +308,76 @@ struct TimerStopwatchView: View {
         }
     }
 
+    private var playPauseButton: some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            if chronograph.mode == .timer, chronograph.status == .idle {
+                lastTimerDuration = Int(chronograph.seconds)
+            }
+            chronograph.status == .running ? chronograph.stop() : chronograph.start()
+        } label: {
+            Image(systemName: chronograph.status == .running ? "pause.fill" : "play.fill")
+                .resizable()
+                .frame(width: transportButtonIconSize, height: transportButtonIconSize)
+                .fontWeight(.bold)
+                .foregroundStyle(themeColor)
+                .frame(width: transportButtonSize, height: transportButtonSize)
+                .background(themeColor.secondaryTranslucentBackground)
+                .clipShape(Circle())
+        }
+        .disabled(chronograph.mode == .timer && Int(chronograph.seconds) == 0)
+    }
+
+    @ViewBuilder
+    private var leadingTransportButton: some View {
+        if isRunningStopwatch {
+            stopwatchTransportButton(symbolName: "stop.fill") {
+                workoutRecorder.endStopwatch(using: chronograph)
+            }
+        } else if isPausedStopwatch {
+            stopwatchTransportButton(symbolName: "arrow.trianglehead.counterclockwise") {
+                finishActiveRestIfNeeded(shouldPersistElapsed: false)
+                chronograph.cancel()
+            }
+        } else if chronograph.mode == .timer, chronograph.status != .idle {
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                finishActiveRestIfNeeded(shouldPersistElapsed: false)
+                chronograph.cancel()
+            } label: {
+                Image(systemName: "arrow.trianglehead.counterclockwise")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.label)
+                    .padding(25)
+                    .background(Color.fill)
+                    .clipShape(Circle())
+            }
+            .disabled(Int(chronograph.seconds) == 0)
+        } else {
+            Color.clear
+                .frame(width: 70, height: 70)
+        }
+    }
+
+    private func stopwatchTransportButton(symbolName: String, action: @escaping () -> Void) -> some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            action()
+        } label: {
+            Image(systemName: symbolName)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(themeColor)
+                .frame(width: transportButtonIconSize, height: transportButtonIconSize)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .buttonStyle(.glassProminent)
+        .buttonBorderShape(.circle)
+        .tint(themeColor.secondaryTranslucentBackground)
+        .frame(width: transportButtonSize, height: transportButtonSize)
+    }
+
     // MARK: - Supporting Properties
 
     private var themeColor: Color {
@@ -350,17 +389,29 @@ struct TimerStopwatchView: View {
         return .accentColor
     }
 
-    private var currentTimerDuration: Int {
-        if chronograph.mode == .timer, chronograph.status != .idle {
-            return Int(chronograph.initialTimerSeconds.rounded(.down))
-        }
-
+    private var currentDisplayedTimerDuration: Int {
         return Int(chronograph.seconds.rounded(.down))
     }
 
     private var isWorkoutRestChronographActive: Bool {
         (chronograph.status == .running || chronograph.status == .paused)
             && workoutRecorder.activeRestTimerSet != nil
+    }
+
+    private var isRunningStopwatch: Bool {
+        chronograph.mode == .stopwatch
+            && chronograph.status == .running
+    }
+
+    private var isPausedStopwatch: Bool {
+        chronograph.mode == .stopwatch
+            && chronograph.status == .paused
+    }
+
+    private var showsLeadingTransportButton: Bool {
+        isRunningStopwatch
+            || isPausedStopwatch
+            || (chronograph.mode == .timer && chronograph.status != .idle)
     }
 
     private var activeExerciseName: String? {
@@ -459,7 +510,7 @@ struct TimerView_Previews: PreviewProvider {
             .sheet(isPresented: .constant(true)) {
                 TimerStopwatchView(chronograph: Chronograph())
                     .previewEnvironmentObjects()
-                    .presentationDetents([.fraction(0.6)])
+                    .presentationDetents([.medium, .large])
             }
     }
 }

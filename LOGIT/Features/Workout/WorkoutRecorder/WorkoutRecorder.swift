@@ -263,6 +263,21 @@ final class WorkoutRecorder: ObservableObject {
         objectWillChange.send()
     }
 
+    func endStopwatch(using chronograph: Chronograph) {
+        guard chronograph.mode == .stopwatch else { return }
+
+        if let activeRestSet = activeRestTimerSet {
+            let elapsed = chronograph.elapsedSeconds
+            if elapsed > 0 {
+                recordRestDuration(elapsed, for: activeRestSet)
+            }
+        }
+
+        chronograph.onTimerFired = nil
+        chronograph.cancel()
+        activeRestTimerSet = nil
+    }
+
     /// Returns the next workout set to be executed. This is the first workout set, that has no workout set with entries after it.
     var nextPerformedWorkoutSet: WorkoutSet? {
         workout?.sets.reversed().reduce(nil) { $1.hasEntry ? $0 : $1 }

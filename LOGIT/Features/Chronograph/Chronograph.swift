@@ -13,7 +13,7 @@ import UserNotifications
 class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     // MARK: - Enums
 
-    enum Mode {
+    enum Mode: String {
         case timer
         case stopwatch
     }
@@ -26,7 +26,13 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
 
     // MARK: - Properties
 
-    @Published var mode: Mode = .timer
+    private static let modeStorageKey = "selectedChronographMode"
+
+    @Published var mode: Mode {
+        didSet {
+            UserDefaults.standard.set(mode.rawValue, forKey: Self.modeStorageKey)
+        }
+    }
     @Published var status: ChronographStatus = .idle
 
     var onTimerFired: (() -> Void)?
@@ -56,6 +62,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     // MARK: - Init
 
     override init() {
+        mode = Self.storedMode
         super.init()
         // Set delegate for handling notifications when app is in foreground
         UNUserNotificationCenter.current().delegate = self
@@ -173,5 +180,15 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     {
         // Show banner, sound, and badge even when app is in foreground
         completionHandler([.banner, .sound, .badge])
+    }
+
+    private static var storedMode: Mode {
+        guard let rawValue = UserDefaults.standard.string(forKey: modeStorageKey),
+              let mode = Mode(rawValue: rawValue)
+        else {
+            return .timer
+        }
+
+        return mode
     }
 }

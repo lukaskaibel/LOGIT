@@ -47,6 +47,8 @@ struct WorkoutSetGroupList: View {
                     .zIndex(1)
                     if workout.setGroups.last != setGroup {
                         separator(for: setGroup.sets.last)
+                    } else {
+                        trailingRestCapsule(for: setGroup.sets.last)
                             .zIndex(0)
                     }
                 }
@@ -65,21 +67,34 @@ struct WorkoutSetGroupList: View {
             .frame(width: 3, height: showsRestCapsule ? SECTION_SPACING + 14 : SECTION_SPACING)
             .overlay {
                 if let workoutSet, showsRestCapsule {
-                    RestTimerBetweenSetsView(
-                        workoutSet: workoutSet,
-                        onTapActiveTimer: {
-                            onTapActiveRest?(workoutSet)
-                        },
-                        onTapRestDuration: {
-                            onTapStaticRest?(workoutSet)
-                        }
-                    )
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.secondaryBackground)
-                    .clipShape(Capsule())
+                    restCapsule(for: workoutSet)
                 }
             }
+    }
+
+    @ViewBuilder
+    private func trailingRestCapsule(for workoutSet: WorkoutSet?) -> some View {
+        if let workoutSet, shouldShowRestSeparator(for: workoutSet) {
+            restCapsule(for: workoutSet)
+                .padding(.top, 6)
+        }
+    }
+
+    private func restCapsule(for workoutSet: WorkoutSet) -> some View {
+        RestTimerBetweenSetsView(
+            workoutSet: workoutSet,
+            onTapActiveTimer: {
+                onTapActiveRest?(workoutSet)
+            },
+            onTapRestDuration: {
+                onTapStaticRest?(workoutSet)
+            }
+        )
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(Color.secondaryBackground)
+        .clipShape(Capsule())
+        .fixedSize(horizontal: true, vertical: true)
     }
 
     private func shouldShowRestSeparator(for workoutSet: WorkoutSet) -> Bool {

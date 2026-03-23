@@ -63,17 +63,15 @@ struct TimerStopwatchView: View {
             }
 
             if let activeExerciseName, isWorkoutRestChronographActive {
-                VStack {
-                    Spacer(minLength: 0)
-                    HStack(spacing: 6) {
-                        Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
-                        Text(activeExerciseName)
-                            .lineLimit(1)
-                    }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(themeColor)
-                    .padding(.bottom, 6)
+                HStack(spacing: 6) {
+                    Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
+                    Text(activeExerciseName)
+                        .lineLimit(1)
                 }
+                .frame(maxWidth: .infinity)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(themeColor)
+                .padding(.bottom, 6)
             }
             
             Spacer(minLength: 0)
@@ -140,7 +138,10 @@ struct TimerStopwatchView: View {
 
             autoTimerSection
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.horizontal)
+        .padding(.top, 24)
+        .padding(.bottom)
         .onChange(of: chronograph.status) {
             if chronograph.status == .idle && chronograph.mode == .timer {
                 chronograph.setSeconds(Double(lastTimerDuration) + 0.99)

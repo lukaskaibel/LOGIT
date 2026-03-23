@@ -326,7 +326,7 @@ struct WorkoutRecorderScreen: View {
                                     .toolbar(.hidden, for: .navigationBar)
                                     .sheet(isPresented: $isShowingChronoSheet) {
                                         TimerStopwatchView(chronograph: chronograph)
-                                            .presentationDetents([.fraction(0.7)])
+                                            .presentationDetents([.fraction(0.76)])
                                             .presentationDragIndicator(.visible)
                                     }
                                     .sheet(item: $selectedRestDurationSet) { workoutSet in

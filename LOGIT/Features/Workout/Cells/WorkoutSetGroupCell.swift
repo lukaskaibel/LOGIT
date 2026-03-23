@@ -12,6 +12,8 @@ struct WorkoutSetGroupCell: View {
 
     @Environment(\.canEdit) var canEdit: Bool
     @EnvironmentObject var database: Database
+    @EnvironmentObject private var chronograph: Chronograph
+    @EnvironmentObject private var workoutRecorder: WorkoutRecorder
 
     // MARK: - Parameters
 
@@ -68,10 +70,13 @@ struct WorkoutSetGroupCell: View {
                                     }
                                 }
                                 if !isLastSet(workoutSet) {
+                                    let showsRestCapsule = shouldShowRestIndicator(for: workoutSet)
                                     Color.clear
-                                        .frame(height: CELL_SPACING)
+                                        .frame(height: showsRestCapsule ? SECTION_SPACING : CELL_SPACING)
                                         .overlay {
-                                            restIndicator(for: workoutSet)
+                                            if showsRestCapsule {
+                                                restCapsule(for: workoutSet)
+                                            }
                                         }
                                         .zIndex(1)
                                 }
@@ -375,6 +380,23 @@ struct WorkoutSetGroupCell: View {
                 onTapStaticRest?(workoutSet)
             } : nil
         )
+    }
+
+    @ViewBuilder
+    private func restCapsule(for workoutSet: WorkoutSet) -> some View {
+        restIndicator(for: workoutSet)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Color.secondaryBackground)
+            .clipShape(Capsule())
+    }
+
+    private func shouldShowRestIndicator(for workoutSet: WorkoutSet) -> Bool {
+        workoutSet.restDurationSeconds > 0
+            || (
+                workoutRecorder.activeRestTimerSet?.objectID == workoutSet.objectID
+                    && (chronograph.status == .running || chronograph.status == .paused)
+            )
     }
 }
 

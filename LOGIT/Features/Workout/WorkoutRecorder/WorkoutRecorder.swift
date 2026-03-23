@@ -204,10 +204,9 @@ final class WorkoutRecorder: ObservableObject {
         let triggerSet: WorkoutSet?
         if let preferredSet, newlyEnteredSetIDs.contains(preferredSet.objectID) {
             triggerSet = preferredSet
-        } else if let firstNewSetID = newlyEnteredSetIDs.first {
-            triggerSet = workout.sets.first(where: { $0.objectID == firstNewSetID })
         } else {
-            triggerSet = nil
+            // Choose deterministically based on workout.sets order
+            triggerSet = workout.sets.first(where: { newlyEnteredSetIDs.contains($0.objectID) })
         }
 
         return (triggerSet, currentRepetitionEntrySetIDs)

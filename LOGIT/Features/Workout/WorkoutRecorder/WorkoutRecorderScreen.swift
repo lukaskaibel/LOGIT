@@ -345,10 +345,7 @@ struct WorkoutRecorderScreen: View {
                                     .sheet(isPresented: $isShowingFinishConfirmation) {
                                         if let workout = workoutRecorder.workout {
                                             FinishConfirmationSheet(workout: workout, onEndWorkout: {
-                                                UINotificationFeedbackGenerator().notificationOccurred(.success)
-                                                workoutRecorder.saveWorkout()
-                                                dismissWorkoutRecorder()
-                                                goHome()
+                                                finishWorkout(shouldSave: true)
                                             })
                                             .padding([.top, .horizontal])
                                             .presentationDetents([.fraction(0.4)])
@@ -563,10 +560,7 @@ struct WorkoutRecorderScreen: View {
                     Spacer()
                     Button {
                         guard workoutRecorder.workout?.hasEntries ?? false else {
-                            withAnimation {
-                                workoutRecorder.discardWorkout()
-                                dismissWorkoutRecorder()
-                            }
+                            finishWorkout(shouldSave: false)
                             return
                         }
                         isShowingFinishConfirmation = true
@@ -693,6 +687,25 @@ struct WorkoutRecorderScreen: View {
         guard chronograph.mode == .stopwatch else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         workoutRecorder.endStopwatch(using: chronograph)
+    }
+
+    private func finishWorkout(shouldSave: Bool) {
+        workoutRecorder.finishRestAndStopChronograph(
+            using: chronograph,
+            persistTrackedValue: shouldSave
+        )
+
+        if shouldSave {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            workoutRecorder.saveWorkout()
+            dismissWorkoutRecorder()
+            goHome()
+        } else {
+            withAnimation {
+                workoutRecorder.discardWorkout()
+                dismissWorkoutRecorder()
+            }
+        }
     }
 
     private var progressInWorkout: Float {

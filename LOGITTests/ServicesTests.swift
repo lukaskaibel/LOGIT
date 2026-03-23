@@ -530,6 +530,74 @@ final class WorkoutRecorderTests: XCTestCase {
         XCTAssertEqual(chronograph.status, .idle)
         XCTAssertEqual(chronograph.seconds, 0, accuracy: 0.001)
     }
+
+    func testFinishRestAndStopChronographPersistsElapsedForActiveTimerSetWithoutConfiguredRest() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let workoutSet = database.newStandardSet(restDuration: 0, setGroup: setGroup)
+        let chronograph = Chronograph()
+
+        workoutRecorder.activeRestTimerSet = workoutSet
+        chronograph.mode = .timer
+        chronograph.setSeconds(45.99)
+        chronograph.seconds = 30.99
+        chronograph.status = .running
+
+        workoutRecorder.finishRestAndStopChronograph(
+            using: chronograph,
+            persistTrackedValue: true
+        )
+
+        XCTAssertEqual(workoutSet.restDurationSeconds, 15)
+        XCTAssertNil(workoutRecorder.activeRestTimerSet)
+        XCTAssertEqual(chronograph.status, .idle)
+        XCTAssertEqual(chronograph.seconds, 0, accuracy: 0.001)
+    }
+
+    func testFinishRestAndStopChronographDoesNotOverrideConfiguredTimerRest() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let workoutSet = database.newStandardSet(restDuration: 90, setGroup: setGroup)
+        let chronograph = Chronograph()
+
+        workoutRecorder.activeRestTimerSet = workoutSet
+        chronograph.mode = .timer
+        chronograph.setSeconds(45.99)
+        chronograph.seconds = 10.99
+        chronograph.status = .running
+
+        workoutRecorder.finishRestAndStopChronograph(
+            using: chronograph,
+            persistTrackedValue: true
+        )
+
+        XCTAssertEqual(workoutSet.restDurationSeconds, 90)
+        XCTAssertNil(workoutRecorder.activeRestTimerSet)
+        XCTAssertEqual(chronograph.status, .idle)
+    }
+
+    func testFinishRestAndStopChronographStopsManualChronographWithoutActiveRestSet() {
+        let chronograph = Chronograph()
+
+        chronograph.mode = .stopwatch
+        chronograph.setSeconds(18)
+        chronograph.status = .running
+
+        workoutRecorder.finishRestAndStopChronograph(
+            using: chronograph,
+            persistTrackedValue: true
+        )
+
+        XCTAssertNil(workoutRecorder.activeRestTimerSet)
+        XCTAssertEqual(chronograph.status, .idle)
+        XCTAssertEqual(chronograph.seconds, 0, accuracy: 0.001)
+    }
 }
 
 final class ChronographTests: XCTestCase {

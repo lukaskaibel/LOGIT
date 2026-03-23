@@ -114,11 +114,17 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         cancelTimerNotification()
     }
 
-    func setSeconds(_ seconds: Double, preservingElapsed: Bool = false) {
+    func setSeconds(
+        _ seconds: Double,
+        preservingElapsed: Bool = false,
+        timerTotalSecondsOverride: Double? = nil
+    ) {
         let elapsedBeforeUpdate = mode == .timer ? max(0, initialTimerSeconds - self.seconds) : 0
         self.seconds = seconds
         if mode == .timer {
-            if preservingElapsed {
+            if let timerTotalSecondsOverride {
+                initialTimerSeconds = timerTotalSecondsOverride
+            } else if preservingElapsed {
                 initialTimerSeconds = elapsedBeforeUpdate + seconds
             } else if status == .idle || status == .running || status == .paused {
                 initialTimerSeconds = seconds

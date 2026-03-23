@@ -14,66 +14,164 @@ import UIKit
 private struct WorkoutRecorderFloatingTimerButton: View {
     @ObservedObject var chronograph: Chronograph
     @ObservedObject var workoutRecorder: WorkoutRecorder
+    @AppStorage("lastTimerDuration") private var lastTimerDuration: Int = 30
+    @AppStorage("autoTimerEnabled") private var autoTimerEnabled: Bool = false
+    @AppStorage("autoStopwatchEnabled") private var autoStopwatchEnabled: Bool = false
 
     let action: () -> Void
 
+    private enum DisplayState {
+        case activeTimer(Int)
+        case activeStopwatch(Int)
+        case idleManual(Chronograph.Mode)
+        case idleAutoTimer(Int)
+        case idleAutoStopwatch
+    }
+
     var body: some View {
         ChronographView(chronograph: chronograph) { seconds in
-            Button(action: action) {
-                HStack(spacing: 8) {
-                    Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
-                        .font(.body.weight(.semibold))
-                    if showsTime(for: seconds) {
-                        Text(restTimeString(seconds: max(0, Int(seconds.rounded(.down)))))
+            floatingButton(for: seconds)
+        }
+    }
+
+    private func floatingButton(for seconds: Double) -> some View {
+        let displayState = displayState(for: seconds)
+
+        return Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: iconName(for: displayState))
+                    .font(.body.weight(.semibold))
+                
+                if case .idleAutoStopwatch = displayState {
+                    Text("0:00")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else if let timeText = timeText(for: displayState) {
+                    if case .idleAutoTimer = displayState {
+                        Text(timeText)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(timeText)
                             .font(.body.weight(.semibold).monospacedDigit())
                             .contentTransition(.numericText())
                     }
                 }
-                .foregroundStyle(timerTint)
-                .padding(.horizontal, showsTime(for: seconds) ? 16 : 14)
-                .padding(.vertical, 13)
-                .background {
-                    GeometryReader { proxy in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(.ultraThinMaterial)
+            }
+            .foregroundStyle(tint(for: displayState))
+            .padding(.horizontal, horizontalPadding(for: displayState))
+            .padding(.vertical, 13)
+            .background {
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(.ultraThinMaterial)
 
-                            if let progress = timerProgress(for: seconds) {
-                                Rectangle()
-                                    .fill(timerTint.opacity(0.24))
-                                    .frame(width: proxy.size.width * progress)
-                            }
-
-                            Capsule()
-                                .strokeBorder(Color.white.opacity(0.28), lineWidth: 0.9)
+                        if let progress = timerProgress(for: seconds, displayState: displayState) {
+                            Rectangle()
+                                .fill(tint(for: displayState).opacity(0.24))
+                                .frame(width: proxy.size.width * progress)
                         }
+
+                        Capsule()
+                            .strokeBorder(Color.white.opacity(0.28), lineWidth: 0.9)
                     }
                 }
-                .clipShape(Capsule())
-                .shadow(color: Color.black.opacity(0.12), radius: 18, y: 8)
             }
-            .buttonStyle(.plain)
+            .clipShape(Capsule())
+            .shadow(color: Color.black.opacity(0.12), radius: 18, y: 8)
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel(for: displayState))
     }
 
-    private var timerTint: Color {
+    private func tint(for displayState: DisplayState) -> Color {
         if let exerciseColor = workoutRecorder.activeRestTimerSet?.exercise?.muscleGroup?.color {
             return exerciseColor
         }
 
-        return .accentColor
+        switch displayState {
+        case .idleManual, .idleAutoTimer, .idleAutoStopwatch:
+            return .white
+        case .activeTimer, .activeStopwatch:
+            return .accentColor
+        }
     }
 
-    private func showsTime(for seconds: Double) -> Bool {
-        chronograph.status != .idle || workoutRecorder.activeRestTimerSet != nil || chronograph.mode == .stopwatch && seconds > 0
+    private func displayState(for seconds: Double) -> DisplayState {
+        let roundedSeconds = max(0, Int(seconds.rounded(.down)))
+
+        if workoutRecorder.activeRestTimerSet != nil || chronograph.status != .idle {
+            return chronograph.mode == .timer ? .activeTimer(roundedSeconds) : .activeStopwatch(roundedSeconds)
+        }
+
+        if chronograph.mode == .stopwatch, roundedSeconds > 0 {
+            return .activeStopwatch(roundedSeconds)
+        }
+
+        if chronograph.mode == .timer, autoTimerEnabled {
+            return .idleAutoTimer(lastTimerDuration)
+        }
+
+        if chronograph.mode == .stopwatch, autoStopwatchEnabled {
+            return .idleAutoStopwatch
+        }
+
+        return .idleManual(chronograph.mode)
     }
 
-    private func timerProgress(for seconds: Double) -> CGFloat? {
-        guard chronograph.mode == .timer,
-              (chronograph.status != .idle || workoutRecorder.activeRestTimerSet != nil)
-        else {
+    private func iconName(for displayState: DisplayState) -> String {
+        switch displayState {
+        case .activeTimer, .idleAutoTimer, .idleManual(.timer):
+            return "timer"
+        case .activeStopwatch, .idleAutoStopwatch, .idleManual(.stopwatch):
+            return "stopwatch"
+        }
+    }
+
+    private func timeText(for displayState: DisplayState) -> String? {
+        switch displayState {
+        case let .activeTimer(seconds), let .activeStopwatch(seconds):
+            return restTimeString(seconds: seconds)
+        case let .idleAutoTimer(duration):
+            return restTimeString(seconds: duration)
+        case .idleManual, .idleAutoStopwatch:
             return nil
         }
+    }
+
+    private func showsAutoIndicator(for displayState: DisplayState) -> Bool {
+        switch displayState {
+        case .idleAutoTimer, .idleAutoStopwatch:
+            return true
+        case .activeTimer, .activeStopwatch, .idleManual:
+            return false
+        }
+    }
+
+    private func horizontalPadding(for displayState: DisplayState) -> CGFloat {
+        timeText(for: displayState) != nil || showsAutoIndicator(for: displayState) ? 16 : 14
+    }
+
+    private func accessibilityLabel(for displayState: DisplayState) -> String {
+        switch displayState {
+        case let .activeTimer(seconds):
+            return "\(NSLocalizedString("timer", comment: "")), \(restTimeString(seconds: seconds))"
+        case let .activeStopwatch(seconds):
+            return "\(NSLocalizedString("stopwatch", comment: "")), \(restTimeString(seconds: seconds))"
+        case .idleManual(.timer):
+            return NSLocalizedString("timer", comment: "")
+        case .idleManual(.stopwatch):
+            return NSLocalizedString("stopwatch", comment: "")
+        case let .idleAutoTimer(duration):
+            return "\(NSLocalizedString("autoRestTimer", comment: "")), \(restTimeString(seconds: duration))"
+        case .idleAutoStopwatch:
+            return NSLocalizedString("autoRestStopwatch", comment: "")
+        }
+    }
+
+    private func timerProgress(for seconds: Double, displayState: DisplayState) -> CGFloat? {
+        guard case .activeTimer = displayState else { return nil }
 
         let totalSeconds = max(chronograph.initialTimerSeconds, 0)
         guard totalSeconds > 0 else { return nil }

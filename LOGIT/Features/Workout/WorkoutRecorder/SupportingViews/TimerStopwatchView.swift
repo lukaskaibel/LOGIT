@@ -63,17 +63,20 @@ struct TimerStopwatchView: View {
             }
 
             if let activeExerciseName, isWorkoutRestChronographActive {
-                HStack(spacing: 6) {
-                    Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
-                    Text(activeExerciseName)
-                        .lineLimit(1)
+                VStack {
+                    Spacer(minLength: 0)
+                    HStack(spacing: 6) {
+                        Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
+                        Text(activeExerciseName)
+                            .lineLimit(1)
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(themeColor)
+                    .padding(.bottom, 6)
                 }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(themeColor)
-                .padding(.bottom, 6)
             }
             
-            Spacer()
+            Spacer(minLength: 0)
 
             VStack {
                 HStack {
@@ -124,7 +127,7 @@ struct TimerStopwatchView: View {
                 muteButton
             }
 
-            Spacer()
+            Spacer(minLength: 0)
             
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
@@ -133,7 +136,7 @@ struct TimerStopwatchView: View {
             }
             .frame(height: controlSectionHeight)
             
-            Spacer()
+            Spacer(minLength: 0)
 
             autoTimerSection
         }
@@ -264,12 +267,10 @@ struct TimerStopwatchView: View {
             UISelectionFeedbackGenerator().selectionChanged()
             guard
                 let currentTimerValueIndex = timerValues.lastIndex(where: {
-                    $0 <= currentDisplayedTimerDuration
+                    $0 <= currentTimerDuration
                 }), currentTimerValueIndex > 0
             else { return }
-            let updatedDuration = timerValues[currentTimerValueIndex - 1]
-            lastTimerDuration = updatedDuration
-            chronograph.setSeconds(Double(updatedDuration) + 0.99)
+            updateTimerDuration(to: timerValues[currentTimerValueIndex - 1])
         } label: {
             Image(systemName: "minus")
                 .resizable()
@@ -289,12 +290,10 @@ struct TimerStopwatchView: View {
             UISelectionFeedbackGenerator().selectionChanged()
             guard
                 let firstLargerTimerValueIndex = timerValues.firstIndex(where: {
-                    $0 > currentDisplayedTimerDuration
+                    $0 > currentTimerDuration
                 })
             else { return }
-            let updatedDuration = timerValues[firstLargerTimerValueIndex]
-            lastTimerDuration = updatedDuration
-            chronograph.setSeconds(Double(updatedDuration) + 0.99)
+            updateTimerDuration(to: timerValues[firstLargerTimerValueIndex])
         } label: {
             Image(systemName: "plus")
                 .resizable()
@@ -378,6 +377,15 @@ struct TimerStopwatchView: View {
         .frame(width: transportButtonSize, height: transportButtonSize)
     }
 
+    private func updateTimerDuration(to remainingDuration: Int) {
+        let updatedTotalDuration = currentElapsedTimerDuration + remainingDuration
+        lastTimerDuration = updatedTotalDuration
+        chronograph.setSeconds(
+            Double(remainingDuration) + 0.99,
+            timerTotalSecondsOverride: Double(updatedTotalDuration) + 0.99
+        )
+    }
+
     // MARK: - Supporting Properties
 
     private var themeColor: Color {
@@ -389,8 +397,20 @@ struct TimerStopwatchView: View {
         return .accentColor
     }
 
-    private var currentDisplayedTimerDuration: Int {
+    private var currentTimerDuration: Int {
         return Int(chronograph.seconds.rounded(.down))
+    }
+
+    private var currentElapsedTimerDuration: Int {
+        max(0, currentOverallTimerDuration - currentTimerDuration)
+    }
+
+    private var currentOverallTimerDuration: Int {
+        if chronograph.mode == .timer, chronograph.status != .idle {
+            return Int(chronograph.initialTimerSeconds.rounded(.down))
+        }
+
+        return lastTimerDuration
     }
 
     private var isWorkoutRestChronographActive: Bool {

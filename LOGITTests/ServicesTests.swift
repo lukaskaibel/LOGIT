@@ -557,6 +557,18 @@ final class ChronographTests: XCTestCase {
         XCTAssertEqual(chronograph.initialTimerSeconds - chronograph.seconds, 20, accuracy: 0.02)
     }
 
+    func testSetSecondsWithTimerTotalOverrideUpdatesRemainingAndTotalIndependently() {
+        let chronograph = Chronograph()
+        chronograph.mode = .timer
+        chronograph.status = .paused
+
+        chronograph.setSeconds(21.99)
+        chronograph.setSeconds(30.99, timerTotalSecondsOverride: 39.99)
+
+        XCTAssertEqual(Int(chronograph.seconds.rounded(.down)), 30)
+        XCTAssertEqual(Int(chronograph.initialTimerSeconds.rounded(.down)), 39)
+    }
+
     func testInitializesWithPersistedMode() {
         UserDefaults.standard.set(Chronograph.Mode.stopwatch.rawValue, forKey: modeStorageKey)
 

@@ -12,7 +12,7 @@ struct RestTimerBetweenSetsView: View {
     @EnvironmentObject var chronograph: Chronograph
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
 
-    let workoutSet: WorkoutSet
+    @ObservedObject var workoutSet: WorkoutSet
     var onTapActiveTimer: (() -> Void)? = nil
     var onTapRestDuration: (() -> Void)? = nil
 

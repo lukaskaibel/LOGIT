@@ -388,7 +388,16 @@
 "time" = "time";
 "tip" = "Tip";
 "timer" = "Timer";
+"manualTimer" = "Manual Timer";
+"manualTimerDescription" = "Use a custom duration whenever you need it.";
+"autoRestTimerDescription" = "Starts automatically once the repetitions of a set have been entered.";
+"autoRestStopwatchDescription" = "Starts automatically after a completed set and saves the elapsed time as the rest duration.";
+"ready" = "Ready";
+"running" = "Running";
+"paused" = "Paused";
+"reset" = "Reset";
 "timerIsMuted" = "Timer Muted";
+"timerSoundOn" = "Sound On";
 "times" = "times";
 "timesUp" = "Time's up!";
 "timesUpBody" = "Your workout timer is done.";
@@ -401,6 +410,7 @@
 "triceps" = "Triceps";
 "two" = "Two";
 "twoWeeksAgo" = "Two weeks ago";
+"autoRestStopwatch" = "Auto Rest Stopwatch";
 
 // MARK: - U
 
@@ -722,3 +732,9 @@
 "noWeeklyGoalTip" = "No Weekly Goal";
 "noWeeklyGoalTipDescription" = "Set a target to track your weekly workout progress.";
 "setGoal" = "Set Goal";
+
+// Rest Duration
+"addRest" = "Add Rest";
+"editRest" = "Edit Rest";
+"restBetweenSets" = "Rest Between Sets";
+"autoRestTimer" = "Auto Rest Timer";

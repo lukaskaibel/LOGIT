@@ -386,7 +386,16 @@
 "time" = "mal";
 "tip" = "Tipp";
 "timer" = "Timer";
+"manualTimer" = "Manueller Timer";
+"manualTimerDescription" = "Nutze eine eigene Dauer, wann immer du sie brauchst.";
+"autoRestTimerDescription" = "Startet automatisch, sobald die Wiederholungen eines Satzes eingetragen wurden.";
+"autoRestStopwatchDescription" = "Startet automatisch nach einem abgeschlossenen Satz und speichert die verstrichene Zeit als Pausendauer.";
+"ready" = "Bereit";
+"running" = "Laeuft";
+"paused" = "Pausiert";
+"reset" = "Zuruecksetzen";
 "timerIsMuted" = "Timer Stummschalten";
+"timerSoundOn" = "Ton an";
 "times" = "mal";
 "timesUp" = "Timer fertig!";
 "timesUpBody" = "Dein Workout-Timer ist abgelaufen.";
@@ -399,6 +408,7 @@
 "triceps" = "Trizeps";
 "two" = "Zwei";
 "twoWeeksAgo" = "Vor 2 Wochen";
+"autoRestStopwatch" = "Automatische Pausen-Stoppuhr";
 
 // MARK: - U
 
@@ -720,3 +730,9 @@
 "noWeeklyGoalTip" = "Kein Wochenziel";
 "noWeeklyGoalTipDescription" = "Setze ein Ziel, um deinen wöchentlichen Trainingsfortschritt zu verfolgen.";
 "setGoal" = "Ziel setzen";
+
+// Rest Duration
+"addRest" = "Pause hinzufügen";
+"editRest" = "Pause bearbeiten";
+"restBetweenSets" = "Pause zwischen Sätzen";
+"autoRestTimer" = "Automatischer Pausentimer";

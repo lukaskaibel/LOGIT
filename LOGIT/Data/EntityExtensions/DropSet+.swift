@@ -30,6 +30,10 @@ public extension DropSet {
         (repetitions?.reduce(0, +) ?? 0) > 0 || (weights?.reduce(0, +) ?? 0) > 0
     }
 
+    override var hasRepetitionEntry: Bool {
+        (repetitions?.reduce(0, +) ?? 0) > 0
+    }
+
     override func clearEntries() {
         repetitions = Array(repeating: 0, count: repetitions?.count ?? 0)
         weights = Array(repeating: 0, count: weights?.count ?? 0)

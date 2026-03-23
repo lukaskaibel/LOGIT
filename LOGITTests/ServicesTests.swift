@@ -325,3 +325,202 @@ final class FuzzySearchServiceTests: XCTestCase {
         XCTAssertEqual(results.count, 2, "Empty query should return all workouts")
     }
 }
+
+// MARK: - WorkoutRecorder Tests
+
+final class WorkoutRecorderTests: XCTestCase {
+
+    private var database: Database!
+    private var workoutRecorder: WorkoutRecorder!
+
+    override func setUp() {
+        super.setUp()
+        database = Database(isPreview: true)
+        workoutRecorder = WorkoutRecorder(database: database)
+    }
+
+    override func tearDown() {
+        workoutRecorder = nil
+        database = nil
+        super.tearDown()
+    }
+
+    func testAutoRestBehaviorUsesConfiguredRestForTimerMode() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        database.newStandardSet(restDuration: 30, setGroup: setGroup)
+        let lastSet = database.newStandardSet(restDuration: 90, setGroup: setGroup)
+
+        let restBehavior = workoutRecorder.autoRestBehavior(
+            forSet: lastSet,
+            usesStopwatch: false,
+            autoTimerEnabled: false,
+            autoStopwatchEnabled: false,
+            timerDuration: 45
+        )
+
+        XCTAssertEqual(restBehavior, .timer(90))
+    }
+
+    func testAutoRestBehaviorUsesAutoTimerWhenNoConfiguredRestExists() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        database.newStandardSet(restDuration: 30, setGroup: setGroup)
+        let lastSet = database.newStandardSet(restDuration: 0, setGroup: setGroup)
+
+        let restBehavior = workoutRecorder.autoRestBehavior(
+            forSet: lastSet,
+            usesStopwatch: false,
+            autoTimerEnabled: true,
+            autoStopwatchEnabled: false,
+            timerDuration: 45
+        )
+
+        XCTAssertEqual(restBehavior, .timer(45))
+    }
+
+    func testAutoRestBehaviorUsesStopwatchWhenEnabledInStopwatchMode() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let lastSet = database.newStandardSet(restDuration: 90, setGroup: setGroup)
+
+        let restBehavior = workoutRecorder.autoRestBehavior(
+            forSet: lastSet,
+            usesStopwatch: true,
+            autoTimerEnabled: false,
+            autoStopwatchEnabled: true,
+            timerDuration: 45
+        )
+
+        XCTAssertEqual(restBehavior, .stopwatch)
+    }
+
+    func testAutoRestBehaviorDoesNotUseStopwatchWhenDisabledInStopwatchMode() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let lastSet = database.newStandardSet(restDuration: 90, setGroup: setGroup)
+
+        let restBehavior = workoutRecorder.autoRestBehavior(
+            forSet: lastSet,
+            usesStopwatch: true,
+            autoTimerEnabled: false,
+            autoStopwatchEnabled: false,
+            timerDuration: 45
+        )
+
+        XCTAssertNil(restBehavior)
+    }
+
+    func testAutoRestTriggerSetIgnoresWeightOnlyStandardSetEdit() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let workoutSet = database.newStandardSet(setGroup: setGroup)
+        let previousIDs = workoutRecorder.repetitionEnteredSetIDs(in: workout)
+
+        workoutSet.weight = 60_000
+
+        let trigger = workoutRecorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: previousIDs,
+            preferredSet: workoutSet
+        )
+
+        XCTAssertNil(trigger.triggerSet)
+        XCTAssertTrue(trigger.repetitionEntrySetIDs.isEmpty)
+    }
+
+    func testAutoRestTriggerSetIgnoresWeightOnlyDropSetEdit() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let workoutSet = database.newDropSet(repetitions: [0, 0], weights: [0, 0], setGroup: setGroup)
+        let previousIDs = workoutRecorder.repetitionEnteredSetIDs(in: workout)
+
+        workoutSet.weights = [50_000, 40_000]
+
+        let trigger = workoutRecorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: previousIDs,
+            preferredSet: workoutSet
+        )
+
+        XCTAssertNil(trigger.triggerSet)
+        XCTAssertTrue(trigger.repetitionEntrySetIDs.isEmpty)
+    }
+
+    func testAutoRestTriggerSetIgnoresWeightOnlySuperSetEdit() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let workoutSet = database.newSuperSet(setGroup: setGroup)
+        let previousIDs = workoutRecorder.repetitionEnteredSetIDs(in: workout)
+
+        workoutSet.weightFirstExercise = 40_000
+        workoutSet.weightSecondExercise = 30_000
+
+        let trigger = workoutRecorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: previousIDs,
+            preferredSet: workoutSet
+        )
+
+        XCTAssertNil(trigger.triggerSet)
+        XCTAssertTrue(trigger.repetitionEntrySetIDs.isEmpty)
+    }
+
+    func testAutoRestTriggerSetReturnsLastSetInGroupWhenRepetitionsAreEntered() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        _ = database.newStandardSet(repetitions: 10, setGroup: setGroup)
+        let lastSet = database.newStandardSet(setGroup: setGroup)
+        let previousIDs = workoutRecorder.repetitionEnteredSetIDs(in: workout)
+
+        lastSet.repetitions = 8
+
+        let trigger = workoutRecorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: previousIDs,
+            preferredSet: lastSet
+        )
+
+        XCTAssertEqual(trigger.triggerSet, lastSet)
+        XCTAssertEqual(trigger.repetitionEntrySetIDs, Set([setGroup.sets.first!.objectID, lastSet.objectID]))
+    }
+}
+
+final class ChronographTests: XCTestCase {
+
+    func testSetSecondsPreservingElapsedKeepsElapsedProgress() {
+        let chronograph = Chronograph()
+        chronograph.mode = .timer
+        chronograph.setSeconds(30.99)
+        chronograph.seconds = 10.99
+
+        chronograph.setSeconds(25.99, preservingElapsed: true)
+
+        XCTAssertEqual(Int(chronograph.initialTimerSeconds.rounded(.down)), 45)
+        XCTAssertEqual(chronograph.initialTimerSeconds - chronograph.seconds, 20, accuracy: 0.02)
+    }
+}

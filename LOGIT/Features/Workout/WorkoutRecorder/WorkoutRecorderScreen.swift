@@ -11,6 +11,76 @@ import CoreData
 import SwiftUI
 import UIKit
 
+private struct WorkoutRecorderFloatingTimerButton: View {
+    @ObservedObject var chronograph: Chronograph
+    @ObservedObject var workoutRecorder: WorkoutRecorder
+
+    let action: () -> Void
+
+    var body: some View {
+        ChronographView(chronograph: chronograph) { seconds in
+            Button(action: action) {
+                HStack(spacing: 8) {
+                    Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
+                        .font(.body.weight(.semibold))
+                    if showsTime(for: seconds) {
+                        Text(restTimeString(seconds: max(0, Int(seconds.rounded(.down)))))
+                            .font(.body.weight(.semibold).monospacedDigit())
+                            .contentTransition(.numericText())
+                    }
+                }
+                .foregroundStyle(timerTint)
+                .padding(.horizontal, showsTime(for: seconds) ? 16 : 14)
+                .padding(.vertical, 13)
+                .background {
+                    GeometryReader { proxy in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color.secondaryBackground)
+
+                            if let progress = timerProgress(for: seconds) {
+                                Rectangle()
+                                    .fill(timerTint.opacity(0.22))
+                                    .frame(width: proxy.size.width * progress)
+                            }
+
+                            Capsule()
+                                .stroke(Color.separator.opacity(0.15), lineWidth: 1)
+                        }
+                    }
+                }
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var timerTint: Color {
+        if let exerciseColor = workoutRecorder.activeRestTimerSet?.exercise?.muscleGroup?.color {
+            return exerciseColor
+        }
+
+        return .accentColor
+    }
+
+    private func showsTime(for seconds: Double) -> Bool {
+        chronograph.status != .idle || workoutRecorder.activeRestTimerSet != nil || chronograph.mode == .stopwatch && seconds > 0
+    }
+
+    private func timerProgress(for seconds: Double) -> CGFloat? {
+        guard chronograph.mode == .timer,
+              (chronograph.status != .idle || workoutRecorder.activeRestTimerSet != nil)
+        else {
+            return nil
+        }
+
+        let totalSeconds = max(chronograph.initialTimerSeconds, 0)
+        guard totalSeconds > 0 else { return nil }
+
+        return min(max(CGFloat(seconds / totalSeconds), 0), 1)
+    }
+}
+
 struct WorkoutRecorderScreen: View {
     // MARK: - AppStorage
 
@@ -32,6 +102,10 @@ struct WorkoutRecorderScreen: View {
 
     // MARK: - State
 
+    @AppStorage("autoTimerEnabled") private var autoTimerEnabled: Bool = false
+    @AppStorage("autoStopwatchEnabled") private var autoStopwatchEnabled: Bool = false
+    @AppStorage("lastTimerDuration") private var lastTimerDuration: Int = 30
+
     @State var isShowingChronoSheet = false
     @State private var didAppear = false
     @State private var progress: Float = 0
@@ -42,8 +116,16 @@ struct WorkoutRecorderScreen: View {
     @State private var isShowingDetailsSheet = false
     @State private var isShowingExerciseSelectionSheet = false
     @State private var isShowingReorderSheet = false
+    @State private var selectedRestDurationSet: WorkoutSet?
+    @State private var sheetHeight: CGFloat = 0
+    @State private var mediumSheetHeight: CGFloat = 0
+    @State private var animationDuration: CGFloat = 0
+    @State private var toolbarOpacity: CGFloat = 1
+    @State private var safeAreaBottomInset: CGFloat = 0
 
     @State var focusedIntegerFieldIndex: IntegerField.Index?
+
+    @State private var enteredRepetitionSetIDs: Set<NSManagedObjectID> = []
 
     @FocusState var isFocusingTitleTextfield: Bool
 
@@ -60,7 +142,13 @@ struct WorkoutRecorderScreen: View {
                                     workout: workout,
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                     canReorder: true,
-                                    showDetailAsSheet: true
+                                    showDetailAsSheet: true,
+                                    onTapActiveRest: { _ in
+                                        isShowingChronoSheet = true
+                                    },
+                                    onTapStaticRest: { workoutSet in
+                                        selectedRestDurationSet = workoutSet
+                                    }
                                 )
                                 .padding(.horizontal)
                                 .padding(.top, 90)
@@ -110,7 +198,14 @@ struct WorkoutRecorderScreen: View {
                                     .toolbar(.hidden, for: .navigationBar)
                                     .sheet(isPresented: $isShowingChronoSheet) {
                                         TimerStopwatchView(chronograph: chronograph)
-                                            .presentationDetents([.fraction(0.4)])
+                                            .presentationDetents([.fraction(0.5)])
+                                            .presentationCornerRadius(30)
+                                            .padding()
+                                            .frame(maxHeight: .infinity, alignment: .top)
+                                    }
+                                    .sheet(item: $selectedRestDurationSet) { workoutSet in
+                                        RestDurationEditorSheet(workoutSet: workoutSet)
+                                            .presentationDetents([.fraction(0.45)])
                                             .presentationCornerRadius(30)
                                             .padding()
                                             .frame(maxHeight: .infinity, alignment: .top)
@@ -196,12 +291,6 @@ struct WorkoutRecorderScreen: View {
                                             } label: {
                                                 Image(systemName: "arrow.up.arrow.down")
                                             }
-                                            Spacer()
-                                            Button {
-                                                isShowingChronoSheet = true
-                                            } label: {
-                                                Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
-                                            }
                                         }
                                         .tint(Color.label)
                                         .font(.title2)
@@ -210,15 +299,57 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 }
                             }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .onGeometryChange(for: CGFloat.self) {
+                                max($0.size.height, 0)
+                            } action: { oldValue, newValue in
+                                sheetHeight = newValue
+
+                                if exerciseSelectionPresentationDetent == .medium {
+                                    mediumSheetHeight = newValue
+                                }
+
+                                if mediumSheetHeight > 0 {
+                                    let fadeStartHeight = mediumSheetHeight + 140
+                                    let progress = max(min((newValue - fadeStartHeight) / 72, 1), 0)
+                                    toolbarOpacity = 1 - progress
+                                } else {
+                                    toolbarOpacity = 1
+                                }
+
+                                let diff = abs(newValue - oldValue)
+                                let duration = max(min(diff / 180, 0.3), 0)
+                                animationDuration = duration
+                            }
                             .opacity(fullScreenDraggableCoverIsDragging ? 0 : 1)
                             .animation(.easeOut(duration: 0.2), value: fullScreenDraggableCoverIsDragging)
                             .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
                             .presentationDragIndicator(fullScreenDraggableCoverIsDragging ? .hidden : .visible)
+                            .ignoresSafeArea()
                             .interactiveDismissDisabled()
                             .onChange(of: fullScreenDraggableCoverIsDragging) {
                                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                             }
+                        }
+                        .overlay(alignment: .bottomTrailing) {
+                            if shouldShowFloatingTimerButton {
+                                WorkoutRecorderFloatingTimerButton(
+                                    chronograph: chronograph,
+                                    workoutRecorder: workoutRecorder,
+                                    action: { isShowingChronoSheet = true }
+                                )
+                                .opacity(toolbarOpacity)
+                                .offset(y: -sheetHeight)
+                                .padding(.trailing, 15)
+                                .offset(y: safeAreaBottomInset - 10)
+                                .animation(.easeInOut(duration: animationDuration), value: sheetHeight)
+                            }
+                        }
+                        .onGeometryChange(for: CGFloat.self) {
+                            $0.safeAreaInsets.bottom
+                        } action: { newValue in
+                            safeAreaBottomInset = newValue
                         }
                     }
                     .onAppear {
@@ -226,6 +357,12 @@ struct WorkoutRecorderScreen: View {
                     }
                     .onReceive(workoutRecorder.workout?.objectWillChange ?? ObservableObjectPublisher()) {
                         updateProgress()
+                    }
+                    .onReceive(
+                        NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
+                            .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+                    ) { _ in
+                        checkForNewSetEntries()
                     }
                 }
                 Header
@@ -243,6 +380,9 @@ struct WorkoutRecorderScreen: View {
                 didAppear = true
                 setUpAutoSaveForWorkout()
                 exerciseSelectionPresentationDetent = workoutRecorder.workout?.isEmpty ?? true ? .medium : .fraction(BOTTOM_SHEET_SMALL)
+                enteredRepetitionSetIDs = workoutRecorder.workout.map {
+                    workoutRecorder.repetitionEnteredSetIDs(in: $0)
+                } ?? []
 
                 if preventAutoLock {
                     UIApplication.shared.isIdleTimerDisabled = true
@@ -272,26 +412,10 @@ struct WorkoutRecorderScreen: View {
                             .animation(.interactiveSpring, value: workout.sets)
                     }
                     VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 10) {
-                            if let workoutStartTime = workoutRecorder.workout?.date {
-                                StopwatchView(startTime: workoutStartTime)
-                                    .foregroundStyle(.secondary)
-                                    .font(.footnote.weight(.bold).monospacedDigit())
-                            }
-                            if chronograph.status != .idle {
-                                ChronographView(chronograph: chronograph) { seconds in
-                                    HStack {
-                                        Divider()
-                                            .frame(height: 12)
-                                        HStack {
-                                            Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
-                                            Text("\(Int(seconds) / 60 / 10 % 6)\(Int(seconds) / 60 % 10):\(Int(seconds) % 60 / 10)\(Int(seconds) % 60 % 10)")
-                                        }
-                                        .foregroundColor(chronograph.status == .running ? .accentColor : .secondaryLabel)
-                                        .font(.footnote.weight(.semibold).monospacedDigit())
-                                    }
-                                }
-                            }
+                        if let workoutStartTime = workoutRecorder.workout?.date {
+                            StopwatchView(startTime: workoutStartTime)
+                                .foregroundStyle(.secondary)
+                                .font(.footnote.weight(.bold).monospacedDigit())
                         }
                         TextField(
                             "",
@@ -332,6 +456,15 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
+    // MARK: - Floating Timer Button
+
+    private var shouldShowFloatingTimerButton: Bool {
+        sheetHeight > 0
+            && !fullScreenDraggableCoverIsDragging
+            && selectedRestDurationSet == nil
+            && !isShowingChronoSheet
+    }
+
     // MARK: - Supporting Methods / Computed Properties
 
     private var workoutName: Binding<String> {
@@ -346,6 +479,77 @@ struct WorkoutRecorderScreen: View {
         let totalSets = workout.sets.count
         let completedSets = workout.sets.filter { $0.hasEntry }.count
         progress = totalSets > 0 ? Float(completedSets) / Float(totalSets) : 0
+    }
+
+    private func checkForNewSetEntries() {
+        guard let workout = workoutRecorder.workout else { return }
+
+        let autoRestTrigger = workoutRecorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: enteredRepetitionSetIDs,
+            preferredSet: selectedWorkoutSet
+        )
+        enteredRepetitionSetIDs = autoRestTrigger.repetitionEntrySetIDs
+
+        guard let enteredSet = autoRestTrigger.triggerSet else { return }
+        startRestTimerForSet(enteredSet)
+    }
+
+    private func startRestTimerForSet(_ completedSet: WorkoutSet) {
+        if chronograph.status == .running,
+           let previousTimerSet = workoutRecorder.activeRestTimerSet,
+           previousTimerSet.objectID != completedSet.objectID
+        {
+            if chronograph.mode == .stopwatch {
+                let elapsed = chronograph.elapsedSeconds
+                if elapsed > 0 {
+                    workoutRecorder.recordRestDuration(elapsed, for: previousTimerSet)
+                }
+            }
+            chronograph.cancel()
+            chronograph.onTimerFired = nil
+            workoutRecorder.activeRestTimerSet = nil
+        }
+
+        guard workoutRecorder.activeRestTimerSet?.objectID != completedSet.objectID else { return }
+        guard chronograph.status != .running else { return }
+
+        guard let autoRestBehavior = workoutRecorder.autoRestBehavior(
+            forSet: completedSet,
+            usesStopwatch: chronograph.mode == .stopwatch,
+            autoTimerEnabled: autoTimerEnabled,
+            autoStopwatchEnabled: autoStopwatchEnabled,
+            timerDuration: lastTimerDuration
+        ) else {
+            return
+        }
+
+        workoutRecorder.activeRestTimerSet = completedSet
+        chronograph.cancel()
+
+        switch autoRestBehavior {
+        case let .timer(restSeconds):
+            chronograph.mode = .timer
+            chronograph.setSeconds(Double(restSeconds) + 0.99)
+            chronograph.start()
+            chronograph.onTimerFired = { [weak chronograph, weak workoutRecorder] in
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                if let currentSet = workoutRecorder?.activeRestTimerSet,
+                   currentSet.restDurationSeconds == 0 {
+                    let recordedDuration = chronograph.map {
+                        max(0, Int($0.initialTimerSeconds.rounded(.down)))
+                    } ?? restSeconds
+                    workoutRecorder?.recordRestDuration(recordedDuration, for: currentSet)
+                }
+                workoutRecorder?.activeRestTimerSet = nil
+            }
+
+        case .stopwatch:
+            chronograph.mode = .stopwatch
+            chronograph.setSeconds(0)
+            chronograph.onTimerFired = nil
+            chronograph.start()
+        }
     }
 
     private var progressInWorkout: Float {

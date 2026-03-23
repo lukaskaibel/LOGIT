@@ -12,6 +12,12 @@ public extension TemplateSet {
         fatalError("TemplateSet+: hasEntry must be implemented in subclass of TemplateSet")
     }
 
+    /// Rest duration in seconds after completing this set. 0 means no rest defined.
+    var restDurationSeconds: Int {
+        get { Int(restDuration) }
+        set { restDuration = Int64(newValue) }
+    }
+
     var exercise: Exercise? {
         setGroup?.exercise
     }

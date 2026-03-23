@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		80AA00022F3A000100AA0001 /* RestDurationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00012F3A000100AA0001 /* RestDurationPicker.swift */; };
+		80AA00042F3A000100AA0001 /* RestTimerBetweenSetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */; };
+		80AA00082F3A000100AA0001 /* RestDurationEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */; };
 		7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7907FDE9289E99B1006AF271 /* CloudKit.framework */; };
 		791347B62AE2BEB100D20BB7 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 791347B52AE2BEB100D20BB7 /* MarkdownUI */; };
 		792A3FF32AB478F000C6A097 /* DatabaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 792A3FF22AB478F000C6A097 /* DatabaseTests.swift */; };
@@ -250,6 +253,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		80AA00012F3A000100AA0001 /* RestDurationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDurationPicker.swift; sourceTree = "<group>"; };
+		80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestTimerBetweenSetsView.swift; sourceTree = "<group>"; };
+		80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDurationEditorSheet.swift; sourceTree = "<group>"; };
 		22040B8B5D5971A78B9E3A04 /* Pods_LOGIT.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LOGIT.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7907FDE9289E99B1006AF271 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		792A3FF22AB478F000C6A097 /* DatabaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseTests.swift; sourceTree = "<group>"; };
@@ -435,6 +441,7 @@
 		8031D04B2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsAndConditionsScreen.swift; sourceTree = "<group>"; };
 		8034A7EC2E83073700834A32 /* LOGIT 4.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 4.0.xcdatamodel"; sourceTree = "<group>"; };
 		8054E6B02F1CC5F9003F150D /* LOGIT 5.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 5.0.xcdatamodel"; sourceTree = "<group>"; };
+		80AA00052F3A000100AA0001 /* LOGIT 6.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 6.0.xcdatamodel"; sourceTree = "<group>"; };
 		8054E6B32F1D9581003F150D /* ExerciseAttemptCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseAttemptCell.swift; sourceTree = "<group>"; };
 		8054E6B52F1DB513003F150D /* ComparisonBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComparisonBar.swift; sourceTree = "<group>"; };
 		8054E6B62F1DB513003F150D /* HighlightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightView.swift; sourceTree = "<group>"; };
@@ -849,6 +856,8 @@
 				801BBD1F2DF7338A00CDB1FB /* FinishConfirmationSheet.swift */,
 				801BBD202DF7338A00CDB1FB /* StopwatchView.swift */,
 				801BBD212DF7338A00CDB1FB /* WorkoutDetailSheet.swift */,
+				80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */,
+				80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */,
 			);
 			path = SupportingViews;
 			sourceTree = "<group>";
@@ -969,6 +978,7 @@
 				801BBD5A2DF7338A00CDB1FB /* UnitView.swift */,
 				801BBD5B2DF7338A00CDB1FB /* WidgetCollectionView.swift */,
 				80B387BA2EBA187100AD7EFC /* DecimalField.swift */,
+				80AA00012F3A000100AA0001 /* RestDurationPicker.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1354,6 +1364,9 @@
 				806DE6202E1DD10A008E162F /* ChronographView.swift in Sources */,
 				801BBE052DF7338A00CDB1FB /* PrivacyPolicyScreen.swift in Sources */,
 				801BBE062DF7338A00CDB1FB /* VolumeCalculating.swift in Sources */,
+				80AA00022F3A000100AA0001 /* RestDurationPicker.swift in Sources */,
+				80AA00082F3A000100AA0001 /* RestDurationEditorSheet.swift in Sources */,
+				80AA00042F3A000100AA0001 /* RestTimerBetweenSetsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1731,13 +1744,14 @@
 		801BBCC92DF7338A00CDB1FB /* LOGIT.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				80AA00052F3A000100AA0001 /* LOGIT 6.0.xcdatamodel */,
 				8054E6B02F1CC5F9003F150D /* LOGIT 5.0.xcdatamodel */,
 				8034A7EC2E83073700834A32 /* LOGIT 4.0.xcdatamodel */,
 				801BBD5F2DF7338A00CDB1FB /* LOGIT 2.0.xcdatamodel */,
 				801BBD602DF7338A00CDB1FB /* LOGIT 3.0.xcdatamodel */,
 				801BBD612DF7338A00CDB1FB /* WorkoutDiary.xcdatamodel */,
 			);
-			currentVersion = 8054E6B02F1CC5F9003F150D /* LOGIT 5.0.xcdatamodel */;
+			currentVersion = 80AA00052F3A000100AA0001 /* LOGIT 6.0.xcdatamodel */;
 			path = LOGIT.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

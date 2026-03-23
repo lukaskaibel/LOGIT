@@ -11,10 +11,6 @@ struct TemplateSetCell: View {
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
-    @EnvironmentObject var database: Database
-
-    // MARK: - Parameters
-
     @ObservedObject var templateSet: TemplateSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
 
@@ -111,7 +107,6 @@ struct TemplateSetCell: View {
     private var indexInSetGroup: Int? {
         templateSet.setGroup?.sets.firstIndex(of: templateSet)
     }
-
     private func templateSetIsFirst(templateSet: TemplateSet) -> Bool {
         guard let setGroup = templateSet.setGroup else { return false }
         return setGroup.sets.firstIndex(of: templateSet) == 0

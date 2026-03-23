@@ -126,3 +126,76 @@ struct WorkoutSetCell: View {
         return setGroup.sets.firstIndex(of: workoutSet) == setGroup.numberOfSets - 1
     }
 }
+
+// MARK: - Preview
+
+private struct PreviewWrapperView: View {
+    @EnvironmentObject private var database: Database
+
+    private var standardSet: WorkoutSet? {
+        let workouts = database.fetch(Workout.self) as! [Workout]
+        let sets = workouts.flatMap(\.sets)
+        return sets.first(where: { $0 is StandardSet })
+    }
+
+    private var dropSet: WorkoutSet? {
+        let workouts = database.fetch(Workout.self) as! [Workout]
+        let sets = workouts.flatMap(\.sets)
+        return sets.first(where: { $0 is DropSet })
+    }
+
+    private var superSet: WorkoutSet? {
+        let workouts = database.fetch(Workout.self) as! [Workout]
+        let sets = workouts.flatMap(\.sets)
+        return sets.first(where: { $0 is SuperSet })
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: CELL_PADDING) {
+                if let standardSet {
+                    previewSection(title: "Standard Set", workoutSet: standardSet)
+                }
+                if let dropSet {
+                    previewSection(title: "Drop Set", workoutSet: dropSet)
+                    previewSection(title: "Read-Only Drop Set", workoutSet: dropSet, canEdit: false)
+                }
+                if let superSet {
+                    previewSection(title: "Superset", workoutSet: superSet)
+                }
+            }
+            .padding()
+        }
+    }
+
+    private func previewSection(
+        title: String,
+        workoutSet: WorkoutSet,
+        canEdit: Bool = true
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            WorkoutSetCell(
+                workoutSet: workoutSet,
+                focusedIntegerFieldIndex: .constant(nil)
+            )
+            .background(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                    .foregroundStyle(Color.tertiaryBackground)
+            )
+            .cornerRadius(15)
+            .canEdit(canEdit)
+        }
+    }
+}
+
+struct WorkoutSetCell_Previews: PreviewProvider {
+    static var previews: some View {
+        PreviewWrapperView()
+            .previewEnvironmentObjects()
+    }
+}

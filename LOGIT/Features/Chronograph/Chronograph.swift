@@ -32,9 +32,26 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     var onTimerFired: (() -> Void)?
 
     var seconds: TimeInterval = 0
+    /// The initial duration set for timer mode, used to compute elapsed time.
+    private(set) var initialTimerSeconds: TimeInterval = 0
     private var timer: Timer?
     var startDate: Date?
     private var pauseTime: TimeInterval?
+
+    /// How many seconds have elapsed since the timer started (timer mode only).
+    var elapsedTimerSeconds: Int {
+        max(0, Int(initialTimerSeconds - seconds))
+    }
+
+    /// How many seconds have elapsed for the active chronograph mode.
+    var elapsedSeconds: Int {
+        switch mode {
+        case .timer:
+            elapsedTimerSeconds
+        case .stopwatch:
+            max(0, Int(seconds.rounded(.down)))
+        }
+    }
 
     // MARK: - Init
 
@@ -90,8 +107,16 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         cancelTimerNotification()
     }
 
-    func setSeconds(_ seconds: Double) {
+    func setSeconds(_ seconds: Double, preservingElapsed: Bool = false) {
+        let elapsedBeforeUpdate = mode == .timer ? max(0, initialTimerSeconds - self.seconds) : 0
         self.seconds = seconds
+        if mode == .timer {
+            if preservingElapsed {
+                initialTimerSeconds = elapsedBeforeUpdate + seconds
+            } else if status == .idle || status == .running || status == .paused {
+                initialTimerSeconds = seconds
+            }
+        }
         objectWillChange.send()
         if status == .running {
             cancelTimerNotification()

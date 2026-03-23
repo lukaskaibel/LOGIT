@@ -22,6 +22,8 @@ struct WorkoutSetGroupCell: View {
 
     let supplementaryText: String?
     var showDetailAsSheet: Bool = false
+    var onTapActiveRest: ((WorkoutSet) -> Void)? = nil
+    var onTapStaticRest: ((WorkoutSet) -> Void)? = nil
 
     // MARK: - State
 
@@ -42,28 +44,39 @@ struct WorkoutSetGroupCell: View {
 
             if !isReordering {
                 VStack(spacing: CELL_PADDING) {
-                    VStack(spacing: CELL_SPACING) {
+                    VStack(spacing: 0) {
                         ReorderableForEach(
                             $setGroup.sets,
                             canReorder: canEdit,
                             isReordering: $isReorderingSets
                         ) { workoutSet in
-                            WorkoutSetCell(
-                                workoutSet: workoutSet,
-                                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-                            )
-                            .contentShape(Rectangle())
-                            .background(
-                                RoundedRectangle(cornerRadius: 15)
-                                    .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
-                                    .foregroundStyle(Color.tertiaryBackground)
-                            )
-                            .cornerRadius(15)
-                            .onDeleteView(disabled: !canEdit) {
-                                withAnimation(.interactiveSpring()) {
-                                    database.delete(workoutSet)
+                            VStack(spacing: 0) {
+                                WorkoutSetCell(
+                                    workoutSet: workoutSet,
+                                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+                                )
+                                .contentShape(Rectangle())
+                                .background(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                                        .foregroundStyle(Color.tertiaryBackground)
+                                )
+                                .cornerRadius(15)
+                                .onDeleteView(disabled: !canEdit) {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.delete(workoutSet)
+                                    }
+                                }
+                                if !isLastSet(workoutSet) {
+                                    Color.clear
+                                        .frame(height: CELL_SPACING)
+                                        .overlay {
+                                            restIndicator(for: workoutSet)
+                                        }
+                                        .zIndex(1)
                                 }
                             }
+                            .zIndex(zIndex(for: workoutSet))
                         }
                     }
                     .padding(.horizontal, CELL_PADDING / 2)
@@ -338,6 +351,30 @@ struct WorkoutSetGroupCell: View {
                         .fill((setGroup.exercise?.muscleGroup?.color ?? .accentColor).secondaryTranslucentBackground)
                 )
         }
+    }
+
+    // MARK: - Supporting Methods
+
+    private func isLastSet(_ workoutSet: WorkoutSet) -> Bool {
+        setGroup.sets.last == workoutSet
+    }
+
+    private func zIndex(for workoutSet: WorkoutSet) -> Double {
+        guard let index = setGroup.sets.firstIndex(of: workoutSet) else { return 0 }
+        return Double(setGroup.sets.count - index)
+    }
+
+    @ViewBuilder
+    private func restIndicator(for workoutSet: WorkoutSet) -> some View {
+        RestTimerBetweenSetsView(
+            workoutSet: workoutSet,
+            onTapActiveTimer: {
+                onTapActiveRest?(workoutSet)
+            },
+            onTapRestDuration: canEdit ? {
+                onTapStaticRest?(workoutSet)
+            } : nil
+        )
     }
 }
 

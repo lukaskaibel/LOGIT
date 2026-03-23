@@ -11,9 +11,13 @@ struct TimerStopwatchView: View {
     // MARK: - Properties
 
     @ObservedObject var chronograph: Chronograph
+    @EnvironmentObject private var workoutRecorder: WorkoutRecorder
 
     @AppStorage("lastTimerDuration") private var lastTimerDuration: Int = 30
     @AppStorage("hasRequestedNotificationPermission") private var hasRequestedNotificationPermission: Bool = false
+    @AppStorage("autoTimerEnabled") private var autoTimerEnabled: Bool = false
+    @AppStorage("autoStopwatchEnabled") private var autoStopwatchEnabled: Bool = false
+    @AppStorage("timerIsMuted") private var timerIsMuted: Bool = false
 
     // MARK: - Constants
 
@@ -28,7 +32,7 @@ struct TimerStopwatchView: View {
     // MARK: - View
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 20) {
             HStack {
                 Button {
                     if chronograph.mode != .timer {
@@ -39,7 +43,7 @@ struct TimerStopwatchView: View {
                     Text(NSLocalizedString("timer", comment: ""))
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundStyle(chronograph.mode == .timer ? .white : .placeholder)
+                        .foregroundStyle(chronograph.mode == .timer ? themeColor : .placeholder)
                 }
                 Spacer()
                 Button {
@@ -51,19 +55,32 @@ struct TimerStopwatchView: View {
                     Text(NSLocalizedString("stopwatch", comment: ""))
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundStyle(chronograph.mode == .stopwatch ? .white : .placeholder)
+                        .foregroundStyle(chronograph.mode == .stopwatch ? themeColor : .placeholder)
                 }
             }
-            Spacer()
+
+            Spacer(minLength: 12)
+
+            if let activeExerciseName, isWorkoutRestChronographActive {
+                HStack(spacing: 6) {
+                    Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
+                    Text(activeExerciseName)
+                        .lineLimit(1)
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(themeColor)
+                .padding(.bottom, 6)
+            }
+
             HStack {
                 Spacer()
                 if chronograph.mode == .timer {
                     timerDecreaseButton
                 }
                 Spacer()
-                VStack {
-                    if chronograph.status != .idle {
-                        // Add this with opacity 0, s.t. the timer string stays centered
+                VStack(spacing: 12) {
+                    if chronograph.mode == .timer, chronograph.status != .idle {
+                        // Keep the countdown vertically stable once the duration helper appears.
                         Text(timeString(seconds: Double(lastTimerDuration)))
                             .foregroundStyle(.secondary)
                             .font(.body.monospacedDigit())
@@ -73,11 +90,14 @@ struct TimerStopwatchView: View {
                         Text(timeString(seconds: seconds))
                             .font(.system(size: 70, weight: .regular).monospacedDigit())
                             .fontDesign(.rounded)
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(themeColor)
+                            .opacity(chronograph.status == .paused ? opacityOfTimeWhenPaused : 1)
                             .lineLimit(1)
                             .minimumScaleFactor(1)
+                            .contentTransition(.numericText())
                     }
-                    if chronograph.status != .idle {
+                    muteButton
+                    if chronograph.mode == .timer, chronograph.status != .idle {
                         HStack {
                             let minutes = lastTimerDuration / 60
                             let seconds = lastTimerDuration % 60
@@ -99,6 +119,9 @@ struct TimerStopwatchView: View {
                             }
                         }
                         .foregroundStyle(.secondary)
+                    } else {
+                        Color.clear
+                            .frame(height: 20)
                     }
                 }
                 Spacer()
@@ -107,17 +130,30 @@ struct TimerStopwatchView: View {
                 }
                 Spacer()
             }
-            Spacer()
+
+            Spacer(minLength: 8)
+
             HStack {
                 Spacer()
                 Button {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    chronograph.status == .running ? chronograph.setSeconds(Double(lastTimerDuration) + 0.99) : chronograph.cancel()
+                    if chronograph.mode == .timer {
+                        if chronograph.status == .running {
+                            chronograph.setSeconds(Double(lastTimerDuration) + 0.99)
+                        } else {
+                            finishActiveRestIfNeeded(shouldPersistElapsed: false)
+                            chronograph.cancel()
+                        }
+                    } else {
+                        finishActiveRestIfNeeded(shouldPersistElapsed: true)
+                        chronograph.cancel()
+                    }
                 } label: {
                     Image(systemName: chronograph.status == .idle ? "xmark" : "arrow.trianglehead.counterclockwise")
                         .resizable()
                         .frame(width: 20, height: 20)
                         .fontWeight(.bold)
+                        .foregroundStyle(Color.label)
                         .padding(25)
                         .background(Color.fill)
                         .clipShape(Circle())
@@ -135,22 +171,30 @@ struct TimerStopwatchView: View {
                         .resizable()
                         .frame(width: 20, height: 20)
                         .fontWeight(.bold)
+                        .foregroundStyle(themeColor)
                         .padding(25)
-                        .background(Color.accentColor.secondaryTranslucentBackground)
+                        .background(themeColor.secondaryTranslucentBackground)
                         .clipShape(Circle())
                 }
                 .disabled(chronograph.mode == .timer && Int(chronograph.seconds) == 0)
                 Spacer()
             }
+
+            autoTimerSection
         }
+        .padding()
         .onChange(of: chronograph.status) {
             if chronograph.status == .idle && chronograph.mode == .timer {
                 chronograph.setSeconds(Double(lastTimerDuration) + 0.99)
             }
         }
-        .onChange(of: chronograph.mode) {
+        .onChange(of: chronograph.mode) { oldMode, newMode in
+            finishActiveRestIfNeeded(
+                shouldPersistElapsed: oldMode == .stopwatch,
+                mode: oldMode
+            )
             chronograph.cancel()
-            chronograph.setSeconds(chronograph.mode == .timer ? Double(lastTimerDuration) + 0.99 : 0)
+            chronograph.setSeconds(newMode == .timer ? Double(lastTimerDuration) + 0.99 : 0)
         }
         .onAppear {
             checkNotificationPermission()
@@ -188,33 +232,80 @@ struct TimerStopwatchView: View {
 
     // MARK: - Subviews
 
-    private var pickerView: some View {
-        Picker("Select Timer or Stopwatch", selection: $chronograph.mode) {
-            Image(systemName: "timer")
-                .tag(Chronograph.Mode.timer)
-            Image(systemName: "stopwatch")
-                .tag(Chronograph.Mode.stopwatch)
+    private var autoTimerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Toggle(isOn: autoRestBinding) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "repeat")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(themeColor)
+                        Text(autoRestTitle)
+                            .font(.subheadline.weight(.semibold))
+                    }
+
+                    Text(autoRestDescription)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .tint(themeColor)
         }
-        .pickerStyle(.segmented)
+        .padding(.top, 8)
+    }
+
+    @ViewBuilder
+    private var muteButton: some View {
+        if chronograph.mode == .timer {
+            Button {
+                UISelectionFeedbackGenerator().selectionChanged()
+                timerIsMuted.toggle()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: timerIsMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                        .font(.body.weight(.semibold))
+                    Text(
+                        timerIsMuted
+                            ? NSLocalizedString("timerIsMuted", comment: "")
+                            : NSLocalizedString("timerSoundOn", comment: "")
+                    )
+                    .font(.callout.weight(.semibold))
+                }
+                .foregroundStyle(timerIsMuted ? themeColor : .secondary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(
+                    timerIsMuted
+                        ? themeColor.secondaryTranslucentBackground
+                        : Color.fill,
+                    in: Capsule()
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(NSLocalizedString("timerIsMuted", comment: ""))
+        }
     }
 
     private var timerDecreaseButton: some View {
         Button {
             UISelectionFeedbackGenerator().selectionChanged()
             guard
-                let firstLargerTimerValueIndex = timerValues.firstIndex(where: {
-                    $0 >= Int(chronograph.seconds)
-                }), firstLargerTimerValueIndex > 0
+                let currentTimerValueIndex = timerValues.lastIndex(where: {
+                    $0 <= currentTimerDuration
+                }), currentTimerValueIndex > 0
             else { return }
-            let updatedSeconds = Double(timerValues[firstLargerTimerValueIndex - 1]) + 0.99
-            lastTimerDuration = Int(updatedSeconds)
-            chronograph.setSeconds(updatedSeconds)
+            let updatedDuration = timerValues[currentTimerValueIndex - 1]
+            let durationDelta = updatedDuration - currentTimerDuration
+            let updatedSeconds = max(0.99, chronograph.seconds + Double(durationDelta))
+            lastTimerDuration = updatedDuration
+            chronograph.setSeconds(updatedSeconds, preservingElapsed: chronograph.status != .idle)
         } label: {
             Image(systemName: "minus")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 18, height: 18)
                 .font(.title2.weight(.heavy))
+                .foregroundStyle(themeColor)
                 .padding(10)
                 .background(Color.fill)
                 .clipShape(Circle())
@@ -227,34 +318,101 @@ struct TimerStopwatchView: View {
             UISelectionFeedbackGenerator().selectionChanged()
             guard
                 let firstLargerTimerValueIndex = timerValues.firstIndex(where: {
-                    $0 > Int(chronograph.seconds)
-                }), firstLargerTimerValueIndex > 0
+                    $0 > currentTimerDuration
+                })
             else { return }
-            let updatedSeconds = Double(timerValues[firstLargerTimerValueIndex]) + 0.99
-            lastTimerDuration = Int(updatedSeconds)
-            chronograph.setSeconds(updatedSeconds)
+            let updatedDuration = timerValues[firstLargerTimerValueIndex]
+            let durationDelta = updatedDuration - currentTimerDuration
+            let updatedSeconds = chronograph.seconds + Double(durationDelta)
+            lastTimerDuration = updatedDuration
+            chronograph.setSeconds(updatedSeconds, preservingElapsed: chronograph.status != .idle)
         } label: {
             Image(systemName: "plus")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 18, height: 18)
                 .font(.title2.weight(.heavy))
+                .foregroundStyle(themeColor)
                 .padding(10)
                 .background(Color.fill)
                 .clipShape(Circle())
         }
     }
 
+    // MARK: - Supporting Properties
+
+    private var themeColor: Color {
+        if isWorkoutRestChronographActive,
+           let exerciseColor = workoutRecorder.activeRestTimerSet?.exercise?.muscleGroup?.color {
+            return exerciseColor
+        }
+
+        return .accentColor
+    }
+
+    private var currentTimerDuration: Int {
+        if chronograph.mode == .timer, chronograph.status != .idle {
+            return Int(chronograph.initialTimerSeconds.rounded(.down))
+        }
+
+        return Int(chronograph.seconds.rounded(.down))
+    }
+
+    private var isWorkoutRestChronographActive: Bool {
+        (chronograph.status == .running || chronograph.status == .paused)
+            && workoutRecorder.activeRestTimerSet != nil
+    }
+
+    private var activeExerciseName: String? {
+        workoutRecorder.activeRestTimerSet?.exercise?.displayName
+    }
+
+    private var autoRestBinding: Binding<Bool> {
+        Binding(
+            get: { chronograph.mode == .timer ? autoTimerEnabled : autoStopwatchEnabled },
+            set: {
+                if chronograph.mode == .timer {
+                    autoTimerEnabled = $0
+                } else {
+                    autoStopwatchEnabled = $0
+                }
+            }
+        )
+    }
+
+    private var autoRestTitle: String {
+        chronograph.mode == .timer
+            ? NSLocalizedString("autoRestTimer", comment: "")
+            : NSLocalizedString("autoRestStopwatch", comment: "")
+    }
+
+    private var autoRestDescription: String {
+        chronograph.mode == .timer
+            ? NSLocalizedString("autoRestTimerDescription", comment: "")
+            : NSLocalizedString("autoRestStopwatchDescription", comment: "")
+    }
+
+    // MARK: - Supporting Methods
+
     private func timeString(seconds: Double) -> String {
         "\(Int(seconds) / 60 / 10 % 6)\(Int(seconds) / 60 % 10):\(Int(seconds) % 60 / 10)\(Int(seconds) % 60 % 10)"
     }
 
-    private func durationMinutesString(seconds: Double) -> String {
-        "\(Int(seconds) / 60)"
-    }
+    private func finishActiveRestIfNeeded(
+        shouldPersistElapsed: Bool,
+        mode: Chronograph.Mode? = nil
+    ) {
+        guard let activeRestSet = workoutRecorder.activeRestTimerSet else { return }
 
-    private func durationSecondsString(seconds: Double) -> String {
-        "\(Int(seconds) % 60)"
+        let activeMode = mode ?? chronograph.mode
+        if shouldPersistElapsed, activeMode == .stopwatch {
+            let elapsed = chronograph.elapsedSeconds
+            if elapsed > 0 {
+                workoutRecorder.recordRestDuration(elapsed, for: activeRestSet)
+            }
+        }
+
+        workoutRecorder.activeRestTimerSet = nil
     }
 
     private func checkNotificationPermission() {
@@ -271,7 +429,6 @@ struct TimerStopwatchView: View {
                     isShowingNotificationNotEnabledAlert = true
 
                 case .authorized, .provisional, .ephemeral:
-                    // Notifications are enabled, nothing to do
                     break
 
                 @unknown default:
@@ -280,7 +437,7 @@ struct TimerStopwatchView: View {
             }
         }
     }
-    
+
     private func requestNotificationPermission() {
         hasRequestedNotificationPermission = true
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -301,9 +458,8 @@ struct TimerView_Previews: PreviewProvider {
             .foregroundStyle(.black)
             .sheet(isPresented: .constant(true)) {
                 TimerStopwatchView(chronograph: Chronograph())
-                    .padding()
-                    .tileStyle()
-                    .presentationDetents([.fraction(0.4)])
+                    .previewEnvironmentObjects()
+                    .presentationDetents([.fraction(0.6)])
             }
     }
 }

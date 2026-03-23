@@ -11,6 +11,11 @@ import Foundation
 import OSLog
 
 final class WorkoutRecorder: ObservableObject {
+    enum AutoRestBehavior: Equatable {
+        case timer(Int)
+        case stopwatch
+    }
+
     // MARK: - Static
 
     private static let logger = Logger(subsystem: ".com.lukaskbl.LOGIT", category: "WorkoutRecorder")
@@ -19,6 +24,9 @@ final class WorkoutRecorder: ObservableObject {
     // MARK: - Public Variables
 
     @Published var workout: Workout?
+
+    /// The set whose rest timer is currently active (the set that was just completed).
+    @Published var activeRestTimerSet: WorkoutSet?
 
     // MARK: - Private Variables
 
@@ -49,16 +57,21 @@ final class WorkoutRecorder: ObservableObject {
                 )
                 for templateSet in templateSetGroup.sets {
                     if let templateStandardSet = templateSet as? TemplateStandardSet {
-                        let standardSet = database.newStandardSet(setGroup: setGroup)
+                        let standardSet = database.newStandardSet(
+                            restDuration: Int(templateStandardSet.restDuration),
+                            setGroup: setGroup
+                        )
                         workoutSetTemplateSetDictionary[standardSet] = templateStandardSet
                     } else if let templateDropSet = templateSet as? TemplateDropSet {
                         let dropSet = database.newDropSet(from: templateDropSet, setGroup: setGroup)
+                        dropSet.restDuration = templateDropSet.restDuration
                         workoutSetTemplateSetDictionary[dropSet] = templateDropSet
                     } else if let templateSuperSet = templateSet as? TemplateSuperSet {
                         let superSet = database.newSuperSet(
                             from: templateSuperSet,
                             setGroup: setGroup
                         )
+                        superSet.restDuration = templateSuperSet.restDuration
                         workoutSetTemplateSetDictionary[superSet] = templateSuperSet
                     }
                 }
@@ -174,6 +187,80 @@ final class WorkoutRecorder: ObservableObject {
 
     func templateSet(for workoutSet: WorkoutSet) -> TemplateSet? {
         workoutSetTemplateSetDictionary[workoutSet]
+    }
+
+    func repetitionEnteredSetIDs(in workout: Workout) -> Set<NSManagedObjectID> {
+        Set(workout.sets.filter { $0.hasRepetitionEntry }.map(\.objectID))
+    }
+
+    func autoRestTriggerSet(
+        in workout: Workout,
+        previousRepetitionEntrySetIDs: Set<NSManagedObjectID>,
+        preferredSet: WorkoutSet? = nil
+    ) -> (triggerSet: WorkoutSet?, repetitionEntrySetIDs: Set<NSManagedObjectID>) {
+        let currentRepetitionEntrySetIDs = repetitionEnteredSetIDs(in: workout)
+        let newlyEnteredSetIDs = currentRepetitionEntrySetIDs.subtracting(previousRepetitionEntrySetIDs)
+
+        let triggerSet: WorkoutSet?
+        if let preferredSet, newlyEnteredSetIDs.contains(preferredSet.objectID) {
+            triggerSet = preferredSet
+        } else if let firstNewSetID = newlyEnteredSetIDs.first {
+            triggerSet = workout.sets.first(where: { $0.objectID == firstNewSetID })
+        } else {
+            triggerSet = nil
+        }
+
+        return (triggerSet, currentRepetitionEntrySetIDs)
+    }
+
+    /// Returns the applicable auto-rest behavior for the given set.
+    /// The set being entered is treated as just completed, so its own rest duration applies.
+    func autoRestBehavior(
+        forSet workoutSet: WorkoutSet,
+        usesStopwatch: Bool,
+        autoTimerEnabled: Bool,
+        autoStopwatchEnabled: Bool,
+        timerDuration: Int
+    ) -> AutoRestBehavior? {
+        if usesStopwatch {
+            return autoStopwatchEnabled ? .stopwatch : nil
+        }
+
+        if workoutSet.restDurationSeconds > 0 {
+            return .timer(workoutSet.restDurationSeconds)
+        }
+
+        if autoTimerEnabled && timerDuration > 0 {
+            return .timer(timerDuration)
+        }
+
+        return nil
+    }
+
+    /// Compatibility wrapper for call sites that only support automatic timers.
+    func applicableRestDuration(
+        forSet workoutSet: WorkoutSet,
+        autoTimerEnabled: Bool,
+        timerDuration: Int
+    ) -> Int? {
+        switch autoRestBehavior(
+            forSet: workoutSet,
+            usesStopwatch: false,
+            autoTimerEnabled: autoTimerEnabled,
+            autoStopwatchEnabled: false,
+            timerDuration: timerDuration
+        ) {
+        case let .timer(seconds):
+            return seconds
+        case .stopwatch, .none:
+            return nil
+        }
+    }
+
+    /// Records the actual rest duration for a completed set.
+    func recordRestDuration(_ seconds: Int, for workoutSet: WorkoutSet) {
+        workoutSet.restDurationSeconds = seconds
+        objectWillChange.send()
     }
 
     /// Returns the next workout set to be executed. This is the first workout set, that has no workout set with entries after it.

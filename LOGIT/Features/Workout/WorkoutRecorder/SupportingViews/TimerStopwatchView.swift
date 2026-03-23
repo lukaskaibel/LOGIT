@@ -246,7 +246,11 @@ struct TimerStopwatchView: View {
                 )
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(NSLocalizedString("timerIsMuted", comment: ""))
+            .accessibilityLabel(
+                timerIsMuted
+                    ? NSLocalizedString("timerIsMuted", comment: "")
+                    : NSLocalizedString("timerSoundOn", comment: "")
+            )
         }
     }
 

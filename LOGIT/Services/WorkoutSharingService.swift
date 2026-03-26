@@ -37,10 +37,6 @@ final class WorkoutSharingService {
     private let database: Database
     private let fuzzySearchService = FuzzySearchService.shared
     
-    /// Threshold for fuzzy matching custom exercises (0.0 = exact, 1.0 = match anything)
-    /// Using a strict threshold to only match very similar exercises
-    private let fuzzyMatchThreshold: Double = 0.3
-    
     // MARK: - Init
     
     init(database: Database) {

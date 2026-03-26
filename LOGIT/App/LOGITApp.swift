@@ -350,30 +350,52 @@ struct LOGIT: App {
     }
     
     private func handleIncomingFile(url: URL) {
-        let sharingService = WorkoutSharingService(database: database)
-        
         let fileExtension = url.pathExtension.lowercased()
-        
-        switch fileExtension {
-        case "logitworkout":
-            do {
-                let workout = try sharingService.importWorkout(from: url)
-                importedWorkout = workout
-            } catch {
-                importErrorMessage = error.localizedDescription
-                showingImportError = true
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let sharingService = WorkoutSharingService(database: database)
+
+            var importedWorkoutResult: Workout?
+            var importedTemplateResult: Template?
+            var errorMessage: String?
+            var hasError = false
+
+            switch fileExtension {
+            case "logitworkout":
+                do {
+                    let workout = try sharingService.importWorkout(from: url)
+                    importedWorkoutResult = workout
+                } catch {
+                    errorMessage = error.localizedDescription
+                    hasError = true
+                }
+            case "logittemplate":
+                do {
+                    let template = try sharingService.importTemplate(from: url)
+                    importedTemplateResult = template
+                } catch {
+                    errorMessage = error.localizedDescription
+                    hasError = true
+                }
+            default:
+                errorMessage = NSLocalizedString("unsupportedFileType", comment: "")
+                hasError = true
             }
-        case "logittemplate":
-            do {
-                let template = try sharingService.importTemplate(from: url)
-                importedTemplate = template
-            } catch {
-                importErrorMessage = error.localizedDescription
-                showingImportError = true
+
+            DispatchQueue.main.async {
+                if let workout = importedWorkoutResult {
+                    self.importedWorkout = workout
+                }
+
+                if let template = importedTemplateResult {
+                    self.importedTemplate = template
+                }
+
+                if hasError, let message = errorMessage {
+                    self.importErrorMessage = message
+                    self.showingImportError = true
+                }
             }
-        default:
-            importErrorMessage = NSLocalizedString("unsupportedFileType", comment: "")
-            showingImportError = true
         }
     }
 }

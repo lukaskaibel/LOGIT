@@ -54,7 +54,8 @@ struct WorkoutSetDTO: Codable {
         case dropSet
     }
     
-    let type: SetType
+    let type: SetType?
+    let restDuration: Int?
     
     // StandardSet fields
     let repetitions: Int?
@@ -73,6 +74,7 @@ struct WorkoutSetDTO: Codable {
     init(from workoutSet: WorkoutSet) {
         if let standardSet = workoutSet as? StandardSet {
             self.type = .standard
+            self.restDuration = standardSet.restDurationSeconds
             self.repetitions = Int(standardSet.repetitions)
             self.weight = Int(standardSet.weight)
             self.repetitionsFirstExercise = nil
@@ -83,6 +85,7 @@ struct WorkoutSetDTO: Codable {
             self.dropSetWeights = nil
         } else if let superSet = workoutSet as? SuperSet {
             self.type = .superSet
+            self.restDuration = superSet.restDurationSeconds
             self.repetitions = nil
             self.weight = nil
             self.repetitionsFirstExercise = Int(superSet.repetitionsFirstExercise)
@@ -93,6 +96,7 @@ struct WorkoutSetDTO: Codable {
             self.dropSetWeights = nil
         } else if let dropSet = workoutSet as? DropSet {
             self.type = .dropSet
+            self.restDuration = dropSet.restDurationSeconds
             self.repetitions = nil
             self.weight = nil
             self.repetitionsFirstExercise = nil
@@ -104,6 +108,7 @@ struct WorkoutSetDTO: Codable {
         } else {
             // Fallback to standard
             self.type = .standard
+            self.restDuration = workoutSet.restDurationSeconds
             self.repetitions = 0
             self.weight = 0
             self.repetitionsFirstExercise = nil

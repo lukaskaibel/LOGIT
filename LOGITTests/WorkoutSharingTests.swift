@@ -225,6 +225,54 @@ final class WorkoutDTOTests: XCTestCase {
         XCTAssertEqual(dto.endDate, end)
     }
     
+    func testWorkoutDTOPreservesRestDurationsForAllSetTypes() {
+        let workout = database.newWorkout(name: "Rest Duration DTO", date: Date())
+        
+        let standardExercise = builder.createExercise(name: "Bench", muscleGroup: .chest)
+        let standardGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: standardExercise,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 8, weight: 80000, restDuration: 90, setGroup: standardGroup)
+        
+        let superPrimary = builder.createExercise(name: "Row", muscleGroup: .back)
+        let superSecondary = builder.createExercise(name: "Face Pull", muscleGroup: .shoulders)
+        let superGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: superPrimary,
+            workout: workout
+        )
+        superGroup.secondaryExercise = superSecondary
+        database.newSuperSet(
+            repetitionsFirstExercise: 12,
+            repetitionsSecondExercise: 15,
+            weightFirstExercise: 50000,
+            weightSecondExercise: 15000,
+            restDuration: 75,
+            setGroup: superGroup
+        )
+        
+        let dropExercise = builder.createExercise(name: "Curl", muscleGroup: .biceps)
+        let dropGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: dropExercise,
+            workout: workout
+        )
+        database.newDropSet(
+            repetitions: [12, 10, 8],
+            weights: [20000, 15000, 10000],
+            restDuration: 60,
+            setGroup: dropGroup
+        )
+        
+        let dto = WorkoutDTO(from: workout)
+        
+        XCTAssertEqual(dto.setGroups[0].sets[0].restDuration, 90)
+        XCTAssertEqual(dto.setGroups[1].sets[0].restDuration, 75)
+        XCTAssertEqual(dto.setGroups[2].sets[0].restDuration, 60)
+    }
+    
     // MARK: - JSON Encoding/Decoding Round-Trip
     
     func testWorkoutDTORoundTripStandardSets() throws {
@@ -534,6 +582,56 @@ final class TemplateDTOCodableTests: XCTestCase {
         XCTAssertEqual(decoded.setGroups[1].sets[0].type, .superSet)
         XCTAssertEqual(decoded.setGroups[2].sets[0].type, .dropSet)
     }
+    
+    func testTemplateDTOPreservesRestDurationsForAllSetTypes() throws {
+        let primary = builder.createExercise(name: "Incline Press", muscleGroup: .chest)
+        let secondary = builder.createExercise(name: "Cable Fly", muscleGroup: .chest)
+        let dropExercise = builder.createExercise(name: "Lateral Raise", muscleGroup: .shoulders)
+        
+        let template = database.newTemplate(name: "Rest Template")
+        
+        let standardGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: primary,
+            template: template
+        )
+        database.newTemplateStandardSet(repetitions: 10, weight: 70000, restDuration: 120, setGroup: standardGroup)
+        
+        let superGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: primary,
+            template: template
+        )
+        superGroup.secondaryExercise = secondary
+        database.newTemplateSuperSet(
+            repetitionsFirstExercise: 12,
+            repetitionsSecondExercise: 15,
+            weightFirstExercise: 30000,
+            weightSecondExercise: 12000,
+            restDuration: 45,
+            setGroup: superGroup
+        )
+        
+        let dropGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: dropExercise,
+            template: template
+        )
+        database.newTemplateDropSet(
+            repetitions: [15, 12, 10],
+            weights: [12000, 10000, 8000],
+            restDuration: 30,
+            templateSetGroup: dropGroup
+        )
+        
+        let dto = TemplateDTO(from: template)
+        let data = try JSONEncoder().encode(dto)
+        let decoded = try JSONDecoder().decode(TemplateDTO.self, from: data)
+        
+        XCTAssertEqual(decoded.setGroups[0].sets[0].restDuration, 120)
+        XCTAssertEqual(decoded.setGroups[1].sets[0].restDuration, 45)
+        XCTAssertEqual(decoded.setGroups[2].sets[0].restDuration, 30)
+    }
 }
 
 // MARK: - WorkoutSharingService Tests
@@ -671,6 +769,30 @@ final class WorkoutSharingServiceTests: XCTestCase {
         XCTAssertEqual(decoded.setGroups[0].sets[0].dropSetRepetitions, [10, 8, 6])
     }
     
+    func testExportWorkoutIncludesRestDurations() throws {
+        let workout = database.newWorkout(name: "Rest Export", date: Date())
+        let exercise = builder.createExercise(name: "Squat", muscleGroup: .legs)
+        let group = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: exercise,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 5, weight: 140000, restDuration: 180, setGroup: group)
+        
+        guard let url = sharingService.exportWorkout(workout) else {
+            XCTFail("Export returned nil")
+            return
+        }
+        defer { try? FileManager.default.removeItem(at: url) }
+        
+        let data = try Data(contentsOf: url)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(WorkoutDTO.self, from: data)
+        
+        XCTAssertEqual(decoded.setGroups[0].sets[0].restDuration, 180)
+    }
+    
     func testExportEmptyWorkout() {
         let workout = database.newWorkout(name: "Empty", date: Date())
         
@@ -805,6 +927,28 @@ final class WorkoutSharingServiceTests: XCTestCase {
         XCTAssertEqual(decoded.setGroups[0].sets[0].dropSetWeights?.count, 3)
         XCTAssertEqual(decoded.setGroups[0].sets[0].dropSetRepetitions, [10, 8, 6])
         XCTAssertEqual(decoded.setGroups[0].sets[0].dropSetWeights, [20000, 15000, 10000])
+    }
+    
+    func testExportWorkoutAsTemplatePreservesRestDurations() throws {
+        let workout = database.newWorkout(name: "Rest Template Export", date: Date())
+        let exercise = builder.createExercise(name: "Split Squat", muscleGroup: .legs)
+        let group = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: exercise,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 10, weight: 30000, restDuration: 95, setGroup: group)
+        
+        guard let url = sharingService.exportWorkoutAsTemplate(workout) else {
+            XCTFail("Export returned nil")
+            return
+        }
+        defer { try? FileManager.default.removeItem(at: url) }
+        
+        let data = try Data(contentsOf: url)
+        let decoded = try JSONDecoder().decode(TemplateDTO.self, from: data)
+        
+        XCTAssertEqual(decoded.setGroups[0].sets[0].restDuration, 95)
     }
     
     // MARK: - Import Workout Tests
@@ -947,6 +1091,62 @@ final class WorkoutSharingServiceTests: XCTestCase {
         XCTAssertTrue(imported.setGroups[2].sets[0] is DropSet)
     }
     
+    func testImportWorkoutPreservesRestDurations() throws {
+        let workout = database.newWorkout(name: "Rest Import", date: Date())
+        
+        let standardExercise = builder.createExercise(name: "Bench Press", muscleGroup: .chest)
+        let standardGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: standardExercise,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 8, weight: 80000, restDuration: 120, setGroup: standardGroup)
+        
+        let superPrimary = builder.createExercise(name: "Row", muscleGroup: .back)
+        let superSecondary = builder.createExercise(name: "Rear Delt Fly", muscleGroup: .shoulders)
+        let superGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: superPrimary,
+            workout: workout
+        )
+        superGroup.secondaryExercise = superSecondary
+        database.newSuperSet(
+            repetitionsFirstExercise: 10,
+            repetitionsSecondExercise: 14,
+            weightFirstExercise: 60000,
+            weightSecondExercise: 12000,
+            restDuration: 75,
+            setGroup: superGroup
+        )
+        
+        let dropExercise = builder.createExercise(name: "Hammer Curl", muscleGroup: .biceps)
+        let dropGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: dropExercise,
+            workout: workout
+        )
+        database.newDropSet(
+            repetitions: [12, 10, 8],
+            weights: [20000, 15000, 10000],
+            restDuration: 45,
+            setGroup: dropGroup
+        )
+        
+        guard let exportURL = sharingService.exportWorkout(workout) else {
+            XCTFail("Export returned nil")
+            return
+        }
+        defer { try? FileManager.default.removeItem(at: exportURL) }
+        
+        let importDB = Database(isPreview: true)
+        let importService = WorkoutSharingService(database: importDB)
+        let imported = try importService.importWorkout(from: exportURL)
+        
+        XCTAssertEqual((imported.setGroups[0].sets[0] as? StandardSet)?.restDurationSeconds, 120)
+        XCTAssertEqual((imported.setGroups[1].sets[0] as? SuperSet)?.restDurationSeconds, 75)
+        XCTAssertEqual((imported.setGroups[2].sets[0] as? DropSet)?.restDurationSeconds, 45)
+    }
+    
     func testImportWorkoutFlagsAsTemporary() throws {
         let workout = builder.createCompleteWorkout(name: "Temp Flag Test", exerciseCount: 1, setsPerExercise: 1)
         guard let exportURL = sharingService.exportWorkout(workout) else {
@@ -1074,6 +1274,62 @@ final class WorkoutSharingServiceTests: XCTestCase {
             XCTAssertEqual(dropSet.repetitions?.map { Int($0) }, [15, 12, 10, 8, 6])
             XCTAssertEqual(dropSet.weights?.map { Int($0) }, [80000, 70000, 60000, 50000, 40000])
         }
+    }
+    
+    func testImportTemplatePreservesRestDurations() throws {
+        let template = database.newTemplate(name: "Rest Template Import")
+        
+        let standardExercise = builder.createExercise(name: "Overhead Press", muscleGroup: .shoulders)
+        let standardGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: standardExercise,
+            template: template
+        )
+        database.newTemplateStandardSet(repetitions: 8, weight: 50000, restDuration: 90, setGroup: standardGroup)
+        
+        let superPrimary = builder.createExercise(name: "Dip", muscleGroup: .chest)
+        let superSecondary = builder.createExercise(name: "Pull Up", muscleGroup: .back)
+        let superGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: superPrimary,
+            template: template
+        )
+        superGroup.secondaryExercise = superSecondary
+        database.newTemplateSuperSet(
+            repetitionsFirstExercise: 12,
+            repetitionsSecondExercise: 8,
+            weightFirstExercise: 0,
+            weightSecondExercise: 0,
+            restDuration: 60,
+            setGroup: superGroup
+        )
+        
+        let dropExercise = builder.createExercise(name: "Cable Curl", muscleGroup: .biceps)
+        let dropGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: dropExercise,
+            template: template
+        )
+        database.newTemplateDropSet(
+            repetitions: [12, 10, 8],
+            weights: [25000, 20000, 15000],
+            restDuration: 30,
+            templateSetGroup: dropGroup
+        )
+        
+        guard let exportURL = sharingService.exportTemplate(template) else {
+            XCTFail("Export returned nil")
+            return
+        }
+        defer { try? FileManager.default.removeItem(at: exportURL) }
+        
+        let importDB = Database(isPreview: true)
+        let importService = WorkoutSharingService(database: importDB)
+        let imported = try importService.importTemplate(from: exportURL)
+        
+        XCTAssertEqual(Int((imported.setGroups[0].sets[0] as? TemplateStandardSet)?.restDuration ?? -1), 90)
+        XCTAssertEqual(Int((imported.setGroups[1].sets[0] as? TemplateSuperSet)?.restDuration ?? -1), 60)
+        XCTAssertEqual(Int((imported.setGroups[2].sets[0] as? TemplateDropSet)?.restDuration ?? -1), 30)
     }
     
     func testImportTemplateInvalidExtension() {
@@ -1214,6 +1470,39 @@ final class WorkoutSharingServiceTests: XCTestCase {
         
         // Exercise should be created with "Unknown" name
         XCTAssertEqual(imported.setGroups[0].exercise?.name, "Unknown")
+    }
+    
+    func testImportWorkoutWithoutSetTypeDefaultsToStandardSet() throws {
+        let json: [String: Any] = [
+            "formatVersion": 1,
+            "name": "Legacy Workout",
+            "date": ISO8601DateFormatter().string(from: Date()),
+            "setGroups": [
+                [
+                    "exercise": ["name": "Legacy Bench", "type": "chest", "isDefaultExercise": false] as [String: Any],
+                    "setType": "standard",
+                    "sets": [
+                        ["repetitions": 10, "weight": 60000, "restDuration": 90]
+                    ]
+                ] as [String: Any]
+            ],
+            "appStoreURL": "https://example.com"
+        ]
+        
+        let data = try JSONSerialization.data(withJSONObject: json)
+        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("legacy.logitworkout")
+        try data.write(to: fileURL)
+        defer { try? FileManager.default.removeItem(at: fileURL) }
+        
+        let importDB = Database(isPreview: true)
+        let importService = WorkoutSharingService(database: importDB)
+        let imported = try importService.importWorkout(from: fileURL)
+        
+        let set = imported.setGroups[0].sets[0]
+        XCTAssertTrue(set is StandardSet)
+        XCTAssertEqual((set as? StandardSet)?.restDurationSeconds, 90)
+        XCTAssertEqual((set as? StandardSet)?.repetitions, 10)
+        XCTAssertEqual((set as? StandardSet)?.weight, 60000)
     }
     
     // MARK: - Custom Exercise Matching Tests

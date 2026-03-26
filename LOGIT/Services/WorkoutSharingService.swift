@@ -85,6 +85,7 @@ final class WorkoutSharingService {
                         if let superSet = workoutSet as? SuperSet {
                             return TemplateSetDTO(
                                 type: .superSet,
+                                restDuration: superSet.restDurationSeconds,
                                 repetitionsFirstExercise: Int(superSet.repetitionsFirstExercise),
                                 repetitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
                                 weightFirstExercise: Int(superSet.weightFirstExercise),
@@ -93,13 +94,19 @@ final class WorkoutSharingService {
                         } else if let dropSet = workoutSet as? DropSet {
                             return TemplateSetDTO(
                                 type: .dropSet,
+                                restDuration: dropSet.restDurationSeconds,
                                 dropSetRepetitions: dropSet.repetitions?.map { Int($0) },
                                 dropSetWeights: dropSet.weights?.map { Int($0) }
                             )
                         } else if let standardSet = workoutSet as? StandardSet {
-                            return TemplateSetDTO(repetitions: Int(standardSet.repetitions), weight: Int(standardSet.weight), type: .standard)
+                            return TemplateSetDTO(
+                                repetitions: Int(standardSet.repetitions),
+                                weight: Int(standardSet.weight),
+                                type: .standard,
+                                restDuration: standardSet.restDurationSeconds
+                            )
                         } else {
-                            return TemplateSetDTO(repetitions: 0, weight: 0, type: .standard)
+                            return TemplateSetDTO(repetitions: 0, weight: 0, type: .standard, restDuration: 0)
                         }
                     },
                     secondaryExercise: workoutSetGroup.secondaryExercise.map { ExerciseDTO(from: $0) },
@@ -238,6 +245,7 @@ final class WorkoutSharingService {
                     database.newStandardSet(
                         repetitions: setDTO.repetitions ?? 0,
                         weight: setDTO.weight ?? 0,
+                        restDuration: setDTO.restDuration ?? 0,
                         setGroup: setGroup
                     )
                 case .superSet:
@@ -246,12 +254,14 @@ final class WorkoutSharingService {
                         repetitionsSecondExercise: setDTO.repetitionsSecondExercise ?? 0,
                         weightFirstExercise: setDTO.weightFirstExercise ?? 0,
                         weightSecondExercise: setDTO.weightSecondExercise ?? 0,
+                        restDuration: setDTO.restDuration ?? 0,
                         setGroup: setGroup
                     )
                 case .dropSet:
                     database.newDropSet(
                         repetitions: setDTO.dropSetRepetitions ?? [0],
                         weights: setDTO.dropSetWeights ?? [0],
+                        restDuration: setDTO.restDuration ?? 0,
                         setGroup: setGroup
                     )
                 }
@@ -291,6 +301,7 @@ final class WorkoutSharingService {
                     database.newTemplateStandardSet(
                         repetitions: setDTO.repetitions ?? 0,
                         weight: setDTO.weight ?? 0,
+                        restDuration: setDTO.restDuration ?? 0,
                         setGroup: setGroup
                     )
                 case .superSet:
@@ -299,12 +310,14 @@ final class WorkoutSharingService {
                         repetitionsSecondExercise: setDTO.repetitionsSecondExercise ?? 0,
                         weightFirstExercise: setDTO.weightFirstExercise ?? 0,
                         weightSecondExercise: setDTO.weightSecondExercise ?? 0,
+                        restDuration: setDTO.restDuration ?? 0,
                         setGroup: setGroup
                     )
                 case .dropSet:
                     database.newTemplateDropSet(
                         repetitions: setDTO.dropSetRepetitions ?? [0],
                         weights: setDTO.dropSetWeights ?? [0],
+                        restDuration: setDTO.restDuration ?? 0,
                         templateSetGroup: setGroup
                     )
                 }

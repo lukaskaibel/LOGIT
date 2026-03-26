@@ -15,11 +15,6 @@ final class WorkoutSharingService {
     
     // MARK: - Types
     
-    enum ShareType {
-        case workout
-        case template
-    }
-    
     enum ImportError: LocalizedError {
         case invalidFileFormat
         case decodingFailed(Error)

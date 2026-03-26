@@ -217,7 +217,7 @@ final class WorkoutSharingService {
             date: dto.date ?? Date(),
             setGroups: []
         )
-        workout.endDate = dto.endDate ?? Date()
+        workout.endDate = dto.endDate ?? dto.date
         
         // Flag workout as temporary until user confirms
         database.flagAsTemporary(workout)

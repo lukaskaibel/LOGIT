@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public enum MuscleGroup: String, Decodable, Identifiable, CaseIterable, Comparable, Equatable {
+public enum MuscleGroup: String, Codable, Identifiable, CaseIterable, Comparable, Equatable {
     case chest, triceps, shoulders, biceps, back, legs, abdominals, cardio
 
     public var id: String { rawValue }

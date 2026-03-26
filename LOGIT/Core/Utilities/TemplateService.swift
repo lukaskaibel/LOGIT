@@ -157,7 +157,7 @@ class TemplateService: ObservableObject {
         Self.logger.info("Converting TemplateSetGroup from TemmplateSetGroupDTO")
         let setGroup = database.newTemplateSetGroup(createFirstSetAutomatically: false, exercise: exercise)
         for setDTO in dto.sets {
-            database.newTemplateStandardSet(repetitions: setDTO.repetitions, weight: setDTO.weight, setGroup: setGroup)
+            database.newTemplateStandardSet(repetitions: setDTO.repetitions ?? 0, weight: setDTO.weight ?? 0, setGroup: setGroup)
         }
         return setGroup
     }

@@ -22,10 +22,17 @@ struct TemplateDetailScreen: View {
     @State private var showingDeletionAlert = false
     @State private var showingTemplateEditor = false
     @State private var isMuscleGroupExpanded = false
+    @State private var templateShareFileURL: URL?
 
     // MARK: - Variables
 
     @StateObject var template: Template
+    
+    // MARK: - Sharing Service
+    
+    private var sharingService: WorkoutSharingService {
+        WorkoutSharingService(database: database)
+    }
 
     // MARK: - Body
 
@@ -81,6 +88,11 @@ struct TemplateDetailScreen: View {
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Menu(content: {
+                    Button {
+                        templateShareFileURL = sharingService.exportTemplate(template)
+                    } label: {
+                        Label(NSLocalizedString("shareTemplate", comment: ""), systemImage: "square.and.arrow.up")
+                    }
                     Button(
                         action: { showingTemplateEditor = true },
                         label: {
@@ -110,6 +122,17 @@ struct TemplateDetailScreen: View {
                     }
                 }
             }
+        }
+        .sheet(item: $templateShareFileURL) { url in
+            ShareSheet(activityItems: [WorkoutActivityItemSource(fileURL: url, title: template.name ?? NSLocalizedString("template", comment: ""))])
+                .onDisappear {
+                    do {
+                        try FileManager.default.removeItem(at: url)
+                    } catch {
+                        // Ignore errors when attempting to remove the temporary share file
+                    }
+                    templateShareFileURL = nil
+                }
         }
         .alert(
             NSLocalizedString("templates", comment: ""),

@@ -12,8 +12,6 @@ struct WorkoutSetGroupCell: View {
 
     @Environment(\.canEdit) var canEdit: Bool
     @EnvironmentObject var database: Database
-    @EnvironmentObject private var chronograph: Chronograph
-    @EnvironmentObject private var workoutRecorder: WorkoutRecorder
 
     // MARK: - Parameters
 
@@ -24,8 +22,6 @@ struct WorkoutSetGroupCell: View {
 
     let supplementaryText: String?
     var showDetailAsSheet: Bool = false
-    var onTapActiveRest: ((WorkoutSet) -> Void)? = nil
-    var onTapStaticRest: ((WorkoutSet) -> Void)? = nil
 
     // MARK: - State
 
@@ -46,13 +42,13 @@ struct WorkoutSetGroupCell: View {
 
             if !isReordering {
                 VStack(spacing: CELL_PADDING) {
-                    VStack(spacing: 0) {
+                    VStack(spacing: CELL_SPACING) {
                         ReorderableForEach(
                             $setGroup.sets,
                             canReorder: canEdit,
                             isReordering: $isReorderingSets
                         ) { workoutSet in
-                            VStack(spacing: 0) {
+                            VStack(spacing: CELL_SPACING) {
                                 WorkoutSetCell(
                                     workoutSet: workoutSet,
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex
@@ -70,18 +66,14 @@ struct WorkoutSetGroupCell: View {
                                     }
                                 }
                                 if !isLastSet(workoutSet) {
-                                    let showsRestCapsule = shouldShowRestIndicator(for: workoutSet)
-                                    Color.clear
-                                        .frame(height: showsRestCapsule ? SECTION_SPACING : CELL_SPACING)
-                                        .overlay {
-                                            if showsRestCapsule {
-                                                restCapsule(for: workoutSet)
-                                            }
-                                        }
-                                        .zIndex(1)
+                                    if canEdit {
+                                        RestTimerBetweenSetsView(workoutSet: workoutSet)
+                                    } else if workoutSet.restDurationSeconds > 0 {
+                                        RestDurationLabel(seconds: workoutSet.restDurationSeconds)
+                                            .padding(.vertical, 2)
+                                    }
                                 }
                             }
-                            .zIndex(zIndex(for: workoutSet))
                         }
                     }
                     .padding(.horizontal, CELL_PADDING / 2)
@@ -362,41 +354,6 @@ struct WorkoutSetGroupCell: View {
 
     private func isLastSet(_ workoutSet: WorkoutSet) -> Bool {
         setGroup.sets.last == workoutSet
-    }
-
-    private func zIndex(for workoutSet: WorkoutSet) -> Double {
-        guard let index = setGroup.sets.firstIndex(of: workoutSet) else { return 0 }
-        return Double(setGroup.sets.count - index)
-    }
-
-    @ViewBuilder
-    private func restIndicator(for workoutSet: WorkoutSet) -> some View {
-        RestTimerBetweenSetsView(
-            workoutSet: workoutSet,
-            onTapActiveTimer: {
-                onTapActiveRest?(workoutSet)
-            },
-            onTapRestDuration: canEdit ? {
-                onTapStaticRest?(workoutSet)
-            } : nil
-        )
-    }
-
-    @ViewBuilder
-    private func restCapsule(for workoutSet: WorkoutSet) -> some View {
-        restIndicator(for: workoutSet)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(Color.secondaryBackground)
-            .clipShape(Capsule())
-    }
-
-    private func shouldShowRestIndicator(for workoutSet: WorkoutSet) -> Bool {
-        workoutSet.restDurationSeconds > 0
-            || (
-                workoutRecorder.activeRestTimerSet?.objectID == workoutSet.objectID
-                    && (chronograph.status == .running || chronograph.status == .paused)
-            )
     }
 }
 

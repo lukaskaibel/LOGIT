@@ -18,9 +18,37 @@ struct WorkoutSetCell: View {
     @ObservedObject var workoutSet: WorkoutSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
 
+    // MARK: - State
+
+    @State private var isEditingRestDuration = false
+
     // MARK: - Body
 
     var body: some View {
+        Group {
+            if canEdit {
+                content
+                    .contextMenu {
+                        contextMenuContent
+                    }
+            } else {
+                content
+            }
+        }
+        .padding(.leading, CELL_PADDING)
+        .padding([.top, .trailing], 8)
+        .padding(.bottom, workoutSet as? DropSet != nil ? CELL_PADDING : 8)
+        .sheet(isPresented: $isEditingRestDuration) {
+            RestDurationEditorSheet(workoutSet: workoutSet)
+                .presentationDetents([.fraction(0.65)])
+                .padding()
+                .frame(maxHeight: .infinity, alignment: .top)
+        }
+    }
+
+    // MARK: - Supporting Views
+
+    private var content: some View {
         VStack(spacing: 0) {
             if let indexInSetGroup = indexInSetGroup {
                 HStack {
@@ -29,46 +57,7 @@ struct WorkoutSetCell: View {
                         .fontDesign(.rounded)
                         .foregroundStyle(.secondary)
                     Spacer()
-                    if let standardSet = workoutSet as? StandardSet {
-                        StandardSetCell(
-                            standardSet: standardSet,
-                            focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-                        )
-                        .padding(
-                            .top,
-                            workoutSetIsFirst(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2
-                        )
-                        .padding(
-                            .bottom,
-                            workoutSetIsLast(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2
-                        )
-                    } else if let dropSet = workoutSet as? DropSet {
-                        DropSetCell(
-                            dropSet: dropSet,
-                            focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-                        )
-                        .padding(
-                            .top,
-                            workoutSetIsFirst(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2
-                        )
-                        .padding(
-                            .bottom,
-                            workoutSetIsLast(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2
-                        )
-                    } else if let superSet = workoutSet as? SuperSet {
-                        SuperSetCell(
-                            superSet: superSet,
-                            focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-                        )
-                        .padding(
-                            .top,
-                            workoutSetIsFirst(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2
-                        )
-                        .padding(
-                            .bottom,
-                            workoutSetIsLast(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2
-                        )
-                    }
+                    setContent
                 }
                 if let dropSet = workoutSet as? DropSet, canEdit {
                     Divider()
@@ -91,7 +80,6 @@ struct WorkoutSetCell: View {
                             .font(.body.weight(.medium).monospacedDigit())
                             .foregroundStyle(.primary)
                         Button {
-                            print("add drop")
                             UISelectionFeedbackGenerator().selectionChanged()
                             dropSet.addDrop()
                         } label: {
@@ -105,9 +93,91 @@ struct WorkoutSetCell: View {
                 }
             }
         }
-        .padding(.leading, CELL_PADDING)
-        .padding([.top, .trailing], 8)
-        .padding(.bottom, workoutSet as? DropSet != nil ? CELL_PADDING : 8)
+    }
+
+    @ViewBuilder
+    private var setContent: some View {
+        if let standardSet = workoutSet as? StandardSet {
+            StandardSetCell(
+                standardSet: standardSet,
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+            )
+            .padding(.top, workoutSetIsFirst(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
+            .padding(.bottom, workoutSetIsLast(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
+        } else if let dropSet = workoutSet as? DropSet {
+            DropSetCell(
+                dropSet: dropSet,
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+            )
+            .padding(.top, workoutSetIsFirst(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
+            .padding(.bottom, workoutSetIsLast(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
+        } else if let superSet = workoutSet as? SuperSet {
+            SuperSetCell(
+                superSet: superSet,
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+            )
+            .padding(.top, workoutSetIsFirst(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
+            .padding(.bottom, workoutSetIsLast(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
+        }
+    }
+
+    @ViewBuilder
+    private var contextMenuContent: some View {
+        Section {
+            Button {
+                isEditingRestDuration = true
+            } label: {
+                Label(
+                    NSLocalizedString(
+                        workoutSet.restDurationSeconds > 0 ? "editRest" : "addRest",
+                        comment: ""
+                    ),
+                    systemImage: "clock"
+                )
+            }
+        }
+
+        Section {
+            Button {
+                withAnimation(.interactiveSpring()) {
+                    database.addSet(before: workoutSet)
+                }
+            } label: {
+                Label(
+                    NSLocalizedString("addSetBefore", comment: ""),
+                    systemImage: "arrow.up.to.line.circle"
+                )
+            }
+
+            Button {
+                withAnimation(.interactiveSpring()) {
+                    database.addSet(after: workoutSet)
+                }
+            } label: {
+                Label(
+                    NSLocalizedString("addSetAfter", comment: ""),
+                    systemImage: "arrow.down.to.line.circle"
+                )
+            }
+        }
+
+        Section {
+            Button {
+                withAnimation(.interactiveSpring()) {
+                    database.duplicateSet(workoutSet)
+                }
+            } label: {
+                Label(NSLocalizedString("copySet", comment: ""), systemImage: "plus.square.on.square")
+            }
+
+            Button(role: .destructive) {
+                withAnimation(.interactiveSpring()) {
+                    database.delete(workoutSet)
+                }
+            } label: {
+                Label(NSLocalizedString("remove", comment: ""), systemImage: "xmark.circle")
+            }
+        }
     }
 
     // MARK: - Supporting Methods

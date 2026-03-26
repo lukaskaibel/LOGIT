@@ -72,13 +72,7 @@ struct WorkoutRecorderScreen: View {
                                     workout: workout,
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                     canReorder: true,
-                                    showDetailAsSheet: true,
-                                    onTapActiveRest: { _ in
-                                        isShowingChronoSheet = true
-                                    },
-                                    onTapStaticRest: { workoutSet in
-                                        selectedRestDurationSet = workoutSet
-                                    }
+                                    showDetailAsSheet: true
                                 )
                                 .padding(.horizontal)
                                 .padding(.top, 90)
@@ -389,8 +383,6 @@ struct WorkoutRecorderScreen: View {
     private var shouldShowFloatingTimerButton: Bool {
         sheetHeight > 0
             && !fullScreenDraggableCoverIsDragging
-            && selectedRestDurationSet == nil
-            && !isShowingChronoSheet
     }
 
     private var shouldShowFloatingStopwatchStopButton: Bool {
@@ -463,6 +455,7 @@ struct WorkoutRecorderScreen: View {
         switch autoRestBehavior {
         case let .timer(restSeconds):
             chronograph.mode = .timer
+            chronograph.timerAlertTintColor = completedSet.exercise?.muscleGroup?.color ?? .accentColor
             chronograph.setSeconds(Double(restSeconds) + 0.99)
             chronograph.start()
             chronograph.onTimerFired = { [weak chronograph, weak workoutRecorder] in

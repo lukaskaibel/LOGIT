@@ -655,4 +655,41 @@ final class ChronographTests: XCTestCase {
             Chronograph.Mode.stopwatch.rawValue
         )
     }
+
+    func testStopwatchMinuteNotificationScheduleStartsAtFirstMinute() {
+        let schedule = Chronograph.stopwatchMinuteNotificationSchedule(
+            elapsedSeconds: 0,
+            maxNotificationCount: 3
+        )
+
+        XCTAssertEqual(
+            schedule,
+            [
+                .init(minuteMark: 1, timeInterval: 60),
+                .init(minuteMark: 2, timeInterval: 120),
+                .init(minuteMark: 3, timeInterval: 180),
+            ]
+        )
+    }
+
+    func testStopwatchMinuteNotificationScheduleResumesAtNextFullMinute() {
+        let schedule = Chronograph.stopwatchMinuteNotificationSchedule(
+            elapsedSeconds: 75.4,
+            maxNotificationCount: 2
+        )
+
+        XCTAssertEqual(schedule[0].minuteMark, 2)
+        XCTAssertEqual(schedule[0].timeInterval, 44.6, accuracy: 0.001)
+        XCTAssertEqual(schedule[1].minuteMark, 3)
+        XCTAssertEqual(schedule[1].timeInterval, 104.6, accuracy: 0.001)
+    }
+
+    func testStopwatchMinuteNotificationScheduleWaitsOneMinuteOnBoundary() {
+        let schedule = Chronograph.stopwatchMinuteNotificationSchedule(
+            elapsedSeconds: 120,
+            maxNotificationCount: 1
+        )
+
+        XCTAssertEqual(schedule, [.init(minuteMark: 3, timeInterval: 60)])
+    }
 }

@@ -11,8 +11,6 @@ struct WorkoutSetGroupList: View {
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
-    @EnvironmentObject private var chronograph: Chronograph
-    @EnvironmentObject private var workoutRecorder: WorkoutRecorder
 
     // MARK: - Parameters
 
@@ -21,8 +19,6 @@ struct WorkoutSetGroupList: View {
     let canReorder: Bool
     var reduceShadow: Bool = false
     var showDetailAsSheet: Bool = false
-    var onTapActiveRest: ((WorkoutSet) -> Void)? = nil
-    var onTapStaticRest: ((WorkoutSet) -> Void)? = nil
 
     // MARK: - State
 
@@ -39,16 +35,14 @@ struct WorkoutSetGroupList: View {
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         isReordering: $isReordering,
                         supplementaryText: nil,
-                        showDetailAsSheet: showDetailAsSheet,
-                        onTapActiveRest: onTapActiveRest,
-                        onTapStaticRest: onTapStaticRest
+                        showDetailAsSheet: showDetailAsSheet
                     )
                     .shadow(color: .black.opacity(reduceShadow ? 0.5 : 1.0), radius: 5)
                     .zIndex(1)
                     if workout.setGroups.last != setGroup {
-                        separator(for: setGroup.sets.last)
-                    } else {
-                        trailingRestCapsule(for: setGroup.sets.last)
+                        Rectangle()
+                            .foregroundStyle(.secondary)
+                            .frame(width: 3, height: SECTION_SPACING)
                             .zIndex(0)
                     }
                 }
@@ -57,52 +51,6 @@ struct WorkoutSetGroupList: View {
             }
         }
         .animation(.interactiveSpring(), value: workout.setGroups.count)
-    }
-
-    @ViewBuilder
-    private func separator(for workoutSet: WorkoutSet?) -> some View {
-        let showsRestCapsule = workoutSet.map(shouldShowRestSeparator(for:)) ?? false
-        Rectangle()
-            .foregroundStyle(.secondary)
-            .frame(width: 3, height: showsRestCapsule ? SECTION_SPACING + 14 : SECTION_SPACING)
-            .overlay {
-                if let workoutSet, showsRestCapsule {
-                    restCapsule(for: workoutSet)
-                }
-            }
-    }
-
-    @ViewBuilder
-    private func trailingRestCapsule(for workoutSet: WorkoutSet?) -> some View {
-        if let workoutSet, shouldShowRestSeparator(for: workoutSet) {
-            restCapsule(for: workoutSet)
-                .padding(.top, 6)
-        }
-    }
-
-    private func restCapsule(for workoutSet: WorkoutSet) -> some View {
-        RestTimerBetweenSetsView(
-            workoutSet: workoutSet,
-            onTapActiveTimer: {
-                onTapActiveRest?(workoutSet)
-            },
-            onTapRestDuration: {
-                onTapStaticRest?(workoutSet)
-            }
-        )
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(Color.secondaryBackground)
-        .clipShape(Capsule())
-        .fixedSize(horizontal: true, vertical: true)
-    }
-
-    private func shouldShowRestSeparator(for workoutSet: WorkoutSet) -> Bool {
-        workoutSet.restDurationSeconds > 0
-            || (
-                workoutRecorder.activeRestTimerSet?.objectID == workoutSet.objectID
-                    && (chronograph.status == .running || chronograph.status == .paused)
-            )
     }
 }
 

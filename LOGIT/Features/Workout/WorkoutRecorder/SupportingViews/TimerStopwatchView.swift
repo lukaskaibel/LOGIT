@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 08.06.23.
 //
 
+import AlarmKit
 import SwiftUI
 
 struct TimerStopwatchView: View {
@@ -13,8 +14,14 @@ struct TimerStopwatchView: View {
     @ObservedObject var chronograph: Chronograph
     @EnvironmentObject private var workoutRecorder: WorkoutRecorder
 
+    enum PermissionRequirement {
+        case timerAlarm
+        case notification
+    }
+
     @AppStorage("lastTimerDuration") private var lastTimerDuration: Int = 30
     @AppStorage("hasRequestedNotificationPermission") private var hasRequestedNotificationPermission: Bool = false
+    @AppStorage("hasRequestedAlarmPermission") private var hasRequestedAlarmPermission: Bool = false
     @AppStorage("autoTimerEnabled") private var autoTimerEnabled: Bool = false
     @AppStorage("autoStopwatchEnabled") private var autoStopwatchEnabled: Bool = false
     @AppStorage("timerIsMuted") private var timerIsMuted: Bool = false
@@ -28,9 +35,11 @@ struct TimerStopwatchView: View {
     private let transportButtonSize: CGFloat = 70
     private let transportButtonIconSize: CGFloat = 20
     private let controlSectionHeight: CGFloat = 96
+    private let stopwatchQuickAdjustments = [-15, -5, 5, 15]
 
     @State private var isShowingNotificationNotEnabledAlert = false
     @State private var isShowingNotificationExplanationAlert = false
+    @State private var activePermissionRequirement: PermissionRequirement = .notification
 
     // MARK: - View
 
@@ -123,6 +132,17 @@ struct TimerStopwatchView: View {
                     Spacer()
                 }
                 muteButton
+
+                if chronograph.mode == .stopwatch {
+                    stopwatchAdjustmentControls
+                        .padding(.top, 18)
+                        .transition(
+                            .asymmetric(
+                                insertion: .move(edge: .top).combined(with: .opacity),
+                                removal: .opacity
+                            )
+                        )
+                }
             }
 
             Spacer(minLength: 0)
@@ -142,6 +162,8 @@ struct TimerStopwatchView: View {
         .padding(.horizontal)
         .padding(.top, 24)
         .padding(.bottom)
+        .animation(.spring(response: 0.32, dampingFraction: 0.82), value: chronograph.mode)
+        .animation(.spring(response: 0.32, dampingFraction: 0.82), value: chronograph.status)
         .onChange(of: chronograph.status) {
             if chronograph.status == .idle && chronograph.mode == .timer {
                 chronograph.setSeconds(Double(lastTimerDuration) + 0.99)
@@ -154,14 +176,19 @@ struct TimerStopwatchView: View {
             )
             chronograph.cancel()
             chronograph.setSeconds(newMode == .timer ? Double(lastTimerDuration) + 0.99 : 0)
+            checkPermissionRequirement()
+        }
+        .onChange(of: timerIsMuted) {
+            guard chronograph.mode == .timer, chronograph.status != .running else { return }
+            checkPermissionRequirement()
         }
         .onAppear {
-            checkNotificationPermission()
+            checkPermissionRequirement()
             if chronograph.mode == .timer, chronograph.status == .idle {
                 chronograph.setSeconds(Double(lastTimerDuration) + 0.99)
             }
         }
-        .alert(Text(NSLocalizedString("notificationsDisabled", comment: "")), isPresented: $isShowingNotificationNotEnabledAlert, actions: {
+        .alert(Text(permissionDisabledTitle), isPresented: $isShowingNotificationNotEnabledAlert, actions: {
             Button(NSLocalizedString("openSettings", comment: "")) {
                 if let url = URL(string: UIApplication.openSettingsURLString),
                    UIApplication.shared.canOpenURL(url)
@@ -174,18 +201,18 @@ struct TimerStopwatchView: View {
                 isShowingNotificationNotEnabledAlert = false
             }
         }, message: {
-            Text(NSLocalizedString("notificationsDisabledMessage", comment: ""))
+            Text(permissionDisabledMessage)
         })
-        .alert(Text(NSLocalizedString("enableTimerNotifications", comment: "")), isPresented: $isShowingNotificationExplanationAlert, actions: {
+        .alert(Text(permissionExplanationTitle), isPresented: $isShowingNotificationExplanationAlert, actions: {
             Button(NSLocalizedString("continue", comment: "")) {
-                requestNotificationPermission()
+                requestPermission()
             }
             .fontWeight(.bold)
             Button(NSLocalizedString("notNow", comment: ""), role: .cancel) {
-                hasRequestedNotificationPermission = true
+                markCurrentPermissionPromptSeen()
             }
         }, message: {
-            Text(NSLocalizedString("enableTimerNotificationsMessage", comment: ""))
+            Text(permissionExplanationMessage)
         })
     }
 
@@ -254,6 +281,34 @@ struct TimerStopwatchView: View {
         }
     }
 
+    private var stopwatchAdjustmentControls: some View {
+        HStack(spacing: 12) {
+            ForEach(stopwatchQuickAdjustments, id: \.self) { adjustment in
+                Button {
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    chronograph.adjustStopwatch(by: Double(adjustment))
+                } label: {
+                    Text(adjustmentLabel(for: adjustment))
+                        .font(.body.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(adjustment < 0 ? .secondary : themeColor)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            adjustment < 0
+                                ? Color.fill
+                                : themeColor.secondaryTranslucentBackground
+                        )
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .disabled(!showsStopwatchAdjustmentControls)
+            }
+        }
+        .opacity(showsStopwatchAdjustmentControls ? 1 : 0)
+        .offset(y: showsStopwatchAdjustmentControls ? 0 : -10)
+        .allowsHitTesting(showsStopwatchAdjustmentControls)
+    }
+
     private var transportControls: some View {
         HStack(spacing: 24) {
             Spacer()
@@ -317,6 +372,9 @@ struct TimerStopwatchView: View {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             if chronograph.mode == .timer, chronograph.status == .idle {
                 lastTimerDuration = Int(chronograph.seconds)
+            }
+            if chronograph.mode == .timer, chronograph.status != .running {
+                chronograph.timerAlertTintColor = themeColor
             }
             chronograph.status == .running ? chronograph.stop() : chronograph.start()
         } label: {
@@ -433,6 +491,11 @@ struct TimerStopwatchView: View {
             && chronograph.status == .paused
     }
 
+    private var showsStopwatchAdjustmentControls: Bool {
+        chronograph.mode == .stopwatch
+            && chronograph.status == .running
+    }
+
     private var showsLeadingTransportButton: Bool {
         isRunningStopwatch
             || isPausedStopwatch
@@ -474,6 +537,11 @@ struct TimerStopwatchView: View {
         "\(Int(seconds) / 60 / 10 % 6)\(Int(seconds) / 60 % 10):\(Int(seconds) % 60 / 10)\(Int(seconds) % 60 % 10)"
     }
 
+    private func adjustmentLabel(for adjustment: Int) -> String {
+        let sign = adjustment > 0 ? "+" : ""
+        return "\(sign)\(adjustment)s"
+    }
+
     private func finishActiveRestIfNeeded(
         shouldPersistElapsed: Bool,
         mode: Chronograph.Mode? = nil
@@ -491,7 +559,61 @@ struct TimerStopwatchView: View {
         workoutRecorder.activeRestTimerSet = nil
     }
 
+    private var permissionDisabledTitle: String {
+        switch activePermissionRequirement {
+        case .timerAlarm:
+            NSLocalizedString("timerAlertsDisabled", comment: "")
+        case .notification:
+            NSLocalizedString("notificationsDisabled", comment: "")
+        }
+    }
+
+    private var permissionDisabledMessage: String {
+        switch activePermissionRequirement {
+        case .timerAlarm:
+            NSLocalizedString("timerAlertsDisabledMessage", comment: "")
+        case .notification:
+            NSLocalizedString("notificationsDisabledMessage", comment: "")
+        }
+    }
+
+    private var permissionExplanationTitle: String {
+        switch activePermissionRequirement {
+        case .timerAlarm:
+            NSLocalizedString("enableTimerAlerts", comment: "")
+        case .notification:
+            NSLocalizedString("enableTimerNotifications", comment: "")
+        }
+    }
+
+    private var permissionExplanationMessage: String {
+        switch activePermissionRequirement {
+        case .timerAlarm:
+            NSLocalizedString("enableTimerAlertsMessage", comment: "")
+        case .notification:
+            NSLocalizedString("enableTimerNotificationsMessage", comment: "")
+        }
+    }
+
+    private var currentPermissionRequirement: PermissionRequirement {
+        if chronograph.mode == .timer && !timerIsMuted {
+            return .timerAlarm
+        }
+
+        return .notification
+    }
+
+    private func checkPermissionRequirement() {
+        switch currentPermissionRequirement {
+        case .timerAlarm:
+            checkAlarmPermission()
+        case .notification:
+            checkNotificationPermission()
+        }
+    }
+
     private func checkNotificationPermission() {
+        activePermissionRequirement = .notification
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
             DispatchQueue.main.async {
@@ -514,6 +636,43 @@ struct TimerStopwatchView: View {
         }
     }
 
+    private func checkAlarmPermission() {
+        activePermissionRequirement = .timerAlarm
+
+        switch AlarmManager.shared.authorizationState {
+        case .notDetermined:
+            if !hasRequestedAlarmPermission {
+                isShowingNotificationExplanationAlert = true
+            }
+
+        case .denied:
+            isShowingNotificationNotEnabledAlert = true
+
+        case .authorized:
+            break
+        @unknown default:
+            break
+        }
+    }
+
+    private func requestPermission() {
+        switch activePermissionRequirement {
+        case .timerAlarm:
+            requestAlarmPermission()
+        case .notification:
+            requestNotificationPermission()
+        }
+    }
+
+    private func markCurrentPermissionPromptSeen() {
+        switch activePermissionRequirement {
+        case .timerAlarm:
+            hasRequestedAlarmPermission = true
+        case .notification:
+            hasRequestedNotificationPermission = true
+        }
+    }
+
     private func requestNotificationPermission() {
         hasRequestedNotificationPermission = true
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -523,6 +682,23 @@ struct TimerStopwatchView: View {
                 print("User allowed notifications")
             } else {
                 print("User denied notifications")
+            }
+        }
+    }
+
+    private func requestAlarmPermission() {
+        hasRequestedAlarmPermission = true
+
+        Task {
+            do {
+                let state = try await AlarmManager.shared.requestAuthorization()
+                if state == .denied {
+                    await MainActor.run {
+                        isShowingNotificationNotEnabledAlert = true
+                    }
+                }
+            } catch {
+                print("Alarm auth error: \(error)")
             }
         }
     }

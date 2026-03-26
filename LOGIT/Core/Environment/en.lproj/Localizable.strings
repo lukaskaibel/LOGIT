@@ -19,6 +19,8 @@
 "addNote" = "Add Note";
 "addNote..." = "Add Note...";
 "addSet" = "Add Set";
+"addSetAfter" = "Add Set After";
+"addSetBefore" = "Add Set Before";
 "addWorkout" = "Add Workout";
 "afternoon" = "Afternoon";
 "all" = "All";
@@ -242,8 +244,12 @@
 "noTemplatesTipDescription" = "Save your favorite routines for quick access.";
 "notificationsDisabled" = "Notifications Disabled";
 "notificationsDisabledMessage" = "To allow the timer to play a sound and show when it ends, notifications must be enabled.";
+"timerAlertsDisabled" = "Timer Alerts Disabled";
+"timerAlertsDisabledMessage" = "To allow the timer to ring and show when it ends, timer alerts must be enabled.";
 "enableTimerNotifications" = "Enable Timer Notifications";
 "enableTimerNotificationsMessage" = "Get notified when your rest timer ends, even when the app is in the background. This helps you stay on track during your workout.";
+"enableTimerAlerts" = "Enable Timer Alerts";
+"enableTimerAlertsMessage" = "Allow LOGIT to ring when your rest timer ends, even if your iPhone is on silent. This helps you stay on track during your workout.";
 "notNow" = "Not Now";
 "now" = "Now";
 "noWidgetsAdded" = "No Widgets Added";
@@ -401,6 +407,8 @@
 "times" = "times";
 "timesUp" = "Time's up!";
 "timesUpBody" = "Your workout timer is done.";
+"stopwatchMinuteTitle" = "Stopwatch";
+"stopwatchMinuteBody" = "%@ elapsed.";
 "title" = "Title";
 "to" = "to";
 "today" = "Today";

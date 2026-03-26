@@ -153,10 +153,20 @@ struct WorkoutDetailScreen: View {
                 }
             }
         }
-        .sheet(item: $workoutShareFileURL) { url in
+        .sheet(item: $workoutShareFileURL, onDismiss: {
+            if let url = workoutShareFileURL {
+                try? FileManager.default.removeItem(at: url)
+                workoutShareFileURL = nil
+            }
+        }) { url in
             ShareSheet(activityItems: [WorkoutActivityItemSource(fileURL: url, title: workout.name ?? NSLocalizedString("workout", comment: ""))])
         }
-        .sheet(item: $templateShareFileURL) { url in
+        .sheet(item: $templateShareFileURL, onDismiss: {
+            if let url = templateShareFileURL {
+                try? FileManager.default.removeItem(at: url)
+                templateShareFileURL = nil
+            }
+        }) { url in
             ShareSheet(activityItems: [WorkoutActivityItemSource(fileURL: url, title: workout.name ?? NSLocalizedString("template", comment: ""))])
         }
         .sheet(item: $sheetType) { type in

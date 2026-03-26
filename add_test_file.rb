@@ -6,12 +6,20 @@ content = File.read(pbxproj_path)
 
 def safe_sub!(content, pattern, replacement, description)
   unless content.sub!(pattern, replacement)
-    abort "Failed to update project.pbxproj: #{description}"
+require 'securerandom'
+
+def generate_unique_pbx_id(content)
+  loop do
+    id = SecureRandom.hex(12).upcase # 24-character hex string
+    return id unless content.include?(id)
   end
 end
 
-file_ref_id = "80SHARING01"
-build_file_id = "80SHARING02"
+pbxproj_path = "LOGIT.xcodeproj/project.pbxproj"
+content = File.read(pbxproj_path)
+
+file_ref_id = generate_unique_pbx_id(content)
+build_file_id = generate_unique_pbx_id(content)
 file_name = "WorkoutSharingTests.swift"
 
 # 1. Add PBXBuildFile entry (after the last 80NEWTEST line in build files section)

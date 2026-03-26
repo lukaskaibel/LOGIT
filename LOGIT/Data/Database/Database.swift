@@ -75,10 +75,18 @@ public class Database: ObservableObject {
     }
 
     func discardUnsavedChanges() {
-        // Perform the hasChanges check on the context's queue to ensure thread safety
-        context.perform {
+        // Cancel actions expect an immediate visual revert. If we rollback asynchronously and dismiss
+        // right away, the caller can briefly (or persistently) see the edited in-memory values.
+        //
+        // `performAndWait` is safe for the viewContext (main-queue) when called on the main thread,
+        // and ensures rollback completes before we return.
+        context.performAndWait {
             guard self.context.hasChanges else { return }
             self.context.rollback()
+            self.context.refreshAllObjects()
+        }
+        DispatchQueue.main.async {
+            self.objectWillChange.send()
         }
     }
 

@@ -19,6 +19,10 @@ public extension SuperSet {
             || weightSecondExercise > 0
     }
 
+    override var hasRepetitionEntry: Bool {
+        repetitionsFirstExercise > 0 || repetitionsSecondExercise > 0
+    }
+
     override func clearEntries() {
         repetitionsFirstExercise = 0
         repetitionsSecondExercise = 0

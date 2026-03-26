@@ -22,6 +22,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to the camera to scan workouts.</string>
+	<key>NSAlarmKitUsageDescription</key>
+	<string>LOGIT schedules workout rest timer alarms that can ring even when your iPhone is on silent.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

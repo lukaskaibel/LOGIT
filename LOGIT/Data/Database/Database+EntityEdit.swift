@@ -20,6 +20,27 @@ public extension Database {
         setGroup.workout?.objectWillChange.send()
     }
 
+    func addSet(before workoutSet: WorkoutSet) {
+        insertEmptySet(relativeTo: workoutSet, offset: 0)
+    }
+
+    func addSet(after workoutSet: WorkoutSet) {
+        insertEmptySet(relativeTo: workoutSet, offset: 1)
+    }
+
+    func duplicateSet(_ workoutSet: WorkoutSet) {
+        guard
+            let setGroup = workoutSet.setGroup,
+            let index = setGroup.sets.firstIndex(of: workoutSet)
+        else {
+            return
+        }
+
+        let duplicatedSet = copy(of: workoutSet)
+        insert(duplicatedSet, into: setGroup, at: index + 1)
+        setGroup.workout?.objectWillChange.send()
+    }
+
     func duplicateLastSet(from setGroup: WorkoutSetGroup) {
         let lastSet = setGroup.sets.last
         if let standardSet = lastSet as? StandardSet {
@@ -134,5 +155,41 @@ public extension Database {
                 setGroup: setGroup
             )
         }
+    }
+
+    private func insertEmptySet(relativeTo workoutSet: WorkoutSet, offset: Int) {
+        guard
+            let setGroup = workoutSet.setGroup,
+            let index = setGroup.sets.firstIndex(of: workoutSet)
+        else {
+            return
+        }
+
+        let newSet = emptySet(matching: workoutSet)
+        insert(newSet, into: setGroup, at: index + offset)
+        setGroup.workout?.objectWillChange.send()
+    }
+
+    private func emptySet(matching workoutSet: WorkoutSet) -> WorkoutSet {
+        if workoutSet is DropSet {
+            return newDropSet()
+        } else if workoutSet is SuperSet {
+            return newSuperSet()
+        } else {
+            return newStandardSet()
+        }
+    }
+
+    private func copy(of workoutSet: WorkoutSet) -> WorkoutSet {
+        let duplicatedSet = emptySet(matching: workoutSet)
+        duplicatedSet.match(workoutSet)
+        return duplicatedSet
+    }
+
+    private func insert(_ workoutSet: WorkoutSet, into setGroup: WorkoutSetGroup, at index: Int) {
+        var updatedSets = setGroup.sets
+        let clampedIndex = max(0, min(index, updatedSets.count))
+        updatedSets.insert(workoutSet, at: clampedIndex)
+        setGroup.sets = updatedSets
     }
 }

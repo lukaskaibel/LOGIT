@@ -16,6 +16,12 @@ public extension WorkoutSet {
         return lhs.objectID == rhs.objectID
     }
 
+    /// Rest duration in seconds after completing this set. 0 means no rest defined.
+    var restDurationSeconds: Int {
+        get { Int(restDuration) }
+        set { restDuration = Int64(newValue) }
+    }
+
     var exercise: Exercise? {
         setGroup?.exercise
     }
@@ -82,6 +88,7 @@ public extension WorkoutSet {
             superSet.weightFirstExercise = templateSuperSet.weightFirstExercise
             superSet.weightSecondExercise = templateSuperSet.weightSecondExercise
         }
+        restDuration = templateSet.restDuration
     }
 
     func match(_ workoutSet: WorkoutSet) {
@@ -99,12 +106,18 @@ public extension WorkoutSet {
             superSet.weightFirstExercise = workoutSuperSet.weightFirstExercise
             superSet.weightSecondExercise = workoutSuperSet.weightSecondExercise
         }
+        restDuration = workoutSet.restDuration
     }
 
     // MARK: Methods to override for subclass
 
     @objc var hasEntry: Bool {
         fatalError("WorkoutSet+: hasEntry must be implemented in subclass of WorkoutSet")
+    }
+
+    /// True when the set has recorded repetitions, regardless of weight entry.
+    @objc var hasRepetitionEntry: Bool {
+        fatalError("WorkoutSet+: hasRepetitionEntry must be implemented in subclass of WorkoutSet")
     }
 
     @objc func clearEntries() {

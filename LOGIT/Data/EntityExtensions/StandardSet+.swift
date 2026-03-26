@@ -14,6 +14,10 @@ public extension StandardSet {
         repetitions > 0 || weight > 0
     }
 
+    override var hasRepetitionEntry: Bool {
+        repetitions > 0
+    }
+
     override func clearEntries() {
         repetitions = 0
         weight = 0

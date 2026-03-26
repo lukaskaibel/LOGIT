@@ -19,6 +19,8 @@
 "addNote" = "Notiz hinzufügen";
 "addNote..." = "Notiz hinzufügen...";
 "addSet" = "Satz hinzufügen";
+"addSetAfter" = "Satz danach hinzufügen";
+"addSetBefore" = "Satz davor hinzufügen";
 "addWorkout" = "Workout hinzufügen";
 "afternoon" = "Nachmittag";
 "all" = "Alle";
@@ -238,8 +240,12 @@
 "noTemplatesTipDescription" = "Speichere deine Lieblingsroutinen für schnellen Zugriff.";
 "notificationsDisabled" = "Benachrichtigungen deaktiviert";
 "notificationsDisabledMessage" = "Damit der Timer einen Ton abspielen und das Ende anzeigen kann, müssen Benachrichtigungen aktiviert sein.";
+"timerAlertsDisabled" = "Timer-Alarme deaktiviert";
+"timerAlertsDisabledMessage" = "Damit der Timer klingeln und sein Ende anzeigen kann, müssen Timer-Alarme aktiviert sein.";
 "enableTimerNotifications" = "Timer-Benachrichtigungen aktivieren";
 "enableTimerNotificationsMessage" = "Werde benachrichtigt, wenn dein Pausentimer endet, auch wenn die App im Hintergrund ist. So bleibst du während deines Trainings auf Kurs.";
+"enableTimerAlerts" = "Timer-Alarme aktivieren";
+"enableTimerAlertsMessage" = "Erlaube LOGIT zu klingeln, wenn dein Pausentimer endet, auch wenn dein iPhone auf Lautlos steht. So bleibst du während deines Trainings auf Kurs.";
 "notNow" = "Nicht jetzt";
 "now" = "Jetzt";
 "noWidgetsAdded" = "Keine Widgets hinzugefügt";
@@ -386,10 +392,21 @@
 "time" = "mal";
 "tip" = "Tipp";
 "timer" = "Timer";
+"manualTimer" = "Manueller Timer";
+"manualTimerDescription" = "Nutze eine eigene Dauer, wann immer du sie brauchst.";
+"autoRestTimerDescription" = "Startet automatisch, sobald die Wiederholungen eines Satzes eingetragen wurden.";
+"autoRestStopwatchDescription" = "Startet automatisch und speichert die verstrichene Zeit als Pausendauer.";
+"ready" = "Bereit";
+"running" = "Laeuft";
+"paused" = "Pausiert";
+"reset" = "Zuruecksetzen";
 "timerIsMuted" = "Timer Stummschalten";
+"timerSoundOn" = "Ton an";
 "times" = "mal";
 "timesUp" = "Timer fertig!";
 "timesUpBody" = "Dein Workout-Timer ist abgelaufen.";
+"stopwatchMinuteTitle" = "Stoppuhr";
+"stopwatchMinuteBody" = "%@ vergangen.";
 "title" = "Titel";
 "to" = "bis";
 "today" = "Heute";
@@ -399,6 +416,7 @@
 "triceps" = "Trizeps";
 "two" = "Zwei";
 "twoWeeksAgo" = "Vor 2 Wochen";
+"autoRestStopwatch" = "Automatische Pausen-Stoppuhr";
 
 // MARK: - U
 
@@ -720,3 +738,9 @@
 "noWeeklyGoalTip" = "Kein Wochenziel";
 "noWeeklyGoalTipDescription" = "Setze ein Ziel, um deinen wöchentlichen Trainingsfortschritt zu verfolgen.";
 "setGoal" = "Ziel setzen";
+
+// Rest Duration
+"addRest" = "Pause hinzufügen";
+"editRest" = "Pause bearbeiten";
+"restBetweenSets" = "Pause zwischen Sätzen";
+"autoRestTimer" = "Automatischer Pausentimer";

@@ -46,6 +46,11 @@ final class EntityExtensionTests: XCTestCase {
         let set = database.newStandardSet(repetitions: 0, weight: 50000)
         XCTAssertTrue(set.hasEntry, "Set with only weight should have entry")
     }
+
+    func testStandardSetHasNoRepetitionEntryWithOnlyWeight() {
+        let set = database.newStandardSet(repetitions: 0, weight: 50000)
+        XCTAssertFalse(set.hasRepetitionEntry, "Set with only weight should not have a repetition entry")
+    }
     
     func testStandardSetHasNoEntry() {
         let set = database.newStandardSet(repetitions: 0, weight: 0)
@@ -76,6 +81,11 @@ final class EntityExtensionTests: XCTestCase {
     func testDropSetHasEntryWithOnlyWeights() {
         let dropSet = database.newDropSet(repetitions: [0, 0], weights: [50000, 40000])
         XCTAssertTrue(dropSet.hasEntry, "Drop set with only weights should have entry")
+    }
+
+    func testDropSetHasNoRepetitionEntryWithOnlyWeights() {
+        let dropSet = database.newDropSet(repetitions: [0, 0], weights: [50000, 40000])
+        XCTAssertFalse(dropSet.hasRepetitionEntry, "Drop set with only weights should not have a repetition entry")
     }
     
     func testDropSetHasNoEntry() {
@@ -156,6 +166,16 @@ final class EntityExtensionTests: XCTestCase {
             weightSecondExercise: 40000
         )
         XCTAssertTrue(superSet.hasEntry, "Super set with only second exercise should have entry")
+    }
+
+    func testSuperSetHasNoRepetitionEntryWithOnlyWeights() {
+        let superSet = database.newSuperSet(
+            repetitionsFirstExercise: 0,
+            repetitionsSecondExercise: 0,
+            weightFirstExercise: 50000,
+            weightSecondExercise: 40000
+        )
+        XCTAssertFalse(superSet.hasRepetitionEntry, "Super set with only weights should not have a repetition entry")
     }
     
     func testSuperSetHasNoEntry() {

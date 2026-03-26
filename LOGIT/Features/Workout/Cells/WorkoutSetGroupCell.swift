@@ -48,20 +48,30 @@ struct WorkoutSetGroupCell: View {
                             canReorder: canEdit,
                             isReordering: $isReorderingSets
                         ) { workoutSet in
-                            WorkoutSetCell(
-                                workoutSet: workoutSet,
-                                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-                            )
-                            .contentShape(Rectangle())
-                            .background(
-                                RoundedRectangle(cornerRadius: 15)
-                                    .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
-                                    .foregroundStyle(Color.tertiaryBackground)
-                            )
-                            .cornerRadius(15)
-                            .onDeleteView(disabled: !canEdit) {
-                                withAnimation(.interactiveSpring()) {
-                                    database.delete(workoutSet)
+                            VStack(spacing: CELL_SPACING) {
+                                WorkoutSetCell(
+                                    workoutSet: workoutSet,
+                                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+                                )
+                                .contentShape(Rectangle())
+                                .background(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                                        .foregroundStyle(Color.tertiaryBackground)
+                                )
+                                .cornerRadius(15)
+                                .onDeleteView(disabled: !canEdit) {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.delete(workoutSet)
+                                    }
+                                }
+                                if !isLastSet(workoutSet) {
+                                    if canEdit {
+                                        RestTimerBetweenSetsView(workoutSet: workoutSet)
+                                    } else if workoutSet.restDurationSeconds > 0 {
+                                        RestDurationLabel(seconds: workoutSet.restDurationSeconds)
+                                            .padding(.vertical, 2)
+                                    }
                                 }
                             }
                         }
@@ -338,6 +348,12 @@ struct WorkoutSetGroupCell: View {
                         .fill((setGroup.exercise?.muscleGroup?.color ?? .accentColor).secondaryTranslucentBackground)
                 )
         }
+    }
+
+    // MARK: - Supporting Methods
+
+    private func isLastSet(_ workoutSet: WorkoutSet) -> Bool {
+        setGroup.sets.last == workoutSet
     }
 }
 

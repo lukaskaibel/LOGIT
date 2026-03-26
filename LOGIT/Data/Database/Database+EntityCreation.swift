@@ -47,12 +47,14 @@ extension Database {
     func newStandardSet(
         repetitions: Int = 0,
         weight: Int = 0,
+        restDuration: Int = 0,
         setGroup: WorkoutSetGroup? = nil
     ) -> StandardSet {
         let standardSet = StandardSet(context: context)
         standardSet.id = UUID()
         standardSet.repetitions = Int64(repetitions)
         standardSet.weight = Int64(weight)
+        standardSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(standardSet)
         return standardSet
     }
@@ -61,12 +63,14 @@ extension Database {
     func newDropSet(
         repetitions: [Int] = [0],
         weights: [Int] = [0],
+        restDuration: Int = 0,
         setGroup: WorkoutSetGroup? = nil
     ) -> DropSet {
         let dropSet = DropSet(context: context)
         dropSet.id = UUID()
         dropSet.repetitions = repetitions.map { Int64($0) }
         dropSet.weights = weights.map { Int64($0) }
+        dropSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(dropSet)
         return dropSet
     }
@@ -89,6 +93,7 @@ extension Database {
         repetitionsSecondExercise: Int = 0,
         weightFirstExercise: Int = 0,
         weightSecondExercise: Int = 0,
+        restDuration: Int = 0,
         setGroup: WorkoutSetGroup? = nil
     ) -> SuperSet {
         let superSet = SuperSet(context: context)
@@ -97,6 +102,7 @@ extension Database {
         superSet.repetitionsSecondExercise = Int64(repetitionsSecondExercise)
         superSet.weightFirstExercise = Int64(weightFirstExercise)
         superSet.weightSecondExercise = Int64(weightSecondExercise)
+        superSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(superSet)
         return superSet
     }
@@ -185,6 +191,7 @@ extension Database {
             templateStandardSet.id = UUID()
             templateStandardSet.repetitions = standardSet.repetitions
             templateStandardSet.weight = standardSet.weight
+            templateStandardSet.restDuration = standardSet.restDuration
             templateSetGroup?.sets.append(templateStandardSet)
             return templateStandardSet
 
@@ -193,6 +200,7 @@ extension Database {
             templateDropSet.id = UUID()
             templateDropSet.repetitions = dropSet.repetitions
             templateDropSet.weights = dropSet.weights
+            templateDropSet.restDuration = dropSet.restDuration
             templateSetGroup?.sets.append(templateDropSet)
             return templateDropSet
         } else if let superSet = workoutSet as? SuperSet {
@@ -202,6 +210,7 @@ extension Database {
             templateSuperSet.repetitionsSecondExercise = superSet.repetitionsSecondExercise
             templateSuperSet.weightFirstExercise = superSet.weightFirstExercise
             templateSuperSet.weightSecondExercise = superSet.weightSecondExercise
+            templateSuperSet.restDuration = superSet.restDuration
             templateSetGroup?.sets.append(templateSuperSet)
             templateSetGroup?.secondaryExercise = superSet.secondaryExercise
             return templateSuperSet
@@ -214,12 +223,14 @@ extension Database {
     func newTemplateStandardSet(
         repetitions: Int = 0,
         weight: Int = 0,
+        restDuration: Int = 0,
         setGroup: TemplateSetGroup? = nil
     ) -> TemplateStandardSet {
         let templateSet = TemplateStandardSet(context: context)
         templateSet.id = UUID()
         templateSet.repetitions = Int64(repetitions)
         templateSet.weight = Int64(weight)
+        templateSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(templateSet)
         return templateSet
     }
@@ -228,12 +239,14 @@ extension Database {
     func newTemplateDropSet(
         repetitions: [Int] = [0],
         weights: [Int] = [0],
+        restDuration: Int = 0,
         templateSetGroup: TemplateSetGroup? = nil
     ) -> TemplateDropSet {
         let templateDropSet = TemplateDropSet(context: context)
         templateDropSet.id = UUID()
         templateDropSet.repetitions = repetitions.map { Int64($0) }
         templateDropSet.weights = weights.map { Int64($0) }
+        templateDropSet.restDuration = Int64(restDuration)
         templateSetGroup?.sets.append(templateDropSet)
         return templateDropSet
     }
@@ -244,6 +257,7 @@ extension Database {
         repetitionsSecondExercise: Int = 0,
         weightFirstExercise: Int = 0,
         weightSecondExercise: Int = 0,
+        restDuration: Int = 0,
         setGroup: TemplateSetGroup? = nil
     ) -> TemplateSuperSet {
         let templateSuperSet = TemplateSuperSet(context: context)
@@ -252,6 +266,7 @@ extension Database {
         templateSuperSet.repetitionsSecondExercise = Int64(repetitionsSecondExercise)
         templateSuperSet.weightFirstExercise = Int64(weightFirstExercise)
         templateSuperSet.weightSecondExercise = Int64(weightSecondExercise)
+        templateSuperSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(templateSuperSet)
         return templateSuperSet
     }

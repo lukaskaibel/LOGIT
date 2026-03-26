@@ -125,6 +125,14 @@ struct TemplateDetailScreen: View {
         }
         .sheet(item: $templateShareFileURL) { url in
             ShareSheet(activityItems: [WorkoutActivityItemSource(fileURL: url, title: template.name ?? NSLocalizedString("template", comment: ""))])
+                .onDisappear {
+                    do {
+                        try FileManager.default.removeItem(at: url)
+                    } catch {
+                        // Ignore errors when attempting to remove the temporary share file
+                    }
+                    templateShareFileURL = nil
+                }
         }
         .alert(
             NSLocalizedString("templates", comment: ""),

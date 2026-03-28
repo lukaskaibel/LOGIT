@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		80AA00022F3A000100AA0001 /* RestDurationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00012F3A000100AA0001 /* RestDurationPicker.swift */; };
-		80AA00042F3A000100AA0001 /* RestTimerBetweenSetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */; };
-		80AA00082F3A000100AA0001 /* RestDurationEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */; };
-		80AA000A2F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */; };
-		80AA000C2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */; };
 		435F070826CC8D1F8D7239B8 /* WorkoutDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */; };
 		781060648530454E63B22EB3 /* WorkoutSharingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB3B92BF7A5E9FE9E442716 /* WorkoutSharingService.swift */; };
 		7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7907FDE9289E99B1006AF271 /* CloudKit.framework */; };
@@ -24,7 +19,6 @@
 		79C07B302ABA566E000BF879 /* MeasurementEntryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C07B2F2ABA566E000BF879 /* MeasurementEntryControllerTests.swift */; };
 		79C8FADF2AE3F657001EA5A7 /* OpenAIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 79C8FADE2AE3F657001EA5A7 /* OpenAIKit */; };
 		79FF97B72AA29E680070015E /* ExerciseServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E849092A7EA28000C0DF95 /* ExerciseServiceTests.swift */; };
-		80NEWTEST00B /* WorkoutSharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00C /* WorkoutSharingTests.swift */; };
 		80036CDC2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80036CDA2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift */; };
 		80036CDE2EFEF9CE00B7C7B4 /* FuzzySearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80036CDD2EFEF9CE00B7C7B4 /* FuzzySearchService.swift */; };
 		80036CE12EFEFFD100B7C7B4 /* Ifrit in Frameworks */ = {isa = PBXBuildFile; productRef = 80036CE02EFEFFD100B7C7B4 /* Ifrit */; };
@@ -206,19 +200,25 @@
 		80A1D9822EDC98E6004EE258 /* PinnedExerciseWeightTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */; };
 		80A640A02E414F4E0053C2C3 /* Transmission in Frameworks */ = {isa = PBXBuildFile; productRef = 80A6409F2E414F4E0053C2C3 /* Transmission */; };
 		80A7A0D12F2E6C5C00112233 /* logit_terms_and_conditions.md in Resources */ = {isa = PBXBuildFile; fileRef = 80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */; };
+		80AA00022F3A000100AA0001 /* RestDurationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00012F3A000100AA0001 /* RestDurationPicker.swift */; };
+		80AA00042F3A000100AA0001 /* RestTimerBetweenSetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */; };
+		80AA00082F3A000100AA0001 /* RestDurationEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */; };
+		80AA000A2F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */; };
+		80AA000C2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */; };
 		80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387BA2EBA187100AD7EFC /* DecimalField.swift */; };
 		80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = 80C2B98E2EC9362A00118FE2 /* ColorfulX */; };
 		80CBE1D52ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */; };
 		80CBE1D62ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */; };
 		80CBE1D72ED7AFD500DDE1C5 /* MeasurementTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D42ED7AFD500DDE1C5 /* MeasurementTile.swift */; };
+		80NEWSHAR001 /* WorkoutActivityItemSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWSHAR002 /* WorkoutActivityItemSource.swift */; };
 		80NEWTEST001 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST002 /* TestHelpers.swift */; };
 		80NEWTEST003 /* WeightConvertingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST004 /* WeightConvertingTests.swift */; };
 		80NEWTEST005 /* VolumeCalculatingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST006 /* VolumeCalculatingTests.swift */; };
 		80NEWTEST007 /* EntityExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST008 /* EntityExtensionTests.swift */; };
 		80NEWTEST009 /* ServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00A /* ServicesTests.swift */; };
+		80NEWTEST00B /* WorkoutSharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00C /* WorkoutSharingTests.swift */; };
 		8C6BE79BA086E3876A56C1D7 /* SharedWithYouBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */; };
 		ACC49C37E1B74DFAC016299F /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BDE77C44D210E79936D216 /* ShareSheet.swift */; };
-		80NEWSHAR001 /* WorkoutActivityItemSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWSHAR002 /* WorkoutActivityItemSource.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -256,13 +256,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		80AA00012F3A000100AA0001 /* RestDurationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDurationPicker.swift; sourceTree = "<group>"; };
-		80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestTimerBetweenSetsView.swift; sourceTree = "<group>"; };
-		80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDurationEditorSheet.swift; sourceTree = "<group>"; };
-		80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingTimerButton.swift; sourceTree = "<group>"; };
-		80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingStopwatchStopButton.swift; sourceTree = "<group>"; };
 		14BDE77C44D210E79936D216 /* ShareSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
-		80NEWSHAR002 /* WorkoutActivityItemSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutActivityItemSource.swift; sourceTree = "<group>"; };
 		1EB3B92BF7A5E9FE9E442716 /* WorkoutSharingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutSharingService.swift; sourceTree = "<group>"; };
 		22040B8B5D5971A78B9E3A04 /* Pods_LOGIT.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LOGIT.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedWithYouBanner.swift; sourceTree = "<group>"; };
@@ -276,7 +270,6 @@
 		79C07B2F2ABA566E000BF879 /* MeasurementEntryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementEntryControllerTests.swift; sourceTree = "<group>"; };
 		79E849072A7EA28000C0DF95 /* LOGITTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LOGITTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		79E849092A7EA28000C0DF95 /* ExerciseServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseServiceTests.swift; sourceTree = "<group>"; };
-		80NEWTEST00C /* WorkoutSharingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSharingTests.swift; sourceTree = "<group>"; };
 		80036CDA2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalSearchScreen.swift; sourceTree = "<group>"; };
 		80036CDD2EFEF9CE00B7C7B4 /* FuzzySearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzySearchService.swift; sourceTree = "<group>"; };
 		801BBC932DF7338A00CDB1FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -447,7 +440,6 @@
 		8031D04B2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsAndConditionsScreen.swift; sourceTree = "<group>"; };
 		8034A7EC2E83073700834A32 /* LOGIT 4.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 4.0.xcdatamodel"; sourceTree = "<group>"; };
 		8054E6B02F1CC5F9003F150D /* LOGIT 5.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 5.0.xcdatamodel"; sourceTree = "<group>"; };
-		80AA00052F3A000100AA0001 /* LOGIT 6.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 6.0.xcdatamodel"; sourceTree = "<group>"; };
 		8054E6B32F1D9581003F150D /* ExerciseAttemptCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseAttemptCell.swift; sourceTree = "<group>"; };
 		8054E6B52F1DB513003F150D /* ComparisonBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComparisonBar.swift; sourceTree = "<group>"; };
 		8054E6B62F1DB513003F150D /* HighlightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightView.swift; sourceTree = "<group>"; };
@@ -463,15 +455,23 @@
 		80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseVolumeTile.swift; sourceTree = "<group>"; };
 		80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseWeightTile.swift; sourceTree = "<group>"; };
 		80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions.md; sourceTree = "<group>"; };
+		80AA00012F3A000100AA0001 /* RestDurationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDurationPicker.swift; sourceTree = "<group>"; };
+		80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestTimerBetweenSetsView.swift; sourceTree = "<group>"; };
+		80AA00052F3A000100AA0001 /* LOGIT 6.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 6.0.xcdatamodel"; sourceTree = "<group>"; };
+		80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDurationEditorSheet.swift; sourceTree = "<group>"; };
+		80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingTimerButton.swift; sourceTree = "<group>"; };
+		80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingStopwatchStopButton.swift; sourceTree = "<group>"; };
 		80B387BA2EBA187100AD7EFC /* DecimalField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalField.swift; sourceTree = "<group>"; };
 		80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementDetailScreen.swift; sourceTree = "<group>"; };
 		80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementsEditSheet.swift; sourceTree = "<group>"; };
 		80CBE1D42ED7AFD500DDE1C5 /* MeasurementTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementTile.swift; sourceTree = "<group>"; };
+		80NEWSHAR002 /* WorkoutActivityItemSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutActivityItemSource.swift; sourceTree = "<group>"; };
 		80NEWTEST002 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
 		80NEWTEST004 /* WeightConvertingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightConvertingTests.swift; sourceTree = "<group>"; };
 		80NEWTEST006 /* VolumeCalculatingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeCalculatingTests.swift; sourceTree = "<group>"; };
 		80NEWTEST008 /* EntityExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityExtensionTests.swift; sourceTree = "<group>"; };
 		80NEWTEST00A /* ServicesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesTests.swift; sourceTree = "<group>"; };
+		80NEWTEST00C /* WorkoutSharingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSharingTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1592,7 +1592,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0;
+				MARKETING_VERSION = 4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = .com.lukaskbl.LOGIT;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1622,7 +1622,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.0;
+				MARKETING_VERSION = 4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = .com.lukaskbl.LOGIT;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

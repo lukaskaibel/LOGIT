@@ -595,24 +595,15 @@ struct TimerStopwatchView: View {
         }
     }
 
-    private var currentPermissionRequirement: PermissionRequirement {
-        if chronograph.mode == .timer && !timerIsMuted {
-            return .timerAlarm
-        }
-
-        return .notification
+    private var shouldCheckTimerAlarmPermission: Bool {
+        chronograph.mode == .timer && !timerIsMuted
     }
 
     private func checkPermissionRequirement() {
-        switch currentPermissionRequirement {
-        case .timerAlarm:
-            checkAlarmPermission()
-        case .notification:
-            checkNotificationPermission()
-        }
+        checkNotificationPermission(thenCheckAlarmIfNeeded: shouldCheckTimerAlarmPermission)
     }
 
-    private func checkNotificationPermission() {
+    private func checkNotificationPermission(thenCheckAlarmIfNeeded: Bool = false) {
         activePermissionRequirement = .notification
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
@@ -627,7 +618,9 @@ struct TimerStopwatchView: View {
                     isShowingNotificationNotEnabledAlert = true
 
                 case .authorized, .provisional, .ephemeral:
-                    break
+                    if thenCheckAlarmIfNeeded {
+                        checkAlarmPermission()
+                    }
 
                 @unknown default:
                     break
@@ -680,6 +673,11 @@ struct TimerStopwatchView: View {
                 print("Notification auth error: \(error)")
             } else if granted {
                 print("User allowed notifications")
+                if shouldCheckTimerAlarmPermission {
+                    DispatchQueue.main.async {
+                        checkAlarmPermission()
+                    }
+                }
             } else {
                 print("User denied notifications")
             }

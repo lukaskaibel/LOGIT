@@ -10,13 +10,30 @@ import SwiftUI
 struct RestDurationEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
 
-    @ObservedObject var workoutSet: WorkoutSet
+    @Binding private var restDurationSeconds: Int
+
+    private let exerciseName: String?
+    private let themeColor: Color
 
     private let presets = [30, 45, 60, 90, 120, 180]
     private let quickAdjustments = [-15, -5, 5, 15]
 
-    private var themeColor: Color {
-        workoutSet.exercise?.muscleGroup?.color ?? .accentColor
+    init(workoutSet: WorkoutSet) {
+        _restDurationSeconds = Binding(
+            get: { workoutSet.restDurationSeconds },
+            set: { workoutSet.restDurationSeconds = $0 }
+        )
+        exerciseName = workoutSet.exercise?.displayName
+        themeColor = workoutSet.exercise?.muscleGroup?.color ?? .accentColor
+    }
+
+    init(templateSet: TemplateSet) {
+        _restDurationSeconds = Binding(
+            get: { templateSet.restDurationSeconds },
+            set: { templateSet.restDurationSeconds = $0 }
+        )
+        exerciseName = templateSet.exercise?.displayName
+        themeColor = templateSet.exercise?.muscleGroup?.color ?? .accentColor
     }
 
     var body: some View {
@@ -26,7 +43,7 @@ struct RestDurationEditorSheet: View {
                     Text(NSLocalizedString("editRest", comment: ""))
                         .font(.title2.weight(.bold))
 
-                    if let exerciseName = workoutSet.exercise?.displayName {
+                    if let exerciseName {
                         HStack(spacing: 6) {
                             Image(systemName: "figure.strengthtraining.traditional")
                             Text(exerciseName)
@@ -47,7 +64,7 @@ struct RestDurationEditorSheet: View {
             }
 
             VStack(spacing: 10) {
-                Text(restTimeString(seconds: workoutSet.restDurationSeconds))
+                Text(restTimeString(seconds: restDurationSeconds))
                     .font(.system(size: 56, weight: .regular).monospacedDigit())
                     .fontDesign(.rounded)
                     .foregroundStyle(themeColor)
@@ -87,19 +104,19 @@ struct RestDurationEditorSheet: View {
                 ForEach(presets, id: \.self) { seconds in
                     Button {
                         UISelectionFeedbackGenerator().selectionChanged()
-                        workoutSet.restDurationSeconds = seconds
+                        restDurationSeconds = seconds
                     } label: {
                         Text(restTimeString(seconds: seconds))
                             .font(.body.weight(.semibold).monospacedDigit())
                             .foregroundStyle(
-                                workoutSet.restDurationSeconds == seconds
+                                restDurationSeconds == seconds
                                     ? themeColor
                                     : .secondary
                             )
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(
-                                workoutSet.restDurationSeconds == seconds
+                                restDurationSeconds == seconds
                                     ? themeColor.secondaryTranslucentBackground
                                     : Color.fill
                             )
@@ -111,7 +128,7 @@ struct RestDurationEditorSheet: View {
 
             Button {
                 withAnimation(.easeOut(duration: 0.2)) {
-                    workoutSet.restDurationSeconds = 0
+                    restDurationSeconds = 0
                 }
             } label: {
                 Label(NSLocalizedString("remove", comment: ""), systemImage: "xmark.circle.fill")
@@ -129,7 +146,7 @@ struct RestDurationEditorSheet: View {
 
     private func adjustRestDuration(by adjustment: Int) {
         UISelectionFeedbackGenerator().selectionChanged()
-        workoutSet.restDurationSeconds = max(0, workoutSet.restDurationSeconds + adjustment)
+        restDurationSeconds = max(0, restDurationSeconds + adjustment)
     }
 
     private func adjustmentLabel(for adjustment: Int) -> String {

@@ -72,7 +72,14 @@ struct WorkoutRecorderScreen: View {
                                     workout: workout,
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                     canReorder: true,
-                                    showDetailAsSheet: true
+                                    showDetailAsSheet: true,
+                                    onTapRestDuration: { workoutSet in
+                                        selectedRestDurationSet = workoutSet
+                                    },
+                                    activeRestTimerSet: workoutRecorder.activeRestTimerSet,
+                                    isChronographActive: chronograph.status == .running || chronograph.status == .paused,
+                                    chronograph: chronograph,
+                                    chronographMode: chronograph.mode
                                 )
                                 .padding(.horizontal)
                                 .padding(.top, 90)

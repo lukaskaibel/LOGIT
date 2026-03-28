@@ -64,14 +64,12 @@ final class WorkoutRecorder: ObservableObject {
                         workoutSetTemplateSetDictionary[standardSet] = templateStandardSet
                     } else if let templateDropSet = templateSet as? TemplateDropSet {
                         let dropSet = database.newDropSet(from: templateDropSet, setGroup: setGroup)
-                        dropSet.restDuration = templateDropSet.restDuration
                         workoutSetTemplateSetDictionary[dropSet] = templateDropSet
                     } else if let templateSuperSet = templateSet as? TemplateSuperSet {
                         let superSet = database.newSuperSet(
                             from: templateSuperSet,
                             setGroup: setGroup
                         )
-                        superSet.restDuration = templateSuperSet.restDuration
                         workoutSetTemplateSetDictionary[superSet] = templateSuperSet
                     }
                 }

@@ -17,10 +17,21 @@ struct WorkoutSetCell: View {
 
     @ObservedObject var workoutSet: WorkoutSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    let onEditRestDuration: (() -> Void)?
 
     // MARK: - State
 
     @State private var isEditingRestDuration = false
+
+    init(
+        workoutSet: WorkoutSet,
+        focusedIntegerFieldIndex: Binding<IntegerField.Index?>,
+        onEditRestDuration: (() -> Void)? = nil
+    ) {
+        self.workoutSet = workoutSet
+        _focusedIntegerFieldIndex = focusedIntegerFieldIndex
+        self.onEditRestDuration = onEditRestDuration
+    }
 
     // MARK: - Body
 
@@ -125,7 +136,11 @@ struct WorkoutSetCell: View {
     private var contextMenuContent: some View {
         Section {
             Button {
-                isEditingRestDuration = true
+                if let onEditRestDuration {
+                    onEditRestDuration()
+                } else {
+                    isEditingRestDuration = true
+                }
             } label: {
                 Label(
                     NSLocalizedString(

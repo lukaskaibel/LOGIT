@@ -417,6 +417,7 @@
 "times" = "times";
 "timesUp" = "Time's up!";
 "timesUpBody" = "Your workout timer is done.";
+"timerWarningBody" = "%@ remaining.";
 "stopwatchMinuteTitle" = "Stopwatch";
 "stopwatchMinuteBody" = "%@ elapsed.";
 "title" = "Title";

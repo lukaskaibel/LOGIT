@@ -11,57 +11,41 @@ struct TemplateSetCell: View {
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
+    @EnvironmentObject var database: Database
+
+    // MARK: - Parameters
+
     @ObservedObject var templateSet: TemplateSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    let onEditRestDuration: (() -> Void)?
 
     // MARK: - Body
 
     var body: some View {
+        Group {
+            if canEdit {
+                content
+                    .contextMenu {
+                        contextMenuContent
+                    }
+            } else {
+                content
+            }
+        }
+        .padding(.leading, CELL_PADDING)
+        .padding([.top, .trailing], 8)
+        .padding(.bottom, templateSet as? TemplateDropSet != nil ? CELL_PADDING : 8)
+    }
+
+    // MARK: - Supporting Views
+
+    private var content: some View {
         VStack(spacing: 0) {
             if let indexInSetGroup = indexInSetGroup {
                 HStack {
                     Text("\(NSLocalizedString("set", comment: "")) \(indexInSetGroup + 1)")
                     Spacer()
-                    if let standardSet = templateSet as? TemplateStandardSet {
-                        TemplateStandardSetCell(
-                            standardSet: standardSet,
-                            focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-                        )
-                        .padding(
-                            .top,
-                            templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2
-                        )
-                        .padding(
-                            .bottom,
-                            templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2
-                        )
-                    } else if let dropSet = templateSet as? TemplateDropSet {
-                        TemplateDropSetCell(
-                            dropSet: dropSet,
-                            focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-                        )
-                        .padding(
-                            .top,
-                            templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2
-                        )
-                        .padding(
-                            .bottom,
-                            templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2
-                        )
-                    } else if let superSet = templateSet as? TemplateSuperSet {
-                        TemplateSuperSetCell(
-                            superSet: superSet,
-                            focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-                        )
-                        .padding(
-                            .top,
-                            templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2
-                        )
-                        .padding(
-                            .bottom,
-                            templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2
-                        )
-                    }
+                    setContent
                 }
                 if let dropSet = templateSet as? TemplateDropSet, canEdit {
                     Divider()
@@ -97,9 +81,93 @@ struct TemplateSetCell: View {
                 }
             }
         }
-        .padding(.leading, CELL_PADDING)
-        .padding([.top, .trailing], 8)
-        .padding(.bottom, templateSet as? TemplateDropSet != nil ? CELL_PADDING : 8)
+    }
+
+    @ViewBuilder
+    private var setContent: some View {
+        if let standardSet = templateSet as? TemplateStandardSet {
+            TemplateStandardSetCell(
+                standardSet: standardSet,
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+            )
+            .padding(.top, templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
+            .padding(.bottom, templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
+        } else if let dropSet = templateSet as? TemplateDropSet {
+            TemplateDropSetCell(
+                dropSet: dropSet,
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+            )
+            .padding(.top, templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
+            .padding(.bottom, templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
+        } else if let superSet = templateSet as? TemplateSuperSet {
+            TemplateSuperSetCell(
+                superSet: superSet,
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+            )
+            .padding(.top, templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
+            .padding(.bottom, templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
+        }
+    }
+
+    @ViewBuilder
+    private var contextMenuContent: some View {
+        Section {
+            if let onEditRestDuration {
+                Button {
+                    onEditRestDuration()
+                } label: {
+                    Label(
+                        NSLocalizedString(
+                            templateSet.restDurationSeconds > 0 ? "editRest" : "addRest",
+                            comment: ""
+                        ),
+                        systemImage: "clock"
+                    )
+                }
+            }
+        }
+
+        Section {
+            Button {
+                withAnimation(.interactiveSpring()) {
+                    database.addSet(before: templateSet)
+                }
+            } label: {
+                Label(
+                    NSLocalizedString("addSetBefore", comment: ""),
+                    systemImage: "arrow.up.to.line.circle"
+                )
+            }
+
+            Button {
+                withAnimation(.interactiveSpring()) {
+                    database.addSet(after: templateSet)
+                }
+            } label: {
+                Label(
+                    NSLocalizedString("addSetAfter", comment: ""),
+                    systemImage: "arrow.down.to.line.circle"
+                )
+            }
+        }
+
+        Section {
+            Button {
+                withAnimation(.interactiveSpring()) {
+                    database.duplicateSet(templateSet)
+                }
+            } label: {
+                Label(NSLocalizedString("copySet", comment: ""), systemImage: "plus.square.on.square")
+            }
+
+            Button(role: .destructive) {
+                withAnimation(.interactiveSpring()) {
+                    database.delete(templateSet)
+                }
+            } label: {
+                Label(NSLocalizedString("remove", comment: ""), systemImage: "xmark.circle")
+            }
+        }
     }
 
     // MARK: - Supporting Methods
@@ -107,6 +175,7 @@ struct TemplateSetCell: View {
     private var indexInSetGroup: Int? {
         templateSet.setGroup?.sets.firstIndex(of: templateSet)
     }
+
     private func templateSetIsFirst(templateSet: TemplateSet) -> Bool {
         guard let setGroup = templateSet.setGroup else { return false }
         return setGroup.sets.firstIndex(of: templateSet) == 0

@@ -83,6 +83,7 @@ extension Database {
         return newDropSet(
             repetitions: Array(repeatElement(0, count: templateDropSet.repetitions?.count ?? 0)),
             weights: Array(repeating: 0, count: templateDropSet.weights?.count ?? 0),
+            restDuration: Int(templateDropSet.restDuration),
             setGroup: setGroup
         )
     }
@@ -112,7 +113,10 @@ extension Database {
         from templateSuperSet: TemplateSuperSet,
         setGroup: WorkoutSetGroup? = nil
     ) -> SuperSet {
-        let superSet = newSuperSet(setGroup: setGroup)
+        let superSet = newSuperSet(
+            restDuration: Int(templateSuperSet.restDuration),
+            setGroup: setGroup
+        )
         setGroup?.secondaryExercise = templateSuperSet.secondaryExercise
         return superSet
     }

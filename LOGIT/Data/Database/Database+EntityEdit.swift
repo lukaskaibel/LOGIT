@@ -138,12 +138,14 @@ public extension Database {
             newTemplateStandardSet(
                 repetitions: Int(standardSet.repetitions),
                 weight: Int(standardSet.weight),
+                restDuration: Int(standardSet.restDuration),
                 setGroup: setGroup
             )
         } else if let dropSet = lastSet as? TemplateDropSet {
             newTemplateDropSet(
                 repetitions: dropSet.repetitions?.map { Int($0) } ?? [0],
                 weights: dropSet.weights?.map { Int($0) } ?? [0],
+                restDuration: Int(dropSet.restDuration),
                 templateSetGroup: setGroup
             )
         } else if let superSet = lastSet as? TemplateSuperSet {
@@ -152,9 +154,30 @@ public extension Database {
                 repetitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
                 weightFirstExercise: Int(superSet.weightFirstExercise),
                 weightSecondExercise: Int(superSet.weightSecondExercise),
+                restDuration: Int(superSet.restDuration),
                 setGroup: setGroup
             )
         }
+    }
+
+    func addSet(before templateSet: TemplateSet) {
+        insertEmptyTemplateSet(relativeTo: templateSet, offset: 0)
+    }
+
+    func addSet(after templateSet: TemplateSet) {
+        insertEmptyTemplateSet(relativeTo: templateSet, offset: 1)
+    }
+
+    func duplicateSet(_ templateSet: TemplateSet) {
+        guard
+            let setGroup = templateSet.setGroup,
+            let index = setGroup.sets.firstIndex(of: templateSet)
+        else {
+            return
+        }
+
+        let duplicatedSet = copy(of: templateSet)
+        insert(duplicatedSet, into: setGroup, at: index + 1)
     }
 
     private func insertEmptySet(relativeTo workoutSet: WorkoutSet, offset: Int) {
@@ -190,6 +213,41 @@ public extension Database {
         var updatedSets = setGroup.sets
         let clampedIndex = max(0, min(index, updatedSets.count))
         updatedSets.insert(workoutSet, at: clampedIndex)
+        setGroup.sets = updatedSets
+    }
+
+    private func insertEmptyTemplateSet(relativeTo templateSet: TemplateSet, offset: Int) {
+        guard
+            let setGroup = templateSet.setGroup,
+            let index = setGroup.sets.firstIndex(of: templateSet)
+        else {
+            return
+        }
+
+        let newSet = emptySet(matching: templateSet)
+        insert(newSet, into: setGroup, at: index + offset)
+    }
+
+    private func emptySet(matching templateSet: TemplateSet) -> TemplateSet {
+        if templateSet is TemplateDropSet {
+            return newTemplateDropSet()
+        } else if templateSet is TemplateSuperSet {
+            return newTemplateSuperSet()
+        } else {
+            return newTemplateStandardSet()
+        }
+    }
+
+    private func copy(of templateSet: TemplateSet) -> TemplateSet {
+        let duplicatedSet = emptySet(matching: templateSet)
+        duplicatedSet.match(templateSet)
+        return duplicatedSet
+    }
+
+    private func insert(_ templateSet: TemplateSet, into setGroup: TemplateSetGroup, at index: Int) {
+        var updatedSets = setGroup.sets
+        let clampedIndex = max(0, min(index, updatedSets.count))
+        updatedSets.insert(templateSet, at: clampedIndex)
         setGroup.sets = updatedSets
     }
 }

@@ -195,4 +195,52 @@ final class DatabaseTests: XCTestCase {
         let dropSet = database.newDropSet(repetitions: reps, weights: weights)
         XCTAssertEqual(dropSet.numberOfDrops, 10, "Should handle many drops")
     }
+
+    func testDuplicateTemplateSetPreservesRestDurationAndInsertsAfterSource() {
+        let template = database.newTemplate(name: "Template")
+        let setGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            template: template
+        )
+        let firstSet = database.newTemplateStandardSet(
+            repetitions: 10,
+            weight: 60000,
+            restDuration: 90,
+            setGroup: setGroup
+        )
+        let secondSet = database.newTemplateStandardSet(
+            repetitions: 8,
+            weight: 65000,
+            restDuration: 45,
+            setGroup: setGroup
+        )
+
+        database.duplicateSet(firstSet)
+
+        XCTAssertEqual(setGroup.sets.count, 3)
+        XCTAssertEqual(setGroup.sets[0].objectID, firstSet.objectID)
+        XCTAssertEqual(setGroup.sets[2].objectID, secondSet.objectID)
+
+        let duplicatedSet = setGroup.sets[1] as? TemplateStandardSet
+        XCTAssertNotNil(duplicatedSet)
+        XCTAssertNotEqual(duplicatedSet?.objectID, firstSet.objectID)
+        XCTAssertEqual(duplicatedSet?.repetitions, firstSet.repetitions)
+        XCTAssertEqual(duplicatedSet?.weight, firstSet.weight)
+        XCTAssertEqual(duplicatedSet?.restDurationSeconds, firstSet.restDurationSeconds)
+    }
+
+    func testDuplicateLastTemplateSetPreservesRestDuration() {
+        let setGroup = database.newTemplateSetGroup(createFirstSetAutomatically: false)
+        _ = database.newTemplateStandardSet(
+            repetitions: 10,
+            weight: 60000,
+            restDuration: 75,
+            setGroup: setGroup
+        )
+
+        database.duplicateLastSet(from: setGroup)
+
+        XCTAssertEqual(setGroup.sets.count, 2)
+        XCTAssertEqual(setGroup.sets.last?.restDurationSeconds, 75)
+    }
 }

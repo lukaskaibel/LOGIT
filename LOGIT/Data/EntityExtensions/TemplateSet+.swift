@@ -21,4 +21,27 @@ public extension TemplateSet {
     var exercise: Exercise? {
         setGroup?.exercise
     }
+
+    func match(_ templateSet: TemplateSet) {
+        if let standardSet = self as? TemplateStandardSet,
+           let sourceStandardSet = templateSet as? TemplateStandardSet
+        {
+            standardSet.repetitions = sourceStandardSet.repetitions
+            standardSet.weight = sourceStandardSet.weight
+        } else if let dropSet = self as? TemplateDropSet,
+                  let sourceDropSet = templateSet as? TemplateDropSet
+        {
+            dropSet.repetitions = sourceDropSet.repetitions
+            dropSet.weights = sourceDropSet.weights
+        } else if let superSet = self as? TemplateSuperSet,
+                  let sourceSuperSet = templateSet as? TemplateSuperSet
+        {
+            superSet.repetitionsFirstExercise = sourceSuperSet.repetitionsFirstExercise
+            superSet.repetitionsSecondExercise = sourceSuperSet.repetitionsSecondExercise
+            superSet.weightFirstExercise = sourceSuperSet.weightFirstExercise
+            superSet.weightSecondExercise = sourceSuperSet.weightSecondExercise
+        }
+
+        restDuration = templateSet.restDuration
+    }
 }

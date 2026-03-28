@@ -22,6 +22,7 @@ struct WorkoutSetGroupCell: View {
 
     let supplementaryText: String?
     var showDetailAsSheet: Bool = false
+    var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
 
     // MARK: - State
 
@@ -51,7 +52,10 @@ struct WorkoutSetGroupCell: View {
                             VStack(spacing: CELL_SPACING) {
                                 WorkoutSetCell(
                                     workoutSet: workoutSet,
-                                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+                                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                                    onEditRestDuration: {
+                                        onTapRestDuration?(workoutSet)
+                                    }
                                 )
                                 .contentShape(Rectangle())
                                 .background(
@@ -67,7 +71,12 @@ struct WorkoutSetGroupCell: View {
                                 }
                                 if !isLastSet(workoutSet) {
                                     if canEdit {
-                                        RestTimerBetweenSetsView(workoutSet: workoutSet)
+                                        RestTimerBetweenSetsView(
+                                            workoutSet: workoutSet,
+                                            onTapRestDuration: {
+                                                onTapRestDuration?(workoutSet)
+                                            }
+                                        )
                                     } else if workoutSet.restDurationSeconds > 0 {
                                         RestDurationLabel(seconds: workoutSet.restDurationSeconds)
                                             .padding(.vertical, 2)

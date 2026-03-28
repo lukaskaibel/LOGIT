@@ -7,6 +7,17 @@
 
 import SwiftUI
 
+private enum TemplateInterSetGroupRestDisplayState: Equatable {
+    case hidden
+    case staticRest(Int)
+
+    static func afterSetGroup(_ setGroup: TemplateSetGroup) -> Self {
+        guard let lastSet = setGroup.sets.last else { return .hidden }
+        guard lastSet.restDurationSeconds > 0 else { return .hidden }
+        return .staticRest(lastSet.restDurationSeconds)
+    }
+}
+
 struct TemplateEditorScreen: View {
     enum SheetType: Identifiable {
         case exerciseDetail(exercise: Exercise)
@@ -27,8 +38,9 @@ struct TemplateEditorScreen: View {
 
     @StateObject var template: Template
 
-    @State private var isReordering: Bool = false
+    @State private var isShowingReorderSheet = false
     @State private var sheetType: SheetType? = nil
+    @State private var selectedRestDurationSet: TemplateSet?
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isRenamingTemplate = false
     @FocusState private var isFocusingRenameTemplateField: Bool
@@ -95,27 +107,25 @@ struct TemplateEditorScreen: View {
                         }
                         
                         VStack(spacing: 0) {
-                            ReorderableForEach(
-                                $template.setGroups,
-                                isReordering: $isReordering
-                            ) { setGroup in
+                            ForEach(template.setGroups) { setGroup in
                                 VStack(spacing: 0) {
                                     TemplateSetGroupCell(
                                         setGroup: setGroup,
                                         focusedIntegerFieldIndex: .constant(nil),
                                         sheetType: $sheetType,
-                                        isReordering: $isReordering,
                                         supplementaryText: nil,
-                                        showDetailAsSheet: true
+                                        showDetailAsSheet: true,
+                                        onTapRestDuration: { templateSet in
+                                            selectedRestDurationSet = templateSet
+                                        }
                                     )
                                     .shadow(color: .black.opacity(0.5), radius: 5)
                                     .zIndex(1)
-                                    if template.setGroups.last != setGroup {
-                                        Rectangle()
-                                            .foregroundStyle(.secondary)
-                                            .frame(width: 3, height: SECTION_SPACING)
-                                            .zIndex(0)
-                                    }
+                                    interSetGroupConnector(
+                                        after: setGroup,
+                                        showsTrailingLine: template.setGroups.last != setGroup
+                                    )
+                                    .zIndex(0)
                                 }
                                 .transition(.scale)
                                 .id(setGroup)
@@ -149,6 +159,45 @@ struct TemplateEditorScreen: View {
                             )
                             .padding(.top)
                             .toolbar(.hidden, for: .navigationBar)
+                            .sheet(item: $selectedRestDurationSet) { templateSet in
+                                RestDurationEditorSheet(templateSet: templateSet)
+                                    .presentationDetents([.fraction(0.65)])
+                                    .padding()
+                                    .frame(maxHeight: .infinity, alignment: .top)
+                            }
+                            .sheet(isPresented: $isShowingReorderSheet) {
+                                NavigationStack {
+                                    List {
+                                        ForEach(template.setGroups) { setGroup in
+                                            HStack {
+                                                VStack(alignment: .leading) {
+                                                    Text(setGroup.exercise?.displayName ?? "")
+                                                    if setGroup.setType == .superSet,
+                                                       let secondaryExercise = setGroup.secondaryExercise {
+                                                        HStack {
+                                                            Image(systemName: "arrow.turn.down.right")
+                                                            Text(secondaryExercise.displayName)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .onMove(perform: moveSetGroups)
+                                    }
+                                    .environment(\.editMode, .constant(.active))
+                                    .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
+                                    .navigationBarTitleDisplayMode(.inline)
+                                    .toolbar {
+                                        ToolbarItem(placement: .topBarTrailing) {
+                                            Button {
+                                                isShowingReorderSheet = false
+                                            } label: {
+                                                Text(NSLocalizedString("done", comment: ""))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
                                 HStack {
                                     Button {
@@ -165,8 +214,11 @@ struct TemplateEditorScreen: View {
                                     }
                                     .disabled(!database.canRedo)
                                     Spacer()
-                                    Spacer()
-                                    Spacer()
+                                    Button {
+                                        isShowingReorderSheet = true
+                                    } label: {
+                                        Image(systemName: "arrow.up.arrow.down")
+                                    }
                                 }
                                 .tint(Color.label)
                                 .font(.title2)
@@ -253,6 +305,73 @@ struct TemplateEditorScreen: View {
 
     private var templateName: Binding<String> {
         Binding(get: { template.name ?? "" }, set: { template.name = $0 })
+    }
+
+    @ViewBuilder
+    private func interSetGroupConnector(
+        after setGroup: TemplateSetGroup,
+        showsTrailingLine: Bool
+    ) -> some View {
+        switch TemplateInterSetGroupRestDisplayState.afterSetGroup(setGroup) {
+        case .hidden:
+            if showsTrailingLine {
+                Rectangle()
+                    .foregroundStyle(.secondary)
+                    .frame(width: 3, height: SECTION_SPACING)
+            }
+
+        case let .staticRest(seconds):
+            templateInterSetGroupRestIndicator(showsTrailingLine: showsTrailingLine) {
+                templateInterSetGroupRestCapsule {
+                    let label = RestDurationLabel(
+                        seconds: seconds,
+                        foregroundColor: .secondary,
+                        iconName: "timer",
+                        textFont: .caption.weight(.semibold),
+                        iconFont: .caption.weight(.semibold)
+                    )
+
+                    if let lastSet = setGroup.sets.last {
+                        Button {
+                            selectedRestDurationSet = lastSet
+                        } label: {
+                            label
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        label
+                    }
+                }
+            }
+        }
+    }
+
+    private func templateInterSetGroupRestIndicator<Content: View>(
+        showsTrailingLine: Bool,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(spacing: 4) {
+            Rectangle()
+                .foregroundStyle(.secondary)
+                .frame(width: 3, height: 6)
+            content()
+            if showsTrailingLine {
+                Rectangle()
+                    .foregroundStyle(.secondary)
+                    .frame(width: 3, height: 6)
+            }
+        }
+        .frame(minHeight: SECTION_SPACING + 10)
+    }
+
+    private func templateInterSetGroupRestCapsule<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        content()
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Color.secondaryBackground)
+            .clipShape(Capsule())
     }
 
     public func moveSetGroups(from source: IndexSet, to destination: Int) {

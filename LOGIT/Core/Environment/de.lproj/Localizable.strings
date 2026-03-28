@@ -415,6 +415,7 @@
 "times" = "mal";
 "timesUp" = "Timer fertig!";
 "timesUpBody" = "Dein Workout-Timer ist abgelaufen.";
+"timerWarningBody" = "%@ verbleibend.";
 "stopwatchMinuteTitle" = "Stoppuhr";
 "stopwatchMinuteBody" = "%@ vergangen.";
 "title" = "Titel";

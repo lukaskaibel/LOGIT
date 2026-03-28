@@ -26,6 +26,7 @@ struct WorkoutEditorScreen: View {
     @State private var isRenamingWorkout = false
     @State private var focusedIntegerFieldIndex: IntegerField.Index?
     @State private var isEditingStartEndDate = false
+    @State private var selectedRestDurationSet: WorkoutSet?
 
     // MARK: - Parameters
 
@@ -95,7 +96,10 @@ struct WorkoutEditorScreen: View {
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                 canReorder: true,
                                 reduceShadow: true,
-                                showDetailAsSheet: true
+                                showDetailAsSheet: true,
+                                onTapRestDuration: { workoutSet in
+                                    selectedRestDurationSet = workoutSet
+                                }
                             )
                             .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
                             .id(1)
@@ -128,6 +132,12 @@ struct WorkoutEditorScreen: View {
                             )
                             .padding(.top)
                             .toolbar(.hidden, for: .navigationBar)
+                            .sheet(item: $selectedRestDurationSet) { workoutSet in
+                                RestDurationEditorSheet(workoutSet: workoutSet)
+                                    .presentationDetents([.fraction(0.65)])
+                                    .padding()
+                                    .frame(maxHeight: .infinity, alignment: .top)
+                            }
                             if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
                                 HStack {
                                     Button {

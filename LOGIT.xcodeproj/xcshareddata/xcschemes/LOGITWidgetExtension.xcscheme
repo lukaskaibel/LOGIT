@@ -15,7 +15,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "792D522627F1160800B08813"
+               BlueprintIdentifier = "8D5B0EB66AF461FFD82736C7"
                BuildableName = "LOGITWidgetExtension.appex"
                BlueprintName = "LOGITWidgetExtension"
                ReferencedContainer = "container:LOGIT.xcodeproj">

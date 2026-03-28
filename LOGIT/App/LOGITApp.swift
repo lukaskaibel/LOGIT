@@ -26,6 +26,7 @@ struct LOGIT: App {
     @StateObject private var purchaseManager = PurchaseManager()
     @StateObject private var networkMonitor = NetworkMonitor()
     @StateObject private var workoutRecorder: WorkoutRecorder
+    @StateObject private var workoutLiveActivityManager: WorkoutLiveActivityManager
     @StateObject private var muscleGroupService: MuscleGroupService
     @StateObject private var homeNavigationCoordinator = HomeNavigationCoordinator()
     @StateObject private var chronograph = Chronograph()
@@ -54,7 +55,14 @@ struct LOGIT: App {
         _database = StateObject(wrappedValue: database)
         _templateService = StateObject(wrappedValue: TemplateService(database: database))
         _measurementController = StateObject(wrappedValue: MeasurementEntryController(database: database))
-        _workoutRecorder = StateObject(wrappedValue: WorkoutRecorder(database: database))
+        let workoutRecorder = WorkoutRecorder(database: database)
+        _workoutRecorder = StateObject(wrappedValue: workoutRecorder)
+        _workoutLiveActivityManager = StateObject(
+            wrappedValue: WorkoutLiveActivityManager(
+                workoutRecorder: workoutRecorder,
+                database: database
+            )
+        )
         _muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
         _homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
         _defaultExerciseService = StateObject(wrappedValue: DefaultExerciseService(database: database))

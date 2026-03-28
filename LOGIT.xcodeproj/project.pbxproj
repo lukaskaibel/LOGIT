@@ -7,7 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10F53DA7818380C706F42B20 /* WorkoutLiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */; };
+		18F8886F2E06B3DCB04A2002 /* LOGITWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 79D10973BCE1A0618D3256CD /* LOGITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		396ADE67CD8C1D14F7A8D82A /* LOGITWidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */; };
 		435F070826CC8D1F8D7239B8 /* WorkoutDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */; };
+		57A9ABF55683DB0071E02FE6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A72B470FE19DAE1E42233F7F /* Foundation.framework */; };
+		6A45A79A5D89B951F7726DBD /* WorkoutLiveActivitySnapshotBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */; };
+		773128213DE6E6FA1506597C /* WorkoutLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */; };
 		781060648530454E63B22EB3 /* WorkoutSharingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB3B92BF7A5E9FE9E442716 /* WorkoutSharingService.swift */; };
 		7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7907FDE9289E99B1006AF271 /* CloudKit.framework */; };
 		791347B62AE2BEB100D20BB7 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 791347B52AE2BEB100D20BB7 /* MarkdownUI */; };
@@ -217,11 +223,21 @@
 		80NEWTEST007 /* EntityExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST008 /* EntityExtensionTests.swift */; };
 		80NEWTEST009 /* ServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00A /* ServicesTests.swift */; };
 		80NEWTEST00B /* WorkoutSharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00C /* WorkoutSharingTests.swift */; };
+		898FDFC3AC4FF171A0E6C549 /* WorkoutLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */; };
 		8C6BE79BA086E3876A56C1D7 /* SharedWithYouBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */; };
+		9392C43C9501E6676A02488A /* WorkoutLiveActivitySnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */; };
 		ACC49C37E1B74DFAC016299F /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BDE77C44D210E79936D216 /* ShareSheet.swift */; };
+		FF178CF5635C188320F0E7B4 /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		08E0170328D84277A9972ABF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8065AA632686667F00F53A5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D5B0EB66AF461FFD82736C7;
+			remoteInfo = LOGITWidgetExtension;
+		};
 		79E8490B2A7EA28100C0DF95 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8065AA632686667F00F53A5A /* Project object */;
@@ -238,6 +254,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				18F8886F2E06B3DCB04A2002 /* LOGITWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -256,11 +273,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivityManager.swift; path = WorkoutLiveActivityManager.swift; sourceTree = "<group>"; };
 		14BDE77C44D210E79936D216 /* ShareSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
+		19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivityWidget.swift; path = WorkoutLiveActivityWidget.swift; sourceTree = "<group>"; };
 		1EB3B92BF7A5E9FE9E442716 /* WorkoutSharingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutSharingService.swift; sourceTree = "<group>"; };
 		22040B8B5D5971A78B9E3A04 /* Pods_LOGIT.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LOGIT.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedWithYouBanner.swift; sourceTree = "<group>"; };
 		4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutDTO.swift; sourceTree = "<group>"; };
+		4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivitySnapshotBuilder.swift; path = WorkoutLiveActivitySnapshotBuilder.swift; sourceTree = "<group>"; };
+		5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivitySnapshotBuilderTests.swift; path = WorkoutLiveActivitySnapshotBuilderTests.swift; sourceTree = "<group>"; };
 		7907FDE9289E99B1006AF271 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		792A3FF22AB478F000C6A097 /* DatabaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseTests.swift; sourceTree = "<group>"; };
 		792D522B27F1160800B08813 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -268,6 +289,7 @@
 		794A8E5F2ACC2184006087EA /* athleanx_total_body_A.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = athleanx_total_body_A.jpeg; sourceTree = "<group>"; };
 		7959F4CE2ACD8F5B0038B222 /* WorkoutImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = WorkoutImages.xcassets; sourceTree = "<group>"; };
 		79C07B2F2ABA566E000BF879 /* MeasurementEntryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementEntryControllerTests.swift; sourceTree = "<group>"; };
+		79D10973BCE1A0618D3256CD /* LOGITWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LOGITWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		79E849072A7EA28000C0DF95 /* LOGITTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LOGITTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		79E849092A7EA28000C0DF95 /* ExerciseServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseServiceTests.swift; sourceTree = "<group>"; };
 		80036CDA2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalSearchScreen.swift; sourceTree = "<group>"; };
@@ -472,9 +494,21 @@
 		80NEWTEST008 /* EntityExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityExtensionTests.swift; sourceTree = "<group>"; };
 		80NEWTEST00A /* ServicesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesTests.swift; sourceTree = "<group>"; };
 		80NEWTEST00C /* WorkoutSharingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSharingTests.swift; sourceTree = "<group>"; };
+		829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivityAttributes.swift; path = WorkoutLiveActivityAttributes.swift; sourceTree = "<group>"; };
+		A72B470FE19DAE1E42233F7F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		BA2F6D7984C9394E060503E7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = Info.plist; sourceTree = "<group>"; };
+		C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LOGITWidgetExtension.swift; path = LOGITWidgetExtension.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		6CCE531166DA2F7FAA6330D9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57A9ABF55683DB0071E02FE6 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		79E849042A7EA28000C0DF95 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -500,12 +534,32 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6B0C5444A74B071859C40CB3 /* LiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */,
+				4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */,
+				06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */,
+			);
+			name = LiveActivity;
+			path = LiveActivity;
+			sourceTree = "<group>";
+		};
+		7640A7066066673130B3572E /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				A72B470FE19DAE1E42233F7F /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 		792D522827F1160800B08813 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				7907FDE9289E99B1006AF271 /* CloudKit.framework */,
 				792D522B27F1160800B08813 /* SwiftUI.framework */,
 				22040B8B5D5971A78B9E3A04 /* Pods_LOGIT.framework */,
+				7640A7066066673130B3572E /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -533,6 +587,7 @@
 				80NEWTEST004 /* WeightConvertingTests.swift */,
 				80NEWTEST00C /* WorkoutSharingTests.swift */,
 				7959F4CE2ACD8F5B0038B222 /* WorkoutImages.xcassets */,
+				5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */,
 			);
 			path = LOGITTests;
 			sourceTree = "<group>";
@@ -893,6 +948,7 @@
 				801BBD292DF7338A00CDB1FB /* WorkoutListScreen.swift */,
 				801BBD2A2DF7338A00CDB1FB /* WorkoutSetGroupList.swift */,
 				8068AEBB2F1500380007FA8F /* WorkoutStartSheet.swift */,
+				6B0C5444A74B071859C40CB3 /* LiveActivity */,
 			);
 			path = Workout;
 			sourceTree = "<group>";
@@ -1040,6 +1096,7 @@
 				79E849082A7EA28000C0DF95 /* LOGITTests */,
 				792D522827F1160800B08813 /* Frameworks */,
 				8065AA6C2686667F00F53A5A /* Products */,
+				EA52A20BCC1C70E881C6C5C2 /* LOGITWidgetExtension */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1048,6 +1105,7 @@
 			children = (
 				8065AA6B2686667F00F53A5A /* LOGIT.app */,
 				79E849072A7EA28000C0DF95 /* LOGITTests.xctest */,
+				79D10973BCE1A0618D3256CD /* LOGITWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1058,6 +1116,17 @@
 				8085497D2EE9A37C00761706 /* default_exercises.json */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		EA52A20BCC1C70E881C6C5C2 /* LOGITWidgetExtension */ = {
+			isa = PBXGroup;
+			children = (
+				C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */,
+				19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */,
+				BA2F6D7984C9394E060503E7 /* Info.plist */,
+			);
+			name = LOGITWidgetExtension;
+			path = LOGITWidgetExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1094,6 +1163,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				448F5185A077D7ADF4E23B36 /* PBXTargetDependency */,
 			);
 			name = LOGIT;
 			packageProductDependencies = (
@@ -1108,6 +1178,23 @@
 			productName = WorkoutDiary;
 			productReference = 8065AA6B2686667F00F53A5A /* LOGIT.app */;
 			productType = "com.apple.product-type.application";
+		};
+		8D5B0EB66AF461FFD82736C7 /* LOGITWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EBE7F76FFFE72263F8A88A11 /* Build configuration list for PBXNativeTarget "LOGITWidgetExtension" */;
+			buildPhases = (
+				39D05725905A361B70F0232D /* Sources */,
+				6CCE531166DA2F7FAA6330D9 /* Frameworks */,
+				4EBC02598EE23AA57E8F5B89 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LOGITWidgetExtension;
+			productName = LOGITWidgetExtension;
+			productReference = 79D10973BCE1A0618D3256CD /* LOGITWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -1153,11 +1240,19 @@
 			targets = (
 				8065AA6A2686667F00F53A5A /* LOGIT */,
 				79E849062A7EA28000C0DF95 /* LOGITTests */,
+				8D5B0EB66AF461FFD82736C7 /* LOGITWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		4EBC02598EE23AA57E8F5B89 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		79E849052A7EA28000C0DF95 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1186,6 +1281,16 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		39D05725905A361B70F0232D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				773128213DE6E6FA1506597C /* WorkoutLiveActivityAttributes.swift in Sources */,
+				396ADE67CD8C1D14F7A8D82A /* LOGITWidgetExtension.swift in Sources */,
+				FF178CF5635C188320F0E7B4 /* WorkoutLiveActivityWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		79E849032A7EA28000C0DF95 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1200,6 +1305,7 @@
 				80NEWTEST007 /* EntityExtensionTests.swift in Sources */,
 				80NEWTEST009 /* ServicesTests.swift in Sources */,
 				80NEWTEST00B /* WorkoutSharingTests.swift in Sources */,
+				6A45A79A5D89B951F7726DBD /* WorkoutLiveActivitySnapshotBuilderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1389,12 +1495,21 @@
 				ACC49C37E1B74DFAC016299F /* ShareSheet.swift in Sources */,
 				80NEWSHAR001 /* WorkoutActivityItemSource.swift in Sources */,
 				8C6BE79BA086E3876A56C1D7 /* SharedWithYouBanner.swift in Sources */,
+				898FDFC3AC4FF171A0E6C549 /* WorkoutLiveActivityAttributes.swift in Sources */,
+				9392C43C9501E6676A02488A /* WorkoutLiveActivitySnapshotBuilder.swift in Sources */,
+				10F53DA7818380C706F42B20 /* WorkoutLiveActivityManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		448F5185A077D7ADF4E23B36 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = LOGITWidgetExtension;
+			target = 8D5B0EB66AF461FFD82736C7 /* LOGITWidgetExtension */;
+			targetProxy = 08E0170328D84277A9972ABF /* PBXContainerItemProxy */;
+		};
 		79E8490C2A7EA28100C0DF95 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8065AA6A2686667F00F53A5A /* LOGIT */;
@@ -1633,6 +1748,67 @@
 			};
 			name = Release;
 		};
+		A56D238A5C770234AC02DF5C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = S2F6F7JZ8C;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LOGITWidgetExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 4.1;
+				PRODUCT_BUNDLE_IDENTIFIER = .com.lukaskbl.LOGIT.LOGITWidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		D853EB291864DF2630ACBB1A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = S2F6F7JZ8C;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LOGITWidgetExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 4.1;
+				PRODUCT_BUNDLE_IDENTIFIER = .com.lukaskbl.LOGIT.LOGITWidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1659,6 +1835,15 @@
 			buildConfigurations = (
 				8065AA802686668100F53A5A /* Debug */,
 				8065AA812686668100F53A5A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EBE7F76FFFE72263F8A88A11 /* Build configuration list for PBXNativeTarget "LOGITWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D853EB291864DF2630ACBB1A /* Release */,
+				A56D238A5C770234AC02DF5C /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

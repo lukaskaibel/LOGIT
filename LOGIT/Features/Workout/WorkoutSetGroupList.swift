@@ -9,14 +9,15 @@ import SwiftUI
 
 enum InterSetGroupRestDisplayState: Equatable {
     case hidden
-    case staticRest(Int)
+    case staticRest(Int, Bool)
     case active(Chronograph.Mode)
 
     static func betweenSetGroups(
         for workoutSet: WorkoutSet?,
         activeRestTimerSet: WorkoutSet?,
         isChronographActive: Bool,
-        chronographMode: Chronograph.Mode
+        chronographMode: Chronograph.Mode,
+        showPendingRestInTertiary: Bool
     ) -> Self {
         guard let workoutSet else { return .hidden }
 
@@ -25,7 +26,8 @@ enum InterSetGroupRestDisplayState: Equatable {
         }
 
         if workoutSet.restDurationSeconds > 0 {
-            return .staticRest(workoutSet.restDurationSeconds)
+            let isPendingOnly = showPendingRestInTertiary && !workoutSet.hasEntry
+            return .staticRest(workoutSet.restDurationSeconds, isPendingOnly)
         }
 
         return .hidden
@@ -44,6 +46,7 @@ struct WorkoutSetGroupList: View {
     let canReorder: Bool
     var reduceShadow: Bool = false
     var showDetailAsSheet: Bool = false
+    var showPendingRestInTertiary: Bool = false
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
     var activeRestTimerSet: WorkoutSet? = nil
     var isChronographActive: Bool = false
@@ -66,6 +69,7 @@ struct WorkoutSetGroupList: View {
                         isReordering: $isReordering,
                         supplementaryText: nil,
                         showDetailAsSheet: showDetailAsSheet,
+                        showPendingRestInTertiary: showPendingRestInTertiary,
                         onTapRestDuration: onTapRestDuration
                     )
                     .shadow(color: .black.opacity(reduceShadow ? 0.5 : 1.0), radius: 5)
@@ -92,7 +96,8 @@ struct WorkoutSetGroupList: View {
             for: setGroup.sets.last,
             activeRestTimerSet: activeRestTimerSet,
             isChronographActive: isChronographActive,
-            chronographMode: chronographMode
+            chronographMode: chronographMode,
+            showPendingRestInTertiary: showPendingRestInTertiary
         )
 
         switch displayState {
@@ -103,12 +108,12 @@ struct WorkoutSetGroupList: View {
                     .frame(width: 3, height: SECTION_SPACING)
             }
 
-        case let .staticRest(seconds):
+        case let .staticRest(seconds, isPendingOnly):
             interSetGroupRestIndicator(showsTrailingLine: showsTrailingLine) {
                 interSetGroupRestCapsule {
                     let label = RestDurationLabel(
                         seconds: seconds,
-                        foregroundColor: .secondary,
+                        foregroundColor: isPendingOnly ? .tertiaryLabel : .secondary,
                         iconName: "timer",
                         textFont: .caption.weight(.semibold),
                         iconFont: .caption.weight(.semibold)

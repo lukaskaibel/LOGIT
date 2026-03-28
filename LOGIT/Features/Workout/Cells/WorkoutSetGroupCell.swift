@@ -22,6 +22,7 @@ struct WorkoutSetGroupCell: View {
 
     let supplementaryText: String?
     var showDetailAsSheet: Bool = false
+    var showPendingRestInTertiary: Bool = false
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
 
     // MARK: - State
@@ -73,6 +74,7 @@ struct WorkoutSetGroupCell: View {
                                     if canEdit {
                                         RestTimerBetweenSetsView(
                                             workoutSet: workoutSet,
+                                            showPendingRestInTertiary: showPendingRestInTertiary,
                                             onTapRestDuration: {
                                                 onTapRestDuration?(workoutSet)
                                             }

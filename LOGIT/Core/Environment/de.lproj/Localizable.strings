@@ -243,12 +243,8 @@
 "noTemplatesTipDescription" = "Speichere deine Lieblingsroutinen für schnellen Zugriff.";
 "notificationsDisabled" = "Benachrichtigungen deaktiviert";
 "notificationsDisabledMessage" = "Damit der Timer einen Ton abspielen und das Ende anzeigen kann, müssen Benachrichtigungen aktiviert sein.";
-"timerAlertsDisabled" = "Timer-Alarme deaktiviert";
-"timerAlertsDisabledMessage" = "Damit der Timer klingeln und sein Ende anzeigen kann, müssen Timer-Alarme aktiviert sein.";
 "enableTimerNotifications" = "Timer-Benachrichtigungen aktivieren";
 "enableTimerNotificationsMessage" = "Werde benachrichtigt, wenn dein Pausentimer endet, auch wenn die App im Hintergrund ist. So bleibst du während deines Trainings auf Kurs.";
-"enableTimerAlerts" = "Timer-Alarme aktivieren";
-"enableTimerAlertsMessage" = "Erlaube LOGIT zu klingeln, wenn dein Pausentimer endet, auch wenn dein iPhone auf Lautlos steht. So bleibst du während deines Trainings auf Kurs.";
 "notNow" = "Nicht jetzt";
 "now" = "Jetzt";
 "noWidgetsAdded" = "Keine Widgets hinzugefügt";

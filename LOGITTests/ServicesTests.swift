@@ -852,4 +852,28 @@ final class ChronographTests: XCTestCase {
 
         XCTAssertTrue(schedule.isEmpty)
     }
+
+    func testNotificationHapticReturnsSuccessForTimerFinishedNotification() {
+        let haptic = Chronograph.notificationHaptic(forNotificationIdentifier: "timerFinished")
+
+        XCTAssertEqual(haptic, .success)
+    }
+
+    func testNotificationHapticReturnsWarningForTimerWarningNotification() {
+        let haptic = Chronograph.notificationHaptic(forNotificationIdentifier: "timerWarning-10")
+
+        XCTAssertEqual(haptic, .warning)
+    }
+
+    func testNotificationHapticReturnsSelectionForStopwatchNotification() {
+        let haptic = Chronograph.notificationHaptic(forNotificationIdentifier: "stopwatchMinute-2")
+
+        XCTAssertEqual(haptic, .selection)
+    }
+
+    func testNotificationHapticReturnsNilForUnknownNotification() {
+        let haptic = Chronograph.notificationHaptic(forNotificationIdentifier: "other-notification")
+
+        XCTAssertNil(haptic)
+    }
 }

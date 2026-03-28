@@ -13,6 +13,7 @@ struct RestTimerBetweenSetsView: View {
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
 
     @ObservedObject var workoutSet: WorkoutSet
+    var showPendingRestInTertiary: Bool = false
     var onTapActiveTimer: (() -> Void)? = nil
     var onTapRestDuration: (() -> Void)? = nil
 
@@ -29,7 +30,7 @@ struct RestTimerBetweenSetsView: View {
     private var staticRestLabel: some View {
         let label = RestDurationLabel(
             seconds: workoutSet.restDurationSeconds,
-            foregroundColor: .secondary,
+            foregroundColor: pendingRestColor,
             iconName: "timer",
             textFont: .caption.weight(.semibold),
             iconFont: .caption.weight(.semibold)
@@ -52,6 +53,10 @@ struct RestTimerBetweenSetsView: View {
 
     private var activeTimerTint: Color {
         workoutSet.exercise?.muscleGroup?.color ?? .accentColor
+    }
+
+    private var pendingRestColor: Color {
+        showPendingRestInTertiary && !workoutSet.hasEntry ? .tertiaryLabel : .secondary
     }
 
     @ViewBuilder

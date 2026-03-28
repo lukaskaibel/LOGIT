@@ -73,6 +73,7 @@ struct WorkoutRecorderScreen: View {
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                     canReorder: true,
                                     showDetailAsSheet: true,
+                                    showPendingRestInTertiary: true,
                                     onTapRestDuration: { workoutSet in
                                         selectedRestDurationSet = workoutSet
                                     },
@@ -462,7 +463,6 @@ struct WorkoutRecorderScreen: View {
         switch autoRestBehavior {
         case let .timer(restSeconds):
             chronograph.mode = .timer
-            chronograph.timerAlertTintColor = completedSet.exercise?.muscleGroup?.color ?? .accentColor
             chronograph.setSeconds(Double(restSeconds) + 0.99)
             chronograph.start()
             chronograph.onTimerFired = { [weak chronograph, weak workoutRecorder] in

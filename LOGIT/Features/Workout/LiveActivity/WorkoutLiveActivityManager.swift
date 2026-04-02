@@ -19,12 +19,14 @@ final class WorkoutLiveActivityManager: ObservableObject {
 
     private let workoutRecorder: WorkoutRecorder
     private let database: Database
+    private let chronograph: Chronograph
     private var cancellables = Set<AnyCancellable>()
     private var latestSnapshot: WorkoutLiveActivitySnapshot?
 
-    init(workoutRecorder: WorkoutRecorder, database: Database) {
+    init(workoutRecorder: WorkoutRecorder, database: Database, chronograph: Chronograph) {
         self.workoutRecorder = workoutRecorder
         self.database = database
+        self.chronograph = chronograph
 
         observeWorkoutLifecycle()
 
@@ -36,6 +38,17 @@ final class WorkoutLiveActivityManager: ObservableObject {
     private func observeWorkoutLifecycle() {
         workoutRecorder.$workout
             .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Task { await self.reconcileCurrentState() }
+            }
+            .store(in: &cancellables)
+
+        // Chronograph does not publish on each tick; only real changes (start/stop/pause, duration edits, etc.).
+        // The Live Activity chip animates countdown/stopwatch text locally via `Text(timerInterval:)` in the widget.
+        chronograph.objectWillChange
+            .receive(on: RunLoop.main)
+            .debounce(for: .milliseconds(150), scheduler: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
                 Task { await self.reconcileCurrentState() }
@@ -61,13 +74,100 @@ final class WorkoutLiveActivityManager: ObservableObject {
             return
         }
 
-        guard let snapshot = WorkoutLiveActivitySnapshotBuilder.build(for: workout) else {
+        let chip = makeChronoChip()
+        guard let snapshot = WorkoutLiveActivitySnapshotBuilder.build(for: workout, chronoChip: chip) else {
             latestSnapshot = nil
             await endAllActivities()
             return
         }
 
         await upsertActivity(using: snapshot)
+    }
+
+    private func makeChronoChip() -> WorkoutLiveActivityChronoChip? {
+        switch chronograph.status {
+        case .idle:
+            return nil
+        case .paused:
+            return makeChronoChipPaused()
+        case .running:
+            return makeChronoChipRunning()
+        }
+    }
+
+    private func makeChronoChipRunning() -> WorkoutLiveActivityChronoChip? {
+        let activeRest = workoutRecorder.activeRestTimerSet != nil
+
+        switch chronograph.mode {
+        case .timer:
+            let endDate = chronograph.timerWallClockEndDate ?? Date().addingTimeInterval(chronograph.seconds)
+            let tintKind: WorkoutLiveActivityChronoTintKind = activeRest ? .restTimer : .manual
+            let muscle = activeRest ? muscleThemeToken(for: workoutRecorder.activeRestTimerSet) : nil
+            let total = max(chronograph.initialTimerSeconds, 0.001)
+            return WorkoutLiveActivityChronoChip(
+                phase: .timerRunning,
+                tintKind: tintKind,
+                muscleThemeToken: muscle,
+                timerEndDate: endDate,
+                timerTotalSeconds: total,
+                staticTickSeconds: nil,
+                stopwatchStartDate: nil
+            )
+        case .stopwatch:
+            let tintKind: WorkoutLiveActivityChronoTintKind = activeRest ? .restStopwatch : .manual
+            let startDate = Date().addingTimeInterval(-chronograph.seconds)
+            return WorkoutLiveActivityChronoChip(
+                phase: .stopwatchRunning,
+                tintKind: tintKind,
+                muscleThemeToken: nil,
+                timerEndDate: nil,
+                timerTotalSeconds: nil,
+                staticTickSeconds: nil,
+                stopwatchStartDate: startDate
+            )
+        }
+    }
+
+    private func makeChronoChipPaused() -> WorkoutLiveActivityChronoChip? {
+        let activeRest = workoutRecorder.activeRestTimerSet != nil
+        let roundedSeconds = max(0, Int(chronograph.seconds.rounded(.down)))
+
+        switch chronograph.mode {
+        case .timer:
+            let tintKind: WorkoutLiveActivityChronoTintKind = activeRest ? .restTimer : .manual
+            let muscle = activeRest ? muscleThemeToken(for: workoutRecorder.activeRestTimerSet) : nil
+            return WorkoutLiveActivityChronoChip(
+                phase: .timerPaused,
+                tintKind: tintKind,
+                muscleThemeToken: muscle,
+                timerEndDate: nil,
+                timerTotalSeconds: nil,
+                staticTickSeconds: roundedSeconds,
+                stopwatchStartDate: nil
+            )
+        case .stopwatch:
+            let tintKind: WorkoutLiveActivityChronoTintKind = activeRest ? .restStopwatch : .manual
+            return WorkoutLiveActivityChronoChip(
+                phase: .stopwatchPaused,
+                tintKind: tintKind,
+                muscleThemeToken: nil,
+                timerEndDate: nil,
+                timerTotalSeconds: nil,
+                staticTickSeconds: roundedSeconds,
+                stopwatchStartDate: nil
+            )
+        }
+    }
+
+    private func muscleThemeToken(for workoutSet: WorkoutSet?) -> WorkoutLiveActivityThemeToken {
+        themeToken(for: workoutSet?.exercise?.muscleGroup)
+    }
+
+    private func themeToken(for muscleGroup: MuscleGroup?) -> WorkoutLiveActivityThemeToken {
+        guard let rawValue = muscleGroup?.rawValue else {
+            return .neutral
+        }
+        return WorkoutLiveActivityThemeToken(rawValue: rawValue) ?? .neutral
     }
 
     private func upsertActivity(using snapshot: WorkoutLiveActivitySnapshot) async {

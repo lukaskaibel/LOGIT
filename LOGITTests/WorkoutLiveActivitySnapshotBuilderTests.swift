@@ -76,6 +76,30 @@ final class WorkoutLiveActivitySnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(snapshot.exerciseIndex, 1)
         XCTAssertEqual(snapshot.setIndex, 2)
         XCTAssertEqual(snapshot.setCount, 2)
+        XCTAssertEqual(snapshot.previousPrimaryMetrics?.repetitionSegments, ["8"])
+        XCTAssertEqual(snapshot.previousPrimaryMetrics?.repetitionsUnit, repetitionsUnit)
+        XCTAssertEqual(snapshot.previousPrimaryMetrics?.weightSegments, ["100"])
+        XCTAssertEqual(snapshot.previousPrimaryMetrics?.repetitionSegmentPlaceholders, [false])
+        XCTAssertEqual(snapshot.previousPrimaryMetrics?.weightSegmentPlaceholders, [false])
+        XCTAssertNil(snapshot.previousSecondaryMetrics)
+    }
+
+    func testFirstSetHasNoPreviousSetMetrics() throws {
+        let (database, builder) = createTestBuilder()
+        let workout = builder.createWorkout()
+        let squat = builder.createExercise(name: "Squat", muscleGroup: .legs)
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: squat,
+            workout: workout
+        )
+        database.newStandardSet(setGroup: setGroup)
+
+        let snapshot = try XCTUnwrap(WorkoutLiveActivitySnapshotBuilder.build(for: workout))
+
+        XCTAssertEqual(snapshot.setIndex, 1)
+        XCTAssertNil(snapshot.previousPrimaryMetrics)
+        XCTAssertNil(snapshot.previousSecondaryMetrics)
     }
 
     func testWeightWithoutRepetitionsShowsOnlyEnteredWeight() throws {
@@ -100,8 +124,10 @@ final class WorkoutLiveActivitySnapshotBuilderTests: XCTestCase {
 
         let snapshot = try XCTUnwrap(WorkoutLiveActivitySnapshotBuilder.build(for: workout))
 
-        XCTAssertNil(snapshot.primaryMetrics.repetitionsText)
-        XCTAssertEqual(snapshot.primaryMetrics.weightText, "55 kg")
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegments, ["8"])
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegmentPlaceholders, [true])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegments, ["55"])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegmentPlaceholders, [false])
     }
 
     func testTemplateBackedStandardSetUsesTemplateValuesWhenUntouched() throws {
@@ -126,8 +152,11 @@ final class WorkoutLiveActivitySnapshotBuilderTests: XCTestCase {
 
         let snapshot = try XCTUnwrap(WorkoutLiveActivitySnapshotBuilder.build(for: workout))
 
-        XCTAssertEqual(snapshot.primaryMetrics.repetitionsText, "8 \(repetitionsUnit)")
-        XCTAssertEqual(snapshot.primaryMetrics.weightText, "60 kg")
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegments, ["8"])
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionsUnit, repetitionsUnit)
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegments, ["60"])
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegmentPlaceholders, [true])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegmentPlaceholders, [true])
     }
 
     func testDropSetCurrentSetDetectionUsesFirstIncompleteDropSet() throws {
@@ -182,10 +211,60 @@ final class WorkoutLiveActivitySnapshotBuilderTests: XCTestCase {
 
         XCTAssertEqual(snapshot.primaryExerciseName, "Curls")
         XCTAssertEqual(snapshot.secondaryExerciseName, "Pushdowns")
-        XCTAssertEqual(snapshot.primaryMetrics.repetitionsText, "12 \(repetitionsUnit)")
-        XCTAssertEqual(snapshot.primaryMetrics.weightText, "20 kg")
-        XCTAssertEqual(snapshot.secondaryMetrics?.repetitionsText, "15 \(repetitionsUnit)")
-        XCTAssertEqual(snapshot.secondaryMetrics?.weightText, "25 kg")
+        XCTAssertFalse(snapshot.supersetPartnerIsLeading)
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegments, ["12"])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegments, ["20"])
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegmentPlaceholders, [true])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegmentPlaceholders, [true])
+        XCTAssertNil(snapshot.secondaryMetrics)
+    }
+
+    func testSuperSetFocusesSecondExerciseWhenFirstHasReps() throws {
+        let (database, builder) = createTestBuilder()
+        let workout = builder.createWorkout()
+        let template = database.newTemplate(name: "Arms")
+        let curls = builder.createExercise(name: "Curls", muscleGroup: .biceps)
+        let pushdowns = builder.createExercise(name: "Pushdowns", muscleGroup: .triceps)
+        let templateGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: curls,
+            template: template
+        )
+        templateGroup.secondaryExercise = pushdowns
+        database.newTemplateSuperSet(
+            repetitionsFirstExercise: 12,
+            repetitionsSecondExercise: 15,
+            weightFirstExercise: 20_000,
+            weightSecondExercise: 25_000,
+            setGroup: templateGroup
+        )
+        workout.template = template
+
+        let workoutGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: curls,
+            workout: workout
+        )
+        workoutGroup.secondaryExercise = pushdowns
+        database.newSuperSet(
+            repetitionsFirstExercise: 10,
+            repetitionsSecondExercise: 0,
+            weightFirstExercise: 17_500,
+            weightSecondExercise: 0,
+            setGroup: workoutGroup
+        )
+
+        let snapshot = try XCTUnwrap(WorkoutLiveActivitySnapshotBuilder.build(for: workout))
+
+        XCTAssertEqual(snapshot.primaryExerciseName, "Pushdowns")
+        XCTAssertEqual(snapshot.secondaryExerciseName, "Curls")
+        XCTAssertTrue(snapshot.supersetPartnerIsLeading)
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegments, ["15"])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegments, ["25"])
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegmentPlaceholders, [true])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegmentPlaceholders, [true])
+        XCTAssertNil(snapshot.secondaryMetrics)
+        XCTAssertEqual(snapshot.themeToken, .triceps)
     }
 
     func testAllCompletedWorkoutFallsBackToLastSetGroup() throws {
@@ -288,7 +367,9 @@ final class WorkoutLiveActivitySnapshotBuilderTests: XCTestCase {
         let snapshot = try XCTUnwrap(WorkoutLiveActivitySnapshotBuilder.build(for: workout))
 
         XCTAssertEqual(snapshot.primaryExerciseName, "Bench")
-        XCTAssertEqual(snapshot.primaryMetrics.repetitionsText, "5 \(repetitionsUnit)")
-        XCTAssertEqual(snapshot.primaryMetrics.weightText, "120 kg")
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegments, ["5"])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegments, ["120"])
+        XCTAssertEqual(snapshot.primaryMetrics.repetitionSegmentPlaceholders, [true])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegmentPlaceholders, [true])
     }
 }

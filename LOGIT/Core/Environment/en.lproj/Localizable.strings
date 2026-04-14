@@ -178,6 +178,9 @@
 "legs" = "Legs";
 "letsGetStarted" = "Let's get started";
 "letsGetStartedDescription" = "Before you can start working out we need to do a quick setup to optimise your experience.";
+"liveActivityNextUp" = "Up next";
+"liveActivitySetLabelCurrent" = "Current";
+"liveActivitySetLabelPrev" = "Prev";
 "licenceAgreement" = "Licence Agreement";
 "lookupExercise" = "Look up %@";
 

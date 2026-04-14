@@ -17,6 +17,8 @@ struct StopwatchView: View {
     var body: some View {
         if updater || !updater {
             Text(workoutDurationString)
+                .contentTransition(.numericText())
+                .animation(.easeOut(duration: 0.18), value: workoutDurationString)
                 .onReceive(timer) { _ in
                     updater.toggle()
                 }

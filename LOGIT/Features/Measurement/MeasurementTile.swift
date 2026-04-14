@@ -127,21 +127,7 @@ struct MeasurementTile: View {
         .chartYScale(domain: 0 ... (entries.map { $0.decimalValue }.max() ?? 1) * 1.1)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
-        .chartPlotStyle { plotArea in
-            plotArea.frame(height: 70)
-        }
-        .frame(width: 120)
-        .mask(
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: .clear, location: 0.0),
-                    .init(color: .black, location: 0.1),
-                    .init(color: .black, location: 1.0),
-                ]),
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
+        .tileSparklineChartStyle()
     }
 
     private var xDomain: some ScaleDomain {

@@ -75,6 +75,8 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     var seconds: TimeInterval = 0
     /// The initial duration set for timer mode, used to compute elapsed time.
     private(set) var initialTimerSeconds: TimeInterval = 0
+    /// Wall-clock instant when the running countdown timer is expected to hit zero (timer mode only).
+    @Published private(set) var timerWallClockEndDate: Date?
     private var timer: Timer?
     var startDate: Date?
     private var pauseTime: TimeInterval?
@@ -113,6 +115,12 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
 
         scheduleNotificationsForCurrentState()
 
+        if mode == .timer {
+            timerWallClockEndDate = Date().addingTimeInterval(seconds)
+        } else {
+            timerWallClockEndDate = nil
+        }
+
         startDate = Date()
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             guard let self = self else { return }
@@ -134,6 +142,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
             }
         }
         status = .running
+        objectWillChange.send()
     }
 
     func cancel() {
@@ -144,8 +153,10 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     func stop() {
         timer?.invalidate()
         timer = nil
+        timerWallClockEndDate = nil
         status = .paused
         cancelNotifications()
+        objectWillChange.send()
     }
 
     func setSeconds(
@@ -164,6 +175,9 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
                 // When not overriding and not preserving elapsed, treat `seconds` as the new total
                 // timer duration, regardless of whether the timer is idle, running, or paused.
                 initialTimerSeconds = seconds
+            }
+            if status == .running {
+                timerWallClockEndDate = Date().addingTimeInterval(self.seconds)
             }
         }
         objectWillChange.send()
@@ -191,6 +205,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         timer = nil
         startDate = nil
         seconds = 0
+        timerWallClockEndDate = nil
         status = .idle
     }
 

@@ -138,10 +138,13 @@ struct WorkoutSetGroupList: View {
                     if let chronograph {
                         ChronographView(chronograph: chronograph) { seconds in
                             HStack(spacing: 4) {
+                                let displayedSeconds = max(0, Int(seconds.rounded(.down)))
                                 Image(systemName: mode == .timer ? "timer" : "stopwatch")
                                     .font(.caption.weight(.semibold))
-                                Text(restTimeString(seconds: max(0, Int(seconds.rounded(.down)))))
+                                Text(restTimeString(seconds: displayedSeconds))
                                     .font(.caption.weight(.semibold).monospacedDigit())
+                                    .contentTransition(.numericText())
+                                    .animation(.easeOut(duration: 0.18), value: displayedSeconds)
                             }
                             .foregroundStyle(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
                         }
@@ -151,6 +154,7 @@ struct WorkoutSetGroupList: View {
                                 .font(.caption.weight(.semibold))
                             Text(restTimeString(seconds: 0))
                                 .font(.caption.weight(.semibold).monospacedDigit())
+                                .contentTransition(.numericText())
                         }
                         .foregroundStyle(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
                     }

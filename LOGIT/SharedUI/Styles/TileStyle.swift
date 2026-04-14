@@ -27,6 +27,30 @@ struct SecondaryTileModifier: ViewModifier {
     }
 }
 
+struct TileSparklineChartModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .chartPlotStyle { plotArea in
+                plotArea
+                    .padding(.leading, 8)
+                    .padding(.trailing, 4)
+                    .padding(.vertical, 4)
+            }
+            .frame(width: 120, height: 70)
+            .mask(
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: .clear, location: 0.0),
+                        .init(color: .black, location: 0.1),
+                        .init(color: .black, location: 1.0),
+                    ]),
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+    }
+}
+
 extension View {
     func tileStyle(backgroundColor: Color = .secondaryBackground) -> some View {
         modifier(TileModifier(backgroundColor: backgroundColor))
@@ -34,6 +58,10 @@ extension View {
 
     func secondaryTileStyle(backgroundColor: Color = .tertiaryBackground) -> some View {
         modifier(SecondaryTileModifier(backgroundColor: backgroundColor))
+    }
+
+    func tileSparklineChartStyle() -> some View {
+        modifier(TileSparklineChartModifier())
     }
 }
 

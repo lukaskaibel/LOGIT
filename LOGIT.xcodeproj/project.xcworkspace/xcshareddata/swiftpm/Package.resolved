@@ -110,15 +110,6 @@
       }
     },
     {
-      "identity" : "transmission",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nathantannar4/Transmission",
-      "state" : {
-        "revision" : "045d593ef5008041deea1632ead78cdbdcfc051e",
-        "version" : "2.5.43"
-      }
-    },
-    {
       "identity" : "wishkit-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/wishkit/wishkit-ios.git",

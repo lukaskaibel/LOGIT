@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Transmission
 
 @main
 struct LOGIT: App {

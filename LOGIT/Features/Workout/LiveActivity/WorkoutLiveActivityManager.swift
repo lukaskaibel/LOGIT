@@ -100,10 +100,11 @@ final class WorkoutLiveActivityManager: ObservableObject {
 
         switch chronograph.mode {
         case .timer:
-            let endDate = chronograph.timerWallClockEndDate ?? Date().addingTimeInterval(chronograph.seconds)
+            let displayedRemainingSeconds = max(0, Int(chronograph.seconds.rounded(.down)))
+            let endDate = Date().addingTimeInterval(TimeInterval(displayedRemainingSeconds))
             let tintKind: WorkoutLiveActivityChronoTintKind = activeRest ? .restTimer : .manual
             let muscle = activeRest ? muscleThemeToken(for: workoutRecorder.activeRestTimerSet) : nil
-            let total = max(chronograph.initialTimerSeconds, 0.001)
+            let total = max(Double(Int(chronograph.initialTimerSeconds.rounded(.down))), 0.001)
             return WorkoutLiveActivityChronoChip(
                 phase: .timerRunning,
                 tintKind: tintKind,

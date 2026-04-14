@@ -204,13 +204,13 @@
 		80A1D9802EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */; };
 		80A1D9812EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */; };
 		80A1D9822EDC98E6004EE258 /* PinnedExerciseWeightTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */; };
-		80A640A02E414F4E0053C2C3 /* Transmission in Frameworks */ = {isa = PBXBuildFile; productRef = 80A6409F2E414F4E0053C2C3 /* Transmission */; };
 		80A7A0D12F2E6C5C00112233 /* logit_terms_and_conditions.md in Resources */ = {isa = PBXBuildFile; fileRef = 80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */; };
 		80AA00022F3A000100AA0001 /* RestDurationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00012F3A000100AA0001 /* RestDurationPicker.swift */; };
 		80AA00042F3A000100AA0001 /* RestTimerBetweenSetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */; };
 		80AA00082F3A000100AA0001 /* RestDurationEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */; };
 		80AA000A2F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */; };
 		80AA000C2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */; };
+		80AA00102F3A000100AA0001 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 801BBCAA2DF7338A00CDB1FB /* Localizable.strings */; };
 		80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387BA2EBA187100AD7EFC /* DecimalField.swift */; };
 		80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = 80C2B98E2EC9362A00118FE2 /* ColorfulX */; };
 		80CBE1D52ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */; };
@@ -526,7 +526,6 @@
 				79C8FADF2AE3F657001EA5A7 /* OpenAIKit in Frameworks */,
 				7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */,
 				795767812AE706DB0040E327 /* Camera-SwiftUI in Frameworks */,
-				80A640A02E414F4E0053C2C3 /* Transmission in Frameworks */,
 				80750E112DDFCA550037F1FE /* WishKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1171,7 +1170,6 @@
 				79C8FADE2AE3F657001EA5A7 /* OpenAIKit */,
 				795767802AE706DB0040E327 /* Camera-SwiftUI */,
 				80750E102DDFCA550037F1FE /* WishKit */,
-				80A6409F2E414F4E0053C2C3 /* Transmission */,
 				80C2B98E2EC9362A00118FE2 /* ColorfulX */,
 				80036CE02EFEFFD100B7C7B4 /* Ifrit */,
 			);
@@ -1230,7 +1228,6 @@
 				79C8FADD2AE3F657001EA5A7 /* XCRemoteSwiftPackageReference "OpenAI" */,
 				7957677F2AE706DB0040E327 /* XCRemoteSwiftPackageReference "Camera-SwiftUI" */,
 				80750E0F2DDFCA550037F1FE /* XCRemoteSwiftPackageReference "wishkit-ios" */,
-				80A6409E2E414F4E0053C2C3 /* XCRemoteSwiftPackageReference "Transmission" */,
 				80C2B98D2EC9362A00118FE2 /* XCRemoteSwiftPackageReference "ColorfulX" */,
 				80036CDF2EFEFFD100B7C7B4 /* XCRemoteSwiftPackageReference "Ifrit" */,
 			);
@@ -1250,6 +1247,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80AA00102F3A000100AA0001 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1891,14 +1889,6 @@
 				minimumVersion = 4.7.0;
 			};
 		};
-		80A6409E2E414F4E0053C2C3 /* XCRemoteSwiftPackageReference "Transmission" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/nathantannar4/Transmission";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.8;
-			};
-		};
 		80C2B98D2EC9362A00118FE2 /* XCRemoteSwiftPackageReference "ColorfulX" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Lakr233/ColorfulX.git";
@@ -1934,11 +1924,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 80750E0F2DDFCA550037F1FE /* XCRemoteSwiftPackageReference "wishkit-ios" */;
 			productName = WishKit;
-		};
-		80A6409F2E414F4E0053C2C3 /* Transmission */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 80A6409E2E414F4E0053C2C3 /* XCRemoteSwiftPackageReference "Transmission" */;
-			productName = Transmission;
 		};
 		80C2B98E2EC9362A00118FE2 /* ColorfulX */ = {
 			isa = XCSwiftPackageProductDependency;

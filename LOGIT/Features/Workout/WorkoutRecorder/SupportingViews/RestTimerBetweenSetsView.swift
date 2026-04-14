@@ -58,10 +58,13 @@ struct RestTimerBetweenSetsView: View {
     private var activeTimerLabel: some View {
         let label = ChronographView(chronograph: chronograph) { seconds in
             HStack(spacing: 4) {
+                let displayedSeconds = max(0, Int(seconds.rounded(.down)))
                 Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
                     .font(.caption.weight(.semibold))
-                Text(restTimeString(seconds: max(0, Int(seconds.rounded(.down)))))
+                Text(restTimeString(seconds: displayedSeconds))
                     .font(.caption.weight(.semibold).monospacedDigit())
+                    .contentTransition(.numericText())
+                    .animation(.easeOut(duration: 0.18), value: displayedSeconds)
             }
             .foregroundStyle(activeTimerTint)
         }

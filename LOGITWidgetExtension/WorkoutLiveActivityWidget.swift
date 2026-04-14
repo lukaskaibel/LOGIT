@@ -23,9 +23,14 @@ private extension Color {
         Color(red: 0.56, green: 0.57, blue: 0.62)
     }
 
-    /// The widget extension does not load the app’s `AccentColor` asset; `Color.accentColor` here can prevent the Live Activity from rendering on the lock screen.
+    /// Third-tier text on black surfaces (dimmed below `workoutLiveActivitySecondary`).
+    static var workoutLiveActivityTertiary: Color {
+        Color(red: 0.53, green: 0.54, blue: 0.59)
+    }
+
+    /// Mirrors the app accent color asset for dark surfaces because the widget extension should not depend on loading `AccentColor`.
     static var workoutLiveActivityManualChronoTint: Color {
-        Color(red: 0.04, green: 0.52, blue: 1.0)
+        Color(red: 0.729, green: 0.987, blue: 0.310)
     }
 }
 
@@ -34,46 +39,39 @@ struct WorkoutLiveActivityWidget: Widget {
         ActivityConfiguration(for: WorkoutLiveActivityAttributes.self) { context in
             WorkoutLiveActivityLockScreenView(context: context)
                 .activityBackgroundTint(Color.black)
-                .activitySystemActionForegroundColor(context.state.themeToken.accentColor)
+                .activitySystemActionForegroundColor(context.state.liveActivityChromeTint)
             } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     EmptyView()
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    WorkoutElapsedDurationLabel(startedAt: context.attributes.startedAt, font: .caption.weight(.bold))
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                    EmptyView()
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    Text(context.state.workoutTitle)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.workoutLiveActivitySecondary)
-                        .lineLimit(1)
+                    EmptyView()
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    WorkoutExerciseCard(
-                        state: context.state,
-                        chronoChip: context.state.chronoChip,
-                        chronoChipUsesCompactStyle: true
+                    WorkoutLiveActivityExpandedContent(
+                        attributes: context.attributes,
+                        state: context.state
                     )
                     .padding(.horizontal, 4)
                 }
             } compactLeading: {
-                WorkoutCompactIslandLeadingContent(state: context.state)
+                WorkoutCompactIslandLeadingContent(chronoChip: context.state.chronoChip)
             } compactTrailing: {
                 WorkoutCompactIslandTrailingContent(
-                    startedAt: context.attributes.startedAt,
                     chronoChip: context.state.chronoChip,
                     font: .caption2.weight(.bold)
                 )
             } minimal: {
-                WorkoutCompactIslandTrailingContent(
-                    startedAt: context.attributes.startedAt,
+                WorkoutMinimalIslandContent(
                     chronoChip: context.state.chronoChip,
                     font: .caption2.weight(.bold)
                 )
             }
-            .keylineTint(context.state.themeToken.accentColor)
+            .keylineTint(context.state.liveActivityChromeTint)
         }
     }
 }
@@ -83,22 +81,10 @@ private struct WorkoutLiveActivityLockScreenContent: View {
     let state: WorkoutLiveActivityAttributes.ContentState
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(state.workoutTitle)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color.workoutLiveActivitySecondary)
-                    .lineLimit(1)
+        VStack(alignment: .leading, spacing: 10) {
+            WorkoutLiveActivityHeaderRow(attributes: attributes, state: state)
 
-                WorkoutElapsedDurationLabel(startedAt: attributes.startedAt, font: .caption.weight(.bold))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-
-            WorkoutExerciseCard(
-                state: state,
-                chronoChip: state.chronoChip,
-                chronoChipUsesCompactStyle: false
-            )
+            WorkoutLiveActivityPrimaryContent(state: state, chronoChipUsesCompactStyle: false)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(16)
@@ -115,15 +101,300 @@ private struct WorkoutLiveActivityLockScreenView: View {
     }
 }
 
+private struct WorkoutLiveActivityExpandedContent: View {
+    let attributes: WorkoutLiveActivityAttributes
+    let state: WorkoutLiveActivityAttributes.ContentState
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            WorkoutLiveActivityHeaderRow(attributes: attributes, state: state)
+
+            WorkoutLiveActivityPrimaryContent(state: state, chronoChipUsesCompactStyle: true)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+}
+
+private struct WorkoutLiveActivityPrimaryContent: View {
+    let state: WorkoutLiveActivityAttributes.ContentState
+    let chronoChipUsesCompactStyle: Bool
+
+    var body: some View {
+        if let chip = state.chronoChip {
+            WorkoutLiveActivityRunningFocus(
+                state: state,
+                chip: chip,
+                compactLayout: chronoChipUsesCompactStyle
+            )
+                .frame(maxWidth: .infinity)
+        } else {
+            WorkoutExerciseCard(
+                state: state,
+                chronoChip: state.chronoChip,
+                chronoChipUsesCompactStyle: chronoChipUsesCompactStyle
+            )
+        }
+    }
+}
+
 private func workoutLiveActivityRestTimeString(seconds: Int) -> String {
     let m = seconds / 60
     let s = seconds % 60
     return "\(m):\(String(format: "%02d", s))"
 }
 
-/// Mirrors `WorkoutRecorderFloatingTimerButton` (capsule fill, stroke, shadow, optional timer progress fill).
+private func workoutLiveActivityDurationString(totalSeconds: Int) -> String {
+    let hours = totalSeconds / 3600
+    let minutes = (totalSeconds % 3600) / 60
+    let seconds = totalSeconds % 60
+
+    if hours > 0 {
+        return "\(hours):\(String(format: "%02d", minutes)):\(String(format: "%02d", seconds))"
+    }
+
+    return workoutLiveActivityRestTimeString(seconds: totalSeconds)
+}
+
+private func workoutLiveActivityCountdownRange(
+    endingAt endDate: Date,
+    referenceDate: Date = .now
+) -> ClosedRange<Date> {
+    let clampedEndDate = max(endDate, referenceDate)
+    return referenceDate ... clampedEndDate
+}
+
+private extension WorkoutLiveActivityChronoChip {
+    var isRunning: Bool {
+        switch phase {
+        case .timerRunning, .stopwatchRunning:
+            true
+        case .timerPaused, .stopwatchPaused:
+            false
+        }
+    }
+
+    func displayText(at referenceDate: Date) -> String? {
+        switch phase {
+        case .timerRunning:
+            guard let end = timerEndDate else { return nil }
+            let remainingSeconds = max(0, Int(end.timeIntervalSince(referenceDate).rounded(.down)))
+            return workoutLiveActivityRestTimeString(seconds: remainingSeconds)
+        case .stopwatchRunning:
+            guard let start = stopwatchStartDate else { return nil }
+            let elapsedSeconds = max(0, Int(referenceDate.timeIntervalSince(start).rounded(.down)))
+            return workoutLiveActivityRestTimeString(seconds: elapsedSeconds)
+        case .timerPaused, .stopwatchPaused:
+            guard let staticTickSeconds else { return nil }
+            return workoutLiveActivityRestTimeString(seconds: staticTickSeconds)
+        }
+    }
+
+    var liveActivityHeaderTitle: String {
+        switch (tintKind, phase) {
+        case (.restTimer, _):
+            NSLocalizedString("autoRestTimer", comment: "")
+        case (.restStopwatch, _):
+            NSLocalizedString("autoRestStopwatch", comment: "")
+        case (_, .timerRunning), (_, .timerPaused):
+            NSLocalizedString("timer", comment: "")
+        case (_, .stopwatchRunning), (_, .stopwatchPaused):
+            NSLocalizedString("stopwatch", comment: "")
+        }
+    }
+
+    var headerTrailingTitle: String? {
+        switch phase {
+        case .timerRunning:
+            guard let totalSeconds = timerTotalSeconds else { return nil }
+            return workoutLiveActivityDurationString(totalSeconds: max(0, Int(totalSeconds.rounded(.down))))
+        case .timerPaused, .stopwatchRunning, .stopwatchPaused:
+            return nil
+        }
+    }
+}
+
+private extension WorkoutLiveActivityAttributes.ContentState {
+    var liveActivityChromeTint: Color {
+        chronoChip?.liveActivityChronoForegroundTint ?? themeToken.accentColor
+    }
+}
+
+private struct WorkoutLiveActivityHeaderRow: View {
+    let attributes: WorkoutLiveActivityAttributes
+    let state: WorkoutLiveActivityAttributes.ContentState
+
+    private var activeChronoChip: WorkoutLiveActivityChronoChip? {
+        state.chronoChip
+    }
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                if let activeChronoChip {
+                    Image(systemName: activeChronoChip.compactIslandIconName)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(leadingColor)
+                }
+
+                Text(leadingTitle)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(leadingColor)
+                    .lineLimit(1)
+            }
+
+            trailingContent
+        }
+    }
+
+    private var leadingTitle: String {
+        activeChronoChip?.liveActivityHeaderTitle ?? state.workoutTitle
+    }
+
+    private var trailingTitle: String? {
+        if let chip = activeChronoChip {
+            return chip.headerTrailingTitle
+        }
+        return nil
+    }
+
+    private var leadingColor: Color {
+        activeChronoChip?.liveActivityChronoForegroundTint ?? Color.workoutLiveActivitySecondary
+    }
+
+    private var trailingColor: Color {
+        activeChronoChip?.liveActivityChronoForegroundTint ?? .white
+    }
+
+    @ViewBuilder
+    private var trailingContent: some View {
+        if let trailingTitle {
+            Text(trailingTitle)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(trailingColor)
+                .monospacedDigit()
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        } else if activeChronoChip == nil {
+            WorkoutElapsedDurationLabel(startedAt: attributes.startedAt, font: .caption.weight(.bold))
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        } else {
+            Spacer(minLength: 0)
+        }
+    }
+}
+
+private struct WorkoutLiveActivityRunningChronoText: View {
+    let chip: WorkoutLiveActivityChronoChip
+
+    var body: some View {
+        if chip.isRunning {
+            runningText()
+        } else if let label = chip.displayText(at: .now) {
+            Text(label)
+        } else {
+            Text("0:00")
+                .opacity(0)
+        }
+    }
+
+    @ViewBuilder
+    private func runningText() -> some View {
+        switch chip.phase {
+        case .timerRunning:
+            if let end = chip.timerEndDate {
+                Text(
+                    timerInterval: workoutLiveActivityCountdownRange(endingAt: end),
+                    countsDown: true
+                )
+            } else {
+                Text("0:00").opacity(0)
+            }
+        case .stopwatchRunning:
+            if let start = chip.stopwatchStartDate {
+                Text(start, style: .timer)
+            } else {
+                Text("0:00").opacity(0)
+            }
+        case .timerPaused, .stopwatchPaused:
+            Text("0:00").opacity(0)
+        }
+    }
+}
+
+private struct WorkoutLiveActivityRunningFocus: View {
+    let state: WorkoutLiveActivityAttributes.ContentState
+    let chip: WorkoutLiveActivityChronoChip
+    var compactLayout: Bool = false
+
+    private var nextSetTitle: String {
+        let trimmedPrimary = state.primaryExerciseName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedPrimary.isEmpty ? NSLocalizedString("exercise", comment: "") : trimmedPrimary
+    }
+
+    private var hasCurrentMetrics: Bool {
+        !state.primaryMetrics.isEmpty
+    }
+
+    private var verticalSpacing: CGFloat {
+        compactLayout ? 8 : 10
+    }
+
+    private var chronoFontSize: CGFloat {
+        compactLayout ? 38 : 42
+    }
+
+    private var contextLabelText: String {
+        switch chip.tintKind {
+        case .manual:
+            "CURRENT"
+        case .restTimer, .restStopwatch:
+            "UP NEXT"
+        }
+    }
+
+    private var contextLabelFont: Font {
+        .caption2.weight(.semibold)
+    }
+
+    private var contextLabelLeadingInset: CGFloat {
+        12
+    }
+
+    private var contextLabelVerticalOffset: CGFloat {
+        compactLayout ? -15 : -17
+    }
+
+    var body: some View {
+        VStack(spacing: verticalSpacing) {
+            WorkoutLiveActivityRunningChronoText(chip: chip)
+                .font(.system(size: chronoFontSize, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(chip.liveActivityChronoForegroundTint)
+                .opacity(chip.isRunning ? 1 : 0.7)
+                .multilineTextAlignment(.center)
+                .contentTransition(.numericText())
+                .frame(maxWidth: .infinity)
+
+            WorkoutLiveActivityNextSetPill(
+                title: nextSetTitle,
+                metrics: hasCurrentMetrics ? state.primaryMetrics : nil,
+                compactLayout: compactLayout
+            )
+            .overlay(alignment: .topLeading) {
+                Text(contextLabelText)
+                    .font(contextLabelFont)
+                    .fontDesign(.rounded)
+                    .foregroundStyle(Color.workoutLiveActivitySecondary)
+                    .padding(.leading, contextLabelLeadingInset)
+                    .offset(y: contextLabelVerticalOffset)
+            }
+        }
+    }
+}
+
+/// Mirrors `WorkoutRecorderFloatingTimerButton` styling, but keeps the Live Activity chrono chip on a plain black capsule.
 /// Avoid `Button` and `Material` here—Live Activities on the lock screen often show a stuck spinner when those fail to resolve in the extension.
-/// Running timer/stopwatch digits use `Text(timerInterval:showsHours:)` so the system updates the label locally—no Activity pushes each tick.
+/// Running timer/stopwatch digits use system timer text so the lock screen keeps advancing without Activity pushes every tick.
 private struct WorkoutLiveActivityChronoChipView: View {
     let chip: WorkoutLiveActivityChronoChip
     var compact: Bool
@@ -146,29 +417,12 @@ private struct WorkoutLiveActivityChronoChipView: View {
         .padding(.horizontal, horizontalPadding)
         .padding(.vertical, compact ? 10 : 13)
         .background {
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color.white.opacity(0.16))
+            ZStack {
+                Capsule()
+                    .fill(Color.black)
 
-                    if chip.phase == .timerRunning,
-                       let end = chip.timerEndDate,
-                       let total = chip.timerTotalSeconds,
-                       total > 0
-                    {
-                        let start = end.addingTimeInterval(-total)
-                        TimelineView(PeriodicTimelineSchedule(from: start, by: 1)) { timelineContext in
-                            let remaining = max(0, end.timeIntervalSince(timelineContext.date))
-                            let progress = CGFloat(min(max(remaining / total, 0), 1))
-                            Rectangle()
-                                .fill(tint.opacity(0.24))
-                                .frame(width: max(0, proxy.size.width * progress))
-                        }
-                    }
-
-                    Capsule()
-                        .strokeBorder(Color.white.opacity(0.28), lineWidth: 0.9)
-                }
+                Capsule()
+                    .strokeBorder(Color.white.opacity(0.28), lineWidth: 0.9)
             }
         }
         .clipShape(Capsule())
@@ -177,24 +431,42 @@ private struct WorkoutLiveActivityChronoChipView: View {
 
     @ViewBuilder
     private var chronoTimeText: some View {
-        switch chip.phase {
-        case .timerRunning:
-            if let end = chip.timerEndDate, let total = chip.timerTotalSeconds, total > 0 {
-                let start = end.addingTimeInterval(-total)
-                Text(timerInterval: start...end, countsDown: true, showsHours: false)
-            }
-        case .stopwatchRunning:
-            if let start = chip.stopwatchStartDate {
-                Text(timerInterval: start...Date.distantFuture, countsDown: false, showsHours: false)
-            }
-        case .timerPaused, .stopwatchPaused:
-            if let s = chip.staticTickSeconds {
-                Text(workoutLiveActivityRestTimeString(seconds: s))
-            }
+        if chip.isRunning {
+            runningText()
+        } else if let label = chip.displayText(at: .now) {
+            Text(label)
+        } else {
+            Text("0:00")
+                .opacity(0)
         }
     }
 
-    private var iconName: String {
+    @ViewBuilder
+    private func runningText() -> some View {
+        switch chip.phase {
+        case .timerRunning:
+            if let end = chip.timerEndDate {
+                Text(
+                    timerInterval: workoutLiveActivityCountdownRange(endingAt: end),
+                    countsDown: true
+                )
+            } else {
+                Text("0:00").opacity(0)
+            }
+        case .stopwatchRunning:
+            if let start = chip.stopwatchStartDate {
+                Text(start, style: .timer)
+            } else {
+                Text("0:00").opacity(0)
+            }
+        case .timerPaused, .stopwatchPaused:
+            Text("0:00").opacity(0)
+        }
+    }
+}
+
+private extension WorkoutLiveActivityChronoChipView {
+    var iconName: String {
         switch chip.phase {
         case .timerRunning, .timerPaused:
             return "timer"
@@ -203,22 +475,15 @@ private struct WorkoutLiveActivityChronoChipView: View {
         }
     }
 
-    private var horizontalPadding: CGFloat {
+    var horizontalPadding: CGFloat {
         showsTimeLabel ? (compact ? 12 : 16) : (compact ? 11 : 14)
     }
 
-    private var showsTimeLabel: Bool {
-        switch chip.phase {
-        case .timerRunning:
-            return chip.timerEndDate != nil
-        case .timerPaused, .stopwatchPaused:
-            return chip.staticTickSeconds != nil
-        case .stopwatchRunning:
-            return chip.stopwatchStartDate != nil
-        }
+    var showsTimeLabel: Bool {
+        chip.displayText(at: .now) != nil
     }
 
-    private var chipForegroundTint: Color {
+    var chipForegroundTint: Color {
         chip.liveActivityChronoForegroundTint
     }
 }
@@ -250,7 +515,16 @@ private extension WorkoutLiveActivityChronoChip {
         case .stopwatchRunning:
             stopwatchStartDate != nil
         case .timerPaused, .stopwatchPaused:
-            false
+            staticTickSeconds != nil
+        }
+    }
+
+    var compactIslandIconName: String {
+        switch phase {
+        case .timerRunning, .timerPaused:
+            "timer"
+        case .stopwatchRunning, .stopwatchPaused:
+            "stopwatch"
         }
     }
 }
@@ -323,8 +597,7 @@ private struct WorkoutExerciseCard: View {
     }
 
     private var hasPreviousEntries: Bool {
-        (state.previousPrimaryMetrics.map { !$0.isEmpty } ?? false)
-            || (state.previousSecondaryMetrics.map { !$0.isEmpty } ?? false)
+        !displayedPreviousMetrics.isEmpty
     }
 
     private var hasCurrentMetrics: Bool {
@@ -340,6 +613,17 @@ private struct WorkoutExerciseCard: View {
 
     private var shouldShowCurrentSetOrdinal: Bool {
         state.setCount > 0 && state.setIndex > 0
+    }
+
+    private var displayedPreviousMetrics: [ExerciseMetricDisplay] {
+        let metrics = [state.previousPrimaryMetrics, state.previousSecondaryMetrics]
+            .compactMap { metric -> ExerciseMetricDisplay? in
+                guard let metric, !metric.isEmpty else { return nil }
+                return metric
+            }
+
+        // Supersets only surface the focused exercise in the Live Activity.
+        return state.secondaryExerciseName == nil ? metrics : Array(metrics.prefix(1))
     }
 
     var body: some View {
@@ -383,33 +667,24 @@ private struct WorkoutExerciseCard: View {
     }
 
     private var metricsColumn: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 0) {
             if hasPreviousEntries {
                 VStack(alignment: .leading, spacing: 4) {
-                    if let previous = state.previousPrimaryMetrics, !previous.isEmpty {
-                        HStack(alignment: .lastTextBaseline, spacing: 8) {
-                            if let ordinal = previousSetOrdinal {
-                                WorkoutLiveActivitySetOrdinalLabel(setNumber: ordinal, style: .previous)
-                            }
-                            WorkoutLiveActivityMetricsUnitRow(metrics: previous, presentation: .smallSecondary)
+                    if let previous = displayedPreviousMetrics.first {
+                        WorkoutLiveActivitySetPillRow(label: "prev", style: .previous) {
+                            WorkoutLiveActivityMetricsUnitRow(metrics: previous, presentation: .smallTertiary)
                         }
                     }
-                    if let previousSecondary = state.previousSecondaryMetrics, !previousSecondary.isEmpty {
-                        HStack(alignment: .lastTextBaseline, spacing: 8) {
-                            if let ordinal = previousSetOrdinal {
-                                WorkoutLiveActivitySetOrdinalLabel(setNumber: ordinal, style: .previous)
-                            }
-                            WorkoutLiveActivityMetricsUnitRow(metrics: previousSecondary, presentation: .smallSecondary)
+                    if displayedPreviousMetrics.count > 1, let previousSecondary = displayedPreviousMetrics.last {
+                        WorkoutLiveActivitySetPillRow(label: "prev", style: .previous) {
+                            WorkoutLiveActivityMetricsUnitRow(metrics: previousSecondary, presentation: .smallTertiary)
                         }
                     }
                 }
             }
 
             if !hasCurrentMetrics {
-                HStack(alignment: .center, spacing: 8) {
-                    if shouldShowCurrentSetOrdinal {
-                        WorkoutLiveActivitySetOrdinalLabel(setNumber: state.setIndex, style: .current)
-                    }
+                WorkoutLiveActivitySetPillRow(label: "current", style: .current) {
                     Text(NSLocalizedString("addExercise", comment: ""))
                         .font(.caption.weight(.medium))
                         .foregroundStyle(Color.workoutLiveActivitySecondary)
@@ -417,19 +692,13 @@ private struct WorkoutExerciseCard: View {
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     if !state.primaryMetrics.isEmpty {
-                        HStack(alignment: .lastTextBaseline, spacing: 8) {
-                            if shouldShowCurrentSetOrdinal {
-                                WorkoutLiveActivitySetOrdinalLabel(setNumber: state.setIndex, style: .current)
-                            }
-                            WorkoutLiveActivityMetricsUnitRow(metrics: state.primaryMetrics, presentation: .large)
+                        WorkoutLiveActivitySetPillRow(label: "current", style: .current) {
+                            WorkoutLiveActivityMetricsUnitRow(metrics: state.primaryMetrics, presentation: .normal)
                         }
                     }
                     if let secondary = state.secondaryMetrics, !secondary.isEmpty {
-                        HStack(alignment: .lastTextBaseline, spacing: 8) {
-                            if shouldShowCurrentSetOrdinal {
-                                WorkoutLiveActivitySetOrdinalLabel(setNumber: state.setIndex, style: .current)
-                            }
-                            WorkoutLiveActivityMetricsUnitRow(metrics: secondary, presentation: .large)
+                        WorkoutLiveActivitySetPillRow(label: "current", style: .current) {
+                            WorkoutLiveActivityMetricsUnitRow(metrics: secondary, presentation: .normal)
                         }
                     }
                 }
@@ -458,10 +727,12 @@ private struct WorkoutLiveActivitySetOrdinalLabel: View {
 }
 
 private enum WorkoutLiveActivityUnitPresentation {
-    /// Matches `UnitView` `.large` (lock screen + expanded Dynamic Island).
-    case large
-    /// Matches `UnitView` `.small` with value and unit in secondary styling.
-    case smallSecondary
+    /// Matches `UnitView` `.normal`.
+    case normal
+    /// Matches `UnitView` `.small`.
+    case small
+    /// Matches `UnitView` `.small`, but in tertiary styling.
+    case smallTertiary
 }
 
 private struct WorkoutLiveActivityMetricsUnitRow: View {
@@ -470,24 +741,106 @@ private struct WorkoutLiveActivityMetricsUnitRow: View {
 
     var body: some View {
         HStack(alignment: .lastTextBaseline, spacing: 12) {
-            if !metrics.repetitionSegments.isEmpty {
-                WorkoutLiveActivitySegmentedNumericField(
-                    segments: metrics.repetitionSegments,
-                    segmentPlaceholders: metrics.repetitionSegmentPlaceholders,
-                    unit: metrics.repetitionsUnit,
-                    presentation: presentation
-                )
-            }
-            if !metrics.weightSegments.isEmpty {
-                WorkoutLiveActivitySegmentedNumericField(
-                    segments: metrics.weightSegments,
-                    segmentPlaceholders: metrics.weightSegmentPlaceholders,
-                    unit: metrics.weightUnit,
-                    presentation: presentation
-                )
+            if presentation == .normal {
+                if !metrics.repetitionSegments.isEmpty {
+                    WorkoutLiveActivityUnitViewGroup(
+                        segments: metrics.repetitionSegments,
+                        segmentPlaceholders: metrics.repetitionSegmentPlaceholders,
+                        unit: metrics.repetitionsUnit.uppercased(),
+                        configuration: .normal
+                    )
+                }
+                if !metrics.weightSegments.isEmpty {
+                    WorkoutLiveActivityUnitViewGroup(
+                        segments: metrics.weightSegments,
+                        segmentPlaceholders: metrics.weightSegmentPlaceholders,
+                        unit: metrics.weightUnit.uppercased(),
+                        configuration: .normal
+                    )
+                }
+            } else {
+                if !metrics.repetitionSegments.isEmpty {
+                    WorkoutLiveActivitySegmentedNumericField(
+                        segments: metrics.repetitionSegments,
+                        segmentPlaceholders: metrics.repetitionSegmentPlaceholders,
+                        unit: metrics.repetitionsUnit,
+                        presentation: presentation
+                    )
+                }
+                if !metrics.weightSegments.isEmpty {
+                    WorkoutLiveActivitySegmentedNumericField(
+                        segments: metrics.weightSegments,
+                        segmentPlaceholders: metrics.weightSegmentPlaceholders,
+                        unit: metrics.weightUnit,
+                        presentation: presentation
+                    )
+                }
             }
         }
         .lineLimit(1)
+    }
+}
+
+private struct WorkoutLiveActivityUnitView: View {
+    let value: String
+    let unit: String
+    let configuration: WorkoutLiveActivityUnitViewConfiguration
+    let valueColor: Color
+    let unitColor: Color
+
+    var body: some View {
+        HStack(alignment: .lastTextBaseline, spacing: 2) {
+            Text(value)
+                .font(configuration == .large ? .title : configuration == .small ? .subheadline : .title3)
+                .fontWeight(.bold)
+                .fontDesign(.rounded)
+                .foregroundStyle(valueColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
+
+            if !unit.isEmpty {
+                Text(unit)
+                    .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
+                    .fontWeight(.semibold)
+                    .fontDesign(.rounded)
+                    .foregroundStyle(unitColor)
+                    .lineLimit(1)
+            }
+        }
+    }
+}
+
+private enum WorkoutLiveActivityUnitViewConfiguration {
+    case normal, large, small
+}
+
+private struct WorkoutLiveActivityUnitViewGroup: View {
+    let segments: [String]
+    let segmentPlaceholders: [Bool]
+    let unit: String
+    let configuration: WorkoutLiveActivityUnitViewConfiguration
+
+    var body: some View {
+        HStack(alignment: .lastTextBaseline, spacing: 6) {
+            ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
+                if index > 0 {
+                    Text(" / ")
+                        .font(configuration == .small ? .subheadline : .title3)
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(Color.white.opacity(0.28))
+                }
+
+                let isPlaceholder = index < segmentPlaceholders.count && segmentPlaceholders[index]
+                WorkoutLiveActivityUnitView(
+                    value: segment,
+                    unit: unit,
+                    configuration: configuration,
+                    valueColor: isPlaceholder ? Color.workoutLiveActivityPlaceholderText : .white,
+                    unitColor: isPlaceholder ? Color.workoutLiveActivityPlaceholderText : Color.workoutLiveActivitySecondary
+                )
+            }
+        }
     }
 }
 
@@ -499,11 +852,25 @@ private struct WorkoutLiveActivitySegmentedNumericField: View {
     let presentation: WorkoutLiveActivityUnitPresentation
 
     private var valueFont: Font {
-        presentation == .large ? .title : .subheadline
+        switch presentation {
+        case .normal:
+            return .title3
+        case .small:
+            return .subheadline
+        case .smallTertiary:
+            return .subheadline
+        }
     }
 
     private var unitFont: Font {
-        presentation == .large ? .body : .caption2
+        switch presentation {
+        case .normal:
+            return .subheadline
+        case .small:
+            return .caption2
+        case .smallTertiary:
+            return .caption2
+        }
     }
 
     private var allSegmentsPlaceholder: Bool {
@@ -541,32 +908,201 @@ private struct WorkoutLiveActivitySegmentedNumericField: View {
     private func foreground(forValueAt index: Int) -> Color {
         let isPlaceholder = index < segmentPlaceholders.count && segmentPlaceholders[index]
         switch presentation {
-        case .large:
+        case .normal:
             if isPlaceholder { return Color.workoutLiveActivityPlaceholderText }
             return .white
-        case .smallSecondary:
+        case .small:
             return Color.workoutLiveActivitySecondary
+        case .smallTertiary:
+            return Color.workoutLiveActivityTertiary
         }
     }
 
     private var unitForeground: Color {
         switch presentation {
-        case .large:
+        case .normal:
             if allSegmentsPlaceholder {
                 return Color.workoutLiveActivityPlaceholderText
             }
             return Color.workoutLiveActivitySecondary
-        case .smallSecondary:
+        case .small:
             return Color.workoutLiveActivitySecondary
+        case .smallTertiary:
+            return Color.workoutLiveActivityTertiary
         }
     }
 
     private var separatorForeground: Color {
         switch presentation {
-        case .large:
+        case .normal:
             Color.white.opacity(0.28)
-        case .smallSecondary:
+        case .small:
             Color.workoutLiveActivitySecondary.opacity(0.55)
+        case .smallTertiary:
+            Color.workoutLiveActivityTertiary.opacity(0.55)
+        }
+    }
+}
+
+private struct RoundedCornerRect: Shape {
+    var radius: CGFloat
+    var corners: UIRectCorner
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
+    }
+}
+
+/// Stroke for the "prev" pill: draws only top + left/right edges (no bottom line).
+private struct WorkoutLiveActivityPrevPillStroke: Shape {
+    var radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+
+        let r = min(radius, min(rect.width, rect.height) / 2)
+        let minX = rect.minX
+        let maxX = rect.maxX
+        let minY = rect.minY
+        let maxY = rect.maxY
+
+        // Left side up to the start of the top-left curve.
+        p.move(to: CGPoint(x: minX, y: maxY))
+        p.addLine(to: CGPoint(x: minX, y: minY + r))
+
+        // Top-left corner arc.
+        p.addArc(
+            center: CGPoint(x: minX + r, y: minY + r),
+            radius: r,
+            startAngle: .degrees(180),
+            endAngle: .degrees(270),
+            clockwise: false
+        )
+
+        // Top edge.
+        p.addLine(to: CGPoint(x: maxX - r, y: minY))
+
+        // Top-right corner arc.
+        p.addArc(
+            center: CGPoint(x: maxX - r, y: minY + r),
+            radius: r,
+            startAngle: .degrees(270),
+            endAngle: .degrees(0),
+            clockwise: false
+        )
+
+        // Right side down.
+        p.addLine(to: CGPoint(x: maxX, y: maxY))
+
+        return p
+    }
+}
+
+private struct WorkoutLiveActivitySetPillRow<Content: View>: View {
+    enum Style {
+        case current
+        case previous
+    }
+
+    let label: String
+    let style: Style
+    @ViewBuilder var content: Content
+
+    private var labelColor: Color {
+        style == .previous ? Color.workoutLiveActivityTertiary : Color.workoutLiveActivitySecondary
+    }
+
+    private var innerVerticalPadding: CGFloat {
+        style == .previous ? 5 : 10
+    }
+
+    private var innerHorizontalPadding: CGFloat {
+        style == .previous ? 10 : 12
+    }
+
+    private var outerHorizontalInset: CGFloat {
+        style == .previous ? 18 : 0
+    }
+
+    private var backgroundShape: some Shape {
+        if style == .previous {
+            return AnyShape(RoundedCornerRect(radius: 14, corners: [.topLeft, .topRight]))
+        }
+        return AnyShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    var body: some View {
+        HStack(alignment: .lastTextBaseline, spacing: 10) {
+            Text(label)
+                .font(.caption2.weight(.bold))
+                .fontDesign(.rounded)
+                .foregroundStyle(labelColor)
+                .textCase(.uppercase)
+
+            Spacer(minLength: 10)
+
+            content
+        }
+        .padding(.horizontal, innerHorizontalPadding)
+        .padding(.vertical, innerVerticalPadding)
+        .background {
+            backgroundShape
+                .fill(Color.white.opacity(0.08))
+                .overlay {
+                    if style == .previous {
+                        WorkoutLiveActivityPrevPillStroke(radius: 14)
+                            .stroke(Color.white.opacity(0.14), lineWidth: 0.9)
+                    } else {
+                        backgroundShape
+                            .stroke(Color.white.opacity(0.14), lineWidth: 0.9)
+                    }
+                }
+        }
+        .padding(.horizontal, outerHorizontalInset)
+    }
+}
+
+private struct WorkoutLiveActivityNextSetPill: View {
+    let title: String
+    let metrics: ExerciseMetricDisplay?
+    var compactLayout: Bool = false
+
+    private var titleFont: Font {
+        compactLayout ? .caption2.weight(.semibold) : .caption.weight(.semibold)
+    }
+
+    private var verticalPadding: CGFloat {
+        compactLayout ? 5 : 6
+    }
+
+    var body: some View {
+        HStack(alignment: .lastTextBaseline, spacing: 12) {
+            Text(title)
+                .font(titleFont)
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+
+            Spacer(minLength: 10)
+
+            if let metrics, !metrics.isEmpty {
+                WorkoutLiveActivityMetricsUnitRow(metrics: metrics, presentation: .small)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, verticalPadding)
+        .background {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.white.opacity(0.08))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.14), lineWidth: 0.9)
+                }
         }
     }
 }
@@ -702,7 +1238,7 @@ private extension WorkoutLiveActivityAttributes {
             primaryMetrics: previewDemoMetrics(reps: "12", repsPlaceholder: true, weight: "20", weightPlaceholder: true),
             secondaryMetrics: nil,
             previousPrimaryMetrics: previewDemoMetrics(reps: "10", repsPlaceholder: false, weight: "17.5", weightPlaceholder: false),
-            previousSecondaryMetrics: previewDemoMetrics(reps: "12", repsPlaceholder: false, weight: "25", weightPlaceholder: false),
+            previousSecondaryMetrics: nil,
             themeToken: .biceps,
             chronoChip: nil
         )
@@ -721,8 +1257,8 @@ private extension WorkoutLiveActivityAttributes {
             supersetPartnerIsLeading: true,
             primaryMetrics: previewDemoMetrics(reps: "15", repsPlaceholder: false, weight: "27.5", weightPlaceholder: false),
             secondaryMetrics: nil,
-            previousPrimaryMetrics: previewDemoMetrics(reps: "10", repsPlaceholder: false, weight: "17.5", weightPlaceholder: false),
-            previousSecondaryMetrics: previewDemoMetrics(reps: "12", repsPlaceholder: false, weight: "25", weightPlaceholder: false),
+            previousPrimaryMetrics: previewDemoMetrics(reps: "12", repsPlaceholder: false, weight: "25", weightPlaceholder: false),
+            previousSecondaryMetrics: nil,
             themeToken: .triceps,
             chronoChip: WorkoutLiveActivityChronoChip(
                 phase: .stopwatchPaused,
@@ -816,7 +1352,6 @@ private extension WorkoutLiveActivityAttributes {
 /// Compact / minimal Dynamic Island trailing: live rest timer or stopwatch (`m:ss` via `showsHours: false`) when running,
 /// otherwise elapsed workout duration.
 private struct WorkoutCompactIslandTrailingContent: View {
-    let startedAt: Date
     let chronoChip: WorkoutLiveActivityChronoChip?
     let font: Font
 
@@ -824,9 +1359,7 @@ private struct WorkoutCompactIslandTrailingContent: View {
         if let chip = chronoChip, chip.showsRunningChronoInCompactIsland {
             WorkoutCompactIslandChronoLabel(chip: chip, font: font)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-        } else {
-            WorkoutElapsedDurationLabel(startedAt: startedAt, font: font)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 }
@@ -836,42 +1369,40 @@ private struct WorkoutCompactIslandChronoLabel: View {
     let font: Font
 
     var body: some View {
-        compactChronoText
-            .font(font)
-            .monospacedDigit()
-            .foregroundStyle(chip.liveActivityChronoForegroundTint)
-            .multilineTextAlignment(.trailing)
-            .contentTransition(.numericText())
+        TimelineView(.periodic(from: timelineStartDate, by: 1)) { context in
+            let label = chip.displayText(at: context.date)
+
+            Text(label ?? "0:00")
+                .font(font)
+                .monospacedDigit()
+                .foregroundStyle(chip.liveActivityChronoForegroundTint)
+                .multilineTextAlignment(.trailing)
+                .contentTransition(.numericText())
+                .opacity(label == nil ? 0 : 1)
+        }
     }
 
-    @ViewBuilder
-    private var compactChronoText: some View {
+    private var timelineStartDate: Date {
         switch chip.phase {
         case .timerRunning:
-            if let end = chip.timerEndDate, let total = chip.timerTotalSeconds, total > 0 {
-                let start = end.addingTimeInterval(-total)
-                Text(timerInterval: start...end, countsDown: true, showsHours: false)
-            }
+            return .now
         case .stopwatchRunning:
-            if let start = chip.stopwatchStartDate {
-                Text(timerInterval: start...Date.distantFuture, countsDown: false, showsHours: false)
-            }
+            return chip.stopwatchStartDate ?? .now
         case .timerPaused, .stopwatchPaused:
-            EmptyView()
+            return .now
         }
     }
 }
 
-/// Elapsed workout time in compact minutes (`12min`, `1h 5min`). Uses a **periodic timeline** from the
-/// workout start (60s cadence) so the label advances on the extension side—no Activity pushes each minute—same idea as
-/// `Text(timerInterval:)` for the rest chip (system/schedule-driven updates, app can be suspended).
+/// Elapsed workout time advances locally via `TimelineView`, so the widget keeps updating without Activity pushes.
 private struct WorkoutElapsedDurationLabel: View {
     let startedAt: Date
     let font: Font
 
     var body: some View {
-        TimelineView(PeriodicTimelineSchedule(from: startedAt, by: 60)) { _ in
-            Text(WorkoutDurationFormatting.label(from: startedAt, reference: Date()))
+        TimelineView(.periodic(from: startedAt, by: 60)) { context in
+            let minutes = max(0, Int(context.date.timeIntervalSince(startedAt) / 60))
+            Text("\(minutes) min")
                 .font(font)
                 .monospacedDigit()
                 .foregroundStyle(.white)
@@ -881,77 +1412,27 @@ private struct WorkoutElapsedDurationLabel: View {
     }
 }
 
-private enum WorkoutDurationFormatting {
-    static func label(from start: Date, reference now: Date) -> String {
-        let totalSeconds = max(0, Int(now.timeIntervalSince(start)))
-        let totalMinutes = totalSeconds / 60
-        let hours = totalMinutes / 60
-        let minutesRemainder = totalMinutes % 60
-        let minToken = NSLocalizedString("min", comment: "")
-        if hours > 0 {
-            if minutesRemainder > 0 {
-                return "\(hours)h \(minutesRemainder)\(minToken)"
-            }
-            return "\(hours)h"
-        }
-        return "\(totalMinutes)\(minToken)"
-    }
-}
-
-/// Dynamic Island compact leading: first weight segment from current metrics, styled like `UnitView` (`.small`). Falls back to set fraction when there is no weight.
 private struct WorkoutCompactIslandLeadingContent: View {
-    let state: WorkoutLiveActivityAttributes.ContentState
+    let chronoChip: WorkoutLiveActivityChronoChip?
 
     var body: some View {
-        Group {
-            if let triple = state.primaryMetrics.compactWeightValueUnitAndPlaceholder {
-                WorkoutCompactIslandWeightUnitView(
-                    value: triple.value,
-                    unit: triple.unit,
-                    valueUsesPlaceholderStyle: triple.isPlaceholder
-                )
-            } else {
-                WorkoutCompactSetFraction(state: state)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-/// Mirrors `UnitView` (`.small`): rounded bold value + smaller semibold unit; widget target cannot import app `UnitView`.
-private struct WorkoutCompactIslandWeightUnitView: View {
-    let value: String
-    let unit: String
-    var valueUsesPlaceholderStyle: Bool = false
-
-    var body: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 2) {
-            Text(value)
-                .font(.subheadline)
-                .fontWeight(.bold)
-                .fontDesign(.rounded)
-                .foregroundStyle(valueUsesPlaceholderStyle ? Color.workoutLiveActivityPlaceholderText : .white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.65)
-            if !unit.isEmpty {
-                Text(unit.uppercased())
-                    .foregroundStyle(valueUsesPlaceholderStyle ? Color.workoutLiveActivityPlaceholderText : Color.workoutLiveActivitySecondary)
-                    .font(.caption2)
-                    .fontWeight(.semibold)
-                    .fontDesign(.rounded)
-                    .lineLimit(1)
-            }
+        if let chip = chronoChip, chip.showsRunningChronoInCompactIsland {
+            Image(systemName: chip.compactIslandIconName)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(chip.liveActivityChronoForegroundTint)
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 }
 
-private struct WorkoutCompactSetFraction: View {
-    let state: WorkoutLiveActivityAttributes.ContentState
+private struct WorkoutMinimalIslandContent: View {
+    let chronoChip: WorkoutLiveActivityChronoChip?
+    let font: Font
 
     var body: some View {
-        Text(state.setFractionLabel ?? "—")
-            .font(.caption2.weight(.bold).monospacedDigit())
-            .foregroundStyle(.white)
+        if let chip = chronoChip, chip.showsRunningChronoInCompactIsland {
+            WorkoutCompactIslandChronoLabel(chip: chip, font: font)
+        }
     }
 }
 

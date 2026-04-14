@@ -42,15 +42,18 @@ struct WorkoutRecorderFloatingTimerButton: View {
                     Text("0:00")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .contentTransition(.numericText())
                 } else if let timeText = timeText(for: displayState) {
                     if case .idleAutoTimer = displayState {
                         Text(timeText)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
+                            .contentTransition(.numericText())
                     } else {
                         Text(timeText)
                             .font(.body.weight(.semibold).monospacedDigit())
                             .contentTransition(.numericText())
+                            .animation(.easeOut(duration: 0.18), value: timeText)
                     }
                 }
             }

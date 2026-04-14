@@ -92,6 +92,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
         let primaryMetrics: ExerciseMetricDisplay
         let secondaryMetrics: ExerciseMetricDisplay?
         let themeMuscle: MuscleGroup?
+        let focusedSupersetExercise: FocusedSupersetExercise?
 
         if let superSet = currentContext.set as? SuperSet,
            let partnerExerciseName,
@@ -108,6 +109,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
             themeMuscle = focusesSecondExercise
                 ? currentContext.setGroup.secondaryExercise?.muscleGroup
                 : currentContext.setGroup.exercise?.muscleGroup
+            focusedSupersetExercise = focusesSecondExercise ? .second : .first
         } else {
             primaryExerciseName = firstExerciseName
             secondaryExerciseName = partnerExerciseName
@@ -115,11 +117,13 @@ enum WorkoutLiveActivitySnapshotBuilder {
             primaryMetrics = primaryMetricDisplay(for: currentContext.set, templateSet: templateSet)
             secondaryMetrics = secondaryMetricDisplay(for: currentContext.set, templateSet: templateSet)
             themeMuscle = currentContext.setGroup.exercise?.muscleGroup
+            focusedSupersetExercise = nil
         }
 
         let (previousPrimaryMetrics, previousSecondaryMetrics) = previousSetMetricDisplays(
             in: currentContext.setGroup,
-            beforeSetIndex: currentContext.setIndex
+            beforeSetIndex: currentContext.setIndex,
+            focusedSupersetExercise: focusedSupersetExercise
         )
 
         return WorkoutLiveActivitySnapshot(
@@ -156,6 +160,11 @@ enum WorkoutLiveActivitySnapshotBuilder {
         var hasEntry: Bool {
             repetitions.contains(where: { $0 > 0 }) || weights.contains(where: { $0 > 0 })
         }
+    }
+
+    private enum FocusedSupersetExercise {
+        case first
+        case second
     }
 
     private static func currentSetContext(in workout: Workout) -> CurrentSetContext? {
@@ -332,12 +341,35 @@ enum WorkoutLiveActivitySnapshotBuilder {
 
     private static func previousSetMetricDisplays(
         in setGroup: WorkoutSetGroup,
-        beforeSetIndex: Int
+        beforeSetIndex: Int,
+        focusedSupersetExercise: FocusedSupersetExercise?
     ) -> (ExerciseMetricDisplay?, ExerciseMetricDisplay?) {
         guard beforeSetIndex > 0 else { return (nil, nil) }
         let sets = setGroup.sets
         guard beforeSetIndex <= sets.count else { return (nil, nil) }
         let previousSet = sets[beforeSetIndex - 1]
+
+        if let superSet = previousSet as? SuperSet, let focusedSupersetExercise {
+            let focusedDisplay: ExerciseMetricDisplay
+            switch focusedSupersetExercise {
+            case .first:
+                focusedDisplay = metricDisplayEntriesOnly(
+                    actual: MetricValues(
+                        repetitions: [superSet.repetitionsFirstExercise],
+                        weights: [superSet.weightFirstExercise]
+                    )
+                )
+            case .second:
+                focusedDisplay = metricDisplayEntriesOnly(
+                    actual: MetricValues(
+                        repetitions: [superSet.repetitionsSecondExercise],
+                        weights: [superSet.weightSecondExercise]
+                    )
+                )
+            }
+            return (focusedDisplay.isEmpty ? nil : focusedDisplay, nil)
+        }
+
         let primary = primaryMetricEntriesOnly(for: previousSet)
         let primaryOut = primary.isEmpty ? nil : primary
         let secondaryOut = secondaryMetricEntriesOnly(for: previousSet)

@@ -269,6 +269,11 @@ struct WorkoutRecorderScreen: View {
                                             workoutRecorder: workoutRecorder,
                                             action: stopStopwatch
                                         )
+                                    } else if shouldShowFloatingTimerCancelButton {
+                                        WorkoutRecorderFloatingStopwatchStopButton(
+                                            workoutRecorder: workoutRecorder,
+                                            action: cancelTimer
+                                        )
                                     }
                                 }
                                 .opacity(toolbarOpacity)
@@ -397,6 +402,11 @@ struct WorkoutRecorderScreen: View {
             && chronograph.status == .running
     }
 
+    private var shouldShowFloatingTimerCancelButton: Bool {
+        chronograph.mode == .timer
+            && chronograph.status == .running
+    }
+
     // MARK: - Supporting Methods / Computed Properties
 
     private var workoutName: Binding<String> {
@@ -462,7 +472,6 @@ struct WorkoutRecorderScreen: View {
         switch autoRestBehavior {
         case let .timer(restSeconds):
             chronograph.mode = .timer
-            chronograph.timerAlertTintColor = completedSet.exercise?.muscleGroup?.color ?? .accentColor
             chronograph.setSeconds(Double(restSeconds) + 0.99)
             chronograph.start()
             chronograph.onTimerFired = { [weak chronograph, weak workoutRecorder] in
@@ -489,6 +498,14 @@ struct WorkoutRecorderScreen: View {
         guard chronograph.mode == .stopwatch else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         workoutRecorder.endStopwatch(using: chronograph)
+    }
+
+    private func cancelTimer() {
+        guard chronograph.mode == .timer else { return }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        // If this timer is an auto-rest timer (activeRestTimerSet != nil), we want to keep
+        // the elapsed rest time so far when cancelling.
+        workoutRecorder.finishRestAndStopChronograph(using: chronograph, persistTrackedValue: true)
     }
 
     private func finishWorkout(shouldSave: Bool) {

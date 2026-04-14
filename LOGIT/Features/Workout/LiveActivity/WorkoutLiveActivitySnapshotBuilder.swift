@@ -171,12 +171,12 @@ enum WorkoutLiveActivitySnapshotBuilder {
         let setGroups = workout.setGroups
         guard !setGroups.isEmpty else { return nil }
 
-        let hasStarted = workout.sets.contains { $0.hasRepetitionEntry }
+        let hasStarted = workout.sets.contains { setHasStartedForLiveActivity($0) }
         let currentSetGroup: WorkoutSetGroup
 
         if hasStarted {
             currentSetGroup = setGroups.first(where: { setGroup in
-                setGroup.sets.contains { !$0.hasRepetitionEntry }
+                setGroup.sets.contains { setNeedsLiveActivityAttention($0) }
             }) ?? setGroups.last!
         } else {
             currentSetGroup = setGroups.first!
@@ -186,7 +186,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
             return nil
         }
 
-        let currentSet = currentSetGroup.sets.first(where: { !$0.hasRepetitionEntry })
+        let currentSet = currentSetGroup.sets.first(where: { setNeedsLiveActivityAttention($0) })
             ?? currentSetGroup.sets.last
 
         guard let currentSet, let setIndex = currentSetGroup.sets.firstIndex(of: currentSet) else {
@@ -199,6 +199,24 @@ enum WorkoutLiveActivitySnapshotBuilder {
             exerciseIndex: exerciseIndex,
             setIndex: setIndex
         )
+    }
+
+    private static func setHasStartedForLiveActivity(_ workoutSet: WorkoutSet) -> Bool {
+        if let superSet = workoutSet as? SuperSet {
+            return superSet.repetitionsFirstExercise > 0 || superSet.repetitionsSecondExercise > 0
+        }
+
+        return workoutSet.hasRepetitionEntry
+    }
+
+    /// Supersets stay "current" until both exercise entries are complete, so the Live Activity can hand off from
+    /// the first exercise to the second within the same set instead of jumping to the next untouched set.
+    private static func setNeedsLiveActivityAttention(_ workoutSet: WorkoutSet) -> Bool {
+        if let superSet = workoutSet as? SuperSet {
+            return superSet.repetitionsFirstExercise == 0 || superSet.repetitionsSecondExercise == 0
+        }
+
+        return !workoutSet.hasRepetitionEntry
     }
 
     private static func templateSet(for workoutSet: WorkoutSet, in workout: Workout) -> TemplateSet? {

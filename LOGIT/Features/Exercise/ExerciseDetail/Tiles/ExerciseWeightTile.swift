@@ -113,19 +113,7 @@ struct ExerciseWeightTile: View {
                         .chartYScale(domain: 0 ... ((Double(allTimeWeightPREntry(in: workoutSets).0) ?? 0) * 1.1))
                         .chartXAxis {}
                         .chartYAxis {}
-                        .frame(width: 120, height: 70)
-                        .clipped()
-                        .mask(
-                            LinearGradient(
-                                gradient: Gradient(stops: [
-                                    .init(color: .clear, location: 0.0),
-                                    .init(color: .black, location: 0.1),
-                                    .init(color: .black, location: 1.0),
-                                ]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .tileSparklineChartStyle()
                     }
                 }
             }

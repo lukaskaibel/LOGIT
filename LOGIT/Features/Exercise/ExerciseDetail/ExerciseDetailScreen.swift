@@ -34,6 +34,7 @@ struct ExerciseDetailScreen: View {
     @State private var isShowingRepetitionsScreen = false
     @State private var isShowingVolumeScreen = false
     @State private var isShowingInstructions = false
+    @State private var isShowingMergingSheet = false
 
     // MARK: - Variables
 
@@ -154,38 +155,43 @@ struct ExerciseDetailScreen: View {
                         } label: {
                             Image(systemName: "info.circle")
                         }
-                        if !exercise.isDefaultExercise {
                         Menu {
-                        Button(
-                            action: { showingEditExercise.toggle() },
-                            label: {
-                                Label(NSLocalizedString("edit", comment: ""), systemImage: "pencil")
+                            Button {
+                                isShowingMergingSheet = true
+                            } label: {
+                                Label(NSLocalizedString("mergeExercise", comment: ""), systemImage: "arrow.triangle.merge")
                             }
-                        )
-                        Button(
-                            role: .destructive,
-                            action: { showDeletionAlert.toggle() },
-                            label: {
-                                Label(NSLocalizedString("delete", comment: ""), systemImage: "trash")
+                            if !exercise.isDefaultExercise {
+                                Button(
+                                    action: { showingEditExercise.toggle() },
+                                    label: {
+                                        Label(NSLocalizedString("edit", comment: ""), systemImage: "pencil")
+                                    }
+                                )
+                                Button(
+                                    role: .destructive,
+                                    action: { showDeletionAlert.toggle() },
+                                    label: {
+                                        Label(NSLocalizedString("delete", comment: ""), systemImage: "trash")
+                                    }
+                                )
                             }
-                        )
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                    .confirmationDialog(
-                        Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
-                        isPresented: $showDeletionAlert,
-                        titleVisibility: .visible
-                    ) {
-                        Button(
-                            "\(NSLocalizedString("delete", comment: ""))",
-                            role: .destructive,
-                            action: {
-                                database.delete(exercise, saveContext: true)
-                                dismiss()
-                            }
-                        )
-                    }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                        }
+                        .confirmationDialog(
+                            Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
+                            isPresented: $showDeletionAlert,
+                            titleVisibility: .visible
+                        ) {
+                            Button(
+                                "\(NSLocalizedString("delete", comment: ""))",
+                                role: .destructive,
+                                action: {
+                                    database.delete(exercise, saveContext: true)
+                                    dismiss()
+                                }
+                            )
                         }
                     }
                 }
@@ -195,6 +201,9 @@ struct ExerciseDetailScreen: View {
             }
             .sheet(isPresented: $isShowingInstructions) {
                 ExerciseInstructionsSheet(exercise: exercise)
+            }
+            .sheet(isPresented: $isShowingMergingSheet) {
+                ExerciseMergingSheet(exercise: exercise)
             }
             .navigationDestination(isPresented: $isShowingExerciseHistoryScreen) {
                 ExerciseHistoryScreen(exercise: exercise)

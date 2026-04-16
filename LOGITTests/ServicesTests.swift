@@ -693,10 +693,11 @@ final class WorkoutRecorderTests: XCTestCase {
             for: lastSet,
             activeRestTimerSet: nil,
             isChronographActive: false,
-            chronographMode: .timer
+            chronographMode: .timer,
+            showPendingRestInTertiary: false
         )
 
-        XCTAssertEqual(displayState, .staticRest(90))
+        XCTAssertEqual(displayState, .staticRest(90, false))
     }
 
     func testInterSetGroupRestDisplayStateShowsActiveTimerForMatchingActiveRestSet() {
@@ -711,7 +712,8 @@ final class WorkoutRecorderTests: XCTestCase {
             for: lastSet,
             activeRestTimerSet: lastSet,
             isChronographActive: true,
-            chronographMode: .timer
+            chronographMode: .timer,
+            showPendingRestInTertiary: false
         )
 
         XCTAssertEqual(displayState, .active(.timer))
@@ -729,7 +731,8 @@ final class WorkoutRecorderTests: XCTestCase {
             for: lastSet,
             activeRestTimerSet: nil,
             isChronographActive: false,
-            chronographMode: .stopwatch
+            chronographMode: .stopwatch,
+            showPendingRestInTertiary: false
         )
 
         XCTAssertEqual(displayState, .hidden)

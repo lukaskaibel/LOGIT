@@ -757,3 +757,19 @@
 "editRest" = "Edit Rest";
 "restBetweenSets" = "Rest Between Sets";
 "autoRestTimer" = "Auto Rest Timer";
+
+// MARK: - Exercise Merging
+"mergeExercise" = "Merge";
+"mergeExercises" = "Merge Exercises";
+"selectExerciseToMerge" = "Select Exercise to Merge With";
+"mergeDirectionDescription" = "Choose which exercise should remain. All workout history will be transferred.";
+"defaultExerciseAlwaysRemains" = "Default exercises always remain.";
+"cannotMergeDefaultExercises" = "Default exercises cannot be merged with each other.";
+"cannotMergeSameExercise" = "An exercise cannot be merged with itself.";
+"mergeConfirmation" = "All workout history from \"%@\" will be moved to \"%@\". \"%@\" will be deleted. This cannot be undone.";
+"mergeInto" = "Merge Into";
+"willBeDeleted" = "Will Be Deleted";
+"willRemain" = "Will Remain";
+"defaultExercise" = "Default";
+"changeExercise" = "Change Exercise";
+"error" = "Error";

@@ -755,3 +755,19 @@
 "editRest" = "Pause bearbeiten";
 "restBetweenSets" = "Pause zwischen Sätzen";
 "autoRestTimer" = "Automatischer Pausentimer";
+
+// MARK: - Exercise Merging
+"mergeExercise" = "Zusammenführen";
+"mergeExercises" = "Übungen zusammenführen";
+"selectExerciseToMerge" = "Übung zum Zusammenführen auswählen";
+"mergeDirectionDescription" = "Wähle, welche Übung bestehen bleiben soll. Der gesamte Trainingsverlauf wird übertragen.";
+"defaultExerciseAlwaysRemains" = "Standardübungen bleiben immer bestehen.";
+"cannotMergeDefaultExercises" = "Standardübungen können nicht miteinander zusammengeführt werden.";
+"cannotMergeSameExercise" = "Eine Übung kann nicht mit sich selbst zusammengeführt werden.";
+"mergeConfirmation" = "Der gesamte Trainingsverlauf von \"%@\" wird zu \"%@\" verschoben. \"%@\" wird gelöscht. Dies kann nicht rückgängig gemacht werden.";
+"mergeInto" = "Zusammenführen in";
+"willBeDeleted" = "Wird gelöscht";
+"willRemain" = "Bleibt bestehen";
+"defaultExercise" = "Standard";
+"changeExercise" = "Übung ändern";
+"error" = "Fehler";

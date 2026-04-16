@@ -28,6 +28,7 @@ struct ExerciseMergingSheet: View {
     // MARK: - Parameters
 
     let exercise: Exercise
+    var onMerged: ((Exercise) -> Void)?
 
     // MARK: - Computed
 
@@ -327,9 +328,11 @@ struct ExerciseMergingSheet: View {
 
     private func performMerge() {
         let mergeService = ExerciseMergeService(database: database)
+        let mergeTarget = target
         do {
-            try mergeService.merge(source: source, into: target)
+            try mergeService.merge(source: source, into: mergeTarget)
             dismiss()
+            onMerged?(mergeTarget)
         } catch let error as ExerciseMergeError {
             mergeError = error
             showErrorAlert = true

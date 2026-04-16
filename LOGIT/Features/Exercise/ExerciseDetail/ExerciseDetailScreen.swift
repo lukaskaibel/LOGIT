@@ -35,11 +35,13 @@ struct ExerciseDetailScreen: View {
     @State private var isShowingVolumeScreen = false
     @State private var isShowingInstructions = false
     @State private var isShowingMergingSheet = false
+    @State private var mergedIntoExercise: Exercise?
 
     // MARK: - Variables
 
     @StateObject var exercise: Exercise
     var isShowingAsSheet: Bool = false
+    var onNavigateToExercise: ((Exercise) -> Void)?
 
     // MARK: - Body
 
@@ -203,7 +205,21 @@ struct ExerciseDetailScreen: View {
                 ExerciseInstructionsSheet(exercise: exercise)
             }
             .sheet(isPresented: $isShowingMergingSheet) {
-                ExerciseMergingSheet(exercise: exercise)
+                ExerciseMergingSheet(exercise: exercise) { targetExercise in
+                    if targetExercise != exercise {
+                        if isShowingAsSheet {
+                            onNavigateToExercise?(targetExercise)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                dismiss()
+                            }
+                        } else {
+                            mergedIntoExercise = targetExercise
+                        }
+                    }
+                }
+            }
+            .navigationDestination(item: $mergedIntoExercise) { targetExercise in
+                ExerciseDetailScreen(exercise: targetExercise)
             }
             .navigationDestination(isPresented: $isShowingExerciseHistoryScreen) {
                 ExerciseHistoryScreen(exercise: exercise)

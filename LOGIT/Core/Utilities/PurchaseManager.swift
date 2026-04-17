@@ -70,6 +70,12 @@ class PurchaseManager: NSObject, ObservableObject {
     }
 
     var hasUnlockedPro: Bool {
+        // Fastlane snapshot runs need Pro-only screens (charts, measurements,
+        // Scan a Workout) to render without the "Available with Pro" blocker
+        // overlay, since that overlay is meaningless in marketing assets.
+        if ScreenshotFixtures.isEnabled {
+            return true
+        }
         #if DEBUG
             return false
         #else

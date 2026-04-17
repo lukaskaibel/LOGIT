@@ -1,5 +1,5 @@
 "01_Home" = "TRAIN";
-"02_History" = "PROGRESS";
-"03_Templates" = "PLAN";
+"02_MuscleGroups" = "BALANCE";
+"03_Bodyweight" = "PROGRESS";
 "04_ExerciseDetail" = "TRACK";
 "05_WorkoutDetail" = "LOG";

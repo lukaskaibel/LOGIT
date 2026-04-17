@@ -24,12 +24,12 @@
       "keyword": { "color": "#C6FF4B" }
     },
     {
-      "filter": "02_History",
-      "keyword": { "color": "#7AD39F" }
+      "filter": "02_MuscleGroups",
+      "keyword": { "color": "#7AB7FF" }
     },
     {
-      "filter": "03_Templates",
-      "keyword": { "color": "#7AB7FF" }
+      "filter": "03_Bodyweight",
+      "keyword": { "color": "#7AD39F" }
     },
     {
       "filter": "04_ExerciseDetail",

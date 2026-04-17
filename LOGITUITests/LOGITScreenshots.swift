@@ -55,16 +55,52 @@ final class LOGITScreenshots: XCTestCase {
         snapshot("01_Home")
     }
 
-    func test02History() {
-        tapTab(at: 1)
+    func test02MuscleGroups() {
+        // Lands on the full Muscle Groups split screen: a big donut chart +
+        // weekly focus breakdown. Much more visual than the history list.
+        tapTab(at: 0)
         waitABit()
-        snapshot("02_History")
+
+        // The tile sits under the "This Week" section on Home; scroll it into
+        // view and tap. `swipeUp` reliably exposes it on 6.9" iPhones.
+        let muscleGroupsTile = app.buttons
+            .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Muscle Groups", "Muskelgruppen"))
+            .firstMatch
+        if !muscleGroupsTile.waitForExistence(timeout: 3) || !muscleGroupsTile.isHittable {
+            app.swipeUp()
+            waitABit()
+        }
+        if muscleGroupsTile.waitForExistence(timeout: 3) {
+            muscleGroupsTile.tap()
+            waitABit(3)
+        }
+
+        snapshot("02_MuscleGroups")
     }
 
-    func test03Templates() {
-        tapTab(at: 2)
+    func test03Bodyweight() {
+        // Bodyweight trend screen: line chart with selectable data points +
+        // highlight tiles. Sells the Pro "Measurements" feature directly.
+        tapTab(at: 3) // Search tab - exposes "Measurements" destination.
         waitABit()
-        snapshot("03_Templates")
+
+        let measurementsButton = app.buttons
+            .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Measurements", "Messungen"))
+            .firstMatch
+        if measurementsButton.waitForExistence(timeout: 5) {
+            measurementsButton.tap()
+            waitABit(2)
+        }
+
+        let bodyweightCell = app.buttons
+            .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Bodyweight", "Körpergewicht"))
+            .firstMatch
+        if bodyweightCell.waitForExistence(timeout: 5) {
+            bodyweightCell.tap()
+            waitABit(3)
+        }
+
+        snapshot("03_Bodyweight")
     }
 
     func test04ExerciseDetail() {

@@ -1,8 +1,10 @@
-# Devices to capture. Apple currently requires a 6.9" iPhone; 6.5" covers
-# older hardware that still reads as "primary screenshots" in App Store Connect.
+# Apple currently requires exactly ONE iPhone display size - the 6.9" tier.
+# Screenshots for smaller devices (6.5", 5.5") are auto-derived from the
+# 6.9" capture, so uploading a second size would just show the same images
+# twice in App Store Connect. Keep this list at one device unless Apple
+# introduces a new required size tier.
 devices([
-  "iPhone 17 Pro Max", # 6.9" - required display size
-  "iPhone 16 Plus"     # 6.7" - second marketing size (update if Apple adds a new size tier)
+  "iPhone 17 Pro Max" # 6.9" - required display size
 ])
 
 languages([

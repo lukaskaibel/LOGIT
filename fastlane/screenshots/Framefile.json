@@ -24,24 +24,28 @@
       "keyword": { "color": "#C6FF4B" }
     },
     {
-      "filter": "02_MuscleGroups",
+      "filter": "02_MuscleGroupBack",
       "keyword": { "color": "#7AB7FF" }
     },
     {
-      "filter": "03_Bodyweight",
-      "keyword": { "color": "#7AD39F" }
-    },
-    {
-      "filter": "04_ExerciseDetail",
+      "filter": "03_ExerciseDetail",
       "keyword": { "color": "#FFCE54" }
     },
     {
-      "filter": "05_WorkoutDetail",
+      "filter": "04_WorkoutDetail",
       "keyword": { "color": "#FF8A5C" }
     },
     {
-      "filter": "06_WorkoutRecorder",
+      "filter": "05_WorkoutRecorder",
       "keyword": { "color": "#F05A5A" }
+    },
+    {
+      "filter": "06_SuperDropSet",
+      "keyword": { "color": "#E47CC9" }
+    },
+    {
+      "filter": "08_BodyFat",
+      "keyword": { "color": "#7AD39F" }
     }
   ]
 }

@@ -756,6 +756,13 @@
 "restBetweenSets" = "Pause zwischen Sätzen";
 "autoRestTimer" = "Automatischer Pausentimer";
 
+// App Store — Live Activity Showcase (Vollbild-Screenshot)
+"screenshotLiveActivityKicker" = "LIVE ACTIVITY";
+"screenshotLiveActivityTitle" = "Orientierung auf einen Blick.\nAuf dem Sperrbildschirm.";
+"screenshotLiveActivitySubtitle" = "Automatischer Pausen-Countdown, dein letzter Satz und das Gewicht für den nächsten — ohne Entsperren.";
+"screenshotLiveActivityModeAutoCaption" = "Auto-Timer";
+"screenshotLiveActivityModeLoggingCaption" = "Satz-Tracking";
+
 // MARK: - Exercise Merging
 "mergeExercise" = "Zusammenführen";
 "mergeExercises" = "Übungen zusammenführen";

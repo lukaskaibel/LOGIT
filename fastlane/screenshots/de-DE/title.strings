@@ -1,6 +1,7 @@
 "01_Home" = "Dein Training\nauf einen Blick.";
-"02_MuscleGroups" = "Dein Split,\nwöchentlich sichtbar.";
-"03_Bodyweight" = "Sieh deinen\nFortschritt wachsen.";
-"04_ExerciseDetail" = "Deine Bestwerte\nimmer im Blick.";
-"05_WorkoutDetail" = "Jeder Satz,\njede Wiederholung.";
-"06_WorkoutRecorder" = "Sätze tippen,\nim Flow bleiben.";
+"02_MuscleGroupBack" = "Jede Muskelgruppe\nim Gleichgewicht.";
+"03_ExerciseDetail" = "Deine Bestwerte\nimmer im Blick.";
+"04_WorkoutDetail" = "Jeder Satz,\njede Wiederholung.";
+"05_WorkoutRecorder" = "Sätze tippen,\nim Flow bleiben.";
+"06_SuperDropSet" = "Supersätze,\nDropsätze, gelogged.";
+"08_BodyFat" = "Sieh deinen\nFortschritt wachsen.";

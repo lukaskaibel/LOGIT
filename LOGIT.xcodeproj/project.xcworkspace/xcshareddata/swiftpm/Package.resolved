@@ -1,5 +1,5 @@
 {
-  "originHash" : "1da4ff1f6113bcc0d8fb5764e0e9af35fc70e6286e4250c2a5ed4a48a7a8a379",
+  "originHash" : "071c9662bc92dd8ef6ae4af676b3f7b12d840ed1982c13432e70781a9bd0fd32",
   "pins" : [
     {
       "identity" : "camera-swiftui",
@@ -26,15 +26,6 @@
       "state" : {
         "revision" : "6da8726bf38d68eb943d0f2139ac2a1fac70e65b",
         "version" : "1.0.4"
-      }
-    },
-    {
-      "identity" : "engine",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nathantannar4/Engine",
-      "state" : {
-        "revision" : "cb38d5106f45a49244b993f0f99f1e9b0975dd35",
-        "version" : "2.4.1"
       }
     },
     {
@@ -98,15 +89,6 @@
       "state" : {
         "revision" : "5f613358148239d0292c0cef674a3c2314737f9e",
         "version" : "2.4.1"
-      }
-    },
-    {
-      "identity" : "swift-syntax",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-syntax",
-      "state" : {
-        "revision" : "4799286537280063c85a32f09884cfbca301b1a1",
-        "version" : "602.0.0"
       }
     },
     {

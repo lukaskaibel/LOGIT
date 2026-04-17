@@ -30,6 +30,7 @@ struct LOGIT: App {
     @StateObject private var homeNavigationCoordinator = HomeNavigationCoordinator()
     @StateObject private var chronograph: Chronograph
     @StateObject private var defaultExerciseService: DefaultExerciseService
+    @StateObject private var exerciseSuggestionService: ExerciseSuggestionService
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingWelcome = false
@@ -45,11 +46,16 @@ struct LOGIT: App {
     // MARK: - Init
 
     init() {
-//        #if targetEnvironment(simulator)
-//        let database = Database(isPreview: true)
-//        #else
-        let database = Database()
-//        #endif
+        ScreenshotFixtures.prepareUserDefaultsIfNeeded()
+
+        let database: Database
+        if ScreenshotFixtures.isEnabled {
+            // Fastlane snapshot run: use the seeded in-memory preview store so
+            // every captured screen shows the same curated, photogenic data.
+            database = Database(isPreview: true)
+        } else {
+            database = Database()
+        }
 
         _database = StateObject(wrappedValue: database)
         _templateService = StateObject(wrappedValue: TemplateService(database: database))
@@ -68,6 +74,7 @@ struct LOGIT: App {
         _muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
         _homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
         _defaultExerciseService = StateObject(wrappedValue: DefaultExerciseService(database: database))
+        _exerciseSuggestionService = StateObject(wrappedValue: ExerciseSuggestionService(database: database))
 
         UserDefaults.standard.register(defaults: [
             "weightUnit": WeightUnit.defaultFromLocale.rawValue,
@@ -118,6 +125,7 @@ struct LOGIT: App {
                 .environmentObject(muscleGroupService)
                 .environmentObject(homeNavigationCoordinator)
                 .environmentObject(chronograph)
+                .environmentObject(exerciseSuggestionService)
                 .environment(\.goHome) { selectedTab = .home }
                 .environment(\.presentWorkoutRecorder, showWorkoutRecorder)
                 .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
@@ -131,6 +139,7 @@ struct LOGIT: App {
                         .environmentObject(muscleGroupService)
                         .environmentObject(homeNavigationCoordinator)
                         .environmentObject(chronograph)
+                        .environmentObject(exerciseSuggestionService)
                         .environment(\.managedObjectContext, database.context)
                         .environment(\.goHome) { selectedTab = .home }
                         .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
@@ -183,6 +192,7 @@ struct LOGIT: App {
                     .environmentObject(muscleGroupService)
                     .environmentObject(homeNavigationCoordinator)
                     .environmentObject(chronograph)
+                    .environmentObject(exerciseSuggestionService)
                     .interactiveDismissDisabled()
                     .onDisappear {
                         // Clean up if dismissed without saving
@@ -206,6 +216,7 @@ struct LOGIT: App {
                     .environmentObject(muscleGroupService)
                     .environmentObject(homeNavigationCoordinator)
                     .environmentObject(chronograph)
+                    .environmentObject(exerciseSuggestionService)
                     .presentationBackground(Color.black)
                     .onDisappear {
                         // Clean up if dismissed without saving

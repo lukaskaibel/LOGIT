@@ -1,0 +1,13 @@
+LOGIT ist ein uebersichtlicher, leistungsstarker und datenschutzfreundlicher Workout Tracker fuer dein iPhone. Er ist fuer alle gemacht, die smart trainieren, konsequent bleiben und ihren Fortschritt sehen wollen - ohne Ablenkung, Werbung oder Tracking.
+
+FUNKTIONEN
+
+- Eigene Workouts: Erstelle und verwalte Trainingsplaene mit eigenen Uebungen, Supersets, Drop-Sets und Pausen-Timer.
+- Fortschritts-Charts: Visualisiere deine Leistung ueber die Zeit, pro Uebung, Datum oder Kategorie.
+- Persoenliche Bestwerte: Rekorde fuer Wiederholungen, Gewicht und Volumen werden automatisch erfasst.
+- Schnelles Protokollieren: Fuer den Gebrauch direkt im Gym mit sinnvollen Defaults und wiederverwendbaren Plaenen.
+- Smart Import: Scanne einen handschriftlichen Plan und wandle ihn in einen digitalen Trainingsplan um.
+- iCloud Sync: Deine Workouts werden automatisch auf all deinen iOS-Geraeten synchronisiert.
+- Keine Werbung, kein Tracking: Deine Fitnessdaten gehoeren dir.
+
+Lade LOGIT, erstelle deine erste Vorlage und starte dein Training in Sekunden.

@@ -288,6 +288,42 @@ extension Database {
             workout: fourthBenchWorkout
         )
 
+        // MARK: Templates
+
+        func addTemplateSet(exercise: Exercise, template: Template, reps: Int, weight: Int, extraSets: Int = 2) {
+            let group = database.newTemplateSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: exercise,
+                template: template
+            )
+            for _ in 0 ... extraSets {
+                database.newTemplateStandardSet(
+                    repetitions: reps,
+                    weight: weight,
+                    setGroup: group
+                )
+            }
+        }
+
+        let pushTemplate = database.newTemplate(name: "Push Day")
+        addTemplateSet(exercise: benchpress, template: pushTemplate, reps: 8, weight: 70000, extraSets: 3)
+        addTemplateSet(exercise: inclinedBenchpress, template: pushTemplate, reps: 10, weight: 55000)
+        addTemplateSet(exercise: overheadPress, template: pushTemplate, reps: 8, weight: 45000)
+        addTemplateSet(exercise: tricepsExtensions, template: pushTemplate, reps: 12, weight: 25000)
+        addTemplateSet(exercise: lateralRaises, template: pushTemplate, reps: 15, weight: 12000)
+
+        let pullTemplate = database.newTemplate(name: "Pull Day")
+        addTemplateSet(exercise: deadlift, template: pullTemplate, reps: 5, weight: 120000, extraSets: 3)
+        addTemplateSet(exercise: latPulldown, template: pullTemplate, reps: 10, weight: 60000)
+        addTemplateSet(exercise: standingRows, template: pullTemplate, reps: 10, weight: 55000)
+        addTemplateSet(exercise: bicepsCurls, template: pullTemplate, reps: 12, weight: 30000)
+
+        let legTemplate = database.newTemplate(name: "Leg Day")
+        addTemplateSet(exercise: squat, template: legTemplate, reps: 6, weight: 100000, extraSets: 3)
+        addTemplateSet(exercise: lunges, template: legTemplate, reps: 10, weight: 40000)
+        addTemplateSet(exercise: legExtensions, template: legTemplate, reps: 12, weight: 50000)
+        addTemplateSet(exercise: crunches, template: legTemplate, reps: 20, weight: 0)
+
         database.save()
     }
 

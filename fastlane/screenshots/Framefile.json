@@ -1,0 +1,43 @@
+{
+  "default": {
+    "keyword": {
+      "color": "#C6FF4B",
+      "font": "./SF-Pro-Display-Heavy.otf",
+      "font_size": 95,
+      "padding": 15
+    },
+    "title": {
+      "color": "#FFFFFF",
+      "font": "./SF-Pro-Display-Bold.otf",
+      "font_size": 110
+    },
+    "background": "./background.png",
+    "padding": 45,
+    "stack_title": true,
+    "title_below_image": false,
+    "show_complete_frame": false,
+    "use_platform": "IOS"
+  },
+  "data": [
+    {
+      "filter": "01_Home",
+      "keyword": { "color": "#C6FF4B" }
+    },
+    {
+      "filter": "02_History",
+      "keyword": { "color": "#7AD39F" }
+    },
+    {
+      "filter": "03_Templates",
+      "keyword": { "color": "#7AB7FF" }
+    },
+    {
+      "filter": "04_ExerciseDetail",
+      "keyword": { "color": "#FFCE54" }
+    },
+    {
+      "filter": "05_WorkoutDetail",
+      "keyword": { "color": "#FF8A5C" }
+    }
+  ]
+}

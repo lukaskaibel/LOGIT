@@ -1,0 +1,12 @@
+git_url(ENV["MATCH_GIT_URL"] || "git@github.com:lukaskaibel/logit-certs.git")
+storage_mode("git")
+
+type("appstore")
+
+app_identifier([
+  ".com.lukaskbl.LOGIT",
+  ".com.lukaskbl.LOGIT.LOGITWidgetExtension",
+])
+
+username(ENV["FASTLANE_APPLE_ID"] || "lukas.kaibel@gmail.com")
+team_id("S2F6F7JZ8C")

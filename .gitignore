@@ -3,3 +3,30 @@ LOGIT.xcodeproj/project.xcworkspace/xcuserdata/lukaskaibel.xcuserdatad/UserInter
 LOGIT.xcworkspace/xcuserdata/lukaskaibel.xcuserdatad/UserInterfaceState.xcuserstate
 *.DS_Store
 Secrets.swift
+
+# --- fastlane -----------------------------------------------------------------
+# Per-machine secrets (API key paths, match passphrase, etc.)
+fastlane/.env.secret
+fastlane/*.p8
+
+# Generated outputs
+fastlane/report.xml
+fastlane/README.md
+fastlane/test_output/
+fastlane/builds/
+
+# Raw screenshots captured by `snapshot`. Framed copies (*_framed.png) are
+# committed so that CI can upload them without running the simulator farm.
+fastlane/screenshots/**/*.png
+!fastlane/screenshots/**/*_framed.png
+!fastlane/screenshots/background.png
+
+# Fastlane-generated HTML preview
+fastlane/screenshots/screenshots.html
+
+# Bundler install target (gems vendored locally via `bundle config path vendor/bundle`)
+vendor/
+
+# Gym/build artifacts
+*.ipa
+*.dSYM.zip

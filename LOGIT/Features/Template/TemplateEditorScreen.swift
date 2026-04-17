@@ -113,11 +113,9 @@ struct TemplateEditorScreen: View {
                                         setGroup: setGroup,
                                         focusedIntegerFieldIndex: .constant(nil),
                                         sheetType: $sheetType,
+                                        isReordering: .constant(false),
                                         supplementaryText: nil,
-                                        showDetailAsSheet: true,
-                                        onTapRestDuration: { templateSet in
-                                            selectedRestDurationSet = templateSet
-                                        }
+                                        showDetailAsSheet: true
                                     )
                                     .shadow(color: .black.opacity(0.5), radius: 5)
                                     .zIndex(1)
@@ -131,7 +129,7 @@ struct TemplateEditorScreen: View {
                                 .id(setGroup)
                             }
                         }
-                        .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
+                        .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? UIScreen.main.bounds.height * 0.5 : BOTTOM_SHEET_SMALL)
                         .animation(.interactiveSpring(), value: template.setGroups.count)
                     }
                     .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
@@ -155,9 +153,10 @@ struct TemplateEditorScreen: View {
                                     }
                                 },
                                 forSecondary: false,
+                                currentWorkoutExercises: [],
+                                supersetPrimaryExercise: nil,
                                 presentationDetentSelection: $exerciseSelectionPresentationDetent
                             )
-                            .padding(.top)
                             .toolbar(.hidden, for: .navigationBar)
                             .sheet(item: $selectedRestDurationSet) { templateSet in
                                 RestDurationEditorSheet(templateSet: templateSet)
@@ -198,36 +197,9 @@ struct TemplateEditorScreen: View {
                                     }
                                 }
                             }
-                            if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
-                                HStack {
-                                    Button {
-                                        database.undo()
-                                    } label: {
-                                        Image(systemName: "arrow.uturn.backward")
-                                    }
-                                    .disabled(!database.canUndo)
-                                    Spacer()
-                                    Button {
-                                        database.redo()
-                                    } label: {
-                                        Image(systemName: "arrow.uturn.forward")
-                                    }
-                                    .disabled(!database.canRedo)
-                                    Spacer()
-                                    Button {
-                                        isShowingReorderSheet = true
-                                    } label: {
-                                        Image(systemName: "arrow.up.arrow.down")
-                                    }
-                                }
-                                .tint(Color.label)
-                                .font(.title2)
-                                .padding(.horizontal, 30)
-                                .padding(.bottom, 5)
-                            }
                         }
                     }
-                    .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
+                    .presentationDetents([.height(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                     .presentationBackgroundInteraction(.enabled)
                     .interactiveDismissDisabled()
                 }
@@ -240,7 +212,7 @@ struct TemplateEditorScreen: View {
                 if !isEditingExistingTemplate {
                     database.flagAsTemporary(template)
                 }
-                exerciseSelectionPresentationDetent = template.setGroups.isEmpty ? .medium : .fraction(BOTTOM_SHEET_SMALL)
+                exerciseSelectionPresentationDetent = template.setGroups.isEmpty ? .medium : .height(BOTTOM_SHEET_SMALL)
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -250,7 +222,7 @@ struct TemplateEditorScreen: View {
                                 isFocusingRenameTemplateField = true
                             }
                             isRenamingTemplate = true
-                            exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
+                            exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
 
                         } label: {
                             Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")

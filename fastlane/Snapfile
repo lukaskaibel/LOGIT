@@ -1,0 +1,37 @@
+# Devices to capture. Apple currently requires a 6.9" iPhone; 6.5" covers
+# older hardware that still reads as "primary screenshots" in App Store Connect.
+devices([
+  "iPhone 17 Pro Max", # 6.9" - required display size
+  "iPhone 16 Plus"     # 6.7" - second marketing size (update if Apple adds a new size tier)
+])
+
+languages([
+  "en-US",
+  "de-DE"
+])
+
+# Xcode scheme + workspace/project pair used by snapshot's `xcodebuild` call.
+# Using a dedicated screenshots-only scheme so the unrelated LOGITTests bundle
+# never needs to compile for snapshot runs.
+scheme("LOGITScreenshots")
+project("./LOGIT.xcodeproj")
+
+# UI test bundle that calls `snapshot(...)`.
+test_target_name("LOGITUITests")
+
+# Output layout.
+output_directory("./fastlane/screenshots")
+clear_previous_screenshots(true)
+
+# Clean 9:41 status bar with full battery + Wi-Fi + cellular signal.
+override_status_bar(true)
+
+# Parallelize across simulators (much faster on multi-core Macs).
+concurrent_simulators(true)
+
+# Skip the HTML summary file - the metadata flow doesn't need it.
+skip_open_summary(true)
+
+# Stop the first failing test from aborting the whole run so we still get
+# partial screenshots to iterate on.
+stop_after_first_error(false)

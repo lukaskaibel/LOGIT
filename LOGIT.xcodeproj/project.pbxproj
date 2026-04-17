@@ -9,8 +9,10 @@
 /* Begin PBXBuildFile section */
 		10F53DA7818380C706F42B20 /* WorkoutLiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */; };
 		18F8886F2E06B3DCB04A2002 /* LOGITWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 79D10973BCE1A0618D3256CD /* LOGITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2A384BE3816900000002 /* ExerciseSuggestionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54EE2592821500000001 /* ExerciseSuggestionService.swift */; };
 		396ADE67CD8C1D14F7A8D82A /* LOGITWidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */; };
 		435F070826CC8D1F8D7239B8 /* WorkoutDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */; };
+		5701E3D211A49E43B531E6D8 /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0400C2E827A4AEAF03BACDC6 /* SnapshotHelper.swift */; };
 		57A9ABF55683DB0071E02FE6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A72B470FE19DAE1E42233F7F /* Foundation.framework */; };
 		6A45A79A5D89B951F7726DBD /* WorkoutLiveActivitySnapshotBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */; };
 		773128213DE6E6FA1506597C /* WorkoutLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */; };
@@ -228,8 +230,11 @@
 		8C6BE79BA086E3876A56C1D7 /* SharedWithYouBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */; };
 		8E306606440725A568FE5F1A /* ExerciseMergeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */; };
 		9392C43C9501E6676A02488A /* WorkoutLiveActivitySnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */; };
+		9C03B11C8A034786C5544D2E /* ScreenshotFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */; };
 		9F68D70717290138E369B178 /* ExerciseMergingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E384D0F4B54340F910F6813 /* ExerciseMergingSheet.swift */; };
 		ACC49C37E1B74DFAC016299F /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BDE77C44D210E79936D216 /* ShareSheet.swift */; };
+		B3DC6B7D9EF58D3A51C28227 /* LOGITScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */; };
+		F83E8531DDDC8C271BDF20F1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A72B470FE19DAE1E42233F7F /* Foundation.framework */; };
 		FF178CF5635C188320F0E7B4 /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */; };
 /* End PBXBuildFile section */
 
@@ -240,6 +245,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8D5B0EB66AF461FFD82736C7;
 			remoteInfo = LOGITWidgetExtension;
+		};
+		2519BE635FC33F8200911B1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8065AA632686667F00F53A5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8065AA6A2686667F00F53A5A;
+			remoteInfo = LOGIT;
 		};
 		79E8490B2A7EA28100C0DF95 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -276,15 +288,19 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0400C2E827A4AEAF03BACDC6 /* SnapshotHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SnapshotHelper.swift; sourceTree = "<group>"; };
 		06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivityManager.swift; path = WorkoutLiveActivityManager.swift; sourceTree = "<group>"; };
 		0E384D0F4B54340F910F6813 /* ExerciseMergingSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergingSheet.swift; sourceTree = "<group>"; };
+		144AED8F76DE3EBB1A1752AD /* LOGITUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LOGITUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		14BDE77C44D210E79936D216 /* ShareSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
 		19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivityWidget.swift; path = WorkoutLiveActivityWidget.swift; sourceTree = "<group>"; };
 		1EB3B92BF7A5E9FE9E442716 /* WorkoutSharingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutSharingService.swift; sourceTree = "<group>"; };
 		22040B8B5D5971A78B9E3A04 /* Pods_LOGIT.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LOGIT.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedWithYouBanner.swift; sourceTree = "<group>"; };
+		3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LOGITScreenshots.swift; sourceTree = "<group>"; };
 		4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutDTO.swift; sourceTree = "<group>"; };
 		4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivitySnapshotBuilder.swift; path = WorkoutLiveActivitySnapshotBuilder.swift; sourceTree = "<group>"; };
+		54EE2592821500000001 /* ExerciseSuggestionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSuggestionService.swift; sourceTree = "<group>"; };
 		5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivitySnapshotBuilderTests.swift; path = WorkoutLiveActivitySnapshotBuilderTests.swift; sourceTree = "<group>"; };
 		7907FDE9289E99B1006AF271 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		792A3FF22AB478F000C6A097 /* DatabaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseTests.swift; sourceTree = "<group>"; };
@@ -502,11 +518,20 @@
 		A72B470FE19DAE1E42233F7F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeService.swift; sourceTree = "<group>"; };
 		BA2F6D7984C9394E060503E7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = Info.plist; sourceTree = "<group>"; };
+		C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScreenshotFixtures.swift; sourceTree = "<group>"; };
 		C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LOGITWidgetExtension.swift; path = LOGITWidgetExtension.swift; sourceTree = "<group>"; };
 		EF956F5D14BBB78133BD528A /* ExerciseMergeServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3159CEC22E32BC879D79D0AE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F83E8531DDDC8C271BDF20F1 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6CCE531166DA2F7FAA6330D9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -539,6 +564,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		67CA906F4553F3B0858A215D /* LOGITUITests */ = {
+			isa = PBXGroup;
+			children = (
+				0400C2E827A4AEAF03BACDC6 /* SnapshotHelper.swift */,
+				3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */,
+			);
+			name = LOGITUITests;
+			path = LOGITUITests;
+			sourceTree = "<group>";
+		};
 		6B0C5444A74B071859C40CB3 /* LiveActivity */ = {
 			isa = PBXGroup;
 			children = (
@@ -613,6 +648,7 @@
 				801BBC942DF7338A00CDB1FB /* Launch Screen.storyboard */,
 				801BBC952DF7338A00CDB1FB /* LOGIT.entitlements */,
 				801BBC962DF7338A00CDB1FB /* LOGITApp.swift */,
+				C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -987,6 +1023,7 @@
 				80036CDD2EFEF9CE00B7C7B4 /* FuzzySearchService.swift */,
 				8085497A2EE9A34400761706 /* DefaultExerciseService.swift */,
 				801BBD332DF7338A00CDB1FB /* MuscleGroupService.swift */,
+				54EE2592821500000001 /* ExerciseSuggestionService.swift */,
 				1EB3B92BF7A5E9FE9E442716 /* WorkoutSharingService.swift */,
 				AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */,
 			);
@@ -1105,6 +1142,7 @@
 				792D522827F1160800B08813 /* Frameworks */,
 				8065AA6C2686667F00F53A5A /* Products */,
 				EA52A20BCC1C70E881C6C5C2 /* LOGITWidgetExtension */,
+				67CA906F4553F3B0858A215D /* LOGITUITests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1114,6 +1152,7 @@
 				8065AA6B2686667F00F53A5A /* LOGIT.app */,
 				79E849072A7EA28000C0DF95 /* LOGITTests.xctest */,
 				79D10973BCE1A0618D3256CD /* LOGITWidgetExtension.appex */,
+				144AED8F76DE3EBB1A1752AD /* LOGITUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1140,6 +1179,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4E4A46293BF0001C3B98CF77 /* LOGITUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2B77ECFA4A73FE2B529CFD8B /* Build configuration list for PBXNativeTarget "LOGITUITests" */;
+			buildPhases = (
+				10437630F39A1F04AAB47BDC /* Sources */,
+				3159CEC22E32BC879D79D0AE /* Frameworks */,
+				2F98021B18267E074FE9D754 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DD08CB0AB2C37CF7EE6784A0 /* PBXTargetDependency */,
+			);
+			name = LOGITUITests;
+			productName = LOGITUITests;
+			productReference = 144AED8F76DE3EBB1A1752AD /* LOGITUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		79E849062A7EA28000C0DF95 /* LOGITTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 79E8490F2A7EA28100C0DF95 /* Build configuration list for PBXNativeTarget "LOGITTests" */;
@@ -1247,11 +1304,19 @@
 				8065AA6A2686667F00F53A5A /* LOGIT */,
 				79E849062A7EA28000C0DF95 /* LOGITTests */,
 				8D5B0EB66AF461FFD82736C7 /* LOGITWidgetExtension */,
+				4E4A46293BF0001C3B98CF77 /* LOGITUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2F98021B18267E074FE9D754 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4EBC02598EE23AA57E8F5B89 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1288,6 +1353,15 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		10437630F39A1F04AAB47BDC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5701E3D211A49E43B531E6D8 /* SnapshotHelper.swift in Sources */,
+				B3DC6B7D9EF58D3A51C28227 /* LOGITScreenshots.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		39D05725905A361B70F0232D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1410,6 +1484,7 @@
 				801BBDBB2DF7338A00CDB1FB /* ExerciseDTO.swift in Sources */,
 				8085497B2EE9A34400761706 /* DefaultExerciseService.swift in Sources */,
 				801BBDBC2DF7338A00CDB1FB /* MuscleGroupService.swift in Sources */,
+				2A384BE3816900000002 /* ExerciseSuggestionService.swift in Sources */,
 				801BBDBD2DF7338A00CDB1FB /* Int+.swift in Sources */,
 				801BBDBE2DF7338A00CDB1FB /* WidgetCollectionView.swift in Sources */,
 				801BBDBF2DF7338A00CDB1FB /* ExerciseEditScreen.swift in Sources */,
@@ -1508,6 +1583,7 @@
 				10F53DA7818380C706F42B20 /* WorkoutLiveActivityManager.swift in Sources */,
 				8E306606440725A568FE5F1A /* ExerciseMergeService.swift in Sources */,
 				9F68D70717290138E369B178 /* ExerciseMergingSheet.swift in Sources */,
+				9C03B11C8A034786C5544D2E /* ScreenshotFixtures.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1525,6 +1601,12 @@
 			target = 8065AA6A2686667F00F53A5A /* LOGIT */;
 			targetProxy = 79E8490B2A7EA28100C0DF95 /* PBXContainerItemProxy */;
 		};
+		DD08CB0AB2C37CF7EE6784A0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = LOGIT;
+			target = 8065AA6A2686667F00F53A5A /* LOGIT */;
+			targetProxy = 2519BE635FC33F8200911B1D /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -1540,6 +1622,29 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		6AFA3A7D3F3BDBDCED095B4D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = S2F6F7JZ8C;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = LOGITUITests;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.lukaskbl.LOGITUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LOGIT;
+			};
+			name = Debug;
+		};
 		79E8490D2A7EA28100C0DF95 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1788,6 +1893,30 @@
 			};
 			name = Debug;
 		};
+		AF0AFDEB13BD935082AFE13C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = S2F6F7JZ8C;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = LOGITUITests;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.lukaskbl.LOGITUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LOGIT;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		D853EB291864DF2630ACBB1A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1822,6 +1951,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2B77ECFA4A73FE2B529CFD8B /* Build configuration list for PBXNativeTarget "LOGITUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF0AFDEB13BD935082AFE13C /* Release */,
+				6AFA3A7D3F3BDBDCED095B4D /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		79E8490F2A7EA28100C0DF95 /* Build configuration list for PBXNativeTarget "LOGITTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

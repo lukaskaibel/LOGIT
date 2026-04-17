@@ -27,6 +27,7 @@ struct WorkoutEditorScreen: View {
     @State private var focusedIntegerFieldIndex: IntegerField.Index?
     @State private var isEditingStartEndDate = false
     @State private var selectedRestDurationSet: WorkoutSet?
+    @State private var isShowingReorderSheet = false
 
     // MARK: - Parameters
 
@@ -96,12 +97,9 @@ struct WorkoutEditorScreen: View {
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                 canReorder: true,
                                 reduceShadow: true,
-                                showDetailAsSheet: true,
-                                onTapRestDuration: { workoutSet in
-                                    selectedRestDurationSet = workoutSet
-                                }
+                                showDetailAsSheet: true
                             )
-                            .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
+                            .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? UIScreen.main.bounds.height * 0.5 : BOTTOM_SHEET_SMALL)
                             .id(1)
                             .emptyPlaceholder(workout.setGroups) {
                                 Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
@@ -128,9 +126,10 @@ struct WorkoutEditorScreen: View {
                                     )
                                 },
                                 forSecondary: false,
+                                currentWorkoutExercises: workout.exercises,
+                                supersetPrimaryExercise: nil,
                                 presentationDetentSelection: $exerciseSelectionPresentationDetent
                             )
-                            .padding(.top)
                             .toolbar(.hidden, for: .navigationBar)
                             .sheet(item: $selectedRestDurationSet) { workoutSet in
                                 RestDurationEditorSheet(workoutSet: workoutSet)
@@ -138,33 +137,49 @@ struct WorkoutEditorScreen: View {
                                     .padding()
                                     .frame(maxHeight: .infinity, alignment: .top)
                             }
-                            if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
-                                HStack {
-                                    Button {
-                                        database.undo()
-                                    } label: {
-                                        Image(systemName: "arrow.uturn.backward")
+                            .sheet(isPresented: $isShowingReorderSheet) {
+                                NavigationStack {
+                                    List {
+                                        ForEach(workout.setGroups) { setGroup in
+                                            HStack {
+                                                VStack(alignment: .leading) {
+                                                    Text(setGroup.exercise?.displayName ?? "")
+                                                    if (setGroup.sets.first as? SuperSet) != nil,
+                                                       let secondaryExercise = setGroup.secondaryExercise {
+                                                        HStack {
+                                                            Image(systemName: "arrow.turn.down.right")
+                                                            Text(secondaryExercise.displayName)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .onDelete {
+                                            workout.setGroups.remove(atOffsets: $0)
+                                            workout.setGroups.forEach { $0.objectWillChange.send() }
+                                        }
+                                        .onMove { source, destination in
+                                            workout.setGroups.move(fromOffsets: source, toOffset: destination)
+                                            workout.setGroups.forEach { $0.objectWillChange.send() }
+                                        }
                                     }
-                                    .disabled(!database.canUndo)
-                                    Spacer()
-                                    Button {
-                                        database.redo()
-                                    } label: {
-                                        Image(systemName: "arrow.uturn.forward")
+                                    .environment(\.editMode, .constant(.active))
+                                    .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
+                                    .navigationBarTitleDisplayMode(.inline)
+                                    .toolbar {
+                                        ToolbarItem(placement: .topBarTrailing) {
+                                            Button {
+                                                isShowingReorderSheet = false
+                                            } label: {
+                                                Text(NSLocalizedString("done", comment: ""))
+                                            }
+                                        }
                                     }
-                                    .disabled(!database.canRedo)
-                                    Spacer()
-                                    Spacer()
-                                    Spacer()
                                 }
-                                .tint(Color.label)
-                                .font(.title2)
-                                .padding(.horizontal, 30)
-                                .padding(.bottom, 5)
                             }
                         }
                     }
-                    .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
+                    .presentationDetents([.height(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                     .presentationBackgroundInteraction(.enabled)
                     .interactiveDismissDisabled()
                     .sheet(isPresented: $isEditingStartEndDate) {
@@ -230,7 +245,7 @@ struct WorkoutEditorScreen: View {
                                 focusedTextField = .workoutName
                             }
                             isRenamingWorkout = true
-                            exerciseSelectionPresentationDetent = .fraction(BOTTOM_SHEET_SMALL)
+                            exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
                         } label: {
                             Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")
                         }
@@ -302,7 +317,7 @@ struct WorkoutEditorScreen: View {
                     workout.endDate = .now.addingTimeInterval(1000)
                 }
                 refreshOnChange()
-                exerciseSelectionPresentationDetent = workout.isEmpty ? .medium : .fraction(BOTTOM_SHEET_SMALL)
+                exerciseSelectionPresentationDetent = workout.isEmpty ? .medium : .height(BOTTOM_SHEET_SMALL)
             }
         }
     }

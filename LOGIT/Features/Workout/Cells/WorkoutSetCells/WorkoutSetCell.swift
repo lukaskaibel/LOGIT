@@ -63,7 +63,7 @@ struct WorkoutSetCell: View {
         VStack(spacing: 0) {
             if let indexInSetGroup = indexInSetGroup {
                 HStack {
-                    Text("\(indexInSetGroup + 1).")
+                    Text("\(indexInSetGroup + 1)")
                         .fontWeight(.bold)
                         .fontDesign(.rounded)
                         .foregroundStyle(.secondary)

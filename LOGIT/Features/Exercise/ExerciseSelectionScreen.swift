@@ -20,6 +20,10 @@ struct ExerciseSelectionScreen: View {
         }
     }
 
+    // MARK: - Environment
+
+    @EnvironmentObject private var exerciseSuggestionService: ExerciseSuggestionService
+
     // MARK: - State
 
     @State private var searchedText: String = ""
@@ -34,6 +38,8 @@ struct ExerciseSelectionScreen: View {
     let selectedExercise: Exercise?
     let setExercise: (Exercise) -> Void
     let forSecondary: Bool
+    let currentWorkoutExercises: [Exercise]
+    let supersetPrimaryExercise: Exercise?
     @Binding var presentationDetentSelection: PresentationDetent
 
     // MARK: - Body
@@ -55,151 +61,40 @@ struct ExerciseSelectionScreen: View {
                 $0.displayNameFirstLetter
             }).sorted { $0.key < $1.key }
             let isSearching = !searchedText.isEmpty
-            VStack(spacing: 12) {
-                HStack(spacing: 12) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(Color.placeholder)
-                        TextField(
-                            "Add Exercise",
-                            text: $searchedText,
-                            prompt: Text(NSLocalizedString("searchExercises", comment: ""))
-                        )
-                        .focused($textFieldIsFocused)
-                        if !searchedText.isEmpty {
-                            Button {
-                                searchedText = ""
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                            }
-                            .foregroundStyle(Color.placeholder)
-                        }
-                    }
-                    .font(.title3)
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 10)
-                    .background(Color(.systemGray5))
-                    .clipShape(ConcentricRectangle(corners: .concentric, isUniform: true))
-                    if presentationDetentSelection != .fraction(BOTTOM_SHEET_SMALL) {
-                        Button {
-                            sheetType = .addExercise
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.title2)
-                        }
-                    }
+            let suggestedExercises: [Exercise] = {
+                if forSecondary, let primary = supersetPrimaryExercise {
+                    return exerciseSuggestionService.suggestedSupersetPartners(
+                        forPrimary: primary,
+                        currentWorkoutExercises: currentWorkoutExercises,
+                        allExercises: Array(allExercises)
+                    )
+                } else {
+                    return exerciseSuggestionService.suggestedExercises(
+                        currentWorkoutExercises: currentWorkoutExercises,
+                        allExercises: Array(allExercises)
+                    )
                 }
-                .padding(.horizontal)
-                if presentationDetentSelection != .fraction(BOTTOM_SHEET_SMALL) {
-                    Group {
+            }()
+            let isSmallDetent = presentationDetentSelection == .height(BOTTOM_SHEET_SMALL)
+            VStack(spacing: 0) {
+                searchRow(isSmallDetent: isSmallDetent)
+                    .padding(.horizontal)
+                    .padding(.top)
+                    .padding(.bottom, 12)
+                if !isSmallDetent {
+                    VStack(spacing: 12) {
                         MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
-                        ScrollViewReader { scrollProxy in
-                            ScrollView {
-                                LazyVStack(spacing: SECTION_SPACING) {
-                                if isShowingNoExercisesTip {
-                                    TipView(
-                                        category: NSLocalizedString("exerciseLibrary", comment: ""),
-                                        title: NSLocalizedString("noExercisesTip", comment: ""),
-                                        description: NSLocalizedString("noExercisesTipDescription", comment: ""),
-                                        buttonAction: .init(
-                                            title: NSLocalizedString("createExercise", comment: ""),
-                                            action: { sheetType = .addExercise }
-                                        ),
-                                        isShown: $isShowingNoExercisesTip
-                                    )
-                                    .padding(.horizontal)
-                                }
-                                if isSearching {
-                                    // Flat list when searching - results ordered by relevance
-                                    VStack(spacing: CELL_SPACING) {
-                                        ForEach(sortedExercises) { exercise in
-                                            Button {
-                                                setExercise(exercise)
-                                                presentationDetentSelection = .fraction(BOTTOM_SHEET_SMALL)
-                                            } label: {
-                                                HStack {
-                                                    ExerciseCell(exercise: exercise)
-                                                    Spacer()
-                                                    if exercise == selectedExercise {
-                                                        Image(systemName: "checkmark")
-                                                            .fontWeight(.semibold)
-                                                            .foregroundColor(exercise.muscleGroup?.color)
-                                                    }
-                                                    NavigationChevron()
-                                                        .foregroundStyle(.secondary)
-                                                }
-                                                .padding(CELL_PADDING)
-                                                .tileStyle()
-                                                .contentShape(Rectangle())
-                                            }
-                                            .buttonStyle(TileButtonStyle())
-                                        }
-                                    }
-                                    .padding(.horizontal)
-                                } else {
-                                    // Grouped by first letter when not searching
-                                    ForEach(groupedExercises, id: \.0) { key, exercises in
-                                        VStack(spacing: SECTION_HEADER_SPACING) {
-                                            Text(key)
-                                                .textCase(.uppercase)
-                                                .sectionHeaderStyle2()
-                                                .frame(maxWidth: .infinity, alignment: .leading)
-                                            VStack(spacing: CELL_SPACING) {
-                                                ForEach(exercises) { exercise in
-                                                    Button {
-                                                        setExercise(exercise)
-                                                        presentationDetentSelection = .fraction(BOTTOM_SHEET_SMALL)
-                                                    } label: {
-                                                        HStack {
-                                                            ExerciseCell(exercise: exercise)
-                                                            Spacer()
-                                                            if exercise == selectedExercise {
-                                                                Image(systemName: "checkmark.circle.fill")
-                                                                    .font(.title2)
-                                                                    .foregroundStyle(exercise.muscleGroup?.color ?? .accentColor)
-                                                            }
-                                                            NavigationChevron()
-                                                                .foregroundStyle(.secondary)
-                                                        }
-                                                        .padding(CELL_PADDING)
-                                                        .tileStyle()
-                                                        .contentShape(Rectangle())
-                                                    }
-                                                    .buttonStyle(TileButtonStyle())
-                                                    .id(exercise.objectID)
-                                                }
-                                            }
-                                        }
-                                        .padding(.horizontal)
-                                    }
-                                }
-                                EmptyView()
-                                    .emptyPlaceholder(exercises) {
-                                        if exercises.isEmpty {
-                                            Text(NSLocalizedString("pressPlusToAddExercise", comment: ""))
-                                        } else {
-                                            Text(String(format: NSLocalizedString("pressPlusToAdd", comment: ""), searchedText))
-                                        }
-                                    }
-                            }
-                            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                        }
-                        .onAppear {
-                            if let selected = selectedExercise {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                    withAnimation {
-                                        scrollProxy.scrollTo(selected.objectID, anchor: .center)
-                                    }
-                                }
-                            }
-                        }
-                        }
+                        exerciseList(
+                            exercises: exercises,
+                            sortedExercises: sortedExercises,
+                            groupedExercises: groupedExercises,
+                            suggestedExercises: suggestedExercises,
+                            isSearching: isSearching
+                        )
                     }
-                    .transition(.opacity)
                 }
-                Spacer()
             }
-            .edgesIgnoringSafeArea(.bottom)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 isShowingNoExercisesTip = exercises.isEmpty
@@ -215,7 +110,7 @@ struct ExerciseSelectionScreen: View {
                 if newValue != .large {
                     textFieldIsFocused = false
                 }
-                if newValue == .fraction(BOTTOM_SHEET_SMALL) {
+                if newValue == .height(BOTTOM_SHEET_SMALL) {
                     searchedText = ""
                 }
             }
@@ -231,7 +126,7 @@ struct ExerciseSelectionScreen: View {
                     ExerciseEditScreen(
                         onEditFinished: {
                             setExercise($0)
-                            presentationDetentSelection = .fraction(BOTTOM_SHEET_SMALL)
+                            presentationDetentSelection = .height(BOTTOM_SHEET_SMALL)
                         },
                         initialExerciseName: searchedText.trimmingCharacters(in: .whitespacesAndNewlines).capitalized,
                         initialMuscleGroup: selectedMuscleGroup ?? .chest
@@ -242,6 +137,200 @@ struct ExerciseSelectionScreen: View {
                     }
                 }
             }
+        }
+    }
+
+    // MARK: - Subviews
+
+    @ViewBuilder
+    private func searchRow(isSmallDetent: Bool) -> some View {
+        HStack(spacing: 12) {
+            HStack(spacing: 5) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(Color.placeholder)
+                TextField(
+                    "Add Exercise",
+                    text: $searchedText,
+                    prompt: Text(NSLocalizedString("searchExercises", comment: ""))
+                )
+                .focused($textFieldIsFocused)
+                if !searchedText.isEmpty {
+                    Button {
+                        searchedText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                    }
+                    .foregroundStyle(Color.placeholder)
+                }
+            }
+            .font(.title3)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 10)
+            .background(Color(.systemGray5))
+            .clipShape(ConcentricRectangle(corners: .concentric(minimum: 12), isUniform: true))
+            if !isSmallDetent {
+                Button {
+                    sheetType = .addExercise
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func exerciseList(
+        exercises: [Exercise],
+        sortedExercises: [Exercise],
+        groupedExercises: [(key: String, value: [Exercise])],
+        suggestedExercises: [Exercise],
+        isSearching: Bool
+    ) -> some View {
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                LazyVStack(spacing: SECTION_SPACING) {
+                    if isShowingNoExercisesTip {
+                        TipView(
+                            category: NSLocalizedString("exerciseLibrary", comment: ""),
+                            title: NSLocalizedString("noExercisesTip", comment: ""),
+                            description: NSLocalizedString("noExercisesTipDescription", comment: ""),
+                            buttonAction: .init(
+                                title: NSLocalizedString("createExercise", comment: ""),
+                                action: { sheetType = .addExercise }
+                            ),
+                            isShown: $isShowingNoExercisesTip
+                        )
+                        .padding(.horizontal)
+                    }
+                    if !isSearching && !suggestedExercises.isEmpty && selectedMuscleGroup == nil {
+                        suggestedSection(suggestedExercises: suggestedExercises)
+                    }
+                    if isSearching {
+                        flatExerciseList(sortedExercises: sortedExercises)
+                    } else {
+                        groupedExerciseList(groupedExercises: groupedExercises)
+                    }
+                    EmptyView()
+                        .emptyPlaceholder(exercises) {
+                            if exercises.isEmpty {
+                                Text(NSLocalizedString("pressPlusToAddExercise", comment: ""))
+                            } else {
+                                Text(String(format: NSLocalizedString("pressPlusToAdd", comment: ""), searchedText))
+                            }
+                        }
+                }
+                .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
+            }
+            .onAppear {
+                if let selected = selectedExercise {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation {
+                            scrollProxy.scrollTo(selected.objectID, anchor: .center)
+                        }
+                    }
+                }
+            }
+        }
+        .transition(.opacity)
+    }
+
+    @ViewBuilder
+    private func suggestedSection(suggestedExercises: [Exercise]) -> some View {
+        VStack(spacing: SECTION_HEADER_SPACING) {
+            HStack(spacing: 4) {
+                Image(systemName: "sparkles")
+                Text(NSLocalizedString("suggested", comment: ""))
+            }
+            .sectionHeaderStyle2()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: CELL_SPACING) {
+                ForEach(suggestedExercises) { exercise in
+                    Button {
+                        setExercise(exercise)
+                        presentationDetentSelection = .height(BOTTOM_SHEET_SMALL)
+                    } label: {
+                        HStack {
+                            ExerciseCell(exercise: exercise)
+                            Spacer()
+                            NavigationChevron()
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(CELL_PADDING)
+                        .tileStyle()
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(TileButtonStyle())
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    @ViewBuilder
+    private func flatExerciseList(sortedExercises: [Exercise]) -> some View {
+        VStack(spacing: CELL_SPACING) {
+            ForEach(sortedExercises) { exercise in
+                Button {
+                    setExercise(exercise)
+                    presentationDetentSelection = .height(BOTTOM_SHEET_SMALL)
+                } label: {
+                    HStack {
+                        ExerciseCell(exercise: exercise)
+                        Spacer()
+                        if exercise == selectedExercise {
+                            Image(systemName: "checkmark")
+                                .fontWeight(.semibold)
+                                .foregroundColor(exercise.muscleGroup?.color)
+                        }
+                        NavigationChevron()
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(CELL_PADDING)
+                    .tileStyle()
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(TileButtonStyle())
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    @ViewBuilder
+    private func groupedExerciseList(groupedExercises: [(key: String, value: [Exercise])]) -> some View {
+        ForEach(groupedExercises, id: \.0) { key, exercises in
+            VStack(spacing: SECTION_HEADER_SPACING) {
+                Text(key)
+                    .textCase(.uppercase)
+                    .sectionHeaderStyle2()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(spacing: CELL_SPACING) {
+                    ForEach(exercises) { exercise in
+                        Button {
+                            setExercise(exercise)
+                            presentationDetentSelection = .height(BOTTOM_SHEET_SMALL)
+                        } label: {
+                            HStack {
+                                ExerciseCell(exercise: exercise)
+                                Spacer()
+                                if exercise == selectedExercise {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.title2)
+                                        .foregroundStyle(exercise.muscleGroup?.color ?? .accentColor)
+                                }
+                                NavigationChevron()
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(CELL_PADDING)
+                            .tileStyle()
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(TileButtonStyle())
+                        .id(exercise.objectID)
+                    }
+                }
+            }
+            .padding(.horizontal)
         }
     }
 }
@@ -259,11 +348,12 @@ private struct ExerciseSelectionScreenPreviewWrapper: View {
                         selectedExercise: nil,
                         setExercise: { _ in },
                         forSecondary: false,
+                        currentWorkoutExercises: [],
+                        supersetPrimaryExercise: nil,
                         presentationDetentSelection: $presentationDetent
                     )
-                    .padding(.top)
                 }
-                .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $presentationDetent)
+                .presentationDetents([.height(BOTTOM_SHEET_SMALL), .medium, .large], selection: $presentationDetent)
             }
             .previewEnvironmentObjects()
     }

@@ -1025,7 +1025,7 @@ private struct WorkoutExerciseCard: View {
     }
 }
 
-/// Matches `WorkoutSetCell` set ordinal (`Text("\(n).")` bold rounded secondary); sizes differ for previous vs current.
+/// Matches `WorkoutSetCell` set ordinal (`Text("\(n)")` bold rounded secondary); sizes differ for previous vs current.
 private struct WorkoutLiveActivitySetOrdinalLabel: View {
     enum Style {
         case previous
@@ -1036,7 +1036,7 @@ private struct WorkoutLiveActivitySetOrdinalLabel: View {
     let style: Style
 
     var body: some View {
-        Text("\(setNumber).")
+        Text("\(setNumber)")
             .font(style == .previous ? .caption2.weight(.bold) : .title3.weight(.bold))
             .fontDesign(.rounded)
             .foregroundStyle(Color.workoutLiveActivitySecondary)

@@ -20,11 +20,10 @@ struct ExerciseHeader: View {
 
     // MARK: - State
 
-    @State private var exerciseDetailSheetExercise: Exercise?
-    @State private var secondaryExerciseDetailSheetExercise: Exercise?
+    @State private var isShowingExerciseDetailSheet = false
+    @State private var isShowingSecondaryExerciseDetailSheet = false
     @State private var isNavigatingToExerciseDetail = false
     @State private var isNavigatingToSecondaryExerciseDetail = false
-    @State private var pendingMergeTarget: Exercise?
 
     // MARK: - Body
 
@@ -33,7 +32,7 @@ struct ExerciseHeader: View {
             if let exercise = exercise {
                 if showDetailAsSheet {
                     Button {
-                        exerciseDetailSheetExercise = exercise
+                        isShowingExerciseDetailSheet = true
                     } label: {
                         exerciseLabel(exercise)
                     }
@@ -64,7 +63,7 @@ struct ExerciseHeader: View {
                     if let secondaryExercise = secondaryExercise {
                         if showDetailAsSheet {
                             Button {
-                                secondaryExerciseDetailSheetExercise = secondaryExercise
+                                isShowingSecondaryExerciseDetailSheet = true
                             } label: {
                                 secondaryExerciseLabel(secondaryExercise)
                             }
@@ -95,43 +94,21 @@ struct ExerciseHeader: View {
         .font(.body.weight(.semibold))
         .foregroundColor(.label)
         .lineLimit(1)
-        .sheet(item: $exerciseDetailSheetExercise, onDismiss: {
-            if let target = pendingMergeTarget {
-                pendingMergeTarget = nil
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                    exerciseDetailSheetExercise = target
+        .sheet(isPresented: $isShowingExerciseDetailSheet) {
+            if let exercise = exercise {
+                NavigationStack {
+                    ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
                 }
+                .presentationDragIndicator(.visible)
             }
-        }) { sheetExercise in
-            NavigationStack {
-                ExerciseDetailScreen(
-                    exercise: sheetExercise,
-                    isShowingAsSheet: true,
-                    onNavigateToExercise: { targetExercise in
-                        pendingMergeTarget = targetExercise
-                    }
-                )
-            }
-            .presentationDragIndicator(.visible)
         }
-        .sheet(item: $secondaryExerciseDetailSheetExercise, onDismiss: {
-            if let target = pendingMergeTarget {
-                pendingMergeTarget = nil
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                    exerciseDetailSheetExercise = target
+        .sheet(isPresented: $isShowingSecondaryExerciseDetailSheet) {
+            if let secondaryExercise = secondaryExercise {
+                NavigationStack {
+                    ExerciseDetailScreen(exercise: secondaryExercise, isShowingAsSheet: true)
                 }
+                .presentationDragIndicator(.visible)
             }
-        }) { sheetExercise in
-            NavigationStack {
-                ExerciseDetailScreen(
-                    exercise: sheetExercise,
-                    isShowingAsSheet: true,
-                    onNavigateToExercise: { targetExercise in
-                        pendingMergeTarget = targetExercise
-                    }
-                )
-            }
-            .presentationDragIndicator(.visible)
         }
         .navigationDestination(isPresented: $isNavigatingToExerciseDetail) {
             if let exercise = exercise {

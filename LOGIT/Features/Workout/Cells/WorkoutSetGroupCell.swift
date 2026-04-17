@@ -24,6 +24,7 @@ struct WorkoutSetGroupCell: View {
     var showDetailAsSheet: Bool = false
     var showPendingRestInTertiary: Bool = false
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
+    var onReorderSetGroups: (() -> Void)? = nil
 
     // MARK: - State
 
@@ -157,6 +158,8 @@ struct WorkoutSetGroupCell: View {
                         isSelectingPrimaryExercise = false
                     },
                     forSecondary: false,
+                    currentWorkoutExercises: setGroup.workout?.exercises ?? [],
+                    supersetPrimaryExercise: nil,
                     presentationDetentSelection: .constant(.large)
                 )
                 .presentationDetents([.large], selection: .constant(.large))
@@ -179,6 +182,8 @@ struct WorkoutSetGroupCell: View {
                         isSelectingSecondaryExercise = false
                     },
                     forSecondary: true,
+                    currentWorkoutExercises: setGroup.workout?.exercises ?? [],
+                    supersetPrimaryExercise: setGroup.exercise,
                     presentationDetentSelection: .constant(.large)
                 )
                 .presentationDetents([.large], selection: .constant(.large))
@@ -348,6 +353,18 @@ struct WorkoutSetGroupCell: View {
                 }
             } header: {
                 Text(NSLocalizedString("setType", comment: ""))
+            }
+            if let onReorderSetGroups {
+                Section {
+                    Button {
+                        onReorderSetGroups()
+                    } label: {
+                        Label(
+                            NSLocalizedString("reorderExercises", comment: ""),
+                            systemImage: "arrow.up.arrow.down"
+                        )
+                    }
+                }
             }
         } label: {
             Image(systemName: "ellipsis")

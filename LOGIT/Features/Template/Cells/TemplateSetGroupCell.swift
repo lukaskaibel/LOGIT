@@ -19,13 +19,14 @@ struct TemplateSetGroupCell: View {
 
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
     @Binding var sheetType: TemplateEditorScreen.SheetType?
+    @Binding var isReordering: Bool
 
     let supplementaryText: String?
     var showDetailAsSheet: Bool = false
-    var onTapRestDuration: ((TemplateSet) -> Void)? = nil
 
     // MARK: - State
 
+    @State private var isReorderingSets = false
     @State private var isSelectingPrimaryExercise = false
     @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
     @State private var isSelectingSecondaryExercise = false
@@ -35,16 +36,18 @@ struct TemplateSetGroupCell: View {
     var body: some View {
         VStack(spacing: CELL_PADDING) {
             header
-            VStack(spacing: CELL_PADDING) {
-                VStack(spacing: CELL_SPACING) {
-                    ForEach(setGroup.sets) { templateSet in
-                        VStack(spacing: CELL_SPACING) {
+            if !isReordering {
+                VStack(spacing: CELL_PADDING) {
+                    VStack(spacing: CELL_SPACING) {
+                        ReorderableForEach(
+                            $setGroup.sets,
+                            canReorder: canEdit,
+                            isReordering: $isReorderingSets
+                        ) { templateSet in
                             TemplateSetCell(
                                 templateSet: templateSet,
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                                onEditRestDuration: {
-                                    onTapRestDuration?(templateSet)
-                                }
+                                onEditRestDuration: nil
                             )
                             .contentShape(Rectangle())
                             .background(
@@ -58,58 +61,43 @@ struct TemplateSetGroupCell: View {
                                     database.delete(templateSet)
                                 }
                             }
-
-                            if !isLastSet(templateSet), templateSet.restDurationSeconds > 0 {
-                                if let onTapRestDuration {
-                                    Button {
-                                        onTapRestDuration(templateSet)
-                                    } label: {
-                                        RestDurationLabel(seconds: templateSet.restDurationSeconds)
-                                            .padding(.vertical, 2)
-                                    }
-                                    .buttonStyle(.plain)
-                                } else {
-                                    RestDurationLabel(seconds: templateSet.restDurationSeconds)
-                                        .padding(.vertical, 2)
-                                }
-                            }
                         }
                     }
-                }
-                .padding(.horizontal, CELL_PADDING / 2)
-                .animation(.interactiveSpring())
-                if canEdit {
-                    HStack(spacing: 8) {
-                        Button {
-                            withAnimation(.interactiveSpring()) {
-                                database.addSet(to: setGroup)
-                            }
-                        } label: {
-                            Label(
-                                NSLocalizedString("addSet", comment: ""),
-                                systemImage: "plus.circle.fill"
-                            )
-                            .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
-                            .font(.system(.body, design: .rounded, weight: .bold))
-                            .padding(.vertical, 15)
-                            .frame(maxWidth: .infinity)
-                            .background(Color.accentColor.secondaryTranslucentBackground)
-                            .clipShape(Capsule())
-                        }
-                        Button {
-                            withAnimation(.interactiveSpring()) {
-                                database.duplicateLastSet(from: setGroup)
-                            }
-                        } label: {
-                            Image(systemName: "plus.square.on.square")
+                    .padding(.horizontal, CELL_PADDING / 2)
+                    .animation(.interactiveSpring())
+                    if canEdit {
+                        HStack(spacing: 8) {
+                            Button {
+                                withAnimation(.interactiveSpring()) {
+                                    database.addSet(to: setGroup)
+                                }
+                            } label: {
+                                Label(
+                                    NSLocalizedString("addSet", comment: ""),
+                                    systemImage: "plus.circle.fill"
+                                )
                                 .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
                                 .font(.system(.body, design: .rounded, weight: .bold))
-                                .padding(15)
+                                .padding(.vertical, 15)
+                                .frame(maxWidth: .infinity)
                                 .background(Color.accentColor.secondaryTranslucentBackground)
                                 .clipShape(Capsule())
+                            }
+                            Button {
+                                withAnimation(.interactiveSpring()) {
+                                    database.duplicateLastSet(from: setGroup)
+                                }
+                            } label: {
+                                Image(systemName: "plus.square.on.square")
+                                    .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                                    .font(.system(.body, design: .rounded, weight: .bold))
+                                    .padding(15)
+                                    .background(Color.accentColor.secondaryTranslucentBackground)
+                                    .clipShape(Capsule())
+                            }
                         }
+                        .padding(.horizontal, CELL_PADDING)
                     }
-                    .padding(.horizontal, CELL_PADDING)
                 }
             }
         }
@@ -122,6 +110,8 @@ struct TemplateSetGroupCell: View {
                         isSelectingPrimaryExercise = false
                     },
                     forSecondary: false,
+                    currentWorkoutExercises: [],
+                    supersetPrimaryExercise: nil,
                     presentationDetentSelection: .constant(.large)
                 )
                 .presentationDetents([.large], selection: .constant(.large))
@@ -144,6 +134,8 @@ struct TemplateSetGroupCell: View {
                         isSelectingSecondaryExercise = false
                     },
                     forSecondary: true,
+                    currentWorkoutExercises: [],
+                    supersetPrimaryExercise: nil,
                     presentationDetentSelection: .constant(.large)
                 )
                 .presentationDetents([.large], selection: .constant(.large))
@@ -161,14 +153,8 @@ struct TemplateSetGroupCell: View {
             }
         }
     .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
-    .padding(.bottom, canEdit ? CELL_PADDING : CELL_PADDING / 2)
+    .padding(.bottom, canEdit || isReordering ? CELL_PADDING : CELL_PADDING / 2)
     .tileStyle()
-    }
-
-    // MARK: - Supporting Methods
-
-    private func isLastSet(_ templateSet: TemplateSet) -> Bool {
-        setGroup.sets.last == templateSet
     }
 
     // MARK: - Supporting Views
@@ -201,7 +187,7 @@ struct TemplateSetGroupCell: View {
                                 .foregroundColor(setGroup.secondaryExercise?.muscleGroup?.color ?? .accentColor)
                         }
                         Spacer()
-                        if let supplementaryText = supplementaryText {
+                        if !isReordering, let supplementaryText = supplementaryText {
                             Text(supplementaryText)
                                 .foregroundStyle(.secondary)
                                 .fontWeight(.medium)
@@ -210,7 +196,12 @@ struct TemplateSetGroupCell: View {
                     .font(.system(.footnote, design: .rounded, weight: .bold))
                 }
                 Spacer()
-                if canEdit { menu }
+                if canEdit && !isReordering { menu }
+                if isReordering {
+                    Image(systemName: "line.3.horizontal")
+                        .fontWeight(.regular)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .padding([.top, .horizontal], CELL_PADDING)
@@ -248,6 +239,17 @@ struct TemplateSetGroupCell: View {
                             systemImage: "arrow.triangle.2.circlepath"
                         )
                     }
+                }
+                Button {
+                    isReordering.toggle()
+                } label: {
+                    Label(
+                        NSLocalizedString(
+                            isReordering ? "reorderingDone" : "reorderExercises",
+                            comment: ""
+                        ),
+                        systemImage: "arrow.up.arrow.down"
+                    )
                 }
             }
             Section {
@@ -303,6 +305,7 @@ private struct PreviewWrapperView: View {
                         setGroup: database.testTemplate.setGroups.first!,
                         focusedIntegerFieldIndex: .constant(nil),
                         sheetType: .constant(nil),
+                        isReordering: .constant(false),
                         supplementaryText: nil
                     )
                     .padding(CELL_PADDING)
@@ -312,6 +315,7 @@ private struct PreviewWrapperView: View {
                         setGroup: database.testTemplate.setGroups.first!,
                         focusedIntegerFieldIndex: .constant(nil),
                         sheetType: .constant(nil),
+                        isReordering: .constant(true),
                         supplementaryText: "1 / 3"
                     )
                     .padding(CELL_PADDING)
@@ -321,6 +325,7 @@ private struct PreviewWrapperView: View {
                         setGroup: database.testTemplate.setGroups.first!,
                         focusedIntegerFieldIndex: .constant(nil),
                         sheetType: .constant(nil),
+                        isReordering: .constant(false),
                         supplementaryText: "1 / 3"
                     )
                     .padding(CELL_PADDING)

@@ -21,22 +21,22 @@ struct TimerStopwatchView: View {
 
     // MARK: - Constants
 
-    private let timerValues = [
-        0, 10, 15, 30, 45, 60, 90, 120, 150, 180, 240, 300, 360, 420, 480, 540, 600,
-    ]
     private let opacityOfTimeWhenPaused = 0.7
     private let transportButtonSize: CGFloat = 70
     private let transportButtonIconSize: CGFloat = 20
-    private let controlSectionHeight: CGFloat = 96
     private let stopwatchQuickAdjustments = [-15, -5, 5, 15]
+    private let timerQuickAdjustments = [-15, -5, 5, 15]
+    private let timerPresets = [10, 20, 30, 45, 60, 90, 120, 150, 180, 240, 300, 600]
 
     @State private var isShowingNotificationNotEnabledAlert = false
     @State private var isShowingNotificationExplanationAlert = false
 
+    @Namespace private var transportNamespace
+
     // MARK: - View
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             HStack {
                 Button {
                     if chronograph.mode != .timer {
@@ -62,22 +62,22 @@ struct TimerStopwatchView: View {
                         .foregroundStyle(chronograph.mode == .stopwatch ? themeColor : .placeholder)
                 }
             }
-
+            
             if let activeExerciseName, isWorkoutRestChronographActive {
+                Spacer()
                 HStack(spacing: 6) {
                     Image(systemName: chronograph.mode == .timer ? "timer" : "stopwatch")
                     Text(activeExerciseName)
                         .lineLimit(1)
                 }
-                .frame(maxWidth: .infinity)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(themeColor)
-                .padding(.bottom, 6)
+                .transition(.opacity.combined(with: .offset(y: -4)))
             }
-            
-            Spacer(minLength: 0)
 
-            VStack {
+            Spacer()
+
+            VStack(spacing: 6) {
                 HStack {
                     let minutes = lastTimerDuration / 60
                     let seconds = lastTimerDuration % 60
@@ -100,61 +100,46 @@ struct TimerStopwatchView: View {
                 }
                 .foregroundStyle(.secondary)
                 .opacity(chronograph.mode == .timer && chronograph.status != .idle ? 1 : 0)
+
+                ChronographView(chronograph: chronograph) { seconds in
+                    Text(timeString(seconds: seconds))
+                        .font(.system(size: 70, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundColor(themeColor)
+                        .opacity(chronograph.status == .paused ? opacityOfTimeWhenPaused : 1)
+                        .lineLimit(1)
+                        .minimumScaleFactor(1)
+                        .contentTransition(.numericText())
+                        .animation(.easeOut(duration: 0.18), value: Int(seconds.rounded(.down)))
+                }
+                .frame(maxWidth: .infinity)
+
                 
-                HStack(alignment: .center) {
-                    Spacer()
-                    timerDecreaseButton
-                        .opacity(chronograph.mode == .timer ? 1 : 0)
-                        .allowsHitTesting(chronograph.mode == .timer)
-                    Spacer()
-                    ChronographView(chronograph: chronograph) { seconds in
-                        Text(timeString(seconds: seconds))
-                            .font(.system(size: 70, weight: .bold, design: .rounded))
-                            .monospacedDigit()
-                            .foregroundColor(themeColor)
-                            .opacity(chronograph.status == .paused ? opacityOfTimeWhenPaused : 1)
-                            .lineLimit(1)
-                            .minimumScaleFactor(1)
-                            .contentTransition(.numericText())
-                            .animation(.easeOut(duration: 0.18), value: Int(seconds.rounded(.down)))
-                    }
-                    Spacer()
-                    timerIncreaseButton
-                        .opacity(chronograph.mode == .timer ? 1 : 0)
-                        .allowsHitTesting(chronograph.mode == .timer)
-                    Spacer()
-                }
-                muteButton
-
-                if chronograph.mode == .stopwatch {
-                    stopwatchAdjustmentControls
-                        .padding(.top, 18)
-                        .transition(
-                            .asymmetric(
-                                insertion: .move(edge: .top).combined(with: .opacity),
-                                removal: .opacity
-                            )
-                        )
-                }
             }
 
-            Spacer(minLength: 0)
+            Spacer()
             
-            VStack(spacing: 0) {
-                Spacer(minLength: 0)
-                transportControls
-                Spacer(minLength: 0)
-            }
-            .frame(height: controlSectionHeight)
+            secondaryControlsSection
+                .padding(.top, 14)
+
+            Spacer()
             
-            Spacer(minLength: 0)
+            transportControls
+
+            Spacer()
+
+            muteButton
+                .opacity(chronograph.mode == .timer ? 1 : 0)
+                .allowsHitTesting(chronograph.mode == .timer)
+
+            Spacer(minLength: 20)
 
             autoTimerSection
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.horizontal)
-        .padding(.top, 24)
-        .padding(.bottom)
+        .padding(.top, 28)
+        .padding(.bottom, 16)
         .animation(.spring(response: 0.32, dampingFraction: 0.82), value: chronograph.mode)
         .animation(.spring(response: 0.32, dampingFraction: 0.82), value: chronograph.status)
         .onChange(of: chronograph.status) {
@@ -238,40 +223,37 @@ struct TimerStopwatchView: View {
         }
     }
 
-    @ViewBuilder
     private var muteButton: some View {
-        if chronograph.mode == .timer {
-            Button {
-                UISelectionFeedbackGenerator().selectionChanged()
-                timerIsMuted.toggle()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: timerIsMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                        .font(.footnote.weight(.semibold))
-                    Text(
-                        timerIsMuted
-                            ? NSLocalizedString("timerIsMuted", comment: "")
-                            : NSLocalizedString("timerSoundOn", comment: "")
-                    )
-                    .font(.footnote.weight(.medium))
-                }
-                .foregroundStyle(timerIsMuted ? themeColor.opacity(0.8) : .secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background(
+        Button {
+            UISelectionFeedbackGenerator().selectionChanged()
+            timerIsMuted.toggle()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: timerIsMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                    .font(.footnote.weight(.semibold))
+                Text(
                     timerIsMuted
-                        ? themeColor.secondaryTranslucentBackground.opacity(0.7)
-                        : Color.fill.opacity(0.5),
-                    in: Capsule()
+                        ? NSLocalizedString("timerIsMuted", comment: "")
+                        : NSLocalizedString("timerSoundOn", comment: "")
                 )
+                .font(.footnote.weight(.medium))
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(
+            .foregroundStyle(timerIsMuted ? themeColor.opacity(0.8) : .secondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
                 timerIsMuted
-                    ? NSLocalizedString("timerIsMuted", comment: "")
-                    : NSLocalizedString("timerSoundOn", comment: "")
+                    ? themeColor.secondaryTranslucentBackground.opacity(0.7)
+                    : Color.fill.opacity(0.5),
+                in: Capsule()
             )
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(
+            timerIsMuted
+                ? NSLocalizedString("timerIsMuted", comment: "")
+                : NSLocalizedString("timerSoundOn", comment: "")
+        )
     }
 
     private var stopwatchAdjustmentControls: some View {
@@ -307,60 +289,118 @@ struct TimerStopwatchView: View {
             if showsLeadingTransportButton {
                 Spacer(minLength: 0)
                 playPauseButton
+                    .matchedGeometryEffect(id: "playPause", in: transportNamespace)
                 Spacer(minLength: 0)
                 leadingTransportButton
+                    .transition(.scale(scale: 0.2).combined(with: .opacity))
                 Spacer(minLength: 0)
             } else {
-                Spacer()
+                Spacer(minLength: 0)
                 playPauseButton
-                Spacer()
+                    .matchedGeometryEffect(id: "playPause", in: transportNamespace)
+                Spacer(minLength: 0)
             }
         }
         .frame(maxWidth: .infinity)
     }
 
-    private var timerDecreaseButton: some View {
-        Button {
-            UISelectionFeedbackGenerator().selectionChanged()
-            guard
-                let currentTimerValueIndex = timerValues.lastIndex(where: {
-                    $0 <= currentTimerDuration
-                }), currentTimerValueIndex > 0
-            else { return }
-            updateTimerDuration(to: timerValues[currentTimerValueIndex - 1])
-        } label: {
-            Image(systemName: "minus")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 18, height: 18)
-                .font(.title2.weight(.heavy))
-                .foregroundStyle(themeColor)
-                .padding(10)
-                .background(Color.fill)
-                .clipShape(Circle())
+    @ViewBuilder
+    private var secondaryControlsSection: some View {
+        ZStack {
+            if chronograph.mode == .timer, chronograph.status == .idle {
+                timerPresetControls
+                    .transition(.blurReplace.combined(with: .opacity))
+            } else if chronograph.mode == .timer {
+                timerAdjustmentControls
+                    .transition(.blurReplace.combined(with: .opacity))
+            } else if chronograph.mode == .stopwatch {
+                stopwatchAdjustmentControls
+                    .transition(.blurReplace.combined(with: .opacity))
+            }
         }
-        .disabled(Int(chronograph.seconds) == 0)
+        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: chronograph.mode)
+        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: chronograph.status)
     }
 
-    private var timerIncreaseButton: some View {
-        Button {
-            UISelectionFeedbackGenerator().selectionChanged()
-            guard
-                let firstLargerTimerValueIndex = timerValues.firstIndex(where: {
-                    $0 > currentTimerDuration
-                })
-            else { return }
-            updateTimerDuration(to: timerValues[firstLargerTimerValueIndex])
-        } label: {
-            Image(systemName: "plus")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 18, height: 18)
-                .font(.title2.weight(.heavy))
-                .foregroundStyle(themeColor)
-                .padding(10)
-                .background(Color.fill)
-                .clipShape(Circle())
+    private var timerAdjustmentControls: some View {
+        HStack(spacing: 12) {
+            ForEach(timerQuickAdjustments, id: \.self) { adjustment in
+                Button {
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    adjustTimer(by: adjustment)
+                } label: {
+                    Text(adjustmentLabel(for: adjustment))
+                        .font(.body.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(adjustment < 0 ? .secondary : themeColor)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            adjustment < 0
+                                ? Color.fill
+                                : themeColor.secondaryTranslucentBackground
+                        )
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .disabled(adjustment < 0 && Int(chronograph.seconds) == 0)
+            }
+        }
+    }
+
+    private var timerPresetControls: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(timerPresets, id: \.self) { preset in
+                        let isSelected = lastTimerDuration == preset
+                        Button {
+                            UISelectionFeedbackGenerator().selectionChanged()
+                            applyTimerPreset(preset)
+                        } label: {
+                            Text(presetLabel(for: preset))
+                                .font(.body.weight(.semibold).monospacedDigit())
+                                .foregroundStyle(isSelected ? themeColor : .secondary)
+                                .padding(.horizontal, 18)
+                                .padding(.vertical, 14)
+                                .background(
+                                    isSelected
+                                        ? themeColor.secondaryTranslucentBackground
+                                        : Color.fill
+                                )
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .id(preset)
+                    }
+                }
+                .padding(.horizontal, 2)
+            }
+            .onAppear {
+                DispatchQueue.main.async {
+                    scrollToSelectedPreset(using: proxy, animated: false)
+                }
+            }
+            .onChange(of: lastTimerDuration) {
+                scrollToSelectedPreset(using: proxy, animated: true)
+            }
+        }
+    }
+
+    private func scrollToSelectedPreset(using proxy: ScrollViewProxy, animated: Bool) {
+        guard let target = timerPresets.first(where: { $0 == lastTimerDuration })
+            ?? timerPresets.min(by: { abs($0 - lastTimerDuration) < abs($1 - lastTimerDuration) })
+        else { return }
+
+        let scroll = {
+            proxy.scrollTo(target, anchor: .center)
+        }
+
+        if animated {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                scroll()
+            }
+        } else {
+            scroll()
         }
     }
 
@@ -402,9 +442,6 @@ struct TimerStopwatchView: View {
                 chronograph.cancel()
             }
             .disabled(Int(chronograph.seconds) == 0)
-        } else {
-            Color.clear
-                .frame(width: 70, height: 70)
         }
     }
 
@@ -432,6 +469,22 @@ struct TimerStopwatchView: View {
             Double(remainingDuration) + 0.99,
             timerTotalSecondsOverride: Double(updatedTotalDuration) + 0.99
         )
+    }
+
+    private func adjustTimer(by adjustment: Int) {
+        let newRemaining = max(0, currentTimerDuration + adjustment)
+        updateTimerDuration(to: newRemaining)
+    }
+
+    private func applyTimerPreset(_ preset: Int) {
+        lastTimerDuration = preset
+        chronograph.setSeconds(Double(preset) + 0.99)
+    }
+
+    private func presetLabel(for seconds: Int) -> String {
+        let minutes = seconds / 60
+        let remainingSeconds = seconds % 60
+        return String(format: "%d:%02d", minutes, remainingSeconds)
     }
 
     // MARK: - Supporting Properties
@@ -466,11 +519,11 @@ struct TimerStopwatchView: View {
     }
 
     private var playPauseButtonForegroundColor: Color {
-        isIdleTimer ? themeColor : .white
+        chronograph.status == .idle ? themeColor : .white
     }
 
     private var playPauseButtonBackgroundColor: Color {
-        isIdleTimer ? themeColor.secondaryTranslucentBackground : .fill
+        chronograph.status == .idle ? themeColor.secondaryTranslucentBackground : .fill
     }
 
     private var isWorkoutRestChronographActive: Bool {
@@ -577,6 +630,9 @@ struct TimerStopwatchView: View {
     }
 
     private func checkNotificationPermission() {
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+            return
+        }
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { settings in
             DispatchQueue.main.async {
@@ -627,7 +683,8 @@ struct TimerView_Previews: PreviewProvider {
             .sheet(isPresented: .constant(true)) {
                 TimerStopwatchView(chronograph: Chronograph())
                     .previewEnvironmentObjects()
-                    .presentationDetents([.medium, .large])
+                    .presentationDetents([.fraction(0.88)])
+                    .presentationDragIndicator(.visible)
             }
     }
 }

@@ -34,14 +34,11 @@ struct ExerciseDetailScreen: View {
     @State private var isShowingRepetitionsScreen = false
     @State private var isShowingVolumeScreen = false
     @State private var isShowingInstructions = false
-    @State private var isShowingMergingSheet = false
-    @State private var mergedIntoExercise: Exercise?
 
     // MARK: - Variables
 
     @StateObject var exercise: Exercise
     var isShowingAsSheet: Bool = false
-    var onNavigateToExercise: ((Exercise) -> Void)?
 
     // MARK: - Body
 
@@ -157,43 +154,38 @@ struct ExerciseDetailScreen: View {
                         } label: {
                             Image(systemName: "info.circle")
                         }
+                        if !exercise.isDefaultExercise {
                         Menu {
-                            Button {
-                                isShowingMergingSheet = true
-                            } label: {
-                                Label(NSLocalizedString("mergeExercise", comment: ""), systemImage: "arrow.triangle.merge")
+                        Button(
+                            action: { showingEditExercise.toggle() },
+                            label: {
+                                Label(NSLocalizedString("edit", comment: ""), systemImage: "pencil")
                             }
-                            if !exercise.isDefaultExercise {
-                                Button(
-                                    action: { showingEditExercise.toggle() },
-                                    label: {
-                                        Label(NSLocalizedString("edit", comment: ""), systemImage: "pencil")
-                                    }
-                                )
-                                Button(
-                                    role: .destructive,
-                                    action: { showDeletionAlert.toggle() },
-                                    label: {
-                                        Label(NSLocalizedString("delete", comment: ""), systemImage: "trash")
-                                    }
-                                )
+                        )
+                        Button(
+                            role: .destructive,
+                            action: { showDeletionAlert.toggle() },
+                            label: {
+                                Label(NSLocalizedString("delete", comment: ""), systemImage: "trash")
                             }
-                        } label: {
-                            Image(systemName: "ellipsis.circle")
-                        }
-                        .confirmationDialog(
-                            Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
-                            isPresented: $showDeletionAlert,
-                            titleVisibility: .visible
-                        ) {
-                            Button(
-                                "\(NSLocalizedString("delete", comment: ""))",
-                                role: .destructive,
-                                action: {
-                                    database.delete(exercise, saveContext: true)
-                                    dismiss()
-                                }
-                            )
+                        )
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .confirmationDialog(
+                        Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
+                        isPresented: $showDeletionAlert,
+                        titleVisibility: .visible
+                    ) {
+                        Button(
+                            "\(NSLocalizedString("delete", comment: ""))",
+                            role: .destructive,
+                            action: {
+                                database.delete(exercise, saveContext: true)
+                                dismiss()
+                            }
+                        )
+                    }
                         }
                     }
                 }
@@ -203,23 +195,6 @@ struct ExerciseDetailScreen: View {
             }
             .sheet(isPresented: $isShowingInstructions) {
                 ExerciseInstructionsSheet(exercise: exercise)
-            }
-            .sheet(isPresented: $isShowingMergingSheet) {
-                ExerciseMergingSheet(exercise: exercise) { targetExercise in
-                    if targetExercise != exercise {
-                        if isShowingAsSheet {
-                            onNavigateToExercise?(targetExercise)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                dismiss()
-                            }
-                        } else {
-                            mergedIntoExercise = targetExercise
-                        }
-                    }
-                }
-            }
-            .navigationDestination(item: $mergedIntoExercise) { targetExercise in
-                ExerciseDetailScreen(exercise: targetExercise)
             }
             .navigationDestination(isPresented: $isShowingExerciseHistoryScreen) {
                 ExerciseHistoryScreen(exercise: exercise)

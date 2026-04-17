@@ -21,7 +21,6 @@ struct WorkoutRecorderScreen: View {
     @Environment(\.goHome) var goHome
     @Environment(\.fullScreenDraggableCoverTopInset) var fullScreenDraggableCoverTopInset
     @Environment(\.fullScreenDraggableCoverIsDragging) var fullScreenDraggableCoverIsDragging
-    @Environment(\.undoManager) var undoManager
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
 
@@ -72,19 +71,11 @@ struct WorkoutRecorderScreen: View {
                                     workout: workout,
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                     canReorder: true,
-                                    showDetailAsSheet: true,
-                                    showPendingRestInTertiary: true,
-                                    onTapRestDuration: { workoutSet in
-                                        selectedRestDurationSet = workoutSet
-                                    },
-                                    activeRestTimerSet: workoutRecorder.activeRestTimerSet,
-                                    isChronographActive: chronograph.status == .running || chronograph.status == .paused,
-                                    chronograph: chronograph,
-                                    chronographMode: chronograph.mode
+                                    showDetailAsSheet: true
                                 )
                                 .padding(.horizontal)
                                 .padding(.top, 90)
-                                .padding(.bottom, UIScreen.main.bounds.height * (exerciseSelectionPresentationDetent == .medium ? 0.5 : BOTTOM_SHEET_SMALL))
+                                .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? UIScreen.main.bounds.height * 0.5 : BOTTOM_SHEET_SMALL)
                                 .emptyPlaceholder(workout.setGroups) {
                                     Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
                                         .foregroundStyle(Color.secondaryLabel)
@@ -113,9 +104,8 @@ struct WorkoutRecorderScreen: View {
                             Color.clear.frame(height: 100)
                         }
                         .sheet(isPresented: .constant(true)) {
-                            NavigationView {
-                                VStack(spacing: 0) {
-                                    ExerciseSelectionScreen(
+                            NavigationStack {
+                                ExerciseSelectionScreen(
                                         selectedExercise: nil,
                                         setExercise: { exercise in
                                             withAnimation {
@@ -124,13 +114,14 @@ struct WorkoutRecorderScreen: View {
                                             }
                                         },
                                         forSecondary: false,
+                                        currentWorkoutExercises: workout.exercises,
+                                        supersetPrimaryExercise: nil,
                                         presentationDetentSelection: $exerciseSelectionPresentationDetent
                                     )
-                                    .padding(.top)
                                     .toolbar(.hidden, for: .navigationBar)
                                     .sheet(isPresented: $isShowingChronoSheet) {
                                         TimerStopwatchView(chronograph: chronograph)
-                                            .presentationDetents([.fraction(0.76)])
+                                            .presentationDetents([.fraction(0.88)])
                                             .presentationDragIndicator(.visible)
                                     }
                                     .sheet(item: $selectedRestDurationSet) { workoutSet in
@@ -156,73 +147,8 @@ struct WorkoutRecorderScreen: View {
                                         }
                                     }
                                     .sheet(isPresented: $isShowingReorderSheet) {
-                                        NavigationStack {
-                                            List {
-                                                ForEach(workout.setGroups) { setGroup in
-                                                    HStack {
-                                                        VStack(alignment: .leading) {
-                                                            Text(setGroup.exercise?.displayName ?? "")
-                                                            if (setGroup.sets.first as? SuperSet) != nil,
-                                                               let secondaryExercise = setGroup.secondaryExercise {
-                                                                HStack {
-                                                                    Image(systemName: "arrow.turn.down.right")
-                                                                    Text(secondaryExercise.displayName)
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                .onDelete {
-                                                    workout.setGroups.remove(atOffsets: $0)
-                                                    workout.setGroups.forEach { $0.objectWillChange.send() }
-                                                }
-                                                .onMove { source, destination in
-                                                    workout.setGroups.move(fromOffsets: source, toOffset: destination)
-                                                    workout.setGroups.forEach { $0.objectWillChange.send() }
-                                                }
-                                            }
-                                            .environment(\.editMode, .constant(.active))
-                                            .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
-                                            .navigationBarTitleDisplayMode(.inline)
-                                            .toolbar {
-                                                ToolbarItem(placement: .topBarTrailing) {
-                                                    Button {
-                                                        isShowingReorderSheet = false
-                                                    } label: {
-                                                        Text(NSLocalizedString("done", comment: ""))
-                                                    }
-                                                }
-                                            }
-                                        }
+                                        reorderSetGroupsSheet(for: workout)
                                     }
-                                    if exerciseSelectionPresentationDetent == .fraction(BOTTOM_SHEET_SMALL) {
-                                        HStack {
-                                            Button {
-                                                database.undo()
-                                            } label: {
-                                                Image(systemName: "arrow.uturn.backward")
-                                            }
-                                            .disabled(!database.canUndo)
-                                            Spacer()
-                                            Button {
-                                                database.redo()
-                                            } label: {
-                                                Image(systemName: "arrow.uturn.forward")
-                                            }
-                                            .disabled(!database.canRedo)
-                                            Spacer()
-                                            Button {
-                                                isShowingReorderSheet = true
-                                            } label: {
-                                                Image(systemName: "arrow.up.arrow.down")
-                                            }
-                                        }
-                                        .tint(Color.label)
-                                        .font(.title2)
-                                        .padding(.horizontal, 30)
-                                        .padding(.bottom, 5)
-                                    }
-                                }
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .onGeometryChange(for: CGFloat.self) {
@@ -248,7 +174,7 @@ struct WorkoutRecorderScreen: View {
                             }
                             .opacity(fullScreenDraggableCoverIsDragging ? 0 : 1)
                             .animation(.easeOut(duration: 0.2), value: fullScreenDraggableCoverIsDragging)
-                            .presentationDetents([.fraction(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
+                            .presentationDetents([.height(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
                             .presentationDragIndicator(fullScreenDraggableCoverIsDragging ? .hidden : .visible)
                             .ignoresSafeArea()
@@ -280,8 +206,9 @@ struct WorkoutRecorderScreen: View {
                                 .opacity(toolbarOpacity)
                                 .offset(y: -sheetHeight)
                                 .padding(.trailing, 15)
-                                .offset(y: safeAreaBottomInset - 10)
+                                .offset(y: floatingTimerBottomOffset)
                                 .animation(.easeInOut(duration: animationDuration), value: sheetHeight)
+                                .animation(.easeInOut(duration: animationDuration), value: floatingTimerBottomOffset)
                             }
                         }
                         .onGeometryChange(for: CGFloat.self) {
@@ -317,7 +244,7 @@ struct WorkoutRecorderScreen: View {
             if !didAppear {
                 didAppear = true
                 setUpAutoSaveForWorkout()
-                exerciseSelectionPresentationDetent = workoutRecorder.workout?.isEmpty ?? true ? .medium : .fraction(BOTTOM_SHEET_SMALL)
+                exerciseSelectionPresentationDetent = workoutRecorder.workout?.isEmpty ?? true ? .medium : .height(BOTTOM_SHEET_SMALL)
                 enteredRepetitionSetIDs = workoutRecorder.workout.map {
                     workoutRecorder.repetitionEnteredSetIDs(in: $0)
                 } ?? []
@@ -396,6 +323,56 @@ struct WorkoutRecorderScreen: View {
     private var shouldShowFloatingTimerButton: Bool {
         sheetHeight > 0
             && !fullScreenDraggableCoverIsDragging
+    }
+
+    private var floatingTimerBottomOffset: CGFloat {
+        let base = safeAreaBottomInset - 10
+        if exerciseSelectionPresentationDetent == .height(BOTTOM_SHEET_SMALL) {
+            return base - 10
+        }
+        return base
+    }
+
+    @ViewBuilder
+    private func reorderSetGroupsSheet(for workout: Workout) -> some View {
+        NavigationStack {
+            List {
+                ForEach(workout.setGroups) { setGroup in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(setGroup.exercise?.displayName ?? "")
+                            if (setGroup.sets.first as? SuperSet) != nil,
+                               let secondaryExercise = setGroup.secondaryExercise {
+                                HStack {
+                                    Image(systemName: "arrow.turn.down.right")
+                                    Text(secondaryExercise.displayName)
+                                }
+                            }
+                        }
+                    }
+                }
+                .onDelete {
+                    workout.setGroups.remove(atOffsets: $0)
+                    workout.setGroups.forEach { $0.objectWillChange.send() }
+                }
+                .onMove { source, destination in
+                    workout.setGroups.move(fromOffsets: source, toOffset: destination)
+                    workout.setGroups.forEach { $0.objectWillChange.send() }
+                }
+            }
+            .environment(\.editMode, .constant(.active))
+            .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isShowingReorderSheet = false
+                    } label: {
+                        Text(NSLocalizedString("done", comment: ""))
+                    }
+                }
+            }
+        }
     }
 
     private var shouldShowFloatingStopwatchStopButton: Bool {

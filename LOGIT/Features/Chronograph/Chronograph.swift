@@ -7,7 +7,9 @@
 
 import Combine
 import Foundation
-import UIKit
+import SwiftUI
+import ActivityKit
+import AlarmKit
 import UserNotifications
 
 class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
@@ -16,23 +18,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     enum Mode: String {
         case timer
         case stopwatch
-    }
-
-    enum NotificationHaptic: Equatable {
-        case selection
-        case warning
-        case success
-
-        func play() {
-            switch self {
-            case .selection:
-                UISelectionFeedbackGenerator().selectionChanged()
-            case .warning:
-                UINotificationFeedbackGenerator().notificationOccurred(.warning)
-            case .success:
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
-            }
-        }
     }
 
     enum ChronographStatus {
@@ -45,21 +30,13 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
 
     private static let modeStorageKey = "selectedChronographMode"
     private static let timerFinishedNotificationIdentifier = "timerFinished"
-    private static let timerWarningNotificationIdentifierPrefix = "timerWarning"
-    private static let stopwatchNotificationIdentifierPrefix = "stopwatchMinute"
-    private static let timerNotificationSoundName = "timer.wav"
-    private static let timerNotificationAutoDismissInterval: TimeInterval = 1.5
-    private static let timerWarningNotificationOffsets = [30, 10]
-    private static let stopwatchNotificationInterval: TimeInterval = 30
-    static let maxPendingStopwatchNotifications = 64
+    private static let stopwatchMinuteNotificationIdentifierPrefix = "stopwatchMinute"
+    private static let alarmKitTimerSoundName = "timer.wav"
+    private static let alarmAutoDismissInterval: TimeInterval = 1.5
+    static let maxPendingStopwatchMinuteNotifications = 64
 
-    struct TimerWarningNotificationSchedule: Equatable {
-        let remainingSeconds: Int
-        let timeInterval: TimeInterval
-    }
-
-    struct StopwatchNotificationSchedule: Equatable {
-        let elapsedSecondsMark: Int
+    struct StopwatchMinuteNotificationSchedule: Equatable {
+        let minuteMark: Int
         let timeInterval: TimeInterval
     }
 
@@ -71,15 +48,16 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     @Published var status: ChronographStatus = .idle
 
     var onTimerFired: (() -> Void)?
+    var timerAlertTintColor: Color = .accentColor
 
     var seconds: TimeInterval = 0
     /// The initial duration set for timer mode, used to compute elapsed time.
     private(set) var initialTimerSeconds: TimeInterval = 0
-    /// Wall-clock instant when the running countdown timer is expected to hit zero (timer mode only).
-    @Published private(set) var timerWallClockEndDate: Date?
     private var timer: Timer?
     var startDate: Date?
     private var pauseTime: TimeInterval?
+    private var activeTimerAlarmID: UUID?
+    private var timerAlarmScheduleToken = UUID()
 
     /// How many seconds have elapsed since the timer started (timer mode only).
     var elapsedTimerSeconds: Int {
@@ -115,12 +93,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
 
         scheduleNotificationsForCurrentState()
 
-        if mode == .timer {
-            timerWallClockEndDate = Date().addingTimeInterval(seconds)
-        } else {
-            timerWallClockEndDate = nil
-        }
-
         startDate = Date()
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             guard let self = self else { return }
@@ -131,7 +103,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
                     self.seconds -= timePassed
                     if self.seconds <= 0 {
                         self.seconds = 0
-                        self.scheduleTimerNotificationAutoDismiss()
+                        self.scheduleAlarmAutoDismiss()
                         self.reset()
                         self.onTimerFired?()
                     }
@@ -142,7 +114,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
             }
         }
         status = .running
-        objectWillChange.send()
     }
 
     func cancel() {
@@ -153,10 +124,8 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     func stop() {
         timer?.invalidate()
         timer = nil
-        timerWallClockEndDate = nil
         status = .paused
         cancelNotifications()
-        objectWillChange.send()
     }
 
     func setSeconds(
@@ -175,9 +144,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
                 // When not overriding and not preserving elapsed, treat `seconds` as the new total
                 // timer duration, regardless of whether the timer is idle, running, or paused.
                 initialTimerSeconds = seconds
-            }
-            if status == .running {
-                timerWallClockEndDate = Date().addingTimeInterval(self.seconds)
             }
         }
         objectWillChange.send()
@@ -205,7 +171,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         timer = nil
         startDate = nil
         seconds = 0
-        timerWallClockEndDate = nil
         status = .idle
     }
 
@@ -215,7 +180,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         content.body = NSLocalizedString("timesUpBody", comment: "")
         let timerIsMuted = UserDefaults.standard.bool(forKey: "timerIsMuted")
         if !timerIsMuted {
-            content.sound = UNNotificationSound(named: UNNotificationSoundName(Self.timerNotificationSoundName))
+            content.sound = UNNotificationSound(named: UNNotificationSoundName("timer.wav"))
         }
 
         let trigger = UNTimeIntervalNotificationTrigger(
@@ -231,42 +196,16 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         return request
     }
 
-    private func stopwatchNotificationRequest(
+    private func stopwatchMinuteNotificationRequest(
         identifier: String,
-        elapsedSecondsMark: Int,
+        minuteMark: Int,
         timeInterval: TimeInterval
     ) -> UNNotificationRequest {
         let content = UNMutableNotificationContent()
         content.title = NSLocalizedString("stopwatchMinuteTitle", comment: "")
         content.body = String(
             format: NSLocalizedString("stopwatchMinuteBody", comment: ""),
-            Self.formattedStopwatchElapsedTimeMark(elapsedSecondsMark)
-        )
-
-        let timerIsMuted = UserDefaults.standard.bool(forKey: "timerIsMuted")
-        if !timerIsMuted {
-            content.sound = .default
-        }
-
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
-
-        return UNNotificationRequest(
-            identifier: identifier,
-            content: content,
-            trigger: trigger
-        )
-    }
-
-    private func timerWarningNotificationRequest(
-        identifier: String,
-        remainingSeconds: Int,
-        timeInterval: TimeInterval
-    ) -> UNNotificationRequest {
-        let content = UNMutableNotificationContent()
-        content.title = NSLocalizedString("timer", comment: "")
-        content.body = String(
-            format: NSLocalizedString("timerWarningBody", comment: ""),
-            Self.formattedDuration(seconds: remainingSeconds)
+            Self.formattedStopwatchMinuteMark(minuteMark)
         )
 
         let timerIsMuted = UserDefaults.standard.bool(forKey: "timerIsMuted")
@@ -293,41 +232,21 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         }
     }
 
-    private func scheduleStopwatchNotifications(fromElapsedSeconds elapsedSeconds: TimeInterval) {
-        cancelStopwatchNotifications()
+    private func scheduleStopwatchMinuteNotifications(fromElapsedSeconds elapsedSeconds: TimeInterval) {
+        cancelStopwatchMinuteNotifications()
 
         let center = UNUserNotificationCenter.current()
-        let schedules = Self.stopwatchNotificationSchedule(elapsedSeconds: elapsedSeconds)
+        let schedules = Self.stopwatchMinuteNotificationSchedule(elapsedSeconds: elapsedSeconds)
 
         for (index, schedule) in schedules.enumerated() {
-            let request = stopwatchNotificationRequest(
-                identifier: stopwatchNotificationIdentifier(at: index),
-                elapsedSecondsMark: schedule.elapsedSecondsMark,
+            let request = stopwatchMinuteNotificationRequest(
+                identifier: stopwatchMinuteNotificationIdentifier(at: index),
+                minuteMark: schedule.minuteMark,
                 timeInterval: schedule.timeInterval
             )
             center.add(request) { error in
                 if let error {
-                    print("Error scheduling stopwatch notification: \(error)")
-                }
-            }
-        }
-    }
-
-    private func scheduleTimerWarningNotifications(fromRemainingSeconds remainingSeconds: TimeInterval) {
-        cancelTimerWarningNotifications()
-
-        let center = UNUserNotificationCenter.current()
-        let schedules = Self.timerWarningNotificationSchedule(remainingSeconds: remainingSeconds)
-
-        for schedule in schedules {
-            let request = timerWarningNotificationRequest(
-                identifier: timerWarningNotificationIdentifier(forRemainingSeconds: schedule.remainingSeconds),
-                remainingSeconds: schedule.remainingSeconds,
-                timeInterval: schedule.timeInterval
-            )
-            center.add(request) { error in
-                if let error {
-                    print("Error scheduling timer warning notification: \(error)")
+                    print("Error scheduling stopwatch minute notification: \(error)")
                 }
             }
         }
@@ -338,72 +257,164 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
 
         switch mode {
         case .timer:
-            scheduleTimerWarningNotifications(fromRemainingSeconds: seconds)
             scheduleTimerAlert(inSeconds: seconds)
         case .stopwatch:
-            scheduleStopwatchNotifications(fromElapsedSeconds: seconds)
+            scheduleStopwatchMinuteNotifications(fromElapsedSeconds: seconds)
         }
     }
 
     private func cancelNotifications() {
+        cancelTimerAlarm()
         cancelTimerNotification()
-        cancelTimerWarningNotifications()
-        cancelStopwatchNotifications()
+        cancelStopwatchMinuteNotifications()
     }
 
     private func cancelTimerNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [Self.timerFinishedNotificationIdentifier])
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [Self.timerFinishedNotificationIdentifier])
         print("Timer notification cancelled.")
     }
 
     private func scheduleTimerAlert(inSeconds seconds: TimeInterval) {
         guard seconds > 0 else { return }
-        scheduleTimerNotification(inSeconds: seconds)
-    }
 
-    private func scheduleTimerNotificationAutoDismiss() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.timerNotificationAutoDismissInterval) {
-            UNUserNotificationCenter.current().removeDeliveredNotifications(
-                withIdentifiers: [Self.timerFinishedNotificationIdentifier]
-            )
+        if shouldUseAlarmKitForTimerAlert {
+            scheduleAlarmKitTimer(inSeconds: seconds)
+        } else {
+            scheduleTimerNotification(inSeconds: seconds)
         }
     }
 
-    private func cancelStopwatchNotifications() {
+    private var shouldUseAlarmKitForTimerAlert: Bool {
+        if #available(iOS 26.0, *) {
+            return !UserDefaults.standard.bool(forKey: "timerIsMuted")
+        }
+
+        return false
+    }
+
+    @available(iOS 26.0, *)
+    private func scheduleAlarmKitTimer(inSeconds seconds: TimeInterval) {
+        let token = UUID()
+        let alarmID = UUID()
+        timerAlarmScheduleToken = token
+        activeTimerAlarmID = alarmID
+
+        let configuration = timerAlarmConfiguration(duration: Self.notificationTriggerInterval(forTimerSeconds: seconds))
+
+        Task { [weak self] in
+            do {
+                _ = try await AlarmManager.shared.schedule(id: alarmID, configuration: configuration)
+
+                DispatchQueue.main.async {
+                    guard let self else {
+                        try? AlarmManager.shared.cancel(id: alarmID)
+                        return
+                    }
+
+                    guard self.timerAlarmScheduleToken == token,
+                          self.activeTimerAlarmID == alarmID,
+                          self.mode == .timer,
+                          self.status == .running
+                    else {
+                        try? AlarmManager.shared.cancel(id: alarmID)
+                        return
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    guard self.timerAlarmScheduleToken == token,
+                          self.activeTimerAlarmID == alarmID
+                    else { return }
+
+                    self.activeTimerAlarmID = nil
+                    print("Error scheduling AlarmKit timer: \(error)")
+                    self.scheduleTimerNotification(inSeconds: seconds)
+                }
+            }
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private func timerAlarmConfiguration(duration: TimeInterval) -> AlarmManager.AlarmConfiguration<TimerAlarmMetadata> {
+        AlarmManager.AlarmConfiguration.timer(
+            duration: duration,
+            attributes: timerAlarmAttributes,
+            sound: .named(Self.alarmKitTimerSoundName)
+        )
+    }
+
+    @available(iOS 26.0, *)
+    private var timerAlarmAttributes: AlarmAttributes<TimerAlarmMetadata> {
+        let stopButton = AlarmButton(
+            text: localizedAlarmString("dismiss"),
+            textColor: .white,
+            systemImageName: "stop.circle"
+        )
+        let presentation = AlarmPresentation(
+            alert: AlarmPresentation.Alert(
+                title: localizedAlarmString("timesUp"),
+                stopButton: stopButton
+            )
+        )
+
+        return AlarmAttributes(
+            presentation: presentation,
+            tintColor: timerAlertTintColor
+        )
+    }
+
+    @available(iOS 26.0, *)
+    private func localizedAlarmString(_ key: String) -> LocalizedStringResource {
+        LocalizedStringResource(stringLiteral: NSLocalizedString(key, comment: ""))
+    }
+
+    private func scheduleAlarmAutoDismiss() {
+        let alarmIDToCancel = activeTimerAlarmID
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.alarmAutoDismissInterval) { [weak self] in
+            // Remove delivered local notification
+            UNUserNotificationCenter.current().removeDeliveredNotifications(
+                withIdentifiers: [Self.timerFinishedNotificationIdentifier]
+            )
+
+            // Cancel AlarmKit alarm if it was active
+            if let alarmIDToCancel {
+                if #available(iOS 26.0, *) {
+                    try? AlarmManager.shared.cancel(id: alarmIDToCancel)
+                }
+            }
+
+            self?.activeTimerAlarmID = nil
+        }
+    }
+
+    private func cancelTimerAlarm() {
+        timerAlarmScheduleToken = UUID()
+
+        guard let activeTimerAlarmID else { return }
+
+        if #available(iOS 26.0, *) {
+            try? AlarmManager.shared.cancel(id: activeTimerAlarmID)
+        }
+
+        self.activeTimerAlarmID = nil
+    }
+
+    private func cancelStopwatchMinuteNotifications() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: Self.stopwatchNotificationIdentifiers
+            withIdentifiers: Self.stopwatchMinuteNotificationIdentifiers
         )
     }
 
-    private func cancelTimerWarningNotifications() {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: Self.timerWarningNotificationIdentifiers
-        )
-        UNUserNotificationCenter.current().removeDeliveredNotifications(
-            withIdentifiers: Self.timerWarningNotificationIdentifiers
-        )
-    }
-
-    private func timerWarningNotificationIdentifier(forRemainingSeconds remainingSeconds: Int) -> String {
-        "\(Self.timerWarningNotificationIdentifierPrefix)-\(remainingSeconds)"
-    }
-
-    private func stopwatchNotificationIdentifier(at index: Int) -> String {
-        "\(Self.stopwatchNotificationIdentifierPrefix)-\(index + 1)"
-    }
-
-    private func triggerForegroundNotificationHaptic(forNotificationIdentifier identifier: String) {
-        // Timer completion already produces an in-app success haptic via `onTimerFired`.
-        guard identifier != Self.timerFinishedNotificationIdentifier else { return }
-        Self.notificationHaptic(forNotificationIdentifier: identifier)?.play()
+    private func stopwatchMinuteNotificationIdentifier(at index: Int) -> String {
+        "\(Self.stopwatchMinuteNotificationIdentifierPrefix)-\(index + 1)"
     }
 
     func userNotificationCenter(_: UNUserNotificationCenter,
-                                willPresent notification: UNNotification,
+                                willPresent _: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)
     {
-        triggerForegroundNotificationHaptic(forNotificationIdentifier: notification.request.identifier)
         // Show banner, sound, and badge even when app is in foreground
         completionHandler([.banner, .sound, .badge])
     }
@@ -418,75 +429,33 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         return mode
     }
 
-    static func notificationHaptic(forNotificationIdentifier identifier: String) -> NotificationHaptic? {
-        if identifier == timerFinishedNotificationIdentifier {
-            return .success
-        }
-
-        if identifier.hasPrefix(timerWarningNotificationIdentifierPrefix) {
-            return .warning
-        }
-
-        if identifier.hasPrefix(stopwatchNotificationIdentifierPrefix) {
-            return .selection
-        }
-
-        return nil
-    }
-
-    static func stopwatchNotificationSchedule(
+    static func stopwatchMinuteNotificationSchedule(
         elapsedSeconds: TimeInterval,
-        maxNotificationCount: Int = maxPendingStopwatchNotifications
-    ) -> [StopwatchNotificationSchedule] {
+        maxNotificationCount: Int = maxPendingStopwatchMinuteNotifications
+    ) -> [StopwatchMinuteNotificationSchedule] {
         guard maxNotificationCount > 0 else { return [] }
 
         let safeElapsedSeconds = max(0, elapsedSeconds)
-        let completedIntervals = Int(safeElapsedSeconds / Self.stopwatchNotificationInterval)
-        let nextElapsedSecondsMark = Int(Double(completedIntervals + 1) * Self.stopwatchNotificationInterval)
-        let secondsUntilNextNotification = max(1, Double(nextElapsedSecondsMark) - safeElapsedSeconds)
+        let completedMinutes = Int(safeElapsedSeconds / 60)
+        let nextMinuteMark = completedMinutes + 1
+        let secondsUntilNextMinute = max(1, Double(nextMinuteMark * 60) - safeElapsedSeconds)
 
         return (0 ..< maxNotificationCount).map { index in
-            StopwatchNotificationSchedule(
-                elapsedSecondsMark: nextElapsedSecondsMark + Int(Double(index) * Self.stopwatchNotificationInterval),
-                timeInterval: secondsUntilNextNotification + Double(index) * Self.stopwatchNotificationInterval
+            StopwatchMinuteNotificationSchedule(
+                minuteMark: nextMinuteMark + index,
+                timeInterval: secondsUntilNextMinute + Double(index * 60)
             )
         }
     }
 
-    static func timerWarningNotificationSchedule(
-        remainingSeconds: TimeInterval,
-        warningOffsets: [Int] = timerWarningNotificationOffsets
-    ) -> [TimerWarningNotificationSchedule] {
-        let safeRemainingSeconds = max(0, remainingSeconds)
-
-        return warningOffsets.compactMap { warningOffset in
-            let warningTriggerTime = safeRemainingSeconds - Double(warningOffset)
-            guard warningTriggerTime > 1 else { return nil }
-
-            return TimerWarningNotificationSchedule(
-                remainingSeconds: warningOffset,
-                timeInterval: notificationTriggerInterval(forTimerSeconds: warningTriggerTime)
-            )
+    private static var stopwatchMinuteNotificationIdentifiers: [String] {
+        (0 ..< maxPendingStopwatchMinuteNotifications).map {
+            "\(stopwatchMinuteNotificationIdentifierPrefix)-\($0 + 1)"
         }
     }
 
-    private static var stopwatchNotificationIdentifiers: [String] {
-        (0 ..< maxPendingStopwatchNotifications).map {
-            "\(stopwatchNotificationIdentifierPrefix)-\($0 + 1)"
-        }
-    }
-
-    private static var timerWarningNotificationIdentifiers: [String] {
-        timerWarningNotificationOffsets.map {
-            "\(timerWarningNotificationIdentifierPrefix)-\($0)"
-        }
-    }
-
-    private static func formattedStopwatchElapsedTimeMark(_ elapsedSecondsMark: Int) -> String {
-        formattedDuration(seconds: elapsedSecondsMark)
-    }
-
-    private static func formattedDuration(seconds totalSeconds: Int) -> String {
+    private static func formattedStopwatchMinuteMark(_ minuteMark: Int) -> String {
+        let totalSeconds = minuteMark * 60
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
         return String(format: "%d:%02d", minutes, seconds)
@@ -496,3 +465,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         max(1, seconds - 1)
     }
 }
+
+@available(iOS 26.0, *)
+private struct TimerAlarmMetadata: AlarmMetadata {}

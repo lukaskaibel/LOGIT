@@ -39,6 +39,16 @@
                ReferencedContainer = "container:LOGIT.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4E4A46293BF0001C3B98CF77"
+               BuildableName = "LOGITUITests.xctest"
+               BlueprintName = "LOGITUITests"
+               ReferencedContainer = "container:LOGIT.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

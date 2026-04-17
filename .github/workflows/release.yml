@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "Fastlane lane to run"
+        required: true
+        default: "beta"
+        type: choice
+        options:
+          - beta
+          - release
+          - metadata
+          - upload_screenshots
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ship:
+    name: Ship to App Store Connect
+    runs-on: macos-15
+    env:
+      # App Store Connect API key (.p8 contents are base64-encoded).
+      APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+      # fastlane match (code signing).
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      # Misc.
+      FASTLANE_HIDE_CHANGELOG: "1"
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
+      LC_ALL: en_US.UTF-8
+      LANG: en_US.UTF-8
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        run: |
+          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          echo "Using: $LATEST_XCODE"
+          sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+          xcodebuild -version
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Restore Secrets.swift
+        run: |
+          cat > LOGIT/Config/Secrets.swift << 'EOF'
+          ${{ secrets.SECRETS_SWIFT_CONTENT }}
+          EOF
+
+      - name: Determine lane
+        id: lane
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "name=release" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${{ inputs.lane }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run fastlane ${{ steps.lane.outputs.name }}
+        run: bundle exec fastlane ${{ steps.lane.outputs.name }}
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastlane-output
+          path: |
+            fastlane/builds/*.ipa
+            fastlane/builds/*.app.dSYM.zip
+            fastlane/report.xml
+          if-no-files-found: ignore

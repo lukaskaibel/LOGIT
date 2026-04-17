@@ -1,0 +1,5 @@
+app_identifier(".com.lukaskbl.LOGIT")
+apple_id(ENV["FASTLANE_APPLE_ID"] || "lukas.kaibel@gmail.com")
+
+team_id("S2F6F7JZ8C")
+itc_team_id(ENV["FASTLANE_ITC_TEAM_ID"]) if ENV["FASTLANE_ITC_TEAM_ID"]

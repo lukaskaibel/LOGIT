@@ -278,6 +278,7 @@ struct TemplateDetailScreen: View {
                         setGroup: templateSetGroup,
                         focusedIntegerFieldIndex: .constant(nil),
                         sheetType: .constant(nil),
+                        isReordering: .constant(false),
                         supplementaryText: nil
                     )
                     .tileStyle()

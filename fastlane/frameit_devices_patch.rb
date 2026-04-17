@@ -56,7 +56,50 @@ module Frameit
   # and finally lets the per-filter keyword colour in Framefile.json show
   # up. See: https://github.com/fastlane/fastlane/issues/21959
   class Editor
+    # iPhone 15+ screenshots were composited as sharp rectangles; the device
+    # frame PNG uses a rounded display cutout, so UI could peek past the
+    # bezel corners. Apply the same rounded-rect alpha mask frameit uses for
+    # iPhone 14 (scaled corner radius by width). No extra tools — still
+    # frameit + ImageMagick.
+    alias_method :__logit_original_put_into_frame, :put_into_frame
+
+    def put_into_frame
+      __logit_apply_rounded_display_mask_if_needed
+      __logit_original_put_into_frame
+    end
+
     private
+
+    def __logit_apply_rounded_display_mask_if_needed
+      return if screenshot.mac?
+      return unless __logit_modern_iphone_needs_display_corner_mask?
+
+      width = screenshot.size[0]
+      height = screenshot.size[1]
+      # frameit hard-codes r=100 for 1170-wide iPhone 14; scale proportionally.
+      radius = [[(width * 0.085).round, 90].max, 120].min
+
+      mask_data = MiniMagick::Tool::Convert.new do |img|
+        img.size("#{width}x#{height}")
+        img.canvas("none")
+        img.draw("roundrectangle 0,0,#{width},#{height},#{radius},#{radius}")
+        img << "png:-"
+      end
+
+      mask = MiniMagick::Image.read(mask_data)
+      @image = @image.composite(mask, "png") do |c|
+        c.channel("A")
+        c.compose("DstIn")
+        c.alpha("on")
+      end
+    end
+
+    def __logit_modern_iphone_needs_display_corner_mask?
+      id = screenshot.device.id.to_s
+      return false if id.include?("iphone-14") || id.include?("iphone14")
+
+      id.match?(/iphone-(?:15|16|17)(?:-pro|-plus|$)/) || id.match?(/iphone1[5-7]-/)
+    end
 
     alias_method :__logit_original_build_text_images, :build_text_images
 

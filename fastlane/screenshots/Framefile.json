@@ -16,7 +16,11 @@
     "stack_title": true,
     "title_below_image": false,
     "show_complete_frame": false,
-    "use_platform": "IOS"
+    "use_platform": "IOS",
+    "offset": {
+      "offset": "+77+68",
+      "width": 1320
+    }
   },
   "data": [
     {

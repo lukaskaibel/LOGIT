@@ -138,6 +138,27 @@ final class LOGITScreenshots: XCTestCase {
         snapshot("04_ExerciseDetail")
     }
 
+    func test06WorkoutRecorder() {
+        // Fixtures seed a Push Day workout with `isCurrentWorkout = true`
+        // AND the `-UITEST_SHOW_RECORDER` launch arg instructs LOGITApp to
+        // auto-present the full-screen recorder cover shortly after launch.
+        // This is more reliable than trying to tap the tabViewBottomAccessory
+        // pill which swallows synthetic taps on iOS 26.
+        app.terminate()
+        app.launchArguments += ["-UITEST_SHOW_RECORDER", "1"]
+        app.launch()
+
+        // Wait for the recorder's set list to appear (a seeded benchpress
+        // entry is a stable signal that the cover is fully rendered).
+        let benchpressCell = app.staticTexts
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Benchpress"))
+            .firstMatch
+        _ = benchpressCell.waitForExistence(timeout: 10)
+        waitABit(2)
+
+        snapshot("06_WorkoutRecorder")
+    }
+
     func test05WorkoutDetail() {
         // A completed-workout detail screen shows real sets, reps, and
         // weights so it sells the "log every rep" value prop much better

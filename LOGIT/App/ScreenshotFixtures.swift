@@ -20,6 +20,16 @@ enum ScreenshotFixtures {
         return args.contains("-UITEST_FIXTURES") || args.contains("UITEST_FIXTURES")
     }
 
+    /// Returns `true` when the UI test wants the workout recorder cover
+    /// auto-presented at launch. We need this because the iOS 26
+    /// `tabViewBottomAccessory` pill isn't reliably tappable via XCUITest's
+    /// synthetic events, so the test sets this flag instead of trying to
+    /// tap the pill after the app has launched.
+    static var shouldAutoPresentRecorder: Bool {
+        let args = ProcessInfo.processInfo.arguments
+        return args.contains("-UITEST_SHOW_RECORDER") || args.contains("UITEST_SHOW_RECORDER")
+    }
+
     /// Called very early in `LOGITApp.init` so defaults are in place before
     /// any `@AppStorage` reads happen.
     static func prepareUserDefaultsIfNeeded() {

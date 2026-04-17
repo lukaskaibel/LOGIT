@@ -38,6 +38,10 @@
     {
       "filter": "05_WorkoutDetail",
       "keyword": { "color": "#FF8A5C" }
+    },
+    {
+      "filter": "06_WorkoutRecorder",
+      "keyword": { "color": "#F05A5A" }
     }
   ]
 }

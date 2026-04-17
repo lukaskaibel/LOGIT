@@ -3,3 +3,4 @@
 "03_Bodyweight" = "PROGRESS";
 "04_ExerciseDetail" = "TRACK";
 "05_WorkoutDetail" = "LOG";
+"06_WorkoutRecorder" = "RECORD";

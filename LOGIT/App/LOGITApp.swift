@@ -164,6 +164,16 @@ struct LOGIT: App {
                             print(error)
                         }
                     }
+                    // Fastlane screenshot trigger: open the recorder cover
+                    // automatically once the tab view is on-screen so the
+                    // WorkoutRecorder screenshot test doesn't have to chase
+                    // the tabViewBottomAccessory pill (which swallows
+                    // synthetic taps on iOS 26).
+                    if ScreenshotFixtures.shouldAutoPresentRecorder,
+                       workoutRecorder.workout != nil {
+                        try? await Task.sleep(nanoseconds: 600_000_000)
+                        showWorkoutRecorder()
+                    }
                 }
                 .preferredColorScheme(.dark)
                 .onAppear {

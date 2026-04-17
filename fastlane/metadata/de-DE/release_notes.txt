@@ -1,1 +1,8 @@
-Kleinere Verbesserungen und Optimierungen. Danke, dass du mit LOGIT trainierst!
+Live Activity: Dein Workout immer im Blick.
+
+· Neue Live Activity zeigt dein laufendes Workout auf dem Sperrbildschirm und in der Dynamic Island – aktuelle Übung, Satz und Pausentimer jederzeit sichtbar, ohne die App zu öffnen.
+· Der Pausentimer liegt jetzt direkt neben deinen Sätzen – nie wieder den richtigen Moment zwischen den Wiederholungen verpassen.
+· Feinschliff für Vorlagen, Trainingsverlauf und Übungsdetails in der gesamten App.
+· Diverse Bugfixes und Performance-Verbesserungen.
+
+Danke, dass du mit LOGIT trainierst!

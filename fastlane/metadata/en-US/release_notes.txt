@@ -1,1 +1,8 @@
-· Fixed Timer and Stopwatch Issues
+Live Activity: keep your workout front and center.
+
+· New Live Activity keeps your active workout on the Lock Screen and in the Dynamic Island — see current exercise, set, and rest timer without opening the app.
+· Rest timer now lives right next to your sets so you never miss a cue between reps.
+· Polished templates, workout history, and exercise details throughout the app.
+· Various bug fixes and performance improvements.
+
+Thanks for training with LOGIT!

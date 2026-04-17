@@ -201,6 +201,35 @@ platform :ios do
     )
   end
 
+  desc "Populate the current App Store release (metadata + screenshots) without submitting for review."
+  lane :prepare_release do |options|
+    api_key = asc_api_key
+
+    # Pull the marketing version off the Xcode project so the lane is driven
+    # by the source of truth rather than requiring CLI overrides. Caller can
+    # still force a version via `fastlane prepare_release app_version:4.2`.
+    version_number = options[:app_version] || get_version_number(
+      xcodeproj: XCODE_PROJECT,
+      target: XCODE_SCHEME
+    )
+
+    upload_to_app_store(
+      api_key: api_key,
+      app_version: version_number,
+      metadata_path: METADATA_DIR,
+      screenshots_path: SCREENSHOT_DIR,
+      skip_binary_upload: true,
+      skip_metadata: false,
+      skip_screenshots: false,
+      overwrite_screenshots: true,
+      submit_for_review: false,
+      automatic_release: false,
+      force: true,
+      precheck_include_in_app_purchases: false,
+      run_precheck_before_submit: false
+    )
+  end
+
   desc "Ship a new App Store release (build + metadata + screenshots + submit)."
   lane :release do |options|
     api_key = asc_api_key

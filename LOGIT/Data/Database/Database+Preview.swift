@@ -371,6 +371,65 @@ extension Database {
         database.newStandardSet(repetitions: 7, weight: 70000, setGroup: currentBenchGroup)
         database.newStandardSet(repetitions: 0, weight: 0, setGroup: currentBenchGroup)
 
+        // MARK: Completed "Arm Day" workout with superset + drop set
+        //
+        // Dedicated fixture for the marketing screenshot that shows a super
+        // set and a drop set one after another inside the same completed
+        // workout. Uses "Arm Day" as the name so the UI test can find it
+        // unambiguously (other seeded workouts are named Push/Pull/Leg Day).
+        let armDayDate = Calendar.current.date(byAdding: .day, value: -1, to: .now)!
+        let armDay = database.newWorkout(name: "Arm Day", date: armDayDate)
+        armDay.endDate = Calendar.current.date(byAdding: .minute, value: 42, to: armDayDate)
+
+        let armsSuperSetGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: bicepsCurls,
+            workout: armDay
+        )
+        armsSuperSetGroup.secondaryExercise = tricepsExtensions
+        database.newSuperSet(
+            repetitionsFirstExercise: 12,
+            repetitionsSecondExercise: 12,
+            weightFirstExercise: 18000,
+            weightSecondExercise: 22000,
+            setGroup: armsSuperSetGroup
+        )
+        database.newSuperSet(
+            repetitionsFirstExercise: 10,
+            repetitionsSecondExercise: 12,
+            weightFirstExercise: 18000,
+            weightSecondExercise: 22000,
+            setGroup: armsSuperSetGroup
+        )
+        database.newSuperSet(
+            repetitionsFirstExercise: 10,
+            repetitionsSecondExercise: 10,
+            weightFirstExercise: 18000,
+            weightSecondExercise: 22000,
+            setGroup: armsSuperSetGroup
+        )
+
+        let shoulderDropGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: lateralRaises,
+            workout: armDay
+        )
+        database.newDropSet(
+            repetitions: [12, 10, 8],
+            weights: [14000, 10000, 6000],
+            setGroup: shoulderDropGroup
+        )
+        database.newDropSet(
+            repetitions: [12, 8, 6],
+            weights: [14000, 10000, 6000],
+            setGroup: shoulderDropGroup
+        )
+        database.newDropSet(
+            repetitions: [10, 8, 6],
+            weights: [14000, 10000, 6000],
+            setGroup: shoulderDropGroup
+        )
+
         database.save()
     }
 

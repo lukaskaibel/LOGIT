@@ -36,6 +36,7 @@ struct LOGIT: App {
     @State private var isShowingWelcome = false
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingStartWorkoutSheet = false
+    @State private var isShowingLiveActivityShowcase = false
     
     // Import handling state
     @State private var importedWorkout: Workout?
@@ -174,6 +175,17 @@ struct LOGIT: App {
                         try? await Task.sleep(nanoseconds: 600_000_000)
                         showWorkoutRecorder()
                     }
+                    // Fastlane screenshot trigger for the Live Activity
+                    // marketing view. Swaps the whole screen for a
+                    // Lock Screen-style composition of two Live Activity
+                    // cards (auto rest timer + current set).
+                    if ScreenshotFixtures.shouldShowLiveActivityShowcase {
+                        try? await Task.sleep(nanoseconds: 300_000_000)
+                        isShowingLiveActivityShowcase = true
+                    }
+                }
+                .fullScreenCover(isPresented: $isShowingLiveActivityShowcase) {
+                    LiveActivityShowcaseView()
                 }
                 .preferredColorScheme(.dark)
                 .onAppear {

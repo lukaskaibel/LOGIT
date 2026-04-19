@@ -33,13 +33,6 @@ final class LOGITScreenshots: XCTestCase {
         setupSnapshot(app)
         app.launchArguments += ["-UITEST_FIXTURES", "1"]
         app.launch()
-
-        // Tab bar is the most stable "app is ready" signal.
-        let tabBar = app.tabBars.firstMatch
-        XCTAssertTrue(
-            tabBar.waitForExistence(timeout: 20),
-            "Tab bar never appeared - did the app crash on launch?"
-        )
     }
 
     override func tearDownWithError() throws {
@@ -47,22 +40,24 @@ final class LOGITScreenshots: XCTestCase {
         try super.tearDownWithError()
     }
 
-    // MARK: - Screens
+    // MARK: - Screens (ordered by screenshot filename)
 
     func test01Home() {
+        waitForTabBar()
         tapTab(at: 0)
         waitABit()
         snapshot("01_Home")
     }
 
-    func test02MuscleGroups() {
-        // Lands on the full Muscle Groups split screen: a big donut chart +
-        // weekly focus breakdown. Much more visual than the history list.
+    func test02MuscleGroupBack() {
+        // Muscle Group Split screen with the "Back" muscle filter selected.
+        // Shows the donut chart tilted toward back volume and the weekly
+        // focus list for just that muscle group - more specific and more
+        // marketable than the full overview.
+        waitForTabBar()
         tapTab(at: 0)
         waitABit()
 
-        // The tile sits under the "This Week" section on Home; scroll it into
-        // view and tap. `swipeUp` reliably exposes it on 6.9" iPhones.
         let muscleGroupsTile = app.buttons
             .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Muscle Groups", "Muskelgruppen"))
             .firstMatch
@@ -75,39 +70,26 @@ final class LOGITScreenshots: XCTestCase {
             waitABit(3)
         }
 
-        snapshot("02_MuscleGroups")
-    }
-
-    func test03Bodyweight() {
-        // Bodyweight trend screen: line chart with selectable data points +
-        // highlight tiles. Sells the Pro "Measurements" feature directly.
-        tapTab(at: 3) // Search tab - exposes "Measurements" destination.
-        waitABit()
-
-        let measurementsButton = app.buttons
-            .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Measurements", "Messungen"))
+        // The muscle-group selector is a segmented/horizontal list of
+        // buttons. Each muscle group is its own standalone button. "Back"
+        // in English / "Rücken" in German — match both.
+        let backButton = app.buttons
+            .matching(NSPredicate(format: "label MATCHES[c] %@ OR label MATCHES[c] %@", "^Back$", "^Rücken$"))
             .firstMatch
-        if measurementsButton.waitForExistence(timeout: 5) {
-            measurementsButton.tap()
+        if backButton.waitForExistence(timeout: 3) {
+            backButton.tap()
             waitABit(2)
         }
 
-        let bodyweightCell = app.buttons
-            .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Bodyweight", "Körpergewicht"))
-            .firstMatch
-        if bodyweightCell.waitForExistence(timeout: 5) {
-            bodyweightCell.tap()
-            waitABit(3)
-        }
-
-        snapshot("03_Bodyweight")
+        snapshot("02_MuscleGroupBack")
     }
 
-    func test04ExerciseDetail() {
+    func test03ExerciseDetail() {
         // Search tab always exposes a reliable entry point into the
         // "Exercises" list, which in turn lets us drill into a specific
         // exercise with known seeded data (Benchpress has the richest
         // personal-best history in the fixture database).
+        waitForTabBar()
         tapTab(at: 3)
         waitABit()
 
@@ -126,8 +108,6 @@ final class LOGITScreenshots: XCTestCase {
             benchpress.tap()
             waitABit(3)
         } else {
-            // Fallback to whatever exercise is first so we still get a
-            // useful "detail" screen even if the seeding changes.
             let firstExercise = app.scrollViews.buttons.firstMatch
             if firstExercise.waitForExistence(timeout: 3) {
                 firstExercise.tap()
@@ -135,34 +115,16 @@ final class LOGITScreenshots: XCTestCase {
             }
         }
 
-        snapshot("04_ExerciseDetail")
+        snapshot("03_ExerciseDetail")
     }
 
-    func test06WorkoutRecorder() {
-        // Fixtures seed a Push Day workout with `isCurrentWorkout = true`
-        // AND the `-UITEST_SHOW_RECORDER` launch arg instructs LOGITApp to
-        // auto-present the full-screen recorder cover shortly after launch.
-        // This is more reliable than trying to tap the tabViewBottomAccessory
-        // pill which swallows synthetic taps on iOS 26.
-        app.terminate()
-        app.launchArguments += ["-UITEST_SHOW_RECORDER", "1"]
-        app.launch()
-
-        // Wait for the recorder's set list to appear (a seeded benchpress
-        // entry is a stable signal that the cover is fully rendered).
-        let benchpressCell = app.staticTexts
-            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Benchpress"))
-            .firstMatch
-        _ = benchpressCell.waitForExistence(timeout: 10)
-        waitABit(2)
-
-        snapshot("06_WorkoutRecorder")
-    }
-
-    func test05WorkoutDetail() {
+    func test04WorkoutDetail() {
         // A completed-workout detail screen shows real sets, reps, and
         // weights so it sells the "log every rep" value prop much better
-        // than the empty workout recorder.
+        // than the empty workout recorder. Target Push or Pull day
+        // explicitly — the new "Arm Day" fixture is reserved for the
+        // dedicated superset/dropset screenshot below.
+        waitForTabBar()
         tapTab(at: 1)
         waitABit()
 
@@ -173,7 +135,6 @@ final class LOGITScreenshots: XCTestCase {
             firstWorkout.tap()
             waitABit(3)
         } else {
-            // Fallback to whatever's on top.
             let fallback = app.scrollViews.buttons.firstMatch
             if fallback.waitForExistence(timeout: 3) {
                 fallback.tap()
@@ -181,10 +142,103 @@ final class LOGITScreenshots: XCTestCase {
             }
         }
 
-        snapshot("05_WorkoutDetail")
+        snapshot("04_WorkoutDetail")
+    }
+
+    func test05WorkoutRecorder() {
+        // Fixtures seed a Push Day workout with `isCurrentWorkout = true`
+        // AND the `-UITEST_SHOW_RECORDER` launch arg instructs LOGITApp to
+        // auto-present the full-screen recorder cover shortly after launch.
+        // This is more reliable than trying to tap the tabViewBottomAccessory
+        // pill which swallows synthetic taps on iOS 26.
+        app.terminate()
+        app.launchArguments += ["-UITEST_SHOW_RECORDER", "1"]
+        app.launch()
+
+        let benchpressCell = app.staticTexts
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Benchpress"))
+            .firstMatch
+        _ = benchpressCell.waitForExistence(timeout: 10)
+        waitABit(2)
+
+        snapshot("05_WorkoutRecorder")
+    }
+
+    func test06SuperDropSet() {
+        // Navigate to the seeded "Arm Day" workout which contains a super
+        // set (Biceps Curls ↔ Triceps Extensions) immediately followed by
+        // a drop set (Lateral Raises). Both visually distinct pieces of
+        // the set-group cell layout land in the same frame.
+        waitForTabBar()
+        tapTab(at: 1)
+        waitABit()
+
+        let armDay = app.scrollViews.buttons
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Arm Day"))
+            .firstMatch
+        if armDay.waitForExistence(timeout: 5) {
+            armDay.tap()
+            waitABit(3)
+        }
+
+        // Scroll the detail screen so both set groups are visible — super
+        // set is on top (short), drop set right below (taller). A small
+        // swipe usually lands the frame in a good spot.
+        app.swipeUp(velocity: .slow)
+        waitABit(2)
+
+        snapshot("06_SuperDropSet")
+    }
+
+    func test07LiveActivity() {
+        // Replaces the Live Activity capture. Launches the app with a
+        // launch-arg that swaps the root view for a Lock Screen-style
+        // mockup showing both the auto rest timer and current-set cards
+        // side by side (well, stacked).
+        app.terminate()
+        app.launchArguments += ["-UITEST_LIVE_ACTIVITY_SHOWCASE", "1"]
+        app.launch()
+
+        // The mockup is a static view; give it a moment to fade in.
+        waitABit(3)
+
+        snapshot("07_LiveActivity")
+    }
+
+    func test08BodyFat() {
+        // Body Fat trend screen: line chart with selectable data points
+        // showing a gentle downward slope over three months. Sells Pro
+        // "Measurements" feature and lands at the end of the deck so the
+        // earlier screens carry the punch.
+        waitForTabBar()
+        tapTab(at: 3) // Search tab - exposes "Measurements" destination.
+        waitABit()
+
+        let measurementsButton = app.buttons
+            .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Measurements", "Messungen"))
+            .firstMatch
+        if measurementsButton.waitForExistence(timeout: 5) {
+            measurementsButton.tap()
+            waitABit(2)
+        }
+
+        let bodyFatCell = app.buttons
+            .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Body Fat", "Körperfett"))
+            .firstMatch
+        if bodyFatCell.waitForExistence(timeout: 5) {
+            bodyFatCell.tap()
+            waitABit(3)
+        }
+
+        snapshot("08_BodyFat")
     }
 
     // MARK: - Helpers
+
+    private func waitForTabBar() {
+        let tabBar = app.tabBars.firstMatch
+        _ = tabBar.waitForExistence(timeout: 20)
+    }
 
     private func tapTab(at index: Int) {
         let tabBar = app.tabBars.firstMatch

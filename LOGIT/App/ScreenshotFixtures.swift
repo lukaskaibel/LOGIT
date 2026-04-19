@@ -30,6 +30,17 @@ enum ScreenshotFixtures {
         return args.contains("-UITEST_SHOW_RECORDER") || args.contains("UITEST_SHOW_RECORDER")
     }
 
+    /// When set, LOGITApp swaps its entire root view for the
+    /// `LiveActivityShowcaseView` marketing mockup. The real app never needs
+    /// this; it exists purely so fastlane can capture a Lock Screen-style
+    /// composition of the Live Activity widgets (auto rest timer + current
+    /// set) in one shot, without staging two simulators and merging PNGs.
+    static var shouldShowLiveActivityShowcase: Bool {
+        let args = ProcessInfo.processInfo.arguments
+        return args.contains("-UITEST_LIVE_ACTIVITY_SHOWCASE")
+            || args.contains("UITEST_LIVE_ACTIVITY_SHOWCASE")
+    }
+
     /// Called very early in `LOGITApp.init` so defaults are in place before
     /// any `@AppStorage` reads happen.
     static func prepareUserDefaultsIfNeeded() {

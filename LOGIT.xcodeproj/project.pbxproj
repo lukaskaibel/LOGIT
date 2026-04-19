@@ -234,6 +234,7 @@
 		9F68D70717290138E369B178 /* ExerciseMergingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E384D0F4B54340F910F6813 /* ExerciseMergingSheet.swift */; };
 		ACC49C37E1B74DFAC016299F /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BDE77C44D210E79936D216 /* ShareSheet.swift */; };
 		B3DC6B7D9EF58D3A51C28227 /* LOGITScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */; };
+		E5F79A5B29FEF4F260749E66 /* LiveActivityShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */; };
 		F83E8531DDDC8C271BDF20F1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A72B470FE19DAE1E42233F7F /* Foundation.framework */; };
 		FF178CF5635C188320F0E7B4 /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */; };
 /* End PBXBuildFile section */
@@ -516,6 +517,7 @@
 		80NEWTEST00C /* WorkoutSharingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSharingTests.swift; sourceTree = "<group>"; };
 		829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivityAttributes.swift; path = WorkoutLiveActivityAttributes.swift; sourceTree = "<group>"; };
 		A72B470FE19DAE1E42233F7F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityShowcaseView.swift; sourceTree = "<group>"; };
 		AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeService.swift; sourceTree = "<group>"; };
 		BA2F6D7984C9394E060503E7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = Info.plist; sourceTree = "<group>"; };
 		C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScreenshotFixtures.swift; sourceTree = "<group>"; };
@@ -580,6 +582,7 @@
 				829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */,
 				4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */,
 				06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */,
+				A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */,
 			);
 			name = LiveActivity;
 			path = LiveActivity;
@@ -1584,6 +1587,7 @@
 				8E306606440725A568FE5F1A /* ExerciseMergeService.swift in Sources */,
 				9F68D70717290138E369B178 /* ExerciseMergingSheet.swift in Sources */,
 				9C03B11C8A034786C5544D2E /* ScreenshotFixtures.swift in Sources */,
+				E5F79A5B29FEF4F260749E66 /* LiveActivityShowcaseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

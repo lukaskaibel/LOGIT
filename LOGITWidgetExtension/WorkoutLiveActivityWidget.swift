@@ -442,9 +442,9 @@ private struct WorkoutLiveActivityRunningFocus: View {
     private var contextLabelText: String {
         switch chip.tintKind {
         case .manual:
-            "CURRENT"
+            NSLocalizedString("liveActivitySetRowCurrent", comment: "")
         case .restTimer, .restStopwatch:
-            "UP NEXT"
+            NSLocalizedString("liveActivityContextLabelUpNext", comment: "")
         }
     }
 
@@ -476,6 +476,7 @@ private struct WorkoutLiveActivityRunningFocus: View {
                     .font(contextLabelFont)
                     .fontDesign(.rounded)
                     .foregroundStyle(Color.workoutLiveActivitySecondary)
+                    .textCase(.uppercase)
                     .padding(.leading, contextLabelLeadingInset)
 
                 WorkoutLiveActivityNextSetPill(
@@ -502,9 +503,9 @@ private struct WorkoutLiveActivityExpandedRunningFocus: View {
     private var contextLabelText: String {
         switch chip.tintKind {
         case .manual:
-            "CURRENT"
+            NSLocalizedString("liveActivitySetRowCurrent", comment: "")
         case .restTimer, .restStopwatch:
-            "UP NEXT"
+            NSLocalizedString("liveActivityContextLabelUpNext", comment: "")
         }
     }
 
@@ -811,19 +812,19 @@ private struct WorkoutLiveActivityExpandedExerciseCard: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 if let previous = displayedPreviousMetrics.first {
-                    WorkoutLiveActivitySetPillRow(label: "prev", style: .previous) {
+                    WorkoutLiveActivitySetPillRow(label: NSLocalizedString("liveActivitySetRowPrevious", comment: ""), style: .previous) {
                         WorkoutLiveActivityMetricsUnitRow(metrics: previous, presentation: .smallTertiary)
                     }
                 }
 
                 if !hasCurrentMetrics {
-                    WorkoutLiveActivitySetPillRow(label: "current", style: .current) {
+                    WorkoutLiveActivitySetPillRow(label: NSLocalizedString("liveActivitySetRowCurrent", comment: ""), style: .current) {
                         Text(NSLocalizedString("addExercise", comment: ""))
                             .font(.caption.weight(.medium))
                             .foregroundStyle(Color.workoutLiveActivitySecondary)
                     }
                 } else {
-                    WorkoutLiveActivitySetPillRow(label: "current", style: .current) {
+                    WorkoutLiveActivitySetPillRow(label: NSLocalizedString("liveActivitySetRowCurrent", comment: ""), style: .current) {
                         WorkoutLiveActivityMetricsUnitRow(metrics: state.primaryMetrics, presentation: .normal)
                     }
                 }
@@ -843,6 +844,7 @@ private struct WorkoutLiveActivityExpandedMetricsBar: View {
                 .font(.caption2.weight(.semibold))
                 .fontDesign(.rounded)
                 .foregroundStyle(Color.workoutLiveActivitySecondary)
+                .textCase(.uppercase)
                 .lineLimit(1)
 
             Spacer(minLength: 8)
@@ -977,12 +979,12 @@ private struct WorkoutExerciseCard: View {
             if hasPreviousEntries && !usesCondensedLayout {
                 VStack(alignment: .leading, spacing: 4) {
                     if let previous = displayedPreviousMetrics.first {
-                        WorkoutLiveActivitySetPillRow(label: "prev", style: .previous) {
+                        WorkoutLiveActivitySetPillRow(label: NSLocalizedString("liveActivitySetRowPrevious", comment: ""), style: .previous) {
                             WorkoutLiveActivityMetricsUnitRow(metrics: previous, presentation: .smallTertiary)
                         }
                     }
                     if displayedPreviousMetrics.count > 1, let previousSecondary = displayedPreviousMetrics.last {
-                        WorkoutLiveActivitySetPillRow(label: "prev", style: .previous) {
+                        WorkoutLiveActivitySetPillRow(label: NSLocalizedString("liveActivitySetRowPrevious", comment: ""), style: .previous) {
                             WorkoutLiveActivityMetricsUnitRow(metrics: previousSecondary, presentation: .smallTertiary)
                         }
                     }
@@ -990,7 +992,7 @@ private struct WorkoutExerciseCard: View {
             }
 
             if !hasCurrentMetrics {
-                WorkoutLiveActivitySetPillRow(label: "current", style: .current) {
+                WorkoutLiveActivitySetPillRow(label: NSLocalizedString("liveActivitySetRowCurrent", comment: ""), style: .current) {
                     Text(NSLocalizedString("addExercise", comment: ""))
                         .font(.caption.weight(.medium))
                         .foregroundStyle(Color.workoutLiveActivitySecondary)
@@ -1003,7 +1005,7 @@ private struct WorkoutExerciseCard: View {
                        let secondary = state.secondaryMetrics,
                        !secondary.isEmpty
                     {
-                        WorkoutLiveActivitySetPillRow(label: "current", style: .current) {
+                        WorkoutLiveActivitySetPillRow(label: NSLocalizedString("liveActivitySetRowCurrent", comment: ""), style: .current) {
                             WorkoutLiveActivityMetricsUnitRow(metrics: secondary, presentation: .normal)
                         }
                     }
@@ -1015,7 +1017,7 @@ private struct WorkoutExerciseCard: View {
     @ViewBuilder
     private var currentMetricsRow: some View {
         if !state.primaryMetrics.isEmpty {
-            WorkoutLiveActivitySetPillRow(label: "current", style: .current) {
+            WorkoutLiveActivitySetPillRow(label: NSLocalizedString("liveActivitySetRowCurrent", comment: ""), style: .current) {
                 WorkoutLiveActivityMetricsUnitRow(
                     metrics: state.primaryMetrics,
                     presentation: usesCondensedLayout ? .small : .normal
@@ -1721,32 +1723,47 @@ private struct WorkoutCompactIslandTrailingContent: View {
     }
 }
 
+/// In Live Activities the widget extension is only woken at Activity update points, so `TimelineView(.periodic)`
+/// does not drive continuous refreshes. Use the system-provided live timer `Text` views (`timerInterval:` /
+/// `style: .timer`) which are rendered by the OS and advance in place for both the compact Dynamic Island and minimal.
 private struct WorkoutCompactIslandChronoLabel: View {
     let chip: WorkoutLiveActivityChronoChip
     let font: Font
 
     var body: some View {
-        TimelineView(.periodic(from: timelineStartDate, by: 1)) { context in
-            let label = chip.displayText(at: context.date)
-
-            Text(label ?? "0:00")
-                .font(font)
-                .monospacedDigit()
-                .foregroundStyle(chip.liveActivityChronoForegroundTint)
-                .multilineTextAlignment(.trailing)
-                .contentTransition(.numericText())
-                .opacity(label == nil ? 0 : 1)
-        }
+        chronoText
+            .font(font)
+            .monospacedDigit()
+            .foregroundStyle(chip.liveActivityChronoForegroundTint)
+            .multilineTextAlignment(.trailing)
+            .contentTransition(.numericText())
     }
 
-    private var timelineStartDate: Date {
+    @ViewBuilder
+    private var chronoText: some View {
         switch chip.phase {
         case .timerRunning:
-            return .now
+            if let end = chip.timerEndDate {
+                Text(
+                    timerInterval: workoutLiveActivityCountdownRange(endingAt: end),
+                    countsDown: true,
+                    showsHours: false
+                )
+            } else {
+                Text("0:00").opacity(0)
+            }
         case .stopwatchRunning:
-            return chip.stopwatchStartDate ?? .now
+            if let start = chip.stopwatchStartDate {
+                Text(start, style: .timer)
+            } else {
+                Text("0:00").opacity(0)
+            }
         case .timerPaused, .stopwatchPaused:
-            return .now
+            if let seconds = chip.staticTickSeconds {
+                Text(workoutLiveActivityRestTimeString(seconds: seconds))
+            } else {
+                Text("0:00").opacity(0)
+            }
         }
     }
 }

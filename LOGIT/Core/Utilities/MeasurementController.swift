@@ -82,5 +82,32 @@ class MeasurementEntryController: ObservableObject {
             let randomDays = Int.random(in: 7 ... 11)
             currentDate = Calendar.current.date(byAdding: .day, value: randomDays, to: currentDate)!
         }
+
+        // Body fat %: gentle downward trend over the same 3-month window so
+        // the Pro "Measurements" chart shows a visibly satisfying arc. We
+        // use ~22 % → ~15 % drift with small random wobble so the line
+        // isn't perfectly straight.
+        var currentBodyFat = 22.4
+        currentDate = sixMonthsAgo
+        while currentDate < Date() {
+            let drift = Double.random(in: 0.05 ... 0.28)
+            currentBodyFat = max(13.5, currentBodyFat - drift)
+            let noise = Double.random(in: -0.18 ... 0.18)
+            let displayValue = (currentBodyFat + noise).rounded(toPlaces: 1)
+            addMeasurementEntry(
+                ofType: .bodyFatPercentage,
+                decimalValue: displayValue,
+                onDate: currentDate
+            )
+            let randomDays = Int.random(in: 6 ... 10)
+            currentDate = Calendar.current.date(byAdding: .day, value: randomDays, to: currentDate)!
+        }
+    }
+}
+
+private extension Double {
+    func rounded(toPlaces places: Int) -> Double {
+        let divisor = pow(10.0, Double(places))
+        return (self * divisor).rounded() / divisor
     }
 }

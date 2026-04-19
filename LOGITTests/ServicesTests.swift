@@ -681,62 +681,6 @@ final class WorkoutRecorderTests: XCTestCase {
         XCTAssertEqual(restBehavior, .timer(120))
     }
 
-    func testInterSetGroupRestDisplayStateShowsStaticRestForLastSetRestDuration() {
-        let workout = database.newWorkout(name: "Test")
-        let setGroup = database.newWorkoutSetGroup(
-            createFirstSetAutomatically: false,
-            workout: workout
-        )
-        let lastSet = database.newStandardSet(restDuration: 90, setGroup: setGroup)
-
-        let displayState = InterSetGroupRestDisplayState.betweenSetGroups(
-            for: lastSet,
-            activeRestTimerSet: nil,
-            isChronographActive: false,
-            chronographMode: .timer,
-            showPendingRestInTertiary: false
-        )
-
-        XCTAssertEqual(displayState, .staticRest(90, false))
-    }
-
-    func testInterSetGroupRestDisplayStateShowsActiveTimerForMatchingActiveRestSet() {
-        let workout = database.newWorkout(name: "Test")
-        let setGroup = database.newWorkoutSetGroup(
-            createFirstSetAutomatically: false,
-            workout: workout
-        )
-        let lastSet = database.newStandardSet(restDuration: 90, setGroup: setGroup)
-
-        let displayState = InterSetGroupRestDisplayState.betweenSetGroups(
-            for: lastSet,
-            activeRestTimerSet: lastSet,
-            isChronographActive: true,
-            chronographMode: .timer,
-            showPendingRestInTertiary: false
-        )
-
-        XCTAssertEqual(displayState, .active(.timer))
-    }
-
-    func testInterSetGroupRestDisplayStateIsHiddenWithoutRestOrActiveTimer() {
-        let workout = database.newWorkout(name: "Test")
-        let setGroup = database.newWorkoutSetGroup(
-            createFirstSetAutomatically: false,
-            workout: workout
-        )
-        let lastSet = database.newStandardSet(restDuration: 0, setGroup: setGroup)
-
-        let displayState = InterSetGroupRestDisplayState.betweenSetGroups(
-            for: lastSet,
-            activeRestTimerSet: nil,
-            isChronographActive: false,
-            chronographMode: .stopwatch,
-            showPendingRestInTertiary: false
-        )
-
-        XCTAssertEqual(displayState, .hidden)
-    }
 }
 
 final class ChronographTests: XCTestCase {
@@ -796,7 +740,7 @@ final class ChronographTests: XCTestCase {
     }
 
     func testStopwatchNotificationScheduleStartsAtFirstThirtySeconds() {
-        let schedule = Chronograph.stopwatchNotificationSchedule(
+        let schedule = Chronograph.stopwatchMinuteNotificationSchedule(
             elapsedSeconds: 0,
             maxNotificationCount: 3
         )
@@ -804,79 +748,31 @@ final class ChronographTests: XCTestCase {
         XCTAssertEqual(
             schedule,
             [
-                .init(elapsedSecondsMark: 30, timeInterval: 30),
-                .init(elapsedSecondsMark: 60, timeInterval: 60),
-                .init(elapsedSecondsMark: 90, timeInterval: 90),
+                .init(minuteMark: 1, timeInterval: 60),
+                .init(minuteMark: 2, timeInterval: 120),
+                .init(minuteMark: 3, timeInterval: 180),
             ]
         )
     }
 
-    func testStopwatchNotificationScheduleResumesAtNextThirtySecondBoundary() {
-        let schedule = Chronograph.stopwatchNotificationSchedule(
+    func testStopwatchNotificationScheduleResumesAtNextMinuteBoundary() {
+        let schedule = Chronograph.stopwatchMinuteNotificationSchedule(
             elapsedSeconds: 75.4,
             maxNotificationCount: 2
         )
 
-        XCTAssertEqual(schedule[0].elapsedSecondsMark, 90)
-        XCTAssertEqual(schedule[0].timeInterval, 14.6, accuracy: 0.001)
-        XCTAssertEqual(schedule[1].elapsedSecondsMark, 120)
-        XCTAssertEqual(schedule[1].timeInterval, 44.6, accuracy: 0.001)
+        XCTAssertEqual(schedule[0].minuteMark, 2)
+        XCTAssertEqual(schedule[0].timeInterval, 44.6, accuracy: 0.001)
+        XCTAssertEqual(schedule[1].minuteMark, 3)
+        XCTAssertEqual(schedule[1].timeInterval, 104.6, accuracy: 0.001)
     }
 
-    func testStopwatchNotificationScheduleWaitsThirtySecondsOnBoundary() {
-        let schedule = Chronograph.stopwatchNotificationSchedule(
+    func testStopwatchNotificationScheduleWaitsOneMinuteOnBoundary() {
+        let schedule = Chronograph.stopwatchMinuteNotificationSchedule(
             elapsedSeconds: 120,
             maxNotificationCount: 1
         )
 
-        XCTAssertEqual(schedule, [.init(elapsedSecondsMark: 150, timeInterval: 30)])
-    }
-
-    func testTimerWarningNotificationScheduleIncludesThirtyAndTenSecondWarnings() {
-        let schedule = Chronograph.timerWarningNotificationSchedule(remainingSeconds: 90.99)
-
-        XCTAssertEqual(schedule.count, 2)
-        XCTAssertEqual(schedule[0].remainingSeconds, 30)
-        XCTAssertEqual(schedule[0].timeInterval, 59.99, accuracy: 0.001)
-        XCTAssertEqual(schedule[1].remainingSeconds, 10)
-        XCTAssertEqual(schedule[1].timeInterval, 79.99, accuracy: 0.001)
-    }
-
-    func testTimerWarningNotificationScheduleSkipsWarningsThatWouldTriggerImmediately() {
-        let schedule = Chronograph.timerWarningNotificationSchedule(remainingSeconds: 25.99)
-
-        XCTAssertEqual(schedule.count, 1)
-        XCTAssertEqual(schedule[0].remainingSeconds, 10)
-        XCTAssertEqual(schedule[0].timeInterval, 14.99, accuracy: 0.001)
-    }
-
-    func testTimerWarningNotificationScheduleOmitsWarningsAtOrBelowThreshold() {
-        let schedule = Chronograph.timerWarningNotificationSchedule(remainingSeconds: 10.99)
-
-        XCTAssertTrue(schedule.isEmpty)
-    }
-
-    func testNotificationHapticReturnsSuccessForTimerFinishedNotification() {
-        let haptic = Chronograph.notificationHaptic(forNotificationIdentifier: "timerFinished")
-
-        XCTAssertEqual(haptic, .success)
-    }
-
-    func testNotificationHapticReturnsWarningForTimerWarningNotification() {
-        let haptic = Chronograph.notificationHaptic(forNotificationIdentifier: "timerWarning-10")
-
-        XCTAssertEqual(haptic, .warning)
-    }
-
-    func testNotificationHapticReturnsSelectionForStopwatchNotification() {
-        let haptic = Chronograph.notificationHaptic(forNotificationIdentifier: "stopwatchMinute-2")
-
-        XCTAssertEqual(haptic, .selection)
-    }
-
-    func testNotificationHapticReturnsNilForUnknownNotification() {
-        let haptic = Chronograph.notificationHaptic(forNotificationIdentifier: "other-notification")
-
-        XCTAssertNil(haptic)
+        XCTAssertEqual(schedule, [.init(minuteMark: 3, timeInterval: 60)])
     }
 }

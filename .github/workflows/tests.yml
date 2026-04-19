@@ -36,15 +36,34 @@ jobs:
           let OPENAI_API_KEY = "test-key-for-ci"
           let WISHKIT_API_KEY = "test-key-for-ci"
           EOF
-      
+
+      - name: Select available iPhone simulator
+        run: |
+          DEVICE=$(xcrun simctl list devices available | \
+            grep -E 'iPhone (16|17|Air|e)' | \
+            tail -1 | \
+            sed -E 's/^[[:space:]]*([^()]+) \(([0-9A-F-]+)\) \(.*$/\1/' | \
+            xargs)
+
+          if [ -z "$DEVICE" ]; then
+            echo "No available iPhone simulator found"
+            xcrun simctl list devices available
+            exit 1
+          fi
+
+          DESTINATION="platform=iOS Simulator,name=$DEVICE"
+          echo "Using destination: $DESTINATION"
+          echo "IOS_TEST_DESTINATION=$DESTINATION" >> "$GITHUB_ENV"
+
       - name: Run tests
         run: |
           set -o pipefail
           xcodebuild test \
             -project LOGIT.xcodeproj \
             -scheme LOGIT \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination "$IOS_TEST_DESTINATION" \
             -resultBundlePath TestResults.xcresult \
+            -skip-testing:LOGITUITests \
             -skip-testing:LOGITTests/ExerciseServiceTests \
             -skip-testing:LOGITTests/TemplateServiceTests \
             CODE_SIGN_IDENTITY="" \

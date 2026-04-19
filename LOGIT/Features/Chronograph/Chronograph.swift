@@ -20,7 +20,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         case stopwatch
     }
 
-    enum ChronographStatus {
+    enum ChronographStatus: Equatable {
         case idle
         case running
         case paused

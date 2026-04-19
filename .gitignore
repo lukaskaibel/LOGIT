@@ -30,8 +30,3 @@ vendor/
 # Gym/build artifacts
 *.ipa
 *.dSYM.zip
-
-# Website
-website/node_modules/
-website/dist/
-website/public/screenshots/

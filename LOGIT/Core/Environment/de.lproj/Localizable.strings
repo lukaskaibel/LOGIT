@@ -756,10 +756,12 @@
 "restBetweenSets" = "Pause zwischen Sätzen";
 "autoRestTimer" = "Automatischer Pausentimer";
 
-// App Store — Live Activity Showcase (Vollbild-Screenshot)
-"screenshotLiveActivityKicker" = "LIVE ACTIVITY";
-"screenshotLiveActivityTitle" = "Orientierung auf einen Blick.\nAuf dem Sperrbildschirm.";
-"screenshotLiveActivitySubtitle" = "Automatischer Pausen-Countdown, dein letzter Satz und das Gewicht für den nächsten — ohne Entsperren.";
+// Live Activity Widget (kurz halten — wenig Platz)
+"liveActivitySetRowPrevious" = "Zuvor";
+"liveActivitySetRowCurrent" = "Aktuell";
+"liveActivityContextLabelUpNext" = "Nächste";
+
+// App Store — Live Activity Showcase (nur In-App-Labels; Überschrift liefert frameit)
 "screenshotLiveActivityModeAutoCaption" = "Auto-Timer";
 "screenshotLiveActivityModeLoggingCaption" = "Satz-Tracking";
 

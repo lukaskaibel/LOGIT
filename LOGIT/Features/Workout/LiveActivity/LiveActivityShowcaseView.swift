@@ -4,12 +4,9 @@
 //
 //  Marketing-only Lock Screen mockup used by fastlane snapshot to capture a
 //  single App Store asset showing LOGIT's Live Activity in both modes: auto
-//  rest countdown and normal set logging (previous + current weight).
-//
-//  Intentionally **not** wrapped in a device frame in the screenshot pipeline:
-//  frameit skips this file (no title.strings entry) and Fastfile copies the
-//  raw PNG to `*_framed.png` so App Store Connect still receives a full-bleed
-//  Lock Screen composition.
+//  rest countdown and normal set logging (previous + current weight). Copy is
+//  only the fake Lock Screen (clock + cards); frameit adds the device frame
+//  and headline like the rest of the screenshot set.
 //
 //  Only presented when `ScreenshotFixtures.shouldShowLiveActivityShowcase`
 //  is true. Not wired into any user-facing flow.
@@ -26,11 +23,7 @@ struct LiveActivityShowcaseView: View {
                 LiveActivityShowcaseClock()
                     .padding(.top, 44)
 
-                LiveActivityShowcaseMarketingBlock()
-                    .padding(.top, 28)
-                    .padding(.horizontal, 28)
-
-                Spacer(minLength: 20)
+                Spacer(minLength: 28)
 
                 VStack(alignment: .leading, spacing: 18) {
                     LiveActivityShowcaseModeCaption(
@@ -103,42 +96,6 @@ private struct LiveActivityShowcaseBackground: View {
             )
         }
         .ignoresSafeArea()
-    }
-}
-
-// MARK: - Marketing (in-view; replaces frameit headline for this asset)
-
-private struct LiveActivityShowcaseMarketingBlock: View {
-    var body: some View {
-        VStack(spacing: 12) {
-            Text(NSLocalizedString("screenshotLiveActivityKicker", comment: ""))
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .tracking(1.6)
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.78, green: 1, blue: 0.35),
-                            Color(red: 0.55, green: 0.92, blue: 0.85),
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-
-            Text(NSLocalizedString("screenshotLiveActivityTitle", comment: ""))
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.white)
-                .shadow(color: Color.black.opacity(0.35), radius: 12, y: 4)
-
-            Text(NSLocalizedString("screenshotLiveActivitySubtitle", comment: ""))
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .multilineTextAlignment(.center)
-                .foregroundStyle(Color.white.opacity(0.78))
-                .lineSpacing(3)
-                .padding(.horizontal, 4)
-        }
-        .frame(maxWidth: .infinity)
     }
 }
 
@@ -215,7 +172,7 @@ private struct LiveActivityShowcaseAutoTimerCard: View {
                     Spacer(minLength: 8)
 
                     HStack(spacing: 8) {
-                        pill(title: "SET 3/4")
+                        pill(title: "\(NSLocalizedString("set", comment: "")) 3/4")
                         Text("2:30")
                             .font(.caption.weight(.bold))
                             .foregroundStyle(timerTint)
@@ -231,10 +188,11 @@ private struct LiveActivityShowcaseAutoTimerCard: View {
                     .padding(.top, 4)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("UP NEXT")
+                    Text(NSLocalizedString("liveActivityContextLabelUpNext", comment: ""))
                         .font(.caption2.weight(.semibold))
                         .fontDesign(.rounded)
                         .foregroundStyle(Color.white.opacity(0.72))
+                        .textCase(.uppercase)
                         .padding(.leading, 12)
 
                     nextSetPill
@@ -249,6 +207,7 @@ private struct LiveActivityShowcaseAutoTimerCard: View {
             .font(.caption2.weight(.bold))
             .fontDesign(.rounded)
             .foregroundStyle(Color.white.opacity(0.72))
+            .textCase(.uppercase)
             .lineLimit(1)
             .padding(.horizontal, 8)
             .padding(.vertical, 5)
@@ -334,7 +293,7 @@ private struct LiveActivityShowcaseCurrentSetCard: View {
             Spacer(minLength: 8)
 
             HStack(spacing: 8) {
-                pill(title: "SET 3/4")
+                pill(title: "\(NSLocalizedString("set", comment: "")) 3/4")
                 Text("22 min")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.white)
@@ -348,6 +307,7 @@ private struct LiveActivityShowcaseCurrentSetCard: View {
             .font(.caption2.weight(.bold))
             .fontDesign(.rounded)
             .foregroundStyle(Color.white.opacity(0.72))
+            .textCase(.uppercase)
             .padding(.horizontal, 8)
             .padding(.vertical, 5)
             .background(
@@ -359,7 +319,7 @@ private struct LiveActivityShowcaseCurrentSetCard: View {
 
     private var previousPill: some View {
         HStack(alignment: .lastTextBaseline, spacing: 10) {
-            Text("prev")
+            Text(NSLocalizedString("liveActivitySetRowPrevious", comment: ""))
                 .font(.caption2.weight(.bold))
                 .fontDesign(.rounded)
                 .foregroundStyle(Color.white.opacity(0.45))
@@ -389,7 +349,7 @@ private struct LiveActivityShowcaseCurrentSetCard: View {
 
     private var currentPill: some View {
         HStack(alignment: .lastTextBaseline, spacing: 10) {
-            Text("current")
+            Text(NSLocalizedString("liveActivitySetRowCurrent", comment: ""))
                 .font(.caption2.weight(.bold))
                 .fontDesign(.rounded)
                 .foregroundStyle(Color.white.opacity(0.72))

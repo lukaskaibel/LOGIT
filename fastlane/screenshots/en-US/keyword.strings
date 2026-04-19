@@ -4,4 +4,5 @@
 "04_WorkoutDetail" = "LOG";
 "05_WorkoutRecorder" = "RECORD";
 "06_SuperDropSet" = "INTENSITY";
+"07_LiveActivity" = "LIVE";
 "08_BodyFat" = "PROGRESS";

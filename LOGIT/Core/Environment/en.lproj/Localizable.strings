@@ -758,10 +758,12 @@
 "restBetweenSets" = "Rest Between Sets";
 "autoRestTimer" = "Auto Rest Timer";
 
-// App Store — Live Activity showcase (full-bleed screenshot, not framed)
-"screenshotLiveActivityKicker" = "LIVE ACTIVITY";
-"screenshotLiveActivityTitle" = "Guidance at a glance.\nOn your Lock Screen.";
-"screenshotLiveActivitySubtitle" = "Auto rest countdown, your last set, and the weight you are logging next — without unlocking.";
+// Live Activity widget (keep labels compact — layout is tight)
+"liveActivitySetRowPrevious" = "Prev";
+"liveActivitySetRowCurrent" = "Current";
+"liveActivityContextLabelUpNext" = "Up Next";
+
+// App Store — Live Activity showcase (in-app labels only; frameit supplies headline)
 "screenshotLiveActivityModeAutoCaption" = "Auto timer";
 "screenshotLiveActivityModeLoggingCaption" = "Set tracking";
 

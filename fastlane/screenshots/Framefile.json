@@ -48,6 +48,10 @@
       "keyword": { "color": "#E47CC9" }
     },
     {
+      "filter": "07_LiveActivity",
+      "keyword": { "color": "#5ADBEB" }
+    },
+    {
       "filter": "08_BodyFat",
       "keyword": { "color": "#7AD39F" }
     }

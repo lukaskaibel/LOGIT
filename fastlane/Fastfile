@@ -28,8 +28,10 @@ XCODE_PROJECT   = "LOGIT.xcodeproj"
 XCODE_SCHEME    = "LOGIT"
 SCREENSHOT_SCHEME = "LOGITScreenshots"
 UITEST_TARGET   = "LOGITUITests"
-METADATA_DIR    = "./fastlane/metadata"
-SCREENSHOT_DIR  = "./fastlane/screenshots"
+# Anchor to this file so paths stay valid after actions that `chdir` (e.g.
+# `frame_screenshots` moves into `screenshots/` while running).
+METADATA_DIR    = File.expand_path("metadata", __dir__)
+SCREENSHOT_DIR  = File.expand_path("screenshots", __dir__)
 
 # Dotenv: load `.env.secret` so local runs pick up API key paths without
 # polluting the shell. CI passes the same values as env vars directly.

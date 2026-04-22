@@ -2,13 +2,29 @@
   "default": {
     "keyword": {
       "color": "#C6FF4B",
-      "font": "./SF-Pro-Display-Heavy.otf",
+      "fonts": [
+        {
+          "font": "../../../../../../../System/Library/Fonts/AppleSDGothicNeo.ttc",
+          "supported": ["ja", "ko"]
+        },
+        {
+          "font": "./SF-Pro-Display-Heavy.otf"
+        }
+      ],
       "font_size": 95,
       "padding": 15
     },
     "title": {
       "color": "#FFFFFF",
-      "font": "./SF-Pro-Display-Bold.otf",
+      "fonts": [
+        {
+          "font": "../../../../../../../System/Library/Fonts/AppleSDGothicNeo.ttc",
+          "supported": ["ja", "ko"]
+        },
+        {
+          "font": "./SF-Pro-Display-Bold.otf"
+        }
+      ],
       "font_size": 110
     },
     "background": "./background.png",

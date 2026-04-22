@@ -28,8 +28,8 @@ prompts ever appear.
 - `fastlane/Appfile` - app identifier, Apple ID, team IDs.
 - `fastlane/Matchfile` - points at the private cert repo.
 - `fastlane/Fastfile` - all lanes (see table above).
-- `fastlane/Snapfile` - snapshot devices (6.9" + 6.5" iPhone) + locales
-  (`en-US`, `de-DE`).
+- `fastlane/Snapfile` - snapshot devices (6.9" iPhone) + locales
+  (`en-US`, `de-DE`, `es-MX`, `es-ES`, `fr-FR`, `pt-BR`, `ja`, `ko`, `it`).
 - `fastlane/metadata/<locale>/*.txt` - App Store Connect store listing copy.
   One field per file; edit and upload via `fastlane metadata`.
 - `fastlane/screenshots/<locale>/title.strings` - headlines drawn above each
@@ -120,6 +120,21 @@ that are committed to the repo.
   both locales.
 - Release notes must stay under 4000 characters per locale and should not
   contain Markdown - App Store Connect renders them as plain text.
+- **Localization is mandatory for user-facing text.** LOGIT currently supports
+  app locales `en`, `de`, `es`, `fr`, `pt-BR`, `ja`, `ko`, and `it`, plus App
+  Store locales `en-US`, `de-DE`, `es-MX`, `es-ES`, `fr-FR`, `pt-BR`, `ja`,
+  `ko`, and `it`. Any change that adds or edits user-facing text must update
+  all supported `Localizable.strings` files. If the change affects App Store
+  copy or screenshots, update every matching `fastlane/metadata/<locale>` and
+  `fastlane/screenshots/<locale>` file. If the change touches default
+  exercises, localize both the `_default.exercise.*` names and the localized
+  instruction arrays in `LOGIT/Resources/default_exercises.json`.
+- Keep translations close to the English length where possible, but do not make
+  them awkward. Use natural Apple-style platform wording, preserve product
+  terms such as iCloud, App Store, Live Activity, Dynamic Island, and LOGIT Pro,
+  and use normal fitness terminology for each locale.
+- Localized legal Markdown files include machine-translated text for app
+  coverage. Treat legal text as requiring human/legal review before release.
 - Never commit `fastlane/.env.secret`, the raw `.p8`, or anything inside
   `fastlane/builds/` - these are all gitignored.
 - If a UI change breaks one of the screenshot UI tests, update the

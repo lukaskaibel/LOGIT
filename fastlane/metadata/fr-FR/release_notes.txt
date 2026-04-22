@@ -1,0 +1,8 @@
+Live Activity : gardez votre séance au premier plan.
+
+· La nouvelle Live Activity affiche votre séance en cours sur l’écran verrouillé et dans Dynamic Island : exercice actuel, série et minuteur de repos sans ouvrir l’app.
+· Le minuteur de repos est désormais juste à côté de vos séries pour ne jamais manquer le bon moment entre deux répétitions.
+· Finitions sur les modèles, l’historique des séances et les détails d’exercices.
+· Corrections de bugs et améliorations des performances.
+
+Merci de vous entraîner avec LOGIT !

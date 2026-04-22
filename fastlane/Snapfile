@@ -9,7 +9,14 @@ devices([
 
 languages([
   "en-US",
-  "de-DE"
+  "de-DE",
+  "es-MX",
+  "es-ES",
+  "fr-FR",
+  "pt-BR",
+  "ja",
+  "ko",
+  "it"
 ])
 
 # Xcode scheme + workspace/project pair used by snapshot's `xcodebuild` call.

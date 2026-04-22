@@ -20,7 +20,7 @@ struct ChangeWeeklyWorkoutGoalScreen: View {
                 Text(NSLocalizedString("weeklyWorkoutGoal", comment: ""))
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                Text("Set this to how many workouts you want to perform per week, to keep you motivated.")
+                Text(NSLocalizedString("weeklyWorkoutGoalDescription", comment: ""))
                     .multilineTextAlignment(.center)
             }
             .padding(.top)

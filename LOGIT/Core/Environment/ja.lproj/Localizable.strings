@@ -1,0 +1,826 @@
+/* 
+  Localizable.strings
+  LOGIT.
+
+  Created by Lukas Kaibel on 11.04.22.
+  
+*/
+
+
+// MARK: - A
+
+"abdominals" = "腹筋";
+"acceptPrivacyPolicy" = "プライバシーポリシーに同意する";
+"add" = "追加";
+"addExercise" = "エクササイズを追加";
+"addExercisesFromBelow" = "以下から演習を追加します。";
+"addMeasurement" = "測定の追加";
+"addMeasurements" = "測定値の追加";
+"addNote" = "メモを追加";
+"addNote..." = "メモを追加...";
+"addSet" = "セットの追加";
+"addSetAfter" = "後にセットを追加";
+"addSetBefore" = "前にセットを追加";
+"addWorkout" = "ワークアウトを追加";
+"addToHistory" = "履歴に追加";
+"afternoon" = "午後";
+"all" = "全て";
+"allEntries" = "すべてのエントリー";
+"allSetsCompleted" = "全セット完成";
+"allTime" = "オールタイム";
+"alreadyExists" = "すでに存在します。";
+"areYouSure?" = "本気ですか？";
+"autoRenewMonth" = "毎月自動更新";
+"ascending" = "上昇";
+"availableWith" = "で利用可能";
+
+// MARK: - B
+
+"back" = "戻る";
+"best" = "最高";
+"bestLastMonth" = "先月のベスト";
+"bestPerDay" = "一日あたりのベスト";
+"bestThisMonth" = "今月のベスト";
+"bestWeightPerDay" = "1日あたりのベスト体重";
+"bestRepetitionsPerDay" = "1日あたりのベストレップ数";
+"biceps" = "上腕二頭筋";
+"bicepsLeft" = "左上腕二頭筋";
+"bicepsRight" = "右上腕二頭筋";
+"bodyFatPercentage" = "体脂肪";
+"bodyParts" = "体の部位";
+"bodyweight" = "体重";
+
+// MARK: - C
+
+"caloriesBurned" = "消費カロリー";
+"cancel" = "キャンセル";
+"cardio" = "有酸素運動";
+"changeGoal" = "目標の変更";
+"charts" = "チャート";
+"chartsPromotionText" = "重量から回数、ボリューム、セットまで、フィットネスへの取り組みのあらゆるステップを視覚化します。";
+"chest" = "胸";
+"chooseExercise" = "エクササイズを選択";
+"chooseSecondaryExercise" = "二次演習を選択してください";
+"chooseTemplateText" = "テンプレートを選択するか、空のワークアウトを開始します";
+"completed" = "完了";
+"continue" = "続く";
+"continueWorkout" = "ワークアウトを続ける";
+"copyRepetitions" = "コピーの繰り返し";
+"copySet" = "コピーセット";
+"copyWeight" = "コピー重量";
+"coreMetrics" = "コア指標";
+"create" = "作成する";
+"createExercise" = "エクササイズの作成";
+"createTemplate" = "テンプレートの作成";
+"creatingTemplateFailed" = "テンプレートの作成に失敗しました";
+"creatingTemplateFailedText" = "選択した画像にワークアウトが含まれていることを確認してください。";
+"currentBest" = "現在のベスト";
+"currentBestInfo" = "「現在のベスト」には、今月の最高の試技が表示されます。ない場合は、最近の以前の試技が表示されます。";
+"currentWorkout" = "現在のトレーニング";
+
+// MARK: - D
+
+"date" = "日付";
+"defaultExercises" = "デフォルトの演習";
+"defaultExercisesDescription" = "デフォルトの演習ライブラリを使用しますか?";
+"delete" = "消去";
+"deleteExerciseConfirmation" = "演習を削除しますか?この操作は元に戻すことができません。";
+"deleteSets" = "セットを削除してワークアウトを終了する";
+"deleteSetsWithoutEntries" = "エントリのないすべてのセットを削除して、ワークアウトを終了しますか?";
+"deleteTemplate" = "テンプレートの削除";
+"deleteTemplateMsg" = "このテンプレートを削除しますか?これを元に戻すことはできません。";
+"deleteWorkout" = "ワークアウトの削除";
+"deleteWorkoutDescription" = "ワークアウトを削除しますか?この操作は元に戻すことができません。";
+"descending" = "降順";
+"discardWorkout" = "ワークアウトを破棄する";
+"dismiss" = "却下する";
+"done" = "完了";
+"dropCount" = "ドロップ数";
+"dropSet" = "ドロップセット";
+"duration" = "間隔";
+
+// MARK: - E
+
+"edit" = "編集";
+"edit" = "編集";
+"editDateTime" = "日付/時刻の編集";
+"editNote" = "メモの編集";
+"editTemplate" = "テンプレートの編集";
+"editTime" = "時間の編集";
+"editWorkout" = "ワークアウトの編集";
+"eight" = "八";
+"end" = "終わり";
+"endWorkout" = "ワークアウトを終了する";
+"evening" = "夕方";
+"exercise" = "種目";
+"exerciseName" = "演習名";
+"exerciseNameCantStartWithDefault" = "エクササイズ名を「_default」で始めることはできません。このプレフィックスは、組み込みの演習用に予約されています。";
+"exerciseNameDescription" = "演習の名前を入力します。";
+"exercises" = "種目";
+"exerciseLibrary" = "エクササイズライブラリ";
+
+// MARK: - F
+
+"finishSetup" = "セットアップを完了する";
+"finishWorkout" = "ワークアウトを終了する";
+"finishWorkoutConfimation" = "トレーニングを終了しますか?";
+"five" = "五";
+"focus" = "集中";
+"focusedOn" = "焦点を当てた";
+"focusThisWeek" = "今週の焦点";
+"four" = "4";
+"fourWeeksAgo" = "4週間前";
+"fromLastWeek" = "先週から";
+"FromPhoto" = "写真から";
+"failedToLoadPrivacyPolicy" = "プライバシー ポリシーの読み込みに失敗しました。";
+"failedToLoadTermsAndConditions" = "利用規約を読み込めませんでした。";
+"failedToMatchExercises" = "演習のマッチングに失敗しました。";
+"failedToReadFile" = "ファイルの読み取りに失敗しました: %@";
+
+// MARK: - G
+
+"generateTemplate" = "テンプレートの生成";
+"generateWorkout" = "ワークアウトの生成";
+"generatingTemplate" = "テンプレートの生成";
+"generatingWorkout" = "ワークアウトの生成";
+"generatingWorkoutFailed" = "ワークアウトの生成に失敗しました";
+"generatingWorkoutFailedText" = "写真にワークアウトが含まれていることを確認して、もう一度試してください。";
+"gettingStarted" = "はじめる";
+"goal" = "ゴール";
+
+// MARK: - H
+
+"highlights" = "ハイライト";
+"hips" = "ヒップ";
+"history" = "歴史";
+"home" = "家";
+
+// MARK: - H (continued)
+
+"hidden" = "隠れた";
+
+// MARK: - I
+
+"incompleteSetsWillNotBeSaved" = "不完全なセットは保存されません。";
+"importError" = "インポートエラー";
+"inSelectedWeek" = "選択した週に";
+"instructions" = "説明書";
+"inviteToWorkout" = "ワークアウトに招待する";
+
+// MARK: - K
+
+"keepTrackingForComparison" = "追跡を続けて期間を比較します。";
+
+// MARK: - L
+
+"latest" = "最新";
+"lastMonth" = "先月";
+"lastTenWorkouts" = "過去 10 回のワークアウトで";
+"lastUsed" = "最後に使用した";
+"lastWeek" = "先週";
+"lastWorkout" = "最後のトレーニング";
+"legs" = "脚";
+"letsGetStarted" = "始めましょう";
+"letsGetStartedDescription" = "ワークアウトを開始する前に、エクスペリエンスを最適化するために簡単なセットアップを行う必要があります。";
+"liveActivityNextUp" = "次へ";
+"liveActivitySetLabelCurrent" = "現在";
+"liveActivitySetLabelPrev" = "前へ";
+"licenceAgreement" = "ライセンス契約";
+"lookupExercise" = "%@ を調べてください";
+
+// MARK: - M
+
+"maximumWeight" = "最大重量";
+"maximumRepetitions" = "最大繰り返し回数";
+"maxReps" = "最大担当者";
+"maxWeight" = "最大重量";
+"measurementBodyweight" = "体重";
+"measurementCaloriesBurned" = "消費カロリー";
+"chest" = "胸";
+"measurementLengthHhmeasurementLengthBicepsLeft" = "左上腕二頭筋";
+"calfLeft" = "ふくらはぎ左";
+"forearmLeft" = "前腕左";
+"thighLeft" = "左腿";
+"neck" = "ネック";
+"bicepsRight" = "右上腕二頭筋";
+"calfRight" = "右ふくらはぎ";
+"forearmRight" = "右前腕";
+"thighRight" = "右もも";
+"shoulders" = "肩";
+"waist" = "ウエスト";
+"measurements" = "測定";
+"min" = "分";
+"missing" = "ない";
+"measurementsPromotionDescription" = "体重、体脂肪、腕、胸、ウエストなどの体の部位の測定値を追跡し、進捗状況を明確に確認します。";
+"month" = "月";
+"monthly" = "毎月";
+"morning" = "朝";
+"muscleGroup" = "筋肉グループ";
+"muscleGroups" = "筋肉群";
+"muscleGroupsInLastTen" = "筋肉グループの概要";
+"muscleGroupSplit" = "筋肉グループの分割";
+"muscleMass" = "筋肉量";
+"myTemplates" = "私のテンプレート";
+
+// MARK: - N
+
+"name" = "名前";
+"nameCantBeEmpty" = "名前を空にすることはできません。";
+"navBack" = "戻る";
+"never" = "一度もない";
+"newestFirst" = "新しい順";
+"newExercise" = "新しい演習";
+"newTemplate" = "新しいテンプレート";
+"newTemplateFromWorkout" = "テンプレートとして使用...";
+"newWorkout" = "新しいワークアウト";
+"newWorkoutDescription" = "ワークアウトを一から構築します。";
+"night" = "夜";
+"nine" = "九";
+"noAttempts" = "試行なし";
+"noData" = "データなし";
+"noEntriesConfirmation" = "このワークアウトにはエントリがありません。破棄しますか？";
+"noExercises" = "練習なし";
+"noExercisesInWeek" = "週に運動は禁止";
+"noExercisesTip" = "まだ練習はありません";
+"noExercisesTipDescription" = "まずは個人用のエクササイズ ライブラリを構築してください。";
+"noHistory" = "履歴なし";
+"noMeasurements" = "測定なし";
+"noName" = "ノーネーム";
+"noNetworkConnection" = "ネットワーク接続なし";
+"noNetworkConnectionMessage" = "インターネット接続を確認して、もう一度試してください。";
+"none" = "なし";
+"noon" = "正午";
+"normalset" = "普通";
+"noTemplates" = "テンプレートなし";
+"noTemplatesTip" = "テンプレートはまだありません";
+"noTemplatesTipDescription" = "お気に入りのルーチンを保存して、すぐにアクセスできるようにします。";
+"notificationsDisabled" = "通知が無効になっています";
+"notificationsDisabledMessage" = "タイマーでサウンドを再生し、終了時に表示できるようにするには、通知を有効にする必要があります。";
+"enableTimerNotifications" = "タイマー通知を有効にする";
+"enableTimerNotificationsMessage" = "アプリがバックグラウンドにあるときでも、休憩タイマーが終了すると通知を受け取ります。これにより、ワークアウト中に順調に進むことができます。";
+"notNow" = "今じゃない";
+"now" = "今";
+"noWidgetsAdded" = "ウィジェットは追加されていません";
+"noWorkouts" = "トレーニングなし";
+"noWorkoutsInWeek" = "週にトレーニングはありません";
+"noWorkoutsThisWeek" = "今週はトレーニングはありません";
+"noWorkoutsTip" = "まだトレーニングはありません";
+"noWorkoutsTipDescription" = "トレーニングの記録を開始して、進捗状況を追跡します。";
+
+// MARK: - O
+
+"ok" = "わかりました";
+"oldestFirst" = "古い順";
+"one" = "1つ";
+"onlyFewSeconds" = "これには数秒しかかかりません...";
+"openSettings" = "設定を開く";
+"overallSets" = "総合セット";
+"overallVolume" = "全体のボリューム";
+"overview" = "概要";
+
+// MARK: - P
+
+"pause" = "一時停止";
+"performed" = "実施済み";
+"personalBest" = "自己ベスト";
+"perDay" = "1日あたり";
+"pinExercises" = "ピンの練習";
+"pinExercisesTip" = "ピンの練習";
+"pinExercisesTipDescription" = "演習をピン留めすると、進捗状況をすぐに確認できます。";
+"pinMeasurementsTip" = "ピンの測定";
+"pinMeasurementsTipDescription" = "時間の経過に伴う変化を監視するためのピン測定。";
+"pinned" = "固定された";
+"addPin" = "ピンを追加";
+"PerDay" = "1日あたり";
+"PerMonth" = "月あたり";
+"perWeek" = "週あたり";
+"PerWeek" = "週あたり";
+"planAhead" = "事前に計画を立てる";
+"pressPlusToAdd" = "+を押して「%@」を追加します";
+"pressPlusToAddExercise" = "+ を押してエクササイズを追加します";
+"preventAutoLock" = "オートロックを防ぐ";
+"preventAutoLockDescription" = "ワークアウト中に画面をアクティブに保ちます。";
+"price" = "価格";
+"privacyPolicy" = "プライバシーポリシー";
+"termsAndConditions" = "利用規約";
+"profile" = "Proファイル";
+"progress" = "Proグレス";
+
+// MARK: - R
+
+"recentAttempts" = "最近の試み";
+"recentWorkouts" = "最近のトレーニング";
+"remove" = "取り除く";
+"rename" = "名前の変更";
+"reorderingDone" = "並べ替えが完了しました";
+"reorderExercises" = "演習を並べ替える";
+"repetitions" = "回数";
+"repetitionsPR" = "繰り返し PR";
+"reps" = "RP";
+"replaceExercise" = "置き換え運動";
+"replaceSecondaryExercise" = "二次的な運動を置き換える";
+"restorePurchase" = "購入を復元する";
+
+// MARK: - S
+
+"save" = "保存";
+"saveAsTemplate" = "テンプレートとして保存";
+"saveTemplate" = "テンプレートの保存";
+"saveTime" = "時間を節約する";
+"scanATemplate" = "テンプレートをスキャンする";
+"scanAWorkout" = "ワークアウトをスキャンする";
+"scanWorkout" = "スキャンワークアウト";
+"scanWorkoutDescription" = "写真からエクササイズをインポートします。";
+"scanAWorkoutPromotionText" = "写真をワークアウトに変換して、すぐにトレーニングを始めましょう。";
+"search" = "検索";
+"searchEverything" = "検索";
+"searchPrompt" = "すべてを検索";
+"searchPromptDescription" = "すべてのエクササイズ、ワークアウト、テンプレートを 1 か所で検索できます。";
+"searchExercises" = "演習で検索";
+"searchWorkouts" = "ワークアウトで検索";
+"noSearchResults" = "結果が見つかりませんでした";
+"noSearchResultsFor" = "\"%@\" に一致する結果はありませんでした";
+"showMoreResults" = "%d の結果をさらに表示";
+"sec" = "秒";
+"selectDuration" = "期間を選択してください";
+"selectExercise" = "エクササイズを選択してください";
+"selectMuscleGroup" = "筋肉グループの選択";
+"selectSecondaryExercise" = "二次演習を選択してください";
+"selectTemplate" = "テンプレートの選択";
+"set" = "セット";
+"sets" = "セット";
+"setsIncomplete" = "不完全なセット";
+"setsPerWeek" = "週あたりの全体的なセット数";
+"setType" = "セットタイプ";
+"settings" = "設定";
+"seven" = "セブン";
+"shoulders" = "肩";
+"shareAsTemplate" = "テンプレートとして共有";
+"sharedTemplate" = "共有テンプレート";
+"sharedTemplateDescription" = "このテンプレートを確認してコレクションに保存します。";
+"sharedWorkout" = "共有ワークアウト";
+"sharedWorkoutDescription" = "誰かがこのワークアウトを履歴に追加するよう招待しました。";
+"shareTemplate" = "テンプレートを共有する";
+"showAll" = "すべて表示";
+"showAllAttempts" = "すべての試行を表示";
+"showAllExercises" = "すべての演習を表示";
+"showAllMeasurements" = "すべての測定値を表示";
+"showDetails" = "詳細を表示";
+"showInstructions" = "説明を表示";
+"showMeasurements" = "測定値を表示";
+"showSubscriptions" = "サブスクリプションを表示";
+"six" = "六";
+"skip" = "スキップ";
+"sortBy" = "並べ替え";
+"standard" = "標準";
+"start" = "始める";
+"startEmpty" = "空のワークアウトを開始する";
+"startFromScan" = "スキャンから開始";
+"startFromTemplate" = "テンプレートから開始";
+"startSetup" = "セットアップの開始";
+"starttime" = "開始時間";
+"startWorkout" = "ワークアウトを開始する";
+"workoutStartSheetDescription" = "開始方法を選択してください。";
+"stop" = "停止";
+"stopwatch" = "ストップウォッチ";
+"subscription" = "サブスクリプション";
+"summary" = "まとめ";
+"superSet" = "スーパーセット";
+"shared" = "共有";
+
+// MARK: - T
+
+"target" = "ターゲット";
+"targetPerWeek" = "1週間あたりの目標";
+"targetPerWeekDescription" = "週ごとのワークアウト目標を選択します。";
+"template" = "テンプレート";
+"templateExplanation" = "テンプレートを使用してワークアウトを計画し、再利用します。ワークアウトを開始するときにテンプレートを選択できます。";
+"templateFromPhoto" = "写真からのテンプレート";
+"templateFromPhotoDescription" = "写真からテンプレートを抽出します";
+"templateNeverUsed" = "テンプレートは一度も使用されていません";
+"templates" = "テンプレート";
+"this" = "これ";
+"thisMonth" = "今月";
+"thisWeek" = "今週";
+"ThisWeek" = "今週";
+"thisYear" = "今年";
+"three" = "三つ";
+"threeMonths" = "3ヶ月";
+"threeWeeksAgo" = "3週間前";
+"time" = "時間";
+"tip" = "ヒント";
+"timer" = "タイマー";
+"manualTimer" = "マニュアルタイマー";
+"manualTimerDescription" = "必要に応じてカスタム期間を使用してください。";
+"autoRestTimerDescription" = "セットの繰り返しが入力されると、自動的に開始されます。";
+"autoRestStopwatchDescription" = "自動的に開始され、経過時間が休憩時間として保存されます。";
+"ready" = "準備ができて";
+"running" = "ランニング";
+"paused" = "一時停止中";
+"reset" = "リセット";
+"timerIsMuted" = "タイマーミュート";
+"timerSoundOn" = "サウンドオン";
+"times" = "回";
+"timesUp" = "時間切れです！";
+"timesUpBody" = "ワークアウトタイマーが完了しました。";
+"timerWarningBody" = "%@残り。";
+"stopwatchMinuteTitle" = "ストップウォッチ";
+"stopwatchMinuteBody" = "%@ 経過しました。";
+"title" = "タイトル";
+"to" = "に";
+"today" = "今日";
+"toGo" = "持ち帰り";
+"total" = "合計";
+"trackMore" = "もっと追跡する";
+"triceps" = "上腕三頭筋";
+"two" = "二";
+"twoWeeksAgo" = "2週間前";
+"autoRestStopwatch" = "オートレストストップウォッチ";
+
+// MARK: - U
+
+"unit" = "ユニット";
+"unitDescription" = "使用する単位を選択します。以前のエントリは変更時に変換されます。";
+"unpinned" = "固定されていない";
+"unused" = "未使用";
+"unsupportedFileType" = "このファイル形式はサポートされていません。";
+"unknownExercise" = "不明";
+"update" = "アップデート";
+"upgradeTo" = "にアップグレード";
+"useDefaultExercises" = "デフォルトの演習を使用する";
+"useTemplate" = "テンプレートを使用する";
+"useTemplateDescription" = "保存したワークアウト ルーチンから始めます。";
+"useThisPhoto" = "この写真を使用してください";
+
+// MARK: - R (continued)
+"retakePhoto" = "リテイク";
+
+// MARK: - W
+"viewTemplate" = "テンプレートの表示";
+"volume" = "音量";
+"volumeThisWeek" = "今週のボリューム";
+
+// MARK: - W
+
+"week" = "週";
+"weekly" = "毎週";
+"weeklyAverage" = "週平均";
+"weeklyTarget" = "週間目標";
+"weeklyTargetDescription" = "1 週間に行うワークアウトの数を選択します。";
+"weeklyWorkoutGoal" = "毎週のトレーニング目標";
+"weeklyWorkoutGoalDescription" = "1 週間に行うワークアウトの数を設定します。";
+"weight" = "重量";
+"weightPR" = "体重 PR";
+"weightUnit" = "重量単位";
+"weightUnitDescription" = "アプリ全体で使用する単位を選択します。";
+"welcomeTo" = "へようこそ";
+"whatsStillMissing" = "まだ何が足りないのでしょうか？";
+"widget" = "ウィジェット";
+"weekOfThe" = "の週";
+"workout" = "ワークアウト";
+"workoutGoal" = "ワークアウトの目標";
+"workoutHistory" = "歴史";
+"workouts" = "ワークアウト";
+"workoutTarget" = "トレーニングターゲット";
+
+// MARK: - V (continued)
+
+"value" = "価値";
+"visible" = "見える";
+
+// MARK: - Y
+
+"year" = "年";
+"yearly" = "毎年";
+"yesterday" = "昨日";
+"visualise" = "視覚化する";
+
+// MARK: - Z
+
+"zero" = "ゼロ";
+
+// MARK: - Measurements Edit Sheet
+
+"editMeasurements" = "測定値の編集";
+"editPinnedMeasurements" = "固定された編集";
+"dragToReorder" = "ドラッグして並べ替えます";
+"noMeasurementsSelected" = "測定値が選択されていません";
+"noDate" = "日付なし";
+
+// MARK: - OverallSets Highlights (Comparison Sentences)
+"avgMoreSetsPerWorkoutThisWeekThanLastWeek" = "今週は先週よりもワークアウトあたりの平均セット数が増えています。";
+"avgFewerSetsPerWorkoutThisWeekThanLastWeek" = "今週は先週よりもワークアウトあたりの平均セット数が少なくなりました。";
+"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "今月は先月よりもワークアウトあたりの平均セット数が増えています。";
+"avgFewerSetsPerWorkoutThisMonthThanLastMonth" = "今月は先月よりもワークアウトあたりの平均セット数が少なくなります。";
+"avgMoreSetsPerWorkoutThisYearThanLastYear" = "今年は昨年よりもワークアウトあたりの平均セット数が増えています。";
+"avgFewerSetsPerWorkoutThisYearThanLastYear" = "今年は昨年よりもワークアウトあたりの平均セット数が減っています。";
+
+// MARK: - Default Exercise Names
+
+"_default.exercise.pushups" = "腕立て伏せ";
+"_default.exercise.barbellBenchPress" = "バーベルベンチプレス";
+"_default.exercise.dumbbellBenchPress" = "ダンベルベンチプレス";
+"_default.exercise.inclinedBarbellBenchPress" = "インクラインバーベルベンチプレス";
+"_default.exercise.inclinedDumbbellBenchPress" = "インクラインダンベルベンチプレス";
+"_default.exercise.dumbbellFly" = "ダンベルフライ";
+"_default.exercise.cableCrossovers" = "ケーブルクロスオーバー";
+"_default.exercise.declineBenchPress" = "デクラインベンチプレス";
+"_default.exercise.chestDips" = "チェストディップス";
+"_default.exercise.pecDeckFly" = "ペックデッキフライ";
+"_default.exercise.pullups" = "懸垂";
+"_default.exercise.chinups" = "懸垂";
+"_default.exercise.australianPullups" = "オーストラリアンプルアップ";
+"_default.exercise.latPulldowns" = "ラットプルダウン";
+"_default.exercise.barbellRows" = "バーベルロウ";
+"_default.exercise.dumbbellRows" = "ダンベルロウ";
+"_default.exercise.seatedCableRows" = "固定ケーブル列";
+"_default.exercise.tBarRows" = "Tバー列";
+"_default.exercise.deadlift" = "デッドリフト";
+"_default.exercise.sumoDeadlift" = "相撲デッドリフト";
+"_default.exercise.romanianDeadlift" = "ルーマニアンデッドリフト";
+"_default.exercise.facePulls" = "フェイスプル";
+"_default.exercise.squats" = "スクワット";
+"_default.exercise.frontSquats" = "フロントスクワット";
+"_default.exercise.legPress" = "レッグプレス";
+"_default.exercise.walkingLunges" = "ウォーキングランジ";
+"_default.exercise.barbellLunges" = "バーベルランジ";
+"_default.exercise.dumbbellLunges" = "ダンベルランジ";
+"_default.exercise.legExtension" = "レッグエクステンション";
+"_default.exercise.legCurls" = "レッグカール";
+"_default.exercise.calfRaises" = "カーフレイズ";
+"_default.exercise.seatedCalfRaises" = "シーテッドカーフレイズ";
+"_default.exercise.bulgarianSplitSquats" = "ブルガリアン・スプリット・スクワット";
+"_default.exercise.hackSquats" = "ハックスクワット";
+"_default.exercise.gobletSquats" = "ゴブレットスクワット";
+"_default.exercise.legPressCalfRaise" = "レッグプレス カーフレイズ";
+"_default.exercise.hipThrust" = "ヒップスラスト";
+"_default.exercise.handstandPushups" = "逆立ち腕立て伏せ";
+"_default.exercise.militaryPress" = "ミリタリープレス";
+"_default.exercise.shoulderPress" = "ショルダープレス";
+"_default.exercise.dumbbellShoulderPress" = "ダンベルショルダープレス";
+"_default.exercise.uprightRows" = "直立した列";
+"_default.exercise.lateralRaises" = "ラテラルレイズ";
+"_default.exercise.frontRaises" = "フロントレイズ";
+"_default.exercise.rearDeltRaise" = "リアデルトレイズ";
+"_default.exercise.arnoldPress" = "アーノルドプレス";
+"_default.exercise.cableRaises" = "ケーブルレイズ";
+"_default.exercise.dips" = "ディップス";
+"_default.exercise.tricepPushdowns" = "トライセッププッシュダウン";
+"_default.exercise.overheadTricepExtension" = "オーバーヘッドトライセップエクステンション";
+"_default.exercise.closeGripBenchPress" = "クローズグリップベンチプレス";
+"_default.exercise.tricepKickbacks" = "上腕三頭筋のキックバック";
+"_default.exercise.skullCrushers" = "スカルクラッシャー";
+"_default.exercise.diamondPushups" = "ダイヤモンドプッシュアップ";
+"_default.exercise.ropeTricepExtensions" = "ロープトライセップエクステンション";
+"_default.exercise.barbellCurls" = "バーベルカール";
+"_default.exercise.dumbbellCurls" = "ダンベルカール";
+"_default.exercise.hammerCurls" = "ハンマーカール";
+"_default.exercise.preacherCurls" = "プリーチャーカール";
+"_default.exercise.concentrationCurls" = "コンセントレーションカール";
+"_default.exercise.cableCurls" = "ケーブルカール";
+"_default.exercise.inclineDumbbellCurls" = "インクラインダンベルカール";
+"_default.exercise.ezBarCurls" = "EZバーカール";
+"_default.exercise.situps" = "腹筋運動";
+"_default.exercise.crunches" = "クランチ";
+"_default.exercise.bicycles" = "自転車クランチ";
+"_default.exercise.legRaises" = "レッグレイズ";
+"_default.exercise.hangingKneeRaises" = "ハンギングニーレイズ";
+"_default.exercise.plank" = "板";
+"_default.exercise.sidePlank" = "サイドプランク";
+"_default.exercise.russianTwists" = "ロシアンツイスト";
+"_default.exercise.mountainClimbers" = "登山者";
+"_default.exercise.abWheelRollout" = "アブ ホイール ロールアウト";
+"_default.exercise.hangingLegRaises" = "ハンギングレッグレイズ";
+"_default.exercise.cableCrunches" = "ケーブルクランチ";
+"_default.exercise.running" = "ランニング";
+"_default.exercise.cycling" = "サイクリング";
+"_default.exercise.rowing" = "ボート漕ぎ";
+"_default.exercise.jumpRope" = "縄跳び";
+"_default.exercise.elliptical" = "楕円形";
+"_default.exercise.stairClimber" = "ステアクライマー";
+"_default.exercise.swimming" = "水泳";
+"_default.exercise.burpees" = "バーピー";
+"_default.exercise.boxJumps" = "ボックスジャンプ";
+"_default.exercise.battleRopes" = "バトルロープ";
+"_default.exercise.barbellShrugs" = "バーベルをすくめます";
+"_default.exercise.dumbbellShrugs" = "ダンベルをすくめます";
+"_default.exercise.widegripPullups" = "ワイドグリップ懸垂";
+"_default.exercise.closegripPullups" = "クローズグリップ懸垂";
+"_default.exercise.assistedPullups" = "補助懸垂";
+"_default.exercise.chestSupportedRows" = "チェストサポート列";
+"_default.exercise.pendlayRows" = "ペンドレー・ロウズ";
+"_default.exercise.landmineRows" = "地雷列";
+"_default.exercise.cablePulldowns" = "ケーブルプルダウン";
+"_default.exercise.seatedRowMachine" = "シーテッドローマシン";
+"_default.exercise.reverseFly" = "リバースフライ";
+"_default.exercise.goodMornings" = "おはようございます";
+"_default.exercise.backExtensions" = "バックエクステンション";
+"_default.exercise.hyperextensions" = "過伸展";
+"_default.exercise.reverseHyperextensions" = "逆過伸展";
+"_default.exercise.dumbbellPullover" = "ダンベルプルオーバー";
+"_default.exercise.machineFly" = "マシンフライ";
+"_default.exercise.landminePress" = "地雷プレス";
+"_default.exercise.inclineCableFly" = "インクライン ケーブル フライ";
+"_default.exercise.singleArmCablePress" = "シングルアーム ケーブル プレス";
+"_default.exercise.dumbbellFloorPress" = "ダンベルフロアプレス";
+"_default.exercise.pistolSquats" = "ピストルスクワット";
+"_default.exercise.boxSquats" = "ボックススクワット";
+"_default.exercise.sissySquats" = "シシースクワット";
+"_default.exercise.zercherSquats" = "ザーチャースクワット";
+"_default.exercise.legPressWideStance" = "レッグプレス ワイドスタンス";
+"_default.exercise.legPressNarrowStance" = "レッグプレス ナロースタンス";
+"_default.exercise.nordics" = "ノルディックカール";
+"_default.exercise.gluteHamRaise" = "グルートハムレイズ";
+"_default.exercise.seatedLegCurls" = "シーテッドレッグカール";
+"_default.exercise.standingLegCurls" = "スタンディングレッグカール";
+"_default.exercise.lyingLegCurls" = "ライイングレッグカール";
+"_default.exercise.singleLegDeadlift" = "シングルレッグデッドリフト";
+"_default.exercise.cableKickbacks" = "ケーブルのキックバック";
+"_default.exercise.abductorMachine" = "アブダクターマシン";
+"_default.exercise.adductorMachine" = "貝柱マシン";
+"_default.exercise.stepUps" = "ステップアップ";
+"_default.exercise.reverseGripBenchPress" = "リバースグリップベンチプレス";
+"_default.exercise.reverseCurls" = "リバースカール";
+"_default.exercise.spiderCurls" = "スパイダーカール";
+"_default.exercise.zottmanCurls" = "ゾットマン カール";
+"_default.exercise.seatedInclineCurls" = "シーテッドインクラインカール";
+"_default.exercise.cableHammerCurls" = "ケーブルハンマーカール";
+"_default.exercise.dragCurls" = "ドラッグカール";
+"_default.exercise.wristCurls" = "リストカール";
+"_default.exercise.reverseWristCurls" = "リバースリストカール";
+"_default.exercise.seatedTricepPress" = "シーテッドトライセプスプレス";
+"_default.exercise.oneArmTricepExtension" = "片腕トライセップエクステンション";
+"_default.exercise.tricepDips" = "トライセップディップス";
+"_default.exercise.benchDips" = "ベンチディップス";
+"_default.exercise.reverseGripTricepPushdowns" = "リバースグリップトライセッププッシュダウン";
+"_default.exercise.jmPress" = "JMプレス";
+"_default.exercise.tatePress" = "テート・プレス";
+"_default.exercise.seatedDumbbellPress" = "シーテッドダンベルプレス";
+"_default.exercise.machineShoulderPress" = "マシンショルダープレス";
+"_default.exercise.pikePushups" = "パイクプッシュアップ";
+"_default.exercise.behindTheNeckPress" = "ビハインド・ザ・ネック・プレス";
+"_default.exercise.dumbbellScaption" = "ダンベルスカプション";
+"_default.exercise.cableLateralRaises" = "ケーブル横レイズ";
+"_default.exercise.bentOverLateralRaises" = "ベント・オーバー・ラテラル・レイズ";
+"_default.exercise.reverseDeclineFly" = "リバースデクラインフライ";
+"_default.exercise.seatedBentOverLateralRaises" = "座位ベントオーバーラテラルレイズ";
+"_default.exercise.plateFrontRaise" = "プレートフロントレイズ";
+"_default.exercise.barbellFrontRaise" = "バーベルフロントレイズ";
+"_default.exercise.highPulls" = "ハイプル";
+"_default.exercise.vUps" = "Vアップ";
+"_default.exercise.reverseCrunches" = "リバースクランチ";
+"_default.exercise.flutterKicks" = "フラッターキック";
+"_default.exercise.scissorKicks" = "シザーキック";
+"_default.exercise.deadBug" = "死んだバグ";
+"_default.exercise.birdDog" = "バードドッグ";
+"_default.exercise.hollowBodyHold" = "中空ボディホールド";
+"_default.exercise.toesToBar" = "つま先からバーまで";
+"_default.exercise.lSit" = "L-シット";
+"_default.exercise.dragonFlags" = "ドラゴンフラッグ";
+"_default.exercise.windshieldWipers" = "フロントガラスワイパー";
+"_default.exercise.paloffPress" = "パロフ・プレス";
+"_default.exercise.woodchops" = "ウッドチョップ";
+"_default.exercise.obliqueCrunches" = "オブリーククランチ";
+"_default.exercise.sprints" = "スプリント";
+"_default.exercise.hiitTraining" = "HIITトレーニング";
+"_default.exercise.assaultBike" = "アサルトバイク";
+"_default.exercise.rowingMachine" = "ローイングマシン";
+"_default.exercise.skiErg" = "スキーエルグ";
+"_default.exercise.farmersWalk" = "ファーマーズ ウォーク";
+"_default.exercise.rackPulls" = "ラックプル";
+"_default.exercise.snatchGripDeadlift" = "スナッチグリップデッドリフト";
+"_default.exercise.deficitDeadlift" = "赤字デッドリフト";
+"_default.exercise.trapBarDeadlift" = "トラップバーデッドリフト";
+"_default.exercise.cleanAndPress" = "クリーニングしてプレス";
+"_default.exercise.powerClean" = "パワークリーン";
+"_default.exercise.hangClean" = "ハングクリーン";
+"_default.exercise.snatch" = "スナッチ";
+"_default.exercise.hangSnatch" = "ハング・スナッチ";
+"_default.exercise.pushPress" = "プッシュプレス";
+"_default.exercise.pushJerk" = "プッシュジャーク";
+"_default.exercise.splitJerk" = "スプリットジャーク";
+"_default.exercise.thrusters" = "スラスター";
+"_default.exercise.wallBalls" = "ウォールボール";
+"_default.exercise.turkishGetUp" = "トルコのゲットアップ";
+"_default.exercise.kettlebellSwings" = "ケトルベルスイング";
+"_default.exercise.kettlebellSnatch" = "ケトルベルスナッチ";
+"_default.exercise.kettlebellClean" = "ケトルベルクリーン";
+"_default.exercise.gobletSquatWithKettlebell" = "ケトルベルを使ったゴブレットスクワット";
+"_default.exercise.singleArmKettlebellPress" = "シングルアームケトルベルプレス";
+"_default.exercise.ropeClimbs" = "ロープクライミング";
+"_default.exercise.sledPush" = "そり押し";
+"_default.exercise.sledPull" = "そり引き";
+"_default.exercise.tireFlips" = "タイヤフリップ";
+"_default.exercise.medicineBallSlams" = "メディシン ボール スラム";
+"_default.exercise.wallClimbs" = "ウォールクライム";
+"_default.exercise.muscleUps" = "マッスルアップ";
+"_default.exercise.ringDips" = "リングディップス";
+"_default.exercise.ringPushups" = "リングプッシュアップ";
+"_default.exercise.ringRows" = "リングロウ";
+
+// MARK: - Volume Highlights
+"avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "今月は先月よりもワークアウトごとの平均ボリュームが増えています。";
+"avgLessVolumePerWorkoutThisMonthThanLastMonth" = "今月は先月よりもワークアウトごとの平均ボリュームが減少しています。";
+"avgMoreVolumePerWorkoutThisYearThanLastYear" = "今年は昨年よりもワークアウトあたりの平均ボリュームが増えています。";
+"avgLessVolumePerWorkoutThisYearThanLastYear" = "今年は昨年よりもワークアウトあたりの平均ボリュームが減少しています。";
+
+// MARK: - Exercise Volume Highlights
+"avgMoreExerciseVolumeThisMonthThanLastMonth" = "今月のこのエクササイズの平均ボリュームは先月よりも多くなっています。";
+"avgLessExerciseVolumeThisMonthThanLastMonth" = "今月のこのエクササイズの平均ボリュームは先月よりも少なくなっています。";
+"avgMoreExerciseVolumeThisYearThanLastYear" = "今年は、この演習の平均ボリュームが昨年よりも多くなりました。";
+"avgLessExerciseVolumeThisYearThanLastYear" = "今年のこの演習の平均ボリュームは昨年よりも少なくなっています。";
+
+// MARK: - Exercise Weight Highlights
+"higherMaxWeightThisMonthThanLastMonth" = "今月のあなたのベスト体重は先月よりも増えています。";
+"lowerMaxWeightThisMonthThanLastMonth" = "今月のベスト体重は先月よりも減少しています。";
+"higherMaxWeightThisYearThanLastYear" = "今年のあなたのベスト体重は昨年よりも高くなっています。";
+"lowerMaxWeightThisYearThanLastYear" = "今年のあなたのベスト体重は昨年よりも低いです。";
+
+// MARK: - Exercise Repetitions Highlights
+"higherMaxRepsThisMonthThanLastMonth" = "今月のベストレップ数は先月よりも高くなります。";
+"lowerMaxRepsThisMonthThanLastMonth" = "今月のベストレップ数は先月よりも低くなります。";
+"higherMaxRepsThisYearThanLastYear" = "今年のベストレップ数は昨年よりも高くなっています。";
+"lowerMaxRepsThisYearThanLastYear" = "今年のベストレップ数は昨年よりも低くなります。";
+
+// MARK: - Measurement Highlights
+"measurementHigherThisMonthThanLastMonth" = "今月の平均は先月よりも高くなっています。";
+"measurementLowerThisMonthThanLastMonth" = "今月の平均は先月よりも低くなります。";
+"measurementHigherThisYearThanLastYear" = "今年のあなたの平均は昨年よりも高くなっています。";
+"measurementLowerThisYearThanLastYear" = "今年のあなたの平均は昨年よりも低いです。";
+
+// MARK: - Welcome Screen
+"track" = "追跡";
+"goals" = "目標";
+"getStarted" = "始めましょう";
+"welcomeWorkoutsDescription" = "エクササイズ、セット、回数を記録して、すべてのセッションを追跡します。";
+"welcomeProgressDescription" = "詳細なグラフと統計を使用して、時間の経過とともに改善を確認します。";
+"welcomeTemplatesDescription" = "お気に入りのルーチンを保存し、ワンタップでワークアウトを開始できます。";
+"welcomeGoalsDescription" = "毎週の目標を設定し、フィットネス目標を達成するためのモチベーションを維持しましょう。";
+"noGoalSet" = "まだ目標は設定されていません";
+"noWeeklyGoalTip" = "毎週の目標なし";
+"noWeeklyGoalTipDescription" = "毎週のワークアウトの進捗状況を追跡するための目標を設定します。";
+"setGoal" = "目標を設定する";
+
+// Rest Duration
+"addRest" = "休符を追加する";
+"editRest" = "休符の編集";
+"restBetweenSets" = "セット間の休憩";
+"autoRestTimer" = "オートレストタイマー";
+
+// Live Activity widget (keep labels compact — layout is tight)
+"liveActivitySetRowPrevious" = "前へ";
+"liveActivitySetRowCurrent" = "現在";
+"liveActivityContextLabelUpNext" = "次へ";
+
+// App Store — Live Activity showcase (in-app labels only; frameit supplies headline)
+"screenshotLiveActivityModeAutoCaption" = "オートタイマー";
+"screenshotLiveActivityModeLoggingCaption" = "トラッキングを設定する";
+
+// MARK: - Exercise Merging
+"mergeExercise" = "マージ";
+"mergeExercises" = "マージ演習";
+"selectExerciseToMerge" = "結合するエクササイズを選択してください";
+"mergeDirectionDescription" = "どのエクササイズを残すかを選択します。すべてのワークアウト履歴が転送されます。";
+"defaultExerciseAlwaysRemains" = "デフォルトの演習は常に残ります。";
+"cannotMergeDefaultExercises" = "デフォルトの演習を相互にマージすることはできません。";
+"cannotMergeSameExercise" = "演習をそれ自体とマージすることはできません。";
+"mergeConfirmation" = "「%@」のすべてのワークアウト履歴は「%@」に移動されます。 「%@」は削除されます。これを元に戻すことはできません。";
+"mergeInto" = "マージイン";
+"willBeDeleted" = "削除されます";
+"willRemain" = "残る";
+"defaultExercise" = "デフォルト";
+"changeExercise" = "変更演習";
+"error" = "エラー";
+"suggested" = "提案された";
+
+// MARK: - Screenshot Fixtures
+
+"screenshotLockScreenDate" = "11月14日 金曜日";
+"screenshotInclineDumbbellPress" = "インクラインダンベルプレス";
+"screenshotPushDay" = "プッシュデー";
+
+// MARK: - Preview Fixtures
+
+"previewBenchPress" = "ベンチプレス";
+"previewInclineBenchPress" = "インクラインベンチプレス";
+"previewOverheadPress" = "ショルダープレス";
+"previewLateralRaises" = "サイドレイズ";
+"previewTricepsExtensions" = "トライセプスエクステンション";
+"previewDips" = "ディップス";
+"previewSquat" = "スクワット";
+"previewLunges" = "ランジ";
+"previewLegExtensions" = "レッグエクステンション";
+"previewDeadlift" = "デッドリフト";
+"previewStandingRows" = "スタンディングロー";
+"previewBicepsCurls" = "バイセップスカール";
+"previewLatPulldown" = "ラットプルダウン";
+"previewCrunches" = "クランチ";
+"previewPullDay" = "プルデー";
+"previewPushDay" = "プッシュデー";
+"previewLegDay" = "レッグデー";
+"previewQuickBenchSession" = "クイックベンチ";
+"previewArmDay" = "アームデー";
+"previewPerfectPushDay" = "パーフェクトプッシュデー";
+"previewPushup" = "プッシュアップ";
+"previewSquats" = "スクワット";
+"previewBarbellCurl" = "バーベルカール";

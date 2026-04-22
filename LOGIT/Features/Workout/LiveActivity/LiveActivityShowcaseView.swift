@@ -104,7 +104,7 @@ private struct LiveActivityShowcaseBackground: View {
 private struct LiveActivityShowcaseClock: View {
     var body: some View {
         VStack(spacing: 6) {
-            Text("Friday, November 14")
+            Text(NSLocalizedString("screenshotLockScreenDate", comment: ""))
                 .font(.system(size: 18, weight: .medium, design: .rounded))
                 .foregroundStyle(Color.white.opacity(0.85))
 
@@ -220,7 +220,7 @@ private struct LiveActivityShowcaseAutoTimerCard: View {
 
     private var nextSetPill: some View {
         HStack(alignment: .lastTextBaseline, spacing: 12) {
-            Text("Incline Dumbbell Press")
+            Text(NSLocalizedString("screenshotInclineDumbbellPress", comment: ""))
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.white)
                 .lineLimit(1)
@@ -266,7 +266,7 @@ private struct LiveActivityShowcaseCurrentSetCard: View {
             VStack(alignment: .leading, spacing: 14) {
                 header
 
-                Text("Incline Dumbbell Press")
+                Text(NSLocalizedString("screenshotInclineDumbbellPress", comment: ""))
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(.white)
                     .lineLimit(2)
@@ -285,7 +285,7 @@ private struct LiveActivityShowcaseCurrentSetCard: View {
                 Image(systemName: "dumbbell.fill")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(Color.white.opacity(0.78))
-                Text("Push Day")
+                Text(NSLocalizedString("screenshotPushDay", comment: ""))
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(Color.white.opacity(0.78))
             }

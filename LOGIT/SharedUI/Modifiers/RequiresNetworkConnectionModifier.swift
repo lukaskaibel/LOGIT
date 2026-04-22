@@ -24,9 +24,9 @@ struct RequiresNetworkConnectionModifier: ViewModifier {
             )
             .alert(isPresented: $isShowingNoConnectinoAlert) {
                 Alert(
-                    title: Text("No Network Connection"),
-                    message: Text("Please check your internet connection and try again."),
-                    dismissButton: .default(Text("Ok"))
+                    title: Text(NSLocalizedString("noNetworkConnection", comment: "")),
+                    message: Text(NSLocalizedString("noNetworkConnectionMessage", comment: "")),
+                    dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
                 )
             }
     }

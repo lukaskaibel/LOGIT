@@ -19,12 +19,32 @@ struct DefaultExercise: Codable {
     let nameKey: String
     let muscleGroup: String
     let instructions: [String]?
+    let localizedInstructions: [String: [String]]?
+
+    func instructions(for localeIdentifier: String) -> [String]? {
+        let normalizedLocale = localeIdentifier.replacingOccurrences(of: "_", with: "-")
+        let languageCode = normalizedLocale.split(separator: "-").first.map(String.init)
+        let candidates = [
+            normalizedLocale,
+            languageCode,
+            "en"
+        ].compactMap { $0 }
+
+        for candidate in candidates {
+            if let localized = localizedInstructions?[candidate] {
+                return localized
+            }
+        }
+
+        return instructions
+    }
 }
 
 class DefaultExerciseService: ObservableObject {
     private let database: Database
     private let defaults = UserDefaults.standard
     private let lastLoadedVersionKey = "lastLoadedDefaultExercisesVersion"
+    private let lastLoadedLocaleKey = "lastLoadedDefaultExercisesLocale"
     
     init(database: Database) {
         self.database = database
@@ -39,23 +59,28 @@ class DefaultExerciseService: ObservableObject {
         }
         
         let lastLoadedVersion = defaults.integer(forKey: lastLoadedVersionKey)
+        let preferredLocale = Bundle.main.preferredLocalizations.first ?? Locale.current.identifier
+        let lastLoadedLocale = defaults.string(forKey: lastLoadedLocaleKey)
         
-        if exerciseData.version > lastLoadedVersion {
-            createOrUpdateDefaultExercises(exerciseData.exercises)
+        if exerciseData.version > lastLoadedVersion || preferredLocale != lastLoadedLocale {
+            createOrUpdateDefaultExercises(exerciseData.exercises, localeIdentifier: preferredLocale)
             defaults.set(exerciseData.version, forKey: lastLoadedVersionKey)
+            defaults.set(preferredLocale, forKey: lastLoadedLocaleKey)
             database.save()
             print("DefaultExerciseService: Loaded default exercises version \(exerciseData.version)")
         }
     }
     
-    private func createOrUpdateDefaultExercises(_ exercises: [DefaultExercise]) {
+    private func createOrUpdateDefaultExercises(_ exercises: [DefaultExercise], localeIdentifier: String) {
         for exerciseData in exercises {
+            let instructions = exerciseData.instructions(for: localeIdentifier)
+
             if let existingExercise = fetchExerciseByDefaultId(exerciseData.id) {
                 existingExercise.name = exerciseData.nameKey
                 if let muscleGroup = MuscleGroup(rawValue: exerciseData.muscleGroup) {
                     existingExercise.muscleGroup = muscleGroup
                 }
-                existingExercise.instructions = exerciseData.instructions
+                existingExercise.instructions = instructions
             } else {
                 let exercise = Exercise(context: database.context)
                 exercise.id = generateUUID(from: exerciseData.id)
@@ -63,7 +88,7 @@ class DefaultExerciseService: ObservableObject {
                 if let muscleGroup = MuscleGroup(rawValue: exerciseData.muscleGroup) {
                     exercise.muscleGroup = muscleGroup
                 }
-                exercise.instructions = exerciseData.instructions
+                exercise.instructions = instructions
             }
         }
     }

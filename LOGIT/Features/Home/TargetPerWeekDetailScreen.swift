@@ -166,7 +166,7 @@ struct TargetPerWeekDetailScreen: View {
                     Button {
                         isShowingChangeGoalScreen = true
                     } label: {
-                        Label("Change Goal", systemImage: "plusminus.circle")
+                        Label(NSLocalizedString("changeGoal", comment: ""), systemImage: "plusminus.circle")
                     }
                     .buttonStyle(SecondaryButtonStyle())
                 }

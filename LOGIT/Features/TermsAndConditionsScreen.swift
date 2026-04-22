@@ -19,13 +19,11 @@ struct TermsAndConditionsScreen: View {
     }
 
     private func getTermsMarkdown() -> String {
-        if let url = Bundle.main.url(forResource: "logit_terms_and_conditions", withExtension: "md"),
-           let data = try? Data(contentsOf: url),
-           let markdown = String(data: data, encoding: .utf8)
-        {
+        if let markdown = LocalizedMarkdown.load(named: "logit_terms_and_conditions") {
             return markdown
         }
-        return "Failed to load terms and conditions"
+
+        return NSLocalizedString("failedToLoadTermsAndConditions", comment: "")
     }
 }
 

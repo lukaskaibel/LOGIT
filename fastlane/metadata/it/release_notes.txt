@@ -1,0 +1,8 @@
+Live Activity: tieni il workout sempre in primo piano.
+
+· La nuova Live Activity mostra il workout attivo sulla schermata di blocco e nella Dynamic Island: esercizio corrente, serie e timer di recupero senza aprire l’app.
+· Il timer di recupero ora è accanto alle serie, così non perdi mai il ritmo tra le ripetizioni.
+· Miglioramenti a modelli, cronologia workout e dettagli esercizio.
+· Correzioni di bug e miglioramenti delle prestazioni.
+
+Grazie per allenarti con LOGIT!

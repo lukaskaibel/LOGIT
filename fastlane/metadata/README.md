@@ -11,7 +11,8 @@ to push changes live.
 
 ## Folder layout
 
-- `en-US/`, `de-DE/` - per-locale store listing copy
+- `en-US/`, `de-DE/`, `es-MX/`, `es-ES/`, `fr-FR/`, `pt-BR/`, `ja/`, `ko/`,
+  `it/` - per-locale store listing copy
   - `name.txt` - app name (30 char limit)
   - `subtitle.txt` - subtitle (30 char limit)
   - `description.txt` - full description (4000 char limit)

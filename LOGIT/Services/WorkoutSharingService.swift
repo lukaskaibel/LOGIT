@@ -23,11 +23,14 @@ final class WorkoutSharingService {
         var errorDescription: String? {
             switch self {
             case .invalidFileFormat:
-                return "The file format is not supported."
+                return NSLocalizedString("unsupportedFileType", comment: "")
             case .decodingFailed(let error):
-                return "Failed to read the file: \(error.localizedDescription)"
+                return String(
+                    format: NSLocalizedString("failedToReadFile", comment: ""),
+                    error.localizedDescription
+                )
             case .exerciseMatchingFailed:
-                return "Failed to match exercises."
+                return NSLocalizedString("failedToMatchExercises", comment: "")
             }
         }
     }
@@ -50,7 +53,7 @@ final class WorkoutSharingService {
     /// - Returns: URL to the temporary file, or nil if export failed
     func exportWorkout(_ workout: Workout) -> URL? {
         let dto = WorkoutDTO(from: workout)
-        return exportToFile(dto, filename: sanitizeFilename(workout.name ?? "Workout"), extension: "logitworkout")
+        return exportToFile(dto, filename: sanitizeFilename(workout.name ?? NSLocalizedString("workout", comment: "")), extension: "logitworkout")
     }
     
     /// Exports a template to a shareable .logittemplate file
@@ -58,7 +61,7 @@ final class WorkoutSharingService {
     /// - Returns: URL to the temporary file, or nil if export failed
     func exportTemplate(_ template: Template) -> URL? {
         let dto = TemplateDTO(from: template)
-        return exportToFile(dto, filename: sanitizeFilename(template.name ?? "Template"), extension: "logittemplate")
+        return exportToFile(dto, filename: sanitizeFilename(template.name ?? NSLocalizedString("template", comment: "")), extension: "logittemplate")
     }
     
     /// Exports a workout as a template file
@@ -67,7 +70,7 @@ final class WorkoutSharingService {
     func exportWorkoutAsTemplate(_ workout: Workout) -> URL? {
         // Create a TemplateDTO from the workout data
         let templateDTO = TemplateDTO(
-            name: workout.name ?? "Shared Workout",
+            name: workout.name ?? NSLocalizedString("sharedWorkout", comment: ""),
             setGroups: workout.setGroups.map { workoutSetGroup in
                 TemplateSetGroupDTO(
                     exercise: ExerciseDTO(from: workoutSetGroup.exercise),
@@ -107,7 +110,7 @@ final class WorkoutSharingService {
             formatVersion: TemplateDTO.formatVersion,
             appStoreURL: "https://apps.apple.com/app/logit-track-your-workouts/id6444813640"
         )
-        return exportToFile(templateDTO, filename: sanitizeFilename(workout.name ?? "Workout"), extension: "logittemplate")
+        return exportToFile(templateDTO, filename: sanitizeFilename(workout.name ?? NSLocalizedString("workout", comment: "")), extension: "logittemplate")
     }
     
     // MARK: - Import Methods
@@ -197,7 +200,7 @@ final class WorkoutSharingService {
     private func sanitizeFilename(_ name: String) -> String {
         let invalidCharacters = CharacterSet(charactersIn: "/\\:*?\"<>|")
         let sanitized = name.components(separatedBy: invalidCharacters).joined(separator: "_")
-        return sanitized.isEmpty ? "Shared" : sanitized
+        return sanitized.isEmpty ? NSLocalizedString("shared", comment: "") : sanitized
     }
     
     // MARK: - Private Import Helpers
@@ -324,7 +327,7 @@ final class WorkoutSharingService {
     private func findOrCreateExercise(from dto: ExerciseDTO) throws -> Exercise {
         guard let name = dto.name, !name.isEmpty else {
             // Create a new exercise with unknown name
-            let exercise = database.newExercise(name: "Unknown", muscleGroup: dto.type)
+            let exercise = database.newExercise(name: NSLocalizedString("unknownExercise", comment: ""), muscleGroup: dto.type)
             database.flagAsTemporary(exercise)
             return exercise
         }

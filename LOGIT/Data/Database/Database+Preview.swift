@@ -16,33 +16,33 @@ extension Database {
 
         // MARK: Exercises
 
-        let benchpress = database.newExercise(name: "Benchpress", muscleGroup: .chest)
+        let benchpress = database.newExercise(name: NSLocalizedString("previewBenchPress", comment: ""), muscleGroup: .chest)
         let inclinedBenchpress = database.newExercise(
-            name: "Inclined Benchpress",
+            name: NSLocalizedString("previewInclineBenchPress", comment: ""),
             muscleGroup: .chest
         )
-        let overheadPress = database.newExercise(name: "Overhead Press", muscleGroup: .shoulders)
-        let lateralRaises = database.newExercise(name: "Lateral Raises", muscleGroup: .shoulders)
+        let overheadPress = database.newExercise(name: NSLocalizedString("previewOverheadPress", comment: ""), muscleGroup: .shoulders)
+        let lateralRaises = database.newExercise(name: NSLocalizedString("previewLateralRaises", comment: ""), muscleGroup: .shoulders)
         let tricepsExtensions = database.newExercise(
-            name: "Triceps Extensions",
+            name: NSLocalizedString("previewTricepsExtensions", comment: ""),
             muscleGroup: .triceps
         )
-        let dips = database.newExercise(name: "Dips", muscleGroup: .chest)
-        let squat = database.newExercise(name: "Squat", muscleGroup: .legs)
-        let lunges = database.newExercise(name: "Lunges", muscleGroup: .legs)
-        let legExtensions = database.newExercise(name: "Leg Extensions", muscleGroup: .legs)
-        let deadlift = database.newExercise(name: "Deadlift", muscleGroup: .back)
-        let standingRows = database.newExercise(name: "Standing Rows", muscleGroup: .back)
-        let bicepsCurls = database.newExercise(name: "Biceps Curls", muscleGroup: .biceps)
-        let latPulldown = database.newExercise(name: "Lat Pulldown", muscleGroup: .back)
-        let crunches = database.newExercise(name: "Crunches", muscleGroup: .abdominals)
+        let dips = database.newExercise(name: NSLocalizedString("previewDips", comment: ""), muscleGroup: .chest)
+        let squat = database.newExercise(name: NSLocalizedString("previewSquat", comment: ""), muscleGroup: .legs)
+        let lunges = database.newExercise(name: NSLocalizedString("previewLunges", comment: ""), muscleGroup: .legs)
+        let legExtensions = database.newExercise(name: NSLocalizedString("previewLegExtensions", comment: ""), muscleGroup: .legs)
+        let deadlift = database.newExercise(name: NSLocalizedString("previewDeadlift", comment: ""), muscleGroup: .back)
+        let standingRows = database.newExercise(name: NSLocalizedString("previewStandingRows", comment: ""), muscleGroup: .back)
+        let bicepsCurls = database.newExercise(name: NSLocalizedString("previewBicepsCurls", comment: ""), muscleGroup: .biceps)
+        let latPulldown = database.newExercise(name: NSLocalizedString("previewLatPulldown", comment: ""), muscleGroup: .back)
+        let crunches = database.newExercise(name: NSLocalizedString("previewCrunches", comment: ""), muscleGroup: .abdominals)
 
         // Create workouts with realistic durations (50-75 minutes)
         let workoutDurations = [65, 58, 72, 55, 68] // minutes
         
         for i in 0 ..< 5 {
             var date = Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!
-            let pullday = database.newWorkout(name: "Pull Day", date: date)
+            let pullday = database.newWorkout(name: NSLocalizedString("previewPullDay", comment: ""), date: date)
             pullday.endDate = Calendar.current.date(byAdding: .minute, value: workoutDurations[i], to: date)
             
             let deadliftGroup = database.newWorkoutSetGroup(
@@ -81,7 +81,7 @@ extension Database {
             database.newStandardSet(repetitions: 12, weight: 30000, setGroup: curlGroup)
 
             date = Calendar.current.date(byAdding: .day, value: -2, to: Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!)!
-            let pushday = database.newWorkout(name: "Push Day", date: date)
+            let pushday = database.newWorkout(name: NSLocalizedString("previewPushDay", comment: ""), date: date)
             pushday.endDate = Calendar.current.date(byAdding: .minute, value: [62, 70, 54, 66, 59][i], to: date)
             
             let benchpressGroup = database.newWorkoutSetGroup(
@@ -197,7 +197,7 @@ extension Database {
 
             if i > 0, i != 4 {
                 date = Calendar.current.date(byAdding: .day, value: -4, to: Calendar.current.date(byAdding: .weekOfYear, value: -i, to: .now)!)!
-                let legday = database.newWorkout(name: "Leg Day", date: date)
+                let legday = database.newWorkout(name: NSLocalizedString("previewLegDay", comment: ""), date: date)
                 legday.endDate = Calendar.current.date(byAdding: .minute, value: [0, 75, 68, 71][i-1], to: date)
                 
                 let squatGroup = database.newWorkoutSetGroup(
@@ -250,7 +250,7 @@ extension Database {
         }
 
         let date = Calendar.current.date(byAdding: .weekOfYear, value: -6, to: .now)!
-        let firstBenchWorkout = database.newWorkout(name: "Quick Bench Session", date: date)
+        let firstBenchWorkout = database.newWorkout(name: NSLocalizedString("previewQuickBenchSession", comment: ""), date: date)
         firstBenchWorkout.endDate = Calendar.current.date(byAdding: .minute, value: 30, to: date)
         _ = database.newWorkoutSetGroup(
             sets: [database.newStandardSet(repetitions: 12, weight: 78000)],
@@ -305,20 +305,20 @@ extension Database {
             }
         }
 
-        let pushTemplate = database.newTemplate(name: "Push Day")
+        let pushTemplate = database.newTemplate(name: NSLocalizedString("previewPushDay", comment: ""))
         addTemplateSet(exercise: benchpress, template: pushTemplate, reps: 8, weight: 70000, extraSets: 3)
         addTemplateSet(exercise: inclinedBenchpress, template: pushTemplate, reps: 10, weight: 55000)
         addTemplateSet(exercise: overheadPress, template: pushTemplate, reps: 8, weight: 45000)
         addTemplateSet(exercise: tricepsExtensions, template: pushTemplate, reps: 12, weight: 25000)
         addTemplateSet(exercise: lateralRaises, template: pushTemplate, reps: 15, weight: 12000)
 
-        let pullTemplate = database.newTemplate(name: "Pull Day")
+        let pullTemplate = database.newTemplate(name: NSLocalizedString("previewPullDay", comment: ""))
         addTemplateSet(exercise: deadlift, template: pullTemplate, reps: 5, weight: 120000, extraSets: 3)
         addTemplateSet(exercise: latPulldown, template: pullTemplate, reps: 10, weight: 60000)
         addTemplateSet(exercise: standingRows, template: pullTemplate, reps: 10, weight: 55000)
         addTemplateSet(exercise: bicepsCurls, template: pullTemplate, reps: 12, weight: 30000)
 
-        let legTemplate = database.newTemplate(name: "Leg Day")
+        let legTemplate = database.newTemplate(name: NSLocalizedString("previewLegDay", comment: ""))
         addTemplateSet(exercise: squat, template: legTemplate, reps: 6, weight: 100000, extraSets: 3)
         addTemplateSet(exercise: lunges, template: legTemplate, reps: 10, weight: 40000)
         addTemplateSet(exercise: legExtensions, template: legTemplate, reps: 12, weight: 50000)
@@ -336,7 +336,7 @@ extension Database {
         // reps + weight) so the screenshot shows completed work in the log,
         // and leave later sets empty so the "what's next" state is obvious.
         let inProgressStart = Calendar.current.date(byAdding: .minute, value: -23, to: .now)!
-        let currentPushDay = database.newWorkout(name: "Push Day", date: inProgressStart)
+        let currentPushDay = database.newWorkout(name: NSLocalizedString("previewPushDay", comment: ""), date: inProgressStart)
         currentPushDay.isCurrentWorkout = true
 
         // Ordering matters for the screenshot: the recorder scrolls its set
@@ -371,14 +371,14 @@ extension Database {
         database.newStandardSet(repetitions: 7, weight: 70000, setGroup: currentBenchGroup)
         database.newStandardSet(repetitions: 0, weight: 0, setGroup: currentBenchGroup)
 
-        // MARK: Completed "Arm Day" workout with superset + drop set
+        // MARK: Completed NSLocalizedString("previewArmDay", comment: "") workout with superset + drop set
         //
         // Dedicated fixture for the marketing screenshot that shows a super
         // set and a drop set one after another inside the same completed
-        // workout. Uses "Arm Day" as the name so the UI test can find it
+        // workout. Uses NSLocalizedString("previewArmDay", comment: "") as the name so the UI test can find it
         // unambiguously (other seeded workouts are named Push/Pull/Leg Day).
         let armDayDate = Calendar.current.date(byAdding: .day, value: -1, to: .now)!
-        let armDay = database.newWorkout(name: "Arm Day", date: armDayDate)
+        let armDay = database.newWorkout(name: NSLocalizedString("previewArmDay", comment: ""), date: armDayDate)
         armDay.endDate = Calendar.current.date(byAdding: .minute, value: 42, to: armDayDate)
 
         let armsSuperSetGroup = database.newWorkoutSetGroup(
@@ -438,8 +438,8 @@ extension Database {
     }
 
     var testTemplate: Template {
-        let exampleExerciseNames = ["Pushup", "Deadlift", "Squats", "Pushup", "Bar-Bell Curl"]
-        let template = newTemplate(name: "Perfect Push-Day")
+        let exampleExerciseNames = [NSLocalizedString("previewPushup", comment: ""), NSLocalizedString("previewDeadlift", comment: ""), NSLocalizedString("previewSquats", comment: ""), NSLocalizedString("previewPushup", comment: ""), NSLocalizedString("previewBarbellCurl", comment: "")]
+        let template = newTemplate(name: NSLocalizedString("previewPerfectPushDay", comment: ""))
         for name in exampleExerciseNames {
             let exercise = newExercise(
                 name: name,

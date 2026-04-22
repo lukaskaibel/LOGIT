@@ -1,0 +1,8 @@
+Live Activity: mantenha seu treino sempre à vista.
+
+· A nova Live Activity mostra seu treino ativo na Tela Bloqueada e na Dynamic Island: exercício atual, série e timer de descanso sem abrir o app.
+· O timer de descanso agora fica ao lado das séries para você não perder o ritmo entre repetições.
+· Melhorias em modelos, histórico de treinos e detalhes dos exercícios.
+· Correções de bugs e melhorias de desempenho.
+
+Obrigado por treinar com o LOGIT!

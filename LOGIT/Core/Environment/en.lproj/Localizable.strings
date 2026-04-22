@@ -132,6 +132,10 @@
 "fourWeeksAgo" = "Four weeks ago";
 "fromLastWeek" = "from last week";
 "FromPhoto" = "From Photo";
+"failedToLoadPrivacyPolicy" = "Failed to load privacy policy.";
+"failedToLoadTermsAndConditions" = "Failed to load terms and conditions.";
+"failedToMatchExercises" = "Failed to match exercises.";
+"failedToReadFile" = "Failed to read the file: %@";
 
 // MARK: - G
 
@@ -242,6 +246,8 @@
 "noHistory" = "No History";
 "noMeasurements" = "No Measurements";
 "noName" = "No Name";
+"noNetworkConnection" = "No Network Connection";
+"noNetworkConnectionMessage" = "Please check your internet connection and try again.";
 "none" = "None";
 "noon" = "Noon";
 "normalset" = "Normal";
@@ -380,6 +386,7 @@
 "subscription" = "Subscription";
 "summary" = "Summary";
 "superSet" = "Superset";
+"shared" = "Shared";
 
 // MARK: - T
 
@@ -437,6 +444,7 @@
 "unpinned" = "Unpinned";
 "unused" = "Unused";
 "unsupportedFileType" = "This file type is not supported.";
+"unknownExercise" = "Unknown";
 "update" = "Update";
 "upgradeTo" = "Upgrade to";
 "useDefaultExercises" = "Use Default Exercises";
@@ -460,6 +468,7 @@
 "weeklyTarget" = "Weekly Target";
 "weeklyTargetDescription" = "Select how many workouts you want to do per week.";
 "weeklyWorkoutGoal" = "Weekly Workout Goal";
+"weeklyWorkoutGoalDescription" = "Set how many workouts you want to do per week.";
 "weight" = "Weight";
 "weightPR" = "Weight PR";
 "weightUnit" = "Weight Unit";
@@ -783,3 +792,35 @@
 "changeExercise" = "Change Exercise";
 "error" = "Error";
 "suggested" = "Suggested";
+
+// MARK: - Screenshot Fixtures
+
+"screenshotLockScreenDate" = "Friday, November 14";
+"screenshotInclineDumbbellPress" = "Incline Dumbbell Press";
+"screenshotPushDay" = "Push Day";
+
+// MARK: - Preview Fixtures
+
+"previewBenchPress" = "Bench Press";
+"previewInclineBenchPress" = "Incline Bench Press";
+"previewOverheadPress" = "Overhead Press";
+"previewLateralRaises" = "Lateral Raises";
+"previewTricepsExtensions" = "Triceps Extensions";
+"previewDips" = "Dips";
+"previewSquat" = "Squat";
+"previewLunges" = "Lunges";
+"previewLegExtensions" = "Leg Extensions";
+"previewDeadlift" = "Deadlift";
+"previewStandingRows" = "Standing Rows";
+"previewBicepsCurls" = "Biceps Curls";
+"previewLatPulldown" = "Lat Pulldown";
+"previewCrunches" = "Crunches";
+"previewPullDay" = "Pull Day";
+"previewPushDay" = "Push Day";
+"previewLegDay" = "Leg Day";
+"previewQuickBenchSession" = "Quick Bench Session";
+"previewArmDay" = "Arm Day";
+"previewPerfectPushDay" = "Perfect Push-Day";
+"previewPushup" = "Push-up";
+"previewSquats" = "Squats";
+"previewBarbellCurl" = "Barbell Curl";

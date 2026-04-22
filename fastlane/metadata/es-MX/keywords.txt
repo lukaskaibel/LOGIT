@@ -1,0 +1,1 @@
+fitness,workout,gym,entrenamiento,pesas,progreso,ejercicio,repeticiones,rutina,músculo

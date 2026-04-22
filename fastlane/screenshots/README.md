@@ -7,6 +7,7 @@ Raw screenshots are produced by `fastlane snapshot` (triggered by the
 en-US/iPhone 17 Pro Max-01_Home.png
 en-US/iPhone 17 Pro Max-02_History.png
 de-DE/iPhone 17 Pro Max-01_Home.png
+es-MX/iPhone 17 Pro Max-01_Home.png
 ...
 ```
 

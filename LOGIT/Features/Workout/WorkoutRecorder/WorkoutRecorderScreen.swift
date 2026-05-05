@@ -46,6 +46,7 @@ struct WorkoutRecorderScreen: View {
     @State private var isShowingExerciseSelectionSheet = false
     @State private var isShowingReorderSheet = false
     @State private var selectedRestDurationSet: WorkoutSet?
+    @State private var exerciseForDetailSheet: Exercise?
     @State private var sheetHeight: CGFloat = 0
     @State private var mediumSheetHeight: CGFloat = 0
     @State private var animationDuration: CGFloat = 0
@@ -71,7 +72,8 @@ struct WorkoutRecorderScreen: View {
                                     workout: workout,
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                     canReorder: true,
-                                    showDetailAsSheet: true
+                                    showDetailAsSheet: true,
+                                    onTapPreviousSet: { exerciseForDetailSheet = $0 }
                                 )
                                 .padding(.horizontal)
                                 .padding(.top, 90)
@@ -148,6 +150,12 @@ struct WorkoutRecorderScreen: View {
                                     }
                                     .sheet(isPresented: $isShowingReorderSheet) {
                                         reorderSetGroupsSheet(for: workout)
+                                    }
+                                    .sheet(item: $exerciseForDetailSheet) { exercise in
+                                        NavigationStack {
+                                            ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, scrollToRecentAttempts: true)
+                                        }
+                                        .presentationDragIndicator(.visible)
                                     }
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)

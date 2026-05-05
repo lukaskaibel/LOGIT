@@ -178,6 +178,7 @@
 "lastTenWorkouts" = "過去 10 回のワークアウトで";
 "lastUsed" = "最後に使用した";
 "lastWeek" = "先週";
+"lastSetReferencePrefix" = "前回";
 "lastWorkout" = "最後のトレーニング";
 "legs" = "脚";
 "letsGetStarted" = "始めましょう";

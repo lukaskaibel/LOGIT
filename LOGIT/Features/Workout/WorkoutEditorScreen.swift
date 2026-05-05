@@ -28,6 +28,7 @@ struct WorkoutEditorScreen: View {
     @State private var isEditingStartEndDate = false
     @State private var selectedRestDurationSet: WorkoutSet?
     @State private var isShowingReorderSheet = false
+    @State private var exerciseForDetailSheet: Exercise?
 
     // MARK: - Parameters
 
@@ -97,7 +98,8 @@ struct WorkoutEditorScreen: View {
                                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                 canReorder: true,
                                 reduceShadow: true,
-                                showDetailAsSheet: true
+                                showDetailAsSheet: true,
+                                onTapPreviousSet: { exerciseForDetailSheet = $0 }
                             )
                             .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? UIScreen.main.bounds.height * 0.5 : BOTTOM_SHEET_SMALL)
                             .id(1)
@@ -136,6 +138,12 @@ struct WorkoutEditorScreen: View {
                                     .presentationDetents([.fraction(0.65)])
                                     .padding()
                                     .frame(maxHeight: .infinity, alignment: .top)
+                            }
+                            .sheet(item: $exerciseForDetailSheet) { exercise in
+                                NavigationStack {
+                                    ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, scrollToRecentAttempts: true)
+                                }
+                                .presentationDragIndicator(.visible)
                             }
                             .sheet(isPresented: $isShowingReorderSheet) {
                                 NavigationStack {

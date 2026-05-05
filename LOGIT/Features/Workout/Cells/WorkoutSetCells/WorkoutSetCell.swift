@@ -17,7 +17,9 @@ struct WorkoutSetCell: View {
 
     @ObservedObject var workoutSet: WorkoutSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    let referenceSet: WorkoutSet?
     let onEditRestDuration: (() -> Void)?
+    let onTapPreviousSet: ((Exercise) -> Void)?
 
     // MARK: - State
 
@@ -26,11 +28,15 @@ struct WorkoutSetCell: View {
     init(
         workoutSet: WorkoutSet,
         focusedIntegerFieldIndex: Binding<IntegerField.Index?>,
-        onEditRestDuration: (() -> Void)? = nil
+        referenceSet: WorkoutSet? = nil,
+        onEditRestDuration: (() -> Void)? = nil,
+        onTapPreviousSet: ((Exercise) -> Void)? = nil
     ) {
         self.workoutSet = workoutSet
         _focusedIntegerFieldIndex = focusedIntegerFieldIndex
+        self.referenceSet = referenceSet
         self.onEditRestDuration = onEditRestDuration
+        self.onTapPreviousSet = onTapPreviousSet
     }
 
     // MARK: - Body
@@ -111,24 +117,27 @@ struct WorkoutSetCell: View {
         if let standardSet = workoutSet as? StandardSet {
             StandardSetCell(
                 standardSet: standardSet,
-                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                referenceSet: referenceSet,
+                onTapPreviousSet: onTapPreviousSet
             )
-            .padding(.top, workoutSetIsFirst(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
-            .padding(.bottom, workoutSetIsLast(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
+            .padding(.vertical, CELL_SPACING / 2)
         } else if let dropSet = workoutSet as? DropSet {
             DropSetCell(
                 dropSet: dropSet,
-                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                referenceSet: referenceSet,
+                onTapPreviousSet: onTapPreviousSet
             )
-            .padding(.top, workoutSetIsFirst(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
-            .padding(.bottom, workoutSetIsLast(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
+            .padding(.vertical, CELL_SPACING / 2)
         } else if let superSet = workoutSet as? SuperSet {
             SuperSetCell(
                 superSet: superSet,
-                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                referenceSet: referenceSet,
+                onTapPreviousSet: onTapPreviousSet
             )
-            .padding(.top, workoutSetIsFirst(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
-            .padding(.bottom, workoutSetIsLast(workoutSet: workoutSet) ? 0 : CELL_SPACING / 2)
+            .padding(.vertical, CELL_SPACING / 2)
         }
     }
 
@@ -201,14 +210,58 @@ struct WorkoutSetCell: View {
         workoutSet.setGroup?.sets.firstIndex(of: workoutSet)
     }
 
-    private func workoutSetIsFirst(workoutSet: WorkoutSet) -> Bool {
-        guard let setGroup = workoutSet.setGroup else { return false }
-        return setGroup.sets.firstIndex(of: workoutSet) == 0
+}
+
+struct WorkoutSetReferenceValue: Equatable {
+    let repetitions: Int64
+    let weight: Int64
+
+    var hasEntry: Bool {
+        repetitions > 0 || weight > 0
     }
 
-    private func workoutSetIsLast(workoutSet: WorkoutSet) -> Bool {
-        guard let setGroup = workoutSet.setGroup else { return false }
-        return setGroup.sets.firstIndex(of: workoutSet) == setGroup.numberOfSets - 1
+    var displayText: String {
+        if repetitions > 0, weight > 0 {
+            return "\(repetitions) x \(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue)"
+        }
+
+        if repetitions > 0 {
+            return "\(repetitions) \(NSLocalizedString("reps", comment: ""))"
+        }
+
+        return "\(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue)"
+    }
+}
+
+struct PreviousSetReferenceLabel: View {
+    let reference: WorkoutSetReferenceValue?
+    let onTap: () -> Void
+
+    var body: some View {
+        Group {
+            if let reference, reference.hasEntry {
+                Button {
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    onTap()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.caption2)
+                        Text(reference.displayText)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text(NSLocalizedString("lastSetReferencePrefix", comment: "") + " " + reference.displayText))
+            } else {
+                Color.clear
+            }
+        }
+        .font(.system(.caption, design: .rounded, weight: .semibold))
+        .monospacedDigit()
+        .foregroundStyle(.tertiary)
+        .frame(width: 95, alignment: .trailing)
     }
 }
 

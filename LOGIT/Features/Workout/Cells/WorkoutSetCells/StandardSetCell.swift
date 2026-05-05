@@ -17,12 +17,19 @@ struct StandardSetCell: View {
 
     @ObservedObject var standardSet: StandardSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    let referenceSet: WorkoutSet?
+    var onTapPreviousSet: ((Exercise) -> Void)? = nil
 
     // MARK: - Body
 
     var body: some View {
         HStack {
             if let indexInWorkout = indexInWorkout {
+                PreviousSetReferenceLabel(reference: referenceValue) {
+                    if let exercise = standardSet.setGroup?.exercise {
+                        onTapPreviousSet?(exercise)
+                    }
+                }
                 IntegerField(
                     placeholder: repetitionsPlaceholder(for: standardSet),
                     value: $standardSet.repetitions,
@@ -59,6 +66,20 @@ struct StandardSetCell: View {
 
     private var indexInWorkout: Int? {
         standardSet.workout?.sets.firstIndex(of: standardSet)
+    }
+
+    private var referenceValue: WorkoutSetReferenceValue? {
+        guard let referenceStandardSet = referenceSet as? StandardSet else { return nil }
+        return WorkoutSetReferenceValue(
+            repetitions: referenceStandardSet.repetitions,
+            weight: referenceStandardSet.weight
+        )
+    }
+
+    private func copyReferenceValues() {
+        guard let referenceStandardSet = referenceSet as? StandardSet else { return }
+        standardSet.repetitions = referenceStandardSet.repetitions
+        standardSet.weight = referenceStandardSet.weight
     }
 
     private func repetitionsPlaceholder(for standardSet: StandardSet) -> Int64 {

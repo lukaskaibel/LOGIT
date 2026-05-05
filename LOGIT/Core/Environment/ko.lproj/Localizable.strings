@@ -178,6 +178,7 @@
 "lastTenWorkouts" = "지난 10번의 운동에서";
 "lastUsed" = "마지막으로 사용됨";
 "lastWeek" = "지난주";
+"lastSetReferencePrefix" = "이전";
 "lastWorkout" = "마지막 운동";
 "legs" = "다리";
 "letsGetStarted" = "시작하자";

@@ -17,6 +17,8 @@ struct DropSetCell: View {
 
     @ObservedObject var dropSet: DropSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    let referenceSet: WorkoutSet?
+    var onTapPreviousSet: ((Exercise) -> Void)? = nil
 
     // MARK: - Body
 
@@ -25,6 +27,11 @@ struct DropSetCell: View {
             if let indexInWorkout = indexInWorkout {
                 ForEach(0 ..< (dropSet.repetitions?.count ?? 0), id: \.self) { index in
                     HStack {
+                        PreviousSetReferenceLabel(reference: referenceValue(forIndex: index)) {
+                            if let exercise = dropSet.setGroup?.exercise {
+                                onTapPreviousSet?(exercise)
+                            }
+                        }
                         IntegerField(
                             placeholder: repetitionsPlaceholder(for: dropSet).value(at: index) ?? 0,
                             value: repetitionsBinding(forIndex: index),
@@ -60,6 +67,29 @@ struct DropSetCell: View {
 
     private var indexInWorkout: Int? {
         dropSet.workout?.sets.firstIndex(of: dropSet)
+    }
+
+    private func referenceValue(forIndex index: Int) -> WorkoutSetReferenceValue? {
+        guard
+            let referenceDropSet = referenceSet as? DropSet,
+            let repetitions = referenceDropSet.repetitions?.value(at: index),
+            let weight = referenceDropSet.weights?.value(at: index)
+        else { return nil }
+
+        return WorkoutSetReferenceValue(repetitions: repetitions, weight: weight)
+    }
+
+    private func copyReferenceValues(forIndex index: Int) {
+        guard
+            let referenceDropSet = referenceSet as? DropSet,
+            let repetitions = referenceDropSet.repetitions?.value(at: index),
+            let weight = referenceDropSet.weights?.value(at: index),
+            dropSet.repetitions?.indices.contains(index) == true,
+            dropSet.weights?.indices.contains(index) == true
+        else { return }
+
+        dropSet.repetitions?[index] = repetitions
+        dropSet.weights?[index] = weight
     }
 
     private func repetitionsBinding(forIndex index: Int) -> Binding<Int64> {

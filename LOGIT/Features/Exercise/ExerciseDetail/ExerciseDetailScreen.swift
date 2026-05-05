@@ -39,6 +39,7 @@ struct ExerciseDetailScreen: View {
 
     @StateObject var exercise: Exercise
     var isShowingAsSheet: Bool = false
+    var scrollToRecentAttempts: Bool = false
 
     // MARK: - Body
 
@@ -50,6 +51,7 @@ struct ExerciseDetailScreen: View {
         ) { workoutSetGroups in
             let recentWorkoutSetGroups = workoutSetGroups.prefix(3)
             let workoutSets = workoutSetGroups.flatMap { $0.sets }
+            ScrollViewReader { scrollProxy in
             ScrollView {
                 VStack(spacing: SECTION_SPACING) {
                     header
@@ -83,6 +85,7 @@ struct ExerciseDetailScreen: View {
                                 .sectionHeaderStyle2()
                             Spacer()
                         }
+                        .id("recentAttempts")
                         VStack(spacing: CELL_SPACING + 5) {
                             ForEach(recentWorkoutSetGroups) { setGroup in
                                 ExerciseAttemptCell(setGroup: setGroup)
@@ -207,6 +210,13 @@ struct ExerciseDetailScreen: View {
             }
             .navigationDestination(isPresented: $isShowingVolumeScreen) {
                 ExerciseVolumeScreen(exercise: exercise, workoutSets: workoutSets)
+            }
+            .onAppear {
+                guard scrollToRecentAttempts else { return }
+                DispatchQueue.main.async {
+                    scrollProxy.scrollTo("recentAttempts", anchor: .top)
+                }
+            }
             }
         }
     }

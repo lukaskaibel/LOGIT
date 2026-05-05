@@ -178,6 +178,7 @@
 "lastTenWorkouts" = "En los últimos 10 entrenamientos";
 "lastUsed" = "último usado";
 "lastWeek" = "La semana pasada";
+"lastSetReferencePrefix" = "Último";
 "lastWorkout" = "Último entrenamiento";
 "legs" = "Piernas";
 "letsGetStarted" = "Empecemos";

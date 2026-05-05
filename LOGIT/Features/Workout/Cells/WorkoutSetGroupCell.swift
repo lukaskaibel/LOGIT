@@ -25,6 +25,7 @@ struct WorkoutSetGroupCell: View {
     var showPendingRestInTertiary: Bool = false
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
     var onReorderSetGroups: (() -> Void)? = nil
+    var onTapPreviousSet: ((Exercise) -> Void)? = nil
 
     // MARK: - State
 
@@ -39,114 +40,19 @@ struct WorkoutSetGroupCell: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: CELL_PADDING) {
-            header
-                .padding([.top, .horizontal], CELL_PADDING)
-
-            if !isReordering {
-                VStack(spacing: CELL_PADDING) {
-                    VStack(spacing: CELL_SPACING) {
-                        ReorderableForEach(
-                            $setGroup.sets,
-                            canReorder: canEdit,
-                            isReordering: $isReorderingSets
-                        ) { workoutSet in
-                            VStack(spacing: CELL_SPACING) {
-                                WorkoutSetCell(
-                                    workoutSet: workoutSet,
-                                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                                    onEditRestDuration: {
-                                        onTapRestDuration?(workoutSet)
-                                    }
-                                )
-                                .contentShape(Rectangle())
-                                .background(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
-                                        .foregroundStyle(Color.tertiaryBackground)
-                                )
-                                .cornerRadius(15)
-                                .onDeleteView(disabled: !canEdit) {
-                                    withAnimation(.interactiveSpring()) {
-                                        database.delete(workoutSet)
-                                    }
-                                }
-                                if !isLastSet(workoutSet) {
-                                    if canEdit {
-                                        RestTimerBetweenSetsView(
-                                            workoutSet: workoutSet,
-                                            showPendingRestInTertiary: showPendingRestInTertiary,
-                                            onTapRestDuration: {
-                                                onTapRestDuration?(workoutSet)
-                                            }
-                                        )
-                                    } else if workoutSet.restDurationSeconds > 0 {
-                                        RestDurationLabel(seconds: workoutSet.restDurationSeconds)
-                                            .padding(.vertical, 2)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal, CELL_PADDING / 2)
-                    .animation(.interactiveSpring())
-                    if canEdit {
-                        HStack(spacing: 8) {
-                            Button {
-                                withAnimation(.interactiveSpring()) {
-                                    database.addSet(to: setGroup)
-                                }
-                            } label: {
-                                Label(
-                                    NSLocalizedString("addSet", comment: ""),
-                                    systemImage: "plus.circle.fill"
-                                )
-                                .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
-                                .font(.system(.body, design: .rounded, weight: .bold))
-                                .padding(.vertical, 15)
-                                .frame(maxWidth: .infinity)
-                                .background(Color.accentColor.secondaryTranslucentBackground)
-                                .clipShape(Capsule())
-                            }
-                            Button {
-                                withAnimation(.interactiveSpring()) {
-                                    database.duplicateLastSet(from: setGroup)
-                                }
-                            } label: {
-                                Image(systemName: "plus.square.on.square")
-                                    .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
-                                    .font(.system(.body, design: .rounded, weight: .bold))
-                                    .padding(15)
-                                    .background(Color.accentColor.secondaryTranslucentBackground)
-                                    .clipShape(Capsule())
-                            }
-                            .contextMenu {
-                                Button {
-                                    withAnimation(.interactiveSpring()) {
-                                        database.duplicateLastWeight(from: setGroup)
-                                    }
-                                } label: {
-                                    Label(NSLocalizedString("copyWeight", comment: ""), systemImage: "scalemass")
-                                }
-                                Button {
-                                    withAnimation(.interactiveSpring()) {
-                                        database.duplicateLastRepetitions(from: setGroup)
-                                    }
-                                } label: {
-                                    Label(NSLocalizedString("copyRepetitions", comment: ""), systemImage: "repeat.circle")
-                                }
-                                Button {
-                                    withAnimation(.interactiveSpring()) {
-                                        database.duplicateLastSet(from: setGroup)
-                                    }
-                                } label: {
-                                    Label(NSLocalizedString("copySet", comment: ""), systemImage: "plus.square.on.square")
-                                }
-                            }
-                        }
-                        .padding(.horizontal, CELL_PADDING)
-                    }
+        Group {
+            if shouldShowPreviousSetReferences {
+                FetchRequestWrapper(
+                    WorkoutSetGroup.self,
+                    sortDescriptors: [SortDescriptor(\.workout?.date, order: .reverse)],
+                    predicate: WorkoutSetGroupPredicateFactory.getWorkoutSetGroups(
+                        withExercise: setGroup.exercise
+                    )
+                ) { previousSetGroups in
+                    content(previousSetGroup: previousSetGroup(from: previousSetGroups))
                 }
+            } else {
+                content(previousSetGroup: nil)
             }
         }
         .sheet(isPresented: $isSelectingPrimaryExercise) {
@@ -205,6 +111,125 @@ struct WorkoutSetGroupCell: View {
         .tileStyle()
     }
 
+    private func content(previousSetGroup: WorkoutSetGroup?) -> some View {
+        VStack(spacing: CELL_PADDING) {
+            header
+                .padding([.top, .horizontal], CELL_PADDING)
+
+            if !isReordering {
+                VStack(spacing: CELL_PADDING) {
+                    VStack(spacing: CELL_SPACING) {
+                        ReorderableForEach(
+                            $setGroup.sets,
+                            canReorder: canEdit,
+                            isReordering: $isReorderingSets
+                        ) { workoutSet in
+                            VStack(spacing: CELL_SPACING) {
+                                WorkoutSetCell(
+                                    workoutSet: workoutSet,
+                                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                                    referenceSet: referenceSet(
+                                        for: workoutSet,
+                                        in: previousSetGroup
+                                    ),
+                                    onEditRestDuration: {
+                                        onTapRestDuration?(workoutSet)
+                                    },
+                                    onTapPreviousSet: onTapPreviousSet
+                                )
+                                .contentShape(Rectangle())
+                                .background(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                                        .foregroundStyle(Color.tertiaryBackground)
+                                )
+                                .cornerRadius(15)
+                                .onDeleteView(disabled: !canEdit) {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.delete(workoutSet)
+                                    }
+                                }
+                                if !isLastSet(workoutSet) {
+                                    if canEdit {
+                                        RestTimerBetweenSetsView(
+                                            workoutSet: workoutSet,
+                                            showPendingRestInTertiary: showPendingRestInTertiary,
+                                            onTapRestDuration: {
+                                                onTapRestDuration?(workoutSet)
+                                            }
+                                        )
+                                    } else if workoutSet.restDurationSeconds > 0 {
+                                        RestDurationLabel(seconds: workoutSet.restDurationSeconds)
+                                            .padding(.vertical, 2)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, CELL_PADDING / 2)
+                    .animation(.interactiveSpring())
+                    if canEdit {
+                        HStack(spacing: 8) {
+                            Button {
+                                withAnimation(.interactiveSpring()) {
+                                    database.duplicateLastSet(from: setGroup)
+                                }
+                            } label: {
+                                Image(systemName: "plus.square.on.square")
+                                    .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                                    .font(.system(.body, design: .rounded, weight: .bold))
+                                    .padding(15)
+                                    .background(Color.accentColor.secondaryTranslucentBackground)
+                                    .clipShape(Capsule())
+                            }
+                            .contextMenu {
+                                Button {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.duplicateLastWeight(from: setGroup)
+                                    }
+                                } label: {
+                                    Label(NSLocalizedString("copyWeight", comment: ""), systemImage: "scalemass")
+                                }
+                                Button {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.duplicateLastRepetitions(from: setGroup)
+                                    }
+                                } label: {
+                                    Label(NSLocalizedString("copyRepetitions", comment: ""), systemImage: "repeat.circle")
+                                }
+                                Button {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.duplicateLastSet(from: setGroup)
+                                    }
+                                } label: {
+                                    Label(NSLocalizedString("copySet", comment: ""), systemImage: "plus.square.on.square")
+                                }
+                            }
+                            Button {
+                                withAnimation(.interactiveSpring()) {
+                                    database.addSet(to: setGroup)
+                                }
+                            } label: {
+                                Label(
+                                    NSLocalizedString("addSet", comment: ""),
+                                    systemImage: "plus.circle.fill"
+                                )
+                                .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                                .font(.system(.body, design: .rounded, weight: .bold))
+                                .padding(.vertical, 15)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.accentColor.secondaryTranslucentBackground)
+                                .clipShape(Capsule())
+                            }
+                            menu
+                        }
+                        .padding(.horizontal, CELL_PADDING)
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: - Supporting Views
 
     private var header: some View {
@@ -248,9 +273,6 @@ struct WorkoutSetGroupCell: View {
                     .font(.system(.footnote, design: .rounded, weight: .bold))
                 }
                 Spacer()
-                if canEdit && !isReordering {
-                    menu
-                }
                 if isReordering {
                     Image(systemName: "line.3.horizontal")
                         .fontWeight(.regular)
@@ -369,12 +391,11 @@ struct WorkoutSetGroupCell: View {
         } label: {
             Image(systemName: "ellipsis")
                 .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
-                .padding(.horizontal, 3)
-                .padding(.vertical, 10)
-                .background(
-                    Circle()
-                        .fill((setGroup.exercise?.muscleGroup?.color ?? .accentColor).secondaryTranslucentBackground)
-                )
+                .font(.system(.body, design: .rounded, weight: .bold))
+                .frame(width: 20, height: 20)
+                .padding(15)
+                .background(Color.accentColor.secondaryTranslucentBackground)
+                .clipShape(Circle())
         }
     }
 
@@ -382,6 +403,28 @@ struct WorkoutSetGroupCell: View {
 
     private func isLastSet(_ workoutSet: WorkoutSet) -> Bool {
         setGroup.sets.last == workoutSet
+    }
+
+    private var shouldShowPreviousSetReferences: Bool {
+        setGroup.workout?.isCurrentWorkout == true && setGroup.exercise != nil
+    }
+
+    private func previousSetGroup(from previousSetGroups: [WorkoutSetGroup]) -> WorkoutSetGroup? {
+        previousSetGroups.first { previousSetGroup in
+            previousSetGroup != setGroup && previousSetGroup.sets.contains { $0.hasEntry }
+        }
+    }
+
+    private func referenceSet(
+        for workoutSet: WorkoutSet,
+        in previousSetGroup: WorkoutSetGroup?
+    ) -> WorkoutSet? {
+        guard
+            let index = setGroup.sets.firstIndex(of: workoutSet),
+            let previousSetGroup
+        else { return nil }
+
+        return previousSetGroup.sets.value(at: index)
     }
 }
 

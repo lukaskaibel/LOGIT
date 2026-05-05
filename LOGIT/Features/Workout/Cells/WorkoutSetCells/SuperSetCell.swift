@@ -17,6 +17,8 @@ struct SuperSetCell: View {
 
     @ObservedObject var superSet: SuperSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    let referenceSet: WorkoutSet?
+    var onTapPreviousSet: ((Exercise) -> Void)? = nil
 
     // MARK: - Body
 
@@ -27,6 +29,11 @@ struct SuperSetCell: View {
                     Text("1")
                         .foregroundColor(.secondaryLabel)
                         .font(.footnote)
+                    PreviousSetReferenceLabel(reference: referenceValue(for: superSet.exercise)) {
+                        if let exercise = superSet.exercise {
+                            onTapPreviousSet?(exercise)
+                        }
+                    }
                     IntegerField(
                         placeholder: repetitionsPlaceholder(for: superSet).first!,
                         value: $superSet.repetitionsFirstExercise,
@@ -60,6 +67,11 @@ struct SuperSetCell: View {
                     Text("2")
                         .foregroundColor(.secondaryLabel)
                         .font(.footnote)
+                    PreviousSetReferenceLabel(reference: referenceValue(for: superSet.secondaryExercise)) {
+                        if let exercise = superSet.secondaryExercise {
+                            onTapPreviousSet?(exercise)
+                        }
+                    }
                     IntegerField(
                         placeholder: repetitionsPlaceholder(for: superSet).second!,
                         value: $superSet.repetitionsSecondExercise,
@@ -98,6 +110,46 @@ struct SuperSetCell: View {
 
     private var indexInWorkout: Int? {
         superSet.workout?.sets.firstIndex(of: superSet)
+    }
+
+    private func referenceValue(for exercise: Exercise?) -> WorkoutSetReferenceValue? {
+        guard let referenceValues = referenceValues(for: exercise) else { return nil }
+        return WorkoutSetReferenceValue(
+            repetitions: referenceValues.repetitions,
+            weight: referenceValues.weight
+        )
+    }
+
+    private func referenceValues(for exercise: Exercise?) -> (repetitions: Int64, weight: Int64)? {
+        guard let exercise, let referenceSuperSet = referenceSet as? SuperSet else { return nil }
+
+        if referenceSuperSet.exercise == exercise {
+            return (
+                referenceSuperSet.repetitionsFirstExercise,
+                referenceSuperSet.weightFirstExercise
+            )
+        }
+
+        if referenceSuperSet.secondaryExercise == exercise {
+            return (
+                referenceSuperSet.repetitionsSecondExercise,
+                referenceSuperSet.weightSecondExercise
+            )
+        }
+
+        return nil
+    }
+
+    private func copyReferenceValues(for exercise: Exercise?, toPrimaryExercise: Bool) {
+        guard let referenceValues = referenceValues(for: exercise) else { return }
+
+        if toPrimaryExercise {
+            superSet.repetitionsFirstExercise = referenceValues.repetitions
+            superSet.weightFirstExercise = referenceValues.weight
+        } else {
+            superSet.repetitionsSecondExercise = referenceValues.repetitions
+            superSet.weightSecondExercise = referenceValues.weight
+        }
     }
 
     private func repetitionsPlaceholder(for superSet: SuperSet) -> [Int64] {

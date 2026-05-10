@@ -26,7 +26,6 @@ struct TemplateSetGroupCell: View {
 
     // MARK: - State
 
-    @State private var isReorderingSets = false
     @State private var isSelectingPrimaryExercise = false
     @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
     @State private var isSelectingSecondaryExercise = false
@@ -41,8 +40,8 @@ struct TemplateSetGroupCell: View {
                     VStack(spacing: CELL_SPACING) {
                         ReorderableForEach(
                             $setGroup.sets,
-                            canReorder: canEdit,
-                            isReordering: $isReorderingSets
+                            canReorder: false,
+                            isReordering: .constant(false)
                         ) { templateSet in
                             TemplateSetCell(
                                 templateSet: templateSet,

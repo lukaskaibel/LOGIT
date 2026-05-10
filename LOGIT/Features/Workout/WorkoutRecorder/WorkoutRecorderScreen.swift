@@ -73,6 +73,7 @@ struct WorkoutRecorderScreen: View {
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                     canReorder: true,
                                     showDetailAsSheet: true,
+                                    onTapRestDuration: { selectedRestDurationSet = $0 },
                                     onTapPreviousSet: { exerciseForDetailSheet = $0 }
                                 )
                                 .padding(.horizontal)

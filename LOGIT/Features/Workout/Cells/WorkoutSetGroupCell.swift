@@ -29,7 +29,6 @@ struct WorkoutSetGroupCell: View {
 
     // MARK: - State
 
-    @State private var isReorderingSets = false
     @State private var isHeaderExpanded = false
     @State private var isSelectingPrimaryExercise = false
     @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
@@ -121,8 +120,8 @@ struct WorkoutSetGroupCell: View {
                     VStack(spacing: CELL_SPACING) {
                         ReorderableForEach(
                             $setGroup.sets,
-                            canReorder: canEdit,
-                            isReordering: $isReorderingSets
+                            canReorder: false,
+                            isReordering: .constant(false)
                         ) { workoutSet in
                             VStack(spacing: CELL_SPACING) {
                                 WorkoutSetCell(
@@ -132,8 +131,8 @@ struct WorkoutSetGroupCell: View {
                                         for: workoutSet,
                                         in: previousSetGroup
                                     ),
-                                    onEditRestDuration: {
-                                        onTapRestDuration?(workoutSet)
+                                    onEditRestDuration: onTapRestDuration.map { callback in
+                                        { callback(workoutSet) }
                                     },
                                     onTapPreviousSet: onTapPreviousSet
                                 )
@@ -154,8 +153,8 @@ struct WorkoutSetGroupCell: View {
                                         RestTimerBetweenSetsView(
                                             workoutSet: workoutSet,
                                             showPendingRestInTertiary: showPendingRestInTertiary,
-                                            onTapRestDuration: {
-                                                onTapRestDuration?(workoutSet)
+                                            onTapRestDuration: onTapRestDuration.map { callback in
+                                                { callback(workoutSet) }
                                             }
                                         )
                                     } else if workoutSet.restDurationSeconds > 0 {

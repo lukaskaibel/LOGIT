@@ -33,6 +33,7 @@
 		80036CE42EFF166000B7C7B4 /* Ifrit in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 80036CE02EFEFFD100B7C7B4 /* Ifrit */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		801BBD622DF7338A00CDB1FB /* LOGITStoreKit.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC9E2DF7338A00CDB1FB /* LOGITStoreKit.storekit */; };
 		801BBD632DF7338A00CDB1FB /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC942DF7338A00CDB1FB /* Launch Screen.storyboard */; };
+		80BEEP012EF0000000000001 /* beep.wav in Resources */ = {isa = PBXBuildFile; fileRef = 80BEEP022EF0000000000001 /* beep.wav */; };
 		801BBD652DF7338A00CDB1FB /* timer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC982DF7338A00CDB1FB /* timer.wav */; };
 		801BBD662DF7338A00CDB1FB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 801BBCAA2DF7338A00CDB1FB /* Localizable.strings */; };
 		801BBD672DF7338A00CDB1FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC9A2DF7338A00CDB1FB /* Assets.xcassets */; };
@@ -334,6 +335,7 @@
 		801BBC942DF7338A00CDB1FB /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		801BBC952DF7338A00CDB1FB /* LOGIT.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LOGIT.entitlements; sourceTree = "<group>"; };
 		801BBC962DF7338A00CDB1FB /* LOGITApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LOGITApp.swift; sourceTree = "<group>"; };
+		80BEEP022EF0000000000001 /* beep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beep.wav; sourceTree = "<group>"; };
 		801BBC982DF7338A00CDB1FB /* timer.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = timer.wav; sourceTree = "<group>"; };
 		801BBC9A2DF7338A00CDB1FB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		801BBC9B2DF7338A00CDB1FB /* logit_privacy_policy.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy.md; sourceTree = "<group>"; };
@@ -695,6 +697,7 @@
 		801BBC992DF7338A00CDB1FB /* Sounds */ = {
 			isa = PBXGroup;
 			children = (
+				80BEEP022EF0000000000001 /* beep.wav */,
 				801BBC982DF7338A00CDB1FB /* timer.wav */,
 			);
 			path = Sounds;
@@ -1401,6 +1404,7 @@
 				806F87E52ED0D7E7001E8B8B /* Logit.icon in Resources */,
 				801BBD622DF7338A00CDB1FB /* LOGITStoreKit.storekit in Resources */,
 				801BBD632DF7338A00CDB1FB /* Launch Screen.storyboard in Resources */,
+				80BEEP012EF0000000000001 /* beep.wav in Resources */,
 				801BBD652DF7338A00CDB1FB /* timer.wav in Resources */,
 				801BBD662DF7338A00CDB1FB /* Localizable.strings in Resources */,
 				8085497F2EE9A37C00761706 /* default_exercises.json in Resources */,

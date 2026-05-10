@@ -19,6 +19,7 @@ struct WorkoutSetGroupList: View {
     let canReorder: Bool
     var reduceShadow: Bool = false
     var showDetailAsSheet: Bool = false
+    var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
     var onTapPreviousSet: ((Exercise) -> Void)? = nil
 
     // MARK: - State
@@ -37,6 +38,7 @@ struct WorkoutSetGroupList: View {
                         isReordering: $isReordering,
                         supplementaryText: nil,
                         showDetailAsSheet: showDetailAsSheet,
+                        onTapRestDuration: onTapRestDuration,
                         onTapPreviousSet: onTapPreviousSet
                     )
                     .shadow(color: .black.opacity(reduceShadow ? 0.5 : 1.0), radius: 5)

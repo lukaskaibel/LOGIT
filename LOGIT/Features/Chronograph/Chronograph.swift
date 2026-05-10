@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 20.07.23.
 //
 
+import AVFoundation
 import Combine
 import Foundation
 import SwiftUI
@@ -58,6 +59,9 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     private var pauseTime: TimeInterval?
     private var activeTimerAlarmID: UUID?
     private var timerAlarmScheduleToken = UUID()
+    private var beepPlayer: AVAudioPlayer?
+    private var didBeepAt30: Bool = false
+    private var didBeepAt10: Bool = false
 
     /// How many seconds have elapsed since the timer started (timer mode only).
     var elapsedTimerSeconds: Int {
@@ -89,6 +93,9 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         if pauseTime != nil {
             seconds = pauseTime!
             pauseTime = nil
+        } else if mode == .timer {
+            didBeepAt30 = seconds <= 30
+            didBeepAt10 = seconds <= 10
         }
 
         scheduleNotificationsForCurrentState()
@@ -101,6 +108,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
                 switch self.mode {
                 case .timer:
                     self.seconds -= timePassed
+                    self.playCountdownBeepIfNeeded()
                     if self.seconds <= 0 {
                         self.seconds = 0
                         self.scheduleAlarmAutoDismiss()
@@ -172,6 +180,28 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         startDate = nil
         seconds = 0
         status = .idle
+        didBeepAt30 = false
+        didBeepAt10 = false
+    }
+
+    private func playCountdownBeepIfNeeded() {
+        let timerIsMuted = UserDefaults.standard.bool(forKey: "timerIsMuted")
+        guard !timerIsMuted else { return }
+
+        if !didBeepAt30 && seconds <= 30 {
+            didBeepAt30 = true
+            playBeep()
+        }
+        if !didBeepAt10 && seconds <= 10 {
+            didBeepAt10 = true
+            playBeep()
+        }
+    }
+
+    private func playBeep() {
+        guard let url = Bundle.main.url(forResource: "beep", withExtension: "wav") else { return }
+        beepPlayer = try? AVAudioPlayer(contentsOf: url)
+        beepPlayer?.play()
     }
 
     private var timesUpNotificationRequest: UNNotificationRequest {

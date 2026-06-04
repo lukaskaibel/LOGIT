@@ -47,6 +47,7 @@ struct WorkoutRecorderScreen: View {
     @State private var isShowingReorderSheet = false
     @State private var selectedRestDurationSet: WorkoutSet?
     @State private var exerciseForDetailSheet: Exercise?
+    @State private var scrollToRecentAttempts = false
     @State private var sheetHeight: CGFloat = 0
     @State private var mediumSheetHeight: CGFloat = 0
     @State private var animationDuration: CGFloat = 0
@@ -74,7 +75,8 @@ struct WorkoutRecorderScreen: View {
                                     canReorder: true,
                                     showDetailAsSheet: true,
                                     onTapRestDuration: { selectedRestDurationSet = $0 },
-                                    onTapPreviousSet: { exerciseForDetailSheet = $0 }
+                                    onTapPreviousSet: { scrollToRecentAttempts = true; exerciseForDetailSheet = $0 },
+                                    onTapExerciseName: { scrollToRecentAttempts = false; exerciseForDetailSheet = $0 }
                                 )
                                 .padding(.horizontal)
                                 .padding(.top, 90)
@@ -111,6 +113,7 @@ struct WorkoutRecorderScreen: View {
                                 ExerciseSelectionScreen(
                                         selectedExercise: nil,
                                         setExercise: { exercise in
+                                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                             withAnimation {
                                                 workoutRecorder.addSetGroup(with: exercise)
                                                 proxy.scrollTo(1, anchor: .bottom)
@@ -154,7 +157,7 @@ struct WorkoutRecorderScreen: View {
                                     }
                                     .sheet(item: $exerciseForDetailSheet) { exercise in
                                         NavigationStack {
-                                            ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, scrollToRecentAttempts: true)
+                                            ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, scrollToRecentAttempts: scrollToRecentAttempts)
                                         }
                                         .presentationDragIndicator(.visible)
                                     }
@@ -321,9 +324,13 @@ struct WorkoutRecorderScreen: View {
             }
             .fullScreenDraggableCoverTopInset()
             .padding(.horizontal)
-            .padding(.bottom, 10)
-            .background(.ultraThinMaterial)
-            Divider()
+            .padding(.bottom)
+            .background {
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .clipShape(.rect(bottomLeadingRadius: 30, bottomTrailingRadius: 30))
+                    .edgesIgnoringSafeArea(.top)
+            }
         }
     }
 

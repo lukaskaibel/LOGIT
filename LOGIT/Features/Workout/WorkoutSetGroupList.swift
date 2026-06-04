@@ -21,6 +21,7 @@ struct WorkoutSetGroupList: View {
     var showDetailAsSheet: Bool = false
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
     var onTapPreviousSet: ((Exercise) -> Void)? = nil
+    var onTapExerciseName: ((Exercise) -> Void)? = nil
 
     // MARK: - State
 
@@ -39,22 +40,62 @@ struct WorkoutSetGroupList: View {
                         supplementaryText: nil,
                         showDetailAsSheet: showDetailAsSheet,
                         onTapRestDuration: onTapRestDuration,
-                        onTapPreviousSet: onTapPreviousSet
+                        onTapPreviousSet: onTapPreviousSet,
+                        onTapExerciseName: onTapExerciseName
                     )
                     .shadow(color: .black.opacity(reduceShadow ? 0.5 : 1.0), radius: 5)
                     .zIndex(1)
-                    if workout.setGroups.last != setGroup {
-                        Rectangle()
-                            .foregroundStyle(.secondary)
-                            .frame(width: 3, height: SECTION_SPACING)
-                            .zIndex(0)
-                    }
+                    setGroupConnector(for: setGroup)
                 }
                 .transition(.scale)
                 .id(setGroup)
             }
         }
         .animation(.interactiveSpring(), value: workout.setGroups.count)
+    }
+
+    @ViewBuilder
+    private func setGroupConnector(for setGroup: WorkoutSetGroup) -> some View {
+        let lastSet = setGroup.sets.last
+        let hasRest = lastSet?.restDurationSeconds ?? 0 > 0
+        let isLast = workout.setGroups.last == setGroup
+
+        if isLast {
+            if hasRest, let lastSet {
+                restCapsule(for: lastSet)
+            }
+        } else {
+            if hasRest, let lastSet {
+                restCapsule(for: lastSet)
+                    .padding(.vertical, SECTION_SPACING / 2)
+                    .background(
+                        Rectangle()
+                            .foregroundStyle(.secondary)
+                            .frame(width: 3)
+                    )
+            } else {
+                Rectangle()
+                    .foregroundStyle(.secondary)
+                    .frame(width: 3, height: SECTION_SPACING)
+            }
+        }
+    }
+
+    private func restCapsule(for workoutSet: WorkoutSet) -> some View {
+        RestDurationLabel(
+            seconds: workoutSet.restDurationSeconds,
+            iconName: "timer",
+            textFont: .caption.weight(.semibold),
+            iconFont: .caption.weight(.semibold)
+        )
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color.secondaryBackground)
+        .clipShape(Capsule())
+        .transition(.scale.animation(.interactiveSpring()))
+        .onTapGesture {
+            onTapRestDuration?(workoutSet)
+        }
     }
 }
 

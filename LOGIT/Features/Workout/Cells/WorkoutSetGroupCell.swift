@@ -26,9 +26,15 @@ struct WorkoutSetGroupCell: View {
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
     var onReorderSetGroups: (() -> Void)? = nil
     var onTapPreviousSet: ((Exercise) -> Void)? = nil
+    var onTapExerciseName: ((Exercise) -> Void)? = nil
 
     // MARK: - State
 
+    private enum BadgeDisplayMode {
+        case volume, currentBest, allTime
+    }
+
+    @State private var badgeDisplayMode: BadgeDisplayMode = .volume
     @State private var isHeaderExpanded = false
     @State private var isSelectingPrimaryExercise = false
     @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
@@ -107,7 +113,12 @@ struct WorkoutSetGroupCell: View {
         }
         .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
         .padding(.bottom, canEdit || isReordering ? CELL_PADDING : CELL_PADDING / 2)
-        .tileStyle()
+        .background(
+            RoundedRectangle(cornerRadius: 30)
+                .fill(.shadow(.inner(color: .white.opacity(0.04), radius: 3)))
+                .foregroundStyle(Color.secondaryBackground)
+        )
+        .cornerRadius(30)
     }
 
     private func content(previousSetGroup: WorkoutSetGroup?) -> some View {
@@ -170,6 +181,7 @@ struct WorkoutSetGroupCell: View {
                     if canEdit {
                         HStack(spacing: 8) {
                             Button {
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                 withAnimation(.interactiveSpring()) {
                                     database.duplicateLastSet(from: setGroup)
                                 }
@@ -205,6 +217,7 @@ struct WorkoutSetGroupCell: View {
                                 }
                             }
                             Button {
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                 withAnimation(.interactiveSpring()) {
                                     database.addSet(to: setGroup)
                                 }
@@ -223,6 +236,38 @@ struct WorkoutSetGroupCell: View {
                             menu
                         }
                         .padding(.horizontal, CELL_PADDING)
+                    }
+                }
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            if !isReordering {
+                VStack(spacing: 2) {
+                    Text(badgeLabel)
+                        .font(.system(.caption2, design: .rounded, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                    UnitView(
+                        value: badgeValue,
+                        unit: badgeUnit,
+                        configuration: .small
+                    )
+                }
+                .contentTransition(.numericText())
+                .animation(.easeInOut(duration: 0.2), value: badgeDisplayMode)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 30 - CELL_PADDING / 2)
+                        .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                        .foregroundStyle(Color.tertiaryBackground)
+                )
+                .cornerRadius(30 - CELL_PADDING / 2)
+                .padding(.top, CELL_PADDING / 2)
+                .padding(.trailing, CELL_PADDING / 2)
+                .onTapGesture {
+                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        cycleBadgeMode()
                     }
                 }
             }
@@ -253,7 +298,8 @@ struct WorkoutSetGroupCell: View {
                         },
                         isSuperSet: setGroup.setType == .superSet,
                         navigationToDetailEnabled: true,
-                        showDetailAsSheet: showDetailAsSheet
+                        showDetailAsSheet: showDetailAsSheet,
+                        onTapExerciseName: onTapExerciseName
                     )
                     HStack {
                         Text(setGroup.exercise?.muscleGroup?.description ?? "")
@@ -398,6 +444,103 @@ struct WorkoutSetGroupCell: View {
         }
     }
 
+    // MARK: - Badge Display
+
+    private var badgeLabel: String {
+        switch badgeDisplayMode {
+        case .volume: return NSLocalizedString("volume", comment: "")
+        case .currentBest: return NSLocalizedString("currentBest", comment: "")
+        case .allTime: return NSLocalizedString("allTime", comment: "")
+        }
+    }
+
+    private var badgeValue: String {
+        switch badgeDisplayMode {
+        case .volume:
+            return formatWeightForDisplay(getVolume(of: setGroup.sets))
+        case .currentBest:
+            if let weight = lastMonthBestWeight {
+                return formatWeightForDisplay(weight)
+            } else if let reps = lastMonthBestReps {
+                return String(reps)
+            }
+            return "0"
+        case .allTime:
+            if let weight = allTimeBestWeight {
+                return formatWeightForDisplay(weight)
+            } else if let reps = allTimeBestReps {
+                return String(reps)
+            }
+            return "0"
+        }
+    }
+
+    private var badgeUnit: String {
+        switch badgeDisplayMode {
+        case .volume:
+            return WeightUnit.used.rawValue
+        case .currentBest:
+            return lastMonthBestWeight != nil ? WeightUnit.used.rawValue : NSLocalizedString("reps", comment: "")
+        case .allTime:
+            return allTimeBestWeight != nil ? WeightUnit.used.rawValue : NSLocalizedString("reps", comment: "")
+        }
+    }
+
+    private var lastMonthBestWeight: Int? {
+        guard let exercise = setGroup.exercise else { return nil }
+        let oneMonthAgo = Calendar.current.date(byAdding: .month, value: -1, to: .now)!
+        let sets = exercise.sets.filter { ($0.workout?.date ?? .distantPast) >= oneMonthAgo }
+        let best = sets.map { $0.maximum(.weight, for: exercise) }.max()
+        return best != nil && best! > 0 ? best : nil
+    }
+
+    private var lastMonthBestReps: Int? {
+        guard let exercise = setGroup.exercise else { return nil }
+        let oneMonthAgo = Calendar.current.date(byAdding: .month, value: -1, to: .now)!
+        let sets = exercise.sets.filter { ($0.workout?.date ?? .distantPast) >= oneMonthAgo }
+        let best = sets.map { $0.maximum(.repetitions, for: exercise) }.max()
+        return best != nil && best! > 0 ? best : nil
+    }
+
+    private var allTimeBestWeight: Int? {
+        guard let exercise = setGroup.exercise else { return nil }
+        let best = exercise.sets.map { $0.maximum(.weight, for: exercise) }.max()
+        return best != nil && best! > 0 ? best : nil
+    }
+
+    private var allTimeBestReps: Int? {
+        guard let exercise = setGroup.exercise else { return nil }
+        let best = exercise.sets.map { $0.maximum(.repetitions, for: exercise) }.max()
+        return best != nil && best! > 0 ? best : nil
+    }
+
+    private func cycleBadgeMode() {
+        let modes: [BadgeDisplayMode] = [.volume, .currentBest, .allTime]
+        guard let currentIndex = modes.firstIndex(of: badgeDisplayMode) else {
+            badgeDisplayMode = .volume
+            return
+        }
+        for i in 1..<modes.count {
+            let nextMode = modes[(currentIndex + i) % modes.count]
+            switch nextMode {
+            case .volume:
+                badgeDisplayMode = .volume
+                return
+            case .currentBest:
+                if lastMonthBestWeight != nil || lastMonthBestReps != nil {
+                    badgeDisplayMode = .currentBest
+                    return
+                }
+            case .allTime:
+                if allTimeBestWeight != nil || allTimeBestReps != nil {
+                    badgeDisplayMode = .allTime
+                    return
+                }
+            }
+        }
+        badgeDisplayMode = .volume
+    }
+
     // MARK: - Supporting Methods
 
     private func isLastSet(_ workoutSet: WorkoutSet) -> Bool {
@@ -409,9 +552,24 @@ struct WorkoutSetGroupCell: View {
     }
 
     private func previousSetGroup(from previousSetGroups: [WorkoutSetGroup]) -> WorkoutSetGroup? {
-        previousSetGroups.first { previousSetGroup in
-            previousSetGroup != setGroup && previousSetGroup.sets.contains { $0.hasEntry }
+        // The reference must match the current set group's type *and* its exercise
+        // composition. Otherwise the per-cell `as? SuperSet` / `as? DropSet` cast (or
+        // the superset's per-exercise match) silently fails when the same exercise was
+        // most recently logged as a different set type or in a different pairing.
+        let targetExerciseIDs = exerciseIDs(in: setGroup)
+        return previousSetGroups.first { previousSetGroup in
+            previousSetGroup != setGroup
+                && previousSetGroup.setType == setGroup.setType
+                && exerciseIDs(in: previousSetGroup) == targetExerciseIDs
+                && previousSetGroup.sets.contains { $0.hasEntry }
         }
+    }
+
+    private func exerciseIDs(in setGroup: WorkoutSetGroup) -> Set<UUID> {
+        var ids = Set<UUID>()
+        if let id = setGroup.exercise?.id { ids.insert(id) }
+        if let id = setGroup.secondaryExercise?.id { ids.insert(id) }
+        return ids
     }
 
     private func referenceSet(

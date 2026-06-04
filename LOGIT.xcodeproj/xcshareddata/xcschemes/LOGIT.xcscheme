@@ -82,7 +82,7 @@
          </CommandLineArgument>
       </CommandLineArguments>
       <StoreKitConfigurationFileReference
-         identifier = "../LOGIT./LOGITStoreKit.storekit">
+         identifier = "../LOGIT/Config/LOGITStoreKit.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

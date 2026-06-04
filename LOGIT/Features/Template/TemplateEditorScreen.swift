@@ -143,6 +143,7 @@ struct TemplateEditorScreen: View {
                             ExerciseSelectionScreen(
                                 selectedExercise: nil,
                                 setExercise: { exercise in
+                                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                     database.newTemplateSetGroup(
                                         createFirstSetAutomatically: true,
                                         exercise: exercise,

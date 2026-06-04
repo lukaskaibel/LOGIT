@@ -13,58 +13,80 @@ struct ExerciseVolumeTile: View {
     let workoutSets: [WorkoutSet]
 
     var body: some View {
-        FetchRequestWrapper(
-            WorkoutSet.self,
-            predicate: WorkoutSetPredicateFactory.getWorkoutSets(
-                with: exercise,
-                from: Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now)!.startOfWeek,
-                to: .now
-            )
-        ) { workoutSets in
-            let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
+        if workoutSets.isEmpty {
             VStack {
+                tileHeader
+                Spacer()
                 HStack {
-                    Text(NSLocalizedString("volume", comment: ""))
-                        .tileHeaderStyle()
-                    Spacer()
-                    NavigationChevron()
+                    Text(NSLocalizedString("noData", comment: ""))
+                        .font(.title2)
+                        .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
-                }
-                HStack(alignment: .bottom) {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("thisWeek", comment: ""))
-                            .foregroundStyle(.secondary)
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                        let thisWeekStart = Date.now.startOfWeek
-                        let setsThisWeek = groupedWorkoutSets.first(where: { Calendar.current.isDate($0.key, equalTo: thisWeekStart, toGranularity: .weekOfYear) })?.value ?? []
-                        UnitView(
-                            value: "\(formatWeightForDisplay(getVolume(of: setsThisWeek, for: exercise)))",
-                            unit: WeightUnit.used.rawValue.uppercased(),
-                            configuration: .large
-                        )
-                        .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
-                    }
                     Spacer()
-                    Chart {
-                        ForEach(groupedWorkoutSets, id: \.0) { key, workoutSets in
-                            BarMark(
-                                x: .value("Weeks before now", key, unit: .weekOfYear),
-                                y: .value("Volume in week", convertWeightForDisplayingDecimal(getVolume(of: workoutSets, for: exercise))),
-                                width: .ratio(0.5)
-                            )
-                            .foregroundStyle(Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill)
-                        }
-                    }
-                    .chartXScale(domain: xDomain)
-                    .chartXAxis {}
-                    .chartYAxis {}
-                    .frame(width: 120, height: 70)
                 }
+                .padding(.bottom, 8)
             }
             .frame(minHeight: 100)
             .padding(CELL_PADDING)
             .tileStyle()
+        } else {
+            FetchRequestWrapper(
+                WorkoutSet.self,
+                predicate: WorkoutSetPredicateFactory.getWorkoutSets(
+                    with: exercise,
+                    from: Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now)!.startOfWeek,
+                    to: .now
+                )
+            ) { workoutSets in
+                let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
+                VStack {
+                    tileHeader
+                    HStack(alignment: .bottom) {
+                        VStack(alignment: .leading) {
+                            Text(NSLocalizedString("thisWeek", comment: ""))
+                                .foregroundStyle(.secondary)
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                            let thisWeekStart = Date.now.startOfWeek
+                            let setsThisWeek = groupedWorkoutSets.first(where: { Calendar.current.isDate($0.key, equalTo: thisWeekStart, toGranularity: .weekOfYear) })?.value ?? []
+                            UnitView(
+                                value: "\(formatWeightForDisplay(getVolume(of: setsThisWeek, for: exercise)))",
+                                unit: WeightUnit.used.rawValue.uppercased(),
+                                configuration: .large
+                            )
+                            .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
+                        }
+                        Spacer()
+                        Chart {
+                            ForEach(groupedWorkoutSets, id: \.0) { key, workoutSets in
+                                BarMark(
+                                    x: .value("Weeks before now", key, unit: .weekOfYear),
+                                    y: .value("Volume in week", convertWeightForDisplayingDecimal(getVolume(of: workoutSets, for: exercise))),
+                                    width: .ratio(0.5)
+                                )
+                                .foregroundStyle(Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill)
+                            }
+                        }
+                        .chartXScale(domain: xDomain)
+                        .chartXAxis {}
+                        .chartYAxis {}
+                        .frame(width: 120, height: 70)
+                    }
+                }
+                .frame(minHeight: 100)
+                .padding(CELL_PADDING)
+                .tileStyle()
+            }
+        }
+    }
+
+    private var tileHeader: some View {
+        HStack {
+            Text(NSLocalizedString("volume", comment: ""))
+                .tileHeaderStyle()
+            Spacer()
+            NavigationChevron()
+                .foregroundStyle(.secondary)
         }
     }
 

@@ -67,6 +67,7 @@ struct TemplateSetGroupCell: View {
                     if canEdit {
                         HStack(spacing: 8) {
                             Button {
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                 withAnimation(.interactiveSpring()) {
                                     database.addSet(to: setGroup)
                                 }
@@ -83,6 +84,7 @@ struct TemplateSetGroupCell: View {
                                 .clipShape(Capsule())
                             }
                             Button {
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                 withAnimation(.interactiveSpring()) {
                                     database.duplicateLastSet(from: setGroup)
                                 }

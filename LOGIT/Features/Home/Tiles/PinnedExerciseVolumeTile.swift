@@ -37,7 +37,7 @@ struct PinnedExerciseVolumeTile: View {
                             .font(.footnote)
                             .fontWeight(.semibold)
                         UnitView(
-                            value: "\(formatWeightForDisplay(getVolume(of: groupedWorkoutSets.first?.1 ?? [], for: exercise)))",
+                            value: groupedWorkoutSets.isEmpty ? "––" : "\(formatWeightForDisplay(getVolume(of: groupedWorkoutSets.first?.1 ?? [], for: exercise)))",
                             unit: WeightUnit.used.rawValue.uppercased(),
                             configuration: .large
                         )

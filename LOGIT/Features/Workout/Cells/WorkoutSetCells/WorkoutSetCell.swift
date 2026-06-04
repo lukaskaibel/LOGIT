@@ -73,6 +73,7 @@ struct WorkoutSetCell: View {
                         .fontWeight(.bold)
                         .fontDesign(.rounded)
                         .foregroundStyle(.secondary)
+                        .fixedSize()
                     Spacer()
                     setContent
                 }
@@ -231,6 +232,7 @@ struct WorkoutSetReferenceValue: Equatable {
 
         return "\(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue)"
     }
+
 }
 
 struct PreviousSetReferenceLabel: View {

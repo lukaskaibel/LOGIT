@@ -5,7 +5,6 @@
 //  Created by Lukas Kaibel on 20.07.23.
 //
 
-import AVFoundation
 import Combine
 import Foundation
 import SwiftUI
@@ -32,6 +31,8 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     private static let modeStorageKey = "selectedChronographMode"
     private static let timerFinishedNotificationIdentifier = "timerFinished"
     private static let stopwatchMinuteNotificationIdentifierPrefix = "stopwatchMinute"
+    private static let timerCountdown30NotificationIdentifier = "timerCountdown30"
+    private static let timerCountdown10NotificationIdentifier = "timerCountdown10"
     private static let alarmKitTimerSoundName = "timer.wav"
     private static let alarmAutoDismissInterval: TimeInterval = 1.5
     static let maxPendingStopwatchMinuteNotifications = 64
@@ -59,9 +60,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     private var pauseTime: TimeInterval?
     private var activeTimerAlarmID: UUID?
     private var timerAlarmScheduleToken = UUID()
-    private var beepPlayer: AVAudioPlayer?
-    private var didBeepAt30: Bool = false
-    private var didBeepAt10: Bool = false
 
     /// How many seconds have elapsed since the timer started (timer mode only).
     var elapsedTimerSeconds: Int {
@@ -93,9 +91,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         if pauseTime != nil {
             seconds = pauseTime!
             pauseTime = nil
-        } else if mode == .timer {
-            didBeepAt30 = seconds <= 30
-            didBeepAt10 = seconds <= 10
         }
 
         scheduleNotificationsForCurrentState()
@@ -108,7 +103,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
                 switch self.mode {
                 case .timer:
                     self.seconds -= timePassed
-                    self.playCountdownBeepIfNeeded()
                     if self.seconds <= 0 {
                         self.seconds = 0
                         self.scheduleAlarmAutoDismiss()
@@ -180,28 +174,6 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         startDate = nil
         seconds = 0
         status = .idle
-        didBeepAt30 = false
-        didBeepAt10 = false
-    }
-
-    private func playCountdownBeepIfNeeded() {
-        let timerIsMuted = UserDefaults.standard.bool(forKey: "timerIsMuted")
-        guard !timerIsMuted else { return }
-
-        if !didBeepAt30 && seconds <= 30 {
-            didBeepAt30 = true
-            playBeep()
-        }
-        if !didBeepAt10 && seconds <= 10 {
-            didBeepAt10 = true
-            playBeep()
-        }
-    }
-
-    private func playBeep() {
-        guard let url = Bundle.main.url(forResource: "beep", withExtension: "wav") else { return }
-        beepPlayer = try? AVAudioPlayer(contentsOf: url)
-        beepPlayer?.play()
     }
 
     private var timesUpNotificationRequest: UNNotificationRequest {
@@ -252,6 +224,65 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         )
     }
 
+    private func countdownWarningNotificationRequest(
+        identifier: String,
+        secondsRemaining: Int,
+        triggerInterval: TimeInterval
+    ) -> UNNotificationRequest {
+        let content = UNMutableNotificationContent()
+        content.title = NSLocalizedString("timer", comment: "")
+        content.body = String(
+            format: NSLocalizedString("timerWarningBody", comment: ""),
+            "\(secondsRemaining)s"
+        )
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(
+            timeInterval: max(1, triggerInterval),
+            repeats: false
+        )
+
+        return UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: trigger
+        )
+    }
+
+    private func scheduleCountdownNotifications(forTimerSeconds seconds: TimeInterval) {
+        let timerIsMuted = UserDefaults.standard.bool(forKey: "timerIsMuted")
+        guard !timerIsMuted else { return }
+
+        let center = UNUserNotificationCenter.current()
+
+        if seconds > 30 {
+            let request = countdownWarningNotificationRequest(
+                identifier: Self.timerCountdown30NotificationIdentifier,
+                secondsRemaining: 30,
+                triggerInterval: seconds - 30
+            )
+            center.add(request)
+        }
+
+        if seconds > 10 {
+            let request = countdownWarningNotificationRequest(
+                identifier: Self.timerCountdown10NotificationIdentifier,
+                secondsRemaining: 10,
+                triggerInterval: seconds - 10
+            )
+            center.add(request)
+        }
+    }
+
+    private func cancelCountdownNotifications() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [
+                Self.timerCountdown30NotificationIdentifier,
+                Self.timerCountdown10NotificationIdentifier,
+            ]
+        )
+    }
+
     private func scheduleTimerNotification(inSeconds seconds: TimeInterval) {
         UNUserNotificationCenter.current().add(timesUpNotificationRequest) { error in
             if let error = error {
@@ -288,6 +319,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         switch mode {
         case .timer:
             scheduleTimerAlert(inSeconds: seconds)
+            scheduleCountdownNotifications(forTimerSeconds: seconds)
         case .stopwatch:
             scheduleStopwatchMinuteNotifications(fromElapsedSeconds: seconds)
         }
@@ -296,6 +328,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     private func cancelNotifications() {
         cancelTimerAlarm()
         cancelTimerNotification()
+        cancelCountdownNotifications()
         cancelStopwatchMinuteNotifications()
     }
 

@@ -40,10 +40,7 @@ struct ExerciseWeightTile: View {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading) {
                             VStack(alignment: .leading) {
-                                Text(NSLocalizedString("currentBest", comment: ""))
-                                    .foregroundStyle(.secondary)
-                                    .font(.footnote)
-                                    .fontWeight(.semibold)
+                                CurrentBestLabel()
                                 UnitView(
                                     value: currentBestWeight(workoutSets) != nil ? formatWeightForDisplay(currentBestWeight(workoutSets)!) : "––",
                                     unit: WeightUnit.used.rawValue.uppercased(),

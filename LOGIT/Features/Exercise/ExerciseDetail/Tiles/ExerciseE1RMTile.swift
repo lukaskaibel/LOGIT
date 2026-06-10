@@ -40,10 +40,7 @@ struct ExerciseE1RMTile: View {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading) {
                             VStack(alignment: .leading) {
-                                Text(NSLocalizedString("currentBest", comment: ""))
-                                    .foregroundStyle(.secondary)
-                                    .font(.footnote)
-                                    .fontWeight(.semibold)
+                                CurrentBestLabel()
                                 UnitView(
                                     value: currentBestE1RM(workoutSets) != nil ? formatEstimatedOneRepMax(currentBestE1RM(workoutSets)!) : "––",
                                     unit: WeightUnit.used.rawValue.uppercased(),
@@ -192,6 +189,37 @@ struct ExerciseE1RMTile: View {
         }
         let entry = bestSet.estimatedOneRepMaxEntry(for: exercise)
         return (formatEstimatedOneRepMax(entry.oneRepMax), Int(entry.repetitions), bestSet.workout?.date)
+    }
+}
+
+
+/// The "Current Best" stat label on the exercise-detail metric tiles, with a small info button
+/// that explains how the value is calculated (best of the last month, including today). Shared by
+/// the e1RM, weight, and repetitions tiles.
+struct CurrentBestLabel: View {
+    @State private var isShowingInfo = false
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("currentBest", comment: ""))
+                .fontWeight(.semibold)
+            Button {
+                isShowingInfo = true
+            } label: {
+                Image(systemName: "info.circle")
+            }
+            .popover(isPresented: $isShowingInfo) {
+                Text(NSLocalizedString("currentBestInfo", comment: ""))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding()
+                    .frame(width: 300)
+                    .presentationCompactAdaptation(.popover)
+            }
+        }
+        .font(.footnote)
+        .foregroundStyle(.secondary)
     }
 }
 

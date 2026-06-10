@@ -40,10 +40,7 @@ struct ExerciseRepetitionsTile: View {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading) {
                             VStack(alignment: .leading) {
-                                Text(NSLocalizedString("currentBest", comment: ""))
-                                    .foregroundStyle(.secondary)
-                                    .font(.footnote)
-                                    .fontWeight(.semibold)
+                                CurrentBestLabel()
                                 UnitView(
                                     value: currentBestRepetitions(workoutSets) != nil ? String(currentBestRepetitions(workoutSets)!) : "––",
                                     unit: NSLocalizedString("rps", comment: "").uppercased(),

@@ -1115,13 +1115,10 @@ struct MetricInfoPanel: View {
                 valueAndChart(color: color, showsChevron: false)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text(explanation(for: selectedMetric))
-                Text(NSLocalizedString("currentBestInfo", comment: ""))
-            }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
+            Text(explanation(for: selectedMetric))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
 
             Label(NSLocalizedString("swipeForMetrics", comment: ""), systemImage: "hand.draw")
                 .font(.caption)

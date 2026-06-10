@@ -704,7 +704,7 @@ private struct MetricBadgeView: View {
         }
     }
 
-    /// Renders "5 rps × 100 kg" with a fixed order (reps × weight). Both numbers carry units so the
+    /// Renders "5 RPS × 100 KG" with a fixed order (reps × weight). Both numbers carry units so the
     /// value reads on its own under the shared "Current Best" label; the emphasised metric is
     /// full-size in the primary colour, the other a size smaller in grey. Bodyweight sets (no
     /// weight) fall back to showing reps alone.
@@ -742,13 +742,8 @@ private struct MetricBadgeView: View {
     /// One side of the pair: number + unit, full-size and coloured when it's the selected metric,
     /// a size smaller and grey otherwise.
     private func pairPart(value: String, unit: String, isEmphasized: Bool, primaryColor: Color) -> some View {
-        HStack(alignment: .lastTextBaseline, spacing: 2) {
-            Text(value)
-                .font(.system(isEmphasized ? .subheadline : .footnote, design: .rounded).weight(.bold))
-            Text(unit)
-                .font(.system(.caption2, design: .rounded).weight(.semibold))
-        }
-        .foregroundStyle(isEmphasized ? primaryColor : Color.secondary)
+        UnitView(value: value, unit: unit, configuration: isEmphasized ? .small : .extraSmall)
+            .foregroundStyle(isEmphasized ? primaryColor : Color.secondary)
     }
 
     // MARK: - Gestures & actions
@@ -1185,8 +1180,8 @@ struct MetricInfoPanel: View {
 
     private func panelUnit(for metric: ExercisePrimaryMetric) -> String {
         switch metric {
-        case .estimatedOneRepMax, .weight: return WeightUnit.used.rawValue.uppercased()
-        case .repetitions: return NSLocalizedString("reps", comment: "").uppercased()
+        case .estimatedOneRepMax, .weight: return WeightUnit.used.rawValue
+        case .repetitions: return NSLocalizedString("reps", comment: "")
         }
     }
 

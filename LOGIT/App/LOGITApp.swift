@@ -39,6 +39,7 @@ struct LOGIT: App {
     @State private var isShowingLiveActivityShowcase = false
     #if DEBUG
     @State private var isShowingKbdTest = false
+    @State private var uiTestMetricExercise: Exercise?
     #endif
 
     // Import handling state
@@ -191,6 +192,11 @@ struct LOGIT: App {
                         try? await Task.sleep(nanoseconds: 300_000_000)
                         isShowingKbdTest = true
                     }
+                    if ProcessInfo.processInfo.arguments.contains("-UITEST_METRIC_DETAIL") {
+                        try? await Task.sleep(nanoseconds: 600_000_000)
+                        uiTestMetricExercise = database.getExercises().first(where: { $0.displayName.contains("Bench") })
+                            ?? database.getExercises().max(by: { $0.sets.count < $1.sets.count })
+                    }
                     #endif
                 }
                 .fullScreenCover(isPresented: $isShowingLiveActivityShowcase) {
@@ -203,6 +209,16 @@ struct LOGIT: App {
                         .environmentObject(workoutRecorder)
                         .environmentObject(muscleGroupService)
                         .environmentObject(chronograph)
+                }
+                .fullScreenCover(item: $uiTestMetricExercise) { exercise in
+                    NavigationStack {
+                        ExerciseWeightScreen(exercise: exercise, workoutSets: exercise.sets)
+                    }
+                    .environmentObject(database)
+                    .environmentObject(purchaseManager)
+                    .environmentObject(muscleGroupService)
+                    .environment(\.managedObjectContext, database.context)
+                    .preferredColorScheme(.dark)
                 }
                 #endif
                 .preferredColorScheme(.dark)

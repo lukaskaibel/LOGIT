@@ -113,7 +113,7 @@ private struct SetEntryRow: View {
         HStack(spacing: 0) {
             UnitView(
                 value: "\(standardSet.repetitions)",
-                unit: NSLocalizedString("reps", comment: "").uppercased(),
+                unit: NSLocalizedString("reps", comment: ""),
                 configuration: .normal,
                 unitColor: .secondaryLabel
             )
@@ -121,7 +121,7 @@ private struct SetEntryRow: View {
             
             UnitView(
                 value: formattedWeight(standardSet.weight),
-                unit: WeightUnit.used.rawValue.uppercased(),
+                unit: WeightUnit.used.rawValue,
                 configuration: .normal,
                 unitColor: .secondaryLabel
             )
@@ -141,7 +141,7 @@ private struct SetEntryRow: View {
         HStack(spacing: 0) {
             UnitView(
                 value: "\(repetitions)",
-                unit: NSLocalizedString("reps", comment: "").uppercased(),
+                unit: NSLocalizedString("reps", comment: ""),
                 configuration: .normal,
                 unitColor: .secondaryLabel
             )
@@ -149,7 +149,7 @@ private struct SetEntryRow: View {
             
             UnitView(
                 value: formattedWeight(weight),
-                unit: WeightUnit.used.rawValue.uppercased(),
+                unit: WeightUnit.used.rawValue,
                 configuration: .normal,
                 unitColor: .secondaryLabel
             )
@@ -191,7 +191,7 @@ private struct DropSetEntryRows: View {
                     HStack(spacing: 0) {
                         UnitView(
                             value: "\(item.0)",
-                            unit: NSLocalizedString("reps", comment: "").uppercased(),
+                            unit: NSLocalizedString("reps", comment: ""),
                             configuration: .normal,
                             unitColor: .secondaryLabel
                         )
@@ -199,7 +199,7 @@ private struct DropSetEntryRows: View {
                         
                         UnitView(
                             value: formattedWeight(item.1),
-                            unit: WeightUnit.used.rawValue.uppercased(),
+                            unit: WeightUnit.used.rawValue,
                             configuration: .normal,
                             unitColor: .secondaryLabel
                         )

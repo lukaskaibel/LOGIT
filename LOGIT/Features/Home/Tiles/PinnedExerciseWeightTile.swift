@@ -35,7 +35,7 @@ struct PinnedExerciseWeightTile: View {
                                 .fontWeight(.semibold)
                             UnitView(
                                 value: currentBestWeight(workoutSets) != nil ? formatWeightForDisplay(currentBestWeight(workoutSets)!) : "––",
-                                unit: WeightUnit.used.rawValue.uppercased(),
+                                unit: WeightUnit.used.rawValue,
                                 configuration: .large
                             )
                             .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)

@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum UnitViewConfiguration {
-    case normal, large, small
+    case normal, large, small, extraSmall
 }
 
 struct UnitView: View {
@@ -16,25 +16,49 @@ struct UnitView: View {
     let unit: String
     var configuration: UnitViewConfiguration = .normal
     var unitColor: Color?
+    /// Units render uppercased ("KG", "RPS") — the app-wide convention, applied here so call sites
+    /// can't drift. Pass nil for phrase-like units ("of 4") that must keep their casing.
+    var unitTextCase: Text.Case? = .uppercase
+
+    private var valueFont: Font {
+        switch configuration {
+        case .large: .title
+        case .normal: .title3
+        case .small: .subheadline
+        case .extraSmall: .footnote
+        }
+    }
+
+    private var unitFont: Font {
+        switch configuration {
+        case .large: .body
+        case .normal: .subheadline
+        case .small, .extraSmall: .caption2
+        }
+    }
 
     var body: some View {
         HStack(alignment: .lastTextBaseline, spacing: 2) {
             Text(value)
-                .font(configuration == .large ? .title : configuration == .small ? .subheadline : .title3)
+                .font(valueFont)
                 .fontWeight(.bold)
                 .fontDesign(.rounded)
-            if let unitColor = unitColor {
-                Text(unit)
-                    .foregroundStyle(unitColor)
-                    .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
-                    .fontWeight(.semibold)
-                    .fontDesign(.rounded)
-            } else {
-                Text(unit)
-                    .font(configuration == .large ? .body : configuration == .small ? .caption2 : .subheadline)
-                    .fontWeight(.semibold)
-                    .fontDesign(.rounded)
-            }
+            unitText
+                .font(unitFont)
+                .fontWeight(.semibold)
+                .fontDesign(.rounded)
+        }
+    }
+
+    @ViewBuilder
+    private var unitText: some View {
+        if let unitColor {
+            Text(unit)
+                .textCase(unitTextCase)
+                .foregroundStyle(unitColor)
+        } else {
+            Text(unit)
+                .textCase(unitTextCase)
         }
     }
 }
@@ -42,6 +66,7 @@ struct UnitView: View {
 struct UnitView_Previews: PreviewProvider {
     static var previews: some View {
         VStack {
+            UnitView(value: "12", unit: "rps", configuration: .extraSmall)
             UnitView(value: "12", unit: "rps", configuration: .small)
             UnitView(value: "12", unit: "rps")
             UnitView(value: "12", unit: "rps", configuration: .large)

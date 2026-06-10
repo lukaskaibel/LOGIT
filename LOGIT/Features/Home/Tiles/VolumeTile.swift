@@ -36,7 +36,7 @@ struct VolumeTile: View {
                     let setsThisWeek = groupedWorkoutSets.first(where: { Calendar.current.isDate($0.key, equalTo: thisWeekStart, toGranularity: .weekOfYear) })?.value ?? []
                     UnitView(
                         value: "\(formatWeightForDisplay(getVolume(of: setsThisWeek)))",
-                        unit: WeightUnit.used.rawValue.uppercased(),
+                        unit: WeightUnit.used.rawValue,
                         configuration: .large,
                         unitColor: .secondaryLabel
                     )

@@ -429,6 +429,8 @@
 "today" = "Today";
 "toGo" = "to go";
 "total" = "Total";
+"trendDown" = "Down %@ versus previous period";
+"trendUp" = "Up %@ versus previous period";
 "trackMore" = "Track More";
 "triceps" = "Triceps";
 "two" = "Two";

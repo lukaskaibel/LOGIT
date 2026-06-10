@@ -35,7 +35,7 @@ struct PinnedExerciseE1RMTile: View {
                                 .fontWeight(.semibold)
                             UnitView(
                                 value: currentBestE1RM(workoutSets) != nil ? formatEstimatedOneRepMax(currentBestE1RM(workoutSets)!) : "––",
-                                unit: WeightUnit.used.rawValue.uppercased(),
+                                unit: WeightUnit.used.rawValue,
                                 configuration: .large
                             )
                             .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)

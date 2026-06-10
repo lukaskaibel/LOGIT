@@ -222,14 +222,14 @@ struct WorkoutSetReferenceValue: Equatable {
 
     var displayText: String {
         if repetitions > 0, weight > 0 {
-            return "\(repetitions) x \(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue)"
+            return "\(repetitions) x \(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue.uppercased())"
         }
 
         if repetitions > 0 {
-            return "\(repetitions) \(NSLocalizedString("reps", comment: ""))"
+            return "\(repetitions) \(NSLocalizedString("reps", comment: "").uppercased())"
         }
 
-        return "\(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue)"
+        return "\(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue.uppercased())"
     }
 
 }

@@ -29,6 +29,7 @@ struct ExerciseWeightScreen: View {
         // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
         let bestVisibleWeight = bestWeightInGranularity(workoutSets)
+        let visibleTrendPercentage = trendPercentage(in: workoutSets)
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -41,20 +42,30 @@ struct ExerciseWeightScreen: View {
             .pickerStyle(.segmented)
             .padding(.vertical)
             .padding(.horizontal)
-            VStack(alignment: .leading) {
-                Text(NSLocalizedString("best", comment: ""))
-                    .font(.footnote)
-                    .fontWeight(.medium)
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-                UnitView(
-                    value: "\(bestVisibleWeight != nil ? formatWeightForDisplay(bestVisibleWeight!) : "––")",
-                    unit: WeightUnit.used.rawValue.uppercased()
-                )
-                .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                Text(chartHeaderTitle)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("best", comment: ""))
+                        .font(.footnote)
+                        .fontWeight(.medium)
+                        .textCase(.uppercase)
+                        .foregroundStyle(.secondary)
+                    UnitView(
+                        value: "\(bestVisibleWeight != nil ? formatWeightForDisplay(bestVisibleWeight!) : "––")",
+                        unit: WeightUnit.used.rawValue
+                    )
+                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
+                    Text(chartHeaderTitle)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                if let visibleTrendPercentage {
+                    TrendIndicatorView(
+                        percentChange: visibleTrendPercentage,
+                        positiveColor: exerciseMuscleGroupColor
+                    )
+                    .animation(.snappy, value: visibleTrendPercentage)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal)
@@ -70,7 +81,7 @@ struct ExerciseWeightScreen: View {
                             VStack(alignment: .leading) {
                                 UnitView(
                                     value: "\(valueDisplayed)",
-                                    unit: WeightUnit.used.rawValue.uppercased()
+                                    unit: WeightUnit.used.rawValue
                                 )
                                 .foregroundStyle(exerciseMuscleGroupColor.gradient)
                                 Text(snapped.formatted(.dateTime.day().month()))
@@ -325,6 +336,30 @@ struct ExerciseWeightScreen: View {
         let values = WeightUnit.used == .kg ? yAxisMaxValuesKG : yAxisMaxValuesLBS
         let nextBiggerYAxisMaxValue = values.filter { $0 > maxYValue }.min()
         return nextBiggerYAxisMaxValue ?? maxYValue
+    }
+
+    /// Percent change of the best weight in the visible chart window versus the
+    /// equal-length window immediately before it. Nil when either window has no data.
+    private func trendPercentage(in workoutSets: [WorkoutSet]) -> Double? {
+        let windowStart = chartScrollPosition
+        let windowEnd = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: windowStart)!
+        let previousStart = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: windowStart)!
+        let current = workoutSets
+            .filter {
+                guard let date = $0.workout?.date else { return false }
+                return date >= windowStart && date <= windowEnd
+            }
+            .map { $0.maximum(.weight, for: exercise) }
+            .max()
+        let previous = workoutSets
+            .filter {
+                guard let date = $0.workout?.date else { return false }
+                return date >= previousStart && date < windowStart
+            }
+            .map { $0.maximum(.weight, for: exercise) }
+            .max()
+        guard let current = current, let previous = previous, previous > 0 else { return nil }
+        return (Double(current) - Double(previous)) / Double(previous) * 100
     }
 
     // MARK: - Selection helpers

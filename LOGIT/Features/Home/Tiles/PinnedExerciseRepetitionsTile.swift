@@ -35,7 +35,7 @@ struct PinnedExerciseRepetitionsTile: View {
                                 .fontWeight(.semibold)
                             UnitView(
                                 value: currentBestRepetitions(workoutSets) != nil ? String(currentBestRepetitions(workoutSets)!) : "––",
-                                unit: NSLocalizedString("rps", comment: "").uppercased(),
+                                unit: NSLocalizedString("rps", comment: ""),
                                 configuration: .large
                             )
                             .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)

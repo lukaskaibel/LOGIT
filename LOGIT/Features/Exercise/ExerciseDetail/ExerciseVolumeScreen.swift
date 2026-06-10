@@ -22,6 +22,7 @@ struct ExerciseVolumeScreen: View {
 
     var body: some View {
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
+        let visibleTrendPercentage = trendPercentage(in: workoutSets)
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -34,21 +35,31 @@ struct ExerciseVolumeScreen: View {
                 .pickerStyle(.segmented)
                 .padding(.vertical)
                 .padding(.horizontal)
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("total", comment: ""))
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                        .textCase(.uppercase)
-                        .foregroundStyle(.secondary)
-                    UnitView(
-                        value: totalVolumeInTimeFrame(workoutSets),
-                        unit: WeightUnit.used.rawValue.uppercased()
-                    )
-                    .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
-                    Text("\(visibleDomainDescription)")
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
-                        .foregroundStyle(.secondary)
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("total", comment: ""))
+                            .font(.footnote)
+                            .fontWeight(.semibold)
+                            .textCase(.uppercase)
+                            .foregroundStyle(.secondary)
+                        UnitView(
+                            value: totalVolumeInTimeFrame(workoutSets),
+                            unit: WeightUnit.used.rawValue
+                        )
+                        .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
+                        Text("\(visibleDomainDescription)")
+                            .fontWeight(.bold)
+                            .fontDesign(.rounded)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if let visibleTrendPercentage {
+                        TrendIndicatorView(
+                            percentChange: visibleTrendPercentage,
+                            positiveColor: exercise.muscleGroup?.color ?? .label
+                        )
+                        .animation(.snappy, value: visibleTrendPercentage)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
@@ -83,7 +94,7 @@ struct ExerciseVolumeScreen: View {
                                 VStack(alignment: .leading) {
                                     UnitView(
                                         value: selectedVolume,
-                                        unit: WeightUnit.used.rawValue.uppercased()
+                                        unit: WeightUnit.used.rawValue
                                     )
                                     .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
                                     Text(domainDescription(for: selectedDate))
@@ -188,6 +199,27 @@ struct ExerciseVolumeScreen: View {
     
     private func volumeFormatted(for sets: [WorkoutSet]) -> String {
         formatWeightForDisplay(getVolume(of: sets, for: exercise))
+    }
+
+    /// Percent change of the total volume in the visible chart window versus the
+    /// equal-length window immediately before it. Nil when either window has no data.
+    private func trendPercentage(in workoutSets: [WorkoutSet]) -> Double? {
+        let windowStart = chartScrollPosition
+        let windowEnd = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: windowStart)!
+        let previousStart = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: windowStart)!
+        let currentSets = workoutSets.filter {
+            guard let date = $0.workout?.date else { return false }
+            return date >= windowStart && date <= windowEnd
+        }
+        let previousSets = workoutSets.filter {
+            guard let date = $0.workout?.date else { return false }
+            return date >= previousStart && date < windowStart
+        }
+        guard !currentSets.isEmpty, !previousSets.isEmpty else { return nil }
+        let current = getVolume(of: currentSets, for: exercise)
+        let previous = getVolume(of: previousSets, for: exercise)
+        guard previous > 0 else { return nil }
+        return (Double(current) - Double(previous)) / Double(previous) * 100
     }
 
     private func xAxisDateString(for date: Date) -> String {

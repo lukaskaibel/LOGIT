@@ -43,7 +43,7 @@ struct ExerciseE1RMTile: View {
                                 CurrentBestLabel()
                                 UnitView(
                                     value: currentBestE1RM(workoutSets) != nil ? formatEstimatedOneRepMax(currentBestE1RM(workoutSets)!) : "––",
-                                    unit: WeightUnit.used.rawValue.uppercased(),
+                                    unit: WeightUnit.used.rawValue,
                                     configuration: .large
                                 )
                                 .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
@@ -146,7 +146,7 @@ struct ExerciseE1RMTile: View {
                         }
                         .foregroundStyle(.tertiary)
                         .font(.caption)
-                        UnitView(value: allTimeE1RMPREntry.0, unit: WeightUnit.used.rawValue.uppercased(), unitColor: .tertiaryLabel)
+                        UnitView(value: allTimeE1RMPREntry.0, unit: WeightUnit.used.rawValue, unitColor: .tertiaryLabel)
                             .foregroundStyle(.tertiary)
                     }
                 }

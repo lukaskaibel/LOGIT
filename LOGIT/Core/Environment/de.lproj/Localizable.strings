@@ -425,6 +425,8 @@
 "today" = "Heute";
 "toGo" = "übrig";
 "total" = "Insgesamt";
+"trendDown" = "%@ niedriger als im vorherigen Zeitraum";
+"trendUp" = "%@ höher als im vorherigen Zeitraum";
 "trackMore" = "Tracke mehr";
 "triceps" = "Trizeps";
 "two" = "Zwei";

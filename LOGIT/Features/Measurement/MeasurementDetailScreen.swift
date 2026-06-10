@@ -95,7 +95,7 @@ struct MeasurementDetailScreen: View {
                 if let latestEntry = latestEntry {
                     UnitView(
                         value: formatDecimal(latestEntry.decimalValue),
-                        unit: measurementType.unit.uppercased()
+                        unit: measurementType.unit
                     )
                     .foregroundStyle(Color.accentColor.gradient)
                 }
@@ -115,7 +115,7 @@ struct MeasurementDetailScreen: View {
                             VStack(alignment: .leading) {
                                 UnitView(
                                     value: formatDecimal(selectedEntry.decimalValue),
-                                    unit: measurementType.unit.uppercased()
+                                    unit: measurementType.unit
                                 )
                                 .foregroundStyle(Color.accentColor.gradient)
                                 Text(snapped.formatted(.dateTime.day().month()))

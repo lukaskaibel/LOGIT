@@ -429,6 +429,8 @@
 "today" = "오늘";
 "toGo" = "가다";
 "total" = "총";
+"trendDown" = "이전 기간보다 %@ 감소";
+"trendUp" = "이전 기간보다 %@ 증가";
 "trackMore" = "더 많이 추적하세요";
 "triceps" = "삼두근";
 "two" = "둘";

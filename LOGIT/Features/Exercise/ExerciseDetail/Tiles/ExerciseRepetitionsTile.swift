@@ -43,7 +43,7 @@ struct ExerciseRepetitionsTile: View {
                                 CurrentBestLabel()
                                 UnitView(
                                     value: currentBestRepetitions(workoutSets) != nil ? String(currentBestRepetitions(workoutSets)!) : "––",
-                                    unit: NSLocalizedString("rps", comment: "").uppercased(),
+                                    unit: NSLocalizedString("rps", comment: ""),
                                     configuration: .large
                                 )
                                 .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
@@ -146,7 +146,7 @@ struct ExerciseRepetitionsTile: View {
                         }
                         .foregroundStyle(.tertiary)
                         .font(.caption)
-                        UnitView(value: "\(allTimeRepeitionsPrEntry.0)", unit: NSLocalizedString("rps", comment: "").uppercased(), unitColor: .tertiaryLabel)
+                        UnitView(value: "\(allTimeRepeitionsPrEntry.0)", unit: NSLocalizedString("rps", comment: ""), unitColor: .tertiaryLabel)
                             .foregroundStyle(.tertiary)
                     }
                 }

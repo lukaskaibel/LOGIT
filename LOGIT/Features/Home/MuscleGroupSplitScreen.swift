@@ -191,7 +191,7 @@ struct MuscleGroupSplitScreen: View {
                     Divider()
                     VStack(alignment: .leading) {
                         Text(NSLocalizedString("volume", comment: ""))
-                        UnitView(value: volumeValue, unit: WeightUnit.used.rawValue.uppercased())
+                        UnitView(value: volumeValue, unit: WeightUnit.used.rawValue)
                             .font(.title3)
                             .fontDesign(.rounded)
                             .fontWeight(.bold)

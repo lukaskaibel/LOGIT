@@ -492,6 +492,10 @@ private struct MetricBadgeView: View {
 
     @State private var primaryMetric: ExercisePrimaryMetric = .estimatedOneRepMax
     @State private var isShowingInfo = false
+    /// Exercise-detail sheet presented when the popover's value/chart row is tapped (non-recorder
+    /// contexts — the recorder routes this through its own sheet instead).
+    @State private var detailExercise: Exercise?
+    @State private var detailMetric: ExercisePrimaryMetric = .estimatedOneRepMax
     /// The badge's frame in global (window) coordinates, captured so the recorder can anchor its
     /// popover at the badge. Pure layout observation — nothing extra in the badge's render path.
     @State private var badgeFrame: CGRect = .zero
@@ -549,10 +553,24 @@ private struct MetricBadgeView: View {
             }
             .highPriorityGesture(dragGesture)
             .popover(isPresented: $isShowingInfo) {
-                MetricInfoPanel(setGroup: setGroup)
-                    .padding()
-                    .frame(width: 320)
-                    .presentationCompactAdaptation(.popover)
+                MetricInfoPanel(setGroup: setGroup, onOpenDetail: { metric in
+                    detailMetric = metric
+                    isShowingInfo = false
+                    // Present after the popover's dismissal settles — competing presentations
+                    // from the same host cancel each other.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                        detailExercise = setGroup.exercise
+                    }
+                })
+                .padding()
+                .frame(width: 320)
+                .presentationCompactAdaptation(.popover)
+            }
+            .sheet(item: $detailExercise) { exercise in
+                NavigationStack {
+                    ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, autoOpenMetric: detailMetric)
+                }
+                .presentationDragIndicator(.visible)
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("\(NSLocalizedString("progressMetric", comment: "")), \(displayedMetric.title)"))
@@ -1063,12 +1081,16 @@ struct WorkoutSetGroupCell_Previews: PreviewProvider {
 /// recorder, which presents it as a sheet from its persistent exercise sheet so that sheet survives.
 struct MetricInfoPanel: View {
     @ObservedObject var setGroup: WorkoutSetGroup
+    /// Called when the value/chart row is tapped — the host opens the exercise detail at this
+    /// metric's chart screen. The row isn't tappable when nil.
+    var onOpenDetail: ((ExercisePrimaryMetric) -> Void)?
     @State private var selectedMetric: ExercisePrimaryMetric
 
     private let metrics = ExercisePrimaryMetric.allCases
 
-    init(setGroup: WorkoutSetGroup) {
+    init(setGroup: WorkoutSetGroup, onOpenDetail: ((ExercisePrimaryMetric) -> Void)? = nil) {
         _setGroup = ObservedObject(wrappedValue: setGroup)
+        self.onOpenDetail = onOpenDetail
         _selectedMetric = State(initialValue: setGroup.exercise?.primaryMetric ?? .estimatedOneRepMax)
     }
 
@@ -1082,21 +1104,15 @@ struct MetricInfoPanel: View {
             }
             .pickerStyle(.segmented)
 
-            HStack(alignment: .bottom, spacing: 12) {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(NSLocalizedString("currentBest", comment: ""))
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                    UnitView(
-                        value: panelValue(for: selectedMetric),
-                        unit: panelUnit(for: selectedMetric),
-                        configuration: .large
-                    )
-                    .foregroundStyle(color.gradient)
+            if let onOpenDetail {
+                Button {
+                    onOpenDetail(selectedMetric)
+                } label: {
+                    valueAndChart(color: color, showsChevron: true)
                 }
-                Spacer(minLength: 0)
-                metricChart(for: selectedMetric, color: color)
+                .buttonStyle(.plain)
+            } else {
+                valueAndChart(color: color, showsChevron: false)
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -1111,6 +1127,32 @@ struct MetricInfoPanel: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
+    }
+
+    /// The current-best value next to its progression chart — the tappable heart of the panel
+    /// (chevron shown when tapping opens the exercise detail).
+    private func valueAndChart(color: Color, showsChevron: Bool) -> some View {
+        HStack(alignment: .bottom, spacing: 12) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(NSLocalizedString("currentBest", comment: ""))
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                UnitView(
+                    value: panelValue(for: selectedMetric),
+                    unit: panelUnit(for: selectedMetric),
+                    configuration: .large
+                )
+                .foregroundStyle(color.gradient)
+            }
+            Spacer(minLength: 0)
+            metricChart(for: selectedMetric, color: color)
+            if showsChevron {
+                NavigationChevron()
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .contentShape(Rectangle())
     }
 
     /// Persists the chosen metric (per exercise). The badge observes `UserDefaults.didChangeNotification`

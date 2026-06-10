@@ -43,6 +43,9 @@ struct ExerciseDetailScreen: View {
     @StateObject var exercise: Exercise
     var isShowingAsSheet: Bool = false
     var scrollToRecentAttempts: Bool = false
+    /// When set, the corresponding metric screen is pushed automatically on appear — used by the
+    /// in-workout metric badge's popover to jump straight to the tapped metric's chart.
+    var autoOpenMetric: ExercisePrimaryMetric? = nil
     var onNavigateToExercise: ((Exercise) -> Void)?
 
     // MARK: - Body
@@ -247,6 +250,15 @@ struct ExerciseDetailScreen: View {
                 ExerciseVolumeScreen(exercise: exercise, workoutSets: workoutSets)
             }
             .onAppear {
+                if let autoOpenMetric {
+                    DispatchQueue.main.async {
+                        switch autoOpenMetric {
+                        case .estimatedOneRepMax: isShowingE1RMScreen = true
+                        case .weight: isShowingWeightScreen = true
+                        case .repetitions: isShowingRepetitionsScreen = true
+                        }
+                    }
+                }
                 guard scrollToRecentAttempts else { return }
                 DispatchQueue.main.async {
                     scrollProxy.scrollTo("recentAttempts", anchor: .top)

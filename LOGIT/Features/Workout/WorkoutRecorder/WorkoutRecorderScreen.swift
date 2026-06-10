@@ -47,6 +47,9 @@ struct WorkoutRecorderScreen: View {
     @State private var isShowingReorderSheet = false
     @State private var selectedRestDurationSet: WorkoutSet?
     @State private var exerciseForDetailSheet: Exercise?
+    /// When the exercise-detail sheet is opened from the metric popover, the metric whose chart
+    /// screen it should jump to; nil for the regular name/previous-set entry points.
+    @State private var exerciseDetailAutoMetric: ExercisePrimaryMetric?
     @State private var metricInfoSetGroup: WorkoutSetGroup?
     @State private var metricInfoSourceRect: CGRect?
     @State private var scrollToRecentAttempts = false
@@ -77,8 +80,8 @@ struct WorkoutRecorderScreen: View {
                                     canReorder: true,
                                     showDetailAsSheet: true,
                                     onTapRestDuration: { selectedRestDurationSet = $0 },
-                                    onTapPreviousSet: { scrollToRecentAttempts = true; exerciseForDetailSheet = $0 },
-                                    onTapExerciseName: { scrollToRecentAttempts = false; exerciseForDetailSheet = $0 }
+                                    onTapPreviousSet: { scrollToRecentAttempts = true; exerciseDetailAutoMetric = nil; exerciseForDetailSheet = $0 },
+                                    onTapExerciseName: { scrollToRecentAttempts = false; exerciseDetailAutoMetric = nil; exerciseForDetailSheet = $0 }
                                 )
                                 // A metric-badge tap routes here instead of presenting from the badge:
                                 // the badge sits behind the persistent exercise sheet, so a popover
@@ -170,7 +173,12 @@ struct WorkoutRecorderScreen: View {
                                     }
                                     .sheet(item: $exerciseForDetailSheet) { exercise in
                                         NavigationStack {
-                                            ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, scrollToRecentAttempts: scrollToRecentAttempts)
+                                            ExerciseDetailScreen(
+                                                exercise: exercise,
+                                                isShowingAsSheet: true,
+                                                scrollToRecentAttempts: scrollToRecentAttempts,
+                                                autoOpenMetric: exerciseDetailAutoMetric
+                                            )
                                         }
                                         .presentationDragIndicator(.visible)
                                     }
@@ -184,6 +192,17 @@ struct WorkoutRecorderScreen: View {
                                             onDismiss: {
                                                 metricInfoSetGroup = nil
                                                 metricInfoSourceRect = nil
+                                            },
+                                            onOpenDetail: { exercise, metric in
+                                                // Close the popover first; presenting the detail
+                                                // sheet mid-dismissal would cancel one of the two.
+                                                metricInfoSetGroup = nil
+                                                metricInfoSourceRect = nil
+                                                scrollToRecentAttempts = false
+                                                exerciseDetailAutoMetric = metric
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                                    exerciseForDetailSheet = exercise
+                                                }
                                             }
                                         )
                                     )
@@ -743,6 +762,9 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
     let setGroup: WorkoutSetGroup?
     let anchorRect: CGRect?
     let onDismiss: () -> Void
+    /// Called when the panel's value/chart row is tapped: (exercise, metric) — the recorder closes
+    /// this popover and opens the exercise-detail sheet at that metric's chart.
+    let onOpenDetail: (Exercise, ExercisePrimaryMetric) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
@@ -754,6 +776,7 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
 
     func updateUIView(_ uiView: UIView, context: Context) {
         context.coordinator.onDismiss = onDismiss
+        context.coordinator.onOpenDetail = onOpenDetail
         if let setGroup, let anchorRect {
             context.coordinator.presentIfNeeded(for: setGroup, anchoredAt: anchorRect, embeddedIn: uiView)
         } else {
@@ -764,6 +787,7 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
     @MainActor
     final class Coordinator: NSObject, UIPopoverPresentationControllerDelegate {
         var onDismiss: () -> Void = {}
+        var onOpenDetail: (Exercise, ExercisePrimaryMetric) -> Void = { _, _ in }
         private weak var popover: UIViewController?
         private var isPresenting = false
 
@@ -783,9 +807,12 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
                 while let presented = presenter.presentedViewController { presenter = presented }
 
                 let host = UIHostingController(
-                    rootView: MetricInfoPanel(setGroup: setGroup)
-                        .padding()
-                        .frame(width: 320)
+                    rootView: MetricInfoPanel(setGroup: setGroup, onOpenDetail: { [weak self] metric in
+                        guard let exercise = setGroup.exercise else { return }
+                        self?.onOpenDetail(exercise, metric)
+                    })
+                    .padding()
+                    .frame(width: 320)
                 )
                 host.modalPresentationStyle = .popover
                 // Clear so the system popover material shows, matching the badge's own SwiftUI

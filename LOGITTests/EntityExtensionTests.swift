@@ -356,6 +356,70 @@ final class EntityExtensionTests: XCTestCase {
         XCTAssertEqual(set.maxRepetitionsEntry(for: exercise2).repetitions, 0)
     }
 
+    // MARK: - Exercise Current Best Tests
+
+    func testCurrentBestSetIgnoresSetsOutsideWindow() {
+        let exercise = builder.createExercise(name: "Test")
+        let oldWorkout = builder.createWorkout(date: Calendar.current.date(byAdding: .month, value: -2, to: .now)!)
+        builder.createStandardSet(repetitions: 5, weight: 100_000, exercise: exercise, workout: oldWorkout)
+        let recentWorkout = builder.createWorkout(date: Calendar.current.date(byAdding: .day, value: -7, to: .now)!)
+        let recentSet = builder.createStandardSet(repetitions: 8, weight: 80_000, exercise: exercise, workout: recentWorkout)
+
+        let best = exercise.currentBestSet(for: .weight)
+        XCTAssertEqual(best, recentSet, "The heavier set is outside the window, so the recent lighter set is the current best")
+    }
+
+    func testCurrentBestSetIncludesTodaysWorkout() {
+        let exercise = builder.createExercise(name: "Test")
+        let recentWorkout = builder.createWorkout(date: Calendar.current.date(byAdding: .day, value: -14, to: .now)!)
+        builder.createStandardSet(repetitions: 8, weight: 80_000, exercise: exercise, workout: recentWorkout)
+        let todaysWorkout = builder.createWorkout(date: .now)
+        let todaysSet = builder.createStandardSet(repetitions: 8, weight: 90_000, exercise: exercise, workout: todaysWorkout)
+
+        let best = exercise.currentBestSet(for: .weight)
+        XCTAssertEqual(best, todaysSet, "A set from the workout being recorded counts toward the current best")
+    }
+
+    func testCurrentBestSetIsMetricSpecific() {
+        let exercise = builder.createExercise(name: "Test")
+        let workout = builder.createWorkout(date: .now)
+        let heaviestSet = builder.createStandardSet(repetitions: 5, weight: 100_000, exercise: exercise, workout: workout)
+        let highestRepSet = builder.createStandardSet(repetitions: 12, weight: 60_000, exercise: exercise, workout: workout)
+
+        XCTAssertEqual(exercise.currentBestSet(for: .weight), heaviestSet)
+        XCTAssertEqual(exercise.currentBestSet(for: .repetitions), highestRepSet)
+    }
+
+    func testCurrentBestSetForE1RMSkipsHighRepSets() {
+        let exercise = builder.createExercise(name: "Test")
+        let workout = builder.createWorkout(date: .now)
+        // 15 reps is above the e1RM reliability cutoff, so this set has no e1RM at all.
+        builder.createStandardSet(repetitions: 15, weight: 100_000, exercise: exercise, workout: workout)
+        let lowRepSet = builder.createStandardSet(repetitions: 5, weight: 80_000, exercise: exercise, workout: workout)
+
+        let best = exercise.currentBestSet(for: .estimatedOneRepMax)
+        XCTAssertEqual(best, lowRepSet, "Sets above the rep cutoff don't produce an e1RM and can't be the current best")
+    }
+
+    func testCurrentBestSetNilWithoutUsableSetsInWindow() {
+        let exercise = builder.createExercise(name: "Test")
+        let oldWorkout = builder.createWorkout(date: Calendar.current.date(byAdding: .month, value: -3, to: .now)!)
+        builder.createStandardSet(repetitions: 5, weight: 100_000, exercise: exercise, workout: oldWorkout)
+
+        XCTAssertNil(exercise.currentBestSet(for: .weight), "Only sets older than the window exist")
+        XCTAssertNil(exercise.currentBestSet(for: .estimatedOneRepMax))
+    }
+
+    func testCurrentBestSetRespectsNarrowedCandidates() {
+        let exercise = builder.createExercise(name: "Test")
+        let workout = builder.createWorkout(date: .now)
+        builder.createStandardSet(repetitions: 5, weight: 100_000, exercise: exercise, workout: workout)
+        let lighterSet = builder.createStandardSet(repetitions: 8, weight: 70_000, exercise: exercise, workout: workout)
+
+        let best = exercise.currentBestSet(for: .weight, in: [lighterSet])
+        XCTAssertEqual(best, lighterSet, "Narrowed candidate list excludes the heavier set")
+    }
+
     // MARK: - Workout Extension Tests
     
     func testWorkoutIsEmpty() {

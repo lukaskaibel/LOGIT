@@ -40,12 +40,12 @@ struct ExerciseWeightTile: View {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading) {
                             VStack(alignment: .leading) {
-                                Text(NSLocalizedString("bestLastMonth", comment: ""))
+                                Text(NSLocalizedString("currentBest", comment: ""))
                                     .foregroundStyle(.secondary)
                                     .font(.footnote)
                                     .fontWeight(.semibold)
                                 UnitView(
-                                    value: bestWeightThisMonth(workoutSets) != nil ? formatWeightForDisplay(bestWeightThisMonth(workoutSets)!) : "––",
+                                    value: currentBestWeight(workoutSets) != nil ? formatWeightForDisplay(currentBestWeight(workoutSets)!) : "––",
                                     unit: WeightUnit.used.rawValue.uppercased(),
                                     configuration: .large
                                 )
@@ -178,19 +178,10 @@ struct ExerciseWeightTile: View {
         exercise.muscleGroup?.color ?? Color.accentColor
     }
 
-    private var visibleChartDomainInSeconds: Int {
-        3600 * 24 * 35
-    }
 
-    private func bestWeightThisMonth(_ workoutSets: [WorkoutSet]) -> Int? {
-        let startDate = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: .now)!
-        let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= startDate }
-        guard !setsInTimeFrame.isEmpty else {
-            return 0
-        }
-        return setsInTimeFrame
+    private func currentBestWeight(_ workoutSets: [WorkoutSet]) -> Int? {
+        exercise.currentBestSet(for: .weight, in: workoutSets)
             .map { $0.maximum(.weight, for: exercise) }
-            .max()
     }
 
     private func allTimeWeightPREntry(in workoutSets: [WorkoutSet]) -> (String, Int, Date?) {

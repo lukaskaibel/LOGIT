@@ -79,6 +79,40 @@ extension Exercise {
 
 }
 
+// MARK: - Current Best
+
+extension Exercise {
+    /// Start of the "current best" window: one month back from now.
+    ///
+    /// "Current best" is the app-wide term for the best value of a metric within the last month,
+    /// *including* the workout currently being recorded — a measure of present capability, unlike
+    /// the all-time "personal best". Shown on the in-workout metric badge, its info popover, and
+    /// the exercise tiles; whenever a value is labeled "current best" it must come from this window.
+    static var currentBestWindowStart: Date {
+        Calendar.current.date(byAdding: .month, value: -1, to: .now) ?? .now
+    }
+
+    /// The set holding this exercise's current best (see `currentBestWindowStart`) for `metric`,
+    /// or nil if no set in the window has a usable value. Returning the set (not just the number)
+    /// lets callers show the paired entry — e.g. the reps that accompanied the heaviest weight.
+    /// `sets` narrows the candidates (e.g. a tile's pre-filtered sets); defaults to all sets.
+    func currentBestSet(for metric: ExercisePrimaryMetric, in sets: [WorkoutSet]? = nil) -> WorkoutSet? {
+        let windowStart = Self.currentBestWindowStart
+        let candidates = (sets ?? self.sets).filter { ($0.workout?.date ?? .distantPast) >= windowStart }
+
+        func value(_ workoutSet: WorkoutSet) -> Int {
+            switch metric {
+            case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: self)
+            case .weight: return workoutSet.maximum(.weight, for: self)
+            case .repetitions: return workoutSet.maximum(.repetitions, for: self)
+            }
+        }
+
+        guard let best = candidates.max(by: { value($0) < value($1) }), value(best) > 0 else { return nil }
+        return best
+    }
+}
+
 extension Array: Identifiable where Element: Exercise {
     public var id: NSManagedObjectID {
         first?.objectID ?? NSManagedObjectID()

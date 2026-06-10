@@ -38,7 +38,6 @@
 
 "back" = "Rücken";
 "best" = "Max";
-"bestLastMonth" = "Max letzten Monat";
 "bestPerDay" = "Höchstes pro Tag";
 "bestThisMonth" = "Max diesen Monat";
 "bestWeightPerDay" = "Höchstes Gewicht pro Tag";
@@ -74,8 +73,8 @@
 "createTemplate" = "Vorlage erstellen";
 "creatingTemplateFailed" = "Generieren Fehlgeschlagen";
 "creatingTemplateFailedText" = "Stelle sicher, dass das Bild ein Workout enthält.";
-"currentBest" = "Bestwert";
-"currentBestInfo" = "Bestwert zeigt deinen besten Versuch dieses Monats oder, falls keiner vorhanden ist, deinen letzten vorherigen Versuch.";
+"currentBest" = "Aktueller Bestwert";
+"currentBestInfo" = "Dein aktueller Bestwert ist der höchste Wert aus dem letzten Monat – einschließlich dieses Workouts.";
 "currentWorkout" = "Aktuelles Workout";
 
 // MARK: - D

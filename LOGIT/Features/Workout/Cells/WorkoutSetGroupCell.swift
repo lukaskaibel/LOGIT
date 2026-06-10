@@ -798,13 +798,16 @@ private struct MetricBadgeView: View {
         }
     }
 
+    /// The badge label is the plain metric name — it makes no timeframe claim (the value is the
+    /// *current best*, not an all-time max, so "Max Weight" would over-claim), and it keeps the
+    /// two pair-rendered metrics distinguishable. The popover explains the current-best window.
     private func label(for metric: ExercisePrimaryMetric, display: MetricDisplay) -> String {
         switch display {
         case .e1RM: return NSLocalizedString("e1RM", comment: "")
         case let .pair(_, _, emphasize):
             return emphasize == .weight
-                ? NSLocalizedString("maxWeight", comment: "")
-                : NSLocalizedString("maxReps", comment: "")
+                ? NSLocalizedString("weight", comment: "")
+                : NSLocalizedString("repetitions", comment: "")
         case .empty: return metric.title
         }
     }
@@ -818,27 +821,42 @@ private struct MetricBadgeView: View {
         }
     }
 
-    // MARK: - Set-group bests (current unit base: grams for weight/e1RM, count for reps)
+    // MARK: - Displayed values: the exercise's *current best* (last month, incl. this workout)
+
+    /// The badge is an overview of the lifter's current standing for the exercise — what to beat
+    /// today — not a readout of this session (the set rows below already show that). Values come
+    /// from `Exercise.currentBestSet`, so they match the exercise-detail tiles; at workout start
+    /// the badge immediately shows the standing best instead of "––".
 
     private func bestE1RMGrams() -> Int? {
-        let best = setGroupBest(.estimatedOneRepMax)
-        return best > 0 ? best : nil
+        guard let exercise = setGroup.exercise,
+              let best = exercise.currentBestSet(for: .estimatedOneRepMax)
+        else { return nil }
+        let grams = best.estimatedOneRepMax(for: exercise)
+        return grams > 0 ? grams : nil
     }
 
     private func bestWeightEntry() -> (weight: Int64, reps: Int64)? {
-        guard let exercise = setGroup.exercise else { return nil }
-        let entries = setGroup.sets.map { $0.maxWeightEntry(for: exercise) }
-        guard let best = entries.max(by: { $0.weight < $1.weight }), best.weight > 0 else { return nil }
-        return (best.weight, best.repetitions)
+        guard let exercise = setGroup.exercise,
+              let best = exercise.currentBestSet(for: .weight)
+        else { return nil }
+        let entry = best.maxWeightEntry(for: exercise)
+        guard entry.weight > 0 else { return nil }
+        return (entry.weight, entry.repetitions)
     }
 
     private func bestRepsEntry() -> (reps: Int64, weight: Int64)? {
-        guard let exercise = setGroup.exercise else { return nil }
-        let entries = setGroup.sets.map { $0.maxRepetitionsEntry(for: exercise) }
-        guard let best = entries.max(by: { $0.repetitions < $1.repetitions }), best.repetitions > 0 else { return nil }
-        return (best.repetitions, best.weight)
+        guard let exercise = setGroup.exercise,
+              let best = exercise.currentBestSet(for: .repetitions)
+        else { return nil }
+        let entry = best.maxRepetitionsEntry(for: exercise)
+        guard entry.repetitions > 0 else { return nil }
+        return (entry.repetitions, entry.weight)
     }
 
+    // MARK: - Record detection (session vs all-time — intentionally NOT the current-best window)
+
+    /// This set group's best — what the *session* achieved, used only to detect records.
     private func setGroupBest(_ metric: ExercisePrimaryMetric) -> Int {
         guard let exercise = setGroup.exercise else { return 0 }
         switch metric {
@@ -1058,7 +1076,7 @@ struct MetricInfoPanel: View {
 
             HStack(alignment: .bottom, spacing: 12) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(selectedMetric.title)
+                    Text(NSLocalizedString("currentBest", comment: ""))
                         .font(.footnote)
                         .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
@@ -1073,10 +1091,13 @@ struct MetricInfoPanel: View {
                 metricChart(for: selectedMetric, color: color)
             }
 
-            Text(explanation(for: selectedMetric))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(explanation(for: selectedMetric))
+                Text(NSLocalizedString("currentBestInfo", comment: ""))
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
 
             Label(NSLocalizedString("swipeForMetrics", comment: ""), systemImage: "hand.draw")
                 .font(.caption)
@@ -1103,14 +1124,15 @@ struct MetricInfoPanel: View {
 
     // MARK: - Value
 
-    /// This set group's current value for `metric`, formatted for display.
+    /// The exercise's current best for `metric` (same window as the badge), formatted for display.
     private func panelValue(for metric: ExercisePrimaryMetric) -> String {
-        let base = setGroupBest(metric)
-        guard base > 0 else { return "––" }
+        guard let exercise = setGroup.exercise,
+              let best = exercise.currentBestSet(for: metric)
+        else { return "––" }
         switch metric {
-        case .estimatedOneRepMax: return formatEstimatedOneRepMax(base)
-        case .weight: return formatWeightForDisplay(Int64(base))
-        case .repetitions: return String(base)
+        case .estimatedOneRepMax: return formatEstimatedOneRepMax(best.estimatedOneRepMax(for: exercise))
+        case .weight: return formatWeightForDisplay(Int64(best.maximum(.weight, for: exercise)))
+        case .repetitions: return String(best.maximum(.repetitions, for: exercise))
         }
     }
 
@@ -1118,15 +1140,6 @@ struct MetricInfoPanel: View {
         switch metric {
         case .estimatedOneRepMax, .weight: return WeightUnit.used.rawValue.uppercased()
         case .repetitions: return NSLocalizedString("reps", comment: "").uppercased()
-        }
-    }
-
-    private func setGroupBest(_ metric: ExercisePrimaryMetric) -> Int {
-        guard let exercise = setGroup.exercise else { return 0 }
-        switch metric {
-        case .estimatedOneRepMax: return setGroup.sets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
-        case .weight: return setGroup.sets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
-        case .repetitions: return setGroup.sets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
         }
     }
 
@@ -1169,8 +1182,9 @@ struct MetricInfoPanel: View {
         .sorted { $0.date < $1.date }
     }
 
+    /// Chart window == current-best window, so the chart's visible peak IS the headline value.
     private var chartStartDate: Date {
-        Calendar.current.date(byAdding: .day, value: -35, to: .now) ?? .now
+        Exercise.currentBestWindowStart
     }
 
     /// Trailing edge of the x-domain, pushed ~2 days past today so the latest point's symbol clears

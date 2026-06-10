@@ -34,7 +34,7 @@ struct PinnedExerciseE1RMTile: View {
                                 .font(.footnote)
                                 .fontWeight(.semibold)
                             UnitView(
-                                value: bestE1RMThisMonth(workoutSets) != nil ? formatEstimatedOneRepMax(bestE1RMThisMonth(workoutSets)!) : "––",
+                                value: currentBestE1RM(workoutSets) != nil ? formatEstimatedOneRepMax(currentBestE1RM(workoutSets)!) : "––",
                                 unit: WeightUnit.used.rawValue.uppercased(),
                                 configuration: .large
                             )
@@ -127,11 +127,9 @@ struct PinnedExerciseE1RMTile: View {
         }
     }
 
-    private func bestE1RMThisMonth(_ workoutSets: [WorkoutSet]) -> Int? {
-        workoutSets
-            .filter { ($0.workout?.date ?? .distantPast) > (Calendar.current.date(byAdding: .month, value: -1, to: .now) ?? .distantPast) }
+    private func currentBestE1RM(_ workoutSets: [WorkoutSet]) -> Int? {
+        exercise.currentBestSet(for: .estimatedOneRepMax, in: workoutSets)
             .map { $0.estimatedOneRepMax(for: exercise) }
-            .max()
     }
 
     private func allTimeE1RMPREntry(in workoutSets: [WorkoutSet]) -> (String, Int?, Date?) {

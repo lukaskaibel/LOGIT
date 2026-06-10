@@ -29,12 +29,12 @@ struct PinnedExerciseWeightTile: View {
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading) {
                         VStack(alignment: .leading) {
-                            Text(NSLocalizedString("bestLastMonth", comment: ""))
+                            Text(NSLocalizedString("weight", comment: ""))
                                 .foregroundStyle(.secondary)
                                 .font(.footnote)
                                 .fontWeight(.semibold)
                             UnitView(
-                                value: bestWeightThisMonth(workoutSets) != nil ? formatWeightForDisplay(bestWeightThisMonth(workoutSets)!) : "––",
+                                value: currentBestWeight(workoutSets) != nil ? formatWeightForDisplay(currentBestWeight(workoutSets)!) : "––",
                                 unit: WeightUnit.used.rawValue.uppercased(),
                                 configuration: .large
                             )
@@ -127,11 +127,9 @@ struct PinnedExerciseWeightTile: View {
         }
     }
 
-    private func bestWeightThisMonth(_ workoutSets: [WorkoutSet]) -> Int? {
-        workoutSets
-            .filter { ($0.workout?.date ?? .distantPast) > (Calendar.current.date(byAdding: .month, value: -1, to: .now) ?? .distantPast) }
+    private func currentBestWeight(_ workoutSets: [WorkoutSet]) -> Int? {
+        exercise.currentBestSet(for: .weight, in: workoutSets)
             .map { $0.maximum(.weight, for: exercise) }
-            .max()
     }
 
     private func allTimeWeightPREntry(in workoutSets: [WorkoutSet]) -> (String, Int?, Date?) {

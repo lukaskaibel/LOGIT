@@ -38,7 +38,6 @@
 
 "back" = "Back";
 "best" = "Best";
-"bestLastMonth" = "Best Last Month";
 "bestPerDay" = "Best per Day";
 "bestThisMonth" = "Best this Month";
 "bestWeightPerDay" = "Best Weight per Day";
@@ -75,7 +74,7 @@
 "creatingTemplateFailed" = "Creating Template Failed";
 "creatingTemplateFailedText" = "Make sure the selected image contains a workout.";
 "currentBest" = "Current Best";
-"currentBestInfo" = "Current Best displays your top attempt this month or, if none, your most recent prior attempt.";
+"currentBestInfo" = "Your current best is the highest value you've reached in the last month, including this workout.";
 "currentWorkout" = "Current Workout";
 
 // MARK: - D
@@ -838,6 +837,6 @@
 "maxWeight" = "Max Weight";
 "maxReps" = "Max Reps";
 
-"metricInfoWeight" = "The heaviest set you've logged for this exercise — the top weight and the reps you hit with it.";
-"metricInfoReps" = "Your highest-rep set for this exercise — the most reps and the weight you used.";
+"metricInfoWeight" = "Your heaviest set — the top weight and the reps you hit with it.";
+"metricInfoReps" = "Your highest-rep set — the most reps and the weight you used.";
 "swipeForMetrics" = "Swipe the badge up or down to switch metrics.";

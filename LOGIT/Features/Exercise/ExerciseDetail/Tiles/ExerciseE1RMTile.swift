@@ -40,12 +40,12 @@ struct ExerciseE1RMTile: View {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading) {
                             VStack(alignment: .leading) {
-                                Text(NSLocalizedString("bestLastMonth", comment: ""))
+                                Text(NSLocalizedString("currentBest", comment: ""))
                                     .foregroundStyle(.secondary)
                                     .font(.footnote)
                                     .fontWeight(.semibold)
                                 UnitView(
-                                    value: bestE1RMThisMonth(workoutSets) != nil ? formatEstimatedOneRepMax(bestE1RMThisMonth(workoutSets)!) : "––",
+                                    value: currentBestE1RM(workoutSets) != nil ? formatEstimatedOneRepMax(currentBestE1RM(workoutSets)!) : "––",
                                     unit: WeightUnit.used.rawValue.uppercased(),
                                     configuration: .large
                                 )
@@ -178,19 +178,10 @@ struct ExerciseE1RMTile: View {
         exercise.muscleGroup?.color ?? Color.accentColor
     }
 
-    private var visibleChartDomainInSeconds: Int {
-        3600 * 24 * 35
-    }
 
-    private func bestE1RMThisMonth(_ workoutSets: [WorkoutSet]) -> Int? {
-        let startDate = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: .now)!
-        let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= startDate }
-        guard !setsInTimeFrame.isEmpty else {
-            return 0
-        }
-        return setsInTimeFrame
+    private func currentBestE1RM(_ workoutSets: [WorkoutSet]) -> Int? {
+        exercise.currentBestSet(for: .estimatedOneRepMax, in: workoutSets)
             .map { $0.estimatedOneRepMax(for: exercise) }
-            .max()
     }
 
     private func allTimeE1RMPREntry(in workoutSets: [WorkoutSet]) -> (String, Int, Date?) {

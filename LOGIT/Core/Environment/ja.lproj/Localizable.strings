@@ -38,7 +38,6 @@
 
 "back" = "戻る";
 "best" = "最高";
-"bestLastMonth" = "先月のベスト";
 "bestPerDay" = "一日あたりのベスト";
 "bestThisMonth" = "今月のベスト";
 "bestWeightPerDay" = "1日あたりのベスト体重";
@@ -75,7 +74,7 @@
 "creatingTemplateFailed" = "テンプレートの作成に失敗しました";
 "creatingTemplateFailedText" = "選択した画像にワークアウトが含まれていることを確認してください。";
 "currentBest" = "現在のベスト";
-"currentBestInfo" = "「現在のベスト」には、今月の最高の試技が表示されます。ない場合は、最近の以前の試技が表示されます。";
+"currentBestInfo" = "現在のベストは、今回のワークアウトを含む直近1か月間の最高値です。";
 "currentWorkout" = "現在のトレーニング";
 
 // MARK: - D

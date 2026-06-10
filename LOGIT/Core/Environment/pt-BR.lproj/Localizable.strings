@@ -38,7 +38,6 @@
 
 "back" = "Voltar";
 "best" = "Melhor";
-"bestLastMonth" = "Melhor mês passado";
 "bestPerDay" = "Melhor por dia";
 "bestThisMonth" = "Melhor este mês";
 "bestWeightPerDay" = "Melhor peso por dia";
@@ -75,7 +74,7 @@
 "creatingTemplateFailed" = "Falha na criação do modelo";
 "creatingTemplateFailedText" = "Certifique-se de que a imagem selecionada contenha um treino.";
 "currentBest" = "Melhor atual";
-"currentBestInfo" = "A Melhor Atual exibe sua melhor tentativa neste mês ou, se nenhuma, sua tentativa anterior mais recente.";
+"currentBestInfo" = "Seu melhor atual é o valor mais alto que você alcançou no último mês, incluindo este treino.";
 "currentWorkout" = "Treino atual";
 
 // MARK: - D

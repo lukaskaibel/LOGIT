@@ -38,7 +38,6 @@
 
 "back" = "뒤로";
 "best" = "최상의";
-"bestLastMonth" = "지난 달 최고";
 "bestPerDay" = "하루 최고";
 "bestThisMonth" = "이번 달 최고";
 "bestWeightPerDay" = "일일 최고 체중";
@@ -75,7 +74,7 @@
 "creatingTemplateFailed" = "템플릿 생성 실패";
 "creatingTemplateFailedText" = "선택한 이미지에 운동이 포함되어 있는지 확인하세요.";
 "currentBest" = "현재 최고";
-"currentBestInfo" = "현재 최고 기록은 이번 달 최고의 시도를 표시하며, 없는 경우 가장 최근의 이전 시도를 표시합니다.";
+"currentBestInfo" = "현재 최고는 이번 운동을 포함해 최근 한 달 동안 달성한 최고 값입니다.";
 "currentWorkout" = "현재 운동";
 
 // MARK: - D

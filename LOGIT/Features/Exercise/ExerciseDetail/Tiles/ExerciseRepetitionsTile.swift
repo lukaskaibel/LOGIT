@@ -40,12 +40,12 @@ struct ExerciseRepetitionsTile: View {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading) {
                             VStack(alignment: .leading) {
-                                Text(NSLocalizedString("bestLastMonth", comment: ""))
+                                Text(NSLocalizedString("currentBest", comment: ""))
                                     .foregroundStyle(.secondary)
                                     .font(.footnote)
                                     .fontWeight(.semibold)
                                 UnitView(
-                                    value: bestRepetitionsThisMonth(workoutSets) != nil ? String(bestRepetitionsThisMonth(workoutSets)!) : "––",
+                                    value: currentBestRepetitions(workoutSets) != nil ? String(currentBestRepetitions(workoutSets)!) : "––",
                                     unit: NSLocalizedString("rps", comment: "").uppercased(),
                                     configuration: .large
                                 )
@@ -182,15 +182,9 @@ struct ExerciseRepetitionsTile: View {
         3600 * 24 * 35
     }
 
-    private func bestRepetitionsThisMonth(_ workoutSets: [WorkoutSet]) -> Int? {
-        let startDate = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: .now)!
-        let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= startDate }
-        guard !setsInTimeFrame.isEmpty else {
-            return 0
-        }
-        return setsInTimeFrame
+    private func currentBestRepetitions(_ workoutSets: [WorkoutSet]) -> Int? {
+        exercise.currentBestSet(for: .repetitions, in: workoutSets)
             .map { $0.maximum(.repetitions, for: exercise) }
-            .max()
     }
 
     private func allTimeRepetitionsPREntry(in workoutSets: [WorkoutSet]) -> (Int, String, Date?) {

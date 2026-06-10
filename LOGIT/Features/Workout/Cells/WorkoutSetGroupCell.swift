@@ -686,9 +686,10 @@ private struct MetricBadgeView: View {
         }
     }
 
-    /// Renders "5 × 45 kg" with a fixed order (reps × weight); only the colour moves — the
-    /// emphasised metric reads in the primary colour, the other in grey. Bodyweight sets (no weight)
-    /// fall back to showing reps alone.
+    /// Renders "5 rps × 100 kg" with a fixed order (reps × weight). Both numbers carry units so the
+    /// value reads on its own under the shared "Current Best" label; the emphasised metric is
+    /// full-size in the primary colour, the other a size smaller in grey. Bodyweight sets (no
+    /// weight) fall back to showing reps alone.
     @ViewBuilder
     private func pairView(
         reps: Int,
@@ -696,30 +697,40 @@ private struct MetricBadgeView: View {
         emphasize: MetricDisplay.Emphasis,
         primaryColor: Color
     ) -> some View {
-        let valueFont = Font.system(.subheadline, design: .rounded).weight(.bold)
-        let unitFont = Font.system(.caption2, design: .rounded).weight(.semibold)
-        let repsColor: Color = emphasize == .reps ? primaryColor : .secondary
-        let weightColor: Color = emphasize == .weight ? primaryColor : .secondary
         if weightGrams > 0 {
             HStack(alignment: .lastTextBaseline, spacing: 3) {
-                Text("\(reps)")
-                    .font(valueFont)
-                    .foregroundStyle(repsColor)
+                pairPart(
+                    value: "\(reps)",
+                    unit: NSLocalizedString("reps", comment: ""),
+                    isEmphasized: emphasize == .reps,
+                    primaryColor: primaryColor
+                )
                 Text("×")
-                    .font(unitFont)
+                    .font(.system(.caption2, design: .rounded).weight(.semibold))
                     .foregroundStyle(Color.secondary)
-                HStack(alignment: .lastTextBaseline, spacing: 2) {
-                    Text(formatWeightForDisplay(weightGrams))
-                        .font(valueFont)
-                    Text(WeightUnit.used.rawValue)
-                        .font(unitFont)
-                }
-                .foregroundStyle(weightColor)
+                pairPart(
+                    value: formatWeightForDisplay(weightGrams),
+                    unit: WeightUnit.used.rawValue,
+                    isEmphasized: emphasize == .weight,
+                    primaryColor: primaryColor
+                )
             }
         } else {
             UnitView(value: "\(reps)", unit: NSLocalizedString("reps", comment: ""), configuration: .small)
                 .foregroundStyle(primaryColor)
         }
+    }
+
+    /// One side of the pair: number + unit, full-size and coloured when it's the selected metric,
+    /// a size smaller and grey otherwise.
+    private func pairPart(value: String, unit: String, isEmphasized: Bool, primaryColor: Color) -> some View {
+        HStack(alignment: .lastTextBaseline, spacing: 2) {
+            Text(value)
+                .font(.system(isEmphasized ? .subheadline : .footnote, design: .rounded).weight(.bold))
+            Text(unit)
+                .font(.system(.caption2, design: .rounded).weight(.semibold))
+        }
+        .foregroundStyle(isEmphasized ? primaryColor : Color.secondary)
     }
 
     // MARK: - Gestures & actions
@@ -798,16 +809,13 @@ private struct MetricBadgeView: View {
         }
     }
 
-    /// The badge label is the plain metric name — it makes no timeframe claim (the value is the
-    /// *current best*, not an all-time max, so "Max Weight" would over-claim), and it keeps the
-    /// two pair-rendered metrics distinguishable. The popover explains the current-best window.
+    /// Pair-rendered metrics are labeled "Current Best" — the value identifies the metric by
+    /// itself (both numbers carry units, and the emphasised one is bigger and coloured). e1RM keeps
+    /// its name as the label: its value is a bare weight, so the label is what identifies it.
     private func label(for metric: ExercisePrimaryMetric, display: MetricDisplay) -> String {
         switch display {
         case .e1RM: return NSLocalizedString("e1RM", comment: "")
-        case let .pair(_, _, emphasize):
-            return emphasize == .weight
-                ? NSLocalizedString("weight", comment: "")
-                : NSLocalizedString("repetitions", comment: "")
+        case .pair: return NSLocalizedString("currentBest", comment: "")
         case .empty: return metric.title
         }
     }

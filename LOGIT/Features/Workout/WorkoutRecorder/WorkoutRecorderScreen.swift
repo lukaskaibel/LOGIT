@@ -47,6 +47,8 @@ struct WorkoutRecorderScreen: View {
     @State private var isShowingReorderSheet = false
     @State private var selectedRestDurationSet: WorkoutSet?
     @State private var exerciseForDetailSheet: Exercise?
+    @State private var metricInfoSetGroup: WorkoutSetGroup?
+    @State private var metricInfoSourceRect: CGRect?
     @State private var scrollToRecentAttempts = false
     @State private var sheetHeight: CGFloat = 0
     @State private var mediumSheetHeight: CGFloat = 0
@@ -78,6 +80,15 @@ struct WorkoutRecorderScreen: View {
                                     onTapPreviousSet: { scrollToRecentAttempts = true; exerciseForDetailSheet = $0 },
                                     onTapExerciseName: { scrollToRecentAttempts = false; exerciseForDetailSheet = $0 }
                                 )
+                                // A metric-badge tap routes here instead of presenting from the badge:
+                                // the badge sits behind the persistent exercise sheet, so a popover
+                                // presented from it would dismiss that sheet. The popover is instead
+                                // presented from the sheet's own view controller (below), anchored back
+                                // to the badge, so the sheet survives.
+                                .environment(\.metricInfoRequest) { setGroup, frame in
+                                    metricInfoSetGroup = setGroup
+                                    metricInfoSourceRect = frame
+                                }
                                 .padding(.horizontal)
                                 .padding(.top, 90)
                                 .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? UIScreen.main.bounds.height * 0.5 : BOTTOM_SHEET_SMALL)
@@ -89,6 +100,7 @@ struct WorkoutRecorderScreen: View {
                                         .padding(.top, 30)
                                 }
                                 .onChange(of: focusedIntegerFieldIndex) {
+                                    if isKbdTest || ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SCROLLTO") { return }
                                     if let id = focusedIntegerFieldIndex {
                                         withAnimation(.easeOut(duration: 0.25)) {
                                             proxy.scrollTo(id, anchor: .bottom)
@@ -100,6 +112,7 @@ struct WorkoutRecorderScreen: View {
                             .id(1)
                         }
                         .onAppear {
+                            if isKbdTest || ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SCROLLTO") { return }
                             withAnimation(.easeOut(duration: 0.25)) {
                                 proxy.scrollTo(1, anchor: .bottom)
                             }
@@ -108,7 +121,7 @@ struct WorkoutRecorderScreen: View {
                         .safeAreaInset(edge: .bottom) {
                             Color.clear.frame(height: 100)
                         }
-                        .sheet(isPresented: .constant(true)) {
+                        .sheet(isPresented: .constant(!isKbdTest && !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SHEET"))) {
                             NavigationStack {
                                 ExerciseSelectionScreen(
                                         selectedExercise: nil,
@@ -161,6 +174,19 @@ struct WorkoutRecorderScreen: View {
                                         }
                                         .presentationDragIndicator(.visible)
                                     }
+                                    // Presents the metric-info popover from the exercise sheet's view
+                                    // controller (not the badge's) so the persistent exercise sheet
+                                    // isn't torn down. See `metricInfoRequest`.
+                                    .background(
+                                        MetricInfoPopoverPresenter(
+                                            setGroup: metricInfoSetGroup,
+                                            anchorRect: metricInfoSourceRect,
+                                            onDismiss: {
+                                                metricInfoSetGroup = nil
+                                                metricInfoSourceRect = nil
+                                            }
+                                        )
+                                    )
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .onGeometryChange(for: CGFloat.self) {
@@ -233,29 +259,46 @@ struct WorkoutRecorderScreen: View {
                         updateProgress()
                     }
                     .onReceive(workoutRecorder.workout?.objectWillChange ?? ObservableObjectPublisher()) {
+                        if ProcessInfo.processInfo.arguments.contains("-UITEST_MINIMAL") { return }
                         updateProgress()
                     }
                     .onReceive(
                         NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
                             .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
                     ) { _ in
+                        if ProcessInfo.processInfo.arguments.contains("-UITEST_MINIMAL") { return }
                         checkForNewSetEntries()
                     }
                 }
-                Header
-                    .frame(maxHeight: .infinity, alignment: .top)
-                    .fullScreenDraggableCoverDragArea()
+                if !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_HEADER") {
+                    Header
+                        .frame(maxHeight: .infinity, alignment: .top)
+                        .fullScreenDraggableCoverDragArea()
+                }
             }
             .toolbar(.hidden, for: .navigationBar)
             .toolbar {
-                ToolbarItemsKeyboard
+                if ProcessInfo.processInfo.arguments.contains("-UITEST_SIMPLE_TOOLBAR") {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        HStack {
+                            Spacer()
+                            Button {} label: { Image(systemName: "chevron.up").keyboardToolbarButtonStyle() }
+                            Button {} label: { Image(systemName: "chevron.down").keyboardToolbarButtonStyle() }
+                            Button {} label: { Image(systemName: "keyboard.chevron.compact.down").keyboardToolbarButtonStyle() }
+                        }
+                    }
+                } else {
+                    ToolbarItemsKeyboard
+                }
             }
         }
         .onAppear {
             // onAppear called twice because of bug
             if !didAppear {
                 didAppear = true
-                setUpAutoSaveForWorkout()
+                if !ProcessInfo.processInfo.arguments.contains("-UITEST_MINIMAL") {
+                    setUpAutoSaveForWorkout()
+                }
                 exerciseSelectionPresentationDetent = workoutRecorder.workout?.isEmpty ?? true ? .medium : .height(BOTTOM_SHEET_SMALL)
                 enteredRepetitionSetIDs = workoutRecorder.workout.map {
                     workoutRecorder.repetitionEnteredSetIDs(in: $0)
@@ -263,6 +306,12 @@ struct WorkoutRecorderScreen: View {
 
                 if preventAutoLock {
                     UIApplication.shared.isIdleTimerDisabled = true
+                }
+
+                if isKbdTest {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+                        focusedIntegerFieldIndex = IntegerField.Index(primary: 0, secondary: 0, tertiary: 0)
+                    }
                 }
             }
         }
@@ -272,6 +321,14 @@ struct WorkoutRecorderScreen: View {
         .scrollDismissesKeyboard(.interactively)
         #if targetEnvironment(simulator)
             .statusBarHidden(true)
+        #endif
+    }
+
+    private var isKbdTest: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.arguments.contains("-UITEST_FOCUS_TITLE")
+        #else
+        return false
         #endif
     }
 
@@ -668,5 +725,115 @@ struct WorkoutRecorderView_Previews: PreviewProvider {
     static var previews: some View {
         PreviewWrapperView()
             .previewEnvironmentObjects()
+    }
+}
+
+// MARK: - Metric info popover
+
+/// Presents `MetricInfoPanel` as a real UIKit popover from the **persistent exercise sheet's view
+/// controller**, anchored at the badge's frame. A popover presented from the badge itself (root
+/// content, behind the sheet) makes UIKit dismiss the exercise sheet to present — presenting from
+/// the sheet's own controller nests the popover above it instead, like the recorder's other
+/// sheets. SwiftUI's `.popover` can't express this split between the presenting controller and the
+/// anchor location, hence the UIKit bridge. Embedded (invisibly) in the exercise sheet's content;
+/// presents whenever `setGroup` + `anchorRect` are non-nil. `anchorRect` is in global (window)
+/// coordinates; it lies outside the sheet's bounds, which UIKit accepts — the popover just
+/// positions next to the rect in window space.
+private struct MetricInfoPopoverPresenter: UIViewRepresentable {
+    let setGroup: WorkoutSetGroup?
+    let anchorRect: CGRect?
+    let onDismiss: () -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.onDismiss = onDismiss
+        if let setGroup, let anchorRect {
+            context.coordinator.presentIfNeeded(for: setGroup, anchoredAt: anchorRect, embeddedIn: uiView)
+        } else {
+            context.coordinator.dismissIfNeeded()
+        }
+    }
+
+    @MainActor
+    final class Coordinator: NSObject, UIPopoverPresentationControllerDelegate {
+        var onDismiss: () -> Void = {}
+        private weak var popover: UIViewController?
+        private var isPresenting = false
+
+        func presentIfNeeded(for setGroup: WorkoutSetGroup, anchoredAt globalRect: CGRect, embeddedIn embeddedView: UIView) {
+            guard !isPresenting, popover == nil else { return }
+            isPresenting = true
+            // Deferred: updateUIView runs mid-render, and UIKit presentation during a SwiftUI
+            // update is unreliable.
+            DispatchQueue.main.async { [weak embeddedView] in
+                guard let embeddedView, embeddedView.window != nil,
+                      let baseViewController = embeddedView.owningViewController
+                else {
+                    self.isPresenting = false
+                    return
+                }
+                var presenter = baseViewController
+                while let presented = presenter.presentedViewController { presenter = presented }
+
+                let host = UIHostingController(
+                    rootView: MetricInfoPanel(setGroup: setGroup)
+                        .padding()
+                        .frame(width: 320)
+                )
+                host.modalPresentationStyle = .popover
+                // Clear so the system popover material shows, matching the badge's own SwiftUI
+                // popover on other screens.
+                host.view.backgroundColor = .clear
+                host.sizingOptions = .preferredContentSize
+                host.preferredContentSize = host.sizeThatFits(
+                    in: CGSize(width: 320, height: UIView.layoutFittingCompressedSize.height)
+                )
+                host.overrideUserInterfaceStyle = presenter.traitCollection.userInterfaceStyle
+                if let popoverController = host.popoverPresentationController {
+                    popoverController.sourceView = embeddedView
+                    // SwiftUI's global space is the window's space; convert into the embedded
+                    // view's local space (the rect ends up above the sheet's bounds — fine).
+                    popoverController.sourceRect = embeddedView.convert(globalRect, from: nil)
+                    popoverController.permittedArrowDirections = [.up, .down]
+                    popoverController.delegate = self
+                }
+                self.popover = host
+                presenter.present(host, animated: true) { self.isPresenting = false }
+            }
+        }
+
+        func dismissIfNeeded() {
+            popover?.dismiss(animated: true)
+            popover = nil
+            isPresenting = false
+        }
+
+        // Keep it a popover on iPhone instead of adapting to a sheet.
+        func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle { .none }
+        func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle { .none }
+
+        func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+            popover = nil
+            onDismiss()
+        }
+    }
+}
+
+private extension UIView {
+    /// The view controller this view belongs to, via the responder chain.
+    var owningViewController: UIViewController? {
+        var responder: UIResponder? = next
+        while let current = responder {
+            if let viewController = current as? UIViewController { return viewController }
+            responder = current.next
+        }
+        return nil
     }
 }

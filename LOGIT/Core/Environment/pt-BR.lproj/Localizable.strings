@@ -193,8 +193,6 @@
 
 "maximumWeight" = "Peso Máximo";
 "maximumRepetitions" = "Repetições máximas";
-"maxReps" = "Máximo de repetições";
-"maxWeight" = "Peso máximo";
 "measurementBodyweight" = "Peso corporal";
 "measurementCaloriesBurned" = "Calorias queimadas";
 "chest" = "Peito";
@@ -825,3 +823,21 @@
 "previewPushup" = "Flexão";
 "previewSquats" = "Agachamentos";
 "previewBarbellCurl" = "Rosca direta";
+
+/* Estimated 1RM (e1RM) */
+"e1RM" = "e1RM";
+"estimatedOneRepMax" = "1RM estimado";
+"e1RMInfo" = "1RM estimado: o peso máximo que você provavelmente conseguiria levantar em uma única repetição, calculado a partir do seu peso e repetições (fórmula de Epley). Ela só é precisa em poucas repetições, por isso séries acima de 12 repetições não são contabilizadas.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Seu 1RM estimado neste mês é maior que no mês passado.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Seu 1RM estimado neste mês é menor que no mês passado.";
+"higherMaxE1RMThisYearThanLastYear" = "Seu 1RM estimado neste ano é maior que no ano passado.";
+"lowerMaxE1RMThisYearThanLastYear" = "Seu 1RM estimado neste ano é menor que no ano passado.";
+
+"progressMetric" = "Métrica de progresso";
+
+"maxWeight" = "Peso máx.";
+"maxReps" = "Reps. máx.";
+
+"metricInfoWeight" = "Sua série mais pesada neste exercício: o peso máximo e as repetições que você fez.";
+"metricInfoReps" = "Sua série com mais repetições: o número máximo de repetições e o peso usado.";
+"swipeForMetrics" = "Deslize o emblema para cima ou para baixo para trocar de métrica.";

@@ -283,7 +283,79 @@ final class EntityExtensionTests: XCTestCase {
         let maxReps = set.maximum(.repetitions, for: exercise2)
         XCTAssertEqual(maxReps, 0, "Should return 0 for wrong exercise")
     }
-    
+
+    // MARK: - WorkoutSet Max Entry Tests
+
+    func testStandardSetMaxWeightEntry() {
+        let exercise = builder.createExercise(name: "Test")
+        let set = builder.createStandardSet(repetitions: 15, weight: 50000, exercise: exercise)
+
+        let entry = set.maxWeightEntry(for: exercise)
+        XCTAssertEqual(entry.weight, 50000)
+        XCTAssertEqual(entry.repetitions, 15, "Paired reps come from the same set")
+    }
+
+    func testStandardSetMaxRepetitionsEntry() {
+        let exercise = builder.createExercise(name: "Test")
+        let set = builder.createStandardSet(repetitions: 15, weight: 50000, exercise: exercise)
+
+        let entry = set.maxRepetitionsEntry(for: exercise)
+        XCTAssertEqual(entry.repetitions, 15)
+        XCTAssertEqual(entry.weight, 50000, "Paired weight comes from the same set")
+    }
+
+    func testDropSetMaxWeightEntryUsesSameDrop() {
+        let exercise = builder.createExercise(name: "Test")
+        // Heaviest drop (60000) and most reps (12) are in *different* drops.
+        let dropSet = builder.createDropSet(
+            drops: [(10, 50000), (8, 60000), (12, 30000)],
+            exercise: exercise
+        )
+
+        let entry = dropSet.maxWeightEntry(for: exercise)
+        XCTAssertEqual(entry.weight, 60000, "Heaviest drop wins")
+        XCTAssertEqual(entry.repetitions, 8, "Reps must be the heaviest drop's, not the max reps")
+    }
+
+    func testDropSetMaxRepetitionsEntryUsesSameDrop() {
+        let exercise = builder.createExercise(name: "Test")
+        let dropSet = builder.createDropSet(
+            drops: [(10, 50000), (8, 60000), (12, 30000)],
+            exercise: exercise
+        )
+
+        let entry = dropSet.maxRepetitionsEntry(for: exercise)
+        XCTAssertEqual(entry.repetitions, 12, "Most-reps drop wins")
+        XCTAssertEqual(entry.weight, 30000, "Weight must be the most-reps drop's, not the max weight")
+    }
+
+    func testSuperSetMaxEntryForEachExercise() {
+        let exercise1 = builder.createExercise(name: "Curls")
+        let exercise2 = builder.createExercise(name: "Triceps")
+        let superSet = builder.createSuperSet(
+            repsFirst: 10,
+            repsSecond: 12,
+            weightFirst: 50000,
+            weightSecond: 40000,
+            firstExercise: exercise1,
+            secondExercise: exercise2
+        )
+
+        XCTAssertEqual(superSet.maxWeightEntry(for: exercise1).weight, 50000)
+        XCTAssertEqual(superSet.maxWeightEntry(for: exercise1).repetitions, 10)
+        XCTAssertEqual(superSet.maxRepetitionsEntry(for: exercise2).repetitions, 12)
+        XCTAssertEqual(superSet.maxRepetitionsEntry(for: exercise2).weight, 40000)
+    }
+
+    func testMaxEntryForWrongExerciseIsZero() {
+        let exercise1 = builder.createExercise(name: "Bench")
+        let exercise2 = builder.createExercise(name: "Squat")
+        let set = builder.createStandardSet(repetitions: 10, weight: 50000, exercise: exercise1)
+
+        XCTAssertEqual(set.maxWeightEntry(for: exercise2).weight, 0)
+        XCTAssertEqual(set.maxRepetitionsEntry(for: exercise2).repetitions, 0)
+    }
+
     // MARK: - Workout Extension Tests
     
     func testWorkoutIsEmpty() {
@@ -477,7 +549,40 @@ final class EntityExtensionTests: XCTestCase {
     func testWorkoutWithFutureDate() {
         let futureDate = Calendar.current.date(byAdding: .year, value: 1, to: Date())!
         let workout = database.newWorkout(name: "Future Workout", date: futureDate)
-        
+
         XCTAssertEqual(workout.date, futureDate, "Should handle future date")
+    }
+
+    // MARK: - OneRepMax Tests
+
+    func testOneRepMaxEpleyValue() {
+        // Epley: weight × (1 + reps/30). 100000 × (1 + 5/30) = 116667 (rounded).
+        XCTAssertEqual(OneRepMax.estimated(weight: 100000, repetitions: 5), 116667)
+    }
+
+    func testOneRepMaxSingleRep() {
+        // 100000 × (1 + 1/30) = 103333 (rounded).
+        XCTAssertEqual(OneRepMax.estimated(weight: 100000, repetitions: 1), 103333)
+    }
+
+    func testOneRepMaxZeroWeightOrRepsIsZero() {
+        XCTAssertEqual(OneRepMax.estimated(weight: 0, repetitions: 10), 0, "No weight → no estimate")
+        XCTAssertEqual(OneRepMax.estimated(weight: 50000, repetitions: 0), 0, "No reps → no estimate")
+    }
+
+    func testOneRepMaxAtReliableCutoffIsEstimated() {
+        // The last reliable rep count still produces an estimate.
+        XCTAssertEqual(OneRepMax.maxReliableRepetitions, 12)
+        XCTAssertGreaterThan(
+            OneRepMax.estimated(weight: 50000, repetitions: OneRepMax.maxReliableRepetitions),
+            0,
+            "Sets at the reliable cutoff should be estimated"
+        )
+    }
+
+    func testOneRepMaxAboveReliableCutoffIsExcluded() {
+        // Past the reliable range the estimate is unreliable, so none is reported.
+        XCTAssertEqual(OneRepMax.estimated(weight: 50000, repetitions: 13), 0)
+        XCTAssertEqual(OneRepMax.estimated(weight: 50000, repetitions: 20), 0)
     }
 }

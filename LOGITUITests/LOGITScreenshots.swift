@@ -164,6 +164,62 @@ final class LOGITScreenshots: XCTestCase {
         snapshot("05_WorkoutRecorder")
     }
 
+    // TEMP: capture the keyboard accessory toolbar via a REAL tap on a numeric
+    // set field. A real tap (unlike programmatic @FocusState focus) is what
+    // attaches the `.toolbar(.keyboard)` accessory, so this is the only way to
+    // screenshot the toolbar non-interactively.
+    func test99KeyboardToolbar() {
+        app.terminate()
+        app.launchArguments += ["-UITEST_SHOW_RECORDER", "1", "-UITEST_MINIMAL", "1"]
+        app.launch()
+
+        let benchpressCell = app.staticTexts
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Benchpress"))
+            .firstMatch
+        _ = benchpressCell.waitForExistence(timeout: 10)
+        waitABit(2)
+
+        let h = app.frame.height
+        var didTap = false
+        for field in app.textFields.allElementsBoundByIndex where field.isHittable {
+            let midY = field.frame.midY
+            if midY > h * 0.18, midY < h * 0.6 {
+                field.tap()
+                didTap = true
+                break
+            }
+        }
+        if !didTap {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)).tap()
+        }
+        waitABit(2)
+
+        let shot = XCUIScreen.main.screenshot()
+        let attachment = XCTAttachment(screenshot: shot)
+        attachment.name = "keyboard_toolbar_real"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    // TEMP: reference capture of a plain keyboard accessory toolbar (no
+    // draggable cover, no sheet) to compare the gap against the recorder.
+    func test98KeyboardPlain() {
+        app.terminate()
+        app.launchArguments += ["-UITEST_KBD_TEST", "1"]
+        app.launch()
+
+        let field = app.textFields.firstMatch
+        _ = field.waitForExistence(timeout: 10)
+        field.tap()
+        waitABit(2)
+
+        let shot = XCUIScreen.main.screenshot()
+        let attachment = XCTAttachment(screenshot: shot)
+        attachment.name = "keyboard_toolbar_plain"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     func test06SuperDropSet() {
         // Navigate to the seeded "Arm Day" workout which contains a super
         // set (Biceps Curls ↔ Triceps Extensions) immediately followed by

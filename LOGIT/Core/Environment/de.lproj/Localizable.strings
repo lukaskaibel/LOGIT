@@ -188,8 +188,6 @@
 
 "maximumWeight" = "Maximales Gewicht";
 "maximumRepetitions" = "Maximale Wiederholungen";
-"maxReps" = "Max Wdh";
-"maxWeight" = "Max Gewicht";
 "measurementBodyweight" = "Körpergewicht";
 "measurementCaloriesBurned" = "Verbrannte Kalorien";
 "chest" = "Brust";
@@ -821,3 +819,21 @@
 "previewPushup" = "Liegestütz";
 "previewSquats" = "Kniebeugen";
 "previewBarbellCurl" = "Langhantelcurl";
+
+/* Estimated 1RM (e1RM) */
+"e1RM" = "e1RM";
+"estimatedOneRepMax" = "Geschätztes 1RM";
+"e1RMInfo" = "Geschätztes 1RM: das Gewicht, das du wahrscheinlich für eine einzelne Wiederholung bewegen könntest – berechnet aus Gewicht und Wiederholungen (Epley-Formel). Sie ist nur bei niedrigen Wiederholungszahlen genau, daher werden Sätze über 12 Wiederholungen nicht berücksichtigt.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Dein geschätztes 1RM diesen Monat ist höher als letzten Monat.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Dein geschätztes 1RM diesen Monat ist niedriger als letzten Monat.";
+"higherMaxE1RMThisYearThanLastYear" = "Dein geschätztes 1RM dieses Jahr ist höher als letztes Jahr.";
+"lowerMaxE1RMThisYearThanLastYear" = "Dein geschätztes 1RM dieses Jahr ist niedriger als letztes Jahr.";
+
+"progressMetric" = "Fortschrittsmetrik";
+
+"maxWeight" = "Max. Gewicht";
+"maxReps" = "Max. Wdh.";
+
+"metricInfoWeight" = "Dein schwerster Satz für diese Übung — das höchste Gewicht und die Wiederholungen dazu.";
+"metricInfoReps" = "Dein Satz mit den meisten Wiederholungen — die höchste Wiederholungszahl und das Gewicht dazu.";
+"swipeForMetrics" = "Wische das Abzeichen nach oben oder unten, um die Metrik zu wechseln.";

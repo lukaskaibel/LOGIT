@@ -193,8 +193,6 @@
 
 "maximumWeight" = "Maximum Weight";
 "maximumRepetitions" = "Maximum Repetitions";
-"maxReps" = "Max Reps";
-"maxWeight" = "Max Weight";
 "measurementBodyweight" = "Bodyweight";
 "measurementCaloriesBurned" = "Calories Burned";
 "chest" = "Chest";
@@ -825,3 +823,21 @@
 "previewPushup" = "Push-up";
 "previewSquats" = "Squats";
 "previewBarbellCurl" = "Barbell Curl";
+
+/* Estimated 1RM (e1RM) */
+"e1RM" = "e1RM";
+"estimatedOneRepMax" = "Estimated 1RM";
+"e1RMInfo" = "Estimated 1-rep max: the most weight you could likely lift for a single rep, calculated from your weight and reps (Epley formula). It's only accurate at lower reps, so sets above 12 reps aren't counted.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Your estimated 1RM this month is higher than last month.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Your estimated 1RM this month is lower than last month.";
+"higherMaxE1RMThisYearThanLastYear" = "Your estimated 1RM this year is higher than last year.";
+"lowerMaxE1RMThisYearThanLastYear" = "Your estimated 1RM this year is lower than last year.";
+
+"progressMetric" = "Progress Metric";
+
+"maxWeight" = "Max Weight";
+"maxReps" = "Max Reps";
+
+"metricInfoWeight" = "The heaviest set you've logged for this exercise — the top weight and the reps you hit with it.";
+"metricInfoReps" = "Your highest-rep set for this exercise — the most reps and the weight you used.";
+"swipeForMetrics" = "Swipe the badge up or down to switch metrics.";

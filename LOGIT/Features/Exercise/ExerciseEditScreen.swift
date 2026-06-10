@@ -17,6 +17,7 @@ struct ExerciseEditScreen: View {
 
     @State private var exerciseName: String
     @State private var muscleGroup: MuscleGroup
+    @State private var primaryMetric: ExercisePrimaryMetric
     @State private var showingExerciseExistsAlert: Bool = false
     @State private var showingExerciseNameEmptyAlert: Bool = false
     @State private var showingInvalidNameAlert: Bool = false
@@ -40,6 +41,7 @@ struct ExerciseEditScreen: View {
         self.onEditFinished = onEditFinished
         _exerciseName = State(initialValue: initialExerciseName ?? exerciseToEdit?.displayName ?? "")
         _muscleGroup = State(initialValue: exerciseToEdit?.muscleGroup ?? initialMuscleGroup)
+        _primaryMetric = State(initialValue: exerciseToEdit?.primaryMetric ?? .estimatedOneRepMax)
     }
 
     // MARK: - Body
@@ -67,6 +69,20 @@ struct ExerciseEditScreen: View {
                         selectedMuscleGroup: optionalMuscleGroupBinding,
                         canBeNil: false
                     )
+                }
+
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("progressMetric", comment: ""))
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
+                    Picker(NSLocalizedString("progressMetric", comment: ""), selection: $primaryMetric) {
+                        ForEach(ExercisePrimaryMetric.allCases, id: \.self) { metric in
+                            Text(metric.title).tag(metric)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
                 }
                 Spacer()
             }
@@ -154,6 +170,7 @@ struct ExerciseEditScreen: View {
             )
         }
         database.save()
+        exercise.primaryMetric = primaryMetric
         dismiss()
         onEditFinished?(exercise)
     }

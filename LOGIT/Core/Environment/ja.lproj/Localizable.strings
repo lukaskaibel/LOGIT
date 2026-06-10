@@ -193,8 +193,6 @@
 
 "maximumWeight" = "最大重量";
 "maximumRepetitions" = "最大繰り返し回数";
-"maxReps" = "最大担当者";
-"maxWeight" = "最大重量";
 "measurementBodyweight" = "体重";
 "measurementCaloriesBurned" = "消費カロリー";
 "chest" = "胸";
@@ -825,3 +823,21 @@
 "previewPushup" = "プッシュアップ";
 "previewSquats" = "スクワット";
 "previewBarbellCurl" = "バーベルカール";
+
+/* Estimated 1RM (e1RM) */
+"e1RM" = "e1RM";
+"estimatedOneRepMax" = "推定1RM";
+"e1RMInfo" = "推定1RM：重量とレップ数から算出した、1回だけ挙げられると推定される最大重量です（Epley式）。この式は低レップ数でのみ正確なため、12レップを超えるセットはカウントされません。";
+"higherMaxE1RMThisMonthThanLastMonth" = "今月の推定1RMは先月より高くなっています。";
+"lowerMaxE1RMThisMonthThanLastMonth" = "今月の推定1RMは先月より低くなっています。";
+"higherMaxE1RMThisYearThanLastYear" = "今年の推定1RMは昨年より高くなっています。";
+"lowerMaxE1RMThisYearThanLastYear" = "今年の推定1RMは昨年より低くなっています。";
+
+"progressMetric" = "進捗指標";
+
+"maxWeight" = "最大重量";
+"maxReps" = "最大回数";
+
+"metricInfoWeight" = "この種目で記録した最も重いセット — 最大重量とその回数。";
+"metricInfoReps" = "この種目で最も回数の多いセット — 最大回数とその重量。";
+"swipeForMetrics" = "バッジを上下にスワイプして指標を切り替えます。";

@@ -10,6 +10,7 @@ import SwiftUI
 struct DropSetCell: View {
     // MARK: - Environment
 
+    @Environment(\.canEdit) private var canEdit
     @EnvironmentObject var database: Database
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
 
@@ -32,6 +33,8 @@ struct DropSetCell: View {
                                 onTapPreviousSet?(exercise)
                             }
                         }
+                        .opacity(canEdit && rowHasEntry(at: index) ? 0 : 1)
+                        .animation(.easeInOut(duration: 0.2), value: rowHasEntry(at: index))
                         IntegerField(
                             placeholder: repetitionsPlaceholder(for: dropSet).value(at: index) ?? 0,
                             value: repetitionsBinding(forIndex: index),
@@ -42,7 +45,10 @@ struct DropSetCell: View {
                                 tertiary: 0
                             ),
                             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                            unit: NSLocalizedString("reps", comment: "")
+                            unit: NSLocalizedString("reps", comment: ""),
+                            trend: repetitionsDelta(forIndex: index).comparison,
+                            trendText: repetitionsDelta(forIndex: index).text,
+                            trendColor: muscleColor
                         )
                         DecimalField(
                             placeholder: weightsPlaceholderDecimal(for: dropSet).value(at: index) ?? 0,
@@ -55,7 +61,10 @@ struct DropSetCell: View {
                                 tertiary: 1
                             ),
                             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                            unit: WeightUnit.used.rawValue
+                            unit: WeightUnit.used.rawValue,
+                            trend: weightDeltaResult(forIndex: index).comparison,
+                            trendText: weightDeltaResult(forIndex: index).text,
+                            trendColor: muscleColor
                         )
                     }
                 }
@@ -77,6 +86,29 @@ struct DropSetCell: View {
         else { return nil }
 
         return WorkoutSetReferenceValue(repetitions: repetitions, weight: weight)
+    }
+
+    private func rowHasEntry(at index: Int) -> Bool {
+        (dropSet.repetitions?.value(at: index) ?? 0) > 0
+            || (dropSet.weights?.value(at: index) ?? 0) > 0
+    }
+
+    private func repetitionsDelta(forIndex index: Int) -> (comparison: SetValueComparison?, text: String) {
+        repsDelta(
+            current: dropSet.repetitions?.value(at: index) ?? 0,
+            previous: referenceValue(forIndex: index)?.repetitions
+        )
+    }
+
+    private func weightDeltaResult(forIndex index: Int) -> (comparison: SetValueComparison?, text: String) {
+        weightDelta(
+            currentGrams: dropSet.weights?.value(at: index) ?? 0,
+            previousGrams: referenceValue(forIndex: index)?.weight
+        )
+    }
+
+    private var muscleColor: Color {
+        dropSet.setGroup?.exercise?.muscleGroup?.color ?? .accentColor
     }
 
     private func copyReferenceValues(forIndex index: Int) {

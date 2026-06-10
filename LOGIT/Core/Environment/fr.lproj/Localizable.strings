@@ -193,8 +193,6 @@
 
 "maximumWeight" = "Poids maximum";
 "maximumRepetitions" = "Répétitions maximales";
-"maxReps" = "Nombre maximum de répétitions";
-"maxWeight" = "Poids maximum";
 "measurementBodyweight" = "Poids corporel";
 "measurementCaloriesBurned" = "Calories brûlées";
 "chest" = "Poitrine";
@@ -825,3 +823,21 @@
 "previewPushup" = "Pompe";
 "previewSquats" = "Squats";
 "previewBarbellCurl" = "Curl barre";
+
+/* Estimated 1RM (e1RM) */
+"e1RM" = "e1RM";
+"estimatedOneRepMax" = "1RM estimé";
+"e1RMInfo" = "1RM estimé : la charge maximale que tu pourrais probablement soulever sur une seule répétition, calculée à partir de ton poids et de tes répétitions (formule d'Epley). Elle n'est précise qu'à faible nombre de répétitions ; les séries de plus de 12 répétitions ne sont donc pas comptabilisées.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Ton 1RM estimé ce mois-ci est plus élevé que le mois dernier.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Ton 1RM estimé ce mois-ci est plus bas que le mois dernier.";
+"higherMaxE1RMThisYearThanLastYear" = "Ton 1RM estimé cette année est plus élevé que l'an dernier.";
+"lowerMaxE1RMThisYearThanLastYear" = "Ton 1RM estimé cette année est plus bas que l'an dernier.";
+
+"progressMetric" = "Métrique de progression";
+
+"maxWeight" = "Poids max";
+"maxReps" = "Reps max";
+
+"metricInfoWeight" = "Ta série la plus lourde pour cet exercice : la charge maximale et les répétitions réalisées.";
+"metricInfoReps" = "Ta série avec le plus de répétitions : le nombre maximal de répétitions et la charge utilisée.";
+"swipeForMetrics" = "Fais glisser le badge vers le haut ou le bas pour changer de métrique.";

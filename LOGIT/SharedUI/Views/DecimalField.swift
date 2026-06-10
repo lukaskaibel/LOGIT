@@ -24,6 +24,9 @@ struct DecimalField: View {
     let index: IntegerField.Index
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
     var unit: String? = "kg"
+    var trend: SetValueComparison? = nil
+    var trendText: String = ""
+    var trendColor: Color = .accentColor
 
     // MARK: - State
 
@@ -115,6 +118,7 @@ struct DecimalField: View {
         .padding(.vertical, 5)
         .padding(.horizontal, 8)
         .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.000001))
+        .trendIndicatorOverlay(trend: trend, text: trendText, positiveColor: trendColor, isVisible: canEdit)
         .scaleEffect(isFocused ? 1.05 : 1.0)
         .animation(.spring(response: 0.35, dampingFraction: 0.6, blendDuration: 0), value: isFocused)
         .frame(minWidth: 100, alignment: .trailing)

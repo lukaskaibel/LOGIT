@@ -10,6 +10,7 @@ import SwiftUI
 struct StandardSetCell: View {
     // MARK: - Environment
 
+    @Environment(\.canEdit) private var canEdit
     @EnvironmentObject var database: Database
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
 
@@ -30,6 +31,8 @@ struct StandardSetCell: View {
                         onTapPreviousSet?(exercise)
                     }
                 }
+                .opacity(canEdit && standardSet.hasEntry ? 0 : 1)
+                .animation(.easeInOut(duration: 0.2), value: standardSet.hasEntry)
                 IntegerField(
                     placeholder: repetitionsPlaceholder(for: standardSet),
                     value: $standardSet.repetitions,
@@ -40,7 +43,10 @@ struct StandardSetCell: View {
                         tertiary: 0
                     ),
                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                    unit: NSLocalizedString("reps", comment: "")
+                    unit: NSLocalizedString("reps", comment: ""),
+                    trend: repetitionsDelta.comparison,
+                    trendText: repetitionsDelta.text,
+                    trendColor: muscleColor
                 )
                 DecimalField(
                     placeholder: weightPlaceholderDecimal(for: standardSet),
@@ -56,7 +62,10 @@ struct StandardSetCell: View {
                         tertiary: 1
                     ),
                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                    unit: WeightUnit.used.rawValue
+                    unit: WeightUnit.used.rawValue,
+                    trend: weightDeltaResult.comparison,
+                    trendText: weightDeltaResult.text,
+                    trendColor: muscleColor
                 )
             }
         }
@@ -68,12 +77,28 @@ struct StandardSetCell: View {
         standardSet.workout?.sets.firstIndex(of: standardSet)
     }
 
+    private var referenceStandardSet: StandardSet? {
+        referenceSet as? StandardSet
+    }
+
     private var referenceValue: WorkoutSetReferenceValue? {
-        guard let referenceStandardSet = referenceSet as? StandardSet else { return nil }
+        guard let referenceStandardSet else { return nil }
         return WorkoutSetReferenceValue(
             repetitions: referenceStandardSet.repetitions,
             weight: referenceStandardSet.weight
         )
+    }
+
+    private var repetitionsDelta: (comparison: SetValueComparison?, text: String) {
+        repsDelta(current: standardSet.repetitions, previous: referenceStandardSet?.repetitions)
+    }
+
+    private var weightDeltaResult: (comparison: SetValueComparison?, text: String) {
+        weightDelta(currentGrams: standardSet.weight, previousGrams: referenceStandardSet?.weight)
+    }
+
+    private var muscleColor: Color {
+        standardSet.setGroup?.exercise?.muscleGroup?.color ?? .accentColor
     }
 
     private func copyReferenceValues() {

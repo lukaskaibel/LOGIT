@@ -96,3 +96,12 @@ public func formatWeightForDisplay(_ value: Int64) -> String {
 public func formatWeightForDisplay(_ value: Int) -> String {
     return formatWeightForDisplay(Int64(value))
 }
+
+/// Formats an estimated 1RM (stored in grams) as a clean, whole-number display string.
+/// e1RM is a calculated estimate, so it is rounded to the nearest whole display unit
+/// rather than carrying the fractional noise the Epley formula produces.
+/// - Parameter grams: Estimated 1RM in grams
+/// - Returns: Whole-number string in the user's weight unit (kg or lbs)
+public func formatEstimatedOneRepMax(_ grams: Int) -> String {
+    return String(Int(convertWeightForDisplayingDecimal(grams).rounded()))
+}

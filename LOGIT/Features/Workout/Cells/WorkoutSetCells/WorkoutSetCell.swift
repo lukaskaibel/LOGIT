@@ -74,7 +74,6 @@ struct WorkoutSetCell: View {
                         .fontDesign(.rounded)
                         .foregroundStyle(.secondary)
                         .fixedSize()
-                    Spacer()
                     setContent
                 }
                 if let dropSet = workoutSet as? DropSet, canEdit {
@@ -263,8 +262,39 @@ struct PreviousSetReferenceLabel: View {
         .font(.system(.caption, design: .rounded, weight: .semibold))
         .monospacedDigit()
         .foregroundStyle(.tertiary)
-        .frame(width: 95, alignment: .trailing)
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
+}
+
+// MARK: - Set Value Delta Helpers
+
+/// Compares an entered repetition count against the previous workout's value.
+/// Returns `(nil, "")` when there is nothing meaningful to show (no reference,
+/// empty entry, or unchanged).
+func repsDelta(current: Int64, previous: Int64?) -> (comparison: SetValueComparison?, text: String) {
+    guard let previous, previous > 0, current > 0, current != previous else { return (nil, "") }
+    return (current > previous ? .improved : .declined, String(abs(current - previous)))
+}
+
+/// Compares an entered weight (in grams) against the previous workout's value.
+/// Direction and text are computed in display units (kg/lbs) so they match what the
+/// user sees and avoid rounding artefacts from differencing raw gram values.
+func weightDelta(currentGrams: Int64, previousGrams: Int64?) -> (comparison: SetValueComparison?, text: String) {
+    guard let previousGrams, previousGrams > 0, currentGrams > 0 else { return (nil, "") }
+    let current = convertWeightForDisplayingDecimal(currentGrams)
+    let previous = convertWeightForDisplayingDecimal(previousGrams)
+    guard current != previous else { return (nil, "") }
+    return (current > previous ? .improved : .declined, formatDisplayWeightDelta(abs(current - previous)))
+}
+
+private func formatDisplayWeightDelta(_ value: Double) -> String {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .decimal
+    formatter.minimumFractionDigits = 0
+    formatter.maximumFractionDigits = 3
+    formatter.decimalSeparator = "."
+    formatter.groupingSeparator = ""
+    return formatter.string(from: NSNumber(value: value)) ?? "0"
 }
 
 // MARK: - Preview

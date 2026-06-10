@@ -31,6 +31,7 @@ struct ExerciseDetailScreen: View {
     @State private var showingEditExercise = false
     @State private var isShowingExerciseHistoryScreen = false
     @State private var isShowingWeightScreen = false
+    @State private var isShowingE1RMScreen = false
     @State private var isShowingRepetitionsScreen = false
     @State private var isShowingVolumeScreen = false
     @State private var isShowingInstructions = false
@@ -65,6 +66,12 @@ struct ExerciseDetailScreen: View {
                             isShowingWeightScreen = true
                         } label: {
                             ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
+                        }
+                        .buttonStyle(TileButtonStyle())
+                        Button {
+                            isShowingE1RMScreen = true
+                        } label: {
+                            ExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets)
                         }
                         .buttonStyle(TileButtonStyle())
                         Button {
@@ -229,6 +236,9 @@ struct ExerciseDetailScreen: View {
             }
             .navigationDestination(isPresented: $isShowingWeightScreen) {
                 ExerciseWeightScreen(exercise: exercise, workoutSets: workoutSets)
+            }
+            .navigationDestination(isPresented: $isShowingE1RMScreen) {
+                ExerciseE1RMScreen(exercise: exercise, workoutSets: workoutSets)
             }
             .navigationDestination(isPresented: $isShowingRepetitionsScreen) {
                 ExerciseRepetitionsScreen(exercise: exercise, workoutSets: workoutSets)

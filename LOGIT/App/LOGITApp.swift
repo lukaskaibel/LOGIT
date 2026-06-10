@@ -37,7 +37,10 @@ struct LOGIT: App {
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingStartWorkoutSheet = false
     @State private var isShowingLiveActivityShowcase = false
-    
+    #if DEBUG
+    @State private var isShowingKbdTest = false
+    #endif
+
     // Import handling state
     @State private var importedWorkout: Workout?
     @State private var importedTemplate: Template?
@@ -183,10 +186,25 @@ struct LOGIT: App {
                         try? await Task.sleep(nanoseconds: 300_000_000)
                         isShowingLiveActivityShowcase = true
                     }
+                    #if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("-UITEST_KBD_TEST") {
+                        try? await Task.sleep(nanoseconds: 300_000_000)
+                        isShowingKbdTest = true
+                    }
+                    #endif
                 }
                 .fullScreenCover(isPresented: $isShowingLiveActivityShowcase) {
                     LiveActivityShowcaseView()
                 }
+                #if DEBUG
+                .fullScreenDraggableCover(isPresented: $isShowingKbdTest) {
+                    KbdToolbarReferenceView()
+                        .environmentObject(database)
+                        .environmentObject(workoutRecorder)
+                        .environmentObject(muscleGroupService)
+                        .environmentObject(chronograph)
+                }
+                #endif
                 .preferredColorScheme(.dark)
                 .onAppear {
                     // Fixes issue with Alerts and Confirmation Dialogs not in dark mode
@@ -473,3 +491,85 @@ extension EnvironmentValues {
         set { self[DismissWorkoutRecorderKey.self] = newValue }
     }
 }
+
+#if DEBUG
+// TEMP: reference screen to compare the keyboard accessory toolbar gap in a
+// plain context (no draggable cover, no sheet). Presented via -UITEST_KBD_TEST.
+struct KbdToolbarReferenceView: View {
+    // Observe the same heavy objects the recorder does (chronograph publishes
+    // on a timer) to see if continuous re-render collapses the toolbar gap.
+    @EnvironmentObject private var database: Database
+    @EnvironmentObject private var workoutRecorder: WorkoutRecorder
+    @EnvironmentObject private var muscleGroupService: MuscleGroupService
+    @EnvironmentObject private var chronograph: Chronograph
+
+    @State private var texts: [String] = Array(repeating: "0", count: 12)
+    @State private var showFullToolbar = false
+    @FocusState private var focusedField: Int?
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                ScrollViewReader { _ in
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            Color.clear.frame(height: 320)
+                            ForEach(0..<12, id: \.self) { i in
+                                TextField("0", text: $texts[i])
+                                    .focused($focusedField, equals: i)
+                                    .keyboardType(.numberPad)
+                                    .font(.system(.title3, design: .rounded, weight: .bold))
+                                    .multilineTextAlignment(.center)
+                                    .fixedSize()
+                                    .foregroundStyle(focusedField == i ? Color.black : Color.white)
+                                    .padding(.vertical, 5)
+                                    .padding(.horizontal, 8)
+                                    .background(focusedField == i ? Color.white : Color.black.opacity(0.000001))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .scaleEffect(focusedField == i ? 1.05 : 1.0)
+                                    .animation(.spring(response: 0.35, dampingFraction: 0.6, blendDuration: 0), value: focusedField)
+                                    .frame(minWidth: 100, alignment: .trailing)
+                                    .onTapGesture { focusedField = i }
+                            }
+                            .onChange(of: focusedField) { _, newValue in
+                                showFullToolbar = newValue != nil
+                            }
+                            Color.clear.frame(height: 320)
+                        }
+                    }
+                    .scrollIndicators(.hidden)
+                    .safeAreaInset(edge: .bottom) {
+                        Color.clear.frame(height: 100)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.background)
+            .toolbar(.hidden, for: .navigationBar)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    HStack {
+                        Spacer()
+                        if showFullToolbar {
+                            Button {} label: {
+                                Image(systemName: "chevron.up").keyboardToolbarButtonStyle()
+                            }
+                            Button {} label: {
+                                Image(systemName: "chevron.down").keyboardToolbarButtonStyle()
+                            }
+                        }
+                        Button {} label: {
+                            Image(systemName: "keyboard.chevron.compact.down").keyboardToolbarButtonStyle()
+                        }
+                        if showFullToolbar {
+                            Spacer()
+                        }
+                    }
+                }
+            }
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .statusBarHidden(true)
+    }
+}
+#endif

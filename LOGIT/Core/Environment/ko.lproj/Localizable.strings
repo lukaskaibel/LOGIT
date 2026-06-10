@@ -193,8 +193,6 @@
 
 "maximumWeight" = "최대 중량";
 "maximumRepetitions" = "최대 반복";
-"maxReps" = "최대 반복수";
-"maxWeight" = "최대 무게";
 "measurementBodyweight" = "체중";
 "measurementCaloriesBurned" = "칼로리 소모량";
 "chest" = "가슴";
@@ -825,3 +823,21 @@
 "previewPushup" = "푸시업";
 "previewSquats" = "스쿼트";
 "previewBarbellCurl" = "바벨 컬";
+
+/* Estimated 1RM (e1RM) */
+"e1RM" = "e1RM";
+"estimatedOneRepMax" = "예상 1RM";
+"e1RMInfo" = "예상 1RM: 중량과 반복 횟수로 계산한, 한 번에 들 수 있을 것으로 추정되는 최대 중량입니다(Epley 공식). 이 공식은 낮은 반복 횟수에서만 정확하므로 12회를 초과하는 세트는 집계되지 않습니다.";
+"higherMaxE1RMThisMonthThanLastMonth" = "이번 달 예상 1RM이 지난달보다 높습니다.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "이번 달 예상 1RM이 지난달보다 낮습니다.";
+"higherMaxE1RMThisYearThanLastYear" = "올해 예상 1RM이 작년보다 높습니다.";
+"lowerMaxE1RMThisYearThanLastYear" = "올해 예상 1RM이 작년보다 낮습니다.";
+
+"progressMetric" = "진행 지표";
+
+"maxWeight" = "최대 중량";
+"maxReps" = "최대 횟수";
+
+"metricInfoWeight" = "이 운동에서 기록한 가장 무거운 세트 — 최고 중량과 그때의 횟수.";
+"metricInfoReps" = "이 운동에서 횟수가 가장 많은 세트 — 최대 횟수와 그때의 중량.";
+"swipeForMetrics" = "배지를 위아래로 스와이프하여 지표를 전환하세요.";

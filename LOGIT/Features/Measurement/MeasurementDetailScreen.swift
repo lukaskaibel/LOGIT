@@ -64,7 +64,7 @@ struct MeasurementDetailScreen: View {
         .onAppear {
             initializeChartScrollPosition()
         }
-        .onChange(of: chartGranularity) { _ in
+        .onChange(of: chartGranularity) {
             initializeChartScrollPosition()
         }
     }

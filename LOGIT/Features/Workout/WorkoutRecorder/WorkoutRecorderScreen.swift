@@ -28,6 +28,11 @@ struct WorkoutRecorderScreen: View {
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     @EnvironmentObject private var chronograph: Chronograph
+    /// Re-injected into the metric-info popover's `UIHostingController` (environment objects don't
+    /// cross the UIKit bridge): the panel's Pro gate reads `purchaseManager`, and the upgrade
+    /// screen it can present needs both.
+    @EnvironmentObject private var purchaseManager: PurchaseManager
+    @EnvironmentObject private var networkMonitor: NetworkMonitor
 
     // MARK: - State
 
@@ -94,7 +99,7 @@ struct WorkoutRecorderScreen: View {
                                 }
                                 .padding(.horizontal)
                                 .padding(.top, 90)
-                                .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? UIScreen.main.bounds.height * 0.5 : BOTTOM_SHEET_SMALL)
+                                .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? (UIScreen.current?.bounds.height ?? 0) * 0.5 : BOTTOM_SHEET_SMALL)
                                 .emptyPlaceholder(workout.setGroups) {
                                     Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
                                         .foregroundStyle(Color.secondaryLabel)
@@ -189,6 +194,8 @@ struct WorkoutRecorderScreen: View {
                                         MetricInfoPopoverPresenter(
                                             setGroup: metricInfoSetGroup,
                                             anchorRect: metricInfoSourceRect,
+                                            purchaseManager: purchaseManager,
+                                            networkMonitor: networkMonitor,
                                             onDismiss: {
                                                 metricInfoSetGroup = nil
                                                 metricInfoSourceRect = nil
@@ -761,6 +768,10 @@ struct WorkoutRecorderView_Previews: PreviewProvider {
 private struct MetricInfoPopoverPresenter: UIViewRepresentable {
     let setGroup: WorkoutSetGroup?
     let anchorRect: CGRect?
+    /// Injected into the panel's hosting controller — environment objects don't cross the UIKit
+    /// bridge, and the panel's Pro gate (and the upgrade screen it presents) needs them.
+    let purchaseManager: PurchaseManager
+    let networkMonitor: NetworkMonitor
     let onDismiss: () -> Void
     /// Called when the panel's value/chart row is tapped: (exercise, metric) — the recorder closes
     /// this popover and opens the exercise-detail sheet at that metric's chart.
@@ -778,7 +789,13 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
         context.coordinator.onDismiss = onDismiss
         context.coordinator.onOpenDetail = onOpenDetail
         if let setGroup, let anchorRect {
-            context.coordinator.presentIfNeeded(for: setGroup, anchoredAt: anchorRect, embeddedIn: uiView)
+            context.coordinator.presentIfNeeded(
+                for: setGroup,
+                anchoredAt: anchorRect,
+                embeddedIn: uiView,
+                purchaseManager: purchaseManager,
+                networkMonitor: networkMonitor
+            )
         } else {
             context.coordinator.dismissIfNeeded()
         }
@@ -791,7 +808,13 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
         private weak var popover: UIViewController?
         private var isPresenting = false
 
-        func presentIfNeeded(for setGroup: WorkoutSetGroup, anchoredAt globalRect: CGRect, embeddedIn embeddedView: UIView) {
+        func presentIfNeeded(
+            for setGroup: WorkoutSetGroup,
+            anchoredAt globalRect: CGRect,
+            embeddedIn embeddedView: UIView,
+            purchaseManager: PurchaseManager,
+            networkMonitor: NetworkMonitor
+        ) {
             guard !isPresenting, popover == nil else { return }
             isPresenting = true
             // Deferred: updateUIView runs mid-render, and UIKit presentation during a SwiftUI
@@ -813,6 +836,8 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
                     })
                     .padding()
                     .frame(width: 320)
+                    .environmentObject(purchaseManager)
+                    .environmentObject(networkMonitor)
                 )
                 host.modalPresentationStyle = .popover
                 // Clear so the system popover material shows, matching the badge's own SwiftUI

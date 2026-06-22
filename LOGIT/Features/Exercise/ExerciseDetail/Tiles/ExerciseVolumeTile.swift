@@ -8,91 +8,118 @@
 import Charts
 import SwiftUI
 
+/// The full-width weekly volume tile on the exercise detail screen. Unlike the four "current
+/// best" tiles it answers "how much did I do *this week*", so its pill compares this week against
+/// last week — with the trophy when this week already tops every previous one — and its bar chart
+/// gets the whole row (bars need the horizontal room). Sets of the workout currently being
+/// recorded are excluded like everywhere on the tiles: the standings update when the session is
+/// logged.
 struct ExerciseVolumeTile: View {
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
 
+    private struct WeeklyVolume: Identifiable {
+        let week: Date
+        let volume: Int
+        var id: Date { week }
+    }
+
     var body: some View {
-        if workoutSets.isEmpty {
-            VStack {
-                tileHeader
-                Spacer()
-                HStack {
-                    Text(NSLocalizedString("noData", comment: ""))
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                }
-                .padding(.bottom, 8)
-            }
-            .frame(minHeight: 100)
-            .padding(CELL_PADDING)
-            .tileStyle()
-        } else {
-            FetchRequestWrapper(
-                WorkoutSet.self,
-                predicate: WorkoutSetPredicateFactory.getWorkoutSets(
-                    with: exercise,
-                    from: Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now)!.startOfWeek,
-                    to: .now
+        let sets = workoutSets.filter { $0.workout?.isCurrentWorkout != true }
+        let weeklyVolumes = weeklyVolumes(in: sets)
+        let thisWeekVolume = volume(in: weeklyVolumes, equalTo: .now)
+        let lastWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: .now) ?? .now
+        let lastWeekVolume = volume(in: weeklyVolumes, equalTo: lastWeek)
+        // No volume in the chart's five-week window but some further back: fall back to the best
+        // week ever over the last trained weeks' bars — mirrors the best-value tiles' lapsed
+        // state, instead of a "0" floating above an empty chart.
+        let isLapsed = !weeklyVolumes.isEmpty && !weeklyVolumes.contains { $0.week >= chartStartDate }
+        ExerciseMetricTileLayout(
+            title: NSLocalizedString("volume", comment: ""),
+            label: .plain(NSLocalizedString(isLapsed ? "personalBest" : "thisWeek", comment: "")),
+            value: weeklyVolumes.isEmpty
+                ? nil
+                : formatWeightForDisplay(isLapsed ? weeklyVolumes.map(\.volume).max() ?? 0 : thisWeekVolume),
+            unit: WeightUnit.used.rawValue,
+            color: exercise.muscleGroup?.color ?? .accentColor,
+            percentChange: thisWeekVolume > 0 && lastWeekVolume > 0
+                ? (Double(thisWeekVolume) - Double(lastWeekVolume)) / Double(lastWeekVolume) * 100
+                : nil,
+            isRecord: isRecordWeek(volume: thisWeekVolume, in: weeklyVolumes),
+            requiresPro: true,
+            lapsedSince: isLapsed ? sets.compactMap({ $0.workout?.date }).max() : nil,
+            showsEmptyPlaceholder: weeklyVolumes.isEmpty
+        ) {
+            barChart(weeklyVolumes: weeklyVolumes, isLapsed: isLapsed)
+        }
+    }
+
+    // MARK: - Chart
+
+    private func barChart(weeklyVolumes: [WeeklyVolume], isLapsed: Bool) -> some View {
+        // Lapsed: the last five trained weeks, with the best one highlighted (it's the week the
+        // value above refers to). Otherwise: the regular five-week window, current week
+        // highlighted.
+        let shownVolumes = isLapsed
+            ? Array(weeklyVolumes.suffix(5))
+            : weeklyVolumes.filter { $0.week >= chartStartDate }
+        let highlightedWeek = isLapsed
+            ? shownVolumes.max { $0.volume < $1.volume }?.week
+            : Date.now.startOfWeek
+        let domainStart = isLapsed ? (shownVolumes.first?.week ?? chartStartDate) : chartStartDate
+        let domainEnd = isLapsed
+            ? (shownVolumes.last?.week.endOfWeek ?? Date.now.endOfWeek) : Date.now.endOfWeek
+        return Chart {
+            ForEach(shownVolumes) { weeklyVolume in
+                BarMark(
+                    x: .value("Week", weeklyVolume.week, unit: .weekOfYear),
+                    y: .value("Volume in week", convertWeightForDisplayingDecimal(weeklyVolume.volume)),
+                    width: .ratio(0.5)
                 )
-            ) { workoutSets in
-                let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
-                VStack {
-                    tileHeader
-                    HStack(alignment: .bottom) {
-                        VStack(alignment: .leading) {
-                            Text(NSLocalizedString("thisWeek", comment: ""))
-                                .foregroundStyle(.secondary)
-                                .font(.footnote)
-                                .fontWeight(.semibold)
-                            let thisWeekStart = Date.now.startOfWeek
-                            let setsThisWeek = groupedWorkoutSets.first(where: { Calendar.current.isDate($0.key, equalTo: thisWeekStart, toGranularity: .weekOfYear) })?.value ?? []
-                            UnitView(
-                                value: "\(formatWeightForDisplay(getVolume(of: setsThisWeek, for: exercise)))",
-                                unit: WeightUnit.used.rawValue,
-                                configuration: .large
-                            )
-                            .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
-                        }
-                        Spacer()
-                        Chart {
-                            ForEach(groupedWorkoutSets, id: \.0) { key, workoutSets in
-                                BarMark(
-                                    x: .value("Weeks before now", key, unit: .weekOfYear),
-                                    y: .value("Volume in week", convertWeightForDisplayingDecimal(getVolume(of: workoutSets, for: exercise))),
-                                    width: .ratio(0.5)
-                                )
-                                .foregroundStyle(Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill)
-                            }
-                        }
-                        .chartXScale(domain: xDomain)
-                        .chartXAxis {}
-                        .chartYAxis {}
-                        .frame(width: 120, height: 70)
-                    }
-                }
-                .frame(minHeight: 100)
-                .padding(CELL_PADDING)
-                .tileStyle()
+                .foregroundStyle(
+                    highlightedWeek.map({ Calendar.current.isDate(weeklyVolume.week, equalTo: $0, toGranularity: .weekOfYear) }) == true
+                        ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill
+                )
             }
         }
+        .chartXScale(domain: domainStart ... domainEnd)
+        .chartXAxis {}
+        .chartYAxis {}
+        .frame(maxWidth: .infinity)
+        .frame(height: 62)
     }
 
-    private var tileHeader: some View {
-        HStack {
-            Text(NSLocalizedString("volume", comment: ""))
-                .tileHeaderStyle()
-            Spacer()
-            NavigationChevron()
-                .foregroundStyle(.secondary)
-        }
+    private var chartStartDate: Date {
+        (Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now) ?? .now).startOfWeek
     }
 
-    private var xDomain: some ScaleDomain {
-        let startDate = Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now)!.startOfWeek
-        return startDate ... Date.now.endOfWeek
+    // MARK: - Weekly Volumes
+
+    /// Volume per trained week across the exercise's whole history, oldest → newest — the chart
+    /// shows the last five, the trend and record check need them all. Zero-volume weeks (e.g.
+    /// bodyweight-only training) are dropped so they can't render as invisible bars; with no
+    /// weighted week at all the tile shows its "––" placeholder instead.
+    private func weeklyVolumes(in sets: [WorkoutSet]) -> [WeeklyVolume] {
+        Dictionary(grouping: sets) { $0.workout?.date?.startOfWeek ?? .now }
+            .map { WeeklyVolume(week: $0.key, volume: getVolume(of: $0.value, for: exercise)) }
+            .filter { $0.volume > 0 }
+            .sorted { $0.week < $1.week }
+    }
+
+    private func volume(in weeklyVolumes: [WeeklyVolume], equalTo date: Date) -> Int {
+        weeklyVolumes.first {
+            Calendar.current.isDate($0.week, equalTo: date, toGranularity: .weekOfYear)
+        }?.volume ?? 0
+    }
+
+    /// A record week has to *beat* every previous week, not just match the best — and there has
+    /// to be a previous week to beat, or the first trained week would be a record by default.
+    private func isRecordWeek(volume: Int, in weeklyVolumes: [WeeklyVolume]) -> Bool {
+        let bestPreviousWeek = weeklyVolumes
+            .filter { $0.week < Date.now.startOfWeek }
+            .map(\.volume)
+            .max() ?? 0
+        return volume > 0 && bestPreviousWeek > 0 && volume > bestPreviousWeek
     }
 }
 

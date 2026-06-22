@@ -74,7 +74,7 @@
 "creatingTemplateFailed" = "템플릿 생성 실패";
 "creatingTemplateFailedText" = "선택한 이미지에 운동이 포함되어 있는지 확인하세요.";
 "currentBest" = "현재 최고";
-"currentBestInfo" = "현재 최고는 이번 운동을 포함해 최근 한 달 동안 달성한 최고 값입니다.";
+"currentBestInfo" = "현재 최고는 최근 한 달 동안 달성한 최고 값입니다.";
 "currentWorkout" = "현재 운동";
 
 // MARK: - D
@@ -237,6 +237,8 @@
 "noAttempts" = "시도 없음";
 "noData" = "데이터 없음";
 "noEntriesConfirmation" = "이 운동에는 항목이 없습니다. 폐기하시겠습니까?";
+"noExerciseDataMessage" = "운동에서 이 운동 종목을 수행하면 진행 상황이 여기에 표시됩니다.";
+"noExerciseDataTitle" = "아직 데이터가 없습니다";
 "noExercises" = "운동 종목 없음";
 "noExercisesInWeek" = "주중에는 운동하지 않음";
 "noExercisesTip" = "아직 운동이 없습니다";
@@ -432,6 +434,7 @@
 "total" = "총";
 "trendDown" = "이전 기간보다 %@ 감소";
 "trendUp" = "이전 기간보다 %@ 증가";
+"trendFlat" = "이전 기간과 변화 없음";
 "trackMore" = "더 많이 추적하세요";
 "triceps" = "삼두근";
 "two" = "둘";
@@ -727,9 +730,13 @@
 
 // MARK: - Exercise Volume Highlights
 "avgMoreExerciseVolumeThisMonthThanLastMonth" = "지난 달보다 이번 달에 이 운동의 평균 볼륨이 더 높습니다.";
+"avgMoreExerciseSetsThisMonthThanLastMonth" = "지난 달보다 이번 달에 이 운동의 평균 세트 수가 더 많습니다.";
 "avgLessExerciseVolumeThisMonthThanLastMonth" = "지난 달보다 이번 달에 이 운동의 평균 볼륨이 적습니다.";
+"avgLessExerciseSetsThisMonthThanLastMonth" = "지난 달보다 이번 달에 이 운동의 평균 세트 수가 적습니다.";
 "avgMoreExerciseVolumeThisYearThanLastYear" = "작년보다 올해 이 운동의 평균 볼륨이 더 높아졌습니다.";
+"avgMoreExerciseSetsThisYearThanLastYear" = "작년보다 올해 이 운동의 평균 세트 수가 더 많아졌습니다.";
 "avgLessExerciseVolumeThisYearThanLastYear" = "올해 이 운동의 평균 볼륨은 작년보다 적습니다.";
+"avgLessExerciseSetsThisYearThanLastYear" = "올해 이 운동의 평균 세트 수는 작년보다 적습니다.";
 
 // MARK: - Exercise Weight Highlights
 "higherMaxWeightThisMonthThanLastMonth" = "이번 달 최고의 체중이 지난 달보다 높습니다.";
@@ -835,11 +842,81 @@
 "higherMaxE1RMThisYearThanLastYear" = "올해 예상 1RM이 작년보다 높습니다.";
 "lowerMaxE1RMThisYearThanLastYear" = "올해 예상 1RM이 작년보다 낮습니다.";
 
+/* Set Volume (best single-set volume) */
+"setVolume" = "세트 볼륨";
+"setVolumeInfo" = "세트 볼륨: 한 세트의 중량 × 반복 횟수입니다. 단일 세트 최고 기록을 추적하며, 총 볼륨과 달리 한 세트에서 더 무거운 중량을 들거나 반복 횟수를 늘릴 때만 증가합니다.";
+"higherMaxSetVolumeThisMonthThanLastMonth" = "이번 달 최고 세트 볼륨이 지난달보다 높습니다.";
+"lowerMaxSetVolumeThisMonthThanLastMonth" = "이번 달 최고 세트 볼륨이 지난달보다 낮습니다.";
+"higherMaxSetVolumeThisYearThanLastYear" = "올해 최고 세트 볼륨이 작년보다 높습니다.";
+"lowerMaxSetVolumeThisYearThanLastYear" = "올해 최고 세트 볼륨이 작년보다 낮습니다.";
+
+/* Metric detail "About" sections */
+"aboutMetric" = "%@ 정보";
+"weightInfo" = "하루 중 한 세트에서 들어 올린 가장 무거운 무게입니다. 시간이 지나며 더 무거운 무게를 드는 것은 근력 향상의 가장 직접적인 신호입니다.";
+"repetitionsInfo" = "하루 중 한 세트에서 수행한 최다 반복 횟수입니다. 같은 무게로 더 많이 반복하면 근지구력이 향상되며, 이는 또 다른 발전 방법입니다.";
+"volumeInfo" = "볼륨은 움직인 총 무게로, 무게 × 반복 횟수를 일주일의 모든 세트에 걸쳐 합산한 값입니다. 볼륨이 많을수록 총 운동량이 많다는 뜻이며, 근육 성장의 핵심 요소입니다.";
+"setsInfo" = "세트는 일주일 동안 이 운동에서 기록한 작업 세트 수로, 실제로 완료한 세트만 계산합니다. 주당 세트 수는 훈련 볼륨의 표준 지표이며, 매주 충분한 세트를 수행하는 것이 근력과 근육 성장의 핵심 요소입니다.";
+
 "progressMetric" = "진행 지표";
 
 "maxWeight" = "최대 중량";
 "maxReps" = "최대 횟수";
 
-"metricInfoWeight" = "이 운동에서 기록한 가장 무거운 세트 — 최고 중량과 그때의 횟수.";
-"metricInfoReps" = "이 운동에서 횟수가 가장 많은 세트 — 최대 횟수와 그때의 중량.";
-"swipeForMetrics" = "배지를 위아래로 스와이프하여 지표를 전환하세요.";
+"metricInfoWeight" = "한 세트에서 들어 올린 가장 무거운 중량 — 횟수는 반영되지 않습니다.";
+"metricInfoReps" = "한 세트에서 수행한 가장 많은 횟수 — 중량은 반영되지 않습니다.";
+"tapForMetricInfo" = "탭하여 세부 정보를 확인하고 지표를 전환하세요.";
+"personalRecord" = "개인 기록";
+"repsShort" = "횟수";
+
+/* Workout Progress Section */
+"personalRecords" = "개인 기록";
+"personalRecordsCount" = "개인 기록 %d개";
+"personalRecordsMoreCount" = "+%d개 더";
+"exerciseProgress" = "운동별 진전";
+"exercisesImproved" = "%2$d개 운동 중 %1$d개 향상";
+"firstSession" = "첫 세션";
+"volumeVsLastTime" = "볼륨 비교(지난번)";
+"thisWorkout" = "이번 워크아웃";
+"firstTimeForThisWorkout" = "이 워크아웃은 이번이 처음입니다. 앞으로의 세션은 이번 기록과 비교됩니다.";
+"workoutPRInfo" = "개인 기록은 이번 워크아웃의 세트가 그 이전 모든 워크아웃의 최고 중량, 최다 횟수 또는 추정 1RM을 넘어섰다는 뜻입니다. 이후에 경신되더라도 그날의 기록으로 남습니다.";
+"workoutTrendInfo" = "각 운동의 추세는 이번 워크아웃에서 진전 지표의 최고 값을 그 이전 한 달간의 최고 기록과 비교합니다 — 아래 운동 배지와 같은 비교입니다.";
+"workoutVolumeCompareInfo" = "총 볼륨(각 세트의 중량 × 횟수)을 지난번 같은 워크아웃과 비교합니다.";
+"improvedCount" = "%d개 향상";
+
+/* Paywall */
+"stayMotivated" = "동기 부여 유지";
+"liveProgress" = "실시간 진행 상황";
+"liveProgressPromotionText" = "운동 중 각 세트가 현재 최고 기록과 비교해 어떤지 실시간으로 확인하고, 운동 후에는 개인 기록과 추세도 볼 수 있습니다.";
+"cancelAnytime" = "언제든지 해지 가능";
+"purchaseFailed" = "구매 실패";
+"purchaseFailedText" = "문제가 발생했으며 결제되지 않았습니다. 다시 시도해 주세요.";
+"restoreFailed" = "복원 실패";
+"restoreFailedText" = "구매를 복원할 수 없습니다. 연결을 확인하고 다시 시도해 주세요.";
+
+/* Workout stats (workout detail tiles & detail screens) */
+"rps" = "rps";
+"average" = "평균";
+"volumePerSet" = "세트당 볼륨";
+"workoutStatCompareSameInfo" = "트렌드는 이번 워크아웃을 같은 워크아웃의 이전 실행과 비교합니다. 막대는 최근 실행을 보여주며, 오른쪽의 강조된 막대가 이번 워크아웃입니다.";
+"workoutStatCompareRecentInfo" = "이 워크아웃은 이전 실행이 없어 최근 워크아웃들의 평균과 비교합니다. 막대는 그 워크아웃들을 보여주며, 오른쪽의 강조된 막대가 이번 워크아웃입니다.";
+"workoutStatAverageInfo" = "표시된 기간의 워크아웃당 평균입니다. 트렌드는 이전 기간과 비교합니다. 각 막대는 하나의 워크아웃이며 가장 많이 운동한 근육군의 색으로 표시됩니다. 연 보기에서는 월별 평균을 보여줍니다.";
+"workoutVolumeAboutInfo" = "볼륨은 워크아웃에서 움직인 총 무게입니다 — 무게 × 반복 횟수를 모든 세트에 걸쳐 합한 값. 워크아웃 간 비교하면 세션에 담긴 운동량을 알 수 있습니다.";
+"workoutDurationAboutInfo" = "지속 시간은 워크아웃 시작부터 종료까지의 시간입니다. 길거나 짧다고 그 자체로 좋거나 나쁜 것은 아닙니다 — 볼륨과 함께 보면 훈련 밀도를 알 수 있습니다.";
+"workoutSetsAboutInfo" = "워크아웃에 기록된 세트 수 — 바벨 무게와 무관하게 세션에서 얼마나 했는지 보여주는 간단한 지표입니다.";
+"workoutRepsAboutInfo" = "워크아웃에 기록된 모든 반복 횟수를 모든 세트에 걸쳐 합한 값입니다. 세트 수, 볼륨과 함께 세션의 운동량을 설명합니다.";
+"avgMoreWorkoutVolumeThisMonthThanLastMonth" = "이번 달은 지난달보다 워크아웃당 볼륨이 많습니다.";
+"avgLessWorkoutVolumeThisMonthThanLastMonth" = "이번 달은 지난달보다 워크아웃당 볼륨이 적습니다.";
+"avgMoreWorkoutVolumeThisYearThanLastYear" = "올해는 작년보다 워크아웃당 볼륨이 많습니다.";
+"avgLessWorkoutVolumeThisYearThanLastYear" = "올해는 작년보다 워크아웃당 볼륨이 적습니다.";
+"avgLongerWorkoutsThisMonthThanLastMonth" = "이번 달은 지난달보다 워크아웃이 깁니다.";
+"avgShorterWorkoutsThisMonthThanLastMonth" = "이번 달은 지난달보다 워크아웃이 짧습니다.";
+"avgLongerWorkoutsThisYearThanLastYear" = "올해는 작년보다 워크아웃이 깁니다.";
+"avgShorterWorkoutsThisYearThanLastYear" = "올해는 작년보다 워크아웃이 짧습니다.";
+"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "이번 달은 지난달보다 워크아웃당 세트가 많습니다.";
+"avgLessSetsPerWorkoutThisMonthThanLastMonth" = "이번 달은 지난달보다 워크아웃당 세트가 적습니다.";
+"avgMoreSetsPerWorkoutThisYearThanLastYear" = "올해는 작년보다 워크아웃당 세트가 많습니다.";
+"avgLessSetsPerWorkoutThisYearThanLastYear" = "올해는 작년보다 워크아웃당 세트가 적습니다.";
+"avgMoreRepsPerWorkoutThisMonthThanLastMonth" = "이번 달은 지난달보다 워크아웃당 반복이 많습니다.";
+"avgLessRepsPerWorkoutThisMonthThanLastMonth" = "이번 달은 지난달보다 워크아웃당 반복이 적습니다.";
+"avgMoreRepsPerWorkoutThisYearThanLastYear" = "올해는 작년보다 워크아웃당 반복이 많습니다.";
+"avgLessRepsPerWorkoutThisYearThanLastYear" = "올해는 작년보다 워크아웃당 반복이 적습니다.";

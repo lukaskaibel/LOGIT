@@ -115,6 +115,14 @@ public extension WorkoutSet {
         return (0, 0, 0)
     }
 
+    /// Volume (weight × repetitions) of this single set for `exercise`, in the same unit as
+    /// `weight` (grams). A drop set counts all its drops — it is logged as one set — and a super
+    /// set counts only the matching exercise's entry, matching `getVolume(of:for:)`, which this
+    /// delegates to. Returns 0 when the exercise isn't part of this set.
+    internal func volume(for exercise: Exercise) -> Int {
+        getVolume(of: [self], for: exercise)
+    }
+
     /// The weight × repetitions entry with the highest *weight* for `exercise`, together with the
     /// repetitions performed at that weight. Mirrors the per-set-type handling of `maximum(_:for:)`:
     /// for drop sets the heaviest drop wins (with its own reps); for super sets the matching

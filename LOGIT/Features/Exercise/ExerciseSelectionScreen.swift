@@ -99,14 +99,14 @@ struct ExerciseSelectionScreen: View {
             .onAppear {
                 isShowingNoExercisesTip = exercises.isEmpty
             }
-            .onChange(of: textFieldIsFocused) { newValue in
+            .onChange(of: textFieldIsFocused) { _, newValue in
                 if newValue {
                     withAnimation {
                         presentationDetentSelection = .large
                     }
                 }
             }
-            .onChange(of: presentationDetentSelection) { newValue in
+            .onChange(of: presentationDetentSelection) { _, newValue in
                 if newValue != .large {
                     textFieldIsFocused = false
                 }

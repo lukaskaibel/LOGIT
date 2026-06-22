@@ -10,7 +10,6 @@ import SwiftUI
 struct SuperSetCell: View {
     // MARK: - Environment
 
-    @Environment(\.canEdit) private var canEdit
     @EnvironmentObject var database: Database
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
 
@@ -27,13 +26,7 @@ struct SuperSetCell: View {
         VStack(spacing: 0) {
             if let indexInWorkout = indexInWorkout {
                 HStack {
-                    PreviousSetReferenceLabel(reference: referenceValue(for: superSet.exercise)) {
-                        if let exercise = superSet.exercise {
-                            onTapPreviousSet?(exercise)
-                        }
-                    }
-                    .opacity(canEdit && firstExerciseHasEntry ? 0 : 1)
-                    .animation(.easeInOut(duration: 0.2), value: firstExerciseHasEntry)
+                    Spacer()
                     IntegerField(
                         placeholder: repetitionsPlaceholder(for: superSet).first!,
                         value: $superSet.repetitionsFirstExercise,
@@ -47,7 +40,9 @@ struct SuperSetCell: View {
                         unit: NSLocalizedString("reps", comment: ""),
                         trend: repetitionsDelta(current: superSet.repetitionsFirstExercise, for: superSet.exercise).comparison,
                         trendText: repetitionsDelta(current: superSet.repetitionsFirstExercise, for: superSet.exercise).text,
-                        trendColor: muscleColor(for: superSet.exercise)
+                        trendColor: muscleColor(for: superSet.exercise),
+                        previousValueText: referenceValue(for: superSet.exercise)?.repetitionsText,
+                        onTapPreviousValue: previousValueTapHandler(for: superSet.exercise)
                     )
                     DecimalField(
                         placeholder: weightsPlaceholderDecimal(for: superSet).first!,
@@ -66,17 +61,13 @@ struct SuperSetCell: View {
                         unit: WeightUnit.used.rawValue,
                         trend: weightDeltaResult(currentGrams: superSet.weightFirstExercise, for: superSet.exercise).comparison,
                         trendText: weightDeltaResult(currentGrams: superSet.weightFirstExercise, for: superSet.exercise).text,
-                        trendColor: muscleColor(for: superSet.exercise)
+                        trendColor: muscleColor(for: superSet.exercise),
+                        previousValueText: referenceValue(for: superSet.exercise)?.weightText,
+                        onTapPreviousValue: previousValueTapHandler(for: superSet.exercise)
                     )
                 }
                 HStack {
-                    PreviousSetReferenceLabel(reference: referenceValue(for: superSet.secondaryExercise)) {
-                        if let exercise = superSet.secondaryExercise {
-                            onTapPreviousSet?(exercise)
-                        }
-                    }
-                    .opacity(canEdit && secondExerciseHasEntry ? 0 : 1)
-                    .animation(.easeInOut(duration: 0.2), value: secondExerciseHasEntry)
+                    Spacer()
                     IntegerField(
                         placeholder: repetitionsPlaceholder(for: superSet).second!,
                         value: $superSet.repetitionsSecondExercise,
@@ -90,7 +81,9 @@ struct SuperSetCell: View {
                         unit: NSLocalizedString("reps", comment: ""),
                         trend: repetitionsDelta(current: superSet.repetitionsSecondExercise, for: superSet.secondaryExercise).comparison,
                         trendText: repetitionsDelta(current: superSet.repetitionsSecondExercise, for: superSet.secondaryExercise).text,
-                        trendColor: muscleColor(for: superSet.secondaryExercise)
+                        trendColor: muscleColor(for: superSet.secondaryExercise),
+                        previousValueText: referenceValue(for: superSet.secondaryExercise)?.repetitionsText,
+                        onTapPreviousValue: previousValueTapHandler(for: superSet.secondaryExercise)
                     )
                     DecimalField(
                         placeholder: weightsPlaceholderDecimal(for: superSet).second!,
@@ -109,7 +102,9 @@ struct SuperSetCell: View {
                         unit: WeightUnit.used.rawValue,
                         trend: weightDeltaResult(currentGrams: superSet.weightSecondExercise, for: superSet.secondaryExercise).comparison,
                         trendText: weightDeltaResult(currentGrams: superSet.weightSecondExercise, for: superSet.secondaryExercise).text,
-                        trendColor: muscleColor(for: superSet.secondaryExercise)
+                        trendColor: muscleColor(for: superSet.secondaryExercise),
+                        previousValueText: referenceValue(for: superSet.secondaryExercise)?.weightText,
+                        onTapPreviousValue: previousValueTapHandler(for: superSet.secondaryExercise)
                     )
                 }
                 .accentColor(superSet.secondaryExercise?.muscleGroup?.color)
@@ -131,12 +126,9 @@ struct SuperSetCell: View {
         )
     }
 
-    private var firstExerciseHasEntry: Bool {
-        superSet.repetitionsFirstExercise > 0 || superSet.weightFirstExercise > 0
-    }
-
-    private var secondExerciseHasEntry: Bool {
-        superSet.repetitionsSecondExercise > 0 || superSet.weightSecondExercise > 0
+    private func previousValueTapHandler(for exercise: Exercise?) -> (() -> Void)? {
+        guard onTapPreviousSet != nil, let exercise else { return nil }
+        return { onTapPreviousSet?(exercise) }
     }
 
     private func repetitionsDelta(

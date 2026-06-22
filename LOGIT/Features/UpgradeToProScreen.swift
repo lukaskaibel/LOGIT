@@ -8,11 +8,37 @@
 import SwiftUI
 
 struct UpgradeToProScreen: View {
+    /// A failed StoreKit interaction, surfaced as an alert — a silent failure at the moment
+    /// someone tries to pay is the most expensive bug a paywall can have.
+    private enum PurchaseFlowError: Identifiable {
+        case purchaseFailed, restoreFailed
+
+        var id: Self { self }
+
+        var title: String {
+            switch self {
+            case .purchaseFailed: return NSLocalizedString("purchaseFailed", comment: "")
+            case .restoreFailed: return NSLocalizedString("restoreFailed", comment: "")
+            }
+        }
+
+        var message: String {
+            switch self {
+            case .purchaseFailed: return NSLocalizedString("purchaseFailedText", comment: "")
+            case .restoreFailed: return NSLocalizedString("restoreFailedText", comment: "")
+            }
+        }
+    }
+
     // MARK: - Environment
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var networkMonitor: NetworkMonitor
     @Environment(\.dismiss) var dismiss
+
+    // MARK: - State
+
+    @State private var purchaseFlowError: PurchaseFlowError?
 
     var body: some View {
         ScrollView {
@@ -28,6 +54,22 @@ struct UpgradeToProScreen: View {
                         .padding()
 
                     VStack(alignment: .leading, spacing: 50) {
+                        VStack {
+                            HStack(spacing: 30) {
+                                Image(systemName: "chart.line.uptrend.xyaxis")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.secondary)
+                                VStack(alignment: .leading) {
+                                    Text(NSLocalizedString("stayMotivated", comment: "").uppercased())
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundColor(.secondary)
+                                    Text(NSLocalizedString("liveProgress", comment: ""))
+                                        .font(.title3.weight(.bold))
+                                    Text(NSLocalizedString("liveProgressPromotionText", comment: ""))
+                                        .multilineTextAlignment(.leading)
+                                }
+                            }
+                        }
                         VStack {
                             HStack(spacing: 30) {
                                 Image(systemName: "chart.bar.xaxis")
@@ -97,7 +139,7 @@ struct UpgradeToProScreen: View {
                                 .font(.footnote.weight(.semibold))
                         }
                     }
-                    Text(NSLocalizedString("autoRenewMonth", comment: ""))
+                    Text("\(NSLocalizedString("autoRenewMonth", comment: "")) — \(NSLocalizedString("cancelAnytime", comment: ""))")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -107,7 +149,7 @@ struct UpgradeToProScreen: View {
                         do {
                             try await purchaseManager.subscribeToProMonthly()
                         } catch {
-                            // TODO: Show Alert for Error during purchase
+                            purchaseFlowError = .purchaseFailed
                         }
                     }
                 } label: {
@@ -125,7 +167,7 @@ struct UpgradeToProScreen: View {
                         do {
                             try await purchaseManager.restorePurchase()
                         } catch {
-                            // TODO: Show Alert for Restore Purchase failed
+                            purchaseFlowError = .restoreFailed
                         }
                     }
                 } label: {
@@ -141,10 +183,22 @@ struct UpgradeToProScreen: View {
             }
             .frame(maxHeight: .infinity, alignment: .bottom)
         }
-        .onChange(of: purchaseManager.hasUnlockedPro) { newValue in
+        .onChange(of: purchaseManager.hasUnlockedPro) { _, newValue in
             if newValue {
                 dismiss()
             }
+        }
+        .alert(
+            purchaseFlowError?.title ?? "",
+            isPresented: Binding(
+                get: { purchaseFlowError != nil },
+                set: { if !$0 { purchaseFlowError = nil } }
+            ),
+            presenting: purchaseFlowError
+        ) { _ in
+            Button(NSLocalizedString("ok", comment: "")) {}
+        } message: { error in
+            Text(error.message)
         }
     }
 }

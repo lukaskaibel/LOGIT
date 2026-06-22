@@ -26,6 +26,8 @@ struct IntegerField: View {
     var trend: SetValueComparison? = nil
     var trendText: String = ""
     var trendColor: Color = .accentColor
+    var previousValueText: String? = nil
+    var onTapPreviousValue: (() -> Void)? = nil
 
     // MARK: - State
 
@@ -44,8 +46,8 @@ struct IntegerField: View {
                         prompt: Text(String(placeholder)).foregroundStyle(isFocused ? Color(UIColor.systemGray2) : Color.placeholder)
                     )
                     .focused($isFocused)
-                    .onChange(of: valueString) {
-                        valueString = ($0 == "0" || $0.isEmpty) ? "" : String($0.prefix(4))
+                    .onChange(of: valueString) { _, newString in
+                        valueString = (newString == "0" || newString.isEmpty) ? "" : String(newString.prefix(4))
                         if let valueInt = Int64(valueString), valueInt != value {
                             value = valueInt
                         } else if valueString.isEmpty && value != 0 {
@@ -70,7 +72,7 @@ struct IntegerField: View {
         .onAppear {
             valueString = String(value)
         }
-        .onChange(of: focusedIntegerFieldIndex) { newValue in
+        .onChange(of: focusedIntegerFieldIndex) { _, newValue in
             guard !isFocusSuppressed else { return }
             let shouldBeFocused = newValue == index
             guard isFocused != shouldBeFocused else { return }
@@ -85,7 +87,7 @@ struct IntegerField: View {
             // When transferring to another field (newValue != nil && newValue != index),
             // don't explicitly set isFocused = false; the new field's focus will take over
         }
-        .onChange(of: isFocused) { newValue in
+        .onChange(of: isFocused) { _, newValue in
             guard !isFocusSuppressed else { return }
             if newValue {
                 UISelectionFeedbackGenerator().selectionChanged()
@@ -96,7 +98,7 @@ struct IntegerField: View {
             }
             // When losing focus, don't update the binding - another field is taking over
         }
-        .onChange(of: value) { newValue in
+        .onChange(of: value) { _, newValue in
             if String(newValue) != valueString {
                 valueString = String(newValue)
             }
@@ -104,7 +106,15 @@ struct IntegerField: View {
         .padding(.vertical, 5)
         .padding(.horizontal, 8)
         .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.000001))
-        .trendIndicatorOverlay(trend: trend, text: trendText, positiveColor: trendColor, isVisible: canEdit)
+        .setValueIndicatorOverlay(
+            trend: trend,
+            trendText: trendText,
+            positiveColor: trendColor,
+            previousValueText: previousValueText,
+            showPreviousValue: isEmpty,
+            onTapPreviousValue: onTapPreviousValue,
+            isVisible: canEdit
+        )
         .scaleEffect(isFocused ? 1.05 : 1.0)
         .animation(.spring(response: 0.35, dampingFraction: 0.6, blendDuration: 0), value: isFocused)
         .frame(minWidth: 100, alignment: .trailing)
@@ -173,26 +183,73 @@ struct SetValueDeltaLabel: View {
     }
 }
 
+/// A clock symbol plus the previous workout's value for a single set field, shown in the
+/// same spot as `SetValueDeltaLabel` while the field has no entry yet. Unit-less and all
+/// gray, since the field right next to it already shows the unit. Tapping it opens the
+/// previous attempts for the exercise.
+struct PreviousSetValueLabel: View {
+    let text: String
+    var onTap: (() -> Void)? = nil
+
+    var body: some View {
+        Button {
+            UISelectionFeedbackGenerator().selectionChanged()
+            onTap?()
+        } label: {
+            HStack(spacing: 2) {
+                Image(systemName: "clock")
+                    .font(.system(size: 7, weight: .bold))
+                Text(text)
+            }
+            .font(.system(.caption2, design: .rounded, weight: .bold))
+            .monospacedDigit()
+            .foregroundStyle(.tertiary)
+            .lineLimit(1)
+            .fixedSize()
+        }
+        .buttonStyle(.plain)
+        .disabled(onTap == nil)
+        .accessibilityLabel(
+            Text(NSLocalizedString("lastSetReferencePrefix", comment: "") + " " + text)
+        )
+    }
+}
+
 extension View {
-    /// Places a `SetValueDeltaLabel` immediately to the left of (and bottom-aligned with)
-    /// the number it is attached to. Anchoring to the host's leading edge keeps the gap to
-    /// the number constant regardless of the value's width; the label overflows into the
-    /// empty leading space without affecting layout. Fades in/out and is hidden when not visible.
-    func trendIndicatorOverlay(
+    /// Places one indicator immediately to the left of (and bottom-aligned with) the number
+    /// it is attached to: the previous workout's value while the field is still empty, or
+    /// the trend delta once a value is entered. Anchoring to the host's leading edge keeps
+    /// the gap to the number constant regardless of the value's width; the label overflows
+    /// into the empty leading space without affecting layout. Fades between states.
+    func setValueIndicatorOverlay(
         trend: SetValueComparison?,
-        text: String,
+        trendText: String,
         positiveColor: Color,
+        previousValueText: String?,
+        showPreviousValue: Bool,
+        onTapPreviousValue: (() -> Void)?,
         isVisible: Bool
     ) -> some View {
-        let show = isVisible && trend != nil
+        let showTrend = isVisible && trend != nil
+        let showPrevious = !showTrend && showPreviousValue && previousValueText != nil
         // Aligned to the number's text baseline, sitting a few points to its left. The host
         // is the styled field tile, whose 8pt horizontal padding is offset in the leading
         // guide so the gap to the number stays constant regardless of the value's width.
         return overlay(alignment: Alignment(horizontal: .leading, vertical: .lastTextBaseline)) {
-            SetValueDeltaLabel(comparison: trend ?? .improved, text: text, positiveColor: positiveColor)
-                .alignmentGuide(.leading) { $0.width - 2 }
-                .opacity(show ? 1 : 0)
-                .animation(.easeInOut(duration: 0.2), value: show)
+            ZStack(alignment: Alignment(horizontal: .trailing, vertical: .lastTextBaseline)) {
+                SetValueDeltaLabel(
+                    comparison: trend ?? .improved,
+                    text: trendText,
+                    positiveColor: positiveColor
+                )
+                .opacity(showTrend ? 1 : 0)
+                PreviousSetValueLabel(text: previousValueText ?? "", onTap: onTapPreviousValue)
+                    .opacity(showPrevious ? 1 : 0)
+                    .allowsHitTesting(showPrevious)
+            }
+            .alignmentGuide(.leading) { $0.width - 2 }
+            .animation(.easeInOut(duration: 0.2), value: showTrend)
+            .animation(.easeInOut(duration: 0.2), value: showPrevious)
         }
     }
 }

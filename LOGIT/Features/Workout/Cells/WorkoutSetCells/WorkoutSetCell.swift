@@ -216,54 +216,17 @@ struct WorkoutSetReferenceValue: Equatable {
     let repetitions: Int64
     let weight: Int64
 
-    var hasEntry: Bool {
-        repetitions > 0 || weight > 0
+    /// Unit-less text for the repetitions field's previous-value indicator.
+    var repetitionsText: String? {
+        repetitions > 0 ? String(repetitions) : nil
     }
 
-    var displayText: String {
-        if repetitions > 0, weight > 0 {
-            return "\(repetitions) x \(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue.uppercased())"
-        }
-
-        if repetitions > 0 {
-            return "\(repetitions) \(NSLocalizedString("reps", comment: "").uppercased())"
-        }
-
-        return "\(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue.uppercased())"
+    /// Unit-less text (in the user's weight unit) for the weight field's
+    /// previous-value indicator.
+    var weightText: String? {
+        weight > 0 ? formatWeightForDisplay(weight) : nil
     }
 
-}
-
-struct PreviousSetReferenceLabel: View {
-    let reference: WorkoutSetReferenceValue?
-    let onTap: () -> Void
-
-    var body: some View {
-        Group {
-            if let reference, reference.hasEntry {
-                Button {
-                    UISelectionFeedbackGenerator().selectionChanged()
-                    onTap()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.caption2)
-                        Text(reference.displayText)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(NSLocalizedString("lastSetReferencePrefix", comment: "") + " " + reference.displayText))
-            } else {
-                Color.clear
-            }
-        }
-        .font(.system(.caption, design: .rounded, weight: .semibold))
-        .monospacedDigit()
-        .foregroundStyle(.tertiary)
-        .frame(maxWidth: .infinity, alignment: .trailing)
-    }
 }
 
 // MARK: - Set Value Delta Helpers

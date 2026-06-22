@@ -27,6 +27,8 @@ struct DecimalField: View {
     var trend: SetValueComparison? = nil
     var trendText: String = ""
     var trendColor: Color = .accentColor
+    var previousValueText: String? = nil
+    var onTapPreviousValue: (() -> Void)? = nil
 
     // MARK: - State
 
@@ -45,8 +47,8 @@ struct DecimalField: View {
                         prompt: Text(formatNumber(placeholder)).foregroundStyle(isFocused ? Color(UIColor.systemGray2) : Color.placeholder)
                     )
                     .focused($isFocused)
-                    .onChange(of: valueString) {
-                        let filtered = filterInput($0)
+                    .onChange(of: valueString) { _, newString in
+                        let filtered = filterInput(newString)
                         valueString = (filtered == "0" || filtered.isEmpty) ? "" : filtered
                         if let valueDouble = Double(filtered), valueDouble != value {
                             value = valueDouble
@@ -72,7 +74,7 @@ struct DecimalField: View {
         .onAppear {
             valueString = formatNumber(value)
         }
-        .onChange(of: focusedIntegerFieldIndex) { newValue in
+        .onChange(of: focusedIntegerFieldIndex) { _, newValue in
             guard !isFocusSuppressed else { return }
             let shouldBeFocused = newValue == index
             guard isFocused != shouldBeFocused else { return }
@@ -87,7 +89,7 @@ struct DecimalField: View {
             // When transferring to another field (newValue != nil && newValue != index),
             // don't explicitly set isFocused = false; the new field's focus will take over
         }
-        .onChange(of: isFocused) { newValue in
+        .onChange(of: isFocused) { _, newValue in
             guard !isFocusSuppressed else { return }
             if newValue {
                 UISelectionFeedbackGenerator().selectionChanged()
@@ -104,7 +106,7 @@ struct DecimalField: View {
                 }
             }
         }
-        .onChange(of: value) { newValue in
+        .onChange(of: value) { _, newValue in
             // Only sync from the model when the field is NOT focused.
             // While the user is typing, valueString is the source of truth;
             // overwriting it causes rounding artefacts from the
@@ -118,7 +120,15 @@ struct DecimalField: View {
         .padding(.vertical, 5)
         .padding(.horizontal, 8)
         .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.000001))
-        .trendIndicatorOverlay(trend: trend, text: trendText, positiveColor: trendColor, isVisible: canEdit)
+        .setValueIndicatorOverlay(
+            trend: trend,
+            trendText: trendText,
+            positiveColor: trendColor,
+            previousValueText: previousValueText,
+            showPreviousValue: isEmpty,
+            onTapPreviousValue: onTapPreviousValue,
+            isVisible: canEdit
+        )
         .scaleEffect(isFocused ? 1.05 : 1.0)
         .animation(.spring(response: 0.35, dampingFraction: 0.6, blendDuration: 0), value: isFocused)
         .frame(minWidth: 100, alignment: .trailing)

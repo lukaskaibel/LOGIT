@@ -50,7 +50,7 @@ struct CreateTemplateMenu: View {
             Image(systemName: "plus")
         }
         .templateGeneration(from: $templateImage, to: $newTemplate)
-        .onChange(of: newTemplate) { newValue in
+        .onChange(of: newTemplate) { _, newValue in
             guard let template = newValue else { return }
             database.flagAsTemporary(template)
         }

@@ -144,7 +144,7 @@ final class DatabaseTests: XCTestCase {
         let workout = database.newWorkout(name: "Delete Test")
         let setGroup = database.newWorkoutSetGroup(workout: workout)
         let set1 = database.newStandardSet(repetitions: 5, weight: 10000, setGroup: setGroup)
-        let set2 = database.newStandardSet(repetitions: 6, weight: 12000, setGroup: setGroup)
+        _ = database.newStandardSet(repetitions: 6, weight: 12000, setGroup: setGroup)
         database.save()
         
         let initialCount = setGroup.sets.count

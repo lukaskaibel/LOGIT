@@ -115,7 +115,7 @@ struct WorkoutStartSheet: View {
         .presentationDetents([.medium, .large], selection: $selectedDetent)
         .presentationDragIndicator(.hidden)
         .templateGeneration(from: $templateImage, to: $generatedTemplate)
-        .onChange(of: generatedTemplate) { newValue in
+        .onChange(of: generatedTemplate) { _, newValue in
             if let template = newValue {
                 database.flagAsTemporary(template)
                 workoutRecorder.startWorkout(from: template)

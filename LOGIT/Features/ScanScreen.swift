@@ -96,7 +96,7 @@ struct ScanScreen: View {
                 .padding(.bottom, 30)
             }
         }
-        .onChange(of: photoPickerItem) { _ in
+        .onChange(of: photoPickerItem) {
             Task {
                 if let data = try? await photoPickerItem?.loadTransferable(type: Data.self) {
                     if let uiImage = UIImage(data: data) {
@@ -161,7 +161,7 @@ struct ScanScreen: View {
                     }
                 }
             )
-            .animation(.easeInOut)
+            .animation(.easeInOut, value: scanModel.willCapturePhoto)
     }
 }
 

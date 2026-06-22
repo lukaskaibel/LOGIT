@@ -10,7 +10,6 @@ import SwiftUI
 struct StandardSetCell: View {
     // MARK: - Environment
 
-    @Environment(\.canEdit) private var canEdit
     @EnvironmentObject var database: Database
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
 
@@ -26,13 +25,7 @@ struct StandardSetCell: View {
     var body: some View {
         HStack {
             if let indexInWorkout = indexInWorkout {
-                PreviousSetReferenceLabel(reference: referenceValue) {
-                    if let exercise = standardSet.setGroup?.exercise {
-                        onTapPreviousSet?(exercise)
-                    }
-                }
-                .opacity(canEdit && standardSet.hasEntry ? 0 : 1)
-                .animation(.easeInOut(duration: 0.2), value: standardSet.hasEntry)
+                Spacer()
                 IntegerField(
                     placeholder: repetitionsPlaceholder(for: standardSet),
                     value: $standardSet.repetitions,
@@ -46,7 +39,9 @@ struct StandardSetCell: View {
                     unit: NSLocalizedString("reps", comment: ""),
                     trend: repetitionsDelta.comparison,
                     trendText: repetitionsDelta.text,
-                    trendColor: muscleColor
+                    trendColor: muscleColor,
+                    previousValueText: referenceValue?.repetitionsText,
+                    onTapPreviousValue: previousValueTapHandler
                 )
                 DecimalField(
                     placeholder: weightPlaceholderDecimal(for: standardSet),
@@ -65,7 +60,9 @@ struct StandardSetCell: View {
                     unit: WeightUnit.used.rawValue,
                     trend: weightDeltaResult.comparison,
                     trendText: weightDeltaResult.text,
-                    trendColor: muscleColor
+                    trendColor: muscleColor,
+                    previousValueText: referenceValue?.weightText,
+                    onTapPreviousValue: previousValueTapHandler
                 )
             }
         }
@@ -99,6 +96,15 @@ struct StandardSetCell: View {
 
     private var muscleColor: Color {
         standardSet.setGroup?.exercise?.muscleGroup?.color ?? .accentColor
+    }
+
+    private var previousValueTapHandler: (() -> Void)? {
+        guard onTapPreviousSet != nil else { return nil }
+        return {
+            if let exercise = standardSet.setGroup?.exercise {
+                onTapPreviousSet?(exercise)
+            }
+        }
     }
 
     private func copyReferenceValues() {

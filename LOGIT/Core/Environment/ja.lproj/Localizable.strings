@@ -59,7 +59,7 @@
 "chartsPromotionText" = "重量から回数、ボリューム、セットまで、フィットネスへの取り組みのあらゆるステップを視覚化します。";
 "chest" = "胸";
 "chooseExercise" = "エクササイズを選択";
-"chooseSecondaryExercise" = "二次演習を選択してください";
+"chooseSecondaryExercise" = "二次的なエクササイズを選択してください";
 "chooseTemplateText" = "テンプレートを選択するか、空のワークアウトを開始します";
 "completed" = "完了";
 "continue" = "続く";
@@ -74,7 +74,7 @@
 "creatingTemplateFailed" = "テンプレートの作成に失敗しました";
 "creatingTemplateFailedText" = "選択した画像にワークアウトが含まれていることを確認してください。";
 "currentBest" = "現在のベスト";
-"currentBestInfo" = "現在のベストは、今回のワークアウトを含む直近1か月間の最高値です。";
+"currentBestInfo" = "現在のベストは、直近1か月間の最高値です。";
 "currentWorkout" = "現在のトレーニング";
 
 // MARK: - D
@@ -237,6 +237,8 @@
 "noAttempts" = "試行なし";
 "noData" = "データなし";
 "noEntriesConfirmation" = "このワークアウトにはエントリがありません。破棄しますか？";
+"noExerciseDataMessage" = "この種目をワークアウトで行うと、ここに進捗が表示されます。";
+"noExerciseDataTitle" = "まだデータがありません";
 "noExercises" = "練習なし";
 "noExercisesInWeek" = "週に運動は禁止";
 "noExercisesTip" = "まだ練習はありません";
@@ -343,7 +345,7 @@
 "selectDuration" = "期間を選択してください";
 "selectExercise" = "エクササイズを選択してください";
 "selectMuscleGroup" = "筋肉グループの選択";
-"selectSecondaryExercise" = "二次演習を選択してください";
+"selectSecondaryExercise" = "二次的なエクササイズを選択してください";
 "selectTemplate" = "テンプレートの選択";
 "set" = "セット";
 "sets" = "セット";
@@ -432,6 +434,7 @@
 "total" = "合計";
 "trendDown" = "前の期間より%@減少";
 "trendUp" = "前の期間より%@増加";
+"trendFlat" = "前の期間から変化なし";
 "trackMore" = "もっと追跡する";
 "triceps" = "上腕三頭筋";
 "two" = "二";
@@ -727,9 +730,13 @@
 
 // MARK: - Exercise Volume Highlights
 "avgMoreExerciseVolumeThisMonthThanLastMonth" = "今月のこのエクササイズの平均ボリュームは先月よりも多くなっています。";
+"avgMoreExerciseSetsThisMonthThanLastMonth" = "今月のこのエクササイズの平均セット数は先月よりも多くなっています。";
 "avgLessExerciseVolumeThisMonthThanLastMonth" = "今月のこのエクササイズの平均ボリュームは先月よりも少なくなっています。";
-"avgMoreExerciseVolumeThisYearThanLastYear" = "今年は、この演習の平均ボリュームが昨年よりも多くなりました。";
-"avgLessExerciseVolumeThisYearThanLastYear" = "今年のこの演習の平均ボリュームは昨年よりも少なくなっています。";
+"avgLessExerciseSetsThisMonthThanLastMonth" = "今月のこのエクササイズの平均セット数は先月よりも少なくなっています。";
+"avgMoreExerciseVolumeThisYearThanLastYear" = "今年のこのエクササイズの平均ボリュームは昨年よりも多くなっています。";
+"avgMoreExerciseSetsThisYearThanLastYear" = "今年のこのエクササイズの平均セット数は昨年よりも多くなっています。";
+"avgLessExerciseVolumeThisYearThanLastYear" = "今年のこのエクササイズの平均ボリュームは昨年よりも少なくなっています。";
+"avgLessExerciseSetsThisYearThanLastYear" = "今年のこのエクササイズの平均セット数は昨年よりも少なくなっています。";
 
 // MARK: - Exercise Weight Highlights
 "higherMaxWeightThisMonthThanLastMonth" = "今月のあなたのベスト体重は先月よりも増えています。";
@@ -835,11 +842,81 @@
 "higherMaxE1RMThisYearThanLastYear" = "今年の推定1RMは昨年より高くなっています。";
 "lowerMaxE1RMThisYearThanLastYear" = "今年の推定1RMは昨年より低くなっています。";
 
+/* Set Volume (best single-set volume) */
+"setVolume" = "セットボリューム";
+"setVolumeInfo" = "セットボリューム：1セットの重量×レップ数です。1セットあたりのベスト記録を追跡します。合計ボリュームと異なり、1セットでより重い重量を扱うかレップ数を増やした場合にのみ伸びます。";
+"higherMaxSetVolumeThisMonthThanLastMonth" = "今月のベストセットボリュームは先月より高くなっています。";
+"lowerMaxSetVolumeThisMonthThanLastMonth" = "今月のベストセットボリュームは先月より低くなっています。";
+"higherMaxSetVolumeThisYearThanLastYear" = "今年のベストセットボリュームは昨年より高くなっています。";
+"lowerMaxSetVolumeThisYearThanLastYear" = "今年のベストセットボリュームは昨年より低くなっています。";
+
+/* Metric detail "About" sections */
+"aboutMetric" = "「%@」について";
+"weightInfo" = "1セットで挙げた最も重い重量を日ごとに表示します。扱う重量が時間とともに増えることは、筋力向上の最も直接的なサインです。";
+"repetitionsInfo" = "1セットで行った最多レップ数を日ごとに表示します。同じ重量でより多くのレップをこなすと筋持久力が高まり、進歩のもう一つの形になります。";
+"volumeInfo" = "ボリュームは動かした総重量です。重量 × レップ数を1週間の全セットで合計します。ボリュームが多いほど総仕事量が多く、筋肥大の重要な要因になります。";
+"setsInfo" = "セット数は、1週間にこのエクササイズで記録した有効なセットの数です（実際に完了したセットのみをカウントします）。週あたりのセット数はトレーニングボリュームの標準的な指標で、毎週十分なセットをこなすことが筋力と筋肉の成長の重要な要因になります。";
+
 "progressMetric" = "進捗指標";
 
 "maxWeight" = "最大重量";
 "maxReps" = "最大回数";
 
-"metricInfoWeight" = "この種目で記録した最も重いセット — 最大重量とその回数。";
-"metricInfoReps" = "この種目で最も回数の多いセット — 最大回数とその重量。";
-"swipeForMetrics" = "バッジを上下にスワイプして指標を切り替えます。";
+"metricInfoWeight" = "1セットで挙げた最も重い重量。回数は考慮されません。";
+"metricInfoReps" = "1セットで行った最多回数。重量は考慮されません。";
+"tapForMetricInfo" = "タップすると詳細の表示と指標の切り替えができます。";
+"personalRecord" = "自己ベスト";
+"repsShort" = "回数";
+
+/* Workout Progress Section */
+"personalRecords" = "自己ベスト";
+"personalRecordsCount" = "自己ベスト%d件";
+"personalRecordsMoreCount" = "他%d件";
+"exerciseProgress" = "種目ごとの進捗";
+"exercisesImproved" = "%2$d種目中%1$d種目が向上";
+"firstSession" = "初回セッション";
+"volumeVsLastTime" = "ボリューム比較（前回）";
+"thisWorkout" = "今回のワークアウト";
+"firstTimeForThisWorkout" = "このワークアウトは今回が初めてです。今後のセッションはこれと比較されます。";
+"workoutPRInfo" = "自己ベストとは、このワークアウトのセットが、それ以前のすべてのワークアウトでの最高重量・最多回数・推定1RMを上回ったことを意味します。後で更新されても、この日の記録として残ります。";
+"workoutTrendInfo" = "各種目のトレンドは、このワークアウトでの進捗指標のベスト値を、その前の1か月間のベストと比較します — 下の種目バッジと同じ比較です。";
+"workoutVolumeCompareInfo" = "総ボリューム（各セットの重量×回数）を、前回同じワークアウトを行ったときと比較します。";
+"improvedCount" = "%d種目向上";
+
+/* Paywall */
+"stayMotivated" = "モチベーション維持";
+"liveProgress" = "ライブ進捗";
+"liveProgressPromotionText" = "トレーニング中に各セットが現在のベストと比べてどうかをリアルタイムで確認。ワークアウト後には自己ベストとトレンドも。";
+"cancelAnytime" = "いつでもキャンセル可能";
+"purchaseFailed" = "購入に失敗しました";
+"purchaseFailedText" = "問題が発生しました。請求は行われていません。もう一度お試しください。";
+"restoreFailed" = "復元に失敗しました";
+"restoreFailedText" = "購入を復元できませんでした。接続を確認してもう一度お試しください。";
+
+/* Workout stats (workout detail tiles & detail screens) */
+"rps" = "RP";
+"average" = "平均";
+"volumePerSet" = "セットごとのボリューム";
+"workoutStatCompareSameInfo" = "トレンドは、このワークアウトを同じワークアウトの前回の実施と比較します。バーは直近の実施を示し、右端の強調されたバーがこのワークアウトです。";
+"workoutStatCompareRecentInfo" = "このワークアウトには過去の実施がないため、トレンドは直近のワークアウトの平均と比較します。バーはそれらのワークアウトを示し、右端の強調されたバーがこのワークアウトです。";
+"workoutStatAverageInfo" = "表示期間におけるワークアウトごとの平均です。トレンドは直前の期間と比較します。各バーは1回のワークアウトで、最も鍛えた筋肉グループの色が付きます。年表示では月ごとの平均を示します。";
+"workoutVolumeAboutInfo" = "ボリュームはワークアウトで動かした総重量です — 重量 × 回数を全セットで合計したもの。ワークアウト間で比較すると、セッションに含まれる仕事量がわかります。";
+"workoutDurationAboutInfo" = "間隔はワークアウトの開始から終了までの時間です。長くても短くてもそれ自体は良し悪しではありません — ボリュームと合わせて、トレーニングの密度を見ましょう。";
+"workoutSetsAboutInfo" = "ワークアウトで記録したセット数 — バーの重量に関係なく、セッションでどれだけ行ったかを示すシンプルな指標です。";
+"workoutRepsAboutInfo" = "ワークアウトで記録したすべての回数を全セットで合計したものです。セット数とボリュームと合わせて、セッションの仕事量を表します。";
+"avgMoreWorkoutVolumeThisMonthThanLastMonth" = "今月はワークアウトごとのボリュームが先月より多いです。";
+"avgLessWorkoutVolumeThisMonthThanLastMonth" = "今月はワークアウトごとのボリュームが先月より少ないです。";
+"avgMoreWorkoutVolumeThisYearThanLastYear" = "今年はワークアウトごとのボリュームが昨年より多いです。";
+"avgLessWorkoutVolumeThisYearThanLastYear" = "今年はワークアウトごとのボリュームが昨年より少ないです。";
+"avgLongerWorkoutsThisMonthThanLastMonth" = "今月のワークアウトは先月より長いです。";
+"avgShorterWorkoutsThisMonthThanLastMonth" = "今月のワークアウトは先月より短いです。";
+"avgLongerWorkoutsThisYearThanLastYear" = "今年のワークアウトは昨年より長いです。";
+"avgShorterWorkoutsThisYearThanLastYear" = "今年のワークアウトは昨年より短いです。";
+"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "今月はワークアウトごとのセット数が先月より多いです。";
+"avgLessSetsPerWorkoutThisMonthThanLastMonth" = "今月はワークアウトごとのセット数が先月より少ないです。";
+"avgMoreSetsPerWorkoutThisYearThanLastYear" = "今年はワークアウトごとのセット数が昨年より多いです。";
+"avgLessSetsPerWorkoutThisYearThanLastYear" = "今年はワークアウトごとのセット数が昨年より少ないです。";
+"avgMoreRepsPerWorkoutThisMonthThanLastMonth" = "今月はワークアウトごとの回数が先月より多いです。";
+"avgLessRepsPerWorkoutThisMonthThanLastMonth" = "今月はワークアウトごとの回数が先月より少ないです。";
+"avgMoreRepsPerWorkoutThisYearThanLastYear" = "今年はワークアウトごとの回数が昨年より多いです。";
+"avgLessRepsPerWorkoutThisYearThanLastYear" = "今年はワークアウトごとの回数が昨年より少ないです。";

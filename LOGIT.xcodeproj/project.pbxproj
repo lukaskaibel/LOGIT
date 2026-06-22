@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		10F53DA7818380C706F42B20 /* WorkoutLiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */; };
 		18F8886F2E06B3DCB04A2002 /* LOGITWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 79D10973BCE1A0618D3256CD /* LOGITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2333D8B12B944AD1A27D0E0A /* SetEntityClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD50531C168D4EDFB527D76A /* SetEntityClasses.swift */; };
+		268525E87C3944BA9208D129 /* TrendIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D5D5995AEAE4AA8849AAF28 /* TrendIndicatorView.swift */; };
 		2A384BE3816900000002 /* ExerciseSuggestionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54EE2592821500000001 /* ExerciseSuggestionService.swift */; };
 		396ADE67CD8C1D14F7A8D82A /* LOGITWidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */; };
 		435F070826CC8D1F8D7239B8 /* WorkoutDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */; };
@@ -33,7 +35,6 @@
 		80036CE42EFF166000B7C7B4 /* Ifrit in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 80036CE02EFEFFD100B7C7B4 /* Ifrit */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		801BBD622DF7338A00CDB1FB /* LOGITStoreKit.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC9E2DF7338A00CDB1FB /* LOGITStoreKit.storekit */; };
 		801BBD632DF7338A00CDB1FB /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC942DF7338A00CDB1FB /* Launch Screen.storyboard */; };
-		80BEEP012EF0000000000001 /* beep.wav in Resources */ = {isa = PBXBuildFile; fileRef = 80BEEP022EF0000000000001 /* beep.wav */; };
 		801BBD652DF7338A00CDB1FB /* timer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC982DF7338A00CDB1FB /* timer.wav */; };
 		801BBD662DF7338A00CDB1FB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 801BBCAA2DF7338A00CDB1FB /* Localizable.strings */; };
 		801BBD672DF7338A00CDB1FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 801BBC9A2DF7338A00CDB1FB /* Assets.xcassets */; };
@@ -41,6 +42,7 @@
 		801BBD692DF7338A00CDB1FB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBC9D2DF7338A00CDB1FB /* Constants.swift */; };
 		801BBD6A2DF7338A00CDB1FB /* MuscleGroupGradientStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD482DF7338A00CDB1FB /* MuscleGroupGradientStyle.swift */; };
 		801BBD6B2DF7338A00CDB1FB /* ExerciseVolumeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCF12DF7338A00CDB1FB /* ExerciseVolumeScreen.swift */; };
+		E1E1E1000000000000000B11 /* ExerciseSetsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F11 /* ExerciseSetsScreen.swift */; };
 		801BBD6C2DF7338A00CDB1FB /* Template+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCD52DF7338A00CDB1FB /* Template+.swift */; };
 		801BBD6D2DF7338A00CDB1FB /* Database+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCC62DF7338A00CDB1FB /* Database+Preview.swift */; };
 		801BBD6E2DF7338A00CDB1FB /* MeasurementEntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCA12DF7338A00CDB1FB /* MeasurementEntryType.swift */; };
@@ -55,7 +57,6 @@
 		801BBD772DF7338A00CDB1FB /* TemplateCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD0E2DF7338A00CDB1FB /* TemplateCell.swift */; };
 		801BBD782DF7338A00CDB1FB /* TemplateEditorScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD132DF7338A00CDB1FB /* TemplateEditorScreen.swift */; };
 		801BBD792DF7338A00CDB1FB /* ExerciseWeightTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCEC2DF7338A00CDB1FB /* ExerciseWeightTile.swift */; };
-		E1E1E1000000000000000B01 /* ExerciseE1RMTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */; };
 		801BBD7A2DF7338A00CDB1FB /* LOGIT.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCC92DF7338A00CDB1FB /* LOGIT.xcdatamodeld */; };
 		801BBD7B2DF7338A00CDB1FB /* NavigationChevron.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD552DF7338A00CDB1FB /* NavigationChevron.swift */; };
 		801BBD7C2DF7338A00CDB1FB /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD002DF7338A00CDB1FB /* HomeScreen.swift */; };
@@ -64,7 +65,6 @@
 		801BBD7F2DF7338A00CDB1FB /* ReorderableForEach.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD562DF7338A00CDB1FB /* ReorderableForEach.swift */; };
 		801BBD802DF7338A00CDB1FB /* TileStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD4C2DF7338A00CDB1FB /* TileStyle.swift */; };
 		801BBD812DF7338A00CDB1FB /* ExerciseWeightScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCF22DF7338A00CDB1FB /* ExerciseWeightScreen.swift */; };
-		E1E1E1000000000000000B02 /* ExerciseE1RMScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */; };
 		801BBD822DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCF02DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift */; };
 		801BBD832DF7338A00CDB1FB /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBC9F2DF7338A00CDB1FB /* Secrets.swift */; };
 		801BBD842DF7338A00CDB1FB /* LogitProLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD532DF7338A00CDB1FB /* LogitProLogo.swift */; };
@@ -76,6 +76,8 @@
 		801BBD8A2DF7338A00CDB1FB /* DropSetCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD162DF7338A00CDB1FB /* DropSetCell.swift */; };
 		801BBD8B2DF7338A00CDB1FB /* VolumeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD042DF7338A00CDB1FB /* VolumeScreen.swift */; };
 		801BBD8C2DF7338A00CDB1FB /* ExerciseVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */; };
+		E1E1E1000000000000000B10 /* ExerciseSetsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F10 /* ExerciseSetsTile.swift */; };
+		E1E1E1000000000000000B08 /* ExerciseMetricTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F08 /* ExerciseMetricTile.swift */; };
 		801BBD8D2DF7338A00CDB1FB /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCA32DF7338A00CDB1FB /* WeightUnit.swift */; };
 		801BBD8E2DF7338A00CDB1FB /* VolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCFC2DF7338A00CDB1FB /* VolumeTile.swift */; };
 		801BBD8F2DF7338A00CDB1FB /* SuperSetCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD182DF7338A00CDB1FB /* SuperSetCell.swift */; };
@@ -92,7 +94,6 @@
 		801BBD9A2DF7338A00CDB1FB /* MeasurementController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCB92DF7338A00CDB1FB /* MeasurementController.swift */; };
 		801BBD9B2DF7338A00CDB1FB /* TemplateSetGroup+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCD82DF7338A00CDB1FB /* TemplateSetGroup+.swift */; };
 		801BBD9C2DF7338A00CDB1FB /* UnitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD5A2DF7338A00CDB1FB /* UnitView.swift */; };
-		268525E87C3944BA9208D129 /* TrendIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D5D5995AEAE4AA8849AAF28 /* TrendIndicatorView.swift */; };
 		801BBD9D2DF7338A00CDB1FB /* SuperSet+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCD42DF7338A00CDB1FB /* SuperSet+.swift */; };
 		801BBD9E2DF7338A00CDB1FB /* TileHeaderStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD4B2DF7338A00CDB1FB /* TileHeaderStyle.swift */; };
 		801BBD9F2DF7338A00CDB1FB /* TemplateGenerationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD432DF7338A00CDB1FB /* TemplateGenerationModifier.swift */; };
@@ -195,7 +196,6 @@
 		801BBE042DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCFE2DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift */; };
 		801BBE052DF7338A00CDB1FB /* PrivacyPolicyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD2E2DF7338A00CDB1FB /* PrivacyPolicyScreen.swift */; };
 		801BBE062DF7338A00CDB1FB /* VolumeCalculating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBE2DF7338A00CDB1FB /* VolumeCalculating.swift */; };
-		FAC9CFA615E04E86BD814205 /* OneRepMaxCalculating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6923C33A92504E5287236332 /* OneRepMaxCalculating.swift */; };
 		8031D04C2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8031D04B2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift */; };
 		8054E6B42F1D9581003F150D /* ExerciseAttemptCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8054E6B32F1D9581003F150D /* ExerciseAttemptCell.swift */; };
 		8054E6B72F1DB513003F150D /* ComparisonBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8054E6B52F1DB513003F150D /* ComparisonBar.swift */; };
@@ -211,7 +211,6 @@
 		80A1D9802EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */; };
 		80A1D9812EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */; };
 		80A1D9822EDC98E6004EE258 /* PinnedExerciseWeightTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */; };
-		E1E1E1000000000000000B03 /* PinnedExerciseE1RMTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F03 /* PinnedExerciseE1RMTile.swift */; };
 		80A7A0D12F2E6C5C00112233 /* logit_terms_and_conditions.md in Resources */ = {isa = PBXBuildFile; fileRef = 80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */; };
 		80AA00022F3A000100AA0001 /* RestDurationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00012F3A000100AA0001 /* RestDurationPicker.swift */; };
 		80AA00042F3A000100AA0001 /* RestTimerBetweenSetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */; };
@@ -220,6 +219,7 @@
 		80AA000C2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */; };
 		80AA00102F3A000100AA0001 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 801BBCAA2DF7338A00CDB1FB /* Localizable.strings */; };
 		80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387BA2EBA187100AD7EFC /* DecimalField.swift */; };
+		80BEEP012EF0000000000001 /* beep.wav in Resources */ = {isa = PBXBuildFile; fileRef = 80BEEP022EF0000000000001 /* beep.wav */; };
 		80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = 80C2B98E2EC9362A00118FE2 /* ColorfulX */; };
 		80CBE1D52ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */; };
 		80CBE1D62ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */; };
@@ -235,14 +235,11 @@
 		898FDFC3AC4FF171A0E6C549 /* WorkoutLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */; };
 		8C6BE79BA086E3876A56C1D7 /* SharedWithYouBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */; };
 		8E306606440725A568FE5F1A /* ExerciseMergeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */; };
+		8F4A3C022E5A9B0100D4E5F2 /* SetVolumeBarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4A3C012E5A9B0100D4E5F1 /* SetVolumeBarChart.swift */; };
 		9392C43C9501E6676A02488A /* WorkoutLiveActivitySnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */; };
 		9C03B11C8A034786C5544D2E /* ScreenshotFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */; };
+		9D2E7A022F30AA0100C1D2E2 /* DemoWorkoutSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2E7A012F30AA0100C1D2E1 /* DemoWorkoutSeeder.swift */; };
 		9F68D70717290138E369B178 /* ExerciseMergingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E384D0F4B54340F910F6813 /* ExerciseMergingSheet.swift */; };
-		ACC49C37E1B74DFAC016299F /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BDE77C44D210E79936D216 /* ShareSheet.swift */; };
-		B3DC6B7D9EF58D3A51C28227 /* LOGITScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */; };
-		E5F79A5B29FEF4F260749E66 /* LiveActivityShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */; };
-		F83E8531DDDC8C271BDF20F1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A72B470FE19DAE1E42233F7F /* Foundation.framework */; };
-		FF178CF5635C188320F0E7B4 /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */; };
 		A10000000000000000000001 /* LocalizedMarkdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* LocalizedMarkdown.swift */; };
 		A10000000000000000000010 /* logit_privacy_policy_de.md in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000050 /* logit_privacy_policy_de.md */; };
 		A10000000000000000000011 /* logit_privacy_policy_es.md in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000051 /* logit_privacy_policy_es.md */; };
@@ -258,6 +255,22 @@
 		A1000000000000000000001B /* logit_terms_and_conditions_ja.md in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000005B /* logit_terms_and_conditions_ja.md */; };
 		A1000000000000000000001C /* logit_terms_and_conditions_ko.md in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000005C /* logit_terms_and_conditions_ko.md */; };
 		A1000000000000000000001D /* logit_terms_and_conditions_it.md in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000005D /* logit_terms_and_conditions_it.md */; };
+		A1C7F2E409AB4D11AA01FE10 /* WorkoutProgressSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C7F2E309AB4D11AA01FE10 /* WorkoutProgressSection.swift */; };
+		E1E1E1000000000000000B09 /* WorkoutStatTiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F09 /* WorkoutStatTiles.swift */; };
+		E1E1E1000000000000000B0A /* WorkoutStatScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F0A /* WorkoutStatScreen.swift */; };
+		ACC49C37E1B74DFAC016299F /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BDE77C44D210E79936D216 /* ShareSheet.swift */; };
+		B3DC6B7D9EF58D3A51C28227 /* LOGITScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */; };
+		E1E1E1000000000000000B01 /* ExerciseE1RMTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */; };
+		E1E1E1000000000000000B02 /* ExerciseE1RMScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */; };
+		E1E1E1000000000000000B03 /* PinnedExerciseE1RMTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F03 /* PinnedExerciseE1RMTile.swift */; };
+		E1E1E1000000000000000B04 /* PinnedExerciseSetVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F04 /* PinnedExerciseSetVolumeTile.swift */; };
+		E1E1E1000000000000000B05 /* ExerciseSetVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F05 /* ExerciseSetVolumeTile.swift */; };
+		E1E1E1000000000000000B06 /* ExerciseSetVolumeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F06 /* ExerciseSetVolumeScreen.swift */; };
+		E1E1E1000000000000000B07 /* AboutSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F07 /* AboutSection.swift */; };
+		E5F79A5B29FEF4F260749E66 /* LiveActivityShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */; };
+		F83E8531DDDC8C271BDF20F1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A72B470FE19DAE1E42233F7F /* Foundation.framework */; };
+		FAC9CFA615E04E86BD814205 /* OneRepMaxCalculating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6923C33A92504E5287236332 /* OneRepMaxCalculating.swift */; };
+		FF178CF5635C188320F0E7B4 /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -311,19 +324,21 @@
 
 /* Begin PBXFileReference section */
 		0400C2E827A4AEAF03BACDC6 /* SnapshotHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SnapshotHelper.swift; sourceTree = "<group>"; };
-		06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivityManager.swift; path = WorkoutLiveActivityManager.swift; sourceTree = "<group>"; };
+		06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityManager.swift; sourceTree = "<group>"; };
+		0D5D5995AEAE4AA8849AAF28 /* TrendIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendIndicatorView.swift; sourceTree = "<group>"; };
 		0E384D0F4B54340F910F6813 /* ExerciseMergingSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergingSheet.swift; sourceTree = "<group>"; };
 		144AED8F76DE3EBB1A1752AD /* LOGITUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LOGITUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		14BDE77C44D210E79936D216 /* ShareSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
-		19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivityWidget.swift; path = WorkoutLiveActivityWidget.swift; sourceTree = "<group>"; };
+		19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityWidget.swift; sourceTree = "<group>"; };
 		1EB3B92BF7A5E9FE9E442716 /* WorkoutSharingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutSharingService.swift; sourceTree = "<group>"; };
 		22040B8B5D5971A78B9E3A04 /* Pods_LOGIT.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LOGIT.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedWithYouBanner.swift; sourceTree = "<group>"; };
 		3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LOGITScreenshots.swift; sourceTree = "<group>"; };
 		4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutDTO.swift; sourceTree = "<group>"; };
-		4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivitySnapshotBuilder.swift; path = WorkoutLiveActivitySnapshotBuilder.swift; sourceTree = "<group>"; };
+		4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivitySnapshotBuilder.swift; sourceTree = "<group>"; };
 		54EE2592821500000001 /* ExerciseSuggestionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSuggestionService.swift; sourceTree = "<group>"; };
-		5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivitySnapshotBuilderTests.swift; path = WorkoutLiveActivitySnapshotBuilderTests.swift; sourceTree = "<group>"; };
+		5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivitySnapshotBuilderTests.swift; sourceTree = "<group>"; };
+		6923C33A92504E5287236332 /* OneRepMaxCalculating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneRepMaxCalculating.swift; sourceTree = "<group>"; };
 		7907FDE9289E99B1006AF271 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		792A3FF22AB478F000C6A097 /* DatabaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseTests.swift; sourceTree = "<group>"; };
 		792D522B27F1160800B08813 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -340,7 +355,6 @@
 		801BBC942DF7338A00CDB1FB /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		801BBC952DF7338A00CDB1FB /* LOGIT.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LOGIT.entitlements; sourceTree = "<group>"; };
 		801BBC962DF7338A00CDB1FB /* LOGITApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LOGITApp.swift; sourceTree = "<group>"; };
-		80BEEP022EF0000000000001 /* beep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beep.wav; sourceTree = "<group>"; };
 		801BBC982DF7338A00CDB1FB /* timer.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = timer.wav; sourceTree = "<group>"; };
 		801BBC9A2DF7338A00CDB1FB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		801BBC9B2DF7338A00CDB1FB /* logit_privacy_policy.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy.md; sourceTree = "<group>"; };
@@ -373,7 +387,6 @@
 		801BBCBC2DF7338A00CDB1FB /* TemplateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateService.swift; sourceTree = "<group>"; };
 		801BBCBD2DF7338A00CDB1FB /* TextProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextProcessing.swift; sourceTree = "<group>"; };
 		801BBCBE2DF7338A00CDB1FB /* VolumeCalculating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeCalculating.swift; sourceTree = "<group>"; };
-		6923C33A92504E5287236332 /* OneRepMaxCalculating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneRepMaxCalculating.swift; sourceTree = "<group>"; };
 		801BBCBF2DF7338A00CDB1FB /* WeightConverting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightConverting.swift; sourceTree = "<group>"; };
 		801BBCC22DF7338A00CDB1FB /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		801BBCC32DF7338A00CDB1FB /* Database+EntityCreation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+EntityCreation.swift"; sourceTree = "<group>"; };
@@ -410,14 +423,15 @@
 		801BBCE62DF7338A00CDB1FB /* WorkoutSetPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetPredicateFactory.swift; sourceTree = "<group>"; };
 		801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRepetitionsTile.swift; sourceTree = "<group>"; };
 		801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseVolumeTile.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F10 /* ExerciseSetsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSetsTile.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F08 /* ExerciseMetricTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseMetricTile.swift; sourceTree = "<group>"; };
 		801BBCEC2DF7338A00CDB1FB /* ExerciseWeightTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseWeightTile.swift; sourceTree = "<group>"; };
-		E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseE1RMTile.swift; sourceTree = "<group>"; };
 		801BBCEE2DF7338A00CDB1FB /* ExerciseDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailScreen.swift; sourceTree = "<group>"; };
 		801BBCEF2DF7338A00CDB1FB /* ExerciseHistoryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHistoryScreen.swift; sourceTree = "<group>"; };
 		801BBCF02DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRepetitionsScreen.swift; sourceTree = "<group>"; };
 		801BBCF12DF7338A00CDB1FB /* ExerciseVolumeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseVolumeScreen.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F11 /* ExerciseSetsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSetsScreen.swift; sourceTree = "<group>"; };
 		801BBCF22DF7338A00CDB1FB /* ExerciseWeightScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseWeightScreen.swift; sourceTree = "<group>"; };
-		E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseE1RMScreen.swift; sourceTree = "<group>"; };
 		801BBCF42DF7338A00CDB1FB /* ExerciseCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseCell.swift; sourceTree = "<group>"; };
 		801BBCF52DF7338A00CDB1FB /* ExerciseEditScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseEditScreen.swift; sourceTree = "<group>"; };
 		801BBCF62DF7338A00CDB1FB /* ExerciseListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseListScreen.swift; sourceTree = "<group>"; };
@@ -501,7 +515,6 @@
 		801BBD562DF7338A00CDB1FB /* ReorderableForEach.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReorderableForEach.swift; sourceTree = "<group>"; };
 		801BBD582DF7338A00CDB1FB /* TipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipView.swift; sourceTree = "<group>"; };
 		801BBD5A2DF7338A00CDB1FB /* UnitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitView.swift; sourceTree = "<group>"; };
-		0D5D5995AEAE4AA8849AAF28 /* TrendIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendIndicatorView.swift; sourceTree = "<group>"; };
 		801BBD5B2DF7338A00CDB1FB /* WidgetCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetCollectionView.swift; sourceTree = "<group>"; };
 		801BBD5F2DF7338A00CDB1FB /* LOGIT 2.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 2.0.xcdatamodel"; sourceTree = "<group>"; };
 		801BBD602DF7338A00CDB1FB /* LOGIT 3.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 3.0.xcdatamodel"; sourceTree = "<group>"; };
@@ -523,7 +536,6 @@
 		80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseRepetitionsTile.swift; sourceTree = "<group>"; };
 		80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseVolumeTile.swift; sourceTree = "<group>"; };
 		80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseWeightTile.swift; sourceTree = "<group>"; };
-		E1E1E1000000000000000F03 /* PinnedExerciseE1RMTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseE1RMTile.swift; sourceTree = "<group>"; };
 		80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions.md; sourceTree = "<group>"; };
 		80AA00012F3A000100AA0001 /* RestDurationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDurationPicker.swift; sourceTree = "<group>"; };
 		80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestTimerBetweenSetsView.swift; sourceTree = "<group>"; };
@@ -532,6 +544,7 @@
 		80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingTimerButton.swift; sourceTree = "<group>"; };
 		80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingStopwatchStopButton.swift; sourceTree = "<group>"; };
 		80B387BA2EBA187100AD7EFC /* DecimalField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalField.swift; sourceTree = "<group>"; };
+		80BEEP022EF0000000000001 /* beep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beep.wav; sourceTree = "<group>"; };
 		80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementDetailScreen.swift; sourceTree = "<group>"; };
 		80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementsEditSheet.swift; sourceTree = "<group>"; };
 		80CBE1D42ED7AFD500DDE1C5 /* MeasurementTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementTile.swift; sourceTree = "<group>"; };
@@ -542,35 +555,48 @@
 		80NEWTEST008 /* EntityExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityExtensionTests.swift; sourceTree = "<group>"; };
 		80NEWTEST00A /* ServicesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesTests.swift; sourceTree = "<group>"; };
 		80NEWTEST00C /* WorkoutSharingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSharingTests.swift; sourceTree = "<group>"; };
-		829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutLiveActivityAttributes.swift; path = WorkoutLiveActivityAttributes.swift; sourceTree = "<group>"; };
-		A72B470FE19DAE1E42233F7F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityShowcaseView.swift; sourceTree = "<group>"; };
-		AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeService.swift; sourceTree = "<group>"; };
-		BA2F6D7984C9394E060503E7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = Info.plist; sourceTree = "<group>"; };
-		C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScreenshotFixtures.swift; sourceTree = "<group>"; };
-		C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LOGITWidgetExtension.swift; path = LOGITWidgetExtension.swift; sourceTree = "<group>"; };
-		EF956F5D14BBB78133BD528A /* ExerciseMergeServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeServiceTests.swift; sourceTree = "<group>"; };
-		A10000000000000000000100 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A10000000000000000000101 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A10000000000000000000102 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt-BR; path = pt-BR.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A10000000000000000000103 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A10000000000000000000104 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A10000000000000000000105 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
+		829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityAttributes.swift; sourceTree = "<group>"; };
+		8F4A3C012E5A9B0100D4E5F1 /* SetVolumeBarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetVolumeBarChart.swift; sourceTree = "<group>"; };
+		9D2E7A012F30AA0100C1D2E1 /* DemoWorkoutSeeder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DemoWorkoutSeeder.swift; sourceTree = "<group>"; };
 		A10000000000000000000002 /* LocalizedMarkdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedMarkdown.swift; sourceTree = "<group>"; };
 		A10000000000000000000050 /* logit_privacy_policy_de.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy_de.md; sourceTree = "<group>"; };
 		A10000000000000000000051 /* logit_privacy_policy_es.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy_es.md; sourceTree = "<group>"; };
 		A10000000000000000000052 /* logit_privacy_policy_fr.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy_fr.md; sourceTree = "<group>"; };
-		A10000000000000000000053 /* logit_privacy_policy_pt-BR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy_pt-BR.md; sourceTree = "<group>"; };
+		A10000000000000000000053 /* logit_privacy_policy_pt-BR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "logit_privacy_policy_pt-BR.md"; sourceTree = "<group>"; };
 		A10000000000000000000054 /* logit_privacy_policy_ja.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy_ja.md; sourceTree = "<group>"; };
 		A10000000000000000000055 /* logit_privacy_policy_ko.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy_ko.md; sourceTree = "<group>"; };
 		A10000000000000000000056 /* logit_privacy_policy_it.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy_it.md; sourceTree = "<group>"; };
 		A10000000000000000000057 /* logit_terms_and_conditions_de.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions_de.md; sourceTree = "<group>"; };
 		A10000000000000000000058 /* logit_terms_and_conditions_es.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions_es.md; sourceTree = "<group>"; };
 		A10000000000000000000059 /* logit_terms_and_conditions_fr.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions_fr.md; sourceTree = "<group>"; };
-		A1000000000000000000005A /* logit_terms_and_conditions_pt-BR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions_pt-BR.md; sourceTree = "<group>"; };
+		A1000000000000000000005A /* logit_terms_and_conditions_pt-BR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "logit_terms_and_conditions_pt-BR.md"; sourceTree = "<group>"; };
 		A1000000000000000000005B /* logit_terms_and_conditions_ja.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions_ja.md; sourceTree = "<group>"; };
 		A1000000000000000000005C /* logit_terms_and_conditions_ko.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions_ko.md; sourceTree = "<group>"; };
 		A1000000000000000000005D /* logit_terms_and_conditions_it.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions_it.md; sourceTree = "<group>"; };
+		A10000000000000000000100 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A10000000000000000000101 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A10000000000000000000102 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A10000000000000000000103 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A10000000000000000000104 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A10000000000000000000105 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1C7F2E309AB4D11AA01FE10 /* WorkoutProgressSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutProgressSection.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F09 /* WorkoutStatTiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStatTiles.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F0A /* WorkoutStatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStatScreen.swift; sourceTree = "<group>"; };
+		A72B470FE19DAE1E42233F7F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityShowcaseView.swift; sourceTree = "<group>"; };
+		AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeService.swift; sourceTree = "<group>"; };
+		BA2F6D7984C9394E060503E7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScreenshotFixtures.swift; sourceTree = "<group>"; };
+		C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LOGITWidgetExtension.swift; sourceTree = "<group>"; };
+		DD50531C168D4EDFB527D76A /* SetEntityClasses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetEntityClasses.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseE1RMTile.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseE1RMScreen.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F03 /* PinnedExerciseE1RMTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseE1RMTile.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F04 /* PinnedExerciseSetVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseSetVolumeTile.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F05 /* ExerciseSetVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSetVolumeTile.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F06 /* ExerciseSetVolumeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSetVolumeScreen.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F07 /* AboutSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutSection.swift; sourceTree = "<group>"; };
+		EF956F5D14BBB78133BD528A /* ExerciseMergeServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -620,7 +646,6 @@
 				0400C2E827A4AEAF03BACDC6 /* SnapshotHelper.swift */,
 				3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */,
 			);
-			name = LOGITUITests;
 			path = LOGITUITests;
 			sourceTree = "<group>";
 		};
@@ -632,7 +657,6 @@
 				06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */,
 				A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */,
 			);
-			name = LiveActivity;
 			path = LiveActivity;
 			sourceTree = "<group>";
 		};
@@ -700,6 +724,7 @@
 				801BBC952DF7338A00CDB1FB /* LOGIT.entitlements */,
 				801BBC962DF7338A00CDB1FB /* LOGITApp.swift */,
 				C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */,
+				9D2E7A012F30AA0100C1D2E1 /* DemoWorkoutSeeder.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -825,6 +850,7 @@
 				801BBCC62DF7338A00CDB1FB /* Database+Preview.swift */,
 				801BBCC72DF7338A00CDB1FB /* Database+SetConvert.swift */,
 				801BBCC82DF7338A00CDB1FB /* FetchRequestWrapper.swift */,
+				DD50531C168D4EDFB527D76A /* SetEntityClasses.swift */,
 				801BBCC92DF7338A00CDB1FB /* LOGIT.xcdatamodeld */,
 			);
 			path = Database;
@@ -894,8 +920,11 @@
 			children = (
 				801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */,
 				801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */,
+				E1E1E1000000000000000F10 /* ExerciseSetsTile.swift */,
+				E1E1E1000000000000000F08 /* ExerciseMetricTile.swift */,
 				801BBCEC2DF7338A00CDB1FB /* ExerciseWeightTile.swift */,
 				E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */,
+				E1E1E1000000000000000F05 /* ExerciseSetVolumeTile.swift */,
 			);
 			path = Tiles;
 			sourceTree = "<group>";
@@ -909,8 +938,10 @@
 				801BBCEF2DF7338A00CDB1FB /* ExerciseHistoryScreen.swift */,
 				801BBCF02DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift */,
 				801BBCF12DF7338A00CDB1FB /* ExerciseVolumeScreen.swift */,
+				E1E1E1000000000000000F11 /* ExerciseSetsScreen.swift */,
 				801BBCF22DF7338A00CDB1FB /* ExerciseWeightScreen.swift */,
 				E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */,
+				E1E1E1000000000000000F06 /* ExerciseSetVolumeScreen.swift */,
 			);
 			path = ExerciseDetail;
 			sourceTree = "<group>";
@@ -941,6 +972,7 @@
 				80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */,
 				80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */,
 				E1E1E1000000000000000F03 /* PinnedExerciseE1RMTile.swift */,
+				E1E1E1000000000000000F04 /* PinnedExerciseSetVolumeTile.swift */,
 			);
 			path = Tiles;
 			sourceTree = "<group>";
@@ -1058,6 +1090,9 @@
 				801BBD1D2DF7338A00CDB1FB /* Cells */,
 				801BBD262DF7338A00CDB1FB /* WorkoutRecorder */,
 				801BBD272DF7338A00CDB1FB /* WorkoutDetailScreen.swift */,
+				A1C7F2E309AB4D11AA01FE10 /* WorkoutProgressSection.swift */,
+				E1E1E1000000000000000F09 /* WorkoutStatTiles.swift */,
+				E1E1E1000000000000000F0A /* WorkoutStatScreen.swift */,
 				801BBD282DF7338A00CDB1FB /* WorkoutEditorScreen.swift */,
 				801BBD292DF7338A00CDB1FB /* WorkoutListScreen.swift */,
 				801BBD2A2DF7338A00CDB1FB /* WorkoutSetGroupList.swift */,
@@ -1108,6 +1143,7 @@
 				801BBD362DF7338A00CDB1FB /* DateLineChart.swift */,
 				801BBD372DF7338A00CDB1FB /* MuscleGroupOccurancesChart.swift */,
 				801BBD382DF7338A00CDB1FB /* PieGraph.swift */,
+				8F4A3C012E5A9B0100D4E5F1 /* SetVolumeBarChart.swift */,
 			);
 			path = Charts;
 			sourceTree = "<group>";
@@ -1152,6 +1188,7 @@
 				801BBD4F2DF7338A00CDB1FB /* ExerciseHeader.swift */,
 				801BBD502DF7338A00CDB1FB /* FlashView.swift */,
 				801BBD512DF7338A00CDB1FB /* InfoView.swift */,
+				E1E1E1000000000000000F07 /* AboutSection.swift */,
 				801BBD522DF7338A00CDB1FB /* IntegerField.swift */,
 				801BBD532DF7338A00CDB1FB /* LogitProLogo.swift */,
 				801BBD542DF7338A00CDB1FB /* MuscleGroupSelector.swift */,
@@ -1244,7 +1281,6 @@
 				19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */,
 				BA2F6D7984C9394E060503E7 /* Info.plist */,
 			);
-			name = LOGITWidgetExtension;
 			path = LOGITWidgetExtension;
 			sourceTree = "<group>";
 		};
@@ -1340,7 +1376,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					79E849062A7EA28000C0DF95 = {
 						CreatedOnToolsVersion = 14.3.1;
@@ -1361,7 +1397,7 @@
 				de,
 				es,
 				fr,
-				pt-BR,
+				"pt-BR",
 				ja,
 				ko,
 				it,
@@ -1491,10 +1527,12 @@
 				801BBD692DF7338A00CDB1FB /* Constants.swift in Sources */,
 				801BBD6A2DF7338A00CDB1FB /* MuscleGroupGradientStyle.swift in Sources */,
 				801BBD6B2DF7338A00CDB1FB /* ExerciseVolumeScreen.swift in Sources */,
+				E1E1E1000000000000000B11 /* ExerciseSetsScreen.swift in Sources */,
 				801BBD6C2DF7338A00CDB1FB /* Template+.swift in Sources */,
 				801BBD6D2DF7338A00CDB1FB /* Database+Preview.swift in Sources */,
 				801BBD6E2DF7338A00CDB1FB /* MeasurementEntryType.swift in Sources */,
 				801BBD6F2DF7338A00CDB1FB /* InfoView.swift in Sources */,
+				E1E1E1000000000000000B07 /* AboutSection.swift in Sources */,
 				801BBD702DF7338A00CDB1FB /* TimerStopwatchView.swift in Sources */,
 				801BBD712DF7338A00CDB1FB /* FinishConfirmationSheet.swift in Sources */,
 				801BBD722DF7338A00CDB1FB /* TemplatePredicateFactory.swift in Sources */,
@@ -1506,6 +1544,7 @@
 				801BBD782DF7338A00CDB1FB /* TemplateEditorScreen.swift in Sources */,
 				801BBD792DF7338A00CDB1FB /* ExerciseWeightTile.swift in Sources */,
 				E1E1E1000000000000000B01 /* ExerciseE1RMTile.swift in Sources */,
+				E1E1E1000000000000000B05 /* ExerciseSetVolumeTile.swift in Sources */,
 				801BBD7A2DF7338A00CDB1FB /* LOGIT.xcdatamodeld in Sources */,
 				801BBD7B2DF7338A00CDB1FB /* NavigationChevron.swift in Sources */,
 				801BBD7C2DF7338A00CDB1FB /* HomeScreen.swift in Sources */,
@@ -1516,9 +1555,11 @@
 				80A1D9812EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift in Sources */,
 				80A1D9822EDC98E6004EE258 /* PinnedExerciseWeightTile.swift in Sources */,
 				E1E1E1000000000000000B03 /* PinnedExerciseE1RMTile.swift in Sources */,
+				E1E1E1000000000000000B04 /* PinnedExerciseSetVolumeTile.swift in Sources */,
 				801BBD802DF7338A00CDB1FB /* TileStyle.swift in Sources */,
 				801BBD812DF7338A00CDB1FB /* ExerciseWeightScreen.swift in Sources */,
 				E1E1E1000000000000000B02 /* ExerciseE1RMScreen.swift in Sources */,
+				E1E1E1000000000000000B06 /* ExerciseSetVolumeScreen.swift in Sources */,
 				801BBD822DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift in Sources */,
 				801BBD832DF7338A00CDB1FB /* Secrets.swift in Sources */,
 				801BBD842DF7338A00CDB1FB /* LogitProLogo.swift in Sources */,
@@ -1530,6 +1571,8 @@
 				801BBD8A2DF7338A00CDB1FB /* DropSetCell.swift in Sources */,
 				801BBD8B2DF7338A00CDB1FB /* VolumeScreen.swift in Sources */,
 				801BBD8C2DF7338A00CDB1FB /* ExerciseVolumeTile.swift in Sources */,
+				E1E1E1000000000000000B10 /* ExerciseSetsTile.swift in Sources */,
+				E1E1E1000000000000000B08 /* ExerciseMetricTile.swift in Sources */,
 				801BBD8D2DF7338A00CDB1FB /* WeightUnit.swift in Sources */,
 				801BBD8E2DF7338A00CDB1FB /* VolumeTile.swift in Sources */,
 				801BBD8F2DF7338A00CDB1FB /* SuperSetCell.swift in Sources */,
@@ -1575,6 +1618,7 @@
 				801BBDB52DF7338A00CDB1FB /* IntegerField.swift in Sources */,
 				801BBDB62DF7338A00CDB1FB /* Calendar+.swift in Sources */,
 				801BBDB72DF7338A00CDB1FB /* FetchRequestWrapper.swift in Sources */,
+				2333D8B12B944AD1A27D0E0A /* SetEntityClasses.swift in Sources */,
 				801BBDB82DF7338A00CDB1FB /* WorkoutRecorderScreen.swift in Sources */,
 				801BBDB92DF7338A00CDB1FB /* ExerciseListScreen.swift in Sources */,
 				801BBDBA2DF7338A00CDB1FB /* StandardSet+.swift in Sources */,
@@ -1617,6 +1661,7 @@
 				8031D04C2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift in Sources */,
 				801BBDD92DF7338A00CDB1FB /* View+.swift in Sources */,
 				801BBDDA2DF7338A00CDB1FB /* DateBarChart.swift in Sources */,
+				8F4A3C022E5A9B0100D4E5F2 /* SetVolumeBarChart.swift in Sources */,
 				801BBDDB2DF7338A00CDB1FB /* WorkoutCell.swift in Sources */,
 				801BBDDC2DF7338A00CDB1FB /* WorkoutListScreen.swift in Sources */,
 				801BBDDD2DF7338A00CDB1FB /* TemplateDTO.swift in Sources */,
@@ -1633,6 +1678,9 @@
 				801BBDE92DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift in Sources */,
 				801BBDEA2DF7338A00CDB1FB /* EnvironmentValues+.swift in Sources */,
 				801BBDEB2DF7338A00CDB1FB /* WorkoutDetailScreen.swift in Sources */,
+				A1C7F2E409AB4D11AA01FE10 /* WorkoutProgressSection.swift in Sources */,
+				E1E1E1000000000000000B09 /* WorkoutStatTiles.swift in Sources */,
+				E1E1E1000000000000000B0A /* WorkoutStatScreen.swift in Sources */,
 				801BBDEC2DF7338A00CDB1FB /* TemplateSuperSetCell.swift in Sources */,
 				801BBDED2DF7338A00CDB1FB /* TemplateSuperSet+.swift in Sources */,
 				801BBDEE2DF7338A00CDB1FB /* KeyboardToolbarButtonStyle.swift in Sources */,
@@ -1683,6 +1731,7 @@
 				8E306606440725A568FE5F1A /* ExerciseMergeService.swift in Sources */,
 				9F68D70717290138E369B178 /* ExerciseMergingSheet.swift in Sources */,
 				9C03B11C8A034786C5544D2E /* ScreenshotFixtures.swift in Sources */,
+				9D2E7A022F30AA0100C1D2E2 /* DemoWorkoutSeeder.swift in Sources */,
 				E5F79A5B29FEF4F260749E66 /* LiveActivityShowcaseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1733,7 +1782,6 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = LOGITUITests;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1758,7 +1806,6 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
@@ -1778,7 +1825,6 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
@@ -1827,8 +1873,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -1848,6 +1896,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -1889,8 +1938,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -1903,6 +1954,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
@@ -1919,7 +1971,6 @@
 				"CODE_SIGN_IDENTITY[sdk=*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = LOGIT/App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LOGIT;
@@ -1949,7 +2000,6 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = LOGIT/App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LOGIT;
@@ -1977,7 +2027,6 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LOGITWidgetExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -2004,7 +2053,6 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = LOGITUITests;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -2031,7 +2079,6 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = S2F6F7JZ8C;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LOGITWidgetExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;

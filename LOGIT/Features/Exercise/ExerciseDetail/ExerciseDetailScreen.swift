@@ -19,6 +19,7 @@ struct ExerciseDetailScreen: View {
     // MARK: - Environment
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject var database: Database
 
     // MARK: - State
@@ -34,9 +35,14 @@ struct ExerciseDetailScreen: View {
     @State private var isShowingE1RMScreen = false
     @State private var isShowingRepetitionsScreen = false
     @State private var isShowingVolumeScreen = false
+    @State private var isShowingSetVolumeScreen = false
+    @State private var isShowingSetsScreen = false
     @State private var isShowingInstructions = false
     @State private var isShowingMergingSheet = false
     @State private var mergedIntoExercise: Exercise?
+    /// Guards `autoOpenMetric` so it pushes the metric chart only on first appearance — `onAppear`
+    /// also fires when popping back from that chart, which would otherwise re-push it endlessly.
+    @State private var hasAutoOpenedMetric = false
 
     // MARK: - Variables
 
@@ -64,33 +70,8 @@ struct ExerciseDetailScreen: View {
                     header
                         .padding(.horizontal)
 
-                    VStack {
-                        Button {
-                            isShowingWeightScreen = true
-                        } label: {
-                            ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
-                        }
-                        .buttonStyle(TileButtonStyle())
-                        Button {
-                            isShowingE1RMScreen = true
-                        } label: {
-                            ExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets)
-                        }
-                        .buttonStyle(TileButtonStyle())
-                        Button {
-                            isShowingRepetitionsScreen = true
-                        } label: {
-                            ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
-                        }
-                        .buttonStyle(TileButtonStyle())
-                        Button {
-                            isShowingVolumeScreen = true
-                        } label: {
-                            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
-                        }
-                        .buttonStyle(TileButtonStyle())
-                    }
-                    .padding(.horizontal)
+                    metricTiles(workoutSets: workoutSets)
+                        .padding(.horizontal)
 
                     VStack(spacing: SECTION_HEADER_SPACING) {
                         HStack {
@@ -133,7 +114,7 @@ struct ExerciseDetailScreen: View {
                     .padding(.horizontal)
                     .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                 }
-                .animation(.easeInOut)
+                .animation(.easeInOut, value: workoutSetGroups)
             }
             .background(
                 VStack {
@@ -249,8 +230,15 @@ struct ExerciseDetailScreen: View {
             .navigationDestination(isPresented: $isShowingVolumeScreen) {
                 ExerciseVolumeScreen(exercise: exercise, workoutSets: workoutSets)
             }
+            .navigationDestination(isPresented: $isShowingSetVolumeScreen) {
+                ExerciseSetVolumeScreen(exercise: exercise, workoutSets: workoutSets)
+            }
+            .navigationDestination(isPresented: $isShowingSetsScreen) {
+                ExerciseSetsScreen(exercise: exercise, workoutSets: workoutSets)
+            }
             .onAppear {
-                if let autoOpenMetric {
+                if let autoOpenMetric, !hasAutoOpenedMetric {
+                    hasAutoOpenedMetric = true
                     DispatchQueue.main.async {
                         switch autoOpenMetric {
                         case .estimatedOneRepMax: isShowingE1RMScreen = true
@@ -269,6 +257,101 @@ struct ExerciseDetailScreen: View {
     }
 
     // MARK: - Supporting Views
+
+    /// The metric tiles in the in-workout popover's compact language: the four "current best"
+    /// metrics as a two-column grid, with the weekly volume tile full-width beneath — its bars
+    /// need the room, and "this week" is a different kind of stat than the best-value tiles.
+    /// Collapses to one column at accessibility type sizes, where half-width tiles can't fit
+    /// their text.
+    @ViewBuilder
+    private func metricTiles(workoutSets: [WorkoutSet]) -> some View {
+        let spacing: CGFloat = 10
+        // No logged sets yet (a workout being recorded doesn't count — the tiles exclude it):
+        // one friendly placeholder instead of five identical "––" skeletons.
+        if !workoutSets.contains(where: { $0.workout?.isCurrentWorkout != true }) {
+            ExerciseMetricsEmptyTile(color: exercise.muscleGroup?.color ?? .accentColor)
+        } else {
+            VStack(spacing: spacing) {
+                if dynamicTypeSize.isAccessibilitySize {
+                    weightTile(workoutSets: workoutSets)
+                    e1RMTile(workoutSets: workoutSets)
+                    repetitionsTile(workoutSets: workoutSets)
+                    setVolumeTile(workoutSets: workoutSets)
+                    volumeTile(workoutSets: workoutSets)
+                    setsTile(workoutSets: workoutSets)
+                } else {
+                    HStack(alignment: .top, spacing: spacing) {
+                        weightTile(workoutSets: workoutSets)
+                        e1RMTile(workoutSets: workoutSets)
+                    }
+                    HStack(alignment: .top, spacing: spacing) {
+                        repetitionsTile(workoutSets: workoutSets)
+                        setVolumeTile(workoutSets: workoutSets)
+                    }
+                    // Volume (weekly tonnage) and Sets (weekly working-set count) are the two
+                    // "this week vs last" workload stats — half-width siblings, not one wide tile.
+                    HStack(alignment: .top, spacing: spacing) {
+                        volumeTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    }
+                }
+            }
+        }
+    }
+
+    private func weightTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingWeightScreen = true
+        } label: {
+            ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func e1RMTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingE1RMScreen = true
+        } label: {
+            ExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func repetitionsTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingRepetitionsScreen = true
+        } label: {
+            ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func setVolumeTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingSetVolumeScreen = true
+        } label: {
+            ExerciseSetVolumeTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func volumeTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingVolumeScreen = true
+        } label: {
+            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func setsTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingSetsScreen = true
+        } label: {
+            ExerciseSetsTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
 
     private var header: some View {
         VStack(alignment: .leading) {

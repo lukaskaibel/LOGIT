@@ -22,7 +22,7 @@ struct TemplateGenerationModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: uiImage) { image in
+            .onChange(of: uiImage) { _, image in
                 guard let image = image else {
                     isShowingCreationFailedAlert = true
                     return

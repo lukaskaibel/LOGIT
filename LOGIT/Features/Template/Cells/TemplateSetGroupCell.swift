@@ -63,7 +63,7 @@ struct TemplateSetGroupCell: View {
                         }
                     }
                     .padding(.horizontal, CELL_PADDING / 2)
-                    .animation(.interactiveSpring())
+                    .animation(.interactiveSpring(), value: setGroup.sets)
                     if canEdit {
                         HStack(spacing: 8) {
                             Button {

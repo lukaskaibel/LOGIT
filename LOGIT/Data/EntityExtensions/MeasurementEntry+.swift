@@ -8,10 +8,10 @@
 import Foundation
 import Ifrit
 
-// MARK: - Searchable Conformance
+// MARK: - Fuzzy Search Properties
 
-extension MeasurementEntry: Searchable {
-    public var properties: [FuseProp] {
+extension MeasurementEntry {
+    var searchProperties: [FuseProp] {
         let typeDescription = type?.title ?? ""
         return [FuseProp(typeDescription, weight: 1.0)]
     }

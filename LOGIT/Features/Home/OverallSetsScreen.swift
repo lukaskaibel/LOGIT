@@ -32,7 +32,7 @@ struct OverallSetsScreen: View {
                             .tag(ChartGranularity.year)
                     }
                     .pickerStyle(.segmented)
-                    .onChange(of: chartGranularity) { _ in
+                    .onChange(of: chartGranularity) {
                         // Keep the right edge showing the current period when switching granularity
                         chartScrollPosition = initialScrollPosition
                     }

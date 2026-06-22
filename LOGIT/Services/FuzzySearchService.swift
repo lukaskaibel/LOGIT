@@ -41,7 +41,7 @@ final class FuzzySearchService {
     func searchExercises(_ searchText: String, in exercises: [Exercise]) -> [Exercise] {
         guard !searchText.isEmpty else { return exercises }
         
-        let results = fuse.searchSync(searchText, in: exercises, by: \.properties)
+        let results = fuse.searchSync(searchText, in: exercises.lazy.map(\.searchProperties))
         return results.map { exercises[$0.index] }
     }
     
@@ -53,7 +53,7 @@ final class FuzzySearchService {
     func searchWorkouts(_ searchText: String, in workouts: [Workout]) -> [Workout] {
         guard !searchText.isEmpty else { return workouts }
         
-        let results = fuse.searchSync(searchText, in: workouts, by: \.properties)
+        let results = fuse.searchSync(searchText, in: workouts.lazy.map(\.searchProperties))
         return results.map { workouts[$0.index] }
     }
     
@@ -65,7 +65,7 @@ final class FuzzySearchService {
     func searchTemplates(_ searchText: String, in templates: [Template]) -> [Template] {
         guard !searchText.isEmpty else { return templates }
         
-        let results = fuse.searchSync(searchText, in: templates, by: \.properties)
+        let results = fuse.searchSync(searchText, in: templates.lazy.map(\.searchProperties))
         return results.map { templates[$0.index] }
     }
     
@@ -77,7 +77,7 @@ final class FuzzySearchService {
     func searchMeasurements(_ searchText: String, in measurements: [MeasurementEntry]) -> [MeasurementEntry] {
         guard !searchText.isEmpty else { return measurements }
         
-        let results = fuse.searchSync(searchText, in: measurements, by: \.properties)
+        let results = fuse.searchSync(searchText, in: measurements.lazy.map(\.searchProperties))
         return results.map { measurements[$0.index] }
     }
     

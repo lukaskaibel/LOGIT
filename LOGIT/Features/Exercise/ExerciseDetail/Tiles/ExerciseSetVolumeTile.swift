@@ -1,13 +1,13 @@
 //
-//  ExerciseWeightTile.swift
+//  ExerciseSetVolumeTile.swift
 //  LOGIT
 //
-//  Created by Lukas Kaibel on 03.12.24.
+//  Created by Lukas Kaibel on 11.06.26.
 //
 
 import SwiftUI
 
-struct ExerciseWeightTile: View {
+struct ExerciseSetVolumeTile: View {
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
 
@@ -15,10 +15,10 @@ struct ExerciseWeightTile: View {
         ExerciseBestMetricTile(
             exercise: exercise,
             workoutSets: workoutSets,
-            title: NSLocalizedString("weight", comment: ""),
+            title: NSLocalizedString("setVolume", comment: ""),
             unit: WeightUnit.used.rawValue,
             requiresPro: true,
-            metricValue: { $0.maximum(.weight, for: exercise) },
+            metricValue: { $0.volume(for: exercise) },
             formattedValue: { formatWeightForDisplay($0) },
             chartValue: { convertWeightForDisplayingDecimal($0) }
         )
@@ -30,12 +30,12 @@ private struct PreviewWrapperView: View {
 
     var body: some View {
         NavigationStack {
-            ExerciseWeightTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap { $0.sets })
+            ExerciseSetVolumeTile(exercise: database.getExercises().first!, workoutSets: database.getExercises().flatMap { $0.sets })
         }
     }
 }
 
-struct ExerciseWeightTileView_Previews: PreviewProvider {
+struct ExerciseSetVolumeTileView_Previews: PreviewProvider {
     static var previews: some View {
         PreviewWrapperView()
             .previewEnvironmentObjects()

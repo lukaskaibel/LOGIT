@@ -364,36 +364,32 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
 
         let configuration = timerAlarmConfiguration(duration: Self.notificationTriggerInterval(forTimerSeconds: seconds))
 
-        Task { [weak self] in
+        Task { @MainActor [weak self] in
             do {
                 _ = try await AlarmManager.shared.schedule(id: alarmID, configuration: configuration)
 
-                DispatchQueue.main.async {
-                    guard let self else {
-                        try? AlarmManager.shared.cancel(id: alarmID)
-                        return
-                    }
+                guard let self else {
+                    try? AlarmManager.shared.cancel(id: alarmID)
+                    return
+                }
 
-                    guard self.timerAlarmScheduleToken == token,
-                          self.activeTimerAlarmID == alarmID,
-                          self.mode == .timer,
-                          self.status == .running
-                    else {
-                        try? AlarmManager.shared.cancel(id: alarmID)
-                        return
-                    }
+                guard self.timerAlarmScheduleToken == token,
+                      self.activeTimerAlarmID == alarmID,
+                      self.mode == .timer,
+                      self.status == .running
+                else {
+                    try? AlarmManager.shared.cancel(id: alarmID)
+                    return
                 }
             } catch {
-                DispatchQueue.main.async {
-                    guard let self else { return }
-                    guard self.timerAlarmScheduleToken == token,
-                          self.activeTimerAlarmID == alarmID
-                    else { return }
+                guard let self else { return }
+                guard self.timerAlarmScheduleToken == token,
+                      self.activeTimerAlarmID == alarmID
+                else { return }
 
-                    self.activeTimerAlarmID = nil
-                    print("Error scheduling AlarmKit timer: \(error)")
-                    self.scheduleTimerNotification(inSeconds: seconds)
-                }
+                self.activeTimerAlarmID = nil
+                print("Error scheduling AlarmKit timer: \(error)")
+                self.scheduleTimerNotification(inSeconds: seconds)
             }
         }
     }

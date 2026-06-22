@@ -20,7 +20,6 @@ struct ExerciseWeightScreen: View {
     let workoutSets: [WorkoutSet]
 
     @State private var chartGranularity: ChartGranularity = .month
-    @State private var isShowingCurrentBestInfo = false
     @State private var chartScrollPosition: Date = .now
     @State private var selectedDate: Date?
 
@@ -44,11 +43,15 @@ struct ExerciseWeightScreen: View {
             .padding(.horizontal)
             HStack {
                 VStack(alignment: .leading) {
-                    Text(NSLocalizedString("best", comment: ""))
-                        .font(.footnote)
-                        .fontWeight(.medium)
-                        .textCase(.uppercase)
-                        .foregroundStyle(.secondary)
+                    if isShowingCurrentBestWindow {
+                        CurrentBestLabel(uppercased: true)
+                    } else {
+                        Text(NSLocalizedString("best", comment: ""))
+                            .font(.footnote)
+                            .fontWeight(.medium)
+                            .textCase(.uppercase)
+                            .foregroundStyle(.secondary)
+                    }
                     UnitView(
                         value: "\(bestVisibleWeight != nil ? formatWeightForDisplay(bestVisibleWeight!) : "––")",
                         unit: WeightUnit.used.rawValue
@@ -212,6 +215,13 @@ struct ExerciseWeightScreen: View {
                 
                 // MARK: - Highlights Section
                 highlightsSection(allDailyMaxSets: allDailyMaxSets)
+
+                // MARK: - About Section
+                AboutSection(
+                    metricTitle: NSLocalizedString("weight", comment: ""),
+                    text: NSLocalizedString("weightInfo", comment: "")
+                )
+                .padding(.horizontal)
             }
             .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
@@ -233,7 +243,7 @@ struct ExerciseWeightScreen: View {
             let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
             chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!
         }
-        .onChange(of: chartGranularity) { _ in
+        .onChange(of: chartGranularity) {
             // Re-initialize scroll position when switching granularity to avoid desync with visible window
             let anchor: Date
             switch chartGranularity {
@@ -366,6 +376,13 @@ struct ExerciseWeightScreen: View {
 
     private var visibleEndDate: Date {
         Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
+    }
+
+    /// True while the month view sits at its newest scroll position (the default), where the
+    /// visible window's best IS the exercise's current best — the header label says so then, with
+    /// the info popover explaining the term.
+    private var isShowingCurrentBestWindow: Bool {
+        chartGranularity == .month && visibleEndDate >= .now
     }
 
     private func nearestSet(to date: Date?, in sets: [WorkoutSet]) -> WorkoutSet? {

@@ -41,7 +41,7 @@ struct ExerciseEditScreen: View {
         self.onEditFinished = onEditFinished
         _exerciseName = State(initialValue: initialExerciseName ?? exerciseToEdit?.displayName ?? "")
         _muscleGroup = State(initialValue: exerciseToEdit?.muscleGroup ?? initialMuscleGroup)
-        _primaryMetric = State(initialValue: exerciseToEdit?.primaryMetric ?? .estimatedOneRepMax)
+        _primaryMetric = State(initialValue: exerciseToEdit?.primaryMetric ?? .defaultMetric)
     }
 
     // MARK: - Body

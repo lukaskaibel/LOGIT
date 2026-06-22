@@ -1,14 +1,18 @@
 //
-//  ExerciseVolumeScreen.swift
+//  ExerciseSetsScreen.swift
 //  LOGIT
 //
-//  Created by Lukas Kaibel on 03.12.24.
+//  Created by Lukas Kaibel on 22.06.26.
 //
 
 import Charts
 import SwiftUI
 
-struct ExerciseVolumeScreen: View {
+/// Sets-per-week over time for a single exercise — the detail screen behind the weekly Sets tile.
+/// Structurally the twin of `ExerciseVolumeScreen` (same scrollable weekly bar chart, month/year
+/// granularity, selection and highlights), but it counts working sets per week instead of summing
+/// weight: how many sets you logged is the standard training-volume landmark, alongside tonnage.
+struct ExerciseSetsScreen: View {
     private enum ChartGranularity {
         case month, year
     }
@@ -43,8 +47,8 @@ struct ExerciseVolumeScreen: View {
                             .textCase(.uppercase)
                             .foregroundStyle(.secondary)
                         UnitView(
-                            value: totalVolumeInTimeFrame(workoutSets),
-                            unit: WeightUnit.used.rawValue
+                            value: totalSetsInTimeFrame(workoutSets),
+                            unit: ""
                         )
                         .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
                         Text("\(visibleDomainDescription)")
@@ -67,7 +71,7 @@ struct ExerciseVolumeScreen: View {
                     ForEach(groupedWorkoutSets, id: \.0) { date, workoutSets in
                         BarMark(
                             x: .value("Day", date, unit: .weekOfYear),
-                            y: .value("Volume", volume(for: workoutSets)),
+                            y: .value("Sets", setCount(for: workoutSets)),
                             width: .ratio(0.5)
                         )
                         .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient)
@@ -76,16 +80,9 @@ struct ExerciseVolumeScreen: View {
                     // Single selection rule mark snapped to the start of the selected period
                     if let selectedDate {
                         let snapped = getPeriodStart(for: selectedDate)
-                        let selectedVolume: String = {
-                            switch chartGranularity {
-                            case .month:
-                                let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
-                                return volumeFormatted(for: sets)
-                            case .year:
-                                // Year view still selects per week
-                                let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
-                                return volumeFormatted(for: sets)
-                            }
+                        let selectedSets: String = {
+                            let sets = groupedWorkoutSets.first(where: { $0.0 == snapped })?.1 ?? []
+                            return setCountFormatted(for: sets)
                         }()
                         RuleMark(x: .value("Selected", snapped, unit: xUnit))
                             .foregroundStyle((exercise.muscleGroup?.color ?? Color.label).gradient.opacity(0.35))
@@ -93,8 +90,8 @@ struct ExerciseVolumeScreen: View {
                             .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                                 VStack(alignment: .leading) {
                                     UnitView(
-                                        value: selectedVolume,
-                                        unit: WeightUnit.used.rawValue
+                                        value: selectedSets,
+                                        unit: ""
                                     )
                                     .foregroundStyle((exercise.muscleGroup?.color ?? .label).gradient)
                                     Text(domainDescription(for: selectedDate))
@@ -142,14 +139,14 @@ struct ExerciseVolumeScreen: View {
                 .padding(.leading)
                 .padding(.trailing, 5)
                 }
-                
+
                 // MARK: - Highlights Section
                 highlightsSection
 
                 // MARK: - About Section
                 AboutSection(
-                    metricTitle: NSLocalizedString("volume", comment: ""),
-                    text: NSLocalizedString("volumeInfo", comment: "")
+                    metricTitle: NSLocalizedString("sets", comment: ""),
+                    text: NSLocalizedString("setsInfo", comment: "")
                 )
                 .padding(.horizontal)
             }
@@ -165,7 +162,7 @@ struct ExerciseVolumeScreen: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 VStack {
-                    Text("\(NSLocalizedString("volume", comment: ""))")
+                    Text("\(NSLocalizedString("sets", comment: ""))")
                         .font(.headline)
                     Text(exercise.displayName)
                         .foregroundStyle(.secondary)
@@ -194,22 +191,23 @@ struct ExerciseVolumeScreen: View {
         return startDate ... endDate
     }
 
-    private func totalVolumeInTimeFrame(_ workoutSets: [WorkoutSet]) -> String {
+    private func totalSetsInTimeFrame(_ workoutSets: [WorkoutSet]) -> String {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= chartScrollPosition && $0.workout?.date ?? .distantFuture <= endDate }
-        return volumeFormatted(for: setsInTimeFrame)
+        return setCountFormatted(for: setsInTimeFrame)
     }
 
-    private func volume(for sets: [WorkoutSet]) -> Double {
-        convertWeightForDisplayingDecimal(getVolume(of: sets, for: exercise))
-    }
-    
-    private func volumeFormatted(for sets: [WorkoutSet]) -> String {
-        formatWeightForDisplay(getVolume(of: sets, for: exercise))
+    /// Working-set count — only sets with a recorded entry, matching the weekly tile.
+    private func setCount(for sets: [WorkoutSet]) -> Int {
+        sets.filter(\.hasEntry).count
     }
 
-    /// Percent change of the total volume in the visible chart window versus the
-    /// equal-length window immediately before it. Nil when either window has no data.
+    private func setCountFormatted(for sets: [WorkoutSet]) -> String {
+        "\(setCount(for: sets))"
+    }
+
+    /// Percent change of the total set count in the visible chart window versus the equal-length
+    /// window immediately before it. Nil when either window has no data.
     private func trendPercentage(in workoutSets: [WorkoutSet]) -> Double? {
         let windowStart = chartScrollPosition
         let windowEnd = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: windowStart)!
@@ -223,8 +221,8 @@ struct ExerciseVolumeScreen: View {
             return date >= previousStart && date < windowStart
         }
         guard !currentSets.isEmpty, !previousSets.isEmpty else { return nil }
-        let current = getVolume(of: currentSets, for: exercise)
-        let previous = getVolume(of: previousSets, for: exercise)
+        let current = setCount(for: currentSets)
+        let previous = setCount(for: previousSets)
         guard previous > 0 else { return nil }
         return (Double(current) - Double(previous)) / Double(previous) * 100
     }
@@ -299,10 +297,10 @@ struct ExerciseVolumeScreen: View {
     @ViewBuilder
     private var highlightsSection: some View {
         let ranges = periodRanges()
-        let currentAvg = averageVolumePerWorkout(in: ranges.current)
-        let previousAvg = averageVolumePerWorkout(in: ranges.previous)
-        let headlineKey = exerciseVolumeHeadlineKey(isMore: currentAvg >= previousAvg)
-        let unit = "\(WeightUnit.used.rawValue)/\(NSLocalizedString("workout", comment: ""))"
+        let currentAvg = averageSetsPerWorkout(in: ranges.current)
+        let previousAvg = averageSetsPerWorkout(in: ranges.previous)
+        let headlineKey = exerciseSetsHeadlineKey(isMore: currentAvg >= previousAvg)
+        let unit = "\(NSLocalizedString("sets", comment: ""))/\(NSLocalizedString("workout", comment: ""))"
 
         HighlightView(
             headline: NSLocalizedString(headlineKey, comment: ""),
@@ -332,25 +330,25 @@ struct ExerciseVolumeScreen: View {
         }
     }
 
-    private func averageVolumePerWorkout(in range: (start: Date, end: Date)) -> Double {
+    private func averageSetsPerWorkout(in range: (start: Date, end: Date)) -> Double {
         let s = range.start, e = range.end
         let setsInRange = workoutSets.filter {
             guard let d = $0.workout?.date else { return false }
             return d >= s && d <= e
         }
-        let totalVolume = convertWeightForDisplayingDecimal(getVolume(of: setsInRange, for: exercise))
+        let totalSets = Double(setCount(for: setsInRange))
         let workoutsInRange = Set(setsInRange.compactMap { $0.workout }).filter {
             guard let d = $0.date else { return false }
             return d >= s && d <= e
         }
         let workoutCount = max(workoutsInRange.count, 1)
-        return totalVolume / Double(workoutCount)
+        return totalSets / Double(workoutCount)
     }
 
-    private func exerciseVolumeHeadlineKey(isMore: Bool) -> String {
+    private func exerciseSetsHeadlineKey(isMore: Bool) -> String {
         switch chartGranularity {
-        case .month: return isMore ? "avgMoreExerciseVolumeThisMonthThanLastMonth" : "avgLessExerciseVolumeThisMonthThanLastMonth"
-        case .year: return isMore ? "avgMoreExerciseVolumeThisYearThanLastYear" : "avgLessExerciseVolumeThisYearThanLastYear"
+        case .month: return isMore ? "avgMoreExerciseSetsThisMonthThanLastMonth" : "avgLessExerciseSetsThisMonthThanLastMonth"
+        case .year: return isMore ? "avgMoreExerciseSetsThisYearThanLastYear" : "avgLessExerciseSetsThisYearThanLastYear"
         }
     }
 }
@@ -361,12 +359,12 @@ private struct PreviewWrapperView: View {
     var body: some View {
         let exercise = database.getExercises().first!
         NavigationView {
-            ExerciseVolumeScreen(exercise: exercise, workoutSets: exercise.sets)
+            ExerciseSetsScreen(exercise: exercise, workoutSets: exercise.sets)
         }
     }
 }
 
-struct ExerciseVolumeScreen_Previews: PreviewProvider {
+struct ExerciseSetsScreen_Previews: PreviewProvider {
     static var previews: some View {
         PreviewWrapperView()
             .previewEnvironmentObjects()

@@ -201,25 +201,6 @@ final class LOGITScreenshots: XCTestCase {
         add(attachment)
     }
 
-    // TEMP: reference capture of a plain keyboard accessory toolbar (no
-    // draggable cover, no sheet) to compare the gap against the recorder.
-    func test98KeyboardPlain() {
-        app.terminate()
-        app.launchArguments += ["-UITEST_KBD_TEST", "1"]
-        app.launch()
-
-        let field = app.textFields.firstMatch
-        _ = field.waitForExistence(timeout: 10)
-        field.tap()
-        waitABit(2)
-
-        let shot = XCUIScreen.main.screenshot()
-        let attachment = XCTAttachment(screenshot: shot)
-        attachment.name = "keyboard_toolbar_plain"
-        attachment.lifetime = .keepAlways
-        add(attachment)
-    }
-
     func test06SuperDropSet() {
         // Navigate to the seeded "Arm Day" workout which contains a super
         // set (Biceps Curls ↔ Triceps Extensions) immediately followed by

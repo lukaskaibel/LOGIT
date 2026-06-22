@@ -1,20 +1,17 @@
 //
-//  ExerciseE1RMScreen.swift
+//  ExerciseSetVolumeScreen.swift
 //  LOGIT
 //
-//  Created by Lukas Kaibel on 04.06.26.
+//  Created by Lukas Kaibel on 11.06.26.
 //
 
 import Charts
 import SwiftUI
 
-struct ExerciseE1RMScreen: View {
+struct ExerciseSetVolumeScreen: View {
     private enum ChartGranularity {
         case month, year
     }
-
-    private let yAxisMaxValuesKG = [10, 25, 50, 100, 150, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-    private let yAxisMaxValuesLBS = [25, 55, 110, 225, 335, 445, 665, 885, 1105, 1325, 1545, 1765, 1985, 2205]
 
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
@@ -24,10 +21,10 @@ struct ExerciseE1RMScreen: View {
     @State private var selectedDate: Date?
 
     var body: some View {
-        let allDailyMaxSets = allDailyMaxE1RMSets(in: workoutSets)
+        let allDailyMaxSets = allDailyMaxSetVolumeSets(in: workoutSets)
         // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
-        let bestVisibleE1RM = bestE1RMInGranularity(workoutSets)
+        let bestVisibleSetVolume = bestSetVolumeInGranularity(workoutSets)
         let visibleTrendPercentage = trendPercentage(in: workoutSets)
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
@@ -53,7 +50,7 @@ struct ExerciseE1RMScreen: View {
                                     .foregroundStyle(.secondary)
                             }
                             UnitView(
-                                value: "\(bestVisibleE1RM != nil ? formatEstimatedOneRepMax(bestVisibleE1RM!) : "––")",
+                                value: "\(bestVisibleSetVolume != nil ? formatWeightForDisplay(bestVisibleSetVolume!) : "––")",
                                 unit: WeightUnit.used.rawValue
                             )
                             .foregroundStyle(exerciseMuscleGroupColor.gradient)
@@ -76,7 +73,7 @@ struct ExerciseE1RMScreen: View {
                         // Show selection only when a selection exists, snapped to the nearest datapoint
                         if selectedDate != nil, let selectedSet = snappedSelectedSet, let sDate = selectedSet.workout?.date {
                             let snapped = Calendar.current.startOfDay(for: sDate)
-                            let valueDisplayed = formatEstimatedOneRepMax(selectedSet.estimatedOneRepMax(for: exercise))
+                            let valueDisplayed = formatWeightForDisplay(selectedSet.volume(for: exercise))
                             RuleMark(x: .value("Selected", snapped, unit: .day))
                                 .foregroundStyle(exerciseMuscleGroupColor.opacity(0.35))
                                 .lineStyle(StrokeStyle(lineWidth: 2))
@@ -100,7 +97,7 @@ struct ExerciseE1RMScreen: View {
                         if let firstEntry = allDailyMaxSets.first {
                             LineMark(
                                 x: .value("Date", Date.distantPast, unit: .day),
-                                y: .value("Max e1RM on day", convertWeightForDisplayingDecimal(firstEntry.estimatedOneRepMax(for: exercise)))
+                                y: .value("Max set volume on day", convertWeightForDisplayingDecimal(firstEntry.volume(for: exercise)))
                             )
                             .interpolationMethod(.monotone)
                             .foregroundStyle(exerciseMuscleGroupColor.gradient)
@@ -108,7 +105,7 @@ struct ExerciseE1RMScreen: View {
                             .opacity(snappedSelectedSet == nil ? 1.0 : 0.3)
                             AreaMark(
                                 x: .value("Date", Date.distantPast, unit: .day),
-                                y: .value("Max e1RM on day", convertWeightForDisplayingDecimal(firstEntry.estimatedOneRepMax(for: exercise)))
+                                y: .value("Max set volume on day", convertWeightForDisplayingDecimal(firstEntry.volume(for: exercise)))
                             )
                             .interpolationMethod(.monotone)
                             .foregroundStyle(Gradient(colors: [
@@ -121,7 +118,7 @@ struct ExerciseE1RMScreen: View {
                         ForEach(allDailyMaxSets) { workoutSet in
                             LineMark(
                                 x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max e1RM on day", convertWeightForDisplayingDecimal(workoutSet.estimatedOneRepMax(for: exercise)))
+                                y: .value("Max set volume on day", convertWeightForDisplayingDecimal(workoutSet.volume(for: exercise)))
                             )
                             .interpolationMethod(.monotone)
                             .foregroundStyle(exerciseMuscleGroupColor.gradient)
@@ -149,7 +146,7 @@ struct ExerciseE1RMScreen: View {
                             }())
                             AreaMark(
                                 x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max e1RM on day", convertWeightForDisplayingDecimal(workoutSet.estimatedOneRepMax(for: exercise)))
+                                y: .value("Max set volume on day", convertWeightForDisplayingDecimal(workoutSet.volume(for: exercise)))
                             )
                             .interpolationMethod(.monotone)
                             .foregroundStyle(Gradient(colors: [
@@ -160,11 +157,11 @@ struct ExerciseE1RMScreen: View {
                             .opacity(selectedDate == nil ? 1.0 : 0.0)
                         }
                         if selectedDate == nil, let lastSet = allDailyMaxSets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
-                            let e1RMDisplayed = convertWeightForDisplayingDecimal(lastSet.estimatedOneRepMax(for: exercise))
+                            let setVolumeDisplayed = convertWeightForDisplayingDecimal(lastSet.volume(for: exercise))
                             RuleMark(
                                 xStart: .value("Start", lastDate),
                                 xEnd: .value("End", Date()),
-                                y: .value("Max e1RM on day", e1RMDisplayed)
+                                y: .value("Max set volume on day", setVolumeDisplayed)
                             )
                             .foregroundStyle(exerciseMuscleGroupColor.opacity(0.45))
                             .lineStyle(
@@ -177,7 +174,7 @@ struct ExerciseE1RMScreen: View {
                         }
                     }
                     .chartXScale(domain: xDomain(for: workoutSets))
-                    .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeE1RMPR(in: workoutSets)))
+                    .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeSetVolumePR(in: workoutSets)))
                     .chartScrollableAxes(.horizontal)
                     .chartScrollPosition(x: $chartScrollPosition)
                     .chartScrollTargetBehavior(
@@ -202,7 +199,7 @@ struct ExerciseE1RMScreen: View {
                         }
                     }
                     .chartYAxis {
-                        let chartYScaleMax = chartYScaleMax(maxYValue: allTimeE1RMPR(in: workoutSets))
+                        let chartYScaleMax = chartYScaleMax(maxYValue: allTimeSetVolumePR(in: workoutSets))
                         AxisMarks(values: [0, chartYScaleMax / 2, chartYScaleMax])
                     }
                     .emptyPlaceholder(allDailyMaxSets) {
@@ -218,8 +215,8 @@ struct ExerciseE1RMScreen: View {
 
                 // MARK: - About Section
                 AboutSection(
-                    metricTitle: NSLocalizedString("estimatedOneRepMax", comment: ""),
-                    text: NSLocalizedString("e1RMInfo", comment: "")
+                    metricTitle: NSLocalizedString("setVolume", comment: ""),
+                    text: NSLocalizedString("setVolumeInfo", comment: "")
                 )
                 .padding(.horizontal)
             }
@@ -231,7 +228,7 @@ struct ExerciseE1RMScreen: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 VStack {
-                    Text("\(NSLocalizedString("estimatedOneRepMax", comment: ""))")
+                    Text("\(NSLocalizedString("setVolume", comment: ""))")
                         .font(.headline)
                     Text(exercise.displayName)
                         .foregroundStyle(.secondary)
@@ -257,16 +254,16 @@ struct ExerciseE1RMScreen: View {
         }
     }
 
-    private func allDailyMaxE1RMSets(in workoutSets: [WorkoutSet]) -> [WorkoutSet] {
+    private func allDailyMaxSetVolumeSets(in workoutSets: [WorkoutSet]) -> [WorkoutSet] {
         let groupedSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
             .map { $0.1 }
         let maxSetsPerDay = groupedSets
             .compactMap { setsPerDay -> WorkoutSet? in
-                return setsPerDay.max(by: { $0.estimatedOneRepMax(for: exercise) < $1.estimatedOneRepMax(for: exercise) })
+                return setsPerDay.max(by: { $0.volume(for: exercise) < $1.volume(for: exercise) })
             }
-            .filter { $0.estimatedOneRepMax(for: exercise) > 0 }
+            .filter { $0.volume(for: exercise) > 0 }
         return maxSetsPerDay
     }
 
@@ -281,7 +278,7 @@ struct ExerciseE1RMScreen: View {
             to: .now
         )!
         let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
-        guard let firstSetDate = allDailyMaxE1RMSets(in: workoutSets).first?.workout?.date, firstSetDate < maxStartDate
+        guard let firstSetDate = allDailyMaxSetVolumeSets(in: workoutSets).first?.workout?.date, firstSetDate < maxStartDate
         else { return maxStartDate ... endDate }
         let startDate = chartGranularity == .month ? firstSetDate.startOfMonth : firstSetDate.startOfYear
         return startDate ... endDate
@@ -319,36 +316,40 @@ struct ExerciseE1RMScreen: View {
         }
     }
 
-    private func allTimeE1RMPR(in workoutSets: [WorkoutSet]) -> Int {
+    private func allTimeSetVolumePR(in workoutSets: [WorkoutSet]) -> Int {
         convertWeightForDisplaying(
             workoutSets
                 .map {
-                    $0.estimatedOneRepMax(for: exercise)
+                    $0.volume(for: exercise)
                 }
                 .max() ?? 0
         )
     }
 
-    private func bestE1RMInGranularity(_ workoutSets: [WorkoutSet]) -> Int? {
+    private func bestSetVolumeInGranularity(_ workoutSets: [WorkoutSet]) -> Int? {
         let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
         let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= chartScrollPosition && $0.workout?.date ?? .distantFuture <= endDate }
 
         guard !setsInTimeFrame.isEmpty else {
-            return workoutSets.first?.estimatedOneRepMax(for: exercise)
+            return workoutSets.first?.volume(for: exercise)
         }
 
         return setsInTimeFrame
-            .map { $0.estimatedOneRepMax(for: exercise) }
+            .map { $0.volume(for: exercise) }
             .max()
     }
 
+    /// Set volume has no practical upper bound, so unlike the weight and e1RM screens (which pick
+    /// from a fixed list of axis caps) the cap is the PR rounded up to a clean half-magnitude step
+    /// — keeping the mid axis mark (cap / 2) a round number too.
     private func chartYScaleMax(maxYValue: Int) -> Int {
-        let values = WeightUnit.used == .kg ? yAxisMaxValuesKG : yAxisMaxValuesLBS
-        let nextBiggerYAxisMaxValue = values.filter { $0 > maxYValue }.min()
-        return nextBiggerYAxisMaxValue ?? maxYValue
+        guard maxYValue > 0 else { return 10 }
+        let magnitude = pow(10.0, floor(log10(Double(maxYValue))))
+        let step = magnitude / 2
+        return Int((Double(maxYValue) / step).rounded(.up) * step)
     }
 
-    /// Percent change of the best e1RM in the visible chart window versus the
+    /// Percent change of the best set volume in the visible chart window versus the
     /// equal-length window immediately before it. Nil when either window has no data.
     private func trendPercentage(in workoutSets: [WorkoutSet]) -> Double? {
         let windowStart = chartScrollPosition
@@ -359,14 +360,14 @@ struct ExerciseE1RMScreen: View {
                 guard let date = $0.workout?.date else { return false }
                 return date >= windowStart && date <= windowEnd
             }
-            .map { $0.estimatedOneRepMax(for: exercise) }
+            .map { $0.volume(for: exercise) }
             .max()
         let previous = workoutSets
             .filter {
                 guard let date = $0.workout?.date else { return false }
                 return date >= previousStart && date < windowStart
             }
-            .map { $0.estimatedOneRepMax(for: exercise) }
+            .map { $0.volume(for: exercise) }
             .max()
         guard let current = current, let previous = previous, previous > 0 else { return nil }
         return (Double(current) - Double(previous)) / Double(previous) * 100
@@ -405,15 +406,15 @@ struct ExerciseE1RMScreen: View {
     @ViewBuilder
     private func highlightsSection(allDailyMaxSets: [WorkoutSet]) -> some View {
         let ranges = periodRanges()
-        let currentMax = maxE1RM(in: ranges.current, sets: allDailyMaxSets)
-        let previousMax = maxE1RM(in: ranges.previous, sets: allDailyMaxSets)
-        let headlineKey = e1RMHeadlineKey(isHigher: currentMax >= previousMax)
+        let currentMax = maxSetVolume(in: ranges.current, sets: allDailyMaxSets)
+        let previousMax = maxSetVolume(in: ranges.previous, sets: allDailyMaxSets)
+        let headlineKey = setVolumeHeadlineKey(isHigher: currentMax >= previousMax)
         let unit = WeightUnit.used.rawValue
 
         HighlightView(
             headline: NSLocalizedString(headlineKey, comment: ""),
-            currentValue: currentMax > 0 ? formatEstimatedOneRepMax(currentMax) : "––",
-            previousValue: previousMax > 0 ? formatEstimatedOneRepMax(previousMax) : "––",
+            currentValue: currentMax > 0 ? formatWeightForDisplay(currentMax) : "––",
+            previousValue: previousMax > 0 ? formatWeightForDisplay(previousMax) : "––",
             unit: unit,
             currentNumericValue: Double(convertWeightForDisplaying(currentMax)),
             previousNumericValue: Double(convertWeightForDisplaying(previousMax)),
@@ -438,19 +439,19 @@ struct ExerciseE1RMScreen: View {
         }
     }
 
-    private func maxE1RM(in range: (start: Date, end: Date), sets: [WorkoutSet]) -> Int {
+    private func maxSetVolume(in range: (start: Date, end: Date), sets: [WorkoutSet]) -> Int {
         let s = range.start, e = range.end
         let setsInRange = sets.filter {
             guard let d = $0.workout?.date else { return false }
             return d >= s && d <= e
         }
-        return setsInRange.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
+        return setsInRange.map { $0.volume(for: exercise) }.max() ?? 0
     }
 
-    private func e1RMHeadlineKey(isHigher: Bool) -> String {
+    private func setVolumeHeadlineKey(isHigher: Bool) -> String {
         switch chartGranularity {
-        case .month: return isHigher ? "higherMaxE1RMThisMonthThanLastMonth" : "lowerMaxE1RMThisMonthThanLastMonth"
-        case .year: return isHigher ? "higherMaxE1RMThisYearThanLastYear" : "lowerMaxE1RMThisYearThanLastYear"
+        case .month: return isHigher ? "higherMaxSetVolumeThisMonthThanLastMonth" : "lowerMaxSetVolumeThisMonthThanLastMonth"
+        case .year: return isHigher ? "higherMaxSetVolumeThisYearThanLastYear" : "lowerMaxSetVolumeThisYearThanLastYear"
         }
     }
 }
@@ -461,12 +462,12 @@ private struct PreviewWrapperView: View {
     var body: some View {
         let exercise = database.getExercises().first!
         NavigationView {
-            ExerciseE1RMScreen(exercise: exercise, workoutSets: exercise.sets)
+            ExerciseSetVolumeScreen(exercise: exercise, workoutSets: exercise.sets)
         }
     }
 }
 
-struct ExerciseE1RMScreen_Previews: PreviewProvider {
+struct ExerciseSetVolumeScreen_Previews: PreviewProvider {
     static var previews: some View {
         PreviewWrapperView()
             .previewEnvironmentObjects()

@@ -21,7 +21,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .background(Color.accentColor)
             .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? MIN_BUTTON_SCALE : 1.0)
-            .onChange(of: configuration.isPressed) { isPressed in
+            .onChange(of: configuration.isPressed) { _, isPressed in
                 if isPressed {
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 }
@@ -40,7 +40,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .background(Color.accentColor.secondaryTranslucentBackground)
             .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? MIN_BUTTON_SCALE : 1.0)
-            .onChange(of: configuration.isPressed) { isPressed in
+            .onChange(of: configuration.isPressed) { _, isPressed in
                 if isPressed {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 }
@@ -58,7 +58,7 @@ struct SelectionButtonStyle: ButtonStyle {
             .padding(3)
             .background(isSelected ? Color.accentColor.opacity(0.9) : .clear)
             .cornerRadius(8)
-            .onChange(of: configuration.isPressed) { isPressed in
+            .onChange(of: configuration.isPressed) { _, isPressed in
                 if isPressed {
                     UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                 }
@@ -89,7 +89,7 @@ struct CapsuleButtonStyle: ButtonStyle {
             )
             .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? MIN_BUTTON_SCALE : 1.0)
-            .onChange(of: configuration.isPressed) { isPressed in
+            .onChange(of: configuration.isPressed) { _, isPressed in
                 if isPressed {
                     UISelectionFeedbackGenerator().selectionChanged()
                 }

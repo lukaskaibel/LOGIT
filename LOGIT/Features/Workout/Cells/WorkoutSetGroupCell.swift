@@ -174,7 +174,7 @@ struct WorkoutSetGroupCell: View {
                         }
                     }
                     .padding(.horizontal, CELL_PADDING / 2)
-                    .animation(.interactiveSpring())
+                    .animation(.interactiveSpring(), value: setGroup.sets)
                     if canEdit {
                         HStack(spacing: 8) {
                             Button {
@@ -462,13 +462,103 @@ struct WorkoutSetGroupCell: View {
     }
 }
 
-/// The progress-metric badge shown on each set group. It's a small vertical wheel of three metrics
-/// (e1RM / Weight / Reps): drag up or down to switch — slivers of the neighbouring metrics peek above
-/// and below to signal it scrolls, a selection haptic fires as each becomes centred, and on release it
-/// snaps to and persists the centred metric. A tap opens a panel with the metric's explanation and a
-/// segmented switcher (the accessible path — the wheel also exposes an adjustable action). When a set
-/// scores a personal best on a metric *other* than the centred one, the badge briefly "peeks" that
-/// metric, with a trophy, before rolling back, so a win is never hidden.
+// MARK: - Session vs current best
+
+/// The numbers behind the metric badge and its info panel: what this set group achieved per metric,
+/// the exercise's current best it's measured against, and the percent between them. One shared home
+/// so the badge's pill and the panel's spelled-out values can never tell different stories.
+private struct SetGroupMetricComparison {
+    let setGroup: WorkoutSetGroup
+
+    /// This set group's best for `metric` — what the *session* achieved.
+    func sessionBest(_ metric: ExercisePrimaryMetric) -> Int {
+        guard let exercise = setGroup.exercise else { return 0 }
+        switch metric {
+        case .estimatedOneRepMax: return setGroup.sets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
+        case .weight: return setGroup.sets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
+        case .repetitions: return setGroup.sets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
+        }
+    }
+
+    /// The comparison bar: the exercise's current best (see `Exercise.currentBestWindowStart`) —
+    /// the same recent peak the exercise tiles show — but *excluding* the current workout. The
+    /// exclusion matters: `currentBestSet` includes the workout being recorded, so today's new best
+    /// would clamp the comparison to 0% the moment it's set. A stable monthly bar, deliberately not
+    /// the previous session (a deload last time would fake a huge gain).
+    ///
+    /// On a *finished* workout the window and fallback are anchored at the workout's date, so the
+    /// comparison keeps telling that day's story even after later sessions surpass it. While
+    /// recording, the window stays anchored at now — the two coincide there anyway.
+    func currentBest(_ metric: ExercisePrimaryMetric) -> Int? {
+        guard let exercise = setGroup.exercise else { return nil }
+        let anchor = setGroup.workout?.isCurrentWorkout == true ? nil : setGroup.workout?.date
+        var priorSets = exercise.sets.filter { $0.workout != setGroup.workout }
+        if let anchor {
+            priorSets = priorSets.filter { ($0.workout?.date ?? .distantFuture) < anchor }
+        }
+        if let best = exercise.currentBestSet(for: metric, in: priorSets, endingAt: anchor) {
+            switch metric {
+            case .estimatedOneRepMax: return best.estimatedOneRepMax(for: exercise)
+            case .weight: return best.maximum(.weight, for: exercise)
+            case .repetitions: return best.maximum(.repetitions, for: exercise)
+            }
+        }
+        // Untrained for over a month → the window is empty. Fall back to the all-time best so there
+        // is still a bar to compare against, instead of a flat 0% whatever the entered value is
+        // (the trophy fires against all-time anyway, so the two stay consistent).
+        func value(_ workoutSet: WorkoutSet) -> Int {
+            switch metric {
+            case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: exercise)
+            case .weight: return workoutSet.maximum(.weight, for: exercise)
+            case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
+            }
+        }
+        let allTimeBest = priorSets.map(value).max() ?? 0
+        return allTimeBest > 0 ? allTimeBest : nil
+    }
+
+    /// Percent change of this set group's best over the exercise's current best for `metric`, or
+    /// nil when either side has nothing to compare — before the session's first entry, or with no
+    /// prior history at all.
+    func percentChange(_ metric: ExercisePrimaryMetric) -> Double? {
+        let current = sessionBest(metric)
+        guard current > 0, let baseline = currentBest(metric), baseline > 0 else { return nil }
+        return (Double(current) - Double(baseline)) / Double(baseline) * 100
+    }
+
+    /// Best value for `metric` across all *previous* sessions for this exercise — the bar a new
+    /// record has to clear (all-time, intentionally NOT the current-best window). Excludes the
+    /// current workout.
+    func previousAllTimeBest(_ metric: ExercisePrimaryMetric) -> Int {
+        guard let exercise = setGroup.exercise else { return 0 }
+        let priorSets = exercise.sets.filter { $0.workout != setGroup.workout }
+        switch metric {
+        case .estimatedOneRepMax: return priorSets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
+        case .weight: return priorSets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
+        case .repetitions: return priorSets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
+        }
+    }
+
+    /// True only while recording, when this set group beats every previous session on `metric`.
+    /// Ties don't count — you have to exceed it. Neither do first-ever entries — with no earlier
+    /// value there is no record to beat (and everything would be a PR on day one).
+    func isPersonalRecord(_ metric: ExercisePrimaryMetric) -> Bool {
+        guard setGroup.workout?.isCurrentWorkout == true else { return false }
+        let current = sessionBest(metric)
+        let priorBest = previousAllTimeBest(metric)
+        return current > 0 && priorBest > 0 && current > priorBest
+    }
+}
+
+/// The progress-metric badge shown on each set group, styled like the trend pill on the exercise
+/// chart screens: how this session's best compares to the exercise's current best (last month,
+/// excluding this workout) — the percent change with an up/down chevron, or a dash at 0% — with the
+/// chosen metric's name in fine print
+/// beneath it. The metric is switched from the info panel a tap opens (also where it's explained); the badge
+/// itself has no switching gesture. While the displayed metric stands at a personal record, the
+/// percentage gives way to a trophy and the record value; a record on a metric *other* than the
+/// displayed one is "peeked" — rolled in for a few seconds, trophy and all — before rolling back,
+/// so a win is never hidden.
 ///
 /// It owns its own info popover so the popover is presented from this view's context, not the
 /// cell's — otherwise it shares a presentation host with the cell's exercise-selection sheets and
@@ -500,46 +590,26 @@ private struct MetricBadgeView: View {
     /// popover at the badge. Pure layout observation — nothing extra in the badge's render path.
     @State private var badgeFrame: CGRect = .zero
 
-    // MARK: - Wheel geometry
+    /// The metric on screen — a peeked record while one plays, otherwise the chosen metric.
+    private var displayedMetric: ExercisePrimaryMetric { peek.activeMetric ?? primaryMetric }
 
-    private let metrics = ExercisePrimaryMetric.allCases
-    /// Drag distance (points) that advances one metric.
-    private let itemHeight: CGFloat = 34
+    /// Session-vs-current-best math, shared with `MetricInfoPanel` so badge and panel always agree.
+    private var comparison: SetGroupMetricComparison { SetGroupMetricComparison(setGroup: setGroup) }
 
-    @State private var isDragging = false
-    /// Continuous scroll position in item units. An integer means that metric is centred; the integer
-    /// is *virtual* (can exceed the metric count) so the wheel wraps endlessly while dragging. At rest
-    /// it's normalised to 0..<count.
-    @State private var scrollPos: Double = 0
-    @State private var dragStartPos: Double = 0
-    @State private var lastHapticIndex = 0
-
-    private func index(of metric: ExercisePrimaryMetric) -> Int { metrics.firstIndex(of: metric) ?? 0 }
-
-    /// Wraps a virtual index into 0..<count so the wheel can scroll endlessly in either direction.
-    private func wrapped(_ i: Int) -> Int {
-        let n = metrics.count
-        return ((i % n) + n) % n
-    }
-    private func metric(atVirtual v: Int) -> ExercisePrimaryMetric { metrics[wrapped(v)] }
-
-    /// The metric centred in the window — the rounded scroll position, wrapped.
-    private var displayedMetric: ExercisePrimaryMetric { metric(atVirtual: Int(scrollPos.rounded())) }
-
-    private var centeredIsRecord: Bool {
-        recordMetric(for: resolvedDisplay(for: displayedMetric)).map(isPersonalRecord) ?? false
-    }
+    private var displayedIsRecord: Bool { comparison.isPersonalRecord(displayedMetric) }
 
     var body: some View {
         let accent = setGroup.exercise?.muscleGroup?.color ?? .accentColor
-        return wheel(accent: accent)
+        return pill(accent: accent)
             .onGeometryChange(for: CGRect.self) { proxy in
                 proxy.frame(in: .global)
             } action: { _, newValue in
                 badgeFrame = newValue
             }
-            .padding(.top, CELL_PADDING / 2)
-            .padding(.trailing, CELL_PADDING / 2)
+            // Slightly more than the set cells' edge inset (CELL_PADDING / 2) — the capsule sits in
+            // the cell's rounded corner, which visually eats some of the gap.
+            .padding(.top, CELL_PADDING / 2 + 3)
+            .padding(.trailing, CELL_PADDING / 2 + 3)
             .contentShape(Rectangle())
             .onTapGesture {
                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
@@ -551,7 +621,6 @@ private struct MetricBadgeView: View {
                     isShowingInfo = true
                 }
             }
-            .highPriorityGesture(dragGesture)
             .popover(isPresented: $isShowingInfo) {
                 MetricInfoPanel(setGroup: setGroup, onOpenDetail: { metric in
                     detailMetric = metric
@@ -573,19 +642,10 @@ private struct MetricBadgeView: View {
                 .presentationDragIndicator(.visible)
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text("\(NSLocalizedString("progressMetric", comment: "")), \(displayedMetric.title)"))
-            .accessibilityHint(Text(NSLocalizedString("swipeForMetrics", comment: "")))
-            .accessibilityAdjustableAction { direction in
-                let center = Int(scrollPos.rounded())
-                switch direction {
-                case .increment: setMetric(metric(atVirtual: center + 1))
-                case .decrement: setMetric(metric(atVirtual: center - 1))
-                default: break
-                }
-            }
+            .accessibilityLabel(Text(accessibilityDescription))
+            .accessibilityHint(Text(NSLocalizedString("tapForMetricInfo", comment: "")))
             .onAppear {
-                primaryMetric = setGroup.exercise?.primaryMetric ?? .estimatedOneRepMax
-                scrollPos = Double(index(of: primaryMetric))
+                primaryMetric = setGroup.exercise?.primaryMetric ?? .defaultMetric
                 peek.seed(prSnapshot())
                 peek.setEditing(isEditing)
             }
@@ -595,323 +655,140 @@ private struct MetricBadgeView: View {
             .onChange(of: prSignature) { _, _ in
                 peek.update(prs: prSnapshot(), primary: primaryMetric, order: ExercisePrimaryMetric.allCases)
             }
-            .onChange(of: centeredIsRecord) { _, newValue in
-                // Primary metric becoming a record at rest celebrates here; peeked records fire their
-                // own haptic in the controller and drags fire selection haptics, so guard those out.
-                if newValue, peek.activeMetric == nil, !isDragging {
+            .onChange(of: displayedIsRecord) { _, newValue in
+                // The chosen metric becoming a record celebrates here; peeked records fire their own
+                // haptic in the controller, so guard those out.
+                if newValue, peek.activeMetric == nil {
                     UINotificationFeedbackGenerator().notificationOccurred(.success)
                 }
             }
-            .onChange(of: peek.activeMetric) { _, _ in
-                // Scroll the wheel to a peeked record (and back when it ends). The drag owns scrollPos.
-                guard !isDragging else { return }
-                withAnimation(MetricPeekController.rollAnimation) {
-                    scrollPos = Double(index(of: peek.activeMetric ?? primaryMetric))
-                }
-            }
             .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
-                // The committed metric is persisted per-exercise in UserDefaults, so it can change out
-                // from under us — from the info panel's picker (presented separately in the recorder)
-                // or the exercise editor. Re-sync the wheel to it when idle.
-                guard !isDragging, peek.activeMetric == nil else { return }
-                let current = setGroup.exercise?.primaryMetric ?? .estimatedOneRepMax
+                // The committed metric is persisted per-exercise in UserDefaults, and the badge never
+                // changes it itself — the info panel's picker (presented separately in the recorder)
+                // and the exercise editor write it. Re-sync to it, cancelling any running peek so the
+                // user's explicit choice is what lands on screen.
+                let current = setGroup.exercise?.primaryMetric ?? .defaultMetric
                 guard current != primaryMetric else { return }
-                primaryMetric = current
+                peek.cancelForManualCycle()
                 withAnimation(MetricPeekController.rollAnimation) {
-                    scrollPos = Double(index(of: current))
+                    primaryMetric = current
                 }
             }
     }
 
-    // MARK: - Wheel rendering
+    // MARK: - Pill rendering
 
-    /// Fractional distance from the centred metric, in [-0.5, 0.5]. Zero whenever the wheel is at
-    /// rest (`scrollPos` is an integer there); non-zero only mid-drag / mid-snap.
-    private var scrollFraction: Double { scrollPos - scrollPos.rounded() }
-
-    /// One metric at a time, but it *rides the finger*: the content slides and cross-fades by the
-    /// fractional scroll position, so dragging feels like a continuous, wrapping wheel rather than a
-    /// hard swap. Only `.offset`/`.opacity`/`.scaleEffect` transforms are used on a single,
-    /// always-present item — never a mask, clip, transition, or a strip whose ids change. Those are
-    /// exactly the constructs that blank this badge behind the recorder's interactive sheet; pure
-    /// transforms render reliably. The outgoing metric fades to ~0 before it slides past the pill
-    /// edge (there's no clip), so its overflow is invisible and the hand-off to the next metric — at
-    /// the half-step, where the wrapping `displayedMetric` flips — is seamless.
-    private func wheel(accent: Color) -> some View {
-        let isRecord = centeredIsRecord
-        let frac = scrollFraction
-        let slideOffset = -frac * itemHeight                 // content tracks the drag, ±½ item
-        let slideOpacity = max(0, 1 - abs(frac) * 2.2)       // faded out by the hand-off point
-        return metricItem(displayedMetric, accent: accent)
-            .offset(y: slideOffset)
-            .opacity(slideOpacity)
-            .frame(minHeight: itemHeight)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 5)
-            .background(
-                RoundedRectangle(cornerRadius: 30 - CELL_PADDING / 2)
-                    .foregroundStyle(isRecord ? accent.opacity(0.18) : Color.tertiaryBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 30 - CELL_PADDING / 2)
-                    .strokeBorder(accent.opacity(isRecord ? 0.6 : 0), lineWidth: 1)
-            )
-            .cornerRadius(30 - CELL_PADDING / 2)
-            // Spring the pill's resize when the metric (hence content width/height) changes — at the
-            // mid-drag hand-off and when the panel/peek switches metric — so the badge grows/shrinks
-            // smoothly from its trailing anchor instead of snapping. The slide/opacity above stay
-            // continuous: this animation's transient kick to the offset is overridden by the next drag
-            // frame (and happens at ~0 opacity), so only the frame resize reads on screen.
-            .animation(MetricPeekController.rollAnimation, value: displayedMetric)
-            .scaleEffect(isRecord ? 1.05 : 1.0)
-            .animation(.spring(response: 0.35, dampingFraction: 0.5), value: isRecord)
-    }
-
-    private func metricItem(_ metric: ExercisePrimaryMetric, accent: Color) -> some View {
-        let display = resolvedDisplay(for: metric)
-        let isRecord = recordMetric(for: display).map(isPersonalRecord) ?? false
-        return VStack(alignment: .trailing, spacing: 1) {
-            HStack(spacing: 3) {
+    /// Mirrors `TrendIndicatorView` (the trend pill on the chart screens) — chevron weight, percent
+    /// formatting, tint, capsule fill (translucent accent as soon as the trend is positive, never a
+    /// border) — with the metric's name in fine print beneath the value. It can't embed that view
+    /// directly because the record state swaps the trend row for a trophy and the record value
+    /// inside the same capsule.
+    private func pill(accent: Color) -> some View {
+        let metric = displayedMetric
+        let isRecord = displayedIsRecord
+        let change = comparison.percentChange(metric) ?? 0
+        let direction = trendDirection(for: change)
+        let trendColor = direction == .up ? accent : Color.secondary
+        let isColorful = isRecord || direction == .up
+        // The icon sits beside the whole value+label stack so it centres on the badge, not the value.
+        // A flat trend has no icon (nil) — the muted percent says "no change" without a minus that
+        // would read like a decline; a record still shows the trophy.
+        let symbol = isRecord ? "trophy.fill" : symbolName(for: direction)
+        return HStack(spacing: 4) {
+            if let symbol {
+                Image(systemName: symbol)
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(isRecord ? accent : trendColor)
+            }
+            VStack(alignment: .trailing, spacing: 1) {
                 if isRecord {
-                    Image(systemName: "trophy.fill")
-                        .font(.system(.caption2, design: .rounded, weight: .bold))
+                    recordValueView(for: metric)
+                        .foregroundStyle(accent)
+                } else {
+                    Text(displayedFraction(for: change), format: .percent.precision(.fractionLength(0)))
+                        .font(.system(.footnote, design: .rounded, weight: .bold))
+                        .monospacedDigit()
+                        .foregroundStyle(trendColor)
                 }
-                Text(label(for: metric, display: display))
-                    .font(.system(.caption2, design: .rounded, weight: .semibold))
+                Text(metric.shortTitle)
+                    .font(.system(size: 9, weight: .semibold, design: .rounded))
+                    .foregroundStyle(isColorful ? AnyShapeStyle(accent.secondary) : AnyShapeStyle(.secondary))
             }
-            .foregroundStyle(isRecord ? accent : Color.secondary)
-            valueView(for: display, isRecord: isRecord, accent: accent)
         }
         .contentTransition(.numericText())
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Capsule().fill((isRecord ? accent : trendColor).opacity(0.15)))
+        // Roll between metrics (a peek, or a new choice from the panel) with the shared spring so
+        // the capsule resizes smoothly from its trailing anchor; value edits animate the number in
+        // place via the content transition.
+        .animation(MetricPeekController.rollAnimation, value: metric)
+        .animation(.snappy, value: change)
+        .scaleEffect(isRecord ? 1.05 : 1.0)
+        .animation(.spring(response: 0.35, dampingFraction: 0.5), value: isRecord)
     }
 
-    @ViewBuilder
-    private func valueView(for display: MetricDisplay, isRecord: Bool, accent: Color) -> some View {
-        let primaryColor = isRecord ? accent : Color.label
-        switch display {
-        case let .e1RM(grams):
-            UnitView(
-                value: formatEstimatedOneRepMax(grams),
-                unit: WeightUnit.used.rawValue,
-                configuration: .small
-            )
-            .foregroundStyle(primaryColor)
-        case let .pair(reps, weightGrams, emphasize):
-            pairView(reps: reps, weightGrams: weightGrams, emphasize: emphasize, primaryColor: primaryColor)
-        case .empty:
-            UnitView(value: "––", unit: WeightUnit.used.rawValue, configuration: .small)
-                .foregroundStyle(Color.label)
-        }
-    }
-
-    /// Renders "5 RPS × 100 KG" with a fixed order (reps × weight). Both numbers carry units so the
-    /// value reads on its own under the shared "Current Best" label; the emphasised metric is
-    /// full-size in the primary colour, the other a size smaller in grey. Bodyweight sets (no
-    /// weight) fall back to showing reps alone.
-    @ViewBuilder
-    private func pairView(
-        reps: Int,
-        weightGrams: Int64,
-        emphasize: MetricDisplay.Emphasis,
-        primaryColor: Color
-    ) -> some View {
-        if weightGrams > 0 {
-            HStack(alignment: .lastTextBaseline, spacing: 3) {
-                pairPart(
-                    value: "\(reps)",
-                    unit: NSLocalizedString("reps", comment: ""),
-                    isEmphasized: emphasize == .reps,
-                    primaryColor: primaryColor
-                )
-                Text("×")
-                    .font(.system(.caption2, design: .rounded).weight(.semibold))
-                    .foregroundStyle(Color.secondary)
-                pairPart(
-                    value: formatWeightForDisplay(weightGrams),
-                    unit: WeightUnit.used.rawValue,
-                    isEmphasized: emphasize == .weight,
-                    primaryColor: primaryColor
-                )
-            }
-        } else {
-            UnitView(value: "\(reps)", unit: NSLocalizedString("reps", comment: ""), configuration: .small)
-                .foregroundStyle(primaryColor)
-        }
-    }
-
-    /// One side of the pair: number + unit, full-size and coloured when it's the selected metric,
-    /// a size smaller and grey otherwise.
-    private func pairPart(value: String, unit: String, isEmphasized: Bool, primaryColor: Color) -> some View {
-        UnitView(value: value, unit: unit, configuration: isEmphasized ? .small : .extraSmall)
-            .foregroundStyle(isEmphasized ? primaryColor : Color.secondary)
-    }
-
-    // MARK: - Gestures & actions
-
-    /// A vertical drag scrolls the wheel continuously — unclamped, so dragging far wraps through the
-    /// metrics endlessly — with a selection haptic per metric crossed, and snaps to / persists the
-    /// centred metric on release. `minimumDistance: 8` keeps it from stealing taps (a tap opens the
-    /// panel) and from firing spuriously on launch; `highPriorityGesture` lets a real drag win over
-    /// the recorder's page scroll.
-    private var dragGesture: some Gesture {
-        DragGesture(minimumDistance: 8)
-            .onChanged { value in
-                if !isDragging {
-                    isDragging = true
-                    dragStartPos = Double(index(of: peek.activeMetric ?? primaryMetric))
-                    lastHapticIndex = Int(dragStartPos.rounded())
-                    peek.cancelForManualCycle()
-                }
-                // Follow the finger continuously, unclamped — dragging far wraps through the metrics
-                // repeatedly. Dragging up advances to the next metric.
-                scrollPos = dragStartPos - Double(value.translation.height) / Double(itemHeight)
-                let idx = Int(scrollPos.rounded())
-                if idx != lastHapticIndex {
-                    lastHapticIndex = idx
-                    UISelectionFeedbackGenerator().selectionChanged()
-                }
-            }
-            .onEnded { _ in
-                guard isDragging else { return }
-                let targetVirtual = Int(scrollPos.rounded())
-                let target = metric(atVirtual: targetVirtual)
-                setGroup.exercise?.primaryMetric = target
-                UISelectionFeedbackGenerator().selectionChanged()
-                // Snap to the nearest metric, then normalise the virtual position back into range
-                // (invisible — same metric centred) once the snap settles.
-                withAnimation(MetricPeekController.rollAnimation) {
-                    scrollPos = Double(targetVirtual)
-                } completion: {
-                    primaryMetric = target
-                    scrollPos = Double(index(of: target))
-                    isDragging = false
-                }
-            }
-    }
-
-    private func setMetric(_ metric: ExercisePrimaryMetric) {
-        guard metric != primaryMetric else { return }
-        setGroup.exercise?.primaryMetric = metric
-        UISelectionFeedbackGenerator().selectionChanged()
-        peek.cancelForManualCycle()
-        primaryMetric = metric
-        withAnimation(MetricPeekController.rollAnimation) {
-            scrollPos = Double(index(of: metric))
-        }
-    }
-
-    // MARK: - Display resolution
-
-    /// Resolves the requested metric to what's actually rendered, falling back gracefully when the
-    /// chosen metric has no usable data (e.g. e1RM on a bodyweight or high-rep set → reps).
-    private func resolvedDisplay(for metric: ExercisePrimaryMetric) -> MetricDisplay {
+    /// The session's record value, beside the trophy, while the displayed metric stands at a
+    /// personal record — the record itself is the news; the percentage returns once it no longer is.
+    private func recordValueView(for metric: ExercisePrimaryMetric) -> some View {
+        let best = comparison.sessionBest(metric)
         switch metric {
         case .estimatedOneRepMax:
-            if let grams = bestE1RMGrams() { return .e1RM(grams: grams) }
-            if let r = bestRepsEntry() { return .pair(reps: Int(r.reps), weightGrams: r.weight, emphasize: .reps) }
-            if let w = bestWeightEntry() { return .pair(reps: Int(w.reps), weightGrams: w.weight, emphasize: .weight) }
-            return .empty
+            return UnitView(value: formatEstimatedOneRepMax(best), unit: WeightUnit.used.rawValue, configuration: .extraSmall)
         case .weight:
-            if let w = bestWeightEntry() { return .pair(reps: Int(w.reps), weightGrams: w.weight, emphasize: .weight) }
-            if let r = bestRepsEntry() { return .pair(reps: Int(r.reps), weightGrams: r.weight, emphasize: .reps) }
-            return .empty
+            return UnitView(value: formatWeightForDisplay(best), unit: WeightUnit.used.rawValue, configuration: .extraSmall)
         case .repetitions:
-            if let r = bestRepsEntry() { return .pair(reps: Int(r.reps), weightGrams: r.weight, emphasize: .reps) }
-            if let w = bestWeightEntry() { return .pair(reps: Int(w.reps), weightGrams: w.weight, emphasize: .weight) }
-            return .empty
+            return UnitView(value: "\(best)", unit: NSLocalizedString("reps", comment: ""), configuration: .extraSmall)
         }
     }
 
-    /// Pair-rendered metrics are labeled "Current Best" — the value identifies the metric by
-    /// itself (both numbers carry units, and the emphasised one is bigger and coloured). e1RM keeps
-    /// its name as the label: its value is a bare weight, so the label is what identifies it.
-    private func label(for metric: ExercisePrimaryMetric, display: MetricDisplay) -> String {
-        switch display {
-        case .e1RM: return NSLocalizedString("e1RM", comment: "")
-        case .pair: return NSLocalizedString("currentBest", comment: "")
-        case .empty: return metric.title
+    // MARK: - Trend rendering (math lives in SetGroupMetricComparison)
+
+    private enum TrendDirection { case up, down, flat }
+
+    /// Whole displayed percent, capped like the chart pill so an outlier can't blow up the badge.
+    private func trendMagnitude(for change: Double) -> Int { Int(min(abs(change), 999).rounded()) }
+
+    private func trendDirection(for change: Double) -> TrendDirection {
+        guard trendMagnitude(for: change) > 0 else { return .flat }
+        return change > 0 ? .up : .down
+    }
+
+    /// Nil for a flat trend — see `pill(accent:)`; the muted percent carries "no change" on its own.
+    private func symbolName(for direction: TrendDirection) -> String? {
+        switch direction {
+        case .up: return "chevron.up"
+        case .down: return "chevron.down"
+        case .flat: return nil
         }
     }
 
-    /// The metric whose personal-best status the on-screen value reflects (drives the trophy).
-    private func recordMetric(for display: MetricDisplay) -> ExercisePrimaryMetric? {
-        switch display {
-        case .e1RM: return .estimatedOneRepMax
-        case let .pair(_, _, emphasize): return emphasize == .weight ? .weight : .repetitions
-        case .empty: return nil
+    private func displayedFraction(for change: Double) -> Double {
+        Double(trendMagnitude(for: change)) / 100
+    }
+
+    /// Spoken summary mirroring what's drawn: the metric, then the record or the trend.
+    private var accessibilityDescription: String {
+        let base = "\(NSLocalizedString("progressMetric", comment: "")), \(displayedMetric.title)"
+        if displayedIsRecord {
+            return "\(base), \(NSLocalizedString("personalRecord", comment: ""))"
+        }
+        let change = comparison.percentChange(displayedMetric) ?? 0
+        let percentString = displayedFraction(for: change).formatted(.percent.precision(.fractionLength(0)))
+        switch trendDirection(for: change) {
+        case .up: return "\(base), " + String(format: NSLocalizedString("trendUp", comment: ""), percentString)
+        case .down: return "\(base), " + String(format: NSLocalizedString("trendDown", comment: ""), percentString)
+        case .flat: return "\(base), " + NSLocalizedString("trendFlat", comment: "")
         }
     }
 
-    // MARK: - Displayed values: the exercise's *current best* (last month, incl. this workout)
-
-    /// The badge is an overview of the lifter's current standing for the exercise — what to beat
-    /// today — not a readout of this session (the set rows below already show that). Values come
-    /// from `Exercise.currentBestSet`, so they match the exercise-detail tiles; at workout start
-    /// the badge immediately shows the standing best instead of "––".
-
-    private func bestE1RMGrams() -> Int? {
-        guard let exercise = setGroup.exercise,
-              let best = exercise.currentBestSet(for: .estimatedOneRepMax)
-        else { return nil }
-        let grams = best.estimatedOneRepMax(for: exercise)
-        return grams > 0 ? grams : nil
-    }
-
-    private func bestWeightEntry() -> (weight: Int64, reps: Int64)? {
-        guard let exercise = setGroup.exercise,
-              let best = exercise.currentBestSet(for: .weight)
-        else { return nil }
-        let entry = best.maxWeightEntry(for: exercise)
-        guard entry.weight > 0 else { return nil }
-        return (entry.weight, entry.repetitions)
-    }
-
-    private func bestRepsEntry() -> (reps: Int64, weight: Int64)? {
-        guard let exercise = setGroup.exercise,
-              let best = exercise.currentBestSet(for: .repetitions)
-        else { return nil }
-        let entry = best.maxRepetitionsEntry(for: exercise)
-        guard entry.repetitions > 0 else { return nil }
-        return (entry.repetitions, entry.weight)
-    }
-
-    // MARK: - Record detection (session vs all-time — intentionally NOT the current-best window)
-
-    /// This set group's best — what the *session* achieved, used only to detect records.
-    private func setGroupBest(_ metric: ExercisePrimaryMetric) -> Int {
-        guard let exercise = setGroup.exercise else { return 0 }
-        switch metric {
-        case .estimatedOneRepMax: return setGroup.sets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
-        case .weight: return setGroup.sets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
-        case .repetitions: return setGroup.sets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
-        }
-    }
-
-    /// Best value for `metric` across all *previous* sessions for this exercise — the bar a new
-    /// record has to clear. Excludes the current workout.
-    private func previousBest(_ metric: ExercisePrimaryMetric) -> Int {
-        guard let exercise = setGroup.exercise else { return 0 }
-        let priorSets = exercise.sets.filter { $0.workout != setGroup.workout }
-        switch metric {
-        case .estimatedOneRepMax: return priorSets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
-        case .weight: return priorSets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
-        case .repetitions: return priorSets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
-        }
-    }
-
-    /// True only while recording, when this set group beats every previous session on `metric`.
-    /// Ties don't count — you have to exceed it.
-    private func isPersonalRecord(_ metric: ExercisePrimaryMetric) -> Bool {
-        guard setGroup.workout?.isCurrentWorkout == true else { return false }
-        let current = setGroupBest(metric)
-        return current > 0 && current > previousBest(metric)
-    }
+    // MARK: - Record peeks
 
     /// Base values of every metric currently at a personal record, for the peek controller.
     private func prSnapshot() -> [ExercisePrimaryMetric: Int] {
         var snapshot: [ExercisePrimaryMetric: Int] = [:]
-        for metric in ExercisePrimaryMetric.allCases where isPersonalRecord(metric) {
-            snapshot[metric] = setGroupBest(metric)
+        for metric in ExercisePrimaryMetric.allCases where comparison.isPersonalRecord(metric) {
+            snapshot[metric] = comparison.sessionBest(metric)
         }
         return snapshot
     }
@@ -919,17 +796,8 @@ private struct MetricBadgeView: View {
     /// Stable string that changes whenever any metric's record value changes — drives `onChange`.
     private var prSignature: String {
         ExercisePrimaryMetric.allCases
-            .map { "\($0.rawValue):\(isPersonalRecord($0) ? setGroupBest($0) : 0)" }
+            .map { "\($0.rawValue):\(comparison.isPersonalRecord($0) ? comparison.sessionBest($0) : 0)" }
             .joined(separator: "|")
-    }
-
-    /// One rendered form of the badge value.
-    enum MetricDisplay {
-        case e1RM(grams: Int)
-        case pair(reps: Int, weightGrams: Int64, emphasize: Emphasis)
-        case empty
-
-        enum Emphasis { case reps, weight }
     }
 }
 
@@ -941,7 +809,7 @@ private final class MetricPeekController: ObservableObject {
     static let rollAnimation: Animation = .spring(response: 0.4, dampingFraction: 0.85)
 
     /// How long each record is shown before rolling on.
-    private let peekDuration: Double = 3.5
+    private let peekDuration: Double = 3.0
 
     /// The record metric currently on screen, or nil while the primary metric is shown.
     @Published private(set) var activeMetric: ExercisePrimaryMetric?
@@ -1070,10 +938,16 @@ struct WorkoutSetGroupCell_Previews: PreviewProvider {
 
 // MARK: - Metric info panel
 
-/// Shown when the metric badge is tapped: a switcher, this set group's current value for the selected
-/// metric, a compact progression chart (same design as the exercise-detail tiles), an explanation, and
-/// the "scroll for other metrics" hint. Shared by the badge's own popover (most screens) and the
-/// recorder, which presents it as a sheet from its persistent exercise sheet so that sheet survives.
+/// Shown when the metric badge is tapped: a switcher (the only way to change the badge's metric),
+/// then the badge's comparison as one scoreboard row — current best on the left, this workout on
+/// the right, the badge's percent pill as the step between them — over a full-width progression
+/// chart flowing the same old-to-new direction (same design as the exercise-detail tiles), with
+/// the metric explanation as fine print (the current-best definition lives in the chart detail
+/// screens' header popover instead). Values and percent all
+/// come from `SetGroupMetricComparison`, the badge's own math, so the panel can never contradict
+/// the badge (`Exercise.currentBestSet` would: it includes this workout).
+/// Shared by the badge's own popover (most screens) and the recorder, which presents it as a sheet
+/// from its persistent exercise sheet so that sheet survives.
 struct MetricInfoPanel: View {
     @ObservedObject var setGroup: WorkoutSetGroup
     /// Called when the value/chart row is tapped — the host opens the exercise detail at this
@@ -1083,14 +957,22 @@ struct MetricInfoPanel: View {
 
     private let metrics = ExercisePrimaryMetric.allCases
 
+    /// Same math as the badge — see the type's doc.
+    private var comparison: SetGroupMetricComparison { SetGroupMetricComparison(setGroup: setGroup) }
+
     init(setGroup: WorkoutSetGroup, onOpenDetail: ((ExercisePrimaryMetric) -> Void)? = nil) {
         _setGroup = ObservedObject(wrappedValue: setGroup)
         self.onOpenDetail = onOpenDetail
-        _selectedMetric = State(initialValue: setGroup.exercise?.primaryMetric ?? .estimatedOneRepMax)
+        _selectedMetric = State(initialValue: setGroup.exercise?.primaryMetric ?? .defaultMetric)
     }
 
     var body: some View {
         let color = setGroup.exercise?.muscleGroup?.color ?? .accentColor
+        // Nothing has ever been logged for this metric — a brand-new exercise, or e1RM on one only
+        // ever trained above 12 reps. The scoreboard would read "––" vs "––" over a blank chart, so
+        // show the shared empty state instead (see `emptyState`). `metricPoints` spans the whole
+        // history up to the anchor including this session, so empty here == no value anywhere.
+        let hasData = !metricPoints(for: selectedMetric).isEmpty
         return VStack(alignment: .leading, spacing: 14) {
             Picker("", selection: Binding(get: { selectedMetric }, set: { setMetric($0) })) {
                 ForEach(metrics, id: \.self) { metric in
@@ -1099,56 +981,117 @@ struct MetricInfoPanel: View {
             }
             .pickerStyle(.segmented)
 
-            if let onOpenDetail {
-                Button {
-                    onOpenDetail(selectedMetric)
-                } label: {
-                    valueAndChart(color: color, showsChevron: true)
+            if hasData {
+                // Weight and e1RM comparisons are Pro content; repetitions stays free so every user
+                // gets the full panel on one metric (and the default metric for free users IS reps —
+                // see `ExercisePrimaryMetric.defaultMetric`). Only the data is gated: the picker stays
+                // usable so a free user can always switch to reps (or set the badge to any metric),
+                // and the blurred block shows exactly what Pro would reveal.
+                Group {
+                    if let onOpenDetail {
+                        Button {
+                            onOpenDetail(selectedMetric)
+                        } label: {
+                            comparisonAndChart(color: color)
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        comparisonAndChart(color: color)
+                    }
                 }
-                .buttonStyle(.plain)
+                .isBlockedWithoutPro(selectedMetric != .repetitions)
             } else {
-                valueAndChart(color: color, showsChevron: false)
+                emptyState(color: color)
             }
 
             Text(explanation(for: selectedMetric))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Label(NSLocalizedString("swipeForMetrics", comment: ""), systemImage: "hand.draw")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    /// The current-best value next to its progression chart — the tappable heart of the panel
-    /// (chevron shown when tapping opens the exercise detail).
-    private func valueAndChart(color: Color, showsChevron: Bool) -> some View {
-        HStack(alignment: .bottom, spacing: 12) {
+    /// Replaces the scoreboard and chart when the selected metric has nothing to show — same ghost
+    /// sparkline and "no data yet" copy as the exercise-detail empty tile (`ExerciseMetricsEmptyTile`),
+    /// so an empty popover reads as a designed state rather than a pair of dashes over a void. The
+    /// explanation below still renders, so the panel keeps teaching what the metric is. Deliberately
+    /// *not* Pro-gated: with no data there is nothing to unlock, and a paywall here would promise
+    /// something upgrading wouldn't reveal.
+    private func emptyState(color: Color) -> some View {
+        VStack(spacing: 12) {
+            GhostSparkline(color: color)
+                .frame(width: 160, height: 46)
+            VStack(spacing: 3) {
+                Text(NSLocalizedString("noExerciseDataTitle", comment: ""))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.label)
+                Text(NSLocalizedString("noExerciseDataMessage", comment: ""))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+    }
+
+    /// The heart of the panel, one scoreboard row: current best → this workout, old to new like the
+    /// chart beneath, with the badge's pill as the step between them (hidden when there's nothing to
+    /// compare). Color carries the meaning — only the session value wears the muscle-group tint
+    /// (it's the live side of the comparison, and what the badge tints when you're up); the
+    /// reference stays neutral so a single glance finds "you, now".
+    private func comparisonRow(color: Color) -> some View {
+        HStack(alignment: .center, spacing: 8) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(NSLocalizedString("currentBest", comment: ""))
                     .font(.footnote)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
                 UnitView(
-                    value: panelValue(for: selectedMetric),
+                    value: currentBestValue(for: selectedMetric),
+                    unit: panelUnit(for: selectedMetric),
+                    configuration: .large
+                )
+            }
+            Spacer(minLength: 0)
+            if let change = comparison.percentChange(selectedMetric) {
+                TrendIndicatorView(
+                    percentChange: change,
+                    positiveColor: color,
+                    isRecord: comparison.isPersonalRecord(selectedMetric)
+                )
+            }
+            Spacer(minLength: 0)
+            VStack(alignment: .trailing, spacing: 1) {
+                Text(NSLocalizedString("thisWorkout", comment: ""))
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                UnitView(
+                    value: formattedValue(comparison.sessionBest(selectedMetric), for: selectedMetric),
                     unit: panelUnit(for: selectedMetric),
                     configuration: .large
                 )
                 .foregroundStyle(color.gradient)
             }
-            Spacer(minLength: 0)
+        }
+    }
+
+    /// The comparison row over its full-width chart, sitting tighter together than the panel's
+    /// other rows — one perceptual unit (the two numbers, then the history they come from) and,
+    /// where the host can open it, one whole-area tap target for the exercise-detail chart screen
+    /// (no chevron — the numbers and chart themselves are the invitation).
+    private func comparisonAndChart(color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            comparisonRow(color: color)
             metricChart(for: selectedMetric, color: color)
-            if showsChevron {
-                NavigationChevron()
-                    .foregroundStyle(.secondary)
-            }
         }
         .contentShape(Rectangle())
     }
 
     /// Persists the chosen metric (per exercise). The badge observes `UserDefaults.didChangeNotification`
-    /// and re-syncs its wheel, so this is reflected on the badge even when the panel is a separate sheet.
+    /// and re-syncs, so this is reflected on the badge even when the panel is a separate sheet.
     private func setMetric(_ metric: ExercisePrimaryMetric) {
         guard metric != selectedMetric else { return }
         UISelectionFeedbackGenerator().selectionChanged()
@@ -1164,17 +1107,21 @@ struct MetricInfoPanel: View {
         }
     }
 
-    // MARK: - Value
+    // MARK: - Values
 
-    /// The exercise's current best for `metric` (same window as the badge), formatted for display.
-    private func panelValue(for metric: ExercisePrimaryMetric) -> String {
-        guard let exercise = setGroup.exercise,
-              let best = exercise.currentBestSet(for: metric)
-        else { return "––" }
+    /// The exercise's current best for `metric` — the badge's own baseline (excluding this
+    /// workout), so the percent pill and the two displayed values always agree.
+    private func currentBestValue(for metric: ExercisePrimaryMetric) -> String {
+        guard let best = comparison.currentBest(metric) else { return "––" }
+        return formattedValue(best, for: metric)
+    }
+
+    private func formattedValue(_ value: Int, for metric: ExercisePrimaryMetric) -> String {
+        guard value > 0 else { return "––" }
         switch metric {
-        case .estimatedOneRepMax: return formatEstimatedOneRepMax(best.estimatedOneRepMax(for: exercise))
-        case .weight: return formatWeightForDisplay(Int64(best.maximum(.weight, for: exercise)))
-        case .repetitions: return String(best.maximum(.repetitions, for: exercise))
+        case .estimatedOneRepMax: return formatEstimatedOneRepMax(value)
+        case .weight: return formatWeightForDisplay(value)
+        case .repetitions: return String(value)
         }
     }
 
@@ -1208,7 +1155,10 @@ struct MetricInfoPanel: View {
         }
     }
 
-    /// Daily-max points for `metric` across all of this exercise's sessions, oldest → newest.
+    /// Daily-max points for `metric` across this exercise's sessions up to the window anchor,
+    /// oldest → newest. Sessions after a finished workout's date are cut so the chart's story ends
+    /// where the comparison's does (the domain would clip them anyway, but a Catmull-Rom segment
+    /// into a clipped point still bends the visible line).
     private func metricPoints(for metric: ExercisePrimaryMetric) -> [MetricPoint] {
         guard let exercise = setGroup.exercise else { return [] }
         let grouped = Dictionary(grouping: exercise.sets) {
@@ -1221,20 +1171,29 @@ struct MetricInfoPanel: View {
             guard base > 0, let date = best.workout?.date else { return nil }
             return MetricPoint(date: date, value: metricDisplayValue(base, metric))
         }
+        .filter { $0.date <= windowAnchor }
         .sorted { $0.date < $1.date }
     }
 
-    /// Chart window == current-best window, so the chart's visible peak IS the headline value.
-    private var chartStartDate: Date {
-        Exercise.currentBestWindowStart
+    /// Anchor of the chart window — the same anchor `SetGroupMetricComparison` uses for the current
+    /// best: now while recording, the workout's own date once it's finished. Without this, opening
+    /// the panel on an old workout would chart *today's* last month next to that day's numbers.
+    private var windowAnchor: Date {
+        setGroup.workout?.isCurrentWorkout == true ? .now : (setGroup.workout?.date ?? .now)
     }
 
-    /// Trailing edge of the x-domain, pushed ~2 days past today so the latest point's symbol clears
-    /// the right edge — the chart is `.clipped()` with no trailing fade, and the recorder's last point
-    /// is always today, so without this margin it gets sliced in half. (The volume tile does the same
-    /// by extending to `endOfWeek`.)
+    /// Chart window == current-best window, so everything the chart shows is exactly the history
+    /// the comparison above it is computed from (plus this workout's own point).
+    private var chartStartDate: Date {
+        Exercise.currentBestWindowStart(endingAt: windowAnchor)
+    }
+
+    /// Trailing edge of the x-domain, pushed ~2 days past the anchor so the latest point's symbol
+    /// clears the right edge — the chart is `.clipped()` with no trailing fade, and the recorder's
+    /// last point is always today, so without this margin it gets sliced in half. (The volume tile
+    /// does the same by extending to `endOfWeek`.)
     private var chartEndDate: Date {
-        Calendar.current.date(byAdding: .day, value: 2, to: .now) ?? .now
+        Calendar.current.date(byAdding: .day, value: 2, to: windowAnchor) ?? windowAnchor
     }
 
     /// Compact progression chart matching the exercise-detail tiles (line + area, muscle-group
@@ -1265,8 +1224,9 @@ struct MetricInfoPanel: View {
                     .interpolationMethod(.catmullRom)
                     .foregroundStyle(Gradient(colors: [color.opacity(0.3), color.opacity(0.1), color.opacity(0)]))
             }
-            if let last = points.last, !Calendar.current.isDateInToday(last.date) {
-                RuleMark(xStart: .value("Start", last.date), xEnd: .value("End", Date()), y: .value("Value", last.value))
+            if let last = points.last, last.date < windowAnchor,
+               !Calendar.current.isDate(last.date, inSameDayAs: windowAnchor) {
+                RuleMark(xStart: .value("Start", last.date), xEnd: .value("End", windowAnchor), y: .value("Value", last.value))
                     .foregroundStyle(color.opacity(0.45))
                     .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, dash: [3, 6]))
             }
@@ -1275,7 +1235,8 @@ struct MetricInfoPanel: View {
         .chartYScale(domain: 0 ... max(maxValue * 1.15, 1))
         .chartXAxis {}
         .chartYAxis {}
-        .frame(width: 124, height: 60)
+        .frame(maxWidth: .infinity)
+        .frame(height: 64)
         .clipped()
         .mask(
             LinearGradient(

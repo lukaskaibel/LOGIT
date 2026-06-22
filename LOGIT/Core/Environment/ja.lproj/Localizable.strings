@@ -13,7 +13,7 @@
 "acceptPrivacyPolicy" = "プライバシーポリシーに同意する";
 "add" = "追加";
 "addExercise" = "エクササイズを追加";
-"addExercisesFromBelow" = "以下から演習を追加します。";
+"addExercisesFromBelow" = "以下からエクササイズを追加します。";
 "addMeasurement" = "測定の追加";
 "addMeasurements" = "測定値の追加";
 "addNote" = "メモを追加";
@@ -80,10 +80,10 @@
 // MARK: - D
 
 "date" = "日付";
-"defaultExercises" = "デフォルトの演習";
-"defaultExercisesDescription" = "デフォルトの演習ライブラリを使用しますか?";
+"defaultExercises" = "デフォルトのエクササイズ";
+"defaultExercisesDescription" = "デフォルトのエクササイズライブラリを使用しますか?";
 "delete" = "消去";
-"deleteExerciseConfirmation" = "演習を削除しますか?この操作は元に戻すことができません。";
+"deleteExerciseConfirmation" = "エクササイズを削除しますか?この操作は元に戻すことができません。";
 "deleteSets" = "セットを削除してワークアウトを終了する";
 "deleteSetsWithoutEntries" = "エントリのないすべてのセットを削除して、ワークアウトを終了しますか?";
 "deleteTemplate" = "テンプレートの削除";
@@ -112,9 +112,9 @@
 "endWorkout" = "ワークアウトを終了する";
 "evening" = "夕方";
 "exercise" = "種目";
-"exerciseName" = "演習名";
-"exerciseNameCantStartWithDefault" = "エクササイズ名を「_default」で始めることはできません。このプレフィックスは、組み込みの演習用に予約されています。";
-"exerciseNameDescription" = "演習の名前を入力します。";
+"exerciseName" = "エクササイズ名";
+"exerciseNameCantStartWithDefault" = "エクササイズ名を「_default」で始めることはできません。このプレフィックスは、組み込みのエクササイズ用に予約されています。";
+"exerciseNameDescription" = "エクササイズの名前を入力します。";
 "exercises" = "種目";
 "exerciseLibrary" = "エクササイズライブラリ";
 
@@ -133,7 +133,7 @@
 "FromPhoto" = "写真から";
 "failedToLoadPrivacyPolicy" = "プライバシー ポリシーの読み込みに失敗しました。";
 "failedToLoadTermsAndConditions" = "利用規約を読み込めませんでした。";
-"failedToMatchExercises" = "演習のマッチングに失敗しました。";
+"failedToMatchExercises" = "エクササイズのマッチングに失敗しました。";
 "failedToReadFile" = "ファイルの読み取りに失敗しました: %@";
 
 // MARK: - G
@@ -227,7 +227,7 @@
 "navBack" = "戻る";
 "never" = "一度もない";
 "newestFirst" = "新しい順";
-"newExercise" = "新しい演習";
+"newExercise" = "新しいエクササイズ";
 "newTemplate" = "新しいテンプレート";
 "newTemplateFromWorkout" = "テンプレートとして使用...";
 "newWorkout" = "新しいワークアウト";
@@ -286,7 +286,7 @@
 "perDay" = "1日あたり";
 "pinExercises" = "ピンの練習";
 "pinExercisesTip" = "ピンの練習";
-"pinExercisesTipDescription" = "演習をピン留めすると、進捗状況をすぐに確認できます。";
+"pinExercisesTipDescription" = "エクササイズをピン留めすると、進捗状況をすぐに確認できます。";
 "pinMeasurementsTip" = "ピンの測定";
 "pinMeasurementsTipDescription" = "時間の経過に伴う変化を監視するためのピン測定。";
 "pinned" = "固定された";
@@ -313,7 +313,7 @@
 "remove" = "取り除く";
 "rename" = "名前の変更";
 "reorderingDone" = "並べ替えが完了しました";
-"reorderExercises" = "演習を並べ替える";
+"reorderExercises" = "エクササイズを並べ替える";
 "repetitions" = "回数";
 "repetitionsPR" = "繰り返し PR";
 "reps" = "RP";
@@ -336,7 +336,7 @@
 "searchEverything" = "検索";
 "searchPrompt" = "すべてを検索";
 "searchPromptDescription" = "すべてのエクササイズ、ワークアウト、テンプレートを 1 か所で検索できます。";
-"searchExercises" = "演習で検索";
+"searchExercises" = "エクササイズで検索";
 "searchWorkouts" = "ワークアウトで検索";
 "noSearchResults" = "結果が見つかりませんでした";
 "noSearchResultsFor" = "\"%@\" に一致する結果はありませんでした";
@@ -363,7 +363,7 @@
 "shareTemplate" = "テンプレートを共有する";
 "showAll" = "すべて表示";
 "showAllAttempts" = "すべての試行を表示";
-"showAllExercises" = "すべての演習を表示";
+"showAllExercises" = "すべてのエクササイズを表示";
 "showAllMeasurements" = "すべての測定値を表示";
 "showDetails" = "詳細を表示";
 "showInstructions" = "説明を表示";
@@ -451,7 +451,7 @@
 "unknownExercise" = "不明";
 "update" = "アップデート";
 "upgradeTo" = "にアップグレード";
-"useDefaultExercises" = "デフォルトの演習を使用する";
+"useDefaultExercises" = "デフォルトのエクササイズを使用する";
 "useTemplate" = "テンプレートを使用する";
 "useTemplateDescription" = "保存したワークアウト ルーチンから始めます。";
 "useThisPhoto" = "この写真を使用してください";
@@ -786,18 +786,18 @@
 
 // MARK: - Exercise Merging
 "mergeExercise" = "マージ";
-"mergeExercises" = "マージ演習";
+"mergeExercises" = "エクササイズをマージ";
 "selectExerciseToMerge" = "結合するエクササイズを選択してください";
 "mergeDirectionDescription" = "どのエクササイズを残すかを選択します。すべてのワークアウト履歴が転送されます。";
-"defaultExerciseAlwaysRemains" = "デフォルトの演習は常に残ります。";
-"cannotMergeDefaultExercises" = "デフォルトの演習を相互にマージすることはできません。";
-"cannotMergeSameExercise" = "演習をそれ自体とマージすることはできません。";
+"defaultExerciseAlwaysRemains" = "デフォルトのエクササイズは常に残ります。";
+"cannotMergeDefaultExercises" = "デフォルトのエクササイズを相互にマージすることはできません。";
+"cannotMergeSameExercise" = "エクササイズをそれ自体とマージすることはできません。";
 "mergeConfirmation" = "「%@」のすべてのワークアウト履歴は「%@」に移動されます。 「%@」は削除されます。これを元に戻すことはできません。";
 "mergeInto" = "マージイン";
 "willBeDeleted" = "削除されます";
 "willRemain" = "残る";
 "defaultExercise" = "デフォルト";
-"changeExercise" = "変更演習";
+"changeExercise" = "エクササイズを変更";
 "error" = "エラー";
 "suggested" = "提案された";
 

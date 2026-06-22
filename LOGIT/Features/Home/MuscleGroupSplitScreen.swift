@@ -92,58 +92,7 @@ struct MuscleGroupSplitScreen: View {
                                     )?.endOfWeek
                                 )
                             ) { workouts in
-                                HStack {
-                                    if let selectedMuscleGroup = selectedMuscleGroup {
-                                        let setGroupsInWeekForSelectedMuscleGroup = getSetGroups(
-                                            with: selectedMuscleGroup,
-                                            from: workouts
-                                        )
-                                        VStack(alignment: .leading, spacing: 10) {
-                                            VStack(alignment: .leading) {
-                                                Text(NSLocalizedString("exercises", comment: ""))
-                                                Text("\(setGroupsInWeekForSelectedMuscleGroup.count)")
-                                                    .font(.title3)
-                                                    .fontDesign(.rounded)
-                                                    .fontWeight(.bold)
-                                                    .foregroundStyle(selectedMuscleGroup.color.gradient)
-                                            }
-                                            Divider()
-                                            VStack(alignment: .leading) {
-                                                Text(NSLocalizedString("sets", comment: ""))
-                                                Text("\(setGroupsInWeekForSelectedMuscleGroup.flatMap { $0.sets }.count)")
-                                                    .font(.title3)
-                                                    .fontDesign(.rounded)
-                                                    .fontWeight(.bold)
-                                                    .foregroundStyle(selectedMuscleGroup.color.gradient)
-                                            }
-                                            Divider()
-                                            VStack(alignment: .leading) {
-                                                Text(NSLocalizedString("volume", comment: ""))
-                                                UnitView(value: "\(formatWeightForDisplay(volume(for: selectedMuscleGroup, in: setGroupsInWeekForSelectedMuscleGroup.flatMap { $0.sets })))", unit: WeightUnit.used.rawValue.uppercased())
-                                                    .font(.title3)
-                                                    .fontDesign(.rounded)
-                                                    .fontWeight(.bold)
-                                                    .foregroundStyle(selectedMuscleGroup.color.gradient)
-                                            }
-                                        }
-                                        .padding(.leading)
-                                        Spacer()
-                                    }
-                                    let muscleGroupOccurances = muscleGroupService.getMuscleGroupOccurances(
-                                        in: workouts
-                                    )
-                                    MuscleGroupOccurancesChart(
-                                        muscleGroupOccurances: muscleGroupOccurances,
-                                        selectedMuscleGroup: selectedMuscleGroup
-                                    )
-                                    .animation(nil, value: UUID())
-                                    .frame(width: 200, height: 200)
-                                    .padding()
-                                    .padding(.vertical, 50)
-                                }
-                                .frame(minHeight: 200)
-                                .padding(.horizontal)
-                                .tag(weeksFromNow)
+                                weekPageContent(workouts: workouts, weeksFromNow: weeksFromNow)
                             }
                         }
                     }
@@ -194,7 +143,7 @@ struct MuscleGroupSplitScreen: View {
                 .padding(.top)
             }
             .isBlockedWithoutPro()
-            .onChange(of: selectedWeeksFromNow) { _ in
+            .onChange(of: selectedWeeksFromNow) {
                 selectedMuscleGroup = muscleGroupsInSelectedWeek.contains(where: { $0 == selectedMuscleGroup }) ? selectedMuscleGroup : nil
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -210,6 +159,61 @@ struct MuscleGroupSplitScreen: View {
                 }
             }
         }
+    }
+
+    // MARK: - Supporting Views
+
+    @ViewBuilder
+    private func weekPageContent(workouts: [Workout], weeksFromNow: Int) -> some View {
+        HStack {
+            if let selectedMuscleGroup = selectedMuscleGroup {
+                let setGroups = getSetGroups(with: selectedMuscleGroup, from: workouts)
+                let allSets = setGroups.flatMap { $0.sets }
+                let volumeValue = formatWeightForDisplay(volume(for: selectedMuscleGroup, in: allSets))
+                VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("exercises", comment: ""))
+                        Text("\(setGroups.count)")
+                            .font(.title3)
+                            .fontDesign(.rounded)
+                            .fontWeight(.bold)
+                            .foregroundStyle(selectedMuscleGroup.color.gradient)
+                    }
+                    Divider()
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("sets", comment: ""))
+                        Text("\(allSets.count)")
+                            .font(.title3)
+                            .fontDesign(.rounded)
+                            .fontWeight(.bold)
+                            .foregroundStyle(selectedMuscleGroup.color.gradient)
+                    }
+                    Divider()
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("volume", comment: ""))
+                        UnitView(value: volumeValue, unit: WeightUnit.used.rawValue)
+                            .font(.title3)
+                            .fontDesign(.rounded)
+                            .fontWeight(.bold)
+                            .foregroundStyle(selectedMuscleGroup.color.gradient)
+                    }
+                }
+                .padding(.leading)
+                Spacer()
+            }
+            let muscleGroupOccurances = muscleGroupService.getMuscleGroupOccurances(in: workouts)
+            MuscleGroupOccurancesChart(
+                muscleGroupOccurances: muscleGroupOccurances,
+                selectedMuscleGroup: selectedMuscleGroup
+            )
+            .animation(nil, value: UUID())
+            .frame(width: 200, height: 200)
+            .padding()
+            .padding(.vertical, 50)
+        }
+        .frame(minHeight: 200)
+        .padding(.horizontal)
+        .tag(weeksFromNow)
     }
 
     // MARK: - Computed Properties

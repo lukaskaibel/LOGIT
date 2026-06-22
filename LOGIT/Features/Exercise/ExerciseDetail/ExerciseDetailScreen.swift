@@ -19,6 +19,7 @@ struct ExerciseDetailScreen: View {
     // MARK: - Environment
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject var database: Database
 
     // MARK: - State
@@ -31,15 +32,27 @@ struct ExerciseDetailScreen: View {
     @State private var showingEditExercise = false
     @State private var isShowingExerciseHistoryScreen = false
     @State private var isShowingWeightScreen = false
+    @State private var isShowingE1RMScreen = false
     @State private var isShowingRepetitionsScreen = false
     @State private var isShowingVolumeScreen = false
+    @State private var isShowingSetVolumeScreen = false
+    @State private var isShowingSetsScreen = false
     @State private var isShowingInstructions = false
+    @State private var isShowingMergingSheet = false
+    @State private var mergedIntoExercise: Exercise?
+    /// Guards `autoOpenMetric` so it pushes the metric chart only on first appearance — `onAppear`
+    /// also fires when popping back from that chart, which would otherwise re-push it endlessly.
+    @State private var hasAutoOpenedMetric = false
 
     // MARK: - Variables
 
     @StateObject var exercise: Exercise
     var isShowingAsSheet: Bool = false
     var scrollToRecentAttempts: Bool = false
+    /// When set, the corresponding metric screen is pushed automatically on appear — used by the
+    /// in-workout metric badge's popover to jump straight to the tapped metric's chart.
+    var autoOpenMetric: ExercisePrimaryMetric? = nil
+    var onNavigateToExercise: ((Exercise) -> Void)?
 
     // MARK: - Body
 
@@ -57,27 +70,8 @@ struct ExerciseDetailScreen: View {
                     header
                         .padding(.horizontal)
 
-                    VStack {
-                        Button {
-                            isShowingWeightScreen = true
-                        } label: {
-                            ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
-                        }
-                        .buttonStyle(TileButtonStyle())
-                        Button {
-                            isShowingRepetitionsScreen = true
-                        } label: {
-                            ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
-                        }
-                        .buttonStyle(TileButtonStyle())
-                        Button {
-                            isShowingVolumeScreen = true
-                        } label: {
-                            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
-                        }
-                        .buttonStyle(TileButtonStyle())
-                    }
-                    .padding(.horizontal)
+                    metricTiles(workoutSets: workoutSets)
+                        .padding(.horizontal)
 
                     VStack(spacing: SECTION_HEADER_SPACING) {
                         HStack {
@@ -120,7 +114,7 @@ struct ExerciseDetailScreen: View {
                     .padding(.horizontal)
                     .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                 }
-                .animation(.easeInOut)
+                .animation(.easeInOut, value: workoutSetGroups)
             }
             .background(
                 VStack {
@@ -157,38 +151,43 @@ struct ExerciseDetailScreen: View {
                         } label: {
                             Image(systemName: "info.circle")
                         }
-                        if !exercise.isDefaultExercise {
                         Menu {
-                        Button(
-                            action: { showingEditExercise.toggle() },
-                            label: {
-                                Label(NSLocalizedString("edit", comment: ""), systemImage: "pencil")
+                            Button {
+                                isShowingMergingSheet = true
+                            } label: {
+                                Label(NSLocalizedString("mergeExercise", comment: ""), systemImage: "arrow.triangle.merge")
                             }
-                        )
-                        Button(
-                            role: .destructive,
-                            action: { showDeletionAlert.toggle() },
-                            label: {
-                                Label(NSLocalizedString("delete", comment: ""), systemImage: "trash")
+                            if !exercise.isDefaultExercise {
+                                Button(
+                                    action: { showingEditExercise.toggle() },
+                                    label: {
+                                        Label(NSLocalizedString("edit", comment: ""), systemImage: "pencil")
+                                    }
+                                )
+                                Button(
+                                    role: .destructive,
+                                    action: { showDeletionAlert.toggle() },
+                                    label: {
+                                        Label(NSLocalizedString("delete", comment: ""), systemImage: "trash")
+                                    }
+                                )
                             }
-                        )
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                    .confirmationDialog(
-                        Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
-                        isPresented: $showDeletionAlert,
-                        titleVisibility: .visible
-                    ) {
-                        Button(
-                            "\(NSLocalizedString("delete", comment: ""))",
-                            role: .destructive,
-                            action: {
-                                database.delete(exercise, saveContext: true)
-                                dismiss()
-                            }
-                        )
-                    }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                        }
+                        .confirmationDialog(
+                            Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
+                            isPresented: $showDeletionAlert,
+                            titleVisibility: .visible
+                        ) {
+                            Button(
+                                "\(NSLocalizedString("delete", comment: ""))",
+                                role: .destructive,
+                                action: {
+                                    database.delete(exercise, saveContext: true)
+                                    dismiss()
+                                }
+                            )
                         }
                     }
                 }
@@ -199,11 +198,31 @@ struct ExerciseDetailScreen: View {
             .sheet(isPresented: $isShowingInstructions) {
                 ExerciseInstructionsSheet(exercise: exercise)
             }
+            .sheet(isPresented: $isShowingMergingSheet) {
+                ExerciseMergingSheet(exercise: exercise) { targetExercise in
+                    if targetExercise != exercise {
+                        if isShowingAsSheet {
+                            onNavigateToExercise?(targetExercise)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                dismiss()
+                            }
+                        } else {
+                            mergedIntoExercise = targetExercise
+                        }
+                    }
+                }
+            }
+            .navigationDestination(item: $mergedIntoExercise) { targetExercise in
+                ExerciseDetailScreen(exercise: targetExercise)
+            }
             .navigationDestination(isPresented: $isShowingExerciseHistoryScreen) {
                 ExerciseHistoryScreen(exercise: exercise)
             }
             .navigationDestination(isPresented: $isShowingWeightScreen) {
                 ExerciseWeightScreen(exercise: exercise, workoutSets: workoutSets)
+            }
+            .navigationDestination(isPresented: $isShowingE1RMScreen) {
+                ExerciseE1RMScreen(exercise: exercise, workoutSets: workoutSets)
             }
             .navigationDestination(isPresented: $isShowingRepetitionsScreen) {
                 ExerciseRepetitionsScreen(exercise: exercise, workoutSets: workoutSets)
@@ -211,7 +230,23 @@ struct ExerciseDetailScreen: View {
             .navigationDestination(isPresented: $isShowingVolumeScreen) {
                 ExerciseVolumeScreen(exercise: exercise, workoutSets: workoutSets)
             }
+            .navigationDestination(isPresented: $isShowingSetVolumeScreen) {
+                ExerciseSetVolumeScreen(exercise: exercise, workoutSets: workoutSets)
+            }
+            .navigationDestination(isPresented: $isShowingSetsScreen) {
+                ExerciseSetsScreen(exercise: exercise, workoutSets: workoutSets)
+            }
             .onAppear {
+                if let autoOpenMetric, !hasAutoOpenedMetric {
+                    hasAutoOpenedMetric = true
+                    DispatchQueue.main.async {
+                        switch autoOpenMetric {
+                        case .estimatedOneRepMax: isShowingE1RMScreen = true
+                        case .weight: isShowingWeightScreen = true
+                        case .repetitions: isShowingRepetitionsScreen = true
+                        }
+                    }
+                }
                 guard scrollToRecentAttempts else { return }
                 DispatchQueue.main.async {
                     scrollProxy.scrollTo("recentAttempts", anchor: .top)
@@ -222,6 +257,101 @@ struct ExerciseDetailScreen: View {
     }
 
     // MARK: - Supporting Views
+
+    /// The metric tiles in the in-workout popover's compact language: the four "current best"
+    /// metrics as a two-column grid, with the weekly volume tile full-width beneath — its bars
+    /// need the room, and "this week" is a different kind of stat than the best-value tiles.
+    /// Collapses to one column at accessibility type sizes, where half-width tiles can't fit
+    /// their text.
+    @ViewBuilder
+    private func metricTiles(workoutSets: [WorkoutSet]) -> some View {
+        let spacing: CGFloat = 10
+        // No logged sets yet (a workout being recorded doesn't count — the tiles exclude it):
+        // one friendly placeholder instead of five identical "––" skeletons.
+        if !workoutSets.contains(where: { $0.workout?.isCurrentWorkout != true }) {
+            ExerciseMetricsEmptyTile(color: exercise.muscleGroup?.color ?? .accentColor)
+        } else {
+            VStack(spacing: spacing) {
+                if dynamicTypeSize.isAccessibilitySize {
+                    weightTile(workoutSets: workoutSets)
+                    e1RMTile(workoutSets: workoutSets)
+                    repetitionsTile(workoutSets: workoutSets)
+                    setVolumeTile(workoutSets: workoutSets)
+                    volumeTile(workoutSets: workoutSets)
+                    setsTile(workoutSets: workoutSets)
+                } else {
+                    HStack(alignment: .top, spacing: spacing) {
+                        weightTile(workoutSets: workoutSets)
+                        e1RMTile(workoutSets: workoutSets)
+                    }
+                    HStack(alignment: .top, spacing: spacing) {
+                        repetitionsTile(workoutSets: workoutSets)
+                        setVolumeTile(workoutSets: workoutSets)
+                    }
+                    // Volume (weekly tonnage) and Sets (weekly working-set count) are the two
+                    // "this week vs last" workload stats — half-width siblings, not one wide tile.
+                    HStack(alignment: .top, spacing: spacing) {
+                        volumeTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    }
+                }
+            }
+        }
+    }
+
+    private func weightTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingWeightScreen = true
+        } label: {
+            ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func e1RMTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingE1RMScreen = true
+        } label: {
+            ExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func repetitionsTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingRepetitionsScreen = true
+        } label: {
+            ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func setVolumeTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingSetVolumeScreen = true
+        } label: {
+            ExerciseSetVolumeTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func volumeTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingVolumeScreen = true
+        } label: {
+            ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func setsTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingSetsScreen = true
+        } label: {
+            ExerciseSetsTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
 
     private var header: some View {
         VStack(alignment: .leading) {

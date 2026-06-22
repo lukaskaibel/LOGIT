@@ -60,6 +60,15 @@ struct SettingsScreen: View {
                 }
 
                 VStack(spacing: CELL_SPACING) {
+                    Link(destination: URL(string: "mailto:logit.fitness@gmail.com?subject=LOGIT%20Support")!) {
+                        HStack {
+                            Text(NSLocalizedString("support", comment: ""))
+                            Spacer()
+                            Image(systemName: "envelope")
+                        }
+                        .padding(CELL_PADDING)
+                        .tileStyle()
+                    }
                     Button {
                         isShowingPrivacyPolicy = true
                     } label: {

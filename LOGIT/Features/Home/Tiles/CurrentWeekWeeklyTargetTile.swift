@@ -34,7 +34,7 @@ struct CurrentWeekWeeklyTargetTile: View {
                 }
                 
                 HStack(alignment: .bottom) {
-                    UnitView(value: "\(workouts.count)", unit: "\(NSLocalizedString("of", comment: "")) \(targetPerWeek)", configuration: .large, unitColor: Color.secondaryLabel)
+                    UnitView(value: "\(workouts.count)", unit: "\(NSLocalizedString("of", comment: "")) \(targetPerWeek)", configuration: .large, unitColor: Color.secondaryLabel, unitTextCase: nil)
                         .foregroundStyle(Color.accentColor.gradient)
                     Spacer()
                     Chart {

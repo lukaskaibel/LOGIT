@@ -164,6 +164,12 @@ private func workoutLiveActivityCountdownRange(
     return referenceDate ... clampedEndDate
 }
 
+private func workoutLiveActivityStopwatchRange(
+    startingAt startDate: Date
+) -> ClosedRange<Date> {
+    startDate ... startDate.addingTimeInterval(86400)
+}
+
 private extension WorkoutLiveActivityChronoChip {
     var isRunning: Bool {
         switch phase {
@@ -407,7 +413,10 @@ private struct WorkoutLiveActivityRunningChronoText: View {
             }
         case .stopwatchRunning:
             if let start = chip.stopwatchStartDate {
-                Text(start, style: .timer)
+                Text(
+                    timerInterval: workoutLiveActivityStopwatchRange(startingAt: start),
+                    countsDown: false
+                )
             } else {
                 Text("0:00").opacity(0)
             }
@@ -593,7 +602,10 @@ private struct WorkoutLiveActivityChronoChipView: View {
             }
         case .stopwatchRunning:
             if let start = chip.stopwatchStartDate {
-                Text(start, style: .timer)
+                Text(
+                    timerInterval: workoutLiveActivityStopwatchRange(startingAt: start),
+                    countsDown: false
+                )
             } else {
                 Text("0:00").opacity(0)
             }
@@ -1724,8 +1736,8 @@ private struct WorkoutCompactIslandTrailingContent: View {
 }
 
 /// In Live Activities the widget extension is only woken at Activity update points, so `TimelineView(.periodic)`
-/// does not drive continuous refreshes. Use the system-provided live timer `Text` views (`timerInterval:` /
-/// `style: .timer`) which are rendered by the OS and advance in place for both the compact Dynamic Island and minimal.
+/// does not drive continuous refreshes. Use `Text(timerInterval:countsDown:showsHours:)` which is rendered by the
+/// OS and advances in place for both the compact Dynamic Island and minimal.
 private struct WorkoutCompactIslandChronoLabel: View {
     let chip: WorkoutLiveActivityChronoChip
     let font: Font
@@ -1736,7 +1748,6 @@ private struct WorkoutCompactIslandChronoLabel: View {
             .monospacedDigit()
             .foregroundStyle(chip.liveActivityChronoForegroundTint)
             .multilineTextAlignment(.trailing)
-            .contentTransition(.numericText())
     }
 
     @ViewBuilder
@@ -1754,13 +1765,18 @@ private struct WorkoutCompactIslandChronoLabel: View {
             }
         case .stopwatchRunning:
             if let start = chip.stopwatchStartDate {
-                Text(start, style: .timer)
+                Text(
+                    timerInterval: workoutLiveActivityStopwatchRange(startingAt: start),
+                    countsDown: false,
+                    showsHours: false
+                )
             } else {
                 Text("0:00").opacity(0)
             }
         case .timerPaused, .stopwatchPaused:
             if let seconds = chip.staticTickSeconds {
                 Text(workoutLiveActivityRestTimeString(seconds: seconds))
+                    .contentTransition(.numericText())
             } else {
                 Text("0:00").opacity(0)
             }

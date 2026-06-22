@@ -76,10 +76,10 @@ struct ReorderableForEach<Content: View, Item: Reorderable>: View {
                         draggedItem = nil
                     }
             )
-            .onChange(of: draggedItem) { value in
+            .onChange(of: draggedItem) { _, value in
                 isReordering = value != nil
             }
-            .onChange(of: isDraggingOnValidDropDestination) { value in
+            .onChange(of: isDraggingOnValidDropDestination) { _, value in
                 guard !value else {
                     stopDraggingTimer?.invalidate()
                     stopDraggingTimer = nil

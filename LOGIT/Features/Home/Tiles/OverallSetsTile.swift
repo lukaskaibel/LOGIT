@@ -14,7 +14,13 @@ struct OverallSetsTile: View {
     let workouts: [Workout]
 
     var body: some View {
-        let workoutsThisWeek = workouts.filter { $0.date ?? .distantPast >= .now.startOfWeek && $0.date ?? .distantFuture <= .now }
+        // Limit to last 4 full weeks (including current) to mirror VolumeTile
+        let startDate = Calendar.current.date(byAdding: .weekOfYear, value: -4, to: .now)!.startOfWeek
+        let workoutSets = workouts
+            .flatMap { $0.sets }
+            .filter { if let d = $0.workout?.date { return d >= startDate && d <= .now } else { return false } }
+        let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }
+            .sorted { $0.key < $1.key }
         VStack(spacing: 20) {
             HStack {
                 VStack(alignment: .leading) {
@@ -28,7 +34,8 @@ struct OverallSetsTile: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             HStack(alignment: .bottom) {
                 HStack(alignment: .lastTextBaseline, spacing: 5) {
-                    let numberOfSetsThisWeek = workoutsThisWeek.map { $0.sets }.joined().count
+                    let thisWeekStart = Date.now.startOfWeek
+                    let numberOfSetsThisWeek = groupedWorkoutSets.first(where: { Calendar.current.isDate($0.key, equalTo: thisWeekStart, toGranularity: .weekOfYear) })?.value.count ?? 0
                     UnitView(
                         value: "\(numberOfSetsThisWeek)",
                         unit: NSLocalizedString("set\(numberOfSetsThisWeek == 1 ? "" : "s")", comment: ""),
@@ -39,26 +46,17 @@ struct OverallSetsTile: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Chart {
-                    ForEach(setsOfLastWeekGroupedByDay(workoutsThisWeek), id: \.date) { data in
+                    ForEach(groupedWorkoutSets, id: \.0) { key, workoutSets in
                         BarMark(
-                            x: .value("Day", data.date, unit: .day),
-                            y: .value("Number of Sets", data.workoutSets.count),
+                            x: .value("Weeks before now", key, unit: .weekOfYear),
+                            y: .value("Sets in week", workoutSets.count),
                             width: .ratio(0.5)
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 1))
+                        .foregroundStyle(Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? Color.accentColor : Color.fill)
                     }
                 }
-                .chartXAxis {
-                    AxisMarks(position: .bottom, values: .stride(by: .day)) { value in
-                        if let date = value.as(Date.self) {
-                            AxisGridLine()
-                                .foregroundStyle(Color.gray.opacity(0.5))
-                            AxisValueLabel(date.formatted(.dateTime.weekday(.narrow)))
-                                .foregroundStyle(Calendar.current.isDateInToday(date) ? Color.primary : .secondary)
-                                .font(.caption.weight(.bold))
-                        }
-                    }
-                }
+                .chartXScale(domain: xDomain(startDate: startDate))
+                .chartXAxis {}
                 .chartYAxis {}
                 .frame(width: 120, height: 70)
             }
@@ -67,38 +65,8 @@ struct OverallSetsTile: View {
         .tileStyle()
     }
 
-    private func setsOfLastWeekGroupedByDay(_ workouts: [Workout]) -> [(date: Date, workoutSets: [WorkoutSet])] {
-        var result = [(date: Date, workoutSets: [WorkoutSet])]()
-        let allDays = allDaysOfTheWeek
-
-        var groupedByDay: [Date: [WorkoutSet]] = [:]
-
-        workouts
-            .map { $0.sets }
-            .joined()
-            .forEach { workoutSet in
-                if let setDate = workoutSet.workout?.date {
-                    let startOfDay = Calendar.current.startOfDay(for: setDate)
-                    groupedByDay[startOfDay, default: []].append(workoutSet)
-                }
-            }
-
-        for day in allDays {
-            let startOfDay = Calendar.current.startOfDay(for: day)
-            let setsForDay = groupedByDay[startOfDay] ?? []
-            result.append((date: startOfDay, workoutSets: setsForDay))
-        }
-
-        return result
-    }
-
-    private var allDaysOfTheWeek: [Date] {
-        let calendar = Calendar.current
-        let today = Date()
-
-        guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: today)?.start else { return [] }
-
-        return (0 ..< 7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
+    private func xDomain(startDate: Date) -> some ScaleDomain {
+        startDate ... Date.now.endOfWeek
     }
 }
 

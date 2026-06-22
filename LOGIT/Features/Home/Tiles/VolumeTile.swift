@@ -32,15 +32,11 @@ struct VolumeTile: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading) {
-                    Text(NSLocalizedString("thisWeek", comment: ""))
-                        .foregroundStyle(.secondary)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
                     let thisWeekStart = Date.now.startOfWeek
                     let setsThisWeek = groupedWorkoutSets.first(where: { Calendar.current.isDate($0.key, equalTo: thisWeekStart, toGranularity: .weekOfYear) })?.value ?? []
                     UnitView(
                         value: "\(formatWeightForDisplay(getVolume(of: setsThisWeek)))",
-                        unit: WeightUnit.used.rawValue.uppercased(),
+                        unit: WeightUnit.used.rawValue,
                         configuration: .large,
                         unitColor: .secondaryLabel
                     )

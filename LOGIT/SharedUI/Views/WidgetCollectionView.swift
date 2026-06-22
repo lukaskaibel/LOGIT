@@ -74,7 +74,8 @@ struct WidgetCollectionView<Content: View>: View {
             .emptyPlaceholder(collection.items.filter { $0.isAdded }) {
                 Text(NSLocalizedString("noWidgetsAdded", comment: ""))
             }
-            .animation(.interactiveSpring())
+            .animation(.interactiveSpring(), value: collection.items)
+            .animation(.interactiveSpring(), value: collection.items.map(\.isAdded))
         }
         .onAppear {
             for view in views {

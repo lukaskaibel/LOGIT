@@ -8,10 +8,10 @@
 import Foundation
 import Ifrit
 
-// MARK: - Searchable Conformance
+// MARK: - Fuzzy Search Properties
 
-extension Template: Searchable {
-    public var properties: [FuseProp] {
+extension Template {
+    var searchProperties: [FuseProp] {
         var props: [FuseProp] = []
         if let name = name {
             props.append(FuseProp(name, weight: 1.0))

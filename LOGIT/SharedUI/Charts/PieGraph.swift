@@ -22,7 +22,7 @@ struct PieGraph<CenterView: View>: View {
     init(
         items: [Item],
         configuration: Configuration = .normal,
-        centerView: CenterView? = Spacer(),
+        centerView: CenterView?,
         showZeroValuesInLegend: Bool = false,
         hideLegend: Bool = false
     ) {
@@ -122,6 +122,23 @@ struct PieGraph<CenterView: View>: View {
         let amount: Int
         let color: Color
         let isSelected: Bool
+    }
+}
+
+extension PieGraph where CenterView == Spacer {
+    init(
+        items: [Item],
+        configuration: Configuration = .normal,
+        showZeroValuesInLegend: Bool = false,
+        hideLegend: Bool = false
+    ) {
+        self.init(
+            items: items,
+            configuration: configuration,
+            centerView: Spacer(),
+            showZeroValuesInLegend: showZeroValuesInLegend,
+            hideLegend: hideLegend
+        )
     }
 }
 

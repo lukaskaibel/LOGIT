@@ -48,7 +48,7 @@ struct MeasurementTile: View {
                             .fontWeight(.semibold)
                         UnitView(
                             value: formatDecimal(latestEntry!.decimalValue),
-                            unit: measurementType.unit.uppercased(),
+                            unit: measurementType.unit,
                             configuration: .large
                         )
                         .foregroundStyle(Color.accentColor.gradient)

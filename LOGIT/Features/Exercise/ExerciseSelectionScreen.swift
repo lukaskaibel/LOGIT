@@ -99,14 +99,14 @@ struct ExerciseSelectionScreen: View {
             .onAppear {
                 isShowingNoExercisesTip = exercises.isEmpty
             }
-            .onChange(of: textFieldIsFocused) { newValue in
+            .onChange(of: textFieldIsFocused) { _, newValue in
                 if newValue {
                     withAnimation {
                         presentationDetentSelection = .large
                     }
                 }
             }
-            .onChange(of: presentationDetentSelection) { newValue in
+            .onChange(of: presentationDetentSelection) { _, newValue in
                 if newValue != .large {
                     textFieldIsFocused = false
                 }
@@ -167,7 +167,7 @@ struct ExerciseSelectionScreen: View {
             .padding(.vertical, 10)
             .padding(.horizontal, 10)
             .background(Color(.systemGray5))
-            .clipShape(ConcentricRectangle(corners: .concentric(minimum: 12), isUniform: true))
+            .clipShape(.capsule)
             if !isSmallDetent {
                 Button {
                     sheetType = .addExercise
@@ -261,6 +261,13 @@ struct ExerciseSelectionScreen: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(TileButtonStyle())
+                    .contextMenu {
+                        Button {
+                            selectedExerciseForDetail = exercise
+                        } label: {
+                            Label(NSLocalizedString("showDetails", comment: ""), systemImage: "info.circle")
+                        }
+                    }
                 }
             }
         }
@@ -291,6 +298,13 @@ struct ExerciseSelectionScreen: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(TileButtonStyle())
+                .contextMenu {
+                    Button {
+                        selectedExerciseForDetail = exercise
+                    } label: {
+                        Label(NSLocalizedString("showDetails", comment: ""), systemImage: "info.circle")
+                    }
+                }
             }
         }
         .padding(.horizontal)
@@ -326,6 +340,13 @@ struct ExerciseSelectionScreen: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(TileButtonStyle())
+                        .contextMenu {
+                            Button {
+                                selectedExerciseForDetail = exercise
+                            } label: {
+                                Label(NSLocalizedString("showDetails", comment: ""), systemImage: "info.circle")
+                            }
+                        }
                         .id(exercise.objectID)
                     }
                 }

@@ -38,7 +38,6 @@
 
 "back" = "Dos";
 "best" = "Meilleur";
-"bestLastMonth" = "Meilleur le mois dernier";
 "bestPerDay" = "Meilleur par jour";
 "bestThisMonth" = "Meilleur ce mois-ci";
 "bestWeightPerDay" = "Meilleur poids par jour";
@@ -75,7 +74,7 @@
 "creatingTemplateFailed" = "Échec de la création du modèle";
 "creatingTemplateFailedText" = "Assurez-vous que l'image sélectionnée contient un entraînement.";
 "currentBest" = "Meilleur actuel";
-"currentBestInfo" = "Current Best affiche votre meilleure tentative ce mois-ci ou, s'il n'y en a pas, votre tentative précédente la plus récente.";
+"currentBestInfo" = "Ton meilleur actuel est la valeur la plus élevée atteinte au cours du dernier mois.";
 "currentWorkout" = "Entraînement actuel";
 
 // MARK: - D
@@ -193,8 +192,6 @@
 
 "maximumWeight" = "Poids maximum";
 "maximumRepetitions" = "Répétitions maximales";
-"maxReps" = "Nombre maximum de répétitions";
-"maxWeight" = "Poids maximum";
 "measurementBodyweight" = "Poids corporel";
 "measurementCaloriesBurned" = "Calories brûlées";
 "chest" = "Poitrine";
@@ -240,6 +237,8 @@
 "noAttempts" = "Aucune tentative";
 "noData" = "Aucune donnée";
 "noEntriesConfirmation" = "Cet entraînement n'a aucune entrée. Le jeter ?";
+"noExerciseDataMessage" = "Fais une séance avec cet exercice et ta progression apparaîtra ici.";
+"noExerciseDataTitle" = "Pas encore de données";
 "noExercises" = "Aucun exercice";
 "noExercisesInWeek" = "Pas d'exercice dans la semaine";
 "noExercisesTip" = "Aucun exercice pour l'instant";
@@ -386,6 +385,7 @@
 "stopwatch" = "Chronomètre";
 "subscription" = "Abonnement";
 "summary" = "Résumé";
+"support" = "Assistance";
 "superSet" = "Surensemble";
 "shared" = "Partagé";
 
@@ -432,6 +432,9 @@
 "today" = "Aujourd'hui";
 "toGo" = "aller";
 "total" = "Total";
+"trendDown" = "%@ de moins que la période précédente";
+"trendUp" = "%@ de plus que la période précédente";
+"trendFlat" = "Aucun changement par rapport à la période précédente";
 "trackMore" = "Suivre plus";
 "triceps" = "Triceps";
 "two" = "Deux";
@@ -727,9 +730,13 @@
 
 // MARK: - Exercise Volume Highlights
 "avgMoreExerciseVolumeThisMonthThanLastMonth" = "Vous réalisez en moyenne plus de volume pour cet exercice ce mois-ci que le mois dernier.";
+"avgMoreExerciseSetsThisMonthThanLastMonth" = "Vous réalisez en moyenne plus de séries pour cet exercice ce mois-ci que le mois dernier.";
 "avgLessExerciseVolumeThisMonthThanLastMonth" = "Vous faites en moyenne moins de volume pour cet exercice ce mois-ci que le mois dernier.";
+"avgLessExerciseSetsThisMonthThanLastMonth" = "Vous réalisez en moyenne moins de séries pour cet exercice ce mois-ci que le mois dernier.";
 "avgMoreExerciseVolumeThisYearThanLastYear" = "Vous réalisez en moyenne plus de volume pour cet exercice cette année que l’année dernière.";
+"avgMoreExerciseSetsThisYearThanLastYear" = "Vous réalisez en moyenne plus de séries pour cet exercice cette année que l’année dernière.";
 "avgLessExerciseVolumeThisYearThanLastYear" = "Cette année, vous effectuez en moyenne moins de volume pour cet exercice que l’année dernière.";
+"avgLessExerciseSetsThisYearThanLastYear" = "Vous réalisez en moyenne moins de séries pour cet exercice cette année que l’année dernière.";
 
 // MARK: - Exercise Weight Highlights
 "higherMaxWeightThisMonthThanLastMonth" = "Votre meilleur poids ce mois-ci est supérieur à celui du mois dernier.";
@@ -825,3 +832,91 @@
 "previewPushup" = "Pompe";
 "previewSquats" = "Squats";
 "previewBarbellCurl" = "Curl barre";
+
+/* Estimated 1RM (e1RM) */
+"e1RM" = "e1RM";
+"estimatedOneRepMax" = "1RM estimé";
+"e1RMInfo" = "1RM estimé : la charge maximale que tu pourrais probablement soulever sur une seule répétition, calculée à partir de ton poids et de tes répétitions (formule d'Epley). Elle n'est précise qu'à faible nombre de répétitions ; les séries de plus de 12 répétitions ne sont donc pas comptabilisées.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Ton 1RM estimé ce mois-ci est plus élevé que le mois dernier.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Ton 1RM estimé ce mois-ci est plus bas que le mois dernier.";
+"higherMaxE1RMThisYearThanLastYear" = "Ton 1RM estimé cette année est plus élevé que l'an dernier.";
+"lowerMaxE1RMThisYearThanLastYear" = "Ton 1RM estimé cette année est plus bas que l'an dernier.";
+
+/* Set Volume (best single-set volume) */
+"setVolume" = "Volume par série";
+"setVolumeInfo" = "Volume par série : le poids × répétitions d'une seule série. Il suit ta meilleure série – contrairement au volume total, il n'augmente que si tu soulèves plus lourd ou fais plus de répétitions dans une série.";
+"higherMaxSetVolumeThisMonthThanLastMonth" = "Ton meilleur volume par série ce mois-ci est plus élevé que le mois dernier.";
+"lowerMaxSetVolumeThisMonthThanLastMonth" = "Ton meilleur volume par série ce mois-ci est plus bas que le mois dernier.";
+"higherMaxSetVolumeThisYearThanLastYear" = "Ton meilleur volume par série cette année est plus élevé que l'an dernier.";
+"lowerMaxSetVolumeThisYearThanLastYear" = "Ton meilleur volume par série cette année est plus bas que l'an dernier.";
+
+/* Metric detail "About" sections */
+"aboutMetric" = "À propos de « %@ »";
+"weightInfo" = "Le poids le plus lourd soulevé en une seule série, affiché par jour. Soulever plus lourd au fil du temps est le signe le plus direct d’un gain de force.";
+"repetitionsInfo" = "Le plus grand nombre de répétitions effectuées en une seule série, affiché par jour. Plus de répétitions au même poids développe l’endurance musculaire — une autre façon de progresser.";
+"volumeInfo" = "Le volume est le poids total déplacé : poids × répétitions, additionné sur toutes les séries d’une semaine. Plus de volume signifie plus de travail total — un facteur clé de la croissance musculaire.";
+"setsInfo" = "Les séries comptabilisent le nombre de séries de travail que vous avez enregistrées pour cet exercice sur une semaine — uniquement celles réellement terminées. Les séries par semaine sont la mesure standard du volume d’entraînement : en faire suffisamment chaque semaine est un facteur clé pour gagner en force et en masse musculaire.";
+
+"progressMetric" = "Métrique de progression";
+
+"maxWeight" = "Poids max";
+"maxReps" = "Reps max";
+
+"metricInfoWeight" = "La charge la plus lourde que tu as soulevée en une seule série, quel que soit le nombre de répétitions.";
+"metricInfoReps" = "Le plus grand nombre de répétitions réalisées en une seule série, quelle que soit la charge.";
+"tapForMetricInfo" = "Touche pour voir les détails et changer de métrique.";
+"personalRecord" = "Record personnel";
+"repsShort" = "Reps";
+
+/* Workout Progress Section */
+"personalRecords" = "Records personnels";
+"personalRecordsCount" = "%d records personnels";
+"personalRecordsMoreCount" = "+%d de plus";
+"exerciseProgress" = "Progression par exercice";
+"exercisesImproved" = "%d exercices sur %d en progression";
+"firstSession" = "Première séance";
+"volumeVsLastTime" = "Volume vs la dernière fois";
+"thisWorkout" = "Cette séance";
+"firstTimeForThisWorkout" = "Première fois pour cette séance — les prochaines séances y seront comparées.";
+"workoutPRInfo" = "Un record personnel signifie qu'une série de cette séance a dépassé ta meilleure charge, tes meilleures répétitions ou ton 1RM estimé de toutes les séances précédentes — même si tu l'as dépassé depuis.";
+"workoutTrendInfo" = "La tendance de chaque exercice compare la meilleure valeur de cette séance pour sa métrique de progression avec ton meilleur du mois précédent — la même comparaison que les badges des exercices ci-dessous.";
+"workoutVolumeCompareInfo" = "Volume total (charge × répétitions de chaque série) comparé à la dernière fois que tu as fait cette séance.";
+"improvedCount" = "%d en progression";
+
+/* Paywall */
+"stayMotivated" = "Reste motivé";
+"liveProgress" = "Progression en direct";
+"liveProgressPromotionText" = "Vois comment chaque série se situe par rapport à ton meilleur actuel — en direct pendant l'entraînement, avec records personnels et tendances après chaque séance.";
+"cancelAnytime" = "Annulable à tout moment";
+"purchaseFailed" = "Échec de l'achat";
+"purchaseFailedText" = "Une erreur s'est produite et tu n'as pas été débité. Réessaie.";
+"restoreFailed" = "Échec de la restauration";
+"restoreFailedText" = "Impossible de restaurer ton achat. Vérifie ta connexion et réessaie.";
+
+/* Workout stats (workout detail tiles & detail screens) */
+"rps" = "rps";
+"average" = "Moyenne";
+"volumePerSet" = "Volume par série";
+"workoutStatCompareSameInfo" = "La tendance compare cette séance avec ta dernière exécution de la même séance. Les barres montrent ses exécutions récentes — cette séance est la barre mise en évidence à droite.";
+"workoutStatCompareRecentInfo" = "Cette séance n'a pas d'exécutions précédentes, la tendance la compare donc à la moyenne de tes dernières séances. Les barres montrent ces séances — celle-ci est la barre mise en évidence à droite.";
+"workoutStatAverageInfo" = "La moyenne par séance sur la période visible. La tendance la compare à la période précédente. Chaque barre est une séance, colorée selon son groupe musculaire le plus travaillé ; la vue annuelle montre des moyennes mensuelles.";
+"workoutVolumeAboutInfo" = "Le volume est le poids total déplacé pendant une séance — poids × répétitions, additionné sur toutes les séries. Comparé entre les séances, il montre la quantité de travail de tes entraînements.";
+"workoutDurationAboutInfo" = "La durée est le temps entre le début et la fin d'une séance. Ni plus longue ni plus courte n'est meilleure en soi — lis-la avec le volume pour voir la densité de ton entraînement.";
+"workoutSetsAboutInfo" = "Le nombre de séries enregistrées dans une séance — une mesure simple de ce que tu as fait, indépendamment du poids sur la barre.";
+"workoutRepsAboutInfo" = "Toutes les répétitions enregistrées dans une séance, additionnées sur toutes les séries. Avec les séries et le volume, elles décrivent la quantité de travail d'une séance.";
+"avgMoreWorkoutVolumeThisMonthThanLastMonth" = "Plus de volume par séance ce mois-ci que le mois dernier.";
+"avgLessWorkoutVolumeThisMonthThanLastMonth" = "Moins de volume par séance ce mois-ci que le mois dernier.";
+"avgMoreWorkoutVolumeThisYearThanLastYear" = "Plus de volume par séance cette année que l'année dernière.";
+"avgLessWorkoutVolumeThisYearThanLastYear" = "Moins de volume par séance cette année que l'année dernière.";
+"avgLongerWorkoutsThisMonthThanLastMonth" = "Des séances plus longues ce mois-ci que le mois dernier.";
+"avgShorterWorkoutsThisMonthThanLastMonth" = "Des séances plus courtes ce mois-ci que le mois dernier.";
+"avgLongerWorkoutsThisYearThanLastYear" = "Des séances plus longues cette année que l'année dernière.";
+"avgShorterWorkoutsThisYearThanLastYear" = "Des séances plus courtes cette année que l'année dernière.";
+"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "Plus de séries par séance ce mois-ci que le mois dernier.";
+"avgLessSetsPerWorkoutThisMonthThanLastMonth" = "Moins de séries par séance ce mois-ci que le mois dernier.";
+"avgMoreSetsPerWorkoutThisYearThanLastYear" = "Plus de séries par séance cette année que l'année dernière.";
+"avgLessSetsPerWorkoutThisYearThanLastYear" = "Moins de séries par séance cette année que l'année dernière.";
+"avgMoreRepsPerWorkoutThisMonthThanLastMonth" = "Plus de répétitions par séance ce mois-ci que le mois dernier.";
+"avgLessRepsPerWorkoutThisMonthThanLastMonth" = "Moins de répétitions par séance ce mois-ci que le mois dernier.";
+"avgMoreRepsPerWorkoutThisYearThanLastYear" = "Plus de répétitions par séance cette année que l'année dernière.";
+"avgLessRepsPerWorkoutThisYearThanLastYear" = "Moins de répétitions par séance cette année que l'année dernière.";

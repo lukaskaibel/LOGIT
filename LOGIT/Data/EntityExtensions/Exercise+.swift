@@ -9,10 +9,10 @@ import CoreData
 import Foundation
 import Ifrit
 
-// MARK: - Searchable Conformance
+// MARK: - Fuzzy Search Properties
 
-extension Exercise: Searchable {
-    public var properties: [FuseProp] {
+extension Exercise {
+    var searchProperties: [FuseProp] {
         [FuseProp(displayName, weight: 1.0)]
     }
 }
@@ -79,8 +79,131 @@ extension Exercise {
 
 }
 
-extension Array: Identifiable where Element: Exercise {
+// MARK: - Current Best
+
+extension Exercise {
+    /// Start of the "current best" window: one month back from now.
+    ///
+    /// "Current best" is the app-wide term for the best value of a metric within the last month —
+    /// a measure of present capability, unlike the all-time "personal best". Whenever a value is
+    /// labeled "current best" it must come from this window. Whether the workout currently being
+    /// recorded counts is the caller's choice: the home tiles include it, while the in-workout
+    /// badge and the exercise-detail tiles exclude it — they compare against the current best, and
+    /// a baseline that moved with every entered set couldn't be one.
+    static var currentBestWindowStart: Date {
+        currentBestWindowStart(endingAt: .now)
+    }
+
+    /// The window start anchored at an arbitrary moment — used when a finished workout's detail
+    /// tells the story of *that day*: its badges compare against the month before the workout,
+    /// not the month before now, so a later, better session can't rewrite an old trend.
+    static func currentBestWindowStart(endingAt anchor: Date) -> Date {
+        Calendar.current.date(byAdding: .month, value: -1, to: anchor) ?? anchor
+    }
+
+    /// The set holding this exercise's current best (see `currentBestWindowStart`) for `metric`,
+    /// or nil if no set in the window has a usable value. Returning the set (not just the number)
+    /// lets callers show the paired entry — e.g. the reps that accompanied the heaviest weight.
+    /// `sets` narrows the candidates (e.g. a tile's pre-filtered sets); defaults to all sets.
+    /// `endingAt` closes the window at that moment instead of leaving it open-ended at now.
+    func currentBestSet(for metric: ExercisePrimaryMetric, in sets: [WorkoutSet]? = nil, endingAt anchor: Date? = nil) -> WorkoutSet? {
+        let windowStart = Self.currentBestWindowStart(endingAt: anchor ?? .now)
+        let candidates = (sets ?? self.sets).filter {
+            let date = $0.workout?.date ?? .distantPast
+            guard date >= windowStart else { return false }
+            guard let anchor else { return true }
+            return date < anchor
+        }
+
+        func value(_ workoutSet: WorkoutSet) -> Int {
+            switch metric {
+            case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: self)
+            case .weight: return workoutSet.maximum(.weight, for: self)
+            case .repetitions: return workoutSet.maximum(.repetitions, for: self)
+            }
+        }
+
+        guard let best = candidates.max(by: { value($0) < value($1) }), value(best) > 0 else { return nil }
+        return best
+    }
+
+    /// The set holding this exercise's current best single-set volume (see
+    /// `currentBestWindowStart`), or nil if no set in the window has any volume. Kept separate
+    /// from `currentBestSet(for:)` because set volume is not an `ExercisePrimaryMetric` — it
+    /// isn't offered on the in-workout badge.
+    func currentBestSetVolumeSet(in sets: [WorkoutSet]? = nil) -> WorkoutSet? {
+        let windowStart = Self.currentBestWindowStart
+        let candidates = (sets ?? self.sets).filter { ($0.workout?.date ?? .distantPast) >= windowStart }
+        guard let best = candidates.max(by: { $0.volume(for: self) < $1.volume(for: self) }),
+              best.volume(for: self) > 0 else { return nil }
+        return best
+    }
+}
+
+extension Array: @retroactive Identifiable where Element: Exercise {
     public var id: NSManagedObjectID {
         first?.objectID ?? NSManagedObjectID()
+    }
+}
+
+// MARK: - Primary Progress Metric
+
+/// The progress metric a user chooses to see on an exercise's in-workout badge, switched from the
+/// badge's info panel or the exercise editor.
+enum ExercisePrimaryMetric: String, CaseIterable {
+    case estimatedOneRepMax
+    case weight
+    case repetitions
+
+    /// Short, localized label for the picker and accessibility.
+    var title: String {
+        switch self {
+        case .estimatedOneRepMax: return NSLocalizedString("e1RM", comment: "")
+        case .weight: return NSLocalizedString("weight", comment: "")
+        case .repetitions: return NSLocalizedString("repetitions", comment: "")
+        }
+    }
+
+    /// Compact label for tight spots (the badge's fine print) — "Reps" instead of "Repetitions".
+    var shortTitle: String {
+        switch self {
+        case .repetitions: return NSLocalizedString("repsShort", comment: "")
+        default: return title
+        }
+    }
+
+    /// The metric shown when the user hasn't chosen one for an exercise: e1RM for Pro users (the
+    /// flagship metric), repetitions for free users — the one metric whose info panel is fully
+    /// visible without Pro, so a default badge tap always lands on usable content. Upgrading flips
+    /// exercises without an explicit choice to e1RM automatically.
+    static var defaultMetric: ExercisePrimaryMetric {
+        PurchaseManager.isProUnlocked ? .estimatedOneRepMax : .repetitions
+    }
+}
+
+extension Exercise {
+    private var primaryMetricDefaultsKey: String? {
+        guard let id = id?.uuidString else { return nil }
+        return "exercisePrimaryMetric.\(id)"
+    }
+
+    /// The progress metric shown on this exercise's in-workout badge, defaulting to
+    /// `ExercisePrimaryMetric.defaultMetric` (e1RM with Pro, repetitions without).
+    ///
+    /// Persisted per exercise in `UserDefaults`, keyed by the exercise id — the same lightweight
+    /// approach used for pinned exercise tiles — so it needs no Core Data model change. Reading is a
+    /// single `string(forKey:)` lookup, cheap enough for the badge to read while rendering.
+    var primaryMetric: ExercisePrimaryMetric {
+        get {
+            guard let key = primaryMetricDefaultsKey,
+                  let raw = UserDefaults.standard.string(forKey: key),
+                  let metric = ExercisePrimaryMetric(rawValue: raw)
+            else { return .defaultMetric }
+            return metric
+        }
+        set {
+            guard let key = primaryMetricDefaultsKey else { return }
+            UserDefaults.standard.set(newValue.rawValue, forKey: key)
+        }
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import ColorfulX
+import Combine
 import CoreData
 import SwiftUI
 
@@ -25,9 +26,11 @@ struct WorkoutDetailScreen: View {
 
     @State private var isShowingDeleteWorkoutAlert: Bool = false
     @State private var sheetType: SheetType? = nil
-    @State private var selectedMuscleGroup: MuscleGroup? = nil
-    @State private var isMuscleGroupExpanded: Bool = false
     @State private var selectedTemplate: Template?
+    @State private var selectedStatMetric: WorkoutStatMetric?
+    @State private var headerTextHeight: CGFloat = 64
+    @State private var progressReport: WorkoutProgressReport?
+    @State private var isShowingPersonalRecords: Bool = false
     @State private var workoutShareFileURL: URL?
     @State private var templateShareFileURL: URL?
 
@@ -48,25 +51,23 @@ struct WorkoutDetailScreen: View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 workoutHeader
-                
-                VStack(spacing: SECTION_HEADER_SPACING) {
-                    Text(NSLocalizedString("overview", comment: ""))
-                        .sectionHeaderStyle2()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    VStack(spacing: CELL_SPACING) {
-                        workoutInfo
-                            .padding(CELL_PADDING)
-                            .tileStyle()
-                        setsPerMuscleGroup
-                            .padding(CELL_PADDING)
-                            .tileStyle()
+
+                VStack(spacing: 10) {
+                    WorkoutStatTileGrid(workout: workout) { metric in
+                        selectedStatMetric = metric
                     }
+                    progressAndVolumeRow
                 }
-                
+
                 VStack(spacing: SECTION_HEADER_SPACING) {
-                    Text(NSLocalizedString("exercises", comment: ""))
-                        .sectionHeaderStyle2()
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    HStack {
+                        Text(NSLocalizedString("exercises", comment: ""))
+                            .sectionHeaderStyle2()
+                        Spacer()
+                        if let progressReport, progressReport.comparableTrendCount > 0 {
+                            exercisesImprovedPill(report: progressReport)
+                        }
+                    }
                     WorkoutSetGroupList(
                         workout: workout,
                         focusedIntegerFieldIndex: .constant(nil),
@@ -77,6 +78,14 @@ struct WorkoutDetailScreen: View {
             }
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
             .padding(.horizontal)
+        }
+        .onAppear {
+            progressReport = WorkoutProgressReport.compute(for: workout, database: database)
+        }
+        .onReceive(
+            workout.objectWillChange.debounce(for: .seconds(0.5), scheduler: RunLoop.main)
+        ) { _ in
+            progressReport = WorkoutProgressReport.compute(for: workout, database: database)
         }
         .background(
             VStack {
@@ -186,217 +195,197 @@ struct WorkoutDetailScreen: View {
                 TemplateDetailScreen(template: template)
             }
         }
+        .navigationDestination(item: $selectedStatMetric) { metric in
+            WorkoutStatScreen(metric: metric, workout: workout)
+        }
+        .navigationDestination(isPresented: $isShowingPersonalRecords) {
+            WorkoutPersonalRecordsScreen(workout: workout, report: progressReport ?? .empty)
+        }
     }
 
     // MARK: - Supporting Views
 
     private var workoutHeader: some View {
-        VStack(alignment: .leading) {
-            Text(workout.date?.description(.long) ?? "")
+        HStack(alignment: .center, spacing: 16) {
+            VStack(alignment: .leading) {
+                HStack(spacing: 4) {
+                    Text(workout.date?.description(.long) ?? "")
+                    if let durationString = workoutDurationString {
+                        Text("·")
+                        Text(durationString)
+                    }
+                }
                 .screenHeaderTertiaryStyle()
-            Text(workout.name ?? "")
-                .screenHeaderStyle()
-                .lineLimit(2)
+                Text(workout.name ?? "")
+                    .screenHeaderStyle()
+                    .lineLimit(2)
+            }
+            // The donut matches the height of date + title (like the workout cell's header row),
+            // measured so a wrapping title scales it rather than leaving it floating.
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.size.height
+            } action: { newValue in
+                headerTextHeight = newValue
+            }
+            Spacer()
+            MuscleGroupOccurancesChart(muscleGroupOccurances: getMuscleGroupOccurancesInWorkout)
+                .frame(width: headerTextHeight, height: headerTextHeight)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var workoutInfo: some View {
-        VStack(spacing: 10) {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("starttime", comment: ""))
-                        .foregroundStyle(.secondary)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                    Text("\(workout.date?.timeString ?? "")")
-                        .font(.system(.title3, design: .rounded, weight: .semibold))
-                        .foregroundColor(.primary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("duration", comment: ""))
-                        .foregroundStyle(.secondary)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                    Text("\(workoutDurationString)")
-                        .font(.system(.title3, design: .rounded, weight: .semibold))
-                        .foregroundColor(.primary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+    /// Pill beside the "Exercises" section title: how many exercises beat their previous session.
+    /// Muted gray while nothing improved; muscle-group themed once at least one did. The detailed
+    /// per-exercise trends live on each exercise's badge in the list below.
+    @ViewBuilder
+    private func exercisesImprovedPill(report: WorkoutProgressReport) -> some View {
+        let improved = report.improvedTrendCount
+        let label = HStack(spacing: 4) {
+            Image(systemName: improved > 0 ? "chevron.up" : "minus")
+                .font(.caption2.weight(.bold))
+            Text(String(format: NSLocalizedString("improvedCount", comment: ""), improved))
+                .font(.system(.footnote, design: .rounded, weight: .bold))
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+
+        Group {
+            if improved > 0 {
+                label
+                    .muscleGroupGradientStyle(for: workout.muscleGroups)
+                    .background(
+                        Capsule().fill(
+                            LinearGradient(
+                                colors: workout.muscleGroups.map { $0.color.opacity(0.15) },
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                    )
+            } else {
+                label
+                    .foregroundStyle(Color.secondary)
+                    .background(Capsule().fill(Color.secondary.opacity(0.15)))
             }
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("exercises", comment: ""))
-                        .foregroundStyle(.secondary)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                    Text("\(workout.numberOfSetGroups)")
-                        .font(.system(.title3, design: .rounded, weight: .semibold))
-                        .foregroundColor(.primary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                VStack(alignment: .leading) {
-                    Text(NSLocalizedString("sets", comment: ""))
-                        .foregroundStyle(.secondary)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                    Text("\(workout.numberOfSets)")
-                        .font(.system(.title3, design: .rounded, weight: .semibold))
-                        .foregroundColor(.primary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            String(
+                format: NSLocalizedString("exercisesImproved", comment: ""),
+                improved,
+                report.comparableTrendCount
+            )
+        )
+    }
+
+    /// The records tile and the per-set volume tile, side by side under the stat grid — each a
+    /// half-width tile stretched to the taller of the two. When only one of them has anything to
+    /// show (a workout with no records, or a bodyweight workout with no volume) that tile takes the
+    /// full width on its own, like the single tiles that lived here before.
+    @ViewBuilder
+    private var progressAndVolumeRow: some View {
+        let hasRecords = !(progressReport?.prRecords.isEmpty ?? true)
+        let hasVolume = workoutVolume > 0
+        if hasRecords, hasVolume {
+            HStack(alignment: .top, spacing: 10) {
+                personalBestsTile(stretch: true)
+                volumePerSetTile(stretch: true)
             }
+        } else if hasRecords {
+            personalBestsTile(stretch: false)
+        } else if hasVolume {
+            volumePerSetTile(stretch: false)
         }
     }
 
-    private var setsPerMuscleGroup: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
-                Text(NSLocalizedString("muscleGroups", comment: ""))
-                    .tileHeaderStyle()
-                Spacer()
-                NavigationChevron()
-                    .foregroundStyle(.tint)
-                    .rotationEffect(isMuscleGroupExpanded ? .degrees(90) : .degrees(0))
+    /// The records tile as a button into the records screen. `stretch` makes it fill the height of
+    /// its row neighbor when the two sit side by side — the frame is applied before `tileStyle` so
+    /// the background fills the stretched bounds.
+    private func personalBestsTile(stretch: Bool) -> some View {
+        Button {
+            isShowingPersonalRecords = true
+        } label: {
+            WorkoutPersonalBestsTile(workout: workout, report: progressReport ?? .empty)
+                .padding(CELL_PADDING)
+                .frame(maxWidth: .infinity, maxHeight: stretch ? .infinity : nil, alignment: .topLeading)
+                .tileStyle()
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    private func volumePerSetTile(stretch: Bool) -> some View {
+        volumePerSetTileContent
+            .padding(CELL_PADDING)
+            .frame(maxWidth: .infinity, maxHeight: stretch ? .infinity : nil, alignment: .topLeading)
+            .tileStyle()
+    }
+
+    /// Per-set volume at half width: the chart unique to this screen (totals live in the stat grid)
+    /// with the average per set beneath it. The full-width tile's muscle-split legend is dropped
+    /// here — the header donut already carries the split — so the chart keeps its room next to the
+    /// records tile.
+    private var volumePerSetTileContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(NSLocalizedString("volumePerSet", comment: ""))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.label)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            VStack(alignment: .leading, spacing: 10) {
+                SetVolumeBarChart(sets: workout.sets)
+                    .frame(height: 100)
+                averageVolumePerSetCaption
             }
-            VStack(alignment: .leading, spacing: 20) {
-                HStack(alignment: .bottom) {
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("focus", comment: ""))
-                            .foregroundStyle(.secondary)
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                        HStack {
-                            ForEach(getFocusedMuscleGroups()) { muscleGroup in
-                                Text(muscleGroup.description)
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                    .fontDesign(.rounded)
-                                    .foregroundStyle(muscleGroup.color)
-                            }
-                        }
-                    }
-                    .emptyPlaceholder(getMuscleGroupOccurancesInWorkout) {
-                        Text(NSLocalizedString("noWorkoutsThisWeek", comment: ""))
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                    }
-                    Spacer()
-                    MuscleGroupOccurancesChart(muscleGroupOccurances: getMuscleGroupOccurancesInWorkout)
-                        .frame(width: 70, height: 70)
-                }
-                if isMuscleGroupExpanded {
-                    VStack(spacing: CELL_SPACING) {
-                        ForEach(getMuscleGroupOccurancesInWorkout, id: \.self.0) { muscleGroupOccurance in
-                            HStack {
-                                Text(muscleGroupOccurance.0.description)
-                                    .fontWeight(.bold)
-                                    .fontDesign(.rounded)
-                                    .foregroundStyle(muscleGroupOccurance.0.color)
-                                Spacer()
-                                HStack(spacing: 10) {
-                                    VStack(alignment: .leading) {
-                                        Text(NSLocalizedString("exercises", comment: ""))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text("\(workout.setGroups.filter { $0.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) }.count)")
-                                            .fontWeight(.bold)
-                                            .fontDesign(.rounded)
-                                    }
-                                    Divider()
-                                    VStack(alignment: .leading) {
-                                        Text(NSLocalizedString("sets", comment: ""))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text("\(workout.sets.filter { $0.setGroup?.muscleGroups.contains(where: { $0 == muscleGroupOccurance.0 }) ?? false }.count)")
-                                            .fontWeight(.bold)
-                                            .fontDesign(.rounded)
-                                    }
-                                    Divider()
-                                    VStack(alignment: .leading) {
-                                        Text(NSLocalizedString("volume", comment: ""))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        UnitView(
-                                            value: "\(formatWeightForDisplay(volume(for: muscleGroupOccurance.0, in: workout.sets)))",
-                                            unit: WeightUnit.used.rawValue.uppercased()
-                                        )
-                                    }
-                                }
-                            }
-                            .padding(CELL_PADDING)
-                            .secondaryTileStyle(backgroundColor: muscleGroupOccurance.0.color.secondaryTranslucentBackground)
-                        }
-                    }
-                }
-            }
+            .padding(.top, 12)
             .isBlockedWithoutPro()
         }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            withAnimation {
-                isMuscleGroupExpanded.toggle()
-            }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// "Average 693 KG" — the mean volume across this workout's sets, the figure the per-set bars
+    /// vary around. Rendered through `UnitView` so the unit's casing matches the rest of the screen.
+    private var averageVolumePerSetCaption: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("average", comment: ""))
+            UnitView(
+                value: formatWeightForDisplay(averageVolumePerSet),
+                unit: WeightUnit.used.rawValue,
+                configuration: .extraSmall,
+                unitColor: .secondaryLabel
+            )
         }
+        .font(.footnote.weight(.semibold))
+        .foregroundStyle(.secondary)
+    }
+
+    private var averageVolumePerSet: Int {
+        let count = workout.sets.count
+        guard count > 0 else { return 0 }
+        return workoutVolume / count
     }
 
     // MARK: - Computed Properties
 
-    private var workoutDurationString: String {
-        guard let start = workout.date, let end = workout.endDate else { return "0:00" }
-        let hours = Calendar.current.dateComponents([.hour], from: start, to: end).hour ?? 0
-        let minutes =
-            (Calendar.current.dateComponents([.minute], from: start, to: end).minute ?? 0) % 60
-        return "\(hours):\(minutes < 10 ? "0" : "")\(minutes)"
+    private var workoutVolume: Int {
+        getVolume(of: workout.sets)
+    }
+
+    private var workoutDurationString: String? {
+        guard let start = workout.date, let end = workout.endDate else { return nil }
+        let totalMinutes = Calendar.current.dateComponents([.minute], from: start, to: end).minute ?? 0
+
+        if totalMinutes < 60 {
+            return "\(totalMinutes) min"
+        } else {
+            let hours = totalMinutes / 60
+            let minutes = totalMinutes % 60
+            return minutes == 0 ? "\(hours)h" : "\(hours)h \(minutes)m"
+        }
     }
 
     var getMuscleGroupOccurancesInWorkout: [(MuscleGroup, Int)] {
         muscleGroupService.getMuscleGroupOccurances(in: workout)
-    }
-
-    private var amountOfOccurances: Int {
-        getMuscleGroupOccurancesInWorkout.reduce(0) { $0 + $1.1 }
-    }
-
-    /// Calculates the smallest number of Muscle Groups that combined account for 51% of the overall sets in the timeframe
-    /// - Returns: The focused Muscle Groups
-    private func getFocusedMuscleGroups() -> [MuscleGroup] {
-        var accumulatedPercetange: Float = 0
-        var focusedMuscleGroups = [MuscleGroup]()
-        for muscleGroupOccurance in getMuscleGroupOccurancesInWorkout {
-            accumulatedPercetange += Float(muscleGroupOccurance.1) / Float(amountOfOccurances)
-            focusedMuscleGroups.append(muscleGroupOccurance.0)
-            if accumulatedPercetange > 0.51 {
-                return Array(focusedMuscleGroups.prefix(2))
-            }
-        }
-        return []
-    }
-
-    private func volume(for muscleGroup: MuscleGroup, in sets: [WorkoutSet]) -> Int {
-        sets.reduce(0) { currentVolume, currentSet in
-            if let standardSet = currentSet as? StandardSet {
-                guard standardSet.exercise?.muscleGroup == muscleGroup else { return currentVolume }
-                return currentVolume + Int(standardSet.repetitions * standardSet.weight)
-            }
-            if let dropSet = currentSet as? DropSet, let repetitions = dropSet.repetitions, let weights = dropSet.weights {
-                guard dropSet.exercise?.muscleGroup == muscleGroup else { return currentVolume }
-                return currentVolume + Int(zip(repetitions, weights).map(*).reduce(0, +))
-            }
-            if let superSet = currentSet as? SuperSet {
-                var volumeForFirstExercise = 0
-                var volumeForSecondExercise = 0
-                if superSet.exercise?.muscleGroup == muscleGroup {
-                    volumeForFirstExercise = Int(superSet.repetitionsFirstExercise * superSet.weightFirstExercise)
-                }
-                if superSet.secondaryExercise?.muscleGroup == muscleGroup {
-                    volumeForSecondExercise = Int(superSet.repetitionsSecondExercise * superSet.weightSecondExercise)
-                }
-                return currentVolume + volumeForFirstExercise + volumeForSecondExercise
-            }
-            return currentVolume
-        }
     }
 }
 

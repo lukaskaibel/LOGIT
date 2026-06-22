@@ -20,7 +20,7 @@ struct FlashView: View {
     var body: some View {
         color
             .opacity(isFlashing ? 1 : 0)
-            .onChange(of: shouldFlash) { newValue in
+            .onChange(of: shouldFlash) { _, newValue in
                 guard newValue else { return }
                 animateFlash(count: flashRepeatCount)
             }

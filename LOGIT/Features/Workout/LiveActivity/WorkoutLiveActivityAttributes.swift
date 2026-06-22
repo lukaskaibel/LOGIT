@@ -32,29 +32,42 @@ struct WorkoutLiveActivityChronoChip: Codable, Hashable {
     let staticTickSeconds: Int?
     let stopwatchStartDate: Date?
 
+    private static let dateEqualityTolerance: TimeInterval = 1.5
+
+    private static func datesEqual(_ a: Date?, _ b: Date?) -> Bool {
+        switch (a, b) {
+        case let (a?, b?):
+            return abs(a.timeIntervalSince(b)) < dateEqualityTolerance
+        case (nil, nil):
+            return true
+        default:
+            return false
+        }
+    }
+
+    private static func roundedEpoch(_ date: Date?) -> Int? {
+        guard let date else { return nil }
+        return Int(date.timeIntervalSinceReferenceDate.rounded())
+    }
+
     static func == (lhs: WorkoutLiveActivityChronoChip, rhs: WorkoutLiveActivityChronoChip) -> Bool {
         lhs.phase == rhs.phase
             && lhs.tintKind == rhs.tintKind
             && lhs.muscleThemeToken == rhs.muscleThemeToken
-            && lhs.timerEndDate == rhs.timerEndDate
+            && datesEqual(lhs.timerEndDate, rhs.timerEndDate)
             && lhs.timerTotalSeconds == rhs.timerTotalSeconds
             && lhs.staticTickSeconds == rhs.staticTickSeconds
-            && {
-                if lhs.phase == .stopwatchRunning, rhs.phase == .stopwatchRunning { return true }
-                return lhs.stopwatchStartDate == rhs.stopwatchStartDate
-            }()
+            && datesEqual(lhs.stopwatchStartDate, rhs.stopwatchStartDate)
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(phase)
         hasher.combine(tintKind)
         hasher.combine(muscleThemeToken)
-        hasher.combine(timerEndDate)
+        hasher.combine(Self.roundedEpoch(timerEndDate))
         hasher.combine(timerTotalSeconds)
         hasher.combine(staticTickSeconds)
-        if phase != .stopwatchRunning {
-            hasher.combine(stopwatchStartDate)
-        }
+        hasher.combine(Self.roundedEpoch(stopwatchStartDate))
     }
 }
 

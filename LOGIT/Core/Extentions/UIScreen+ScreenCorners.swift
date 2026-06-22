@@ -8,6 +8,15 @@
 import UIKit
 
 extension UIScreen {
+    /// The screen hosting the app's active window scene — replacement for the
+    /// deprecated `UIScreen.main`. Nil only when no window scene is connected.
+    @MainActor
+    static var current: UIScreen? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let scene = scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
+        return scene?.screen
+    }
+
     private static let cornerRadiusKey: String = {
         let components = ["Radius", "Corner", "display", "_"]
         return components.reversed().joined()

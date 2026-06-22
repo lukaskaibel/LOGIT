@@ -190,7 +190,9 @@ struct TargetPerWeekDetailScreen: View {
                 .background(Color.secondaryBackground)
             }
             .padding(.top)
-            .isBlockedWithoutPro()
+            // Free on purpose: the weekly-target widget that links here is one of the two free
+            // home widgets, and a free widget must not open onto a paywall. User decision
+            // 2026-06-12.
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {

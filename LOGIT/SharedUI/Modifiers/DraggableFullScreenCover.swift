@@ -54,7 +54,7 @@ struct FullScreenDraggableCover<ScreenContent: View, Background: ShapeStyle>: Vi
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                                 .clipped()
                                 .background(background)
-                                .clipShape(RoundedRectangle(cornerRadius: yOffset != 0 ? UIScreen.main.displayCornerRadius : 0, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: yOffset != 0 ? (UIScreen.current?.displayCornerRadius ?? 0) : 0, style: .continuous))
                                 .offset(y: yOffset > 0 ? yOffset : 0)
                                 .ignoresSafeArea(.container, edges: .all)
                                 .ignoresSafeArea(.keyboard)

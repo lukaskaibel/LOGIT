@@ -101,7 +101,7 @@ struct WorkoutEditorScreen: View {
                                 showDetailAsSheet: true,
                                 onTapPreviousSet: { exerciseForDetailSheet = $0 }
                             )
-                            .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? UIScreen.main.bounds.height * 0.5 : BOTTOM_SHEET_SMALL)
+                            .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? (UIScreen.current?.bounds.height ?? 0) * 0.5 : BOTTOM_SHEET_SMALL)
                             .id(1)
                             .emptyPlaceholder(workout.setGroups) {
                                 Text(NSLocalizedString("addExercisesFromBelow", comment: ""))

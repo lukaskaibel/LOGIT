@@ -31,6 +31,8 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     private static let modeStorageKey = "selectedChronographMode"
     private static let timerFinishedNotificationIdentifier = "timerFinished"
     private static let stopwatchMinuteNotificationIdentifierPrefix = "stopwatchMinute"
+    private static let timerCountdown30NotificationIdentifier = "timerCountdown30"
+    private static let timerCountdown10NotificationIdentifier = "timerCountdown10"
     private static let alarmKitTimerSoundName = "timer.wav"
     private static let alarmAutoDismissInterval: TimeInterval = 1.5
     static let maxPendingStopwatchMinuteNotifications = 64
@@ -222,6 +224,65 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         )
     }
 
+    private func countdownWarningNotificationRequest(
+        identifier: String,
+        secondsRemaining: Int,
+        triggerInterval: TimeInterval
+    ) -> UNNotificationRequest {
+        let content = UNMutableNotificationContent()
+        content.title = NSLocalizedString("timer", comment: "")
+        content.body = String(
+            format: NSLocalizedString("timerWarningBody", comment: ""),
+            "\(secondsRemaining)s"
+        )
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(
+            timeInterval: max(1, triggerInterval),
+            repeats: false
+        )
+
+        return UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: trigger
+        )
+    }
+
+    private func scheduleCountdownNotifications(forTimerSeconds seconds: TimeInterval) {
+        let timerIsMuted = UserDefaults.standard.bool(forKey: "timerIsMuted")
+        guard !timerIsMuted else { return }
+
+        let center = UNUserNotificationCenter.current()
+
+        if seconds > 30 {
+            let request = countdownWarningNotificationRequest(
+                identifier: Self.timerCountdown30NotificationIdentifier,
+                secondsRemaining: 30,
+                triggerInterval: seconds - 30
+            )
+            center.add(request)
+        }
+
+        if seconds > 10 {
+            let request = countdownWarningNotificationRequest(
+                identifier: Self.timerCountdown10NotificationIdentifier,
+                secondsRemaining: 10,
+                triggerInterval: seconds - 10
+            )
+            center.add(request)
+        }
+    }
+
+    private func cancelCountdownNotifications() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [
+                Self.timerCountdown30NotificationIdentifier,
+                Self.timerCountdown10NotificationIdentifier,
+            ]
+        )
+    }
+
     private func scheduleTimerNotification(inSeconds seconds: TimeInterval) {
         UNUserNotificationCenter.current().add(timesUpNotificationRequest) { error in
             if let error = error {
@@ -258,6 +319,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         switch mode {
         case .timer:
             scheduleTimerAlert(inSeconds: seconds)
+            scheduleCountdownNotifications(forTimerSeconds: seconds)
         case .stopwatch:
             scheduleStopwatchMinuteNotifications(fromElapsedSeconds: seconds)
         }
@@ -266,6 +328,7 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
     private func cancelNotifications() {
         cancelTimerAlarm()
         cancelTimerNotification()
+        cancelCountdownNotifications()
         cancelStopwatchMinuteNotifications()
     }
 
@@ -301,36 +364,32 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
 
         let configuration = timerAlarmConfiguration(duration: Self.notificationTriggerInterval(forTimerSeconds: seconds))
 
-        Task { [weak self] in
+        Task { @MainActor [weak self] in
             do {
                 _ = try await AlarmManager.shared.schedule(id: alarmID, configuration: configuration)
 
-                DispatchQueue.main.async {
-                    guard let self else {
-                        try? AlarmManager.shared.cancel(id: alarmID)
-                        return
-                    }
+                guard let self else {
+                    try? AlarmManager.shared.cancel(id: alarmID)
+                    return
+                }
 
-                    guard self.timerAlarmScheduleToken == token,
-                          self.activeTimerAlarmID == alarmID,
-                          self.mode == .timer,
-                          self.status == .running
-                    else {
-                        try? AlarmManager.shared.cancel(id: alarmID)
-                        return
-                    }
+                guard self.timerAlarmScheduleToken == token,
+                      self.activeTimerAlarmID == alarmID,
+                      self.mode == .timer,
+                      self.status == .running
+                else {
+                    try? AlarmManager.shared.cancel(id: alarmID)
+                    return
                 }
             } catch {
-                DispatchQueue.main.async {
-                    guard let self else { return }
-                    guard self.timerAlarmScheduleToken == token,
-                          self.activeTimerAlarmID == alarmID
-                    else { return }
+                guard let self else { return }
+                guard self.timerAlarmScheduleToken == token,
+                      self.activeTimerAlarmID == alarmID
+                else { return }
 
-                    self.activeTimerAlarmID = nil
-                    print("Error scheduling AlarmKit timer: \(error)")
-                    self.scheduleTimerNotification(inSeconds: seconds)
-                }
+                self.activeTimerAlarmID = nil
+                print("Error scheduling AlarmKit timer: \(error)")
+                self.scheduleTimerNotification(inSeconds: seconds)
             }
         }
     }

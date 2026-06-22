@@ -129,7 +129,7 @@ struct TemplateEditorScreen: View {
                                 .id(setGroup)
                             }
                         }
-                        .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? UIScreen.main.bounds.height * 0.5 : BOTTOM_SHEET_SMALL)
+                        .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? (UIScreen.current?.bounds.height ?? 0) * 0.5 : BOTTOM_SHEET_SMALL)
                         .animation(.interactiveSpring(), value: template.setGroups.count)
                     }
                     .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
@@ -143,6 +143,7 @@ struct TemplateEditorScreen: View {
                             ExerciseSelectionScreen(
                                 selectedExercise: nil,
                                 setExercise: { exercise in
+                                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                     database.newTemplateSetGroup(
                                         createFirstSetAutomatically: true,
                                         exercise: exercise,

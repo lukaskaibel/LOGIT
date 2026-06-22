@@ -27,11 +27,7 @@ struct DropSetCell: View {
             if let indexInWorkout = indexInWorkout {
                 ForEach(0 ..< (dropSet.repetitions?.count ?? 0), id: \.self) { index in
                     HStack {
-                        PreviousSetReferenceLabel(reference: referenceValue(forIndex: index)) {
-                            if let exercise = dropSet.setGroup?.exercise {
-                                onTapPreviousSet?(exercise)
-                            }
-                        }
+                        Spacer()
                         IntegerField(
                             placeholder: repetitionsPlaceholder(for: dropSet).value(at: index) ?? 0,
                             value: repetitionsBinding(forIndex: index),
@@ -42,7 +38,12 @@ struct DropSetCell: View {
                                 tertiary: 0
                             ),
                             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                            unit: NSLocalizedString("reps", comment: "")
+                            unit: NSLocalizedString("reps", comment: ""),
+                            trend: repetitionsDelta(forIndex: index).comparison,
+                            trendText: repetitionsDelta(forIndex: index).text,
+                            trendColor: muscleColor,
+                            previousValueText: referenceValue(forIndex: index)?.repetitionsText,
+                            onTapPreviousValue: previousValueTapHandler
                         )
                         DecimalField(
                             placeholder: weightsPlaceholderDecimal(for: dropSet).value(at: index) ?? 0,
@@ -55,7 +56,12 @@ struct DropSetCell: View {
                                 tertiary: 1
                             ),
                             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                            unit: WeightUnit.used.rawValue
+                            unit: WeightUnit.used.rawValue,
+                            trend: weightDeltaResult(forIndex: index).comparison,
+                            trendText: weightDeltaResult(forIndex: index).text,
+                            trendColor: muscleColor,
+                            previousValueText: referenceValue(forIndex: index)?.weightText,
+                            onTapPreviousValue: previousValueTapHandler
                         )
                     }
                 }
@@ -77,6 +83,33 @@ struct DropSetCell: View {
         else { return nil }
 
         return WorkoutSetReferenceValue(repetitions: repetitions, weight: weight)
+    }
+
+    private var previousValueTapHandler: (() -> Void)? {
+        guard onTapPreviousSet != nil else { return nil }
+        return {
+            if let exercise = dropSet.setGroup?.exercise {
+                onTapPreviousSet?(exercise)
+            }
+        }
+    }
+
+    private func repetitionsDelta(forIndex index: Int) -> (comparison: SetValueComparison?, text: String) {
+        repsDelta(
+            current: dropSet.repetitions?.value(at: index) ?? 0,
+            previous: referenceValue(forIndex: index)?.repetitions
+        )
+    }
+
+    private func weightDeltaResult(forIndex index: Int) -> (comparison: SetValueComparison?, text: String) {
+        weightDelta(
+            currentGrams: dropSet.weights?.value(at: index) ?? 0,
+            previousGrams: referenceValue(forIndex: index)?.weight
+        )
+    }
+
+    private var muscleColor: Color {
+        dropSet.setGroup?.exercise?.muscleGroup?.color ?? .accentColor
     }
 
     private func copyReferenceValues(forIndex index: Int) {

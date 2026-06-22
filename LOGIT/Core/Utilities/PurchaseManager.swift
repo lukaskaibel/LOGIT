@@ -24,17 +24,19 @@ class PurchaseManager: NSObject, ObservableObject {
     private var products: [Product]?
     private var purchasedProductIDs: [String]?
     private var updates: Task<Void, Never>? = nil
+    private var purchaseIntents: Task<Void, Never>? = nil
 
     // MARK: - Init / Deinit
 
     override init() {
         super.init()
         updates = observeTransactionUpdates()
-        SKPaymentQueue.default().add(self)
+        purchaseIntents = observePurchaseIntents()
     }
 
     deinit {
         self.updates?.cancel()
+        self.purchaseIntents?.cancel()
     }
 
     // MARK: - Public Methods / Variables
@@ -51,12 +53,16 @@ class PurchaseManager: NSObject, ObservableObject {
 
     var proExpirationDate: Date? {
         get {
-            UserDefaults(suiteName: "com.lukaskbl.LOGIT")?.object(forKey: "com.lukaskbl.LOGIT.expirationDate") as? Date
+            Self.storedProExpirationDate
         }
         set {
             UserDefaults(suiteName: "com.lukaskbl.LOGIT")?.set(newValue, forKey: "com.lukaskbl.LOGIT.expirationDate")
             objectWillChange.send()
         }
+    }
+
+    private nonisolated static var storedProExpirationDate: Date? {
+        UserDefaults(suiteName: "com.lukaskbl.LOGIT")?.object(forKey: "com.lukaskbl.LOGIT.expirationDate") as? Date
     }
 
     var proSubscriptionMonthlyPriceString: String {
@@ -70,19 +76,31 @@ class PurchaseManager: NSObject, ObservableObject {
     }
 
     var hasUnlockedPro: Bool {
-        // Fastlane snapshot runs need Pro-only screens (charts, measurements,
-        // Scan a Workout) to render without the "Available with Pro" blocker
-        // overlay, since that overlay is meaningless in marketing assets.
+        Self.isProUnlocked
+    }
+
+    /// Pro state readable without a `PurchaseManager` instance — the entitlement's expiration date
+    /// is persisted in UserDefaults (see `proExpirationDate`), so non-view code like the
+    /// Pro-dependent default progress metric can consult it. `hasUnlockedPro` delegates here.
+    nonisolated static var isProUnlocked: Bool {
+        #if DEBUG
+        // The blanket simulator unlock below makes the free tier untestable there — this launch
+        // argument is the only way to exercise Pro-gated UI states in the simulator.
+        if ProcessInfo.processInfo.arguments.contains("-UITEST_FORCE_FREE") {
+            return false
+        }
+        #endif
+        #if targetEnvironment(simulator)
+        // Pro is always unlocked in the simulator so gated features are testable.
+        return true
+        #else
         if ScreenshotFixtures.isEnabled {
             return true
         }
-        #if DEBUG
-            return false
-        #else
-            if let proExpirationDate = proExpirationDate {
-                return proExpirationDate > .now
-            }
-            return false
+        if let proExpirationDate = storedProExpirationDate {
+            return proExpirationDate > .now
+        }
+        return false
         #endif
     }
 
@@ -136,12 +154,14 @@ class PurchaseManager: NSObject, ObservableObject {
             }
         }
     }
-}
 
-extension PurchaseManager: SKPaymentTransactionObserver {
-    func paymentQueue(_: SKPaymentQueue, updatedTransactions _: [SKPaymentTransaction]) {}
-
-    func paymentQueue(_: SKPaymentQueue, shouldAddStorePayment _: SKPayment, for _: SKProduct) -> Bool {
-        return true
+    /// Continues purchases started from the App Store (promoted in-app purchases) —
+    /// the StoreKit 2 replacement for `SKPaymentTransactionObserver.paymentQueue(_:shouldAddStorePayment:for:)`.
+    private func observePurchaseIntents() -> Task<Void, Never> {
+        Task(priority: .background) { [unowned self] in
+            for await intent in PurchaseIntent.intents {
+                try? await self.purchase(intent.product)
+            }
+        }
     }
 }

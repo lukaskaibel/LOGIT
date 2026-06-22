@@ -450,6 +450,10 @@ struct HomeScreen: View {
                     PinnedExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
                 case .volume:
                     PinnedExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
+                case .setVolume:
+                    PinnedExerciseSetVolumeTile(exercise: exercise, workoutSets: workoutSets)
+                case .estimatedOneRepMax:
+                    PinnedExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets)
                 }
             }
             .buttonStyle(TileButtonStyle())

@@ -25,11 +25,7 @@ struct StandardSetCell: View {
     var body: some View {
         HStack {
             if let indexInWorkout = indexInWorkout {
-                PreviousSetReferenceLabel(reference: referenceValue) {
-                    if let exercise = standardSet.setGroup?.exercise {
-                        onTapPreviousSet?(exercise)
-                    }
-                }
+                Spacer()
                 IntegerField(
                     placeholder: repetitionsPlaceholder(for: standardSet),
                     value: $standardSet.repetitions,
@@ -40,7 +36,12 @@ struct StandardSetCell: View {
                         tertiary: 0
                     ),
                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                    unit: NSLocalizedString("reps", comment: "")
+                    unit: NSLocalizedString("reps", comment: ""),
+                    trend: repetitionsDelta.comparison,
+                    trendText: repetitionsDelta.text,
+                    trendColor: muscleColor,
+                    previousValueText: referenceValue?.repetitionsText,
+                    onTapPreviousValue: previousValueTapHandler
                 )
                 DecimalField(
                     placeholder: weightPlaceholderDecimal(for: standardSet),
@@ -56,7 +57,12 @@ struct StandardSetCell: View {
                         tertiary: 1
                     ),
                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                    unit: WeightUnit.used.rawValue
+                    unit: WeightUnit.used.rawValue,
+                    trend: weightDeltaResult.comparison,
+                    trendText: weightDeltaResult.text,
+                    trendColor: muscleColor,
+                    previousValueText: referenceValue?.weightText,
+                    onTapPreviousValue: previousValueTapHandler
                 )
             }
         }
@@ -68,12 +74,37 @@ struct StandardSetCell: View {
         standardSet.workout?.sets.firstIndex(of: standardSet)
     }
 
+    private var referenceStandardSet: StandardSet? {
+        referenceSet as? StandardSet
+    }
+
     private var referenceValue: WorkoutSetReferenceValue? {
-        guard let referenceStandardSet = referenceSet as? StandardSet else { return nil }
+        guard let referenceStandardSet else { return nil }
         return WorkoutSetReferenceValue(
             repetitions: referenceStandardSet.repetitions,
             weight: referenceStandardSet.weight
         )
+    }
+
+    private var repetitionsDelta: (comparison: SetValueComparison?, text: String) {
+        repsDelta(current: standardSet.repetitions, previous: referenceStandardSet?.repetitions)
+    }
+
+    private var weightDeltaResult: (comparison: SetValueComparison?, text: String) {
+        weightDelta(currentGrams: standardSet.weight, previousGrams: referenceStandardSet?.weight)
+    }
+
+    private var muscleColor: Color {
+        standardSet.setGroup?.exercise?.muscleGroup?.color ?? .accentColor
+    }
+
+    private var previousValueTapHandler: (() -> Void)? {
+        guard onTapPreviousSet != nil else { return nil }
+        return {
+            if let exercise = standardSet.setGroup?.exercise {
+                onTapPreviousSet?(exercise)
+            }
+        }
     }
 
     private func copyReferenceValues() {

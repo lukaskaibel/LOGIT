@@ -17,6 +17,7 @@ struct ExerciseHeader: View {
     let isSuperSet: Bool
     let navigationToDetailEnabled: Bool
     var showDetailAsSheet: Bool = false
+    var onTapExerciseName: ((Exercise) -> Void)? = nil
 
     // MARK: - State
 
@@ -30,7 +31,13 @@ struct ExerciseHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if let exercise = exercise {
-                if showDetailAsSheet {
+                if let onTapExerciseName {
+                    Button {
+                        onTapExerciseName(exercise)
+                    } label: {
+                        exerciseLabel(exercise)
+                    }
+                } else if showDetailAsSheet {
                     Button {
                         isShowingExerciseDetailSheet = true
                     } label: {
@@ -61,7 +68,13 @@ struct ExerciseHeader: View {
                         .font(.body.weight(.medium))
                         .padding(.leading)
                     if let secondaryExercise = secondaryExercise {
-                        if showDetailAsSheet {
+                        if let onTapExerciseName {
+                            Button {
+                                onTapExerciseName(secondaryExercise)
+                            } label: {
+                                secondaryExerciseLabel(secondaryExercise)
+                            }
+                        } else if showDetailAsSheet {
                             Button {
                                 isShowingSecondaryExerciseDetailSheet = true
                             } label: {

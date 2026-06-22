@@ -73,7 +73,7 @@ struct WorkoutSetCell: View {
                         .fontWeight(.bold)
                         .fontDesign(.rounded)
                         .foregroundStyle(.secondary)
-                    Spacer()
+                        .fixedSize()
                     setContent
                 }
                 if let dropSet = workoutSet as? DropSet, canEdit {
@@ -216,53 +216,48 @@ struct WorkoutSetReferenceValue: Equatable {
     let repetitions: Int64
     let weight: Int64
 
-    var hasEntry: Bool {
-        repetitions > 0 || weight > 0
+    /// Unit-less text for the repetitions field's previous-value indicator.
+    var repetitionsText: String? {
+        repetitions > 0 ? String(repetitions) : nil
     }
 
-    var displayText: String {
-        if repetitions > 0, weight > 0 {
-            return "\(repetitions) x \(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue)"
-        }
-
-        if repetitions > 0 {
-            return "\(repetitions) \(NSLocalizedString("reps", comment: ""))"
-        }
-
-        return "\(formatWeightForDisplay(weight)) \(WeightUnit.used.rawValue)"
+    /// Unit-less text (in the user's weight unit) for the weight field's
+    /// previous-value indicator.
+    var weightText: String? {
+        weight > 0 ? formatWeightForDisplay(weight) : nil
     }
+
 }
 
-struct PreviousSetReferenceLabel: View {
-    let reference: WorkoutSetReferenceValue?
-    let onTap: () -> Void
+// MARK: - Set Value Delta Helpers
 
-    var body: some View {
-        Group {
-            if let reference, reference.hasEntry {
-                Button {
-                    UISelectionFeedbackGenerator().selectionChanged()
-                    onTap()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.caption2)
-                        Text(reference.displayText)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(NSLocalizedString("lastSetReferencePrefix", comment: "") + " " + reference.displayText))
-            } else {
-                Color.clear
-            }
-        }
-        .font(.system(.caption, design: .rounded, weight: .semibold))
-        .monospacedDigit()
-        .foregroundStyle(.tertiary)
-        .frame(width: 95, alignment: .trailing)
-    }
+/// Compares an entered repetition count against the previous workout's value.
+/// Returns `(nil, "")` when there is nothing meaningful to show (no reference,
+/// empty entry, or unchanged).
+func repsDelta(current: Int64, previous: Int64?) -> (comparison: SetValueComparison?, text: String) {
+    guard let previous, previous > 0, current > 0, current != previous else { return (nil, "") }
+    return (current > previous ? .improved : .declined, String(abs(current - previous)))
+}
+
+/// Compares an entered weight (in grams) against the previous workout's value.
+/// Direction and text are computed in display units (kg/lbs) so they match what the
+/// user sees and avoid rounding artefacts from differencing raw gram values.
+func weightDelta(currentGrams: Int64, previousGrams: Int64?) -> (comparison: SetValueComparison?, text: String) {
+    guard let previousGrams, previousGrams > 0, currentGrams > 0 else { return (nil, "") }
+    let current = convertWeightForDisplayingDecimal(currentGrams)
+    let previous = convertWeightForDisplayingDecimal(previousGrams)
+    guard current != previous else { return (nil, "") }
+    return (current > previous ? .improved : .declined, formatDisplayWeightDelta(abs(current - previous)))
+}
+
+private func formatDisplayWeightDelta(_ value: Double) -> String {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .decimal
+    formatter.minimumFractionDigits = 0
+    formatter.maximumFractionDigits = 3
+    formatter.decimalSeparator = "."
+    formatter.groupingSeparator = ""
+    return formatter.string(from: NSNumber(value: value)) ?? "0"
 }
 
 // MARK: - Preview

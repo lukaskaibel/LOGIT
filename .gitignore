@@ -30,3 +30,6 @@ vendor/
 # Gym/build artifacts
 *.ipa
 *.dSYM.zip
+
+# Claude Code local config
+.claude/

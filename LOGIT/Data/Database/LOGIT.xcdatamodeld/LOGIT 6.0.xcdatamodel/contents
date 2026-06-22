@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24299" systemVersion="25B78" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
-    <entity name="DropSet" representedClassName="DropSet" parentEntity="WorkoutSet" syncable="YES" codeGenerationType="class">
+    <entity name="DropSet" representedClassName="DropSet" parentEntity="WorkoutSet" syncable="YES" codeGenerationType="category">
         <attribute name="repetitions" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
         <attribute name="weights" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
     </entity>
@@ -20,11 +20,11 @@
         <attribute name="type_" optional="YES" attributeType="String"/>
         <attribute name="value_" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
-    <entity name="StandardSet" representedClassName="StandardSet" parentEntity="WorkoutSet" syncable="YES" codeGenerationType="class">
+    <entity name="StandardSet" representedClassName="StandardSet" parentEntity="WorkoutSet" syncable="YES" codeGenerationType="category">
         <attribute name="repetitions" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="weight" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
-    <entity name="SuperSet" representedClassName="SuperSet" parentEntity="WorkoutSet" syncable="YES" codeGenerationType="class">
+    <entity name="SuperSet" representedClassName="SuperSet" parentEntity="WorkoutSet" syncable="YES" codeGenerationType="category">
         <attribute name="repetitionsFirstExercise" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="repetitionsSecondExercise" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="weightFirstExercise" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -37,7 +37,7 @@
         <relationship name="setGroups_" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TemplateSetGroup" inverseName="workout" inverseEntity="TemplateSetGroup"/>
         <relationship name="workouts_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Workout" inverseName="template" inverseEntity="Workout"/>
     </entity>
-    <entity name="TemplateDropSet" representedClassName="TemplateDropSet" parentEntity="TemplateSet" syncable="YES" codeGenerationType="class">
+    <entity name="TemplateDropSet" representedClassName="TemplateDropSet" parentEntity="TemplateSet" syncable="YES" codeGenerationType="category">
         <attribute name="repetitions" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
         <attribute name="weights" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
     </entity>
@@ -54,11 +54,11 @@
         <relationship name="sets_" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TemplateSet" inverseName="setGroup" inverseEntity="TemplateSet"/>
         <relationship name="workout" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Template" inverseName="setGroups_" inverseEntity="Template"/>
     </entity>
-    <entity name="TemplateStandardSet" representedClassName="TemplateStandardSet" parentEntity="TemplateSet" syncable="YES" codeGenerationType="class">
+    <entity name="TemplateStandardSet" representedClassName="TemplateStandardSet" parentEntity="TemplateSet" syncable="YES" codeGenerationType="category">
         <attribute name="repetitions" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="weight" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
-    <entity name="TemplateSuperSet" representedClassName="TemplateSuperSet" parentEntity="TemplateSet" syncable="YES" codeGenerationType="class">
+    <entity name="TemplateSuperSet" representedClassName="TemplateSuperSet" parentEntity="TemplateSet" syncable="YES" codeGenerationType="category">
         <attribute name="repetitionsFirstExercise" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="repetitionsSecondExercise" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="weightFirstExercise" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>

@@ -14,12 +14,16 @@ struct ComparisonBar: View {
     let maxValue: Double
     let tint: Color
     let label: String
+    /// When set, the filled portion renders with this gradient instead of `tint` — used where the
+    /// bar stands for a whole workout rather than a single metric (muscle-group themed bars).
+    let gradient: LinearGradient?
 
-    init(value: Double, maxValue: Double, tint: Color, label: String = "") {
+    init(value: Double, maxValue: Double, tint: Color, label: String = "", gradient: LinearGradient? = nil) {
         self.value = value
         self.maxValue = maxValue
         self.tint = tint
         self.label = label
+        self.gradient = gradient
     }
 
     var body: some View {
@@ -29,13 +33,19 @@ struct ComparisonBar: View {
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(Color.secondaryBackground)
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(tint)
-                    .frame(width: width * ratio)
+                if let gradient {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(gradient)
+                        .frame(width: width * ratio)
+                } else {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(tint)
+                        .frame(width: width * ratio)
+                }
                 if !label.isEmpty {
                     Text(label)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(tint == .accentColor ? .black : .primary)
+                        .foregroundStyle(tint == .accentColor || gradient != nil ? .black : .primary)
                         .padding(.horizontal, 10)
                 }
             }

@@ -26,7 +26,6 @@ struct TemplateSetGroupCell: View {
 
     // MARK: - State
 
-    @State private var isReorderingSets = false
     @State private var isSelectingPrimaryExercise = false
     @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
     @State private var isSelectingSecondaryExercise = false
@@ -41,8 +40,8 @@ struct TemplateSetGroupCell: View {
                     VStack(spacing: CELL_SPACING) {
                         ReorderableForEach(
                             $setGroup.sets,
-                            canReorder: canEdit,
-                            isReordering: $isReorderingSets
+                            canReorder: false,
+                            isReordering: .constant(false)
                         ) { templateSet in
                             TemplateSetCell(
                                 templateSet: templateSet,
@@ -64,10 +63,11 @@ struct TemplateSetGroupCell: View {
                         }
                     }
                     .padding(.horizontal, CELL_PADDING / 2)
-                    .animation(.interactiveSpring())
+                    .animation(.interactiveSpring(), value: setGroup.sets)
                     if canEdit {
                         HStack(spacing: 8) {
                             Button {
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                 withAnimation(.interactiveSpring()) {
                                     database.addSet(to: setGroup)
                                 }
@@ -84,6 +84,7 @@ struct TemplateSetGroupCell: View {
                                 .clipShape(Capsule())
                             }
                             Button {
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                 withAnimation(.interactiveSpring()) {
                                     database.duplicateLastSet(from: setGroup)
                                 }

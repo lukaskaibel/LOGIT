@@ -12,6 +12,8 @@ struct MuscleGroupOccurancesChart: View {
     let muscleGroupOccurances: [(MuscleGroup, Int)]
     let selectedMuscleGroup: MuscleGroup?
 
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+
     init(muscleGroupOccurances: [(MuscleGroup, Int)], selectedMuscleGroup: MuscleGroup? = nil) {
         self.muscleGroupOccurances = muscleGroupOccurances
         self.selectedMuscleGroup = selectedMuscleGroup
@@ -25,14 +27,18 @@ struct MuscleGroupOccurancesChart: View {
                     innerRadius: .ratio(0.65)
                 )
                 .foregroundStyle(Color.fill.gradient)
+                .accessibilityHidden(true)
             } else {
                 ForEach(muscleGroupOccurances, id: \.0) { muscleGroupOccurance in
                     SectorMark(
                         angle: .value("Value", muscleGroupOccurance.1),
                         innerRadius: .ratio(0.65),
-                        angularInset: 1
+                        // Wider gaps when the user can't rely on hue to tell slices apart.
+                        angularInset: differentiateWithoutColor ? 2.5 : 1
                     )
                     .foregroundStyle(foregroundStyle(for: muscleGroupOccurance.0))
+                    .accessibilityLabel(muscleGroupOccurance.0.description)
+                    .accessibilityValue(Text("\(muscleGroupOccurance.1)"))
                 }
             }
         }

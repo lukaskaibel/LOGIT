@@ -34,17 +34,48 @@ public class Database: ObservableObject {
         if isPreview {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
-        container.loadPersistentStores(completionHandler: { _, error in
-            if let error = error as NSError? {
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
-        })
+        loadStores()
         if isPreview {
             setupPreviewDatabase()
         }
 
         container.viewContext.undoManager = UndoManager()
         observeUndoManager()
+    }
+
+    // MARK: - Store Loading
+
+    /// Loads the persistent stores, recovering from incompatible-model errors in DEBUG builds.
+    ///
+    /// The Core Data model is iterated on frequently during development. Because the store is backed
+    /// by `NSPersistentCloudKitContainer`, properties cannot be renamed or removed in place — CloudKit
+    /// only permits additive schema changes. A store left over from an earlier model revision (e.g. one
+    /// that still had `Exercise.name_`) therefore fails to migrate and crashes on every launch with
+    /// `NSCocoaErrorDomain` 134110. In DEBUG we recreate the offending store once and retry; release
+    /// builds keep the hard failure so real user data is never silently discarded.
+    private func loadStores(recreatingIncompatibleStoreOnFailure recreate: Bool = true) {
+        container.loadPersistentStores { [weak self] description, error in
+            guard let error = error as NSError? else { return }
+            #if DEBUG
+            if recreate, let self, self.isIncompatibleStoreError(error), let url = description.url {
+                os_log(
+                    "Database: Incompatible store at %{public}@ (Core Data error %d). Recreating it for development.",
+                    type: .error, url.absoluteString, error.code
+                )
+                try? self.container.persistentStoreCoordinator.destroyPersistentStore(
+                    at: url, ofType: NSSQLiteStoreType, options: nil
+                )
+                self.loadStores(recreatingIncompatibleStoreOnFailure: false)
+                return
+            }
+            #endif
+            fatalError("Unresolved error \(error), \(error.userInfo)")
+        }
+    }
+
+    /// `true` for Core Data migration / incompatible-model-version errors (`NSCocoaErrorDomain` 134100–134170).
+    private func isIncompatibleStoreError(_ error: NSError) -> Bool {
+        error.domain == NSCocoaErrorDomain && (134100...134170).contains(error.code)
     }
 
     // MARK: - Computed Properties

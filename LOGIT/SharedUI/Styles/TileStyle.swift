@@ -37,17 +37,7 @@ struct TileSparklineChartModifier: ViewModifier {
                     .padding(.vertical, 4)
             }
             .frame(width: 120, height: 70)
-            .mask(
-                LinearGradient(
-                    gradient: Gradient(stops: [
-                        .init(color: .clear, location: 0.0),
-                        .init(color: .black, location: 0.1),
-                        .init(color: .black, location: 1.0),
-                    ]),
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
+            .tileSparklineFadeMask()
     }
 }
 

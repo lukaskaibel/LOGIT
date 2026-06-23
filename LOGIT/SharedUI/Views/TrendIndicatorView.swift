@@ -19,8 +19,9 @@ struct TrendIndicatorView: View {
     /// workout stat tiles pass the workout's multi-muscle-group gradient here, which a single
     /// `Color` can't carry. Decline and no change stay muted gray regardless.
     var positiveStyle: AnyShapeStyle? = nil
-    /// While the value stands at a personal record the chevron gives way to a trophy and the pill
-    /// keeps the positive tint regardless of direction — a record is always a win.
+    /// While the value stands at a personal record the chevron gives way to a trophy, the percent to
+    /// "PR", and the pill keeps the positive tint regardless of direction — a record is always a win,
+    /// and a percentage beside a record has no baseline to be a percentage *of*.
     var isRecord: Bool = false
 
     private enum Direction { case up, down, flat }
@@ -58,37 +59,37 @@ struct TrendIndicatorView: View {
     private var displayedFraction: Double { Double(magnitude) / 100 }
 
     var body: some View {
-        HStack(spacing: 4) {
-            if let symbolName {
-                Image(systemName: symbolName)
-                    .font(.caption2.weight(.bold))
+        ProgressIndicatorPill(symbol: symbolName, style: tint) {
+            // At a record the percent gives way to "PR" — beside the trophy a percentage reads as
+            // "x % above what?" (the record has no higher baseline to beat), so the trophy + "PR"
+            // says all there is to say. The percent returns the moment it's no longer a record.
+            if isRecord {
+                Text(NSLocalizedString("personalRecordShort", comment: ""))
+                    .font(.system(.footnote, design: .rounded, weight: .bold))
+            } else {
+                Text(displayedFraction, format: .percent.precision(.fractionLength(0)))
+                    .font(.system(.footnote, design: .rounded, weight: .bold))
+                    .monospacedDigit()
             }
-            Text(displayedFraction, format: .percent.precision(.fractionLength(0)))
-                .font(.system(.footnote, design: .rounded, weight: .bold))
-                .monospacedDigit()
         }
-        .foregroundStyle(tint)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(Capsule().fill(tint.opacity(0.15)))
         .contentTransition(.numericText())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
     }
 
     private var accessibilityLabel: Text {
+        // A record speaks its full name ("Personal record") rather than the percent the badge no
+        // longer shows — VoiceOver and the badge stay in step.
+        if isRecord { return Text(NSLocalizedString("personalRecord", comment: "")) }
         let percentString = displayedFraction.formatted(.percent.precision(.fractionLength(0)))
-        let trend: String
         switch direction {
         case .up:
-            trend = String(format: NSLocalizedString("trendUp", comment: ""), percentString)
+            return Text(String(format: NSLocalizedString("trendUp", comment: ""), percentString))
         case .down:
-            trend = String(format: NSLocalizedString("trendDown", comment: ""), percentString)
+            return Text(String(format: NSLocalizedString("trendDown", comment: ""), percentString))
         case .flat:
-            trend = NSLocalizedString("trendFlat", comment: "")
+            return Text(NSLocalizedString("trendFlat", comment: ""))
         }
-        guard isRecord else { return Text(trend) }
-        return Text("\(NSLocalizedString("personalRecord", comment: "")), \(trend)")
     }
 }
 
@@ -98,6 +99,7 @@ struct TrendIndicatorView_Previews: PreviewProvider {
             TrendIndicatorView(percentChange: 12.5, positiveColor: .green)
             TrendIndicatorView(percentChange: -8.2, positiveColor: .green)
             TrendIndicatorView(percentChange: 0, positiveColor: .green)
+            TrendIndicatorView(percentChange: 12.5, positiveColor: .green, isRecord: true)
         }
     }
 }

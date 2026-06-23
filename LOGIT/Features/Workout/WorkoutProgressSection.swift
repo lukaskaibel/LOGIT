@@ -193,48 +193,106 @@ struct WorkoutPersonalBestsTile: View {
     /// How many records the tile lists before deferring the rest to "+n more".
     var maxShown: Int = 3
 
+    /// One record per exercise for the compact tile, so three records of the same exercise (its
+    /// weight, estimated 1RM, and reps all at once) don't crowd the others out — the most tangible
+    /// metric wins (weight, then estimated 1RM, then reps). Every record still lives on the records
+    /// screen; "+n more" counts them all.
+    private var tileRecords: [WorkoutProgressReport.PRRecord] {
+        func priority(_ metric: ExercisePrimaryMetric) -> Int {
+            switch metric {
+            case .weight: return 0
+            case .estimatedOneRepMax: return 1
+            case .repetitions: return 2
+            }
+        }
+        var best: [NSManagedObjectID: WorkoutProgressReport.PRRecord] = [:]
+        var order: [NSManagedObjectID] = []
+        for record in report.prRecords {
+            let id = record.exercise.objectID
+            if let existing = best[id] {
+                if priority(record.metric) < priority(existing.metric) { best[id] = record }
+            } else {
+                best[id] = record
+                order.append(id)
+            }
+        }
+        return order.compactMap { best[$0] }
+    }
+
     var body: some View {
-        let shown = Array(report.prRecords.prefix(maxShown))
+        let shown = Array(tileRecords.prefix(maxShown))
         let remaining = report.prRecords.count - shown.count
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 6) {
                 Text(NSLocalizedString("personalRecords", comment: ""))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    .tileHeaderStyle()
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.tertiaryLabel)
             }
-            VStack(spacing: 10) {
-                ForEach(shown) { record in
-                    HStack(spacing: 6) {
-                        Text(record.exercise.displayName)
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(Color.label)
-                            .lineLimit(1)
-                        Spacer(minLength: 4)
-                        personalRecordValueView(for: record, configuration: .small)
-                            .foregroundStyle((record.exercise.muscleGroup?.color ?? .accentColor).gradient)
+            VStack(spacing: 0) {
+                ForEach(Array(shown.enumerated()), id: \.element.id) { index, record in
+                    if index > 0 {
+                        Divider().overlay(Color.primary.opacity(0.06))
                     }
+                    row(for: record)
                 }
             }
+            .padding(.top, 6)
             if remaining > 0 {
                 Text(String(format: NSLocalizedString("personalRecordsMoreCount", comment: ""), remaining))
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.secondary)
+                    .padding(.top, 12)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// One record, full width: the exercise and metric on the left, the new best in its muscle-group
+    /// gradient on the right with the gain over the value it beat beneath it.
+    private func row(for record: WorkoutProgressReport.PRRecord) -> some View {
+        let color = record.exercise.muscleGroup?.color ?? .accentColor
+        let gain = record.value - record.previousBest
+        return HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(record.exercise.displayName)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.label)
+                    .lineLimit(1)
+                Text(record.metric.title)
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 1) {
+                personalRecordValueView(for: record, configuration: .normal)
+                    .foregroundStyle(color.gradient)
+                if gain > 0 {
+                    let display = personalRecordDisplay(gain, metric: record.metric)
+                    HStack(spacing: 2) {
+                        Image(systemName: "chevron.up")
+                            .font(.caption2.weight(.bold))
+                        UnitView(
+                            value: display.value,
+                            unit: display.unit,
+                            configuration: .extraSmall,
+                            unitColor: .secondary
+                        )
+                    }
+                    .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(.vertical, 10)
     }
 }
 
 // MARK: - Records screen
 
 /// The full personal records screen behind the workout detail's records tile: every record set in
-/// this workout, each with the value it beat and a sparkline of the exercise's recent history for
+/// this workout, each with the value it beat and a line chart of the exercise's entire history for
 /// that metric cresting at the new best. The tile shows only the first few and the count; this is
 /// where they all live, with the basis spelled out at the bottom.
 struct WorkoutPersonalRecordsScreen: View {
@@ -306,8 +364,8 @@ struct WorkoutPersonalRecordsScreen: View {
 }
 
 /// One record on `WorkoutPersonalRecordsScreen`: the exercise and metric, the new best in its
-/// muscle-group gradient with the gain over the value it beat, and the exercise tiles' sparkline of
-/// its recent best for this metric — ending at this record.
+/// muscle-group gradient with the gain over the value it beat, and a line chart of the exercise's
+/// entire history for this metric — cresting at this record, so the all-time best stands out.
 struct WorkoutPersonalRecordCard: View {
     let workout: Workout
     let record: WorkoutProgressReport.PRRecord
@@ -335,29 +393,23 @@ struct WorkoutPersonalRecordCard: View {
                 Spacer()
                 gainPill(color: color)
             }
-            ExerciseTileSparkline(points: sparklinePoints, color: color, window: .recentHistory)
+            ExerciseTileSparkline(points: sparklinePoints, color: color, window: .allTime, height: 96)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(CELL_PADDING)
         .tileStyle()
     }
 
-    /// "↑ +n" in the metric's units — the gain this record made over the value it beat, in the
+    /// "⌃ n" in the metric's units — the gain this record made over the value it beat, in the
     /// trend pill's anatomy and the exercise's muscle tint.
     @ViewBuilder
     private func gainPill(color: Color) -> some View {
         let gain = record.value - record.previousBest
         if gain > 0 {
             let display = personalRecordDisplay(gain, metric: record.metric)
-            HStack(spacing: 3) {
-                Image(systemName: "arrow.up")
-                    .font(.caption2.weight(.bold))
-                UnitView(value: "+\(display.value)", unit: display.unit, configuration: .small)
+            ProgressIndicatorPill(symbol: "chevron.up", style: AnyShapeStyle(color.gradient)) {
+                UnitView(value: display.value, unit: display.unit, configuration: .small)
             }
-            .foregroundStyle(color.gradient)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(Capsule().fill(color.opacity(0.15)))
         }
     }
 

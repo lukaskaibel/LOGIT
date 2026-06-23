@@ -237,37 +237,16 @@ struct WorkoutDetailScreen: View {
     /// Pill beside the "Exercises" section title: how many exercises beat their previous session.
     /// Muted gray while nothing improved; muscle-group themed once at least one did. The detailed
     /// per-exercise trends live on each exercise's badge in the list below.
-    @ViewBuilder
     private func exercisesImprovedPill(report: WorkoutProgressReport) -> some View {
         let improved = report.improvedTrendCount
-        let label = HStack(spacing: 4) {
-            Image(systemName: improved > 0 ? "chevron.up" : "minus")
-                .font(.caption2.weight(.bold))
+        // Muscle-group gradient once at least one exercise improved, muted gray otherwise.
+        let style = improved > 0
+            ? workout.muscleGroups.gradientStyle()
+            : AnyShapeStyle(Color.secondary)
+        return ProgressIndicatorPill(symbol: improved > 0 ? "chevron.up" : "minus", style: style) {
             Text(String(format: NSLocalizedString("improvedCount", comment: ""), improved))
                 .font(.system(.footnote, design: .rounded, weight: .bold))
                 .monospacedDigit()
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-
-        Group {
-            if improved > 0 {
-                label
-                    .muscleGroupGradientStyle(for: workout.muscleGroups)
-                    .background(
-                        Capsule().fill(
-                            LinearGradient(
-                                colors: workout.muscleGroups.map { $0.color.opacity(0.15) },
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                    )
-            } else {
-                label
-                    .foregroundStyle(Color.secondary)
-                    .background(Capsule().fill(Color.secondary.opacity(0.15)))
-            }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
@@ -279,41 +258,32 @@ struct WorkoutDetailScreen: View {
         )
     }
 
-    /// The records tile and the per-set volume tile, side by side under the stat grid — each a
-    /// half-width tile stretched to the taller of the two. When only one of them has anything to
-    /// show (a workout with no records, or a bodyweight workout with no volume) that tile takes the
-    /// full width on its own, like the single tiles that lived here before.
+    /// The full-width records tile under the stat grid. The per-set volume tile that used to sit
+    /// beside it is temporarily disabled (see the commented `volumePerSetTile` below) — re-enable it
+    /// to bring back the side-by-side layout.
     @ViewBuilder
     private var progressAndVolumeRow: some View {
-        let hasRecords = !(progressReport?.prRecords.isEmpty ?? true)
-        let hasVolume = workoutVolume > 0
-        if hasRecords, hasVolume {
-            HStack(alignment: .top, spacing: 10) {
-                personalBestsTile(stretch: true)
-                volumePerSetTile(stretch: true)
-            }
-        } else if hasRecords {
-            personalBestsTile(stretch: false)
-        } else if hasVolume {
-            volumePerSetTile(stretch: false)
+        if !(progressReport?.prRecords.isEmpty ?? true) {
+            personalBestsTile
         }
     }
 
-    /// The records tile as a button into the records screen. `stretch` makes it fill the height of
-    /// its row neighbor when the two sit side by side — the frame is applied before `tileStyle` so
-    /// the background fills the stretched bounds.
-    private func personalBestsTile(stretch: Bool) -> some View {
+    /// The full-width records tile as a button into the records screen.
+    private var personalBestsTile: some View {
         Button {
             isShowingPersonalRecords = true
         } label: {
             WorkoutPersonalBestsTile(workout: workout, report: progressReport ?? .empty)
                 .padding(CELL_PADDING)
-                .frame(maxWidth: .infinity, maxHeight: stretch ? .infinity : nil, alignment: .topLeading)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
                 .tileStyle()
         }
         .buttonStyle(TileButtonStyle())
     }
 
+    // MARK: - Volume per set tile (temporarily disabled — re-enable with the side-by-side layout above)
+
+    /*
     private func volumePerSetTile(stretch: Bool) -> some View {
         volumePerSetTileContent
             .padding(CELL_PADDING)
@@ -364,12 +334,14 @@ struct WorkoutDetailScreen: View {
         guard count > 0 else { return 0 }
         return workoutVolume / count
     }
+    */
 
     // MARK: - Computed Properties
 
-    private var workoutVolume: Int {
-        getVolume(of: workout.sets)
-    }
+    // Temporarily unused while the volume per set tile is disabled.
+    // private var workoutVolume: Int {
+    //     getVolume(of: workout.sets)
+    // }
 
     private var workoutDurationString: String? {
         guard let start = workout.date, let end = workout.endDate else { return nil }

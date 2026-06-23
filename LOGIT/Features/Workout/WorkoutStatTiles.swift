@@ -297,10 +297,10 @@ struct WorkoutRunsBarChart: View {
                     BarMark(
                         x: .value("Run", String(bar.slot)),
                         y: .value("Value", bar.value),
-                        width: .ratio(0.8)
+                        width: TileBarChartStyle.barWidth
                     )
                     .foregroundStyle(bar.isCurrent ? currentStyle : AnyShapeStyle(Color.fill))
-                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    .tileBarStyle()
                 }
             }
         }
@@ -431,7 +431,7 @@ struct WorkoutStatTileGrid: View {
                 workout: workout,
                 history: history,
                 pillColor: metric == .duration ? .secondary : dominantMuscleGroupColor,
-                pillStyle: metric == .duration ? nil : muscleGroupStyle(startPoint: .leading, endPoint: .trailing),
+                pillStyle: metric == .duration ? nil : workout.muscleGroups.gradientStyle(),
                 valueStyle: AnyShapeStyle(Color.label),
                 currentBarStyle: AnyShapeStyle(Color.label)
             )
@@ -443,15 +443,6 @@ struct WorkoutStatTileGrid: View {
     /// layout as the trend pill's fallback behind its muscle-group gradient.
     private var dominantMuscleGroupColor: Color {
         muscleGroupService.getMuscleGroupOccurances(in: workout).first?.0.color ?? .accentColor
-    }
-
-    private func muscleGroupStyle(startPoint: UnitPoint, endPoint: UnitPoint) -> AnyShapeStyle {
-        let colors = workout.muscleGroups.map(\.color)
-        return AnyShapeStyle(.linearGradient(
-            colors: colors.isEmpty ? [.accentColor] : colors,
-            startPoint: startPoint,
-            endPoint: endPoint
-        ))
     }
 }
 

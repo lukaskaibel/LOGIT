@@ -11,8 +11,8 @@ import SwiftUI
 // MARK: - Trend
 
 /// The numbers behind a metric tile's trend pill: the exercise's current best (the value the tile
-/// shows) measured against the best of the equal-length window before it, plus whether that
-/// current best stands at the exercise's all-time best (the pill's trophy).
+/// shows), the last execution's change versus the execution before it (the pill's percent), and
+/// whether that current best stands at the exercise's all-time best (the pill's trophy).
 ///
 /// Sets of the workout currently being recorded must be filtered out by the caller — the tiles
 /// tell the standing *before* this session (the in-workout badge tells the live story), and a
@@ -21,8 +21,9 @@ struct ExerciseTileTrend {
     /// Best value within the current-best window (see `Exercise.currentBestWindowStart`) — the
     /// value the tile displays. Nil when no set in the window has a usable value.
     let currentBest: Int?
-    /// Percent change of the current best over the best of the month before the window, or nil
-    /// when either side has nothing to compare — the pill is hidden then.
+    /// Percent change of the last execution (the most recent training day's best) over the
+    /// execution before it — "how last time went versus the time before". Nil while the exercise is
+    /// lapsed or has fewer than two executions to compare; the pill is hidden then.
     let percentChange: Double?
     /// True while the current best *is* the all-time best — "you're at your peak right now".
     /// Requires a usable value from before the window: with no older history there is no record
@@ -34,13 +35,13 @@ struct ExerciseTileTrend {
 
     init(sets: [WorkoutSet], value: (WorkoutSet) -> Int) {
         let windowStart = Exercise.currentBestWindowStart
-        let previousWindowStart =
-            Calendar.current.date(byAdding: .month, value: -1, to: windowStart) ?? windowStart
+        let calendar = Calendar.current
 
         var currentMax = 0
-        var previousMax = 0
         var allTimeMax = 0
         var hasValueBeforeWindow = false
+        // Best value per training day — one day is one "execution", used for the day-over-day pill.
+        var bestByDay: [Date: Int] = [:]
         for workoutSet in sets {
             let setValue = value(workoutSet)
             guard setValue > 0 else { continue }
@@ -50,19 +51,62 @@ struct ExerciseTileTrend {
                 currentMax = max(currentMax, setValue)
             } else {
                 hasValueBeforeWindow = true
-                if date >= previousWindowStart {
-                    previousMax = max(previousMax, setValue)
-                }
             }
+            let day = calendar.startOfDay(for: date)
+            bestByDay[day] = max(bestByDay[day] ?? 0, setValue)
         }
 
         currentBest = currentMax > 0 ? currentMax : nil
-        percentChange = currentMax > 0 && previousMax > 0
-            ? (Double(currentMax) - Double(previousMax)) / Double(previousMax) * 100
-            : nil
-        isAtAllTimeBest = currentMax > 0 && hasValueBeforeWindow && currentMax == allTimeMax
         allTimeBest = allTimeMax > 0 ? allTimeMax : nil
+        isAtAllTimeBest = currentMax > 0 && hasValueBeforeWindow && currentMax == allTimeMax
+
+        // Trend pill: the last execution (most recent training day's best) versus the execution
+        // before it — "how last time went versus the time before". Shown only while the exercise is
+        // active (a value in the current-best window); a lapsed exercise keeps its "time since"
+        // pill instead. Needs two executions to compare.
+        let executions = bestByDay.keys.sorted()
+        if currentMax > 0, executions.count >= 2,
+           let last = bestByDay[executions[executions.count - 1]],
+           let previous = bestByDay[executions[executions.count - 2]],
+           previous > 0 {
+            percentChange = (Double(last) - Double(previous)) / Double(previous) * 100
+        } else {
+            percentChange = nil
+        }
     }
+}
+
+// MARK: - Detail-screen Trend
+
+/// Percent change of a metric across the visible chart window versus a comparable window before it
+/// — the trend pill in the exercise stat screens' headers. When the window immediately before the
+/// visible one holds no training, the baseline slides back to the most recent equally-long window
+/// that does, so the pill stays present whenever there's any earlier history instead of vanishing
+/// after a gap. A sibling of the tiles' previous-month → earlier-history fallback (and the workout
+/// detail's previous-runs → recent fallback). `aggregate(start, end)` reduces the metric over
+/// `[start, end]` to one comparable number — a best for "max" metrics, a total for weekly sums —
+/// returning nil when that span has nothing to compare.
+func exerciseWindowTrendPercentage(
+    sets: [WorkoutSet],
+    windowStart: Date,
+    windowSeconds: Int,
+    aggregate: (_ start: Date, _ end: Date) -> Double?
+) -> Double? {
+    let calendar = Calendar.current
+    let windowEnd = calendar.date(byAdding: .second, value: windowSeconds, to: windowStart) ?? windowStart
+    guard let current = aggregate(windowStart, windowEnd), current > 0 else { return nil }
+    let priorStart = calendar.date(byAdding: .second, value: -windowSeconds, to: windowStart) ?? windowStart
+    var baseline = aggregate(priorStart, windowStart)
+    if baseline == nil || baseline == 0 {
+        // Nothing in the immediately-preceding window: slide back to the last window that has any
+        // training, so a gap before the visible range doesn't hide the trend.
+        if let lastPriorDate = sets.compactMap({ $0.workout?.date }).filter({ $0 < windowStart }).max() {
+            let slideStart = calendar.date(byAdding: .second, value: -windowSeconds, to: lastPriorDate) ?? lastPriorDate
+            baseline = aggregate(slideStart, lastPriorDate)
+        }
+    }
+    guard let baseline, baseline > 0 else { return nil }
+    return (current - baseline) / baseline * 100
 }
 
 // MARK: - Tile Skeleton
@@ -202,16 +246,10 @@ private struct TileLapsedPill: View {
     let date: Date
 
     var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: "clock.arrow.circlepath")
-                .font(.caption2.weight(.bold))
+        ProgressIndicatorPill(symbol: "clock.arrow.circlepath", color: .secondary, size: .compact) {
             Text(date, format: .relative(presentation: .numeric, unitsStyle: .narrow))
                 .font(.system(.caption2, design: .rounded, weight: .bold))
         }
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .background(Capsule().fill(Color.secondary.opacity(0.15)))
         // The pill never compresses or wraps — the title next to it shrinks instead.
         .fixedSize()
         .accessibilityElement(children: .ignore)
@@ -282,11 +320,9 @@ struct GhostSparkline: View {
 /// leading edge, hidden axes) over the current-best window, so the chart shows exactly the
 /// history the value above it comes from.
 struct ExerciseTileSparkline: View {
-    struct Point: Identifiable {
-        let date: Date
-        let value: Double
-        var id: Date { date }
-    }
+    /// One daily-best point — the shared tile-sparkline point type, kept under this name so the
+    /// metric tiles and the personal-record card can go on building `ExerciseTileSparkline.Point`.
+    typealias Point = TileSparklinePoint
 
     enum Window {
         /// The current-best month, dashed carry-forward to today — the default while the window
@@ -296,6 +332,10 @@ struct ExerciseTileSparkline: View {
         /// empty. An empty month would render as nothing but the dashed carry-forward line;
         /// showing the sessions the personal best comes from tells a story instead.
         case recentHistory
+        /// The exercise's entire history, first session to last. The line drops its per-point
+        /// dots (too many to read) and marks only the highest point, so the all-time best stands
+        /// out as the crest of the whole story — used on the personal-records screen.
+        case allTime
     }
 
     /// Daily-best points, oldest → newest. May extend past the window: the domain clips, and the
@@ -303,6 +343,8 @@ struct ExerciseTileSparkline: View {
     let points: [Point]
     let color: Color
     var window: Window = .currentBest
+    /// Chart height. Taller suits the all-time window, where the full history needs room to read.
+    var height: CGFloat = 56
 
     /// How many sessions the recent-history window shows.
     private static let recentHistoryCount = 6
@@ -322,68 +364,47 @@ struct ExerciseTileSparkline: View {
             }
             let lead = Calendar.current.date(byAdding: .day, value: -2, to: first) ?? first
             return lead ... margin(last)
+        case .allTime:
+            guard let first = points.first?.date, let last = points.last?.date else {
+                return Exercise.currentBestWindowStart ... margin(.now)
+            }
+            let lead = Calendar.current.date(byAdding: .day, value: -2, to: first) ?? first
+            return lead ... margin(last)
         }
     }
 
     var body: some View {
         let maxValue = points.map(\.value).max() ?? 1
-        Chart {
-            if let first = points.first {
-                LineMark(x: .value("Date", Date.distantPast, unit: .day), y: .value("Value", first.value))
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(color.gradient)
-                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-            }
-            ForEach(points) { point in
-                LineMark(x: .value("Date", point.date, unit: .day), y: .value("Value", point.value))
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(color.gradient)
-                    .lineStyle(StrokeStyle(lineWidth: 3))
-                    .symbol {
-                        Circle()
-                            .frame(width: 6, height: 6)
-                            .foregroundStyle(color.gradient)
-                            .overlay {
-                                Circle()
-                                    .frame(width: 2, height: 2)
-                                    .foregroundStyle(Color.black)
-                            }
-                    }
-                AreaMark(x: .value("Date", point.date, unit: .day), y: .value("Value", point.value))
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(
-                        Gradient(colors: [color.opacity(0.3), color.opacity(0.1), color.opacity(0)])
-                    )
-            }
-            if window == .currentBest,
-               let last = points.last, !Calendar.current.isDateInToday(last.date), last.date < .now {
-                RuleMark(
-                    xStart: .value("Start", last.date),
-                    xEnd: .value("End", Date.now),
-                    y: .value("Value", last.value)
-                )
-                .foregroundStyle(color.opacity(0.45))
-                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, dash: [3, 6]))
-            }
+        // Over a long span catmullRom waggles between sessions; monotone keeps the all-time line a
+        // clean trend that never overshoots its own crest.
+        let interpolation: InterpolationMethod = window == .allTime ? .monotone : .catmullRom
+        // The all-time window dots only its crest (the rest would be a cluttered string of points);
+        // the shorter windows dot every session.
+        let recordPoint = window == .allTime ? points.max(by: { $0.value < $1.value }) : nil
+        let chart = Chart {
+            tileSparklineMarks(
+                points: points,
+                color: color,
+                interpolation: interpolation,
+                showsSymbols: window != .allTime,
+                showsCarryForward: window == .currentBest,
+                recordPoint: recordPoint
+            )
         }
         .chartXScale(domain: domain)
         .chartYScale(domain: 0 ... max(maxValue * 1.15, 1))
         .chartXAxis {}
         .chartYAxis {}
         .frame(maxWidth: .infinity)
-        .frame(height: 56)
+        .frame(height: height)
         .clipped()
-        .mask(
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: .clear, location: 0.0),
-                    .init(color: .black, location: 0.12),
-                    .init(color: .black, location: 1.0),
-                ]),
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
+        // The all-time window's whole point is to show the start of the history — a leading fade
+        // would swallow it, so it draws edge to edge; the windowed sparklines fade in.
+        if window == .allTime {
+            chart
+        } else {
+            chart.tileSparklineFadeMask()
+        }
     }
 }
 

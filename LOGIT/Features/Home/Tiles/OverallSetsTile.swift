@@ -50,9 +50,10 @@ struct OverallSetsTile: View {
                         BarMark(
                             x: .value("Weeks before now", key, unit: .weekOfYear),
                             y: .value("Sets in week", workoutSets.count),
-                            width: .ratio(0.5)
+                            width: TileBarChartStyle.barWidth
                         )
                         .foregroundStyle(Calendar.current.isDate(key, equalTo: .now, toGranularity: .weekOfYear) ? Color.accentColor : Color.fill)
+                        .tileBarStyle()
                     }
                 }
                 .chartXScale(domain: xDomain(startDate: startDate))

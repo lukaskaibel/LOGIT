@@ -866,6 +866,7 @@
 "metricInfoReps" = "Le plus grand nombre de répétitions réalisées en une seule série, quelle que soit la charge.";
 "tapForMetricInfo" = "Touche pour voir les détails et changer de métrique.";
 "personalRecord" = "Record personnel";
+"personalRecordShort" = "PR";
 "repsShort" = "Reps";
 
 /* Workout Progress Section */

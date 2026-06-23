@@ -67,61 +67,12 @@ struct MeasurementTile: View {
     private var miniChart: some View {
         let chartEntries = Array(entries.prefix(20).reversed())
         Chart {
-            if let firstEntry = chartEntries.first {
-                LineMark(
-                    x: .value("Date", Date.distantPast, unit: .day),
-                    y: .value("Value", firstEntry.decimalValue)
-                )
-                .interpolationMethod(.catmullRom)
-                .foregroundStyle(Color.accentColor.gradient)
-                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-            }
-            ForEach(chartEntries) { entry in
-                LineMark(
-                    x: .value("Date", entry.date ?? .now, unit: .day),
-                    y: .value("Value", entry.decimalValue)
-                )
-                .interpolationMethod(.catmullRom)
-                .foregroundStyle(Color.accentColor.gradient)
-                .lineStyle(StrokeStyle(lineWidth: 3))
-                .symbol {
-                    Circle()
-                        .frame(width: 6, height: 6)
-                        .foregroundStyle(Color.accentColor.gradient)
-                        .overlay {
-                            Circle()
-                                .frame(width: 2, height: 2)
-                                .foregroundStyle(Color.black)
-                        }
-                }
-                AreaMark(
-                    x: .value("Date", entry.date ?? .now, unit: .day),
-                    y: .value("Value", entry.decimalValue)
-                )
-                .interpolationMethod(.catmullRom)
-                .foregroundStyle(Gradient(colors: [
-                    Color.accentColor.opacity(0.3),
-                    Color.accentColor.opacity(0.1),
-                    Color.accentColor.opacity(0),
-                ]))
-            }
-            if let lastEntry = chartEntries.last,
-               let lastDate = lastEntry.date,
-               !Calendar.current.isDateInToday(lastDate) {
-                RuleMark(
-                    xStart: .value("Start", lastDate),
-                    xEnd: .value("End", Date()),
-                    y: .value("Value", lastEntry.decimalValue)
-                )
-                .foregroundStyle(Color.accentColor.opacity(0.45))
-                .lineStyle(
-                    StrokeStyle(
-                        lineWidth: 3,
-                        lineCap: .round,
-                        dash: [3, 6]
-                    )
-                )
-            }
+            tileSparklineMarks(
+                points: chartEntries.map {
+                    TileSparklinePoint(date: $0.date ?? .now, value: $0.decimalValue)
+                },
+                color: .accentColor
+            )
         }
         .chartXScale(domain: xDomain)
         .chartYScale(domain: 0 ... (entries.map { $0.decimalValue }.max() ?? 1) * 1.1)

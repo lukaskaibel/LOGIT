@@ -27,3 +27,18 @@ extension View {
         modifier(MuscleGroupGradientModifier(muscleGroups: muscleGroups))
     }
 }
+
+extension Sequence where Element == MuscleGroup {
+    /// The muscle-group gradient as a `ShapeStyle` value — the value-typed counterpart to the
+    /// `muscleGroupGradientStyle` foreground modifier — for tinting a `ProgressIndicatorPill`: the
+    /// muscle colors left to right, falling back to the accent color when there are none. A single
+    /// `Color` can't carry a multi-muscle workout's gradient, so the pills take an `AnyShapeStyle`.
+    func gradientStyle(startPoint: UnitPoint = .leading, endPoint: UnitPoint = .trailing) -> AnyShapeStyle {
+        let colors = map(\.color)
+        return AnyShapeStyle(.linearGradient(
+            colors: colors.isEmpty ? [.accentColor] : colors,
+            startPoint: startPoint,
+            endPoint: endPoint
+        ))
+    }
+}

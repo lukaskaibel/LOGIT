@@ -862,6 +862,7 @@
 "metricInfoReps" = "Die meisten Wiederholungen, die du in einem einzelnen Satz geschafft hast — unabhängig vom Gewicht.";
 "tapForMetricInfo" = "Tippe für Details und um die Metrik zu wechseln.";
 "personalRecord" = "Persönlicher Rekord";
+"personalRecordShort" = "PR";
 "repsShort" = "Wdh.";
 
 /* Workout Progress Section */

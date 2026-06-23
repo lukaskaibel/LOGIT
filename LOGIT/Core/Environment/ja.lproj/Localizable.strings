@@ -866,6 +866,7 @@
 "metricInfoReps" = "1セットで行った最多回数。重量は考慮されません。";
 "tapForMetricInfo" = "タップすると詳細の表示と指標の切り替えができます。";
 "personalRecord" = "自己ベスト";
+"personalRecordShort" = "自己ベスト";
 "repsShort" = "回数";
 
 /* Workout Progress Section */

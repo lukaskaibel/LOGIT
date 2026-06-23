@@ -348,28 +348,21 @@ struct ExerciseE1RMScreen: View {
         return nextBiggerYAxisMaxValue ?? maxYValue
     }
 
-    /// Percent change of the best e1RM in the visible chart window versus the
-    /// equal-length window immediately before it. Nil when either window has no data.
+    /// Percent change of the best e1RM in the visible chart window versus a comparable window
+    /// before it — the window right before, or the last window with training when that's empty
+    /// (see `exerciseWindowTrendPercentage`). Nil only when there's no earlier history at all.
     private func trendPercentage(in workoutSets: [WorkoutSet]) -> Double? {
-        let windowStart = chartScrollPosition
-        let windowEnd = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: windowStart)!
-        let previousStart = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: windowStart)!
-        let current = workoutSets
-            .filter {
-                guard let date = $0.workout?.date else { return false }
-                return date >= windowStart && date <= windowEnd
-            }
-            .map { $0.estimatedOneRepMax(for: exercise) }
-            .max()
-        let previous = workoutSets
-            .filter {
-                guard let date = $0.workout?.date else { return false }
-                return date >= previousStart && date < windowStart
-            }
-            .map { $0.estimatedOneRepMax(for: exercise) }
-            .max()
-        guard let current = current, let previous = previous, previous > 0 else { return nil }
-        return (Double(current) - Double(previous)) / Double(previous) * 100
+        exerciseWindowTrendPercentage(
+            sets: workoutSets,
+            windowStart: chartScrollPosition,
+            windowSeconds: visibleChartDomainInSeconds
+        ) { start, end in
+            workoutSets
+                .filter { ($0.workout?.date).map { $0 >= start && $0 <= end } ?? false }
+                .map { $0.estimatedOneRepMax(for: exercise) }
+                .max()
+                .map(Double.init)
+        }
     }
 
     // MARK: - Selection helpers

@@ -866,6 +866,7 @@
 "metricInfoReps" = "Il maggior numero di ripetizioni eseguite in una singola serie, indipendentemente dal peso.";
 "tapForMetricInfo" = "Tocca per i dettagli e per cambiare metrica.";
 "personalRecord" = "Record personale";
+"personalRecordShort" = "PR";
 "repsShort" = "Rip.";
 
 /* Workout Progress Section */

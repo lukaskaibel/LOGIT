@@ -866,6 +866,7 @@
 "metricInfoReps" = "The most reps you've done in a single set, regardless of weight.";
 "tapForMetricInfo" = "Tap for details and to switch the metric.";
 "personalRecord" = "Personal record";
+"personalRecordShort" = "PR";
 "repsShort" = "Reps";
 
 /* Workout Progress Section */

@@ -866,6 +866,7 @@
 "metricInfoReps" = "El mayor número de repeticiones que has hecho en una sola serie, sin importar el peso.";
 "tapForMetricInfo" = "Toca para ver detalles y cambiar de métrica.";
 "personalRecord" = "Récord personal";
+"personalRecordShort" = "PR";
 "repsShort" = "Reps";
 
 /* Workout Progress Section */

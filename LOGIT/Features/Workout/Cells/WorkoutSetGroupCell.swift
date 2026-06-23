@@ -694,12 +694,10 @@ private struct MetricBadgeView: View {
         // A flat trend has no icon (nil) — the muted percent says "no change" without a minus that
         // would read like a decline; a record still shows the trophy.
         let symbol = isRecord ? "trophy.fill" : symbolName(for: direction)
-        return HStack(spacing: 4) {
-            if let symbol {
-                Image(systemName: symbol)
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(isRecord ? accent : trendColor)
-            }
+        // The whole capsule (icon + capsule fill + two-line value/name) is the shared
+        // `ProgressIndicatorPill`; only the per-line color overrides and the metric name in fine
+        // print are local. The pill's tint (icon + fill) is the record/up accent, else muted gray.
+        return ProgressIndicatorPill(symbol: symbol, color: isRecord ? accent : trendColor, size: .prominent) {
             VStack(alignment: .trailing, spacing: 1) {
                 if isRecord {
                     recordValueView(for: metric)
@@ -716,9 +714,6 @@ private struct MetricBadgeView: View {
             }
         }
         .contentTransition(.numericText())
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(Capsule().fill((isRecord ? accent : trendColor).opacity(0.15)))
         // Roll between metrics (a peek, or a new choice from the panel) with the shared spring so
         // the capsule resizes smoothly from its trailing anchor; value edits animate the number in
         // place via the content transition.
@@ -1134,12 +1129,6 @@ struct MetricInfoPanel: View {
 
     // MARK: - Progression chart
 
-    private struct MetricPoint: Identifiable {
-        let date: Date
-        let value: Double
-        var id: Date { date }
-    }
-
     private func metricBase(_ set: WorkoutSet, _ metric: ExercisePrimaryMetric, _ exercise: Exercise) -> Int {
         switch metric {
         case .estimatedOneRepMax: return set.estimatedOneRepMax(for: exercise)
@@ -1159,17 +1148,17 @@ struct MetricInfoPanel: View {
     /// oldest → newest. Sessions after a finished workout's date are cut so the chart's story ends
     /// where the comparison's does (the domain would clip them anyway, but a Catmull-Rom segment
     /// into a clipped point still bends the visible line).
-    private func metricPoints(for metric: ExercisePrimaryMetric) -> [MetricPoint] {
+    private func metricPoints(for metric: ExercisePrimaryMetric) -> [TileSparklinePoint] {
         guard let exercise = setGroup.exercise else { return [] }
         let grouped = Dictionary(grouping: exercise.sets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }
-        return grouped.compactMap { _, sets -> MetricPoint? in
+        return grouped.compactMap { _, sets -> TileSparklinePoint? in
             guard let best = sets.max(by: { metricBase($0, metric, exercise) < metricBase($1, metric, exercise) })
             else { return nil }
             let base = metricBase(best, metric, exercise)
             guard base > 0, let date = best.workout?.date else { return nil }
-            return MetricPoint(date: date, value: metricDisplayValue(base, metric))
+            return TileSparklinePoint(date: date, value: metricDisplayValue(base, metric))
         }
         .filter { $0.date <= windowAnchor }
         .sorted { $0.date < $1.date }
@@ -1203,33 +1192,7 @@ struct MetricInfoPanel: View {
         let points = metricPoints(for: metric)
         let maxValue = points.map(\.value).max() ?? 1
         Chart {
-            if let first = points.first {
-                LineMark(x: .value("Date", Date.distantPast, unit: .day), y: .value("Value", first.value))
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(color.gradient)
-                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-            }
-            ForEach(points) { point in
-                LineMark(x: .value("Date", point.date, unit: .day), y: .value("Value", point.value))
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(color.gradient)
-                    .lineStyle(StrokeStyle(lineWidth: 3))
-                    .symbol {
-                        Circle()
-                            .frame(width: 6, height: 6)
-                            .foregroundStyle(color.gradient)
-                            .overlay { Circle().frame(width: 2, height: 2).foregroundStyle(Color.black) }
-                    }
-                AreaMark(x: .value("Date", point.date, unit: .day), y: .value("Value", point.value))
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(Gradient(colors: [color.opacity(0.3), color.opacity(0.1), color.opacity(0)]))
-            }
-            if let last = points.last, last.date < windowAnchor,
-               !Calendar.current.isDate(last.date, inSameDayAs: windowAnchor) {
-                RuleMark(xStart: .value("Start", last.date), xEnd: .value("End", windowAnchor), y: .value("Value", last.value))
-                    .foregroundStyle(color.opacity(0.45))
-                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, dash: [3, 6]))
-            }
+            tileSparklineMarks(points: points, color: color, carryForwardEnd: windowAnchor)
         }
         .chartXScale(domain: chartStartDate ... chartEndDate)
         .chartYScale(domain: 0 ... max(maxValue * 1.15, 1))
@@ -1238,17 +1201,7 @@ struct MetricInfoPanel: View {
         .frame(maxWidth: .infinity)
         .frame(height: 64)
         .clipped()
-        .mask(
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: .clear, location: 0.0),
-                    .init(color: .black, location: 0.12),
-                    .init(color: .black, location: 1.0),
-                ]),
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
+        .tileSparklineFadeMask()
     }
 }
 

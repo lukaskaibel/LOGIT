@@ -43,60 +43,15 @@ struct PinnedExerciseSetVolumeTile: View {
                     }
                     Spacer()
                     Chart {
-                        ForEach(maxDailySets) { workoutSet in
-                            if maxDailySets.first == workoutSet {
-                                LineMark(
-                                    x: .value("Date", Date.distantPast, unit: .day),
-                                    y: .value("Max set volume on day", convertWeightForDisplayingDecimal(workoutSet.volume(for: exercise)))
+                        tileSparklineMarks(
+                            points: maxDailySets.map {
+                                TileSparklinePoint(
+                                    date: $0.workout?.date ?? .now,
+                                    value: convertWeightForDisplayingDecimal($0.volume(for: exercise))
                                 )
-                                .interpolationMethod(.catmullRom)
-                                .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-                            }
-                            LineMark(
-                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max set volume on day", convertWeightForDisplayingDecimal(workoutSet.volume(for: exercise)))
-                            )
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                            .lineStyle(StrokeStyle(lineWidth: 3))
-                            .symbol {
-                                Circle()
-                                    .frame(width: 6, height: 6)
-                                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                                    .overlay {
-                                        Circle()
-                                            .frame(width: 2, height: 2)
-                                            .foregroundStyle(Color.black)
-                                    }
-                            }
-                            AreaMark(
-                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max set volume on day", convertWeightForDisplayingDecimal(workoutSet.volume(for: exercise)))
-                            )
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(Gradient(colors: [
-                                exerciseMuscleGroupColor.opacity(0.3),
-                                exerciseMuscleGroupColor.opacity(0.1),
-                                exerciseMuscleGroupColor.opacity(0),
-                            ]))
-                        }
-                        if let lastSet = maxDailySets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
-                            let setVolumeDisplayed = convertWeightForDisplayingDecimal(lastSet.volume(for: exercise))
-                            RuleMark(
-                                xStart: .value("Start", lastDate),
-                                xEnd: .value("End", Date()),
-                                y: .value("Max set volume on day", setVolumeDisplayed)
-                            )
-                            .foregroundStyle(exerciseMuscleGroupColor.opacity(0.45))
-                            .lineStyle(
-                                StrokeStyle(
-                                    lineWidth: 3,
-                                    lineCap: .round,
-                                    dash: [3, 6]
-                                )
-                            )
-                        }
+                            },
+                            color: exerciseMuscleGroupColor
+                        )
                     }
                     .chartXScale(domain: xDomain)
                     .chartYScale(domain: 0 ... (convertWeightForDisplayingDecimal(allTimeSetVolumePR(in: workoutSets)) * 1.1))

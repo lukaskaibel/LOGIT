@@ -30,6 +30,10 @@ struct ExerciseVolumeTile: View {
         let thisWeekVolume = volume(in: weeklyVolumes, equalTo: .now)
         let lastWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: .now) ?? .now
         let lastWeekVolume = volume(in: weeklyVolumes, equalTo: lastWeek)
+        // Baseline for the trend pill: last week, or — when last week was a rest week — the best
+        // earlier week, so the pill stays present whenever there's any prior week to compare to.
+        let bestPriorWeekVolume = weeklyVolumes.filter { $0.week < Date.now.startOfWeek }.map(\.volume).max() ?? 0
+        let volumeBaseline = lastWeekVolume > 0 ? lastWeekVolume : bestPriorWeekVolume
         // No volume in the chart's five-week window but some further back: fall back to the best
         // week ever over the last trained weeks' bars — mirrors the best-value tiles' lapsed
         // state, instead of a "0" floating above an empty chart.
@@ -42,8 +46,8 @@ struct ExerciseVolumeTile: View {
                 : formatWeightForDisplay(isLapsed ? weeklyVolumes.map(\.volume).max() ?? 0 : thisWeekVolume),
             unit: WeightUnit.used.rawValue,
             color: exercise.muscleGroup?.color ?? .accentColor,
-            percentChange: thisWeekVolume > 0 && lastWeekVolume > 0
-                ? (Double(thisWeekVolume) - Double(lastWeekVolume)) / Double(lastWeekVolume) * 100
+            percentChange: thisWeekVolume > 0 && volumeBaseline > 0
+                ? (Double(thisWeekVolume) - Double(volumeBaseline)) / Double(volumeBaseline) * 100
                 : nil,
             isRecord: isRecordWeek(volume: thisWeekVolume, in: weeklyVolumes),
             requiresPro: true,
@@ -74,12 +78,13 @@ struct ExerciseVolumeTile: View {
                 BarMark(
                     x: .value("Week", weeklyVolume.week, unit: .weekOfYear),
                     y: .value("Volume in week", convertWeightForDisplayingDecimal(weeklyVolume.volume)),
-                    width: .ratio(0.5)
+                    width: TileBarChartStyle.barWidth
                 )
                 .foregroundStyle(
                     highlightedWeek.map({ Calendar.current.isDate(weeklyVolume.week, equalTo: $0, toGranularity: .weekOfYear) }) == true
                         ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill
                 )
+                .tileBarStyle()
             }
         }
         .chartXScale(domain: domainStart ... domainEnd)

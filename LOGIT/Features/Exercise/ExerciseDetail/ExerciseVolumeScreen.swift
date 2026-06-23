@@ -208,25 +208,18 @@ struct ExerciseVolumeScreen: View {
         formatWeightForDisplay(getVolume(of: sets, for: exercise))
     }
 
-    /// Percent change of the total volume in the visible chart window versus the
-    /// equal-length window immediately before it. Nil when either window has no data.
+    /// Percent change of the total volume in the visible chart window versus a comparable window
+    /// before it — the window right before, or the last window with training when that's empty
+    /// (see `exerciseWindowTrendPercentage`). Nil only when there's no earlier history at all.
     private func trendPercentage(in workoutSets: [WorkoutSet]) -> Double? {
-        let windowStart = chartScrollPosition
-        let windowEnd = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: windowStart)!
-        let previousStart = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: windowStart)!
-        let currentSets = workoutSets.filter {
-            guard let date = $0.workout?.date else { return false }
-            return date >= windowStart && date <= windowEnd
+        exerciseWindowTrendPercentage(
+            sets: workoutSets,
+            windowStart: chartScrollPosition,
+            windowSeconds: visibleChartDomainInSeconds
+        ) { start, end in
+            let inRange = workoutSets.filter { ($0.workout?.date).map { $0 >= start && $0 <= end } ?? false }
+            return inRange.isEmpty ? nil : Double(getVolume(of: inRange, for: exercise))
         }
-        let previousSets = workoutSets.filter {
-            guard let date = $0.workout?.date else { return false }
-            return date >= previousStart && date < windowStart
-        }
-        guard !currentSets.isEmpty, !previousSets.isEmpty else { return nil }
-        let current = getVolume(of: currentSets, for: exercise)
-        let previous = getVolume(of: previousSets, for: exercise)
-        guard previous > 0 else { return nil }
-        return (Double(current) - Double(previous)) / Double(previous) * 100
     }
 
     private func xAxisDateString(for date: Date) -> String {

@@ -30,6 +30,10 @@ struct ExerciseSetsTile: View {
         let thisWeekCount = count(in: weeklySets, equalTo: .now)
         let lastWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: .now) ?? .now
         let lastWeekCount = count(in: weeklySets, equalTo: lastWeek)
+        // Baseline for the trend pill: last week, or — when last week was a rest week — the best
+        // earlier week, so the pill stays present whenever there's any prior week to compare to.
+        let bestPriorWeekCount = weeklySets.filter { $0.week < Date.now.startOfWeek }.map(\.count).max() ?? 0
+        let countBaseline = lastWeekCount > 0 ? lastWeekCount : bestPriorWeekCount
         // No sets in the chart's five-week window but some further back: fall back to the best week
         // ever over the last trained weeks' bars — mirrors the Volume tile's lapsed state instead
         // of a "0" floating above an empty chart.
@@ -44,8 +48,8 @@ struct ExerciseSetsTile: View {
             // and an empty unit renders as nothing through UnitView.
             unit: "",
             color: exercise.muscleGroup?.color ?? .accentColor,
-            percentChange: thisWeekCount > 0 && lastWeekCount > 0
-                ? (Double(thisWeekCount) - Double(lastWeekCount)) / Double(lastWeekCount) * 100
+            percentChange: thisWeekCount > 0 && countBaseline > 0
+                ? (Double(thisWeekCount) - Double(countBaseline)) / Double(countBaseline) * 100
                 : nil,
             isRecord: isRecordWeek(count: thisWeekCount, in: weeklySets),
             requiresPro: true,
@@ -76,12 +80,13 @@ struct ExerciseSetsTile: View {
                 BarMark(
                     x: .value("Week", weeklySet.week, unit: .weekOfYear),
                     y: .value("Sets in week", weeklySet.count),
-                    width: .ratio(0.5)
+                    width: TileBarChartStyle.barWidth
                 )
                 .foregroundStyle(
                     highlightedWeek.map({ Calendar.current.isDate(weeklySet.week, equalTo: $0, toGranularity: .weekOfYear) }) == true
                         ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill
                 )
+                .tileBarStyle()
             }
         }
         .chartXScale(domain: domainStart ... domainEnd)

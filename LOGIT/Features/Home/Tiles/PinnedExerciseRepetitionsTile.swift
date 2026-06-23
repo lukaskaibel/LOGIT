@@ -43,60 +43,15 @@ struct PinnedExerciseRepetitionsTile: View {
                     }
                     Spacer()
                     Chart {
-                        if let firstEntry = maxDailySets.first {
-                            LineMark(
-                                x: .value("Date", Date.distantPast, unit: .day),
-                                y: .value("Max repetitions on day", firstEntry.maximum(.repetitions, for: exercise))
-                            )
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-                        }
-                        ForEach(maxDailySets) { workoutSet in
-                            LineMark(
-                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max repetitions on day", workoutSet.maximum(.repetitions, for: exercise))
-                            )
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                            .lineStyle(StrokeStyle(lineWidth: 3))
-                            .symbol {
-                                Circle()
-                                    .frame(width: 6, height: 6)
-                                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                                    .overlay {
-                                        Circle()
-                                            .frame(width: 2, height: 2)
-                                            .foregroundStyle(Color.black)
-                                    }
-                            }
-                            AreaMark(
-                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max repetitions on day", workoutSet.maximum(.repetitions, for: exercise))
-                            )
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(Gradient(colors: [
-                                exerciseMuscleGroupColor.opacity(0.3),
-                                exerciseMuscleGroupColor.opacity(0.1),
-                                exerciseMuscleGroupColor.opacity(0),
-                            ]))
-                        }
-                        if let lastSet = maxDailySets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
-                            let repetitionsDisplayed = lastSet.maximum(.repetitions, for: exercise)
-                            RuleMark(
-                                xStart: .value("Start", lastDate),
-                                xEnd: .value("End", Date()),
-                                y: .value("Max repetitions on day", repetitionsDisplayed)
-                            )
-                            .foregroundStyle(exerciseMuscleGroupColor.opacity(0.45))
-                            .lineStyle(
-                                StrokeStyle(
-                                    lineWidth: 3,
-                                    lineCap: .round,
-                                    dash: [3, 6]
+                        tileSparklineMarks(
+                            points: maxDailySets.map {
+                                TileSparklinePoint(
+                                    date: $0.workout?.date ?? .now,
+                                    value: Double($0.maximum(.repetitions, for: exercise))
                                 )
-                            )
-                        }
+                            },
+                            color: exerciseMuscleGroupColor
+                        )
                     }
                     .chartXScale(domain: xDomain)
                     .chartXAxis {}

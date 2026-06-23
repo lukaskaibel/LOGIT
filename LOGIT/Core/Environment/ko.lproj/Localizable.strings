@@ -866,6 +866,7 @@
 "metricInfoReps" = "한 세트에서 수행한 가장 많은 횟수 — 중량은 반영되지 않습니다.";
 "tapForMetricInfo" = "탭하여 세부 정보를 확인하고 지표를 전환하세요.";
 "personalRecord" = "개인 기록";
+"personalRecordShort" = "신기록";
 "repsShort" = "횟수";
 
 /* Workout Progress Section */

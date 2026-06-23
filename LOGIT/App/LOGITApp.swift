@@ -43,7 +43,6 @@ struct LOGIT: App {
     @State private var importedTemplate: Template?
     @State private var showingImportError = false
     @State private var importErrorMessage = ""
-    @State private var showcaseWorkout: Workout? // TEMP-SHOWCASE
 
     // MARK: - Init
 
@@ -165,14 +164,6 @@ struct LOGIT: App {
                     #if DEBUG
                     DemoWorkoutSeeder.seedIfRequested(database: database)
                     #endif
-                    #if DEBUG
-                    // TEMP-SHOWCASE: open a seeded workout with PRs for screenshots
-                    if ProcessInfo.processInfo.arguments.contains("-UITEST_RECORDS_SHOWCASE") {
-                        try? await Task.sleep(nanoseconds: 500_000_000)
-                        showcaseWorkout = (database.fetch(Workout.self) as? [Workout])?
-                            .first { $0.name == "Push Day" }
-                    }
-                    #endif
                     Task {
                         do {
                             try await purchaseManager.loadProducts()
@@ -201,30 +192,6 @@ struct LOGIT: App {
                 }
                 .fullScreenCover(isPresented: $isShowingLiveActivityShowcase) {
                     LiveActivityShowcaseView()
-                }
-                .fullScreenCover(item: $showcaseWorkout) { workout in // TEMP-SHOWCASE
-                    NavigationStack {
-                        if ProcessInfo.processInfo.arguments.contains("-UITEST_RECORDS_MODE") {
-                            WorkoutPersonalRecordsScreen(
-                                workout: workout,
-                                report: .compute(for: workout, database: database)
-                            )
-                        } else {
-                            WorkoutDetailScreen(workout: workout, canNavigateToTemplate: false)
-                        }
-                    }
-                    .environment(\.managedObjectContext, database.context)
-                    .environmentObject(database)
-                    .environmentObject(measurementController)
-                    .environmentObject(templateService)
-                    .environmentObject(purchaseManager)
-                    .environmentObject(networkMonitor)
-                    .environmentObject(workoutRecorder)
-                    .environmentObject(muscleGroupService)
-                    .environmentObject(homeNavigationCoordinator)
-                    .environmentObject(chronograph)
-                    .environmentObject(exerciseSuggestionService)
-                    .preferredColorScheme(.dark)
                 }
                 .preferredColorScheme(.dark)
                 .onAppear {

@@ -43,60 +43,15 @@ struct PinnedExerciseE1RMTile: View {
                     }
                     Spacer()
                     Chart {
-                        ForEach(maxDailySets) { workoutSet in
-                            if maxDailySets.first == workoutSet {
-                                LineMark(
-                                    x: .value("Date", Date.distantPast, unit: .day),
-                                    y: .value("Max e1RM on day", convertWeightForDisplayingDecimal(Int64(workoutSet.estimatedOneRepMax(for: exercise))))
+                        tileSparklineMarks(
+                            points: maxDailySets.map {
+                                TileSparklinePoint(
+                                    date: $0.workout?.date ?? .now,
+                                    value: convertWeightForDisplayingDecimal(Int64($0.estimatedOneRepMax(for: exercise)))
                                 )
-                                .interpolationMethod(.catmullRom)
-                                .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-                            }
-                            LineMark(
-                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max e1RM on day", convertWeightForDisplayingDecimal(Int64(workoutSet.estimatedOneRepMax(for: exercise))))
-                            )
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                            .lineStyle(StrokeStyle(lineWidth: 3))
-                            .symbol {
-                                Circle()
-                                    .frame(width: 6, height: 6)
-                                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                                    .overlay {
-                                        Circle()
-                                            .frame(width: 2, height: 2)
-                                            .foregroundStyle(Color.black)
-                                    }
-                            }
-                            AreaMark(
-                                x: .value("Date", workoutSet.workout?.date ?? .now, unit: .day),
-                                y: .value("Max e1RM on day", convertWeightForDisplayingDecimal(Int64(workoutSet.estimatedOneRepMax(for: exercise))))
-                            )
-                            .interpolationMethod(.catmullRom)
-                            .foregroundStyle(Gradient(colors: [
-                                exerciseMuscleGroupColor.opacity(0.3),
-                                exerciseMuscleGroupColor.opacity(0.1),
-                                exerciseMuscleGroupColor.opacity(0),
-                            ]))
-                        }
-                        if let lastSet = maxDailySets.last, let lastDate = lastSet.workout?.date, !Calendar.current.isDateInToday(lastDate) {
-                            let e1RMDisplayed = convertWeightForDisplayingDecimal(Int64(lastSet.estimatedOneRepMax(for: exercise)))
-                            RuleMark(
-                                xStart: .value("Start", lastDate),
-                                xEnd: .value("End", Date()),
-                                y: .value("Max e1RM on day", e1RMDisplayed)
-                            )
-                            .foregroundStyle(exerciseMuscleGroupColor.opacity(0.45))
-                            .lineStyle(
-                                StrokeStyle(
-                                    lineWidth: 3,
-                                    lineCap: .round,
-                                    dash: [3, 6]
-                                )
-                            )
-                        }
+                            },
+                            color: exerciseMuscleGroupColor
+                        )
                     }
                     .chartXScale(domain: xDomain)
                     .chartYScale(domain: 0 ... ((Double(allTimeE1RMPREntry(in: workoutSets).0) ?? 0) * 1.1))

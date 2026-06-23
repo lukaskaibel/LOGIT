@@ -45,18 +45,20 @@ public class Database: ObservableObject {
 
     // MARK: - Store Loading
 
-    /// Loads the persistent stores, recovering from incompatible-model errors in DEBUG builds.
+    /// Loads the persistent stores, recovering from incompatible-model errors on the **simulator only**.
     ///
     /// The Core Data model is iterated on frequently during development. Because the store is backed
     /// by `NSPersistentCloudKitContainer`, properties cannot be renamed or removed in place — CloudKit
     /// only permits additive schema changes. A store left over from an earlier model revision (e.g. one
     /// that still had `Exercise.name_`) therefore fails to migrate and crashes on every launch with
-    /// `NSCocoaErrorDomain` 134110. In DEBUG we recreate the offending store once and retry; release
-    /// builds keep the hard failure so real user data is never silently discarded.
+    /// `NSCocoaErrorDomain` 134110. On the simulator we recreate the offending store once and retry so
+    /// stale development stores self-heal. On a real device we keep the hard failure: a user's workout
+    /// history must never be silently discarded, so an incompatible store there is handled deliberately
+    /// (and is normally recoverable from the CloudKit mirror).
     private func loadStores(recreatingIncompatibleStoreOnFailure recreate: Bool = true) {
         container.loadPersistentStores { [weak self] description, error in
             guard let error = error as NSError? else { return }
-            #if DEBUG
+            #if targetEnvironment(simulator)
             if recreate, let self, self.isIncompatibleStoreError(error), let url = description.url {
                 os_log(
                     "Database: Incompatible store at %{public}@ (Core Data error %d). Recreating it for development.",
@@ -73,10 +75,12 @@ public class Database: ObservableObject {
         }
     }
 
+    #if targetEnvironment(simulator)
     /// `true` for Core Data migration / incompatible-model-version errors (`NSCocoaErrorDomain` 134100–134170).
     private func isIncompatibleStoreError(_ error: NSError) -> Bool {
         error.domain == NSCocoaErrorDomain && (134100...134170).contains(error.code)
     }
+    #endif
 
     // MARK: - Computed Properties
 

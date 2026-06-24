@@ -37,21 +37,31 @@ struct OverallSetsScreen: View {
                         chartScrollPosition = initialScrollPosition
                     }
 
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("total", comment: ""))
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                            .textCase(.uppercase)
-                            .foregroundStyle(.secondary)
-                        UnitView(
-                            value: "\(totalSetsInTimeFrame(workouts))",
-                            unit: NSLocalizedString("sets", comment: "")
-                        )
-                        .foregroundStyle(.tint)
-                        Text(visibleDomainDescription)
-                            .fontWeight(.bold)
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.secondary)
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(NSLocalizedString("total", comment: ""))
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                                .textCase(.uppercase)
+                                .foregroundStyle(.secondary)
+                            UnitView(
+                                value: "\(totalSetsInTimeFrame(workouts))",
+                                unit: NSLocalizedString("sets", comment: "")
+                            )
+                            .foregroundStyle(.tint)
+                            Text(visibleDomainDescription)
+                                .fontWeight(.bold)
+                                .fontDesign(.rounded)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if let trend = trendPercentage() {
+                            TrendIndicatorView(
+                                percentChange: trend,
+                                positiveColor: .accentColor
+                            )
+                            .animation(.snappy, value: trend)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -205,6 +215,20 @@ struct OverallSetsScreen: View {
             return d >= chartScrollPosition && d <= endDate
         }
         return sets.count
+    }
+
+    /// Percent change of the visible window's set count over the equal window before it — the header
+    /// trend pill, mirroring the other stat screens.
+    private func trendPercentage() -> Double? {
+        let sets = workouts.flatMap { $0.sets }
+        return exerciseWindowTrendPercentage(
+            sets: sets,
+            windowStart: chartScrollPosition,
+            windowSeconds: visibleChartDomainInSeconds
+        ) { start, end in
+            let count = sets.filter { ($0.workout?.date).map { $0 >= start && $0 <= end } ?? false }.count
+            return count == 0 ? nil : Double(count)
+        }
     }
 
     private var scrollAlignmentComponents: DateComponents {

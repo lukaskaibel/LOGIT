@@ -46,7 +46,10 @@ struct ExerciseVolumeTile: View {
                 : formatWeightForDisplay(isLapsed ? weeklyVolumes.map(\.volume).max() ?? 0 : thisWeekVolume),
             unit: WeightUnit.used.rawValue,
             color: exercise.muscleGroup?.color ?? .accentColor,
-            percentChange: thisWeekVolume > 0 && volumeBaseline > 0
+            // This week against the baseline. With a real baseline but nothing logged this week yet,
+            // that's a genuine "down 100%" — zero work, not missing data — so the pill says so rather
+            // than disappearing. A fully lapsed exercise keeps its "time since" pill (lapsedSince).
+            percentChange: volumeBaseline > 0 && !isLapsed
                 ? (Double(thisWeekVolume) - Double(volumeBaseline)) / Double(volumeBaseline) * 100
                 : nil,
             isRecord: isRecordWeek(volume: thisWeekVolume, in: weeklyVolumes),

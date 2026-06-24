@@ -48,7 +48,10 @@ struct ExerciseSetsTile: View {
             // and an empty unit renders as nothing through UnitView.
             unit: "",
             color: exercise.muscleGroup?.color ?? .accentColor,
-            percentChange: thisWeekCount > 0 && countBaseline > 0
+            // This week against the baseline. With a real baseline but nothing logged this week yet,
+            // that's a genuine "down 100%" — zero work, not missing data — so the pill says so rather
+            // than disappearing. A fully lapsed exercise keeps its "time since" pill (lapsedSince).
+            percentChange: countBaseline > 0 && !isLapsed
                 ? (Double(thisWeekCount) - Double(countBaseline)) / Double(countBaseline) * 100
                 : nil,
             isRecord: isRecordWeek(count: thisWeekCount, in: weeklySets),

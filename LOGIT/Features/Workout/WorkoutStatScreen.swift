@@ -10,12 +10,17 @@ import SwiftUI
 
 /// Detail screen behind a workout stat tile: the stat across *every* workout over time — the tile
 /// zooms into this workout's recent runs, the screen zooms out to the whole landscape. One bar per
-/// workout in the month view, each colored by its workout's most-trained muscle group (the colors
-/// draw the push/pull/legs rhythm); the year view averages each month into one bar. The header
-/// shows the average per workout over the visible period with a trend against the period before,
-/// matching the exercise chart screens' anatomy (picker, header, scrollable chart with
-/// tap-to-inspect, highlights, about). One screen serves all four stats — `WorkoutStatMetric`
-/// supplies values, formatting, and texts.
+/// workout in the month view (the year view averages each month into one bar); the bar for the
+/// workout the screen was opened from wears the workout's muscle-group gradient (its identity
+/// color), a tapped bar lights up white, every other stays a quiet gray. The header is a two-value
+/// scoreboard like the in-workout metric popover: the average per workout across the *shown* time
+/// frame (the reference — neutral, and it moves as you scroll) on one side, this workout's own value
+/// (the bold white constant) on the other, and a pill between them reading this workout against that
+/// average. Scroll the chart and the average + pill retarget while this workout stays the anchor —
+/// we're in its detail, after all. The muscle color lives on the accents: the current chart bar, the
+/// highlights' current bar, and the pill. Otherwise the exercise chart screens' anatomy (picker,
+/// header, scrollable chart with tap-to-inspect, highlights, about). One screen serves all four
+/// stats — `WorkoutStatMetric` supplies values, formatting, and texts.
 struct WorkoutStatScreen: View {
     private enum ChartGranularity {
         case month, year
@@ -30,7 +35,9 @@ struct WorkoutStatScreen: View {
         let rawValue: Double
         /// Display units for the chart's y-axis.
         let value: Double
-        let color: Color
+        /// The bar for the workout the screen was opened from — drawn with the workout's muscle-group
+        /// gradient; every other bar stays a quiet gray (a tapped bar lights up white).
+        let isCurrent: Bool
         /// The single workout behind this bar — nil for a year-granularity month bar.
         let workout: Workout?
         let workoutCount: Int
@@ -69,8 +76,9 @@ struct WorkoutStatScreen: View {
     private func screen(workouts: [Workout]) -> some View {
         let points = statPoints(in: workouts)
         let snappedPoint = selectedDate != nil ? nearestPoint(to: selectedDate, in: points) : nil
+        // The average per workout across the visible window — recomputed as the chart scrolls, so the
+        // header's reference value and its pill always describe the period currently on screen.
         let visibleAverage = averageRaw(in: workouts, from: chartScrollPosition, to: visibleEndDate)
-        let visibleTrendPercentage = trendPercentage(in: workouts)
         return ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -83,7 +91,7 @@ struct WorkoutStatScreen: View {
                     .pickerStyle(.segmented)
                     .padding(.vertical)
                     .padding(.horizontal)
-                    header(visibleAverage: visibleAverage, trendPercentage: visibleTrendPercentage)
+                    header(visibleAverage: visibleAverage)
                     chart(points: points, snappedPoint: snappedPoint)
                 }
 
@@ -136,28 +144,68 @@ struct WorkoutStatScreen: View {
 
     // MARK: - Header
 
-    private func header(visibleAverage: Double?, trendPercentage: Double?) -> some View {
-        HStack {
-            VStack(alignment: .leading) {
-                AverageLabel()
+    /// A scoreboard like the in-workout metric popover: the average across the shown period (the
+    /// reference, neutral, moving with the scroll) on the left, this workout's own value (the bold
+    /// white constant) on the right, the pill between them reading this workout against that average.
+    /// We're in the workout detail, so this workout is always the subject — scrolling retargets the
+    /// average and the pill, never the side they're compared to.
+    private func header(visibleAverage: Double?) -> some View {
+        // This workout's own value for the metric — "––" when it has none (e.g. duration with no end).
+        let raw = metric.rawValue(of: workout)
+        // This workout vs the visible period's average — positive when this session beat it. Duration
+        // stays neutral gray (longer is neither better nor worse), matching its tile.
+        let percentChange: Double? = {
+            guard let average = visibleAverage, average > 0, raw > 0 else { return nil }
+            return (Double(raw) - average) / average * 100
+        }()
+        return HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(NSLocalizedString("average", comment: ""))
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .textCase(.uppercase)
+                    .foregroundStyle(.secondary)
                 UnitView(
                     value: visibleAverage.map { metric.formattedAverage(rawAverage: $0) } ?? "––",
-                    unit: metric.unit
+                    unit: metric.unit,
+                    unitColor: .secondaryLabel
                 )
-                .muscleGroupGradientStyle(for: workout.muscleGroups)
-                Text(chartHeaderTitle)
+                .foregroundStyle(.secondary)
+                Text(visibleDomainDescription)
+                    .font(.caption)
                     .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
+                    .fontDesign(.rounded)
+                    .foregroundStyle(.tertiary)
             }
-            Spacer()
-            if let trendPercentage {
+            Spacer(minLength: 0)
+            if let percentChange {
                 TrendIndicatorView(
-                    percentChange: trendPercentage,
-                    // A longer workout is neither better nor worse — duration's pill stays
-                    // neutral gray in both directions, like its tile.
-                    positiveColor: metric == .duration ? .secondary : dominantMuscleGroupColor
+                    percentChange: percentChange,
+                    positiveColor: metric == .duration ? .secondary : dominantMuscleGroupColor,
+                    positiveStyle: metric == .duration ? nil : workout.muscleGroups.gradientStyle()
                 )
-                .animation(.snappy, value: trendPercentage)
+                .animation(.snappy, value: percentChange)
+            }
+            Spacer(minLength: 0)
+            VStack(alignment: .trailing, spacing: 1) {
+                Text(NSLocalizedString("thisWorkout", comment: ""))
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .textCase(.uppercase)
+                    .foregroundStyle(.secondary)
+                UnitView(
+                    value: raw > 0 ? metric.formattedValue(fromRaw: raw) : "––",
+                    unit: metric.unit,
+                    unitColor: .secondaryLabel
+                )
+                .foregroundStyle(Color.label)
+                if let date = workout.date {
+                    Text(date.formatted(.dateTime.day().month()))
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(.tertiary)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -171,7 +219,7 @@ struct WorkoutStatScreen: View {
         return Chart {
             if let snappedPoint {
                 RuleMark(x: .value("Selected", snappedPoint.date, unit: barUnit))
-                    .foregroundStyle(snappedPoint.color.opacity(0.35))
+                    .foregroundStyle(Color.label.opacity(0.35))
                     .lineStyle(StrokeStyle(lineWidth: 2))
                     .annotation(
                         position: .top,
@@ -186,7 +234,7 @@ struct WorkoutStatScreen: View {
                     y: .value("Value", point.value),
                     width: .ratio(chartGranularity == .month ? 0.6 : 0.5)
                 )
-                .foregroundStyle(point.color.gradient)
+                .foregroundStyle(barStyle(for: point, snappedPoint: snappedPoint))
                 .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
                 .opacity(snappedPoint == nil || snappedPoint?.id == point.id ? 1.0 : 0.4)
             }
@@ -231,8 +279,8 @@ struct WorkoutStatScreen: View {
 
     private func annotationCard(for point: StatPoint) -> some View {
         VStack(alignment: .leading) {
-            UnitView(value: annotationValue(for: point), unit: metric.unit)
-                .foregroundStyle(point.color.gradient)
+            UnitView(value: annotationValue(for: point), unit: metric.unit, unitColor: .secondaryLabel)
+                .foregroundStyle(Color.label)
             Text(annotationSubtitle(for: point))
                 .fontWeight(.bold)
                 .fontDesign(.rounded)
@@ -274,7 +322,7 @@ struct WorkoutStatScreen: View {
                     date: workout.date ?? .now,
                     rawValue: Double(raw),
                     value: metric.displayValue(fromRaw: raw),
-                    color: dominantMuscleGroupColor(of: workout),
+                    isCurrent: workout.objectID == self.workout.objectID,
                     workout: workout,
                     workoutCount: 1
                 )
@@ -290,8 +338,7 @@ struct WorkoutStatScreen: View {
                         date: month,
                         rawValue: rawAverage,
                         value: metric.displayValue(fromRaw: Int(rawAverage.rounded())),
-                        color: muscleGroupService.getMuscleGroupOccurances(in: monthWorkouts).first?.0.color
-                            ?? .accentColor,
+                        isCurrent: workout.date?.startOfMonth == month,
                         workout: nil,
                         workoutCount: monthWorkouts.count
                     )
@@ -319,24 +366,6 @@ struct WorkoutStatScreen: View {
         return Double(values.reduce(0, +)) / Double(values.count)
     }
 
-    /// Percent change of the visible window's average over the equal-length window before it —
-    /// the same window-vs-window comparison as the exercise chart screens' pill, on averages
-    /// because sessions are discrete amounts (a single best would just crown the biggest day).
-    private func trendPercentage(in workouts: [Workout]) -> Double? {
-        let windowStart = chartScrollPosition
-        let previousStart = Calendar.current.date(
-            byAdding: .second,
-            value: -visibleChartDomainInSeconds,
-            to: windowStart
-        )!
-        guard
-            let current = averageRaw(in: workouts, from: windowStart, to: visibleEndDate),
-            let previous = averageRaw(in: workouts, from: previousStart, to: windowStart),
-            previous > 0
-        else { return nil }
-        return (current - previous) / previous * 100
-    }
-
     // MARK: - Highlights
 
     @ViewBuilder
@@ -357,7 +386,8 @@ struct WorkoutStatScreen: View {
             currentNumericValue: currentAverage,
             previousNumericValue: previousAverage,
             granularity: granularity,
-            accentColor: dominantMuscleGroupColor
+            accentColor: dominantMuscleGroupColor,
+            accentGradient: workout.muscleGroups.gradient()
         )
         .padding(.horizontal)
     }
@@ -372,6 +402,18 @@ struct WorkoutStatScreen: View {
         Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
     }
 
+    /// The shown period as a date range ("25 May - 29 Jun") — the time frame the header's average is
+    /// taken over, captioned beneath it; moves with the scroll.
+    private var visibleDomainDescription: String {
+        let endDate = visibleEndDate
+        switch chartGranularity {
+        case .month:
+            return "\(chartScrollPosition.isInCurrentYear ? chartScrollPosition.formatted(.dateTime.day().month()) : chartScrollPosition.formatted(.dateTime.day().month().year())) - \(endDate.isInCurrentYear ? endDate.formatted(.dateTime.day().month()) : endDate.formatted(.dateTime.day().month().year()))"
+        case .year:
+            return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
+        }
+    }
+
     private func xDomain(for points: [StatPoint]) -> some ScaleDomain {
         let maxStartDate = Calendar.current.date(
             byAdding: chartGranularity == .month ? .month : .year,
@@ -383,16 +425,6 @@ struct WorkoutStatScreen: View {
         else { return maxStartDate ... endDate }
         let startDate = chartGranularity == .month ? firstDate.startOfMonth : firstDate.startOfYear
         return startDate ... endDate
-    }
-
-    private var chartHeaderTitle: String {
-        let endDate = visibleEndDate
-        switch chartGranularity {
-        case .month:
-            return "\(chartScrollPosition.isInCurrentYear ? chartScrollPosition.formatted(.dateTime.day().month()) : chartScrollPosition.formatted(.dateTime.day().month().year())) - \(endDate.isInCurrentYear ? endDate.formatted(.dateTime.day().month()) : endDate.formatted(.dateTime.day().month().year()))"
-        case .year:
-            return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
-        }
     }
 
     private func xAxisDateString(for date: Date) -> String {
@@ -437,45 +469,22 @@ struct WorkoutStatScreen: View {
 
     // MARK: - Colors
 
+    /// The bar for the workout the screen was opened from wears the workout's own muscle-group
+    /// gradient — its identity color, the screen's accent. A bar tapped to inspect lights up white
+    /// ("now showing this"); every other bar stays a quiet gray. `isCurrent` wins when the current
+    /// bar is itself the tapped one — its gradient already stands out.
+    private func barStyle(for point: StatPoint, snappedPoint: StatPoint?) -> AnyShapeStyle {
+        if point.isCurrent { return workout.muscleGroups.gradientStyle(startPoint: .bottom, endPoint: .top) }
+        if snappedPoint?.id == point.id { return AnyShapeStyle(Color.label) }
+        return AnyShapeStyle(Color.fill)
+    }
+
     private func dominantMuscleGroupColor(of workout: Workout) -> Color {
         muscleGroupService.getMuscleGroupOccurances(in: workout).first?.0.color ?? .accentColor
     }
 
     private var dominantMuscleGroupColor: Color {
         dominantMuscleGroupColor(of: workout)
-    }
-}
-
-// MARK: - Average Label
-
-/// The "Average" header label on the stat screens — `CurrentBestLabel`'s anatomy with the stat
-/// vocabulary: explains that the value is the mean per workout over the visible period and what
-/// the trend pill compares it against.
-private struct AverageLabel: View {
-    @State private var isShowingInfo = false
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Text(NSLocalizedString("average", comment: ""))
-                .fontWeight(.medium)
-                .textCase(.uppercase)
-            Button {
-                isShowingInfo = true
-            } label: {
-                Image(systemName: "info.circle")
-            }
-            .popover(isPresented: $isShowingInfo) {
-                Text(NSLocalizedString("workoutStatAverageInfo", comment: ""))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding()
-                    .frame(width: 300)
-                    .presentationCompactAdaptation(.popover)
-            }
-        }
-        .font(.footnote)
-        .foregroundStyle(.secondary)
     }
 }
 

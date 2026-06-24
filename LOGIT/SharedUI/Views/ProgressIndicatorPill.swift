@@ -92,6 +92,11 @@ struct ProgressIndicatorPill<Label: View>: View {
         .padding(.horizontal, size.horizontalPadding)
         .padding(.vertical, size.verticalPadding)
         .background(Capsule().fill(style.opacity(0.15)))
+        // The pill always takes its ideal width, so its label never compresses: a percent like
+        // "100 %" can't wrap to two lines or ellipsize. Being rigid, the pill also claims its space
+        // first in any HStack, so a neighbor (a tile title, an exercise name) truncates around it
+        // rather than squeezing it. Vertical stays flexible for the metric badge's two-line label.
+        .fixedSize(horizontal: true, vertical: false)
     }
 }
 

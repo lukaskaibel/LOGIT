@@ -28,6 +28,9 @@ struct HighlightView: View {
     let previousNumericValue: Double
     /// Accent color for the current period bar (defaults to .accentColor)
     var accentColor: Color = .accentColor
+    /// Optional gradient for the current period bar, overriding `accentColor` — used where the bar
+    /// stands for a whole workout (its muscle-group gradient) rather than a single metric.
+    var accentGradient: LinearGradient? = nil
 
     private var maxBar: Double {
         max(max(currentNumericValue, previousNumericValue), 1.0)
@@ -60,7 +63,7 @@ struct HighlightView: View {
                     // Current period
                     VStack(alignment: .leading, spacing: 6) {
                         UnitView(value: currentValue, unit: unit, configuration: .large, unitColor: Color.secondaryLabel)
-                        ComparisonBar(value: currentNumericValue, maxValue: maxBar, tint: accentColor, label: currentLabel)
+                        ComparisonBar(value: currentNumericValue, maxValue: maxBar, tint: accentColor, label: currentLabel, gradient: accentGradient)
                             .frame(height: 30)
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     }
@@ -85,7 +88,7 @@ struct HighlightView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     VStack(alignment: .leading, spacing: 6) {
                         UnitView(value: value, unit: unit, configuration: .large, unitColor: Color.secondaryLabel)
-                        ComparisonBar(value: numericValue, maxValue: numericValue, tint: accentColor, label: label)
+                        ComparisonBar(value: numericValue, maxValue: numericValue, tint: accentColor, label: label, gradient: hasCurrentData ? accentGradient : nil)
                             .frame(height: 30)
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     }
@@ -173,7 +176,8 @@ extension HighlightView {
         currentNumericValue: Double,
         previousNumericValue: Double,
         granularity: Granularity,
-        accentColor: Color = .accentColor
+        accentColor: Color = .accentColor,
+        accentGradient: LinearGradient? = nil
     ) {
         self.headline = headline
         self.currentValue = currentValue
@@ -184,6 +188,7 @@ extension HighlightView {
         self.currentNumericValue = currentNumericValue
         self.previousNumericValue = previousNumericValue
         self.accentColor = accentColor
+        self.accentGradient = accentGradient
     }
 }
 

@@ -86,15 +86,22 @@ struct ExerciseTileTrend {
 /// detail's previous-runs → recent fallback). `aggregate(start, end)` reduces the metric over
 /// `[start, end]` to one comparable number — a best for "max" metrics, a total for weekly sums —
 /// returning nil when that span has nothing to compare.
+///
+/// `emptyCurrentMeansDecline` decides what an empty *current* window means. For a "max" metric an
+/// empty window has simply nothing to plot — leave it off and the pill hides. For a cumulative
+/// metric (volume, sets) an empty window genuinely did zero work, so turn it on: once there's a
+/// baseline to fall from, that's a real "down 100%" reported rather than hidden.
 func exerciseWindowTrendPercentage(
     sets: [WorkoutSet],
     windowStart: Date,
     windowSeconds: Int,
+    emptyCurrentMeansDecline: Bool = false,
     aggregate: (_ start: Date, _ end: Date) -> Double?
 ) -> Double? {
     let calendar = Calendar.current
     let windowEnd = calendar.date(byAdding: .second, value: windowSeconds, to: windowStart) ?? windowStart
-    guard let current = aggregate(windowStart, windowEnd), current > 0 else { return nil }
+    let current = aggregate(windowStart, windowEnd) ?? 0
+    if current <= 0 && !emptyCurrentMeansDecline { return nil }
     let priorStart = calendar.date(byAdding: .second, value: -windowSeconds, to: windowStart) ?? windowStart
     var baseline = aggregate(priorStart, windowStart)
     if baseline == nil || baseline == 0 {

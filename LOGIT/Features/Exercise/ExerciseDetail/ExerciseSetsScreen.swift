@@ -208,12 +208,14 @@ struct ExerciseSetsScreen: View {
 
     /// Percent change of the total set count in the visible chart window versus a comparable window
     /// before it — the window right before, or the last window with training when that's empty
-    /// (see `exerciseWindowTrendPercentage`). Nil only when there's no earlier history at all.
+    /// (see `exerciseWindowTrendPercentage`). A window with no sets yet reads as down 100% once
+    /// there's any earlier history to fall from; nil only when there's no earlier history at all.
     private func trendPercentage(in workoutSets: [WorkoutSet]) -> Double? {
         exerciseWindowTrendPercentage(
             sets: workoutSets,
             windowStart: chartScrollPosition,
-            windowSeconds: visibleChartDomainInSeconds
+            windowSeconds: visibleChartDomainInSeconds,
+            emptyCurrentMeansDecline: true
         ) { start, end in
             let inRange = workoutSets.filter { ($0.workout?.date).map { $0 >= start && $0 <= end } ?? false }
             return inRange.isEmpty ? nil : Double(setCount(for: inRange))

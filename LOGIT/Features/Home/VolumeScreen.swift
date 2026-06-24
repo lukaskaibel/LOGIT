@@ -35,21 +35,31 @@ struct VolumeScreen: View {
                     .pickerStyle(.segmented)
                     .padding(.bottom)
                     .padding(.horizontal)
-                    VStack(alignment: .leading) {
-                        Text(NSLocalizedString("total", comment: ""))
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                            .textCase(.uppercase)
-                            .foregroundStyle(.secondary)
-                        UnitView(
-                            value: totalVolumeInTimeFrame(workoutSets),
-                            unit: WeightUnit.used.rawValue
-                        )
-                        .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient)
-                        Text("\(visibleDomainDescription)")
-                            .fontWeight(.bold)
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.secondary)
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(NSLocalizedString("total", comment: ""))
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                                .textCase(.uppercase)
+                                .foregroundStyle(.secondary)
+                            UnitView(
+                                value: totalVolumeInTimeFrame(workoutSets),
+                                unit: WeightUnit.used.rawValue
+                            )
+                            .foregroundStyle((selectedMuscleGroup?.color ?? Color.accentColor).gradient)
+                            Text("\(visibleDomainDescription)")
+                                .fontWeight(.bold)
+                                .fontDesign(.rounded)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if let trend = trendPercentage() {
+                            TrendIndicatorView(
+                                percentChange: trend,
+                                positiveColor: selectedMuscleGroup?.color ?? .accentColor
+                            )
+                            .animation(.snappy, value: trend)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
@@ -220,6 +230,20 @@ struct VolumeScreen: View {
             return "\(chartScrollPosition.isInCurrentYear ? chartScrollPosition.formatted(.dateTime.day().month()) : chartScrollPosition.formatted(.dateTime.day().month().year())) - \(endDate.isInCurrentYear ? endDate.formatted(.dateTime.day().month()) : endDate.formatted(.dateTime.day().month().year()))"
         case .year:
             return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
+        }
+    }
+
+    /// Percent change of the visible window's total volume over the equal window before it — the
+    /// header trend pill, mirroring the exercise volume screen. Respects the selected muscle group,
+    /// so the pill tracks whatever the header value above it is showing.
+    private func trendPercentage() -> Double? {
+        exerciseWindowTrendPercentage(
+            sets: workoutSets,
+            windowStart: chartScrollPosition,
+            windowSeconds: visibleChartDomainInSeconds
+        ) { start, end in
+            let inRange = workoutSets.filter { ($0.workout?.date).map { $0 >= start && $0 <= end } ?? false }
+            return inRange.isEmpty ? nil : volume(for: inRange, muscleGroup: selectedMuscleGroup)
         }
     }
 

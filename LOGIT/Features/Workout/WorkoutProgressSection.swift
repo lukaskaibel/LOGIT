@@ -295,6 +295,10 @@ struct WorkoutPersonalBestsTile: View {
 /// this workout, each with the value it beat and a line chart of the exercise's entire history for
 /// that metric cresting at the new best. The tile shows only the first few and the count; this is
 /// where they all live, with the basis spelled out at the bottom.
+///
+/// Pro-gated (blur + crown, like the other metric detail screens): the records *tile* on the workout
+/// detail stays free — the PR celebration is the teaser that sells Pro — but the full per-record
+/// history charts here are the analytics behind the wall.
 struct WorkoutPersonalRecordsScreen: View {
     @ObservedObject var workout: Workout
     let report: WorkoutProgressReport
@@ -314,6 +318,7 @@ struct WorkoutPersonalRecordsScreen: View {
             .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
+        .isBlockedWithoutPro()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

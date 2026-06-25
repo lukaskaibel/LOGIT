@@ -74,7 +74,12 @@
 "creatingTemplateFailed" = "Échec de la création du modèle";
 "creatingTemplateFailedText" = "Assurez-vous que l'image sélectionnée contient un entraînement.";
 "currentBest" = "Meilleur actuel";
-"currentBestInfo" = "Ton meilleur actuel est la valeur la plus élevée atteinte au cours du dernier mois.";
+"previousBest" = "Meilleur précédent";
+"newRecord" = "Nouveau record";
+"currentBestInfo" = "Ton meilleur actuel est la valeur la plus élevée des 4 dernières semaines. La tendance indique de combien il dépasse ton meilleur des 4 semaines précédentes.";
+"currentBestComparisonInfo" = "Ton meilleur actuel (à droite) est la valeur la plus élevée des 4 dernières semaines. Le badge indique comment il se compare à ton meilleur sur la période affichée à gauche ; fais défiler pour comparer avec n'importe quelle période.";
+"averageComparisonInfo" = "La valeur de droite est ta moyenne hebdomadaire des 4 dernières semaines. Le badge indique comment elle se compare à la moyenne de la période affichée à gauche ; fais défiler pour comparer avec n'importe quelle période.";
+"lastFourWeeks" = "4 dernières semaines";
 "currentWorkout" = "Entraînement actuel";
 
 // MARK: - D
@@ -867,6 +872,8 @@
 "tapForMetricInfo" = "Touche pour voir les détails et changer de métrique.";
 "personalRecord" = "Record personnel";
 "personalRecordShort" = "PR";
+"personalRecordShortCount" = "%d PR";
+"personalRecordsShortCount" = "%d PRs";
 "repsShort" = "Reps";
 
 /* Workout Progress Section */

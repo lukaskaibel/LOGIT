@@ -26,6 +26,9 @@ struct WorkoutProgressReport {
         /// The exercise's best for this metric *before* this workout — the value the record beat.
         /// Base units like `value`; the records screen shows the gain over it.
         let previousBest: Int
+        /// When that previous best was first set — the earliest prior session to reach it — so the
+        /// card can date it beside the new record. Nil if no dated prior session carried it.
+        let previousBestDate: Date?
         var id: String { "\(exercise.objectID.uriRepresentation())-\(metric.rawValue)" }
     }
 
@@ -98,8 +101,20 @@ struct WorkoutProgressReport {
                 // Ties don't count, and neither do first-ever entries — with no earlier value
                 // there is no record to beat.
                 if current > 0, priorBest > 0, current > priorBest {
+                    // When the beaten record was first set: the earliest prior session that reached
+                    // it, so the card can date the previous best beside the new one.
+                    let previousBestDate = priorSets
+                        .filter { value($0, metric) == priorBest }
+                        .compactMap { $0.workout?.date }
+                        .min()
                     prRecords.append(
-                        PRRecord(exercise: exercise, metric: metric, value: current, previousBest: priorBest)
+                        PRRecord(
+                            exercise: exercise,
+                            metric: metric,
+                            value: current,
+                            previousBest: priorBest,
+                            previousBestDate: previousBestDate
+                        )
                     )
                 }
             }
@@ -355,74 +370,92 @@ struct WorkoutPersonalRecordsScreen: View {
     }
 }
 
-/// One record on `WorkoutPersonalRecordsScreen`: a trophy badge leading the exercise and metric with
-/// the gain over the value it beat as a pill top-right, the new best below in its muscle-group
-/// gradient beside the previous best it beat (a muted history pill), and a line chart of the exercise's
-/// entire history for this metric — cresting at this record, so the all-time best stands out.
+/// One record on `WorkoutPersonalRecordsScreen`: a trophy badge leading the exercise and metric, then
+/// a comparison scoreboard of the previous best (dated) against the new record (dated, muscle-tinted)
+/// with the gain as a percent pill between them, over a clean line chart of the exercise's entire
+/// history for this metric that bleeds to the card's edges. The top-right corner is intentionally left
+/// free now that the gain reads from the scoreboard rather than a pill up there.
 struct WorkoutPersonalRecordCard: View {
     let workout: Workout
     let record: WorkoutProgressReport.PRRecord
 
     var body: some View {
         let color = record.exercise.muscleGroup?.color ?? .accentColor
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.15))
-                        .frame(width: 38, height: 38)
-                    Image(systemName: "trophy.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(color.gradient)
-                }
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(record.exercise.displayName)
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(Color.label)
-                        .lineLimit(1)
-                    Text(record.metric.title)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 8)
-                gainPill(color: color)
+        // Spacing 0 so the chart can sit flush against the card's bottom and side edges: the header
+        // and scoreboard carry their own `CELL_PADDING` inset, the chart carries none and bleeds out
+        // to the `tileStyle` rounded border (which clips its bottom corners).
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 14) {
+                header(color: color)
+                comparison(color: color)
             }
-            HStack(alignment: .firstTextBaseline) {
-                personalRecordValueView(for: record, configuration: .large)
-                    .foregroundStyle(color.gradient)
-                Spacer(minLength: 8)
-                previousBestPill
-            }
-            ExerciseTileSparkline(points: sparklinePoints, color: color, window: .allTime, height: 96)
+            .padding(CELL_PADDING)
+            ExerciseTileSparkline(points: sparklinePoints, color: color, window: .allTime, height: 108)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(CELL_PADDING)
         .tileStyle()
     }
 
-    /// "⌃ n" in the metric's units — the gain this record made over the value it beat, in the
-    /// trend pill's anatomy and the exercise's muscle tint.
-    @ViewBuilder
-    private func gainPill(color: Color) -> some View {
-        let gain = record.value - record.previousBest
-        if gain > 0 {
-            let display = personalRecordDisplay(gain, metric: record.metric)
-            ProgressIndicatorPill(symbol: "chevron.up", style: AnyShapeStyle(color.gradient)) {
-                UnitView(value: display.value, unit: display.unit, configuration: .small)
+    private func header(color: Color) -> some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 38, height: 38)
+                Image(systemName: "trophy.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(color.gradient)
             }
+            VStack(alignment: .leading, spacing: 1) {
+                Text(record.exercise.displayName)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Color.label)
+                    .lineLimit(1)
+                Text(record.metric.title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 8)
+            // Top-right corner intentionally free — the gain now reads from the scoreboard below.
         }
     }
 
-    /// The record this one beat, as a muted history pill: the previous personal best for this metric,
-    /// so the card shows the jump from it to the new best rather than the new number alone.
-    @ViewBuilder
-    private var previousBestPill: some View {
-        if record.previousBest > 0 {
-            let display = personalRecordDisplay(record.previousBest, metric: record.metric)
-            ProgressIndicatorPill(symbol: "clock.arrow.circlepath", color: .secondary, size: .compact) {
-                UnitView(value: display.value, unit: display.unit, configuration: .small)
-            }
-        }
+    /// The scoreboard: the dated previous best on the left, the dated new record (muscle-tinted) on
+    /// the right, and the percent gain of one over the other in the pill between them — the shared
+    /// `MetricComparisonView` the chart-detail headers wear, so this PR jump reads the same way.
+    private func comparison(color: Color) -> some View {
+        let previous = personalRecordDisplay(record.previousBest, metric: record.metric)
+        let current = personalRecordDisplay(record.value, metric: record.metric)
+        let percentChange = record.previousBest > 0
+            ? (Double(record.value) - Double(record.previousBest)) / Double(record.previousBest) * 100
+            : nil
+        return MetricComparisonView(
+            leading: .init(
+                label: NSLocalizedString("previousBest", comment: ""),
+                value: previous.value,
+                unit: previous.unit,
+                caption: recordDateCaption(record.previousBestDate)
+            ),
+            trailing: .init(
+                label: NSLocalizedString("newRecord", comment: ""),
+                value: current.value,
+                unit: current.unit,
+                caption: recordDateCaption(workout.date)
+            ),
+            trailingValueStyle: AnyShapeStyle(color.gradient),
+            percentChange: percentChange,
+            positiveColor: color,
+            positiveStyle: AnyShapeStyle(color.gradient)
+        )
+    }
+
+    /// A scoreboard caption date — day and month, with the year only when it isn't the current one,
+    /// matching the chart headers' date captions.
+    private func recordDateCaption(_ date: Date?) -> String? {
+        guard let date else { return nil }
+        return date.isInCurrentYear
+            ? date.formatted(.dateTime.day().month())
+            : date.formatted(.dateTime.day().month().year())
     }
 
     /// The exercise's daily best for this metric up to and including this workout — the same

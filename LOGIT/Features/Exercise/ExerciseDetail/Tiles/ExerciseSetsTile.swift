@@ -38,7 +38,8 @@ struct ExerciseSetsTile: View {
         // ever over the last trained weeks' bars — mirrors the Volume tile's lapsed state instead
         // of a "0" floating above an empty chart.
         let isLapsed = !weeklySets.isEmpty && !weeklySets.contains { $0.week >= chartStartDate }
-        ExerciseMetricTileLayout(
+        let muscleColor = exercise.muscleGroup?.color ?? .accentColor
+        MetricTile(
             title: NSLocalizedString("sets", comment: ""),
             label: .plain(NSLocalizedString(isLapsed ? "personalBest" : "thisWeek", comment: "")),
             value: weeklySets.isEmpty
@@ -47,7 +48,8 @@ struct ExerciseSetsTile: View {
             // A count needs no unit — the title ("Sets") and label ("This Week") carry the meaning,
             // and an empty unit renders as nothing through UnitView.
             unit: "",
-            color: exercise.muscleGroup?.color ?? .accentColor,
+            accent: AnyShapeStyle(muscleColor),
+            accentColor: muscleColor,
             // This week against the baseline. With a real baseline but nothing logged this week yet,
             // that's a genuine "down 100%" — zero work, not missing data — so the pill says so rather
             // than disappearing. A fully lapsed exercise keeps its "time since" pill (lapsedSince).
@@ -87,7 +89,7 @@ struct ExerciseSetsTile: View {
                 )
                 .foregroundStyle(
                     highlightedWeek.map({ Calendar.current.isDate(weeklySet.week, equalTo: $0, toGranularity: .weekOfYear) }) == true
-                        ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill
+                        ? (exercise.muscleGroup?.color ?? .accentColor) : Color.fill
                 )
                 .tileBarStyle()
             }
@@ -95,8 +97,6 @@ struct ExerciseSetsTile: View {
         .chartXScale(domain: domainStart ... domainEnd)
         .chartXAxis {}
         .chartYAxis {}
-        .frame(maxWidth: .infinity)
-        .frame(height: 62)
     }
 
     private var chartStartDate: Date {

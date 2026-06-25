@@ -27,7 +27,6 @@ struct ExerciseRepetitionsScreen: View {
         // Determine the snapped selected set only when a selection exists; snap to the overall nearest datapoint
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxRepsSets) : nil
         let bestRepsInGranularity: Int? = bestRepetitionsInGranularity(in: workoutSets)
-        let visibleTrendPercentage = trendPercentage(in: workoutSets)
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -40,35 +39,24 @@ struct ExerciseRepetitionsScreen: View {
             .pickerStyle(.segmented)
             .padding(.vertical)
             .padding(.horizontal)
-            HStack {
-                VStack(alignment: .leading) {
-                    if isShowingCurrentBestWindow {
-                        CurrentBestLabel(uppercased: true)
-                    } else {
-                        Text(NSLocalizedString("best", comment: ""))
-                            .font(.footnote)
-                            .fontWeight(.medium)
-                            .textCase(.uppercase)
-                            .foregroundStyle(.secondary)
-                    }
-                    UnitView(
-                        value: "\(bestRepsInGranularity != nil ? String(bestRepsInGranularity!) : "––")",
-                        unit: NSLocalizedString("rps", comment: "")
-                    )
-                    .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                    Text(chartHeaderTitle)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                if let visibleTrendPercentage {
-                    TrendIndicatorView(
-                        percentChange: visibleTrendPercentage,
-                        positiveColor: exerciseMuscleGroupColor
-                    )
-                    .animation(.snappy, value: visibleTrendPercentage)
-                }
-            }
+            MetricComparisonView(
+                leading: .init(
+                    label: NSLocalizedString("previousBest", comment: ""),
+                    value: bestRepsInGranularity.map { String($0) } ?? "––",
+                    unit: NSLocalizedString("rps", comment: ""),
+                    caption: chartHeaderTitle
+                ),
+                trailing: .init(
+                    label: NSLocalizedString("currentBest", comment: ""),
+                    value: currentBestAnchor.map { String($0.value) } ?? "––",
+                    unit: NSLocalizedString("rps", comment: ""),
+                    caption: currentBestAnchor?.date.map { $0.formatted(.dateTime.day().month()) }
+                ),
+                trailingValueStyle: AnyShapeStyle(exerciseMuscleGroupColor.gradient),
+                percentChange: headerTrendPercentage(visibleBest: bestRepsInGranularity),
+                positiveColor: exerciseMuscleGroupColor,
+                explanation: NSLocalizedString("currentBestComparisonInfo", comment: "")
+            )
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal)
             Chart {
@@ -213,9 +201,6 @@ struct ExerciseRepetitionsScreen: View {
                 .padding(.trailing, 5)
                 }
                 
-                // MARK: - Highlights Section
-                highlightsSection(allDailyMaxRepsSets: allDailyMaxRepsSets)
-
                 // MARK: - About Section
                 AboutSection(
                     metricTitle: NSLocalizedString("repetitions", comment: ""),
@@ -331,21 +316,16 @@ struct ExerciseRepetitionsScreen: View {
             .max() ?? 0
     }
 
+    /// The header's left value and the comparison baseline: the best reps in the visible window
+    /// *other than* the current best, falling back to the most recent day's best before the window
+    /// when it holds no other value (see `exerciseOtherBestBaseline`).
     private func bestRepetitionsInGranularity(in workoutSets: [WorkoutSet]) -> Int? {
-        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
-        let setsInTimeFrame = workoutSets
-            .filter {
-                guard let date = $0.workout?.date else { return false }
-                return date >= chartScrollPosition && date <= endDate
-            }
-
-        guard !setsInTimeFrame.isEmpty else {
-            return workoutSets.first?.maximum(.repetitions, for: exercise)
-        }
-
-        return setsInTimeFrame
-            .map { $0.maximum(.repetitions, for: exercise) }
-            .max()
+        exerciseOtherBestBaseline(
+            sets: workoutSets,
+            windowStart: chartScrollPosition,
+            windowEnd: visibleEndDate,
+            currentBestDay: currentBestAnchor?.date
+        ) { $0.maximum(.repetitions, for: exercise) }
     }
 
     private func chartYScaleMax(maxYValue: Int) -> Int {
@@ -353,34 +333,25 @@ struct ExerciseRepetitionsScreen: View {
         return nextBiggerYAxisMaxValue ?? maxYValue
     }
 
-    /// Percent change of the best repetitions in the visible chart window versus a comparable
-    /// window before it — the window right before, or the last window with training when that's
-    /// empty (see `exerciseWindowTrendPercentage`). Nil only when there's no earlier history at all.
-    private func trendPercentage(in workoutSets: [WorkoutSet]) -> Double? {
-        exerciseWindowTrendPercentage(
-            sets: workoutSets,
-            windowStart: chartScrollPosition,
-            windowSeconds: visibleChartDomainInSeconds
-        ) { start, end in
-            workoutSets
-                .filter { ($0.workout?.date).map { $0 >= start && $0 <= end } ?? false }
-                .map { $0.maximum(.repetitions, for: exercise) }
-                .max()
-                .map(Double.init)
-        }
+    /// The exercise's current best (highest reps in the last four weeks) and the day it was reached
+    /// — the fixed right-hand anchor of the header scoreboard, independent of scroll.
+    private var currentBestAnchor: (value: Int, date: Date?)? {
+        guard let best = exercise.currentBestSet(for: .repetitions, in: workoutSets) else { return nil }
+        return (best.maximum(.repetitions, for: exercise), best.workout?.date)
+    }
+
+    /// The header pill: the current best measured against the best in the shown window. Nil when
+    /// either side is empty, so the pill drops out only when there is genuinely nothing to compare.
+    private func headerTrendPercentage(visibleBest: Int?) -> Double? {
+        guard let current = currentBestAnchor?.value, current > 0,
+              let visible = visibleBest, visible > 0 else { return nil }
+        return (Double(current) - Double(visible)) / Double(visible) * 100
     }
 
     // MARK: - Selection helpers
 
     private var visibleEndDate: Date {
         Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
-    }
-
-    /// True while the month view sits at its newest scroll position (the default), where the
-    /// visible window's best IS the exercise's current best — the header label says so then, with
-    /// the info popover explaining the term.
-    private var isShowingCurrentBestWindow: Bool {
-        chartGranularity == .month && visibleEndDate >= .now
     }
 
     private func nearestSet(to date: Date?, in sets: [WorkoutSet]) -> WorkoutSet? {
@@ -398,59 +369,6 @@ struct ExerciseRepetitionsScreen: View {
         }
     }
 
-    // MARK: - Highlights
-
-    @ViewBuilder
-    private func highlightsSection(allDailyMaxRepsSets: [WorkoutSet]) -> some View {
-        let ranges = periodRanges()
-        let currentMax = maxReps(in: ranges.current, sets: allDailyMaxRepsSets)
-        let previousMax = maxReps(in: ranges.previous, sets: allDailyMaxRepsSets)
-        let headlineKey = repsHeadlineKey(isHigher: currentMax >= previousMax)
-        let unit = NSLocalizedString("rps", comment: "")
-
-        HighlightView(
-            headline: NSLocalizedString(headlineKey, comment: ""),
-            currentValue: currentMax > 0 ? String(currentMax) : "––",
-            previousValue: previousMax > 0 ? String(previousMax) : "––",
-            unit: unit,
-            currentNumericValue: Double(currentMax),
-            previousNumericValue: Double(previousMax),
-            granularity: chartGranularity == .month ? .month : .year,
-            accentColor: exerciseMuscleGroupColor
-        )
-        .padding(.horizontal)
-    }
-
-    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
-        switch chartGranularity {
-        case .month:
-            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
-            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
-            let previous = (lastStart, lastStart.endOfMonth)
-            return (current, previous)
-        case .year:
-            let current = (Date.now.startOfYear, Date.now.endOfYear)
-            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
-            let previous = (lastStart, lastStart.endOfYear)
-            return (current, previous)
-        }
-    }
-
-    private func maxReps(in range: (start: Date, end: Date), sets: [WorkoutSet]) -> Int {
-        let s = range.start, e = range.end
-        let setsInRange = sets.filter {
-            guard let d = $0.workout?.date else { return false }
-            return d >= s && d <= e
-        }
-        return setsInRange.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
-    }
-
-    private func repsHeadlineKey(isHigher: Bool) -> String {
-        switch chartGranularity {
-        case .month: return isHigher ? "higherMaxRepsThisMonthThanLastMonth" : "lowerMaxRepsThisMonthThanLastMonth"
-        case .year: return isHigher ? "higherMaxRepsThisYearThanLastYear" : "lowerMaxRepsThisYearThanLastYear"
-        }
-    }
 }
 
 private struct PreviewWrapperView: View {

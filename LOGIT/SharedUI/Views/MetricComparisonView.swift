@@ -54,11 +54,15 @@ struct MetricComparisonView: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 8) {
+            // Both sides claim an equal, flexible half of the row so the pill always lands in a
+            // fixed center column. Without this the sides size to their content and the spacers
+            // rebalance whenever a value's width changes (e.g. scrolling between data points),
+            // which makes the pill drift off-center.
             side(leading, alignment: .leading, valueStyle: AnyShapeStyle(Color.label))
-            Spacer(minLength: 0)
+                .frame(maxWidth: .infinity, alignment: .leading)
             pill
-            Spacer(minLength: 0)
             side(trailing, alignment: .trailing, valueStyle: trailingValueStyle)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
 

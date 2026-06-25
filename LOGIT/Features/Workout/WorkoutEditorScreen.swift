@@ -191,52 +191,10 @@ struct WorkoutEditorScreen: View {
                     .presentationBackgroundInteraction(.enabled)
                     .interactiveDismissDisabled()
                     .sheet(isPresented: $isEditingStartEndDate) {
-                        VStack(spacing: 30) {
-                            HStack {
-                                Text(NSLocalizedString("editTime", comment: ""))
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                Spacer()
-                                Button {
-                                    isEditingStartEndDate = false
-                                } label: {
-                                    Image(systemName: "xmark")
-                                        .font(.body.weight(.bold))
-                                        .foregroundColor(Color.secondaryLabel)
-                                        .padding(8)
-                                        .background(Color.fill)
-                                        .clipShape(Circle())
-                                }
-                            }
-                            VStack(spacing: 15) {
-                                DatePicker(
-                                    NSLocalizedString("start", comment: ""),
-                                    selection: workoutStart,
-                                    in: ...workoutEnd.wrappedValue,
-                                    displayedComponents: [.date, .hourAndMinute]
-                                )
-
-                                DatePicker(
-                                    NSLocalizedString("end", comment: ""),
-                                    selection: workoutEnd,
-                                    in: workoutStart.wrappedValue...,
-                                    displayedComponents: [.date, .hourAndMinute]
-                                )
-                                Divider()
-                                HStack {
-                                    Label(NSLocalizedString("duration", comment: ""), systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                                    Spacer()
-                                    Text(workoutDurationString)
-                                        .padding(.trailing)
-                                }
-                                .fontWeight(.medium)
-                                .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                        }
-                        .padding()
-                        .presentationDetents([.fraction(0.35)])
+                        WorkoutStartEndDateEditorSheet(
+                            workout: workout,
+                            isPresented: $isEditingStartEndDate
+                        )
                     }
                 }
             }
@@ -336,14 +294,6 @@ struct WorkoutEditorScreen: View {
         Binding(get: { workout.name ?? "" }, set: { workout.name = $0 })
     }
 
-    private var workoutStart: Binding<Date> {
-        Binding(get: { workout.date ?? .now }, set: { workout.date = $0 })
-    }
-
-    private var workoutEnd: Binding<Date> {
-        Binding(get: { workout.endDate ?? .now }, set: { workout.endDate = $0 })
-    }
-
     private var workoutDurationString: String {
         guard let start = workout.date, let end = workout.endDate else { return "0:00" }
         let hours = Calendar.current.dateComponents([.hour], from: start, to: end).hour ?? 0
@@ -363,6 +313,91 @@ struct WorkoutEditorScreen: View {
             .sink { _ in
                 self.workout.objectWillChange.send()
             }
+    }
+}
+
+// MARK: - Start/End Date Editor Sheet
+
+/// Edits the workout's start and end dates.
+///
+/// The pickers write to local `@State` rather than directly to the Core Data
+/// `workout`. Writing through to `workout` on every scrub tick fires
+/// `NSManagedObjectContextObjectsDidChange`, which `WorkoutEditorScreen`
+/// rebroadcasts as a full-screen `objectWillChange`, re-rendering the sheet's
+/// presenter on every value change and making the sheet animate in and out.
+/// Holding the values locally and committing once on dismiss avoids that storm.
+private struct WorkoutStartEndDateEditorSheet: View {
+    let workout: Workout
+    @Binding var isPresented: Bool
+
+    @State private var start: Date
+    @State private var end: Date
+
+    init(workout: Workout, isPresented: Binding<Bool>) {
+        self.workout = workout
+        self._isPresented = isPresented
+        self._start = State(initialValue: workout.date ?? .now)
+        self._end = State(initialValue: workout.endDate ?? .now)
+    }
+
+    var body: some View {
+        VStack(spacing: 30) {
+            HStack {
+                Text(NSLocalizedString("editTime", comment: ""))
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer()
+                Button {
+                    isPresented = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.body.weight(.bold))
+                        .foregroundColor(Color.secondaryLabel)
+                        .padding(8)
+                        .background(Color.fill)
+                        .clipShape(Circle())
+                }
+            }
+            VStack(spacing: 15) {
+                DatePicker(
+                    NSLocalizedString("start", comment: ""),
+                    selection: $start,
+                    in: ...end,
+                    displayedComponents: [.date, .hourAndMinute]
+                )
+
+                DatePicker(
+                    NSLocalizedString("end", comment: ""),
+                    selection: $end,
+                    in: start...,
+                    displayedComponents: [.date, .hourAndMinute]
+                )
+                Divider()
+                HStack {
+                    Label(NSLocalizedString("duration", comment: ""), systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                    Spacer()
+                    Text(durationString)
+                        .padding(.trailing)
+                }
+                .fontWeight(.medium)
+                .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .padding()
+        .presentationDetents([.fraction(0.35)])
+        .onDisappear {
+            if workout.date != start { workout.date = start }
+            if workout.endDate != end { workout.endDate = end }
+        }
+    }
+
+    private var durationString: String {
+        let hours = Calendar.current.dateComponents([.hour], from: start, to: end).hour ?? 0
+        let minutes =
+            (Calendar.current.dateComponents([.minute], from: start, to: end).minute ?? 0) % 60
+        return "\(hours):\(minutes < 10 ? "0" : "")\(minutes)"
     }
 }
 

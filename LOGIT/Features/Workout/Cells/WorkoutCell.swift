@@ -14,10 +14,15 @@ struct WorkoutCell: View {
     // MARK: - Environment
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
+    @EnvironmentObject private var database: Database
 
     // MARK: - Variables
 
     @ObservedObject var workout: Workout
+
+    // MARK: - State
+
+    @State private var personalRecordCount: Int = 0
 
     // MARK: - Body
 
@@ -32,6 +37,9 @@ struct WorkoutCell: View {
         .padding(CELL_PADDING)
         .background(backgroundGradient)
         .clipShape(RoundedRectangle(cornerRadius: 30))
+        .onAppear {
+            personalRecordCount = WorkoutProgressReport.compute(for: workout, database: database).prRecords.count
+        }
     }
     
     // MARK: - View Components
@@ -57,6 +65,10 @@ struct WorkoutCell: View {
             if let durationString = workoutDurationString {
                 Text("·")
                 Text(durationString)
+            }
+            if let personalRecordsString {
+                Text("·")
+                Text(personalRecordsString)
             }
         }
         .font(.caption)
@@ -135,6 +147,16 @@ struct WorkoutCell: View {
             let minutes = totalMinutes % 60
             return minutes == 0 ? "\(hours)h" : "\(hours)h \(minutes)m"
         }
+    }
+
+    /// "n PR(s)" for the personal records set in this workout, or nil when there are none. Uses the
+    /// same `WorkoutProgressReport` detection as the detail screen, so the two counts always agree.
+    private var personalRecordsString: String? {
+        guard personalRecordCount > 0 else { return nil }
+        let format = personalRecordCount == 1
+            ? NSLocalizedString("personalRecordShortCount", comment: "")
+            : NSLocalizedString("personalRecordsShortCount", comment: "")
+        return String(format: format, personalRecordCount)
     }
 
     private var exercisesSummary: String {

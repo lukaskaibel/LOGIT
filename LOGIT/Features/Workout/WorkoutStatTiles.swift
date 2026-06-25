@@ -272,9 +272,9 @@ struct WorkoutRunHistory {
 /// The mini bar chart under a stat tile's value: this workout against its previous runs, one bar
 /// per run in a fixed five-slot frame (bars keep the same width however little history there is,
 /// and the newest run is always rightmost). Only the current workout's bar is drawn in
-/// `currentStyle` — the label color, matching the tile's value — every previous run stays quiet
-/// gray, whichever comparison basis is behind it (the label's info button spells the basis out).
-/// Short, wide, softly-rounded bars.
+/// `currentStyle` — the tile's accent — every previous run stays quiet gray, whichever comparison
+/// basis is behind it (the label's info button spells the basis out). Short, wide, softly-rounded
+/// bars.
 struct WorkoutRunsBarChart: View {
     struct Bar: Identifiable {
         let slot: Int
@@ -308,8 +308,6 @@ struct WorkoutRunsBarChart: View {
         .chartYScale(domain: 0 ... max(maxValue, 1))
         .chartXAxis {}
         .chartYAxis {}
-        .frame(maxWidth: .infinity)
-        .frame(height: 44)
         .overlay {
             if maxValue <= 0 {
                 Text(NSLocalizedString("noData", comment: ""))
@@ -322,28 +320,27 @@ struct WorkoutRunsBarChart: View {
 
 // MARK: - Stat Tile
 
-/// One compact session stat on the workout detail — the exercise metric tiles' skeleton with the
-/// workout vocabulary: "This Workout" over a label-colored value with a muted unit, the trend pill
-/// — wearing the workout's muscle-group gradient on a gain — against the run history top-right, and
-/// the run bars beneath, this workout's bar drawn in the label color to match its value. The
-/// duration tile's pill stays neutral gray in both directions — a longer workout is neither better
-/// nor worse.
+/// One compact session stat on the workout detail — the shared metric tile with the workout
+/// vocabulary: "This Workout" over a neutral value, the trend pill wearing the workout's
+/// muscle-group gradient on a gain, and the run bars in the corner with this workout's bar in that
+/// same accent. The duration tile stays neutral gray in both directions — a longer workout is
+/// neither better nor worse.
 struct WorkoutStatTile: View {
     let metric: WorkoutStatMetric
     let workout: Workout
     let history: WorkoutRunHistory
-    let pillColor: Color
-    /// Gradient for the trend pill's positive tint; nil (the duration tile) keeps it neutral gray.
-    let pillStyle: AnyShapeStyle?
-    let valueStyle: AnyShapeStyle
-    let currentBarStyle: AnyShapeStyle
+    /// Tints the trend pill and the current workout's bar — the workout's muscle-group gradient, or
+    /// neutral gray on the duration tile.
+    let accent: AnyShapeStyle
+    /// The flat-color form of `accent`, for the pill's non-gradient fallback and the ghost dot.
+    let accentColor: Color
 
     var body: some View {
         let raw = metric.rawValue(of: workout)
         let explanationKey = history.basis == .sameWorkout
             ? "workoutStatCompareSameInfo"
             : "workoutStatCompareRecentInfo"
-        ExerciseMetricTileLayout(
+        MetricTile(
             title: metric.title,
             label: .info(
                 NSLocalizedString("thisWorkout", comment: ""),
@@ -351,15 +348,13 @@ struct WorkoutStatTile: View {
             ),
             value: raw > 0 ? metric.formattedValue(fromRaw: raw) : nil,
             unit: metric.unit,
-            color: pillColor,
+            accent: accent,
+            accentColor: accentColor,
             percentChange: history.percentChange(for: metric),
             isRecord: false,
-            requiresPro: metric.requiresPro,
-            valueStyle: valueStyle,
-            unitColor: .secondaryLabel,
-            trendStyle: pillStyle
+            requiresPro: metric.requiresPro
         ) {
-            WorkoutRunsBarChart(bars: runBars, currentStyle: currentBarStyle)
+            WorkoutRunsBarChart(bars: runBars, currentStyle: accent)
         }
     }
 
@@ -423,17 +418,16 @@ struct WorkoutStatTileGrid: View {
     }
 
     private func tile(_ metric: WorkoutStatMetric, history: WorkoutRunHistory) -> some View {
-        Button {
+        let isDuration = metric == .duration
+        return Button {
             onOpenDetail(metric)
         } label: {
             WorkoutStatTile(
                 metric: metric,
                 workout: workout,
                 history: history,
-                pillColor: metric == .duration ? .secondary : dominantMuscleGroupColor,
-                pillStyle: metric == .duration ? nil : workout.muscleGroups.gradientStyle(),
-                valueStyle: AnyShapeStyle(Color.label),
-                currentBarStyle: AnyShapeStyle(Color.label)
+                accent: isDuration ? AnyShapeStyle(Color.secondary) : workout.muscleGroups.gradientStyle(),
+                accentColor: isDuration ? .secondary : dominantMuscleGroupColor
             )
         }
         .buttonStyle(TileButtonStyle())

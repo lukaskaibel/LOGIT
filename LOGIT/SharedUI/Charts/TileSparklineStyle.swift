@@ -44,9 +44,16 @@ enum TileSparklineStyle {
     /// Fraction of the width over which the leading edge fades in.
     static let leadingFadeLocation: CGFloat = 0.12
 
-    /// The translucent fill under the line — fades from the tint down to clear.
-    static func areaGradient(_ color: Color) -> Gradient {
-        Gradient(colors: [color.opacity(0.3), color.opacity(0.1), color.opacity(0)])
+    /// The translucent fill under the line — a top-heavy tint. Swift Charts won't reliably fade an
+    /// `AreaMark` to clear at the baseline on its own (the fill gradient maps to a range far taller
+    /// than the area, so its bottom never reaches transparent), so the real fade to transparent is the
+    /// vertical pass in `tileSparklineFadeMask()`; this just supplies the colour.
+    static func areaGradient(_ color: Color) -> LinearGradient {
+        LinearGradient(
+            colors: [color.opacity(0.38), color.opacity(0.18)],
+            startPoint: .top,
+            endPoint: .bottom
+        )
     }
 
     /// A daily-best dot: a filled circle in the tint with a punched-out black center so it reads as
@@ -67,17 +74,16 @@ enum TileSparklineStyle {
 // MARK: - Marks
 
 /// The shared marks of a tile sparkline: a leading segment pinned to the far past so the line enters
-/// from the left edge, the tinted line with daily-best dots, the area fill beneath, the dashed
-/// carry-forward from the last point to `carryForwardEnd`, and — for the all-time window — a single
-/// emphasized record dot. Wrap this in a `Chart { … }` and add the chart's own scales/frame/fade.
+/// from the left edge, the tinted line with daily-best dots, the area fill beneath, and the dashed
+/// carry-forward from the last point to `carryForwardEnd`. Wrap this in a `Chart { … }` and add the
+/// chart's own scales/frame/fade.
 ///
 /// - Parameters:
-///   - showsSymbols: per-point dots; off for the dense all-time window where the crest dot stands in.
+///   - showsSymbols: per-point dots; off for the all-time line, which draws one clean dotless curve.
 ///   - showsCarryForward: the dashed flat line from the last point to `carryForwardEnd` when the
 ///     last point predates that anchor (an exercise untrained since, or the recorder's live anchor).
 ///   - carryForwardEnd: where the carry-forward reaches — today (`.now`) for finished history, or the
 ///     workout being recorded for the in-workout cell.
-///   - recordPoint: the all-time crest, drawn as a larger dot; nil for the windowed sparklines.
 @ChartContentBuilder
 func tileSparklineMarks(
     points: [TileSparklinePoint],
@@ -85,8 +91,7 @@ func tileSparklineMarks(
     interpolation: InterpolationMethod = TileSparklineStyle.interpolation,
     showsSymbols: Bool = true,
     showsCarryForward: Bool = true,
-    carryForwardEnd: Date = .now,
-    recordPoint: TileSparklinePoint? = nil
+    carryForwardEnd: Date = .now
 ) -> some ChartContent {
     // Leading entry pinned to the far past so the line and area enter from the left edge instead of
     // starting mid-chart (the domain clips it).
@@ -116,20 +121,6 @@ func tileSparklineMarks(
             .interpolationMethod(interpolation)
             .foregroundStyle(TileSparklineStyle.areaGradient(color))
     }
-    if let recordPoint {
-        PointMark(x: .value("Date", recordPoint.date, unit: .day), y: .value("Value", recordPoint.value))
-            .foregroundStyle(color.gradient)
-            .symbol {
-                Circle()
-                    .frame(width: 9, height: 9)
-                    .foregroundStyle(color.gradient)
-                    .overlay {
-                        Circle()
-                            .frame(width: 3, height: 3)
-                            .foregroundStyle(Color.black)
-                    }
-            }
-    }
     if showsCarryForward, let last = points.last,
        last.date < carryForwardEnd,
        !Calendar.current.isDate(last.date, inSameDayAs: carryForwardEnd) {
@@ -152,8 +143,11 @@ func tileSparklineMarks(
 // MARK: - Fade Mask
 
 extension View {
-    /// Fades a tile sparkline in from its leading edge so the clipped line dissolves into the tile
-    /// rather than starting on a hard vertical. Shared by every tile sparkline's frame treatment.
+    /// Fades a tile sparkline in from its leading edge (so the clipped line dissolves into the tile
+    /// rather than starting on a hard vertical) AND out toward the bottom (so the area fill melts into
+    /// the tile instead of ending on a hard horizontal edge at the baseline — Swift Charts can't fade
+    /// the `AreaMark` itself reliably). Two stacked masks compose to "visible where both are opaque".
+    /// Shared by every tile sparkline's frame treatment.
     func tileSparklineFadeMask() -> some View {
         mask(
             LinearGradient(
@@ -164,6 +158,19 @@ extension View {
                 ]),
                 startPoint: .leading,
                 endPoint: .trailing
+            )
+        )
+        .mask(
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    // Opaque through the line and the band just under it, then fade to clear at the
+                    // baseline so the fill blends into the tile.
+                    .init(color: .black, location: 0.0),
+                    .init(color: .black, location: 0.4),
+                    .init(color: .clear, location: 1.0),
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
             )
         )
     }

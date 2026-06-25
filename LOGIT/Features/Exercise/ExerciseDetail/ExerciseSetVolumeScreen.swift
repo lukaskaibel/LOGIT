@@ -25,7 +25,6 @@ struct ExerciseSetVolumeScreen: View {
         // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
         let bestVisibleSetVolume = bestSetVolumeInGranularity(workoutSets)
-        let visibleTrendPercentage = trendPercentage(in: workoutSets)
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -38,35 +37,24 @@ struct ExerciseSetVolumeScreen: View {
                     .pickerStyle(.segmented)
                     .padding(.vertical)
                     .padding(.horizontal)
-                    HStack {
-                        VStack(alignment: .leading) {
-                            if isShowingCurrentBestWindow {
-                                CurrentBestLabel(uppercased: true)
-                            } else {
-                                Text(NSLocalizedString("best", comment: ""))
-                                    .font(.footnote)
-                                    .fontWeight(.medium)
-                                    .textCase(.uppercase)
-                                    .foregroundStyle(.secondary)
-                            }
-                            UnitView(
-                                value: "\(bestVisibleSetVolume != nil ? formatWeightForDisplay(bestVisibleSetVolume!) : "––")",
-                                unit: WeightUnit.used.rawValue
-                            )
-                            .foregroundStyle(exerciseMuscleGroupColor.gradient)
-                            Text(chartHeaderTitle)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        if let visibleTrendPercentage {
-                            TrendIndicatorView(
-                                percentChange: visibleTrendPercentage,
-                                positiveColor: exerciseMuscleGroupColor
-                            )
-                            .animation(.snappy, value: visibleTrendPercentage)
-                        }
-                    }
+                    MetricComparisonView(
+                        leading: .init(
+                            label: NSLocalizedString("previousBest", comment: ""),
+                            value: bestVisibleSetVolume.map(formatWeightForDisplay) ?? "––",
+                            unit: WeightUnit.used.rawValue,
+                            caption: chartHeaderTitle
+                        ),
+                        trailing: .init(
+                            label: NSLocalizedString("currentBest", comment: ""),
+                            value: currentBestAnchor.map { formatWeightForDisplay($0.value) } ?? "––",
+                            unit: WeightUnit.used.rawValue,
+                            caption: currentBestAnchor?.date.map { $0.formatted(.dateTime.day().month()) }
+                        ),
+                        trailingValueStyle: AnyShapeStyle(exerciseMuscleGroupColor.gradient),
+                        percentChange: headerTrendPercentage(visibleBest: bestVisibleSetVolume),
+                        positiveColor: exerciseMuscleGroupColor,
+                        explanation: NSLocalizedString("currentBestComparisonInfo", comment: "")
+                    )
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                     Chart {
@@ -210,9 +198,6 @@ struct ExerciseSetVolumeScreen: View {
                     .padding(.trailing, 5)
                 }
 
-                // MARK: - Highlights Section
-                highlightsSection(allDailyMaxSets: allDailyMaxSets)
-
                 // MARK: - About Section
                 AboutSection(
                     metricTitle: NSLocalizedString("setVolume", comment: ""),
@@ -326,17 +311,16 @@ struct ExerciseSetVolumeScreen: View {
         )
     }
 
+    /// The header's left value and the comparison baseline: the best single-set volume in the visible
+    /// window *other than* the current best, falling back to the most recent day's best before the
+    /// window when it holds no other value (see `exerciseOtherBestBaseline`).
     private func bestSetVolumeInGranularity(_ workoutSets: [WorkoutSet]) -> Int? {
-        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
-        let setsInTimeFrame = workoutSets.filter { $0.workout?.date ?? .distantPast >= chartScrollPosition && $0.workout?.date ?? .distantFuture <= endDate }
-
-        guard !setsInTimeFrame.isEmpty else {
-            return workoutSets.first?.volume(for: exercise)
-        }
-
-        return setsInTimeFrame
-            .map { $0.volume(for: exercise) }
-            .max()
+        exerciseOtherBestBaseline(
+            sets: workoutSets,
+            windowStart: chartScrollPosition,
+            windowEnd: visibleEndDate,
+            currentBestDay: currentBestAnchor?.date
+        ) { $0.volume(for: exercise) }
     }
 
     /// Set volume has no practical upper bound, so unlike the weight and e1RM screens (which pick
@@ -349,34 +333,25 @@ struct ExerciseSetVolumeScreen: View {
         return Int((Double(maxYValue) / step).rounded(.up) * step)
     }
 
-    /// Percent change of the best set volume in the visible chart window versus a comparable window
-    /// before it — the window right before, or the last window with training when that's empty
-    /// (see `exerciseWindowTrendPercentage`). Nil only when there's no earlier history at all.
-    private func trendPercentage(in workoutSets: [WorkoutSet]) -> Double? {
-        exerciseWindowTrendPercentage(
-            sets: workoutSets,
-            windowStart: chartScrollPosition,
-            windowSeconds: visibleChartDomainInSeconds
-        ) { start, end in
-            workoutSets
-                .filter { ($0.workout?.date).map { $0 >= start && $0 <= end } ?? false }
-                .map { $0.volume(for: exercise) }
-                .max()
-                .map(Double.init)
-        }
+    /// The exercise's current best (highest single-set volume in the last four weeks) and the day it
+    /// was reached — the fixed right-hand anchor of the header scoreboard, independent of scroll.
+    private var currentBestAnchor: (value: Int, date: Date?)? {
+        guard let best = exercise.currentBestSetVolumeSet(in: workoutSets) else { return nil }
+        return (best.volume(for: exercise), best.workout?.date)
+    }
+
+    /// The header pill: the current best measured against the best in the shown window. Nil when
+    /// either side is empty, so the pill drops out only when there is genuinely nothing to compare.
+    private func headerTrendPercentage(visibleBest: Int?) -> Double? {
+        guard let current = currentBestAnchor?.value, current > 0,
+              let visible = visibleBest, visible > 0 else { return nil }
+        return (Double(current) - Double(visible)) / Double(visible) * 100
     }
 
     // MARK: - Selection helpers
 
     private var visibleEndDate: Date {
         Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
-    }
-
-    /// True while the month view sits at its newest scroll position (the default), where the
-    /// visible window's best IS the exercise's current best — the header label says so then, with
-    /// the info popover explaining the term.
-    private var isShowingCurrentBestWindow: Bool {
-        chartGranularity == .month && visibleEndDate >= .now
     }
 
     private func nearestSet(to date: Date?, in sets: [WorkoutSet]) -> WorkoutSet? {
@@ -394,59 +369,6 @@ struct ExerciseSetVolumeScreen: View {
         }
     }
 
-    // MARK: - Highlights
-
-    @ViewBuilder
-    private func highlightsSection(allDailyMaxSets: [WorkoutSet]) -> some View {
-        let ranges = periodRanges()
-        let currentMax = maxSetVolume(in: ranges.current, sets: allDailyMaxSets)
-        let previousMax = maxSetVolume(in: ranges.previous, sets: allDailyMaxSets)
-        let headlineKey = setVolumeHeadlineKey(isHigher: currentMax >= previousMax)
-        let unit = WeightUnit.used.rawValue
-
-        HighlightView(
-            headline: NSLocalizedString(headlineKey, comment: ""),
-            currentValue: currentMax > 0 ? formatWeightForDisplay(currentMax) : "––",
-            previousValue: previousMax > 0 ? formatWeightForDisplay(previousMax) : "––",
-            unit: unit,
-            currentNumericValue: Double(convertWeightForDisplaying(currentMax)),
-            previousNumericValue: Double(convertWeightForDisplaying(previousMax)),
-            granularity: chartGranularity == .month ? .month : .year,
-            accentColor: exerciseMuscleGroupColor
-        )
-        .padding(.horizontal)
-    }
-
-    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
-        switch chartGranularity {
-        case .month:
-            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
-            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
-            let previous = (lastStart, lastStart.endOfMonth)
-            return (current, previous)
-        case .year:
-            let current = (Date.now.startOfYear, Date.now.endOfYear)
-            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
-            let previous = (lastStart, lastStart.endOfYear)
-            return (current, previous)
-        }
-    }
-
-    private func maxSetVolume(in range: (start: Date, end: Date), sets: [WorkoutSet]) -> Int {
-        let s = range.start, e = range.end
-        let setsInRange = sets.filter {
-            guard let d = $0.workout?.date else { return false }
-            return d >= s && d <= e
-        }
-        return setsInRange.map { $0.volume(for: exercise) }.max() ?? 0
-    }
-
-    private func setVolumeHeadlineKey(isHigher: Bool) -> String {
-        switch chartGranularity {
-        case .month: return isHigher ? "higherMaxSetVolumeThisMonthThanLastMonth" : "lowerMaxSetVolumeThisMonthThanLastMonth"
-        case .year: return isHigher ? "higherMaxSetVolumeThisYearThanLastYear" : "lowerMaxSetVolumeThisYearThanLastYear"
-        }
-    }
 }
 
 private struct PreviewWrapperView: View {

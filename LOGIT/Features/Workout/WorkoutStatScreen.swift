@@ -170,10 +170,10 @@ struct WorkoutStatScreen: View {
                 unit: metric.unit,
                 caption: workout.date?.formatted(.dateTime.day().month())
             ),
-            trailingValueStyle: isDuration ? AnyShapeStyle(Color.label) : workout.muscleGroups.gradientStyle(),
+            trailingValueStyle: isDuration ? AnyShapeStyle(Color.label) : workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing),
             percentChange: percentChange,
             positiveColor: isDuration ? .secondary : dominantMuscleGroupColor,
-            positiveStyle: isDuration ? nil : workout.muscleGroups.gradientStyle()
+            positiveStyle: isDuration ? nil : workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
         )
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal)
@@ -415,7 +415,7 @@ struct WorkoutStatScreen: View {
     /// ("now showing this"); every other bar stays a quiet gray. `isCurrent` wins when the current
     /// bar is itself the tapped one — its gradient already stands out.
     private func barStyle(for point: StatPoint, snappedPoint: StatPoint?) -> AnyShapeStyle {
-        if point.isCurrent { return workout.muscleGroups.gradientStyle(startPoint: .bottom, endPoint: .top) }
+        if point.isCurrent { return workout.sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top) }
         if snappedPoint?.id == point.id { return AnyShapeStyle(Color.label) }
         return AnyShapeStyle(Color.fill)
     }

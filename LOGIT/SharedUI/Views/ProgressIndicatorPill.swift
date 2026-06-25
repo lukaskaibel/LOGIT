@@ -13,12 +13,15 @@ import SwiftUI
 /// weight, capsule fill and 0.15 tint stay identical everywhere.
 ///
 /// The accent is an `AnyShapeStyle`, so it can be a flat `Color` or a gradient — a single `Color`
-/// can't carry a multi-muscle workout's gradient (see `Sequence.gradientStyle()`). It tints the
+/// can't carry a multi-muscle workout's gradient (see `Sequence.muscleGroupGradientStyle()`). It tints the
 /// symbol, the label's default foreground and the capsule fill at 0.15 opacity. Pass
 /// `Color.secondary` for the muted "decline / no change / metadata" look.
 ///
 /// The label supplies its own fonts, so a one-line percent and the metric badge's two-line
-/// value+name both fit; a per-glyph `foregroundStyle` inside the label wins over the pill's tint.
+/// value+name both fit. A gradient (`style:`) accent fills the symbol and label as one continuous
+/// sweep (see `continuousForegroundStyle`) so the gradient doesn't restart inside each; a flat
+/// (`color:`) accent keeps a plain foreground, so a per-glyph `foregroundStyle` inside the label
+/// still wins over the pill's tint — the two-line badges rely on this.
 struct ProgressIndicatorPill<Label: View>: View {
     /// Padding and spacing presets. `.regular` is the trend / gain / "n improved" pill; `.prominent`
     /// is the in-workout metric badge (a touch wider for its two-line content); `.compact` is quieter
@@ -57,6 +60,10 @@ struct ProgressIndicatorPill<Label: View>: View {
     let style: AnyShapeStyle
     let size: Size
     let label: Label
+    /// Whether the symbol+label share one gradient sweep (the `style:` initializer) rather than each
+    /// resolving it on its own — see `continuousForegroundStyle`. Off for the flat-`color:` badges
+    /// whose two-line labels set their own per-line colors, which a single masked fill would flatten.
+    private let fillsContinuously: Bool
 
     init(
         symbol: String?,
@@ -68,6 +75,7 @@ struct ProgressIndicatorPill<Label: View>: View {
         self.style = style
         self.size = size
         self.label = label()
+        self.fillsContinuously = true
     }
 
     /// Convenience for a flat-color accent — the common case (a single muscle-group color).
@@ -77,26 +85,42 @@ struct ProgressIndicatorPill<Label: View>: View {
         size: Size = .regular,
         @ViewBuilder label: () -> Label
     ) {
-        self.init(symbol: symbol, style: AnyShapeStyle(color), size: size, label: label)
+        self.symbol = symbol
+        self.style = AnyShapeStyle(color)
+        self.size = size
+        self.label = label()
+        self.fillsContinuously = false
     }
 
     var body: some View {
-        HStack(spacing: size.spacing) {
+        tintedContent
+            .padding(.horizontal, size.horizontalPadding)
+            .padding(.vertical, size.verticalPadding)
+            .background(Capsule().fill(style.opacity(0.15)))
+        // The pill always takes its ideal width, so its label never compresses: a percent like
+        // "100 %" can't wrap to two lines or ellipsize. Being rigid, the pill also claims its space
+        // first in any HStack, so a neighbor (a tile title, an exercise name) truncates around it
+        // rather than squeezing it. Vertical stays flexible for the metric badge's two-line label.
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
+    /// Symbol + label, tinted by `style`. A gradient accent (the `style:` initializer) fills the
+    /// symbol and label as one continuous sweep so the gradient doesn't restart inside each; a flat
+    /// `color:` badge keeps a plain foreground so its label's own per-line colors survive.
+    @ViewBuilder
+    private var tintedContent: some View {
+        let content = HStack(spacing: size.spacing) {
             if let symbol {
                 Image(systemName: symbol)
                     .font(.caption2.weight(.bold))
             }
             label
         }
-        .foregroundStyle(style)
-        .padding(.horizontal, size.horizontalPadding)
-        .padding(.vertical, size.verticalPadding)
-        .background(Capsule().fill(style.opacity(0.15)))
-        // The pill always takes its ideal width, so its label never compresses: a percent like
-        // "100 %" can't wrap to two lines or ellipsize. Being rigid, the pill also claims its space
-        // first in any HStack, so a neighbor (a tile title, an exercise name) truncates around it
-        // rather than squeezing it. Vertical stays flexible for the metric badge's two-line label.
-        .fixedSize(horizontal: true, vertical: false)
+        if fillsContinuously {
+            content.continuousForegroundStyle(style)
+        } else {
+            content.foregroundStyle(style)
+        }
     }
 }
 

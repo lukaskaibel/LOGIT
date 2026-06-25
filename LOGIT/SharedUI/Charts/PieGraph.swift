@@ -84,7 +84,8 @@ struct PieGraph<CenterView: View>: View {
             Text(item.title)
                 .foregroundColor(.primary)
             UnitView(value: "\(percentage(for: item))", unit: "%")
-                .foregroundStyle((item.amount > 0 ? item.color : .placeholder).gradient)
+                // One continuous gradient across value + unit, not one restarting in each.
+                .continuousForegroundStyle((item.amount > 0 ? item.color : .placeholder).gradient)
         }
         .frame(minWidth: 80, alignment: .leading)
     }

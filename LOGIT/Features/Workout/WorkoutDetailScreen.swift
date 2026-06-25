@@ -243,7 +243,7 @@ struct WorkoutDetailScreen: View {
         let improved = report.improvedTrendCount
         // Muscle-group gradient once at least one exercise improved, muted gray otherwise.
         let style = improved > 0
-            ? workout.muscleGroups.gradientStyle()
+            ? workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
             : AnyShapeStyle(Color.secondary)
         return ProgressIndicatorPill(symbol: improved > 0 ? "chevron.up" : nil, style: style) {
             Text(String(format: NSLocalizedString("improvedCount", comment: ""), improved))

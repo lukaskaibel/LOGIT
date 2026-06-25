@@ -598,92 +598,147 @@ private struct MetricBadgeView: View {
 
     private var displayedIsRecord: Bool { comparison.isPersonalRecord(displayedMetric) }
 
+    init(setGroup: WorkoutSetGroup, workout: Workout, isEditing: Bool) {
+        _setGroup = ObservedObject(wrappedValue: setGroup)
+        _workout = ObservedObject(wrappedValue: workout)
+        self.isEditing = isEditing
+        // Resolve the committed metric up front so the very first render already evaluates the right
+        // metric: the idle/empty decision below shouldn't wait on `onAppear`, and it spares a
+        // first-frame roll up from the `.estimatedOneRepMax` default.
+        _primaryMetric = State(initialValue: setGroup.exercise?.primaryMetric ?? .defaultMetric)
+    }
+
     var body: some View {
         let accent = setGroup.exercise?.muscleGroup?.color ?? .accentColor
-        return pill(accent: accent)
-            .onGeometryChange(for: CGRect.self) { proxy in
-                proxy.frame(in: .global)
-            } action: { _, newValue in
-                badgeFrame = newValue
-            }
-            // Slightly more than the set cells' edge inset (CELL_PADDING / 2) — the capsule sits in
-            // the cell's rounded corner, which visually eats some of the gap.
-            .padding(.top, CELL_PADDING / 2 + 3)
-            .padding(.trailing, CELL_PADDING / 2 + 3)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                if let metricInfoRequest {
-                    if badgeFrame != .zero {
-                        metricInfoRequest(setGroup, badgeFrame)
+        let displayed = displayedMetric
+        let sessionBest = comparison.sessionBest(displayed)
+        // Before this session's first entry there's nothing to trend, so rather than a dead "0 %"
+        // the badge previews the bar this metric is scored against: the exercise's current best
+        // (`idleBest`). With no prior best either — a brand-new exercise — there's nothing to show,
+        // so the badge renders nothing (the info panel owns the "no data yet" state). The instant a
+        // value is entered `sessionBest` turns positive and the trend pill takes over, unchanged.
+        let idleBest = sessionBest == 0 ? comparison.currentBest(displayed) : nil
+        return Group {
+            if sessionBest > 0 || idleBest != nil {
+                pill(accent: accent, idleBest: idleBest)
+                    .onGeometryChange(for: CGRect.self) { proxy in
+                        proxy.frame(in: .global)
+                    } action: { _, newValue in
+                        badgeFrame = newValue
                     }
-                } else {
-                    isShowingInfo = true
-                }
-            }
-            .popover(isPresented: $isShowingInfo) {
-                MetricInfoPanel(setGroup: setGroup, onOpenDetail: { metric in
-                    detailMetric = metric
-                    isShowingInfo = false
-                    // Present after the popover's dismissal settles — competing presentations
-                    // from the same host cancel each other.
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                        detailExercise = setGroup.exercise
+                    // Slightly more than the set cells' edge inset (CELL_PADDING / 2) — the capsule sits in
+                    // the cell's rounded corner, which visually eats some of the gap.
+                    .padding(.top, CELL_PADDING / 2 + 3)
+                    .padding(.trailing, CELL_PADDING / 2 + 3)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        if let metricInfoRequest {
+                            if badgeFrame != .zero {
+                                metricInfoRequest(setGroup, badgeFrame)
+                            }
+                        } else {
+                            isShowingInfo = true
+                        }
                     }
-                })
-                .padding()
-                .frame(width: 320)
-                .presentationCompactAdaptation(.popover)
+                    .popover(isPresented: $isShowingInfo) {
+                        MetricInfoPanel(setGroup: setGroup, onOpenDetail: { metric in
+                            detailMetric = metric
+                            isShowingInfo = false
+                            // Present after the popover's dismissal settles — competing presentations
+                            // from the same host cancel each other.
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                                detailExercise = setGroup.exercise
+                            }
+                        })
+                        .padding()
+                        .frame(width: 320)
+                        .presentationCompactAdaptation(.popover)
+                    }
+                    .sheet(item: $detailExercise) { exercise in
+                        NavigationStack {
+                            ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, autoOpenMetric: detailMetric)
+                        }
+                        .presentationDragIndicator(.visible)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(accessibilityDescription))
+                    .accessibilityHint(Text(NSLocalizedString("tapForMetricInfo", comment: "")))
+                    .onAppear {
+                        primaryMetric = setGroup.exercise?.primaryMetric ?? .defaultMetric
+                        peek.seed(prSnapshot())
+                        peek.setEditing(isEditing)
+                    }
             }
-            .sheet(item: $detailExercise) { exercise in
-                NavigationStack {
-                    ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, autoOpenMetric: detailMetric)
-                }
-                .presentationDragIndicator(.visible)
+        }
+        .onChange(of: isEditing) { _, editing in
+            peek.setEditing(editing)
+        }
+        .onChange(of: prSignature) { _, _ in
+            peek.update(prs: prSnapshot(), primary: primaryMetric, order: ExercisePrimaryMetric.allCases)
+        }
+        .onChange(of: displayedIsRecord) { _, newValue in
+            // The chosen metric becoming a record celebrates here; peeked records fire their own
+            // haptic in the controller, so guard those out.
+            if newValue, peek.activeMetric == nil {
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(accessibilityDescription))
-            .accessibilityHint(Text(NSLocalizedString("tapForMetricInfo", comment: "")))
-            .onAppear {
-                primaryMetric = setGroup.exercise?.primaryMetric ?? .defaultMetric
-                peek.seed(prSnapshot())
-                peek.setEditing(isEditing)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+            // The committed metric is persisted per-exercise in UserDefaults, and the badge never
+            // changes it itself — the info panel's picker (presented separately in the recorder)
+            // and the exercise editor write it. Re-sync to it, cancelling any running peek so the
+            // user's explicit choice is what lands on screen.
+            let current = setGroup.exercise?.primaryMetric ?? .defaultMetric
+            guard current != primaryMetric else { return }
+            peek.cancelForManualCycle()
+            withAnimation(MetricPeekController.rollAnimation) {
+                primaryMetric = current
             }
-            .onChange(of: isEditing) { _, editing in
-                peek.setEditing(editing)
-            }
-            .onChange(of: prSignature) { _, _ in
-                peek.update(prs: prSnapshot(), primary: primaryMetric, order: ExercisePrimaryMetric.allCases)
-            }
-            .onChange(of: displayedIsRecord) { _, newValue in
-                // The chosen metric becoming a record celebrates here; peeked records fire their own
-                // haptic in the controller, so guard those out.
-                if newValue, peek.activeMetric == nil {
-                    UINotificationFeedbackGenerator().notificationOccurred(.success)
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
-                // The committed metric is persisted per-exercise in UserDefaults, and the badge never
-                // changes it itself — the info panel's picker (presented separately in the recorder)
-                // and the exercise editor write it. Re-sync to it, cancelling any running peek so the
-                // user's explicit choice is what lands on screen.
-                let current = setGroup.exercise?.primaryMetric ?? .defaultMetric
-                guard current != primaryMetric else { return }
-                peek.cancelForManualCycle()
-                withAnimation(MetricPeekController.rollAnimation) {
-                    primaryMetric = current
-                }
-            }
+        }
     }
 
     // MARK: - Pill rendering
+
+    /// Idle vs trend dispatch: before this session's first entry the badge shows the current best
+    /// to beat (`idleBest`); once a value is in, the trend pill takes over. The empty-empty case
+    /// (no entry, no prior best) is filtered out in `body`, so a non-nil `idleBest` here always has
+    /// a value to show.
+    @ViewBuilder
+    private func pill(accent: Color, idleBest: Int?) -> some View {
+        if let idleBest {
+            idlePill(best: idleBest)
+        } else {
+            trendPill(accent: accent)
+        }
+    }
+
+    /// The empty/idle state: the exercise's current best for the displayed metric — the bar the
+    /// trend pill scores against — in muted gray behind a `target`, deliberately not the record
+    /// `trophy.fill` (a target is the goal to clear, not a win already won). A tap still opens the
+    /// info panel and switching metric still rolls, exactly like the trend pill; the value reuses
+    /// the record state's `valueView` so the idle and record states read alike.
+    private func idlePill(best: Int) -> some View {
+        let metric = displayedMetric
+        return ProgressIndicatorPill(symbol: "target", color: .secondary, size: .prominent) {
+            VStack(alignment: .trailing, spacing: 1) {
+                valueView(for: metric, value: best)
+                    .foregroundStyle(.secondary)
+                Text(metric.shortTitle)
+                    .font(.system(size: 9, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .contentTransition(.numericText())
+        .animation(MetricPeekController.rollAnimation, value: metric)
+    }
 
     /// Mirrors `TrendIndicatorView` (the trend pill on the chart screens) — chevron weight, percent
     /// formatting, tint, capsule fill (translucent accent as soon as the trend is positive, never a
     /// border) — with the metric's name in fine print beneath the value. It can't embed that view
     /// directly because the record state swaps the trend row for a trophy and the record value
     /// inside the same capsule.
-    private func pill(accent: Color) -> some View {
+    private func trendPill(accent: Color) -> some View {
         let metric = displayedMetric
         let isRecord = displayedIsRecord
         let change = comparison.percentChange(metric) ?? 0
@@ -726,14 +781,19 @@ private struct MetricBadgeView: View {
     /// The session's record value, beside the trophy, while the displayed metric stands at a
     /// personal record — the record itself is the news; the percentage returns once it no longer is.
     private func recordValueView(for metric: ExercisePrimaryMetric) -> some View {
-        let best = comparison.sessionBest(metric)
+        valueView(for: metric, value: comparison.sessionBest(metric))
+    }
+
+    /// A metric's value with its unit, sized for the pill — shared by the record state (this
+    /// session's best, beside the trophy) and the idle state (the current best to beat, in gray).
+    private func valueView(for metric: ExercisePrimaryMetric, value: Int) -> some View {
         switch metric {
         case .estimatedOneRepMax:
-            return UnitView(value: formatEstimatedOneRepMax(best), unit: WeightUnit.used.rawValue, configuration: .extraSmall)
+            return UnitView(value: formatEstimatedOneRepMax(value), unit: WeightUnit.used.rawValue, configuration: .extraSmall)
         case .weight:
-            return UnitView(value: formatWeightForDisplay(best), unit: WeightUnit.used.rawValue, configuration: .extraSmall)
+            return UnitView(value: formatWeightForDisplay(value), unit: WeightUnit.used.rawValue, configuration: .extraSmall)
         case .repetitions:
-            return UnitView(value: "\(best)", unit: NSLocalizedString("reps", comment: ""), configuration: .extraSmall)
+            return UnitView(value: "\(value)", unit: NSLocalizedString("reps", comment: ""), configuration: .extraSmall)
         }
     }
 
@@ -762,9 +822,14 @@ private struct MetricBadgeView: View {
         Double(trendMagnitude(for: change)) / 100
     }
 
-    /// Spoken summary mirroring what's drawn: the metric, then the record or the trend.
+    /// Spoken summary mirroring what's drawn: the metric, then the current best (idle), the record,
+    /// or the trend.
     private var accessibilityDescription: String {
         let base = "\(NSLocalizedString("progressMetric", comment: "")), \(displayedMetric.title)"
+        // Idle (nothing logged yet): spoken as the current best to beat, matching the pill.
+        if comparison.sessionBest(displayedMetric) == 0, let best = comparison.currentBest(displayedMetric) {
+            return "\(base), \(NSLocalizedString("currentBest", comment: "")), \(accessibleValue(best, for: displayedMetric))"
+        }
         if displayedIsRecord {
             return "\(base), \(NSLocalizedString("personalRecord", comment: ""))"
         }
@@ -774,6 +839,19 @@ private struct MetricBadgeView: View {
         case .up: return "\(base), " + String(format: NSLocalizedString("trendUp", comment: ""), percentString)
         case .down: return "\(base), " + String(format: NSLocalizedString("trendDown", comment: ""), percentString)
         case .flat: return "\(base), " + NSLocalizedString("trendFlat", comment: "")
+        }
+    }
+
+    /// A metric value with its unit as plain text, for VoiceOver — the drawn `UnitView` uppercases
+    /// the unit, but spoken text keeps it natural.
+    private func accessibleValue(_ value: Int, for metric: ExercisePrimaryMetric) -> String {
+        switch metric {
+        case .estimatedOneRepMax:
+            return "\(formatEstimatedOneRepMax(value)) \(WeightUnit.used.rawValue)"
+        case .weight:
+            return "\(formatWeightForDisplay(value)) \(WeightUnit.used.rawValue)"
+        case .repetitions:
+            return "\(value) \(NSLocalizedString("reps", comment: ""))"
         }
     }
 

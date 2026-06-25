@@ -12,7 +12,7 @@ import SwiftUI
 
 struct WorkoutDetailScreen: View {
     enum SheetType: Int, Identifiable {
-        case newTemplateFromWorkout, workoutEditor
+        case workoutEditor
         var id: Int { rawValue }
     }
 
@@ -26,6 +26,7 @@ struct WorkoutDetailScreen: View {
 
     @State private var isShowingDeleteWorkoutAlert: Bool = false
     @State private var sheetType: SheetType? = nil
+    @State private var newTemplateFromWorkout: Template?
     @State private var selectedTemplate: Template?
     @State private var selectedStatMetric: WorkoutStatMetric?
     @State private var headerTextHeight: CGFloat = 64
@@ -126,7 +127,7 @@ struct WorkoutDetailScreen: View {
                         }
                     } else {
                         Button {
-                            sheetType = .newTemplateFromWorkout
+                            newTemplateFromWorkout = database.newTemplate(from: workout)
                         } label: {
                             Label(NSLocalizedString("saveAsTemplate", comment: ""), systemImage: "plus.square.on.square")
                         }
@@ -180,15 +181,15 @@ struct WorkoutDetailScreen: View {
         }
         .sheet(item: $sheetType) { type in
             switch type {
-            case .newTemplateFromWorkout:
-                TemplateEditorScreen(
-                    template: database.newTemplate(from: workout),
-                    isEditingExistingTemplate: false
-                )
-                .presentationBackground(Color.black)
             case .workoutEditor:
                 WorkoutEditorScreen(workout: workout, isAddingNewWorkout: false)
             }
+        }
+        .fullScreenCover(item: $newTemplateFromWorkout) { template in
+            TemplateEditorScreen(
+                template: template,
+                isEditingExistingTemplate: false
+            )
         }
         .navigationDestination(item: $selectedTemplate) { template in
             NavigationStack {

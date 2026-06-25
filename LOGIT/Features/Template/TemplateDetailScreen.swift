@@ -140,9 +140,8 @@ struct TemplateDetailScreen: View {
             actions: {},
             message: { Text(NSLocalizedString("templateExplanation", comment: "")) }
         )
-        .sheet(isPresented: $showingTemplateEditor) {
+        .fullScreenCover(isPresented: $showingTemplateEditor) {
             TemplateEditorScreen(template: template, isEditingExistingTemplate: true)
-                .presentationBackground(Color.black)
         }
     }
 

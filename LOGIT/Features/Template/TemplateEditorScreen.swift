@@ -43,6 +43,7 @@ struct TemplateEditorScreen: View {
     @State private var selectedRestDurationSet: TemplateSet?
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isRenamingTemplate = false
+    @State private var focusedIntegerFieldIndex: IntegerField.Index?
     @FocusState private var isFocusingRenameTemplateField: Bool
 
     // MARK: - Parameters
@@ -111,11 +112,12 @@ struct TemplateEditorScreen: View {
                                 VStack(spacing: 0) {
                                     TemplateSetGroupCell(
                                         setGroup: setGroup,
-                                        focusedIntegerFieldIndex: .constant(nil),
+                                        focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                                         sheetType: $sheetType,
                                         isReordering: .constant(false),
                                         supplementaryText: nil,
-                                        showDetailAsSheet: true
+                                        showDetailAsSheet: true,
+                                        onTapRestDuration: { selectedRestDurationSet = $0 }
                                     )
                                     .shadow(color: .black.opacity(0.5), radius: 5)
                                     .zIndex(1)
@@ -206,7 +208,8 @@ struct TemplateEditorScreen: View {
                 }
             }
             .interactiveDismissDisabled()
-            .presentationBackground(.thickMaterial)
+            .background(Color.black.ignoresSafeArea())
+            .presentationBackground(.black)
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarHidden(isRenamingTemplate)
             .onAppear {
@@ -261,10 +264,35 @@ struct TemplateEditorScreen: View {
                     ToolbarItemGroup(placement: .keyboard) {
                         HStack {
                             Spacer()
+                            if focusedIntegerFieldIndex != nil, let templateSet = selectedTemplateSet {
+                                Button {
+                                    // Dismiss the keyboard first, then present the rest sheet on the next
+                                    // runloop tick so the keyboard teardown and the sheet presentation
+                                    // don't race. The sheet itself is presented from within the
+                                    // exercise-selection sheet (see `selectedRestDurationSet`), so it
+                                    // stacks on top of it instead of colliding.
+                                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                    focusedIntegerFieldIndex = nil
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                        selectedRestDurationSet = templateSet
+                                    }
+                                } label: {
+                                    Image(systemName: "timer")
+                                        .keyboardToolbarButtonStyle()
+                                }
+                            }
                             Button {
-                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                if focusedIntegerFieldIndex == nil {
+                                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                } else {
+                                    focusedIntegerFieldIndex = nil
+                                }
                             } label: {
                                 Image(systemName: "keyboard.chevron.compact.down")
+                                    .keyboardToolbarButtonStyle()
+                            }
+                            if focusedIntegerFieldIndex != nil {
+                                Spacer()
                             }
                         }
                     }
@@ -278,6 +306,14 @@ struct TemplateEditorScreen: View {
 
     private var templateName: Binding<String> {
         Binding(get: { template.name ?? "" }, set: { template.name = $0 })
+    }
+
+    /// The template set whose rep/weight field currently holds focus, derived from the keyboard
+    /// field index — mirrors the recorder's `selectedWorkoutSet`. `IntegerField.Index.primary` is
+    /// the set's position in the flat `template.sets` list.
+    private var selectedTemplateSet: TemplateSet? {
+        guard let focusedIndex = focusedIntegerFieldIndex else { return nil }
+        return template.sets.value(at: focusedIndex.primary)
     }
 
     @ViewBuilder

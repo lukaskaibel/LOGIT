@@ -229,7 +229,7 @@ struct LOGIT: App {
                         }
                     }
                 }
-                .sheet(item: $importedTemplate) { template in
+                .fullScreenCover(item: $importedTemplate) { template in
                     TemplateEditorScreen(
                         template: template,
                         isEditingExistingTemplate: false,

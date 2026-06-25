@@ -54,12 +54,11 @@ struct CreateTemplateMenu: View {
             guard let template = newValue else { return }
             database.flagAsTemporary(template)
         }
-        .sheet(item: $newTemplate) { template in
+        .fullScreenCover(item: $newTemplate) { template in
             TemplateEditorScreen(
                 template: template,
                 isEditingExistingTemplate: false
             )
-            .presentationBackground(Color.black)
         }
         .sheet(isPresented: $isShowingUpgradeToProScreen) {
             UpgradeToProScreen()

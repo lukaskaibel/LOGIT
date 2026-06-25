@@ -23,6 +23,7 @@ struct TemplateSetGroupCell: View {
 
     let supplementaryText: String?
     var showDetailAsSheet: Bool = false
+    var onTapRestDuration: ((TemplateSet) -> Void)? = nil
 
     // MARK: - State
 
@@ -43,21 +44,28 @@ struct TemplateSetGroupCell: View {
                             canReorder: false,
                             isReordering: .constant(false)
                         ) { templateSet in
-                            TemplateSetCell(
-                                templateSet: templateSet,
-                                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                                onEditRestDuration: nil
-                            )
-                            .contentShape(Rectangle())
-                            .background(
-                                RoundedRectangle(cornerRadius: 15)
-                                    .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
-                                    .foregroundStyle(Color.tertiaryBackground)
-                            )
-                            .cornerRadius(15)
-                            .onDeleteView(disabled: !canEdit) {
-                                withAnimation(.interactiveSpring()) {
-                                    database.delete(templateSet)
+                            VStack(spacing: CELL_SPACING) {
+                                TemplateSetCell(
+                                    templateSet: templateSet,
+                                    focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                                    onEditRestDuration: onTapRestDuration.map { callback in
+                                        { callback(templateSet) }
+                                    }
+                                )
+                                .contentShape(Rectangle())
+                                .background(
+                                    RoundedRectangle(cornerRadius: 15)
+                                        .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                                        .foregroundStyle(Color.tertiaryBackground)
+                                )
+                                .cornerRadius(15)
+                                .onDeleteView(disabled: !canEdit) {
+                                    withAnimation(.interactiveSpring()) {
+                                        database.delete(templateSet)
+                                    }
+                                }
+                                if !isLastSet(templateSet), templateSet.restDurationSeconds > 0 {
+                                    restLabel(for: templateSet)
                                 }
                             }
                         }
@@ -66,6 +74,19 @@ struct TemplateSetGroupCell: View {
                     .animation(.interactiveSpring(), value: setGroup.sets)
                     if canEdit {
                         HStack(spacing: 8) {
+                            Button {
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                                withAnimation(.interactiveSpring()) {
+                                    database.duplicateLastSet(from: setGroup)
+                                }
+                            } label: {
+                                Image(systemName: "plus.square.on.square")
+                                    .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                                    .font(.system(.body, design: .rounded, weight: .bold))
+                                    .padding(15)
+                                    .background(Color.accentColor.secondaryTranslucentBackground)
+                                    .clipShape(Capsule())
+                            }
                             Button {
                                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                 withAnimation(.interactiveSpring()) {
@@ -83,19 +104,7 @@ struct TemplateSetGroupCell: View {
                                 .background(Color.accentColor.secondaryTranslucentBackground)
                                 .clipShape(Capsule())
                             }
-                            Button {
-                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                                withAnimation(.interactiveSpring()) {
-                                    database.duplicateLastSet(from: setGroup)
-                                }
-                            } label: {
-                                Image(systemName: "plus.square.on.square")
-                                    .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
-                                    .font(.system(.body, design: .rounded, weight: .bold))
-                                    .padding(15)
-                                    .background(Color.accentColor.secondaryTranslucentBackground)
-                                    .clipShape(Capsule())
-                            }
+                            menu
                         }
                         .padding(.horizontal, CELL_PADDING)
                     }
@@ -155,10 +164,43 @@ struct TemplateSetGroupCell: View {
         }
     .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
     .padding(.bottom, canEdit || isReordering ? CELL_PADDING : CELL_PADDING / 2)
-    .tileStyle()
+    .background(
+        RoundedRectangle(cornerRadius: 30)
+            .fill(.shadow(.inner(color: .white.opacity(0.04), radius: 3)))
+            .foregroundStyle(Color.secondaryBackground)
+    )
+    .cornerRadius(30)
     }
 
     // MARK: - Supporting Views
+
+    /// A static, tappable rest indicator shown between two sets (mirrors the recorder's
+    /// `RestTimerBetweenSetsView`, but without the live chronograph since templates don't run a timer).
+    private func restLabel(for templateSet: TemplateSet) -> some View {
+        let label = RestDurationLabel(
+            seconds: templateSet.restDurationSeconds,
+            foregroundColor: .secondary,
+            iconName: "timer",
+            textFont: .caption.weight(.semibold),
+            iconFont: .caption.weight(.semibold)
+        )
+        return Group {
+            if let onTapRestDuration {
+                Button {
+                    onTapRestDuration(templateSet)
+                } label: {
+                    label
+                }
+                .buttonStyle(.plain)
+            } else {
+                label
+            }
+        }
+    }
+
+    private func isLastSet(_ templateSet: TemplateSet) -> Bool {
+        setGroup.sets.last == templateSet
+    }
 
     private var header: some View {
         VStack(spacing: 8) {
@@ -197,7 +239,6 @@ struct TemplateSetGroupCell: View {
                     .font(.system(.footnote, design: .rounded, weight: .bold))
                 }
                 Spacer()
-                if canEdit && !isReordering { menu }
                 if isReordering {
                     Image(systemName: "line.3.horizontal")
                         .fontWeight(.regular)
@@ -285,12 +326,11 @@ struct TemplateSetGroupCell: View {
         } label: {
             Image(systemName: "ellipsis")
                 .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
-                .padding(.horizontal, 3)
-                .padding(.vertical, 10)
-                .background(
-                    Circle()
-                        .fill((setGroup.exercise?.muscleGroup?.color ?? .accentColor).secondaryTranslucentBackground)
-                )
+                .font(.system(.body, design: .rounded, weight: .bold))
+                .frame(width: 20, height: 20)
+                .padding(15)
+                .background(Color.accentColor.secondaryTranslucentBackground)
+                .clipShape(Circle())
         }
     }
 }

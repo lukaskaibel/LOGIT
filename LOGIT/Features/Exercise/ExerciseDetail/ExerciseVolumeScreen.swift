@@ -143,9 +143,6 @@ struct ExerciseVolumeScreen: View {
                 .padding(.trailing, 5)
                 }
                 
-                // MARK: - Highlights Section
-                highlightsSection
-
                 // MARK: - About Section
                 AboutSection(
                     metricTitle: NSLocalizedString("volume", comment: ""),
@@ -289,65 +286,6 @@ struct ExerciseVolumeScreen: View {
         }
     }
 
-    // MARK: - Highlights
-
-    @ViewBuilder
-    private var highlightsSection: some View {
-        let ranges = periodRanges()
-        let currentAvg = averageVolumePerWorkout(in: ranges.current)
-        let previousAvg = averageVolumePerWorkout(in: ranges.previous)
-        let headlineKey = exerciseVolumeHeadlineKey(isMore: currentAvg >= previousAvg)
-        let unit = "\(WeightUnit.used.rawValue)/\(NSLocalizedString("workout", comment: ""))"
-
-        HighlightView(
-            headline: NSLocalizedString(headlineKey, comment: ""),
-            currentValue: HighlightView.formatNumber(currentAvg),
-            previousValue: HighlightView.formatNumber(previousAvg),
-            unit: unit,
-            currentNumericValue: currentAvg,
-            previousNumericValue: previousAvg,
-            granularity: chartGranularity == .month ? .month : .year,
-            accentColor: exercise.muscleGroup?.color ?? .accentColor
-        )
-        .padding(.horizontal)
-    }
-
-    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
-        switch chartGranularity {
-        case .month:
-            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
-            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
-            let previous = (lastStart, lastStart.endOfMonth)
-            return (current, previous)
-        case .year:
-            let current = (Date.now.startOfYear, Date.now.endOfYear)
-            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
-            let previous = (lastStart, lastStart.endOfYear)
-            return (current, previous)
-        }
-    }
-
-    private func averageVolumePerWorkout(in range: (start: Date, end: Date)) -> Double {
-        let s = range.start, e = range.end
-        let setsInRange = workoutSets.filter {
-            guard let d = $0.workout?.date else { return false }
-            return d >= s && d <= e
-        }
-        let totalVolume = convertWeightForDisplayingDecimal(getVolume(of: setsInRange, for: exercise))
-        let workoutsInRange = Set(setsInRange.compactMap { $0.workout }).filter {
-            guard let d = $0.date else { return false }
-            return d >= s && d <= e
-        }
-        let workoutCount = max(workoutsInRange.count, 1)
-        return totalVolume / Double(workoutCount)
-    }
-
-    private func exerciseVolumeHeadlineKey(isMore: Bool) -> String {
-        switch chartGranularity {
-        case .month: return isMore ? "avgMoreExerciseVolumeThisMonthThanLastMonth" : "avgLessExerciseVolumeThisMonthThanLastMonth"
-        case .year: return isMore ? "avgMoreExerciseVolumeThisYearThanLastYear" : "avgLessExerciseVolumeThisYearThanLastYear"
-        }
-    }
 }
 
 private struct PreviewWrapperView: View {

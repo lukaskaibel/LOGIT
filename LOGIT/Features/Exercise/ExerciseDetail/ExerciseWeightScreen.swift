@@ -213,9 +213,6 @@ struct ExerciseWeightScreen: View {
                 .padding(.trailing, 5)
                 }
                 
-                // MARK: - Highlights Section
-                highlightsSection(allDailyMaxSets: allDailyMaxSets)
-
                 // MARK: - About Section
                 AboutSection(
                     metricTitle: NSLocalizedString("weight", comment: ""),
@@ -392,59 +389,6 @@ struct ExerciseWeightScreen: View {
         }
     }
 
-    // MARK: - Highlights
-
-    @ViewBuilder
-    private func highlightsSection(allDailyMaxSets: [WorkoutSet]) -> some View {
-        let ranges = periodRanges()
-        let currentMax = maxWeight(in: ranges.current, sets: allDailyMaxSets)
-        let previousMax = maxWeight(in: ranges.previous, sets: allDailyMaxSets)
-        let headlineKey = weightHeadlineKey(isHigher: currentMax >= previousMax)
-        let unit = WeightUnit.used.rawValue
-
-        HighlightView(
-            headline: NSLocalizedString(headlineKey, comment: ""),
-            currentValue: currentMax > 0 ? formatWeightForDisplay(currentMax) : "––",
-            previousValue: previousMax > 0 ? formatWeightForDisplay(previousMax) : "––",
-            unit: unit,
-            currentNumericValue: Double(convertWeightForDisplaying(currentMax)),
-            previousNumericValue: Double(convertWeightForDisplaying(previousMax)),
-            granularity: chartGranularity == .month ? .month : .year,
-            accentColor: exerciseMuscleGroupColor
-        )
-        .padding(.horizontal)
-    }
-
-    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
-        switch chartGranularity {
-        case .month:
-            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
-            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
-            let previous = (lastStart, lastStart.endOfMonth)
-            return (current, previous)
-        case .year:
-            let current = (Date.now.startOfYear, Date.now.endOfYear)
-            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
-            let previous = (lastStart, lastStart.endOfYear)
-            return (current, previous)
-        }
-    }
-
-    private func maxWeight(in range: (start: Date, end: Date), sets: [WorkoutSet]) -> Int {
-        let s = range.start, e = range.end
-        let setsInRange = sets.filter {
-            guard let d = $0.workout?.date else { return false }
-            return d >= s && d <= e
-        }
-        return setsInRange.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
-    }
-
-    private func weightHeadlineKey(isHigher: Bool) -> String {
-        switch chartGranularity {
-        case .month: return isHigher ? "higherMaxWeightThisMonthThanLastMonth" : "lowerMaxWeightThisMonthThanLastMonth"
-        case .year: return isHigher ? "higherMaxWeightThisYearThanLastYear" : "lowerMaxWeightThisYearThanLastYear"
-        }
-    }
 }
 
 private struct PreviewWrapperView: View {

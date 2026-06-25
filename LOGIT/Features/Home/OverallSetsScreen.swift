@@ -143,8 +143,6 @@ struct OverallSetsScreen: View {
                 }
                 .padding(.horizontal)
                 
-                // MARK: - Highlights Section
-                highlightsSection
             }
             .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
@@ -331,76 +329,6 @@ struct OverallSetsScreen: View {
         return sortedKeys.map { ($0, groupedDict[$0] ?? []) }
     }
 
-    // MARK: - Highlights (helpers kept intentionally minimal)
-
-    private var unitLabel: String { "\(NSLocalizedString("sets", comment: ""))/\(NSLocalizedString("workout", comment: ""))" }
-
-    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
-        switch chartGranularity {
-        case .week:
-            let current = (Date.now.startOfWeek, Date.now.endOfWeek)
-            let lastStart = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: .now.startOfWeek)!
-            let previous = (lastStart, lastStart.endOfWeek)
-            return (current, previous)
-        case .month:
-            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
-            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
-            let previous = (lastStart, lastStart.endOfMonth)
-            return (current, previous)
-        case .year:
-            let current = (Date.now.startOfYear, Date.now.endOfYear)
-            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
-            let previous = (lastStart, lastStart.endOfYear)
-            return (current, previous)
-        }
-    }
-
-    private func averagePerWorkout(in range: (start: Date, end: Date)) -> Double {
-        let s = range.start, e = range.end
-        let sets = workouts.flatMap { $0.sets }.reduce(into: 0) { acc, set in
-            if let d = set.workout?.date, d >= s && d <= e { acc += 1 }
-        }
-        let sessions = workouts.reduce(into: 0) { acc, w in
-            if let d = w.date, d >= s && d <= e { acc += 1 }
-        }
-        return Double(sets) / max(Double(sessions), 1)
-    }
-
-    private func headlineKey(isMore: Bool) -> String {
-        switch chartGranularity {
-        case .week: return isMore ? "avgMoreSetsPerWorkoutThisWeekThanLastWeek" : "avgFewerSetsPerWorkoutThisWeekThanLastWeek"
-        case .month: return isMore ? "avgMoreSetsPerWorkoutThisMonthThanLastMonth" : "avgFewerSetsPerWorkoutThisMonthThanLastMonth"
-        case .year: return isMore ? "avgMoreSetsPerWorkoutThisYearThanLastYear" : "avgFewerSetsPerWorkoutThisYearThanLastYear"
-        }
-    }
-
-    // MARK: - Highlights
-
-    @ViewBuilder
-    private var highlightsSection: some View {
-        let ranges = periodRanges()
-        let currentAvg = averagePerWorkout(in: ranges.current)
-        let previousAvg = averagePerWorkout(in: ranges.previous)
-        let headlineKey = headlineKey(isMore: currentAvg >= previousAvg)
-        let granularity: HighlightView.Granularity = {
-            switch chartGranularity {
-            case .week: return .week
-            case .month: return .month
-            case .year: return .year
-            }
-        }()
-
-        HighlightView(
-            headline: NSLocalizedString(headlineKey, comment: ""),
-            currentValue: HighlightView.formatNumber(currentAvg),
-            previousValue: HighlightView.formatNumber(previousAvg),
-            unit: unitLabel,
-            currentNumericValue: currentAvg,
-            previousNumericValue: previousAvg,
-            granularity: granularity
-        )
-        .padding(.horizontal)
-    }
 }
 
 // #Preview {

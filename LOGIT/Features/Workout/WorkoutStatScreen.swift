@@ -17,9 +17,9 @@ import SwiftUI
 /// frame (the reference — neutral, and it moves as you scroll) on one side, this workout's own value
 /// (the bold white constant) on the other, and a pill between them reading this workout against that
 /// average. Scroll the chart and the average + pill retarget while this workout stays the anchor —
-/// we're in its detail, after all. The muscle color lives on the accents: the current chart bar, the
-/// highlights' current bar, and the pill. Otherwise the exercise chart screens' anatomy (picker,
-/// header, scrollable chart with tap-to-inspect, highlights, about). One screen serves all four
+/// we're in its detail, after all. The muscle color lives on the accents: the current chart bar and
+/// the pill. Otherwise the exercise chart screens' anatomy (picker, header, scrollable chart with
+/// tap-to-inspect, about). One screen serves all four
 /// stats — `WorkoutStatMetric` supplies values, formatting, and texts.
 struct WorkoutStatScreen: View {
     private enum ChartGranularity {
@@ -94,8 +94,6 @@ struct WorkoutStatScreen: View {
                     header(visibleAverage: visibleAverage)
                     chart(points: points, snappedPoint: snappedPoint)
                 }
-
-                highlightsSection(workouts: workouts)
 
                 AboutSection(metricTitle: metric.title, text: metric.aboutText)
                     .padding(.horizontal)
@@ -364,32 +362,6 @@ struct WorkoutStatScreen: View {
             .map { metric.rawValue(of: $0) }
         guard !values.isEmpty else { return nil }
         return Double(values.reduce(0, +)) / Double(values.count)
-    }
-
-    // MARK: - Highlights
-
-    @ViewBuilder
-    private func highlightsSection(workouts: [Workout]) -> some View {
-        let granularity: HighlightView.Granularity = chartGranularity == .month ? .month : .year
-        let ranges = granularity.periodRanges()
-        let currentAverage = averageRaw(in: workouts, from: ranges.current.start, to: ranges.current.end) ?? 0
-        let previousAverage = averageRaw(in: workouts, from: ranges.previous.start, to: ranges.previous.end) ?? 0
-
-        HighlightView(
-            headline: metric.highlightHeadline(
-                isMore: currentAverage >= previousAverage,
-                isYearGranularity: chartGranularity == .year
-            ),
-            currentValue: currentAverage > 0 ? metric.highlightValue(rawAverage: currentAverage) : "––",
-            previousValue: previousAverage > 0 ? metric.highlightValue(rawAverage: previousAverage) : "––",
-            unit: metric.highlightUnit,
-            currentNumericValue: currentAverage,
-            previousNumericValue: previousAverage,
-            granularity: granularity,
-            accentColor: dominantMuscleGroupColor,
-            accentGradient: workout.muscleGroups.gradient()
-        )
-        .padding(.horizontal)
     }
 
     // MARK: - Chart Window

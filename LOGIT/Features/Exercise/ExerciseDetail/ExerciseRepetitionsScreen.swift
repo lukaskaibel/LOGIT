@@ -213,9 +213,6 @@ struct ExerciseRepetitionsScreen: View {
                 .padding(.trailing, 5)
                 }
                 
-                // MARK: - Highlights Section
-                highlightsSection(allDailyMaxRepsSets: allDailyMaxRepsSets)
-
                 // MARK: - About Section
                 AboutSection(
                     metricTitle: NSLocalizedString("repetitions", comment: ""),
@@ -398,59 +395,6 @@ struct ExerciseRepetitionsScreen: View {
         }
     }
 
-    // MARK: - Highlights
-
-    @ViewBuilder
-    private func highlightsSection(allDailyMaxRepsSets: [WorkoutSet]) -> some View {
-        let ranges = periodRanges()
-        let currentMax = maxReps(in: ranges.current, sets: allDailyMaxRepsSets)
-        let previousMax = maxReps(in: ranges.previous, sets: allDailyMaxRepsSets)
-        let headlineKey = repsHeadlineKey(isHigher: currentMax >= previousMax)
-        let unit = NSLocalizedString("rps", comment: "")
-
-        HighlightView(
-            headline: NSLocalizedString(headlineKey, comment: ""),
-            currentValue: currentMax > 0 ? String(currentMax) : "––",
-            previousValue: previousMax > 0 ? String(previousMax) : "––",
-            unit: unit,
-            currentNumericValue: Double(currentMax),
-            previousNumericValue: Double(previousMax),
-            granularity: chartGranularity == .month ? .month : .year,
-            accentColor: exerciseMuscleGroupColor
-        )
-        .padding(.horizontal)
-    }
-
-    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
-        switch chartGranularity {
-        case .month:
-            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
-            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
-            let previous = (lastStart, lastStart.endOfMonth)
-            return (current, previous)
-        case .year:
-            let current = (Date.now.startOfYear, Date.now.endOfYear)
-            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
-            let previous = (lastStart, lastStart.endOfYear)
-            return (current, previous)
-        }
-    }
-
-    private func maxReps(in range: (start: Date, end: Date), sets: [WorkoutSet]) -> Int {
-        let s = range.start, e = range.end
-        let setsInRange = sets.filter {
-            guard let d = $0.workout?.date else { return false }
-            return d >= s && d <= e
-        }
-        return setsInRange.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
-    }
-
-    private func repsHeadlineKey(isHigher: Bool) -> String {
-        switch chartGranularity {
-        case .month: return isHigher ? "higherMaxRepsThisMonthThanLastMonth" : "lowerMaxRepsThisMonthThanLastMonth"
-        case .year: return isHigher ? "higherMaxRepsThisYearThanLastYear" : "lowerMaxRepsThisYearThanLastYear"
-        }
-    }
 }
 
 private struct PreviewWrapperView: View {

@@ -10,7 +10,7 @@ import SwiftUI
 
 /// Sets-per-week over time for a single exercise — the detail screen behind the weekly Sets tile.
 /// Structurally the twin of `ExerciseVolumeScreen` (same scrollable weekly bar chart, month/year
-/// granularity, selection and highlights), but it counts working sets per week instead of summing
+/// granularity and selection), but it counts working sets per week instead of summing
 /// weight: how many sets you logged is the standard training-volume landmark, alongside tonnage.
 struct ExerciseSetsScreen: View {
     private enum ChartGranularity {
@@ -139,9 +139,6 @@ struct ExerciseSetsScreen: View {
                 .padding(.leading)
                 .padding(.trailing, 5)
                 }
-
-                // MARK: - Highlights Section
-                highlightsSection
 
                 // MARK: - About Section
                 AboutSection(
@@ -287,65 +284,6 @@ struct ExerciseSetsScreen: View {
         }
     }
 
-    // MARK: - Highlights
-
-    @ViewBuilder
-    private var highlightsSection: some View {
-        let ranges = periodRanges()
-        let currentAvg = averageSetsPerWorkout(in: ranges.current)
-        let previousAvg = averageSetsPerWorkout(in: ranges.previous)
-        let headlineKey = exerciseSetsHeadlineKey(isMore: currentAvg >= previousAvg)
-        let unit = "\(NSLocalizedString("sets", comment: ""))/\(NSLocalizedString("workout", comment: ""))"
-
-        HighlightView(
-            headline: NSLocalizedString(headlineKey, comment: ""),
-            currentValue: HighlightView.formatNumber(currentAvg),
-            previousValue: HighlightView.formatNumber(previousAvg),
-            unit: unit,
-            currentNumericValue: currentAvg,
-            previousNumericValue: previousAvg,
-            granularity: chartGranularity == .month ? .month : .year,
-            accentColor: exercise.muscleGroup?.color ?? .accentColor
-        )
-        .padding(.horizontal)
-    }
-
-    private func periodRanges() -> (current: (start: Date, end: Date), previous: (start: Date, end: Date)) {
-        switch chartGranularity {
-        case .month:
-            let current = (Date.now.startOfMonth, Date.now.endOfMonth)
-            let lastStart = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfMonth)!
-            let previous = (lastStart, lastStart.endOfMonth)
-            return (current, previous)
-        case .year:
-            let current = (Date.now.startOfYear, Date.now.endOfYear)
-            let lastStart = Calendar.current.date(byAdding: .year, value: -1, to: .now.startOfYear)!
-            let previous = (lastStart, lastStart.endOfYear)
-            return (current, previous)
-        }
-    }
-
-    private func averageSetsPerWorkout(in range: (start: Date, end: Date)) -> Double {
-        let s = range.start, e = range.end
-        let setsInRange = workoutSets.filter {
-            guard let d = $0.workout?.date else { return false }
-            return d >= s && d <= e
-        }
-        let totalSets = Double(setCount(for: setsInRange))
-        let workoutsInRange = Set(setsInRange.compactMap { $0.workout }).filter {
-            guard let d = $0.date else { return false }
-            return d >= s && d <= e
-        }
-        let workoutCount = max(workoutsInRange.count, 1)
-        return totalSets / Double(workoutCount)
-    }
-
-    private func exerciseSetsHeadlineKey(isMore: Bool) -> String {
-        switch chartGranularity {
-        case .month: return isMore ? "avgMoreExerciseSetsThisMonthThanLastMonth" : "avgLessExerciseSetsThisMonthThanLastMonth"
-        case .year: return isMore ? "avgMoreExerciseSetsThisYearThanLastYear" : "avgLessExerciseSetsThisYearThanLastYear"
-        }
-    }
 }
 
 private struct PreviewWrapperView: View {

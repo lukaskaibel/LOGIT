@@ -259,26 +259,46 @@ struct ExerciseDetailScreen: View {
     // MARK: - Supporting Views
 
     /// The metric tiles in the in-workout popover's compact language: the four "current best"
-    /// metrics as a two-column grid, with the weekly volume tile full-width beneath — its bars
-    /// need the room, and "this week" is a different kind of stat than the best-value tiles.
-    /// Collapses to one column at accessibility type sizes, where half-width tiles can't fit
-    /// their text.
+    /// metrics (weight, e1RM, repetitions, set volume) plus the two weekly-workload tiles (volume,
+    /// sets) as a two-column grid. Collapses to one column at accessibility type sizes, where
+    /// half-width tiles can't fit their text.
+    ///
+    /// A bodyweight / reps-only exercise (pull-ups, dips, …) — one that has recorded repetitions
+    /// but never any weight — drops to just the two weight-independent tiles, reps and sets. The
+    /// four weight-derived tiles (weight, e1RM, and both volume tiles) would only ever show "––" or
+    /// zero for such an exercise, so showing them is noise.
     @ViewBuilder
     private func metricTiles(workoutSets: [WorkoutSet]) -> some View {
         let spacing: CGFloat = 10
-        // No logged sets yet (a workout being recorded doesn't count — the tiles exclude it):
-        // one friendly placeholder instead of five identical "––" skeletons.
-        if !workoutSets.contains(where: { $0.workout?.isCurrentWorkout != true }) {
+        // The workout being recorded doesn't count — the tiles tell the standing going into this
+        // session, so they exclude it; the reps-only decision is made on the same basis.
+        let loggedSets = workoutSets.filter { $0.workout?.isCurrentWorkout != true }
+        // No logged sets yet: one friendly placeholder instead of six identical "––" skeletons.
+        if loggedSets.isEmpty {
             ExerciseMetricsEmptyTile(color: exercise.muscleGroup?.color ?? .accentColor)
         } else {
+            // Reps logged but never any weight → bodyweight exercise: keep only reps and sets.
+            let hasWeightEntry = loggedSets.contains { $0.maximum(.weight, for: exercise) > 0 }
+            let hasRepetitionEntry = loggedSets.contains { $0.maximum(.repetitions, for: exercise) > 0 }
+            let isRepsOnly = hasRepetitionEntry && !hasWeightEntry
             VStack(spacing: spacing) {
                 if dynamicTypeSize.isAccessibilitySize {
-                    weightTile(workoutSets: workoutSets)
-                    e1RMTile(workoutSets: workoutSets)
+                    // One column: accessibility text sizes can't fit half-width tiles.
+                    if !isRepsOnly {
+                        weightTile(workoutSets: workoutSets)
+                        e1RMTile(workoutSets: workoutSets)
+                    }
                     repetitionsTile(workoutSets: workoutSets)
-                    setVolumeTile(workoutSets: workoutSets)
-                    volumeTile(workoutSets: workoutSets)
+                    if !isRepsOnly {
+                        setVolumeTile(workoutSets: workoutSets)
+                        volumeTile(workoutSets: workoutSets)
+                    }
                     setsTile(workoutSets: workoutSets)
+                } else if isRepsOnly {
+                    HStack(alignment: .top, spacing: spacing) {
+                        repetitionsTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    }
                 } else {
                     HStack(alignment: .top, spacing: spacing) {
                         weightTile(workoutSets: workoutSets)

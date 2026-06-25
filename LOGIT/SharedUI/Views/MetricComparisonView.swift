@@ -69,7 +69,8 @@ struct MetricComparisonView: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
             UnitView(value: side.value, unit: side.unit, configuration: .large)
-                .foregroundStyle(valueStyle)
+                // One continuous gradient across value + unit, not one restarting in each.
+                .continuousForegroundStyle(valueStyle)
             if let caption = side.caption {
                 Text(caption)
                     .font(.caption)

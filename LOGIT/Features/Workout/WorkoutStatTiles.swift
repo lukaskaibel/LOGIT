@@ -323,15 +323,18 @@ struct WorkoutRunsBarChart: View {
 /// One compact session stat on the workout detail — the shared metric tile with the workout
 /// vocabulary: "This Workout" over a neutral value, the trend pill wearing the workout's
 /// muscle-group gradient on a gain, and the run bars in the corner with this workout's bar in that
-/// same accent. The duration tile stays neutral gray in both directions — a longer workout is
+/// same gradient. The duration tile stays neutral gray in both directions — a longer workout is
 /// neither better nor worse.
 struct WorkoutStatTile: View {
     let metric: WorkoutStatMetric
     let workout: Workout
     let history: WorkoutRunHistory
-    /// Tints the trend pill and the current workout's bar — the workout's muscle-group gradient, or
-    /// neutral gray on the duration tile.
+    /// Tints the trend pill — the workout's muscle-group gradient on a diagonal (text reads
+    /// diagonally), or neutral gray on the duration tile.
     let accent: AnyShapeStyle
+    /// Tints the current workout's run bar — the same muscle-group gradient as `accent` but running
+    /// vertically (bars read bottom-to-top), or neutral gray on the duration tile.
+    let barStyle: AnyShapeStyle
     /// The flat-color form of `accent`, for the pill's non-gradient fallback and the ghost dot.
     let accentColor: Color
 
@@ -354,7 +357,7 @@ struct WorkoutStatTile: View {
             isRecord: false,
             requiresPro: metric.requiresPro
         ) {
-            WorkoutRunsBarChart(bars: runBars, currentStyle: accent)
+            WorkoutRunsBarChart(bars: runBars, currentStyle: barStyle)
         }
     }
 
@@ -419,6 +422,7 @@ struct WorkoutStatTileGrid: View {
 
     private func tile(_ metric: WorkoutStatMetric, history: WorkoutRunHistory) -> some View {
         let isDuration = metric == .duration
+        let sets = workout.sets
         return Button {
             onOpenDetail(metric)
         } label: {
@@ -426,7 +430,8 @@ struct WorkoutStatTileGrid: View {
                 metric: metric,
                 workout: workout,
                 history: history,
-                accent: isDuration ? AnyShapeStyle(Color.secondary) : workout.muscleGroups.gradientStyle(),
+                accent: isDuration ? AnyShapeStyle(Color.secondary) : sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing),
+                barStyle: isDuration ? AnyShapeStyle(Color.secondary) : sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top),
                 accentColor: isDuration ? .secondary : dominantMuscleGroupColor
             )
         }

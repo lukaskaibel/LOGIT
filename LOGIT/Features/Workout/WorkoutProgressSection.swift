@@ -339,11 +339,11 @@ struct WorkoutPersonalRecordsScreen: View {
         VStack(spacing: 10) {
             ZStack {
                 Circle()
-                    .fill(workout.muscleGroups.gradient(startPoint: .bottomLeading, endPoint: .topTrailing).opacity(0.15))
+                    .fill(workout.sets.muscleGroupGradient(startPoint: .bottomLeading, endPoint: .topTrailing).opacity(0.15))
                     .frame(width: 64, height: 64)
                 Image(systemName: "trophy.fill")
                     .font(.system(size: 28))
-                    .muscleGroupGradientStyle(for: workout.muscleGroups)
+                    .foregroundStyle(workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing))
             }
             Text(personalRecordsHeadline(count: report.prRecords.count))
                 .font(.title2.weight(.bold))

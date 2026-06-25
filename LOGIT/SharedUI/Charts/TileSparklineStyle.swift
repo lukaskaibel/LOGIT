@@ -144,10 +144,9 @@ func tileSparklineMarks(
 
 extension View {
     /// Fades a tile sparkline in from its leading edge (so the clipped line dissolves into the tile
-    /// rather than starting on a hard vertical) AND out toward the bottom (so the area fill melts into
-    /// the tile instead of ending on a hard horizontal edge at the baseline — Swift Charts can't fade
-    /// the `AreaMark` itself reliably). Two stacked masks compose to "visible where both are opaque".
-    /// Shared by every tile sparkline's frame treatment.
+    /// rather than starting on a hard vertical) AND out toward the bottom. Two stacked masks compose
+    /// to "visible where both are opaque". Shared by the windowed tile sparklines' frame treatment;
+    /// the all-time line wants only the bottom half and applies `tileSparklineBottomFadeMask()` alone.
     func tileSparklineFadeMask() -> some View {
         mask(
             LinearGradient(
@@ -160,11 +159,18 @@ extension View {
                 endPoint: .trailing
             )
         )
-        .mask(
+        .tileSparklineBottomFadeMask()
+    }
+
+    /// Fades a tile sparkline out toward its BOTTOM edge so the area fill melts into the surface
+    /// instead of ending on a hard horizontal at the baseline (Swift Charts can't fade the `AreaMark`
+    /// itself reliably — left alone it gets clipped while still tinted). The line and the band just
+    /// under it stay opaque; only the lower fill dissolves. Used on its own by the all-time line,
+    /// which bleeds to the card's bottom border and wants this fade but not the leading one.
+    func tileSparklineBottomFadeMask() -> some View {
+        mask(
             LinearGradient(
                 gradient: Gradient(stops: [
-                    // Opaque through the line and the band just under it, then fade to clear at the
-                    // baseline so the fill blends into the tile.
                     .init(color: .black, location: 0.0),
                     .init(color: .black, location: 0.4),
                     .init(color: .clear, location: 1.0),

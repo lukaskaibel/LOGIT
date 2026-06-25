@@ -142,9 +142,8 @@ struct TemplateListScreen: View {
                     }
                 }
             }
-            .popover(isPresented: $showingTemplateCreation) {
+            .fullScreenCover(isPresented: $showingTemplateCreation) {
                 TemplateEditorScreen(template: database.newTemplate(), isEditingExistingTemplate: false)
-                    .presentationBackground(Color.black)
             }
             .navigationDestination(item: $selectedTemplate) { template in
                 TemplateDetailScreen(template: template)

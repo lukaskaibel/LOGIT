@@ -10,7 +10,12 @@ import SwiftUI
 struct RestDurationEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
 
-    @Binding private var restDurationSeconds: Int
+    /// Local source of truth so the displayed time re-renders immediately on every tap. The sheet
+    /// doesn't observe the underlying set, so a manual `Binding` into it persisted writes but never
+    /// invalidated this view — the number and preset highlight stayed stale. We mirror the value
+    /// here and write it back to the set via `applyRest` whenever it changes.
+    @State private var restDurationSeconds: Int
+    private let applyRest: (Int) -> Void
 
     private let exerciseName: String?
     private let themeColor: Color
@@ -19,19 +24,15 @@ struct RestDurationEditorSheet: View {
     private let quickAdjustments = [-15, -5, 5, 15]
 
     init(workoutSet: WorkoutSet) {
-        _restDurationSeconds = Binding(
-            get: { workoutSet.restDurationSeconds },
-            set: { workoutSet.restDurationSeconds = $0 }
-        )
+        _restDurationSeconds = State(initialValue: workoutSet.restDurationSeconds)
+        applyRest = { workoutSet.restDurationSeconds = $0 }
         exerciseName = workoutSet.exercise?.displayName
         themeColor = workoutSet.exercise?.muscleGroup?.color ?? .accentColor
     }
 
     init(templateSet: TemplateSet) {
-        _restDurationSeconds = Binding(
-            get: { templateSet.restDurationSeconds },
-            set: { templateSet.restDurationSeconds = $0 }
-        )
+        _restDurationSeconds = State(initialValue: templateSet.restDurationSeconds)
+        applyRest = { templateSet.restDurationSeconds = $0 }
         exerciseName = templateSet.exercise?.displayName
         themeColor = templateSet.exercise?.muscleGroup?.color ?? .accentColor
     }
@@ -105,6 +106,12 @@ struct RestDurationEditorSheet: View {
                     Button {
                         UISelectionFeedbackGenerator().selectionChanged()
                         restDurationSeconds = seconds
+                        // Picking a preset is a complete choice — dismiss so the user doesn't
+                        // also have to tap Done. The brief delay lets the selection highlight and
+                        // the value update register before the sheet closes.
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            dismiss()
+                        }
                     } label: {
                         Text(restTimeString(seconds: seconds))
                             .font(.body.weight(.semibold).monospacedDigit())
@@ -127,8 +134,14 @@ struct RestDurationEditorSheet: View {
             }
 
             Button {
+                UISelectionFeedbackGenerator().selectionChanged()
                 withAnimation(.easeOut(duration: 0.2)) {
                     restDurationSeconds = 0
+                }
+                // Removing the rest is also a complete choice — dismiss once the value has
+                // animated to zero, matching the preset buttons.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    dismiss()
                 }
             } label: {
                 Label(NSLocalizedString("remove", comment: ""), systemImage: "xmark.circle.fill")
@@ -142,6 +155,9 @@ struct RestDurationEditorSheet: View {
             .buttonStyle(.plain)
         }
         .padding()
+        .onChange(of: restDurationSeconds) { _, newValue in
+            applyRest(newValue)
+        }
     }
 
     private func adjustRestDuration(by adjustment: Int) {

@@ -223,13 +223,12 @@ struct WorkoutPersonalBestsTile: View {
         let shown = Array(tileRecords.prefix(maxShown))
         let remaining = report.prRecords.count - shown.count
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
-                Text(NSLocalizedString("personalRecords", comment: ""))
-                    .tileHeaderStyle()
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.tertiaryLabel)
+            TileHeader(NSLocalizedString("personalRecords", comment: "")) {
+                if remaining > 0 {
+                    Text(String(format: NSLocalizedString("personalRecordsMoreCount", comment: ""), remaining))
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
             VStack(spacing: 8) {
                 ForEach(shown) { record in
@@ -237,23 +236,17 @@ struct WorkoutPersonalBestsTile: View {
                 }
             }
             .padding(.top, 8)
-            if remaining > 0 {
-                Text(String(format: NSLocalizedString("personalRecordsMoreCount", comment: ""), remaining))
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 12)
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// One record on its own secondary tile: a muscle-tinted trophy badge leads the exercise and
-    /// metric, with the new best in its muscle-group gradient on the right and the gain over the value
-    /// it beat in a matching pill beneath it. The tile stays neutral (`tertiaryBackground`, a step up
-    /// from the records tile around it) so the muscle colour reads from the badge, value and pill.
+    /// metric, with the new best in its muscle-group gradient on the right. The tile stays neutral
+    /// (`tertiaryBackground`, recessed with the same inset shadow as the set cells) so the muscle
+    /// colour reads from the badge and value; the gain over the value it beat lives on the records
+    /// screen behind the tile rather than crowding the glance here.
     private func row(for record: WorkoutProgressReport.PRRecord) -> some View {
         let color = record.exercise.muscleGroup?.color ?? .accentColor
-        let gain = record.value - record.previousBest
         return HStack(spacing: 12) {
             ZStack {
                 Circle()
@@ -273,25 +266,13 @@ struct WorkoutPersonalBestsTile: View {
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 5) {
-                personalRecordValueView(for: record, configuration: .normal)
-                    .foregroundStyle(color.gradient)
-                if gain > 0 {
-                    let display = personalRecordDisplay(gain, metric: record.metric)
-                    ProgressIndicatorPill(
-                        symbol: "chevron.up",
-                        style: AnyShapeStyle(color.gradient),
-                        size: .compact
-                    ) {
-                        UnitView(value: display.value, unit: display.unit, configuration: .extraSmall)
-                    }
-                }
-            }
+            personalRecordValueView(for: record, configuration: .normal)
+                .foregroundStyle(color.gradient)
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .secondaryTileStyle()
+        .secondaryTileStyle(insetShadow: true)
     }
 }
 

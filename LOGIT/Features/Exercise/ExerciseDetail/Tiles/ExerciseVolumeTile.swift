@@ -38,14 +38,16 @@ struct ExerciseVolumeTile: View {
         // week ever over the last trained weeks' bars — mirrors the best-value tiles' lapsed
         // state, instead of a "0" floating above an empty chart.
         let isLapsed = !weeklyVolumes.isEmpty && !weeklyVolumes.contains { $0.week >= chartStartDate }
-        ExerciseMetricTileLayout(
+        let muscleColor = exercise.muscleGroup?.color ?? .accentColor
+        MetricTile(
             title: NSLocalizedString("volume", comment: ""),
             label: .plain(NSLocalizedString(isLapsed ? "personalBest" : "thisWeek", comment: "")),
             value: weeklyVolumes.isEmpty
                 ? nil
                 : formatWeightForDisplay(isLapsed ? weeklyVolumes.map(\.volume).max() ?? 0 : thisWeekVolume),
             unit: WeightUnit.used.rawValue,
-            color: exercise.muscleGroup?.color ?? .accentColor,
+            accent: AnyShapeStyle(muscleColor),
+            accentColor: muscleColor,
             // This week against the baseline. With a real baseline but nothing logged this week yet,
             // that's a genuine "down 100%" — zero work, not missing data — so the pill says so rather
             // than disappearing. A fully lapsed exercise keeps its "time since" pill (lapsedSince).
@@ -85,7 +87,7 @@ struct ExerciseVolumeTile: View {
                 )
                 .foregroundStyle(
                     highlightedWeek.map({ Calendar.current.isDate(weeklyVolume.week, equalTo: $0, toGranularity: .weekOfYear) }) == true
-                        ? (exercise.muscleGroup?.color ?? Color.label) : Color.fill
+                        ? (exercise.muscleGroup?.color ?? .accentColor) : Color.fill
                 )
                 .tileBarStyle()
             }
@@ -93,8 +95,6 @@ struct ExerciseVolumeTile: View {
         .chartXScale(domain: domainStart ... domainEnd)
         .chartXAxis {}
         .chartYAxis {}
-        .frame(maxWidth: .infinity)
-        .frame(height: 62)
     }
 
     private var chartStartDate: Date {

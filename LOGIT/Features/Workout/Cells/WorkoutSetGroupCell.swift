@@ -1115,40 +1115,22 @@ struct MetricInfoPanel: View {
     /// (it's the live side of the comparison, and what the badge tints when you're up); the
     /// reference stays neutral so a single glance finds "you, now".
     private func comparisonRow(color: Color) -> some View {
-        HStack(alignment: .center, spacing: 8) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(NSLocalizedString("currentBest", comment: ""))
-                    .font(.footnote)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.secondary)
-                UnitView(
-                    value: currentBestValue(for: selectedMetric),
-                    unit: panelUnit(for: selectedMetric),
-                    configuration: .large
-                )
-            }
-            Spacer(minLength: 0)
-            if let change = comparison.percentChange(selectedMetric) {
-                TrendIndicatorView(
-                    percentChange: change,
-                    positiveColor: color,
-                    isRecord: comparison.isPersonalRecord(selectedMetric)
-                )
-            }
-            Spacer(minLength: 0)
-            VStack(alignment: .trailing, spacing: 1) {
-                Text(NSLocalizedString("thisWorkout", comment: ""))
-                    .font(.footnote)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.secondary)
-                UnitView(
-                    value: formattedValue(comparison.sessionBest(selectedMetric), for: selectedMetric),
-                    unit: panelUnit(for: selectedMetric),
-                    configuration: .large
-                )
-                .foregroundStyle(color.gradient)
-            }
-        }
+        MetricComparisonView(
+            leading: .init(
+                label: NSLocalizedString("currentBest", comment: ""),
+                value: currentBestValue(for: selectedMetric),
+                unit: panelUnit(for: selectedMetric)
+            ),
+            trailing: .init(
+                label: NSLocalizedString("thisWorkout", comment: ""),
+                value: formattedValue(comparison.sessionBest(selectedMetric), for: selectedMetric),
+                unit: panelUnit(for: selectedMetric)
+            ),
+            trailingValueStyle: AnyShapeStyle(color.gradient),
+            percentChange: comparison.percentChange(selectedMetric),
+            positiveColor: color,
+            isRecord: comparison.isPersonalRecord(selectedMetric)
+        )
     }
 
     /// The comparison row over its full-width chart, sitting tighter together than the panel's

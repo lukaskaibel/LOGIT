@@ -21,9 +21,11 @@ struct ExerciseTileTrend {
     /// Best value within the current-best window (see `Exercise.currentBestWindowStart`) — the
     /// value the tile displays. Nil when no set in the window has a usable value.
     let currentBest: Int?
-    /// Percent change of the last execution (the most recent training day's best) over the
-    /// execution before it — "how last time went versus the time before". Nil while the exercise is
-    /// lapsed or has fewer than two executions to compare; the pill is hidden then.
+    /// Percent change of the current best over the *previous* current best — the best value in the
+    /// four weeks before the day the current best was reached (sliding back to the most recent
+    /// earlier window with data after a gap). "How much better your peak is than it used to be."
+    /// Nil only while the exercise is lapsed, or the current best is a first-ever execution with
+    /// nothing before it to compare; the pill is hidden then.
     let percentChange: Double?
     /// True while the current best *is* the all-time best — "you're at your peak right now".
     /// Requires a usable value from before the window: with no older history there is no record
@@ -40,39 +42,66 @@ struct ExerciseTileTrend {
         var currentMax = 0
         var allTimeMax = 0
         var hasValueBeforeWindow = false
-        // Best value per training day — one day is one "execution", used for the day-over-day pill.
-        var bestByDay: [Date: Int] = [:]
+        // The day the current best was first reached — the anchor the previous-best window sits
+        // before. Tracked as the earliest day at the peak so a later equal day can't hide the climb.
+        var currentBestDate: Date?
         for workoutSet in sets {
             let setValue = value(workoutSet)
             guard setValue > 0 else { continue }
             allTimeMax = max(allTimeMax, setValue)
             let date = workoutSet.workout?.date ?? .distantPast
             if date >= windowStart {
-                currentMax = max(currentMax, setValue)
+                let day = calendar.startOfDay(for: date)
+                if setValue > currentMax {
+                    currentMax = setValue
+                    currentBestDate = day
+                } else if setValue == currentMax, let best = currentBestDate, day < best {
+                    currentBestDate = day
+                }
             } else {
                 hasValueBeforeWindow = true
             }
-            let day = calendar.startOfDay(for: date)
-            bestByDay[day] = max(bestByDay[day] ?? 0, setValue)
         }
 
         currentBest = currentMax > 0 ? currentMax : nil
         allTimeBest = allTimeMax > 0 ? allTimeMax : nil
         isAtAllTimeBest = currentMax > 0 && hasValueBeforeWindow && currentMax == allTimeMax
 
-        // Trend pill: the last execution (most recent training day's best) versus the execution
-        // before it — "how last time went versus the time before". Shown only while the exercise is
-        // active (a value in the current-best window); a lapsed exercise keeps its "time since"
-        // pill instead. Needs two executions to compare.
-        let executions = bestByDay.keys.sorted()
-        if currentMax > 0, executions.count >= 2,
-           let last = bestByDay[executions[executions.count - 1]],
-           let previous = bestByDay[executions[executions.count - 2]],
-           previous > 0 {
-            percentChange = (Double(last) - Double(previous)) / Double(previous) * 100
+        // Trend pill: the current best versus the previous current best — the best in the four weeks
+        // before it was reached. A lapsed exercise (no current best) keeps its "time since" pill
+        // instead; a first-ever best with nothing before it has nothing to compare and shows none.
+        if currentMax > 0, let anchor = currentBestDate,
+           let previousBest = Self.previousBest(before: anchor, sets: sets, value: value) {
+            percentChange = (Double(currentMax) - Double(previousBest)) / Double(previousBest) * 100
         } else {
             percentChange = nil
         }
+    }
+
+    /// The previous current best: the highest value in the month before `anchor` (the day the
+    /// current best was reached), excluding that day. When that month holds no training, slides back
+    /// to the most recent earlier session and takes the month ending at it, so a gap before the
+    /// current best doesn't erase the comparison — the tiles' sibling of the chart screens'
+    /// `exerciseWindowTrendPercentage` slide-back. Nil only with no earlier history at all.
+    private static func previousBest(before anchor: Date, sets: [WorkoutSet], value: (WorkoutSet) -> Int) -> Int? {
+        let calendar = Calendar.current
+        let windowStart = calendar.date(byAdding: .month, value: -1, to: anchor) ?? anchor
+        let inWindow = sets.filter {
+            let date = $0.workout?.date ?? .distantPast
+            return date >= windowStart && date < anchor
+        }
+        if let best = inWindow.map(value).filter({ $0 > 0 }).max() { return best }
+        // The month before the current best was empty: slide back to the most recent earlier
+        // session and take the month ending at it.
+        guard let lastPrior = sets.compactMap({ $0.workout?.date }).filter({ $0 < windowStart }).max() else {
+            return nil
+        }
+        let slideStart = calendar.date(byAdding: .month, value: -1, to: lastPrior) ?? lastPrior
+        let slid = sets.filter {
+            let date = $0.workout?.date ?? .distantPast
+            return date >= slideStart && date <= lastPrior
+        }
+        return slid.map(value).filter { $0 > 0 }.max()
     }
 }
 
@@ -116,152 +145,36 @@ func exerciseWindowTrendPercentage(
     return (current - baseline) / baseline * 100
 }
 
-// MARK: - Tile Skeleton
-
-/// Shared skeleton of the exercise-detail metric tiles — the in-workout popover's column anatomy
-/// at tile size: title row with the trend pill top-right (where the navigation chevron used to
-/// sit; like the popover, the content itself is the invitation to tap), the metric's label over
-/// its large value in the muscle-group tint, and the chart beneath running the full tile width.
-/// One skeleton for every tile so tiles sharing a grid row always come out the same height.
-struct ExerciseMetricTileLayout<ChartContent: View>: View {
-    enum Label {
-        case currentBest
-        case plain(String)
-        /// A plain label with an info button explaining the value — `CurrentBestLabel`'s anatomy
-        /// with free-form texts; the workout stat tiles explain their comparison basis this way.
-        case info(String, explanation: String)
+/// The exercise chart headers' comparison baseline: the best value in the visible window *other than*
+/// the current best, so the header pill measures the current best against the rest of the shown
+/// period instead of against itself when the peak is on screen. `currentBestDay` — the day the
+/// current best was reached — is excluded from the window. When the window holds no other value, the
+/// baseline falls back to the most recent day's best before it; nil only when there's nothing earlier
+/// to compare against either. `value` extracts the per-set metric (a max for these screens).
+func exerciseOtherBestBaseline(
+    sets: [WorkoutSet],
+    windowStart: Date,
+    windowEnd: Date,
+    currentBestDay: Date?,
+    value: (WorkoutSet) -> Int
+) -> Int? {
+    let calendar = Calendar.current
+    let otherInWindow = sets.filter { set in
+        guard let date = set.workout?.date, date >= windowStart, date <= windowEnd else { return false }
+        if let currentBestDay, calendar.isDate(date, inSameDayAs: currentBestDay) { return false }
+        return value(set) > 0
     }
-
-    @EnvironmentObject private var purchaseManager: PurchaseManager
-
-    let title: String
-    let label: Label
-    /// Nil renders the "––" placeholder.
-    let value: String?
-    let unit: String
-    let color: Color
-    let percentChange: Double?
-    let isRecord: Bool
-    /// Gates the tile's data — pill, label, value, and chart — behind Pro (blur + compact crown;
-    /// the full capsule doesn't fit a half-width tile). The title stays readable so a locked tile
-    /// still says what it is. Mirrors the in-workout panel's gating: repetitions is the free
-    /// metric, everything else is Pro data.
-    var requiresPro: Bool = false
-    /// Style of the value text. Defaults to `color.gradient`; the workout stat tiles pass
-    /// `Color.label` for a plain label-colored value (their muscle tint moves to the trend pill).
-    var valueStyle: AnyShapeStyle? = nil
-    /// Color for the unit alone, overriding `valueStyle` for it — the workout stat tiles render a
-    /// label-colored value with a muted unit. Nil lets the unit inherit the value style (the
-    /// exercise tiles' muscle-tinted unit).
-    var unitColor: Color? = nil
-    /// Style for the trend pill's positive tint, overriding `color` — the workout stat tiles pass
-    /// the workout's muscle-group gradient. Nil keeps the pill tinted in `color`.
-    var trendStyle: AnyShapeStyle? = nil
-    /// Last session this tile's metric has a value from, when that session is older than the
-    /// current-best window. Renders the gray "time since" capsule in the trend pill's slot, so a
-    /// paused exercise says so at a glance instead of impersonating an active one.
-    var lapsedSince: Date? = nil
-    /// Swaps label, value, and chart for the centered ghost placeholder — for tiles whose metric
-    /// has no usable data at all (the weight tiles of a bodyweight exercise). The stats block
-    /// keeps rendering hidden underneath so the tile stays exactly as tall as its row neighbor.
-    var showsEmptyPlaceholder: Bool = false
-    @ViewBuilder let chart: () -> ChartContent
-
-    private var locksData: Bool { requiresPro && !purchaseManager.hasUnlockedPro }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                    // Next to a wide pill ("↓ 58 %", "vor 2 Mon.") a long title ("Satzvolumen")
-                    // comes up short of its space — shrink it rather than ellipsize.
-                    .minimumScaleFactor(0.7)
-                Spacer(minLength: 6)
-                // The hidden trend pill is the row's height ruler in every state — with a shorter
-                // lapsed pill or no pill at all, the tile would otherwise end up shorter than its
-                // row neighbor.
-                ZStack(alignment: .trailing) {
-                    TrendIndicatorView(percentChange: 0, positiveColor: color, positiveStyle: trendStyle)
-                        .hidden()
-                    if let percentChange, !locksData {
-                        TrendIndicatorView(
-                            percentChange: percentChange,
-                            positiveColor: color,
-                            positiveStyle: trendStyle,
-                            isRecord: isRecord
-                        )
-                    } else if let lapsedSince, !showsEmptyPlaceholder {
-                        TileLapsedPill(date: lapsedSince)
-                    }
-                }
-            }
-            if showsEmptyPlaceholder {
-                ZStack {
-                    statsBlock.hidden()
-                    VStack(spacing: 10) {
-                        GhostSparkline(color: color)
-                            .frame(width: 90, height: 30)
-                        Text(NSLocalizedString("noData", comment: ""))
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            } else {
-                statsBlock
-                    .isBlockedWithoutPro(requiresPro, style: .compact)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(CELL_PADDING)
-        .tileStyle()
+    if let best = otherInWindow.map(value).max(), best > 0 { return best }
+    // No other value in the shown window: the most recent day's best before it.
+    let prior = sets.filter { set in
+        guard let date = set.workout?.date, date < windowStart else { return false }
+        return value(set) > 0
     }
-
-    private var statsBlock: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Group {
-                switch label {
-                case .currentBest:
-                    CurrentBestLabel()
-                case let .plain(text):
-                    Text(text)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                case let .info(text, explanation):
-                    MetricTileInfoLabel(text: text, explanation: explanation)
-                }
-            }
-            .padding(.top, 8)
-            UnitView(value: value ?? "––", unit: unit, configuration: .large, unitColor: unitColor)
-                .foregroundStyle(valueStyle ?? AnyShapeStyle(color.gradient))
-                .padding(.top, 2)
-            chart()
-                .padding(.top, 8)
-        }
-    }
-}
-
-/// The gray "time since the last session" capsule in the trend pill's slot on lapsed tiles —
-/// the trend pill's anatomy (icon + rounded bold text on a 0.15 fill) with the history icon and
-/// a relative date, so the stale state is visible right where the trend usually lives. A size
-/// softer than the trend pill: it's quiet metadata, not a score.
-private struct TileLapsedPill: View {
-    let date: Date
-
-    var body: some View {
-        ProgressIndicatorPill(symbol: "clock.arrow.circlepath", color: .secondary, size: .compact) {
-            Text(date, format: .relative(presentation: .numeric, unitsStyle: .narrow))
-                .font(.system(.caption2, design: .rounded, weight: .bold))
-        }
-        // The pill never compresses or wraps — the title next to it shrinks instead.
-        .fixedSize()
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(date, format: .relative(presentation: .named)))
-    }
+    guard let lastDate = prior.compactMap({ $0.workout?.date }).max() else { return nil }
+    return prior
+        .filter { calendar.isDate($0.workout?.date ?? .distantPast, inSameDayAs: lastDate) }
+        .map(value)
+        .max()
 }
 
 // MARK: - Ghost Sparkline
@@ -339,9 +252,10 @@ struct ExerciseTileSparkline: View {
         /// empty. An empty month would render as nothing but the dashed carry-forward line;
         /// showing the sessions the personal best comes from tells a story instead.
         case recentHistory
-        /// The exercise's entire history, first session to last. The line drops its per-point
-        /// dots (too many to read) and marks only the highest point, so the all-time best stands
-        /// out as the crest of the whole story — used on the personal-records screen.
+        /// The exercise's entire history, first session to last, as a single clean line — no
+        /// per-session dots and no crest marker, just the smooth arc. It spans the full width edge
+        /// to edge and skips the leading fade, so the curve reads end to end. Used on the
+        /// personal-records cards, where it bleeds to the card's borders beneath the scoreboard.
         case allTime
     }
 
@@ -356,10 +270,11 @@ struct ExerciseTileSparkline: View {
     /// How many sessions the recent-history window shows.
     private static let recentHistoryCount = 6
 
-    /// Trailing edge ~2 days past the last shown moment so the latest point's symbol clears the
-    /// right edge — the chart is `.clipped()` with no trailing fade, and a point on the edge
-    /// would be sliced in half.
-    private var domain: ClosedRange<Date> {
+    /// The chart's x-domain. Windowed sparklines push the trailing edge ~2 days past the last shown
+    /// moment so the latest point's symbol clears the right edge (they are `.clipped()` with no
+    /// trailing fade, and a point on the edge would be sliced in half). The all-time line carries no
+    /// symbols to protect, so it fills the width exactly — first session to last, edge to edge.
+    private func xDomain() -> ClosedRange<Date> {
         let margin: (Date) -> Date = { Calendar.current.date(byAdding: .day, value: 2, to: $0) ?? $0 }
         switch window {
         case .currentBest:
@@ -372,11 +287,14 @@ struct ExerciseTileSparkline: View {
             let lead = Calendar.current.date(byAdding: .day, value: -2, to: first) ?? first
             return lead ... margin(last)
         case .allTime:
-            guard let first = points.first?.date, let last = points.last?.date else {
-                return Exercise.currentBestWindowStart ... margin(.now)
+            guard let first = points.first?.date, let last = points.last?.date, first < last else {
+                // A single session: center it on a one-day window so the line has somewhere to sit.
+                let anchor = points.first?.date ?? .now
+                let lead = Calendar.current.date(byAdding: .day, value: -1, to: anchor) ?? anchor
+                let trail = Calendar.current.date(byAdding: .day, value: 1, to: anchor) ?? anchor
+                return lead ... trail
             }
-            let lead = Calendar.current.date(byAdding: .day, value: -2, to: first) ?? first
-            return lead ... margin(last)
+            return first ... last
         }
     }
 
@@ -385,32 +303,30 @@ struct ExerciseTileSparkline: View {
         // Over a long span catmullRom waggles between sessions; monotone keeps the all-time line a
         // clean trend that never overshoots its own crest.
         let interpolation: InterpolationMethod = window == .allTime ? .monotone : .catmullRom
-        // The all-time window dots only its crest (the rest would be a cluttered string of points);
-        // the shorter windows dot every session.
-        let recordPoint = window == .allTime ? points.max(by: { $0.value < $1.value }) : nil
-        let chart = Chart {
+        let base = Chart {
             tileSparklineMarks(
                 points: points,
                 color: color,
                 interpolation: interpolation,
+                // The all-time line is a single clean curve — no per-session dots, no crest marker.
+                // The windowed sparklines keep a dot per session.
                 showsSymbols: window != .allTime,
-                showsCarryForward: window == .currentBest,
-                recordPoint: recordPoint
+                showsCarryForward: window == .currentBest
             )
         }
-        .chartXScale(domain: domain)
+        .chartXScale(domain: xDomain())
         .chartYScale(domain: 0 ... max(maxValue * 1.15, 1))
         .chartXAxis {}
         .chartYAxis {}
         .frame(maxWidth: .infinity)
         .frame(height: height)
-        .clipped()
-        // The all-time window's whole point is to show the start of the history — a leading fade
-        // would swallow it, so it draws edge to edge; the windowed sparklines fade in.
+        // The all-time window spans the full width and skips `.clipped()` and the leading fade — its
+        // whole point is to show where the history begins and ends. The windowed sparklines clip and
+        // fade in from the left.
         if window == .allTime {
-            chart
+            base
         } else {
-            chart.tileSparklineFadeMask()
+            base.clipped().tileSparklineFadeMask()
         }
     }
 }
@@ -426,7 +342,7 @@ struct ExerciseBestMetricTile: View {
     let workoutSets: [WorkoutSet]
     let title: String
     let unit: String
-    /// Pro-gates the tile's data (see `ExerciseMetricTileLayout.requiresPro`).
+    /// Pro-gates the tile's data (see `MetricTile.requiresPro`).
     var requiresPro: Bool = false
     /// The metric's base value of a single set, in raw storage units (grams for weights).
     let metricValue: (WorkoutSet) -> Int
@@ -444,12 +360,13 @@ struct ExerciseBestMetricTile: View {
         // fall back to the all-time personal best over the last sessions' chart (with the
         // "time since" capsule in the pill slot) instead of a "––" floating above an empty month.
         let isLapsed = trend.currentBest == nil && trend.allTimeBest != nil
-        ExerciseMetricTileLayout(
+        MetricTile(
             title: title,
             label: isLapsed ? .plain(NSLocalizedString("personalBest", comment: "")) : .currentBest,
             value: (trend.currentBest ?? trend.allTimeBest).map(formattedValue),
             unit: unit,
-            color: color,
+            accent: AnyShapeStyle(color),
+            accentColor: color,
             percentChange: trend.percentChange,
             isRecord: trend.isAtAllTimeBest,
             requiresPro: requiresPro,
@@ -459,7 +376,8 @@ struct ExerciseBestMetricTile: View {
             ExerciseTileSparkline(
                 points: points,
                 color: color,
-                window: isLapsed ? .recentHistory : .currentBest
+                window: isLapsed ? .recentHistory : .currentBest,
+                height: CompactChartFrame.height
             )
         }
     }
@@ -533,37 +451,6 @@ struct CurrentBestLabel: View {
             }
             .popover(isPresented: $isShowingInfo) {
                 Text(NSLocalizedString("currentBestInfo", comment: ""))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding()
-                    .frame(width: 300)
-                    .presentationCompactAdaptation(.popover)
-            }
-        }
-        .font(.footnote)
-        .foregroundStyle(.secondary)
-    }
-}
-
-/// Backs `ExerciseMetricTileLayout.Label.info` — `CurrentBestLabel`'s text + info-dot anatomy with
-/// the texts supplied by the tile (the workout stat tiles explain their comparison basis here).
-private struct MetricTileInfoLabel: View {
-    let text: String
-    let explanation: String
-    @State private var isShowingInfo = false
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Text(text)
-                .fontWeight(.semibold)
-            Button {
-                isShowingInfo = true
-            } label: {
-                Image(systemName: "info.circle")
-            }
-            .popover(isPresented: $isShowingInfo) {
-                Text(explanation)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

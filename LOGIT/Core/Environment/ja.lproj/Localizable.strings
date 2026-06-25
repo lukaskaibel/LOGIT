@@ -74,7 +74,12 @@
 "creatingTemplateFailed" = "テンプレートの作成に失敗しました";
 "creatingTemplateFailedText" = "選択した画像にワークアウトが含まれていることを確認してください。";
 "currentBest" = "現在のベスト";
-"currentBestInfo" = "現在のベストは、直近1か月間の最高値です。";
+"previousBest" = "以前のベスト";
+"newRecord" = "新記録";
+"currentBestInfo" = "現在のベストは、直近4週間の最高値です。トレンドは、その値に達する前の4週間のベストよりどれだけ高いかを示します。";
+"currentBestComparisonInfo" = "現在のベスト（右）は直近4週間の最高値です。バッジは、左に表示された期間のベストと比べてどうかを示します。スクロールして任意の期間と比較できます。";
+"averageComparisonInfo" = "右の値は直近4週間の週平均です。バッジは、左に表示された期間の平均と比べてどうかを示します。スクロールして任意の期間と比較できます。";
+"lastFourWeeks" = "直近4週間";
 "currentWorkout" = "現在のトレーニング";
 
 // MARK: - D
@@ -867,6 +872,8 @@
 "tapForMetricInfo" = "タップすると詳細の表示と指標の切り替えができます。";
 "personalRecord" = "自己ベスト";
 "personalRecordShort" = "自己ベスト";
+"personalRecordShortCount" = "自己ベスト%d件";
+"personalRecordsShortCount" = "自己ベスト%d件";
 "repsShort" = "回数";
 
 /* Workout Progress Section */

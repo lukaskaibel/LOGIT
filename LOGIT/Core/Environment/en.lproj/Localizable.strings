@@ -74,7 +74,12 @@
 "creatingTemplateFailed" = "Creating Template Failed";
 "creatingTemplateFailedText" = "Make sure the selected image contains a workout.";
 "currentBest" = "Current Best";
-"currentBestInfo" = "Your current best is the highest value you've reached in the last month.";
+"previousBest" = "Previous Best";
+"newRecord" = "New Record";
+"currentBestInfo" = "Your current best is the highest value in the last 4 weeks. The trend shows how much higher it is than your best in the 4 weeks before you reached it.";
+"currentBestComparisonInfo" = "Your current best (right) is the highest value in the last 4 weeks. The badge shows how it compares to your best in the shown period on the left — scroll to compare against any time.";
+"averageComparisonInfo" = "The right value is your weekly average over the last 4 weeks. The badge shows how it compares to the average of the shown period on the left — scroll to compare against any time.";
+"lastFourWeeks" = "Last 4 weeks";
 "currentWorkout" = "Current Workout";
 
 // MARK: - D
@@ -867,6 +872,8 @@
 "tapForMetricInfo" = "Tap for details and to switch the metric.";
 "personalRecord" = "Personal record";
 "personalRecordShort" = "PR";
+"personalRecordShortCount" = "%d PR";
+"personalRecordsShortCount" = "%d PRs";
 "repsShort" = "Reps";
 
 /* Workout Progress Section */

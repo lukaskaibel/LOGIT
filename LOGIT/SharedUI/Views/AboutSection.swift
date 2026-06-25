@@ -9,7 +9,7 @@ import SwiftUI
 
 /// Health-app-style explanation shown at the bottom of metric detail screens:
 /// an "About <Metric>" header followed by a short secondary description sitting
-/// in a tile, matching the `HighlightView` section directly above it.
+/// in a tile at the bottom of the screen.
 struct AboutSection: View {
     let metricTitle: String
     let text: String

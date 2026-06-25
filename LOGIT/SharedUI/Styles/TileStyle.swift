@@ -19,11 +19,25 @@ struct TileModifier: ViewModifier {
 
 struct SecondaryTileModifier: ViewModifier {
     var backgroundColor: Color = .tertiaryBackground
+    /// Recesses the tile with the same inner shadow the workout set cells carry. Off by default
+    /// because this style is also worn by the set-entry fields (`IntegerField`/`DecimalField`),
+    /// whose near-transparent background would render the shadow as a dark ring around the number.
+    var insetShadow: Bool = false
+
+    private let cornerRadius: CGFloat = 25
 
     func body(content: Content) -> some View {
         content
-            .background(backgroundColor)
-            .cornerRadius(25)
+            .background {
+                if insetShadow {
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                        .foregroundStyle(backgroundColor)
+                } else {
+                    backgroundColor
+                }
+            }
+            .cornerRadius(cornerRadius)
     }
 }
 
@@ -46,8 +60,8 @@ extension View {
         modifier(TileModifier(backgroundColor: backgroundColor))
     }
 
-    func secondaryTileStyle(backgroundColor: Color = .tertiaryBackground) -> some View {
-        modifier(SecondaryTileModifier(backgroundColor: backgroundColor))
+    func secondaryTileStyle(backgroundColor: Color = .tertiaryBackground, insetShadow: Bool = false) -> some View {
+        modifier(SecondaryTileModifier(backgroundColor: backgroundColor, insetShadow: insetShadow))
     }
 
     func tileSparklineChartStyle() -> some View {

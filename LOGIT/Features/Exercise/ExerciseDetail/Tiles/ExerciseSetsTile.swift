@@ -34,17 +34,20 @@ struct ExerciseSetsTile: View {
         // earlier week, so the pill stays present whenever there's any prior week to compare to.
         let bestPriorWeekCount = weeklySets.filter { $0.week < Date.now.startOfWeek }.map(\.count).max() ?? 0
         let countBaseline = lastWeekCount > 0 ? lastWeekCount : bestPriorWeekCount
-        // No sets in the chart's five-week window but some further back: fall back to the best week
-        // ever over the last trained weeks' bars — mirrors the Volume tile's lapsed state instead
-        // of a "0" floating above an empty chart.
+        // No sets in the chart's five-week window but some further back: untrained for over a month.
+        // Fall back to the "last best" — the most recent trained week's set count, dated — to match
+        // the four best-value tiles, instead of a "0" floating above an empty chart.
         let isLapsed = !weeklySets.isEmpty && !weeklySets.contains { $0.week >= chartStartDate }
+        // The day the last-best week was logged: the latest completed set, so the date lines up with
+        // the week the value comes from. Only set while lapsed.
+        let lastBestDate = isLapsed ? sets.filter(\.hasEntry).compactMap({ $0.workout?.date }).max() : nil
         let muscleColor = exercise.muscleGroup?.color ?? .accentColor
         MetricTile(
             title: NSLocalizedString("sets", comment: ""),
-            label: .plain(NSLocalizedString(isLapsed ? "personalBest" : "thisWeek", comment: "")),
+            label: .plain(NSLocalizedString(isLapsed ? "lastBest" : "thisWeek", comment: "")),
             value: weeklySets.isEmpty
                 ? nil
-                : "\(isLapsed ? weeklySets.map(\.count).max() ?? 0 : thisWeekCount)",
+                : "\(isLapsed ? weeklySets.last?.count ?? 0 : thisWeekCount)",
             // A count needs no unit — the title ("Sets") and label ("This Week") carry the meaning,
             // and an empty unit renders as nothing through UnitView.
             unit: "",
@@ -52,34 +55,31 @@ struct ExerciseSetsTile: View {
             accentColor: muscleColor,
             // This week against the baseline. With a real baseline but nothing logged this week yet,
             // that's a genuine "down 100%" — zero work, not missing data — so the pill says so rather
-            // than disappearing. A fully lapsed exercise keeps its "time since" pill (lapsedSince).
+            // than disappearing. A fully lapsed exercise drops the pill for the last-best date instead.
             percentChange: countBaseline > 0 && !isLapsed
                 ? (Double(thisWeekCount) - Double(countBaseline)) / Double(countBaseline) * 100
                 : nil,
             isRecord: isRecordWeek(count: thisWeekCount, in: weeklySets),
             requiresPro: true,
-            lapsedSince: isLapsed ? sets.compactMap({ $0.workout?.date }).max() : nil,
+            lastBestDate: lastBestDate,
             showsEmptyPlaceholder: weeklySets.isEmpty
         ) {
-            barChart(weeklySets: weeklySets, isLapsed: isLapsed)
+            // Lapsed → no chart, matching the four best-value tiles (the date carries the story); the
+            // empty slot keeps the row height. Otherwise the regular five-week bars.
+            if isLapsed {
+                Color.clear
+            } else {
+                barChart(weeklySets: weeklySets)
+            }
         }
     }
 
     // MARK: - Chart
 
-    private func barChart(weeklySets: [WeeklySets], isLapsed: Bool) -> some View {
-        // Lapsed: the last five trained weeks, with the best one highlighted (it's the week the
-        // value above refers to). Otherwise: the regular five-week window, current week
-        // highlighted.
-        let shownSets = isLapsed
-            ? Array(weeklySets.suffix(5))
-            : weeklySets.filter { $0.week >= chartStartDate }
-        let highlightedWeek = isLapsed
-            ? shownSets.max { $0.count < $1.count }?.week
-            : Date.now.startOfWeek
-        let domainStart = isLapsed ? (shownSets.first?.week ?? chartStartDate) : chartStartDate
-        let domainEnd = isLapsed
-            ? (shownSets.last?.week.endOfWeek ?? Date.now.endOfWeek) : Date.now.endOfWeek
+    private func barChart(weeklySets: [WeeklySets]) -> some View {
+        // The regular five-week window, current week highlighted. (A lapsed exercise shows no chart
+        // at all — see the tile body — so there's no last-trained-weeks variant here anymore.)
+        let shownSets = weeklySets.filter { $0.week >= chartStartDate }
         return Chart {
             ForEach(shownSets) { weeklySet in
                 BarMark(
@@ -88,13 +88,13 @@ struct ExerciseSetsTile: View {
                     width: TileBarChartStyle.barWidth
                 )
                 .foregroundStyle(
-                    highlightedWeek.map({ Calendar.current.isDate(weeklySet.week, equalTo: $0, toGranularity: .weekOfYear) }) == true
+                    Calendar.current.isDate(weeklySet.week, equalTo: Date.now.startOfWeek, toGranularity: .weekOfYear)
                         ? (exercise.muscleGroup?.color ?? .accentColor) : Color.fill
                 )
                 .tileBarStyle()
             }
         }
-        .chartXScale(domain: domainStart ... domainEnd)
+        .chartXScale(domain: chartStartDate ... Date.now.endOfWeek)
         .chartXAxis {}
         .chartYAxis {}
     }

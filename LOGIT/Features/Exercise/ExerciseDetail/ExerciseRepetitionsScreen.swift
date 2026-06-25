@@ -47,13 +47,13 @@ struct ExerciseRepetitionsScreen: View {
                     caption: chartHeaderTitle
                 ),
                 trailing: .init(
-                    label: NSLocalizedString("currentBest", comment: ""),
-                    value: currentBestAnchor.map { String($0.value) } ?? "––",
+                    label: NSLocalizedString(bestAnchor?.isLapsed == true ? "lastBest" : "currentBest", comment: ""),
+                    value: bestAnchor.map { String($0.value) } ?? "––",
                     unit: NSLocalizedString("rps", comment: ""),
-                    caption: currentBestAnchor?.date.map { $0.formatted(.dateTime.day().month()) }
+                    caption: bestAnchor?.date.map { $0.formatted(.dateTime.day().month()) }
                 ),
                 trailingValueStyle: AnyShapeStyle(exerciseMuscleGroupColor.gradient),
-                percentChange: headerTrendPercentage(visibleBest: bestRepsInGranularity),
+                percentChange: bestAnchor?.isLapsed == true ? nil : headerTrendPercentage(visibleBest: bestRepsInGranularity),
                 positiveColor: exerciseMuscleGroupColor,
                 explanation: NSLocalizedString("currentBestComparisonInfo", comment: "")
             )
@@ -324,7 +324,7 @@ struct ExerciseRepetitionsScreen: View {
             sets: workoutSets,
             windowStart: chartScrollPosition,
             windowEnd: visibleEndDate,
-            currentBestDay: currentBestAnchor?.date
+            currentBestDay: bestAnchor?.date
         ) { $0.maximum(.repetitions, for: exercise) }
     }
 
@@ -333,17 +333,24 @@ struct ExerciseRepetitionsScreen: View {
         return nextBiggerYAxisMaxValue ?? maxYValue
     }
 
-    /// The exercise's current best (highest reps in the last four weeks) and the day it was reached
-    /// — the fixed right-hand anchor of the header scoreboard, independent of scroll.
-    private var currentBestAnchor: (value: Int, date: Date?)? {
-        guard let best = exercise.currentBestSet(for: .repetitions, in: workoutSets) else { return nil }
-        return (best.maximum(.repetitions, for: exercise), best.workout?.date)
+    /// The fixed right-hand anchor of the header scoreboard, independent of scroll: the current best
+    /// (highest reps in the last four weeks) and the day it was reached. When the current-best window
+    /// is empty (untrained for over a month) it falls back to the "last best" — the best on the most
+    /// recent session — which flips the label to "Last Best" and drops the comparison pill.
+    private var bestAnchor: (value: Int, date: Date?, isLapsed: Bool)? {
+        if let best = exercise.currentBestSet(for: .repetitions, in: workoutSets) {
+            return (best.maximum(.repetitions, for: exercise), best.workout?.date, false)
+        }
+        if let last = exercise.lastBestSet(for: .repetitions, in: workoutSets) {
+            return (last.maximum(.repetitions, for: exercise), last.workout?.date, true)
+        }
+        return nil
     }
 
     /// The header pill: the current best measured against the best in the shown window. Nil when
     /// either side is empty, so the pill drops out only when there is genuinely nothing to compare.
     private func headerTrendPercentage(visibleBest: Int?) -> Double? {
-        guard let current = currentBestAnchor?.value, current > 0,
+        guard let current = bestAnchor?.value, current > 0,
               let visible = visibleBest, visible > 0 else { return nil }
         return (Double(current) - Double(visible)) / Double(visible) * 100
     }

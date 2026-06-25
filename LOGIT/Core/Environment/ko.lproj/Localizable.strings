@@ -75,6 +75,8 @@
 "creatingTemplateFailedText" = "선택한 이미지에 운동이 포함되어 있는지 확인하세요.";
 "currentBest" = "현재 최고";
 "previousBest" = "이전 최고";
+"lastBest" = "최근 최고";
+"lastBestInfo" = "이 운동을 4주 이상 기록하지 않았을 때 표시됩니다. 가장 최근 세션에서의 최고 기록입니다.";
 "newRecord" = "새 기록";
 "currentBestInfo" = "현재 최고는 최근 4주 동안의 최고 값입니다. 추세는 그 값을 달성하기 전 4주 동안의 최고보다 얼마나 높은지 보여줍니다.";
 "currentBestComparisonInfo" = "현재 최고(오른쪽)는 최근 4주 동안의 최고 값입니다. 배지는 왼쪽에 표시된 기간의 최고와 어떻게 비교되는지 보여줍니다. 스크롤하여 원하는 기간과 비교하세요.";

@@ -75,6 +75,8 @@
 "creatingTemplateFailedText" = "Stelle sicher, dass das Bild ein Workout enthält.";
 "currentBest" = "Aktueller Bestwert";
 "previousBest" = "Vorheriger Bestwert";
+"lastBest" = "Letzter Bestwert";
+"lastBestInfo" = "Wird angezeigt, wenn du diese Übung seit über 4 Wochen nicht trainiert hast – dein Bestwert aus der letzten Trainingseinheit.";
 "newRecord" = "Neuer Rekord";
 "currentBestInfo" = "Dein aktueller Bestwert ist der höchste Wert der letzten 4 Wochen. Der Trend zeigt, wie viel höher er ist als dein Bestwert in den 4 Wochen davor.";
 "currentBestComparisonInfo" = "Dein aktueller Bestwert (rechts) ist der höchste Wert der letzten 4 Wochen. Das Abzeichen zeigt, wie er sich zu deinem Bestwert im angezeigten Zeitraum links verhält – scrolle, um mit beliebigen Zeiträumen zu vergleichen.";

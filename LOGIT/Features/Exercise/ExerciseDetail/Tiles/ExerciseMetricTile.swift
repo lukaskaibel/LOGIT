@@ -356,30 +356,40 @@ struct ExerciseBestMetricTile: View {
         let sets = workoutSets.filter { $0.workout?.isCurrentWorkout != true }
         let trend = ExerciseTileTrend(sets: sets, value: metricValue)
         let color = exercise.muscleGroup?.color ?? .accentColor
-        let points = dailyBestPoints(in: sets)
-        // Untrained for over a month: the window has nothing to show, but the history does —
-        // fall back to the all-time personal best over the last sessions' chart (with the
-        // "time since" capsule in the pill slot) instead of a "––" floating above an empty month.
+        // Untrained for over a month: the current-best window is empty but the history isn't. Show
+        // the "last best" — the best from the most recent session, with that session's date in the
+        // pill slot and no chart (it would be a lone carry-forward dash over an empty month) —
+        // instead of a "––". Computed from this tile's own metric, so one metric can lapse (e.g.
+        // weight on a now-bodyweight exercise) while its neighbours still show a current best.
         let isLapsed = trend.currentBest == nil && trend.allTimeBest != nil
+        let lastBest = isLapsed ? lastSessionBest(in: sets) : nil
         MetricTile(
             title: title,
-            label: isLapsed ? .plain(NSLocalizedString("personalBest", comment: "")) : .currentBest,
-            value: (trend.currentBest ?? trend.allTimeBest).map(formattedValue),
+            label: isLapsed
+                ? .info(NSLocalizedString("lastBest", comment: ""), explanation: NSLocalizedString("lastBestInfo", comment: ""))
+                : .currentBest,
+            value: trend.currentBest.map(formattedValue) ?? lastBest.map { formattedValue($0.value) },
             unit: unit,
             accent: AnyShapeStyle(color),
             accentColor: color,
-            percentChange: trend.percentChange,
-            isRecord: trend.isAtAllTimeBest,
+            percentChange: isLapsed ? nil : trend.percentChange,
+            isRecord: isLapsed ? false : trend.isAtAllTimeBest,
             requiresPro: requiresPro,
-            lapsedSince: isLapsed ? points.last?.date : nil,
+            lastBestDate: lastBest?.date,
             showsEmptyPlaceholder: trend.allTimeBest == nil
         ) {
-            ExerciseTileSparkline(
-                points: points,
-                color: color,
-                window: isLapsed ? .recentHistory : .currentBest,
-                height: CompactChartFrame.height
-            )
+            if isLapsed {
+                // No chart in the last-best state — a single carry-forward dash says nothing. The
+                // empty slot keeps the bottom row's height so the tile matches its grid neighbour.
+                Color.clear
+            } else {
+                ExerciseTileSparkline(
+                    points: dailyBestPoints(in: sets),
+                    color: color,
+                    window: .currentBest,
+                    height: CompactChartFrame.height
+                )
+            }
         }
     }
 
@@ -393,6 +403,19 @@ struct ExerciseBestMetricTile: View {
             return ExerciseTileSparkline.Point(date: day, value: chartValue(best))
         }
         .sorted { $0.date < $1.date }
+    }
+
+    /// The best value of this tile's metric on the most recent day it was trained, with that day —
+    /// the "last best" shown when the current-best window is empty. Nil when no set has a value.
+    private func lastSessionBest(in sets: [WorkoutSet]) -> (value: Int, date: Date)? {
+        let withValue = sets.filter { metricValue($0) > 0 }
+        guard let lastDate = withValue.compactMap({ $0.workout?.date }).max() else { return nil }
+        let day = Calendar.current.startOfDay(for: lastDate)
+        let best = withValue
+            .filter { Calendar.current.isDate($0.workout?.date ?? .distantPast, inSameDayAs: day) }
+            .map(metricValue).max() ?? 0
+        guard best > 0 else { return nil }
+        return (best, day)
     }
 }
 

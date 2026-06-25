@@ -75,6 +75,8 @@
 "creatingTemplateFailedText" = "Asegúrese de que la imagen seleccionada contenga un entrenamiento.";
 "currentBest" = "Mejor marca actual";
 "previousBest" = "Mejor marca anterior";
+"lastBest" = "Última mejor marca";
+"lastBestInfo" = "Se muestra cuando no entrenas este ejercicio desde hace más de 4 semanas: tu mejor marca de la sesión más reciente.";
 "newRecord" = "Nuevo récord";
 "currentBestInfo" = "Tu mejor marca actual es el valor más alto de las últimas 4 semanas. La tendencia muestra cuánto más alto es que tu mejor marca de las 4 semanas anteriores.";
 "currentBestComparisonInfo" = "Tu mejor marca actual (derecha) es el valor más alto de las últimas 4 semanas. La insignia muestra cómo se compara con tu mejor marca del periodo mostrado a la izquierda; desliza para comparar con cualquier momento.";

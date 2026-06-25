@@ -37,6 +37,12 @@ struct WorkoutSetGroupCell: View {
     @State private var primaryExerciseSelectionSheetDetend: PresentationDetent? = .large
     @State private var isSelectingSecondaryExercise = false
     @State private var isEditingNote = false
+    /// Live width of the metric badge (an overlay with no layout footprint), measured so the exercise
+    /// name can reserve room and dissolve before it instead of sliding underneath the capsule.
+    @State private var metricBadgeWidth: CGFloat = 0
+    /// Width of the exercise-name column (the name + muscle-group VStack). Measured so the name's
+    /// width budget can be derived as (column − badge reservation) and handed to `ExerciseHeader`.
+    @State private var nameSlotWidth: CGFloat = 0
     @FocusState private var isNoteFieldFocused: Bool
 
     // MARK: - Body
@@ -244,11 +250,38 @@ struct WorkoutSetGroupCell: View {
                     workout: workout,
                     isEditing: focusedIntegerFieldIndex != nil
                 )
+                // The badge floats here without claiming layout space; feed its width back so the
+                // exercise name can reserve room and fade out before it (see `exerciseNameTrailingInset`).
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.size.width
+                } action: { _, newWidth in
+                    metricBadgeWidth = newWidth
+                }
             }
         }
     }
 
     // MARK: - Supporting Views
+
+    /// Trailing space the metric badge occupies, reserved on the exercise name's side so a long name
+    /// fades out *before* the badge instead of sliding under it. The badge is an overlay measuring to
+    /// the cell's true trailing edge while the header is inset by `CELL_PADDING`, so subtract that;
+    /// `+ 8` leaves a small gap between the name's fade and the badge. Zero whenever no badge is shown
+    /// (while reordering, or before there's anything to compare) so the name reclaims the full width.
+    private var exerciseNameTrailingInset: CGFloat {
+        guard !isReordering, setGroup.workout != nil else { return 0 }
+        return max(0, metricBadgeWidth - CELL_PADDING + 8)
+    }
+
+    /// Width budget for the exercise-name label (name + chevron) when a badge is present: the measured
+    /// column width minus the badge reservation. Passed to `ExerciseHeader.nameMaxWidth`, which fades
+    /// the name within it while leaving the chevron opaque. `nil` (no badge yet, or the column not
+    /// measured) leaves the name at its natural width with no fade — there's nothing to dissolve before.
+    private var exerciseNameWidth: CGFloat? {
+        let inset = exerciseNameTrailingInset
+        guard inset > 0, nameSlotWidth > 0 else { return nil }
+        return max(40, nameSlotWidth - inset)
+    }
 
     private var header: some View {
         VStack(spacing: 8) {
@@ -273,7 +306,8 @@ struct WorkoutSetGroupCell: View {
                         isSuperSet: setGroup.setType == .superSet,
                         navigationToDetailEnabled: true,
                         showDetailAsSheet: showDetailAsSheet,
-                        onTapExerciseName: onTapExerciseName
+                        onTapExerciseName: onTapExerciseName,
+                        nameMaxWidth: exerciseNameWidth
                     )
                     HStack {
                         Text(setGroup.exercise?.muscleGroup?.description ?? "")
@@ -290,6 +324,14 @@ struct WorkoutSetGroupCell: View {
                         }
                     }
                     .font(.system(.footnote, design: .rounded, weight: .bold))
+                }
+                // Width of the name column, fed to `exerciseNameWidth` so the name fills exactly to
+                // its fade. The muscle row's trailing `Spacer` holds this at the full available width
+                // regardless of the name's own (narrower) frame, so reading it back can't feed back.
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.size.width
+                } action: { _, newWidth in
+                    nameSlotWidth = newWidth
                 }
                 Spacer()
                 if isReordering {

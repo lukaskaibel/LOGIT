@@ -34,50 +34,50 @@ struct ExerciseVolumeTile: View {
         // earlier week, so the pill stays present whenever there's any prior week to compare to.
         let bestPriorWeekVolume = weeklyVolumes.filter { $0.week < Date.now.startOfWeek }.map(\.volume).max() ?? 0
         let volumeBaseline = lastWeekVolume > 0 ? lastWeekVolume : bestPriorWeekVolume
-        // No volume in the chart's five-week window but some further back: fall back to the best
-        // week ever over the last trained weeks' bars — mirrors the best-value tiles' lapsed
-        // state, instead of a "0" floating above an empty chart.
+        // No volume in the chart's five-week window but some further back: untrained for over a
+        // month. Fall back to the "last best" — the most recent trained week's volume, dated — to
+        // match the four best-value tiles, instead of a "0" floating above an empty chart.
         let isLapsed = !weeklyVolumes.isEmpty && !weeklyVolumes.contains { $0.week >= chartStartDate }
+        // The day the last-best week was logged: the latest weighted set, so the date lines up with
+        // the week the value comes from. Only set while lapsed.
+        let lastBestDate = isLapsed ? sets.filter { $0.volume(for: exercise) > 0 }.compactMap({ $0.workout?.date }).max() : nil
         let muscleColor = exercise.muscleGroup?.color ?? .accentColor
         MetricTile(
             title: NSLocalizedString("volume", comment: ""),
-            label: .plain(NSLocalizedString(isLapsed ? "personalBest" : "thisWeek", comment: "")),
+            label: .plain(NSLocalizedString(isLapsed ? "lastBest" : "thisWeek", comment: "")),
             value: weeklyVolumes.isEmpty
                 ? nil
-                : formatWeightForDisplay(isLapsed ? weeklyVolumes.map(\.volume).max() ?? 0 : thisWeekVolume),
+                : formatWeightForDisplay(isLapsed ? weeklyVolumes.last?.volume ?? 0 : thisWeekVolume),
             unit: WeightUnit.used.rawValue,
             accent: AnyShapeStyle(muscleColor),
             accentColor: muscleColor,
             // This week against the baseline. With a real baseline but nothing logged this week yet,
             // that's a genuine "down 100%" — zero work, not missing data — so the pill says so rather
-            // than disappearing. A fully lapsed exercise keeps its "time since" pill (lapsedSince).
+            // than disappearing. A fully lapsed exercise drops the pill for the last-best date instead.
             percentChange: volumeBaseline > 0 && !isLapsed
                 ? (Double(thisWeekVolume) - Double(volumeBaseline)) / Double(volumeBaseline) * 100
                 : nil,
             isRecord: isRecordWeek(volume: thisWeekVolume, in: weeklyVolumes),
             requiresPro: true,
-            lapsedSince: isLapsed ? sets.compactMap({ $0.workout?.date }).max() : nil,
+            lastBestDate: lastBestDate,
             showsEmptyPlaceholder: weeklyVolumes.isEmpty
         ) {
-            barChart(weeklyVolumes: weeklyVolumes, isLapsed: isLapsed)
+            // Lapsed → no chart, matching the four best-value tiles (the date carries the story); the
+            // empty slot keeps the row height. Otherwise the regular five-week bars.
+            if isLapsed {
+                Color.clear
+            } else {
+                barChart(weeklyVolumes: weeklyVolumes)
+            }
         }
     }
 
     // MARK: - Chart
 
-    private func barChart(weeklyVolumes: [WeeklyVolume], isLapsed: Bool) -> some View {
-        // Lapsed: the last five trained weeks, with the best one highlighted (it's the week the
-        // value above refers to). Otherwise: the regular five-week window, current week
-        // highlighted.
-        let shownVolumes = isLapsed
-            ? Array(weeklyVolumes.suffix(5))
-            : weeklyVolumes.filter { $0.week >= chartStartDate }
-        let highlightedWeek = isLapsed
-            ? shownVolumes.max { $0.volume < $1.volume }?.week
-            : Date.now.startOfWeek
-        let domainStart = isLapsed ? (shownVolumes.first?.week ?? chartStartDate) : chartStartDate
-        let domainEnd = isLapsed
-            ? (shownVolumes.last?.week.endOfWeek ?? Date.now.endOfWeek) : Date.now.endOfWeek
+    private func barChart(weeklyVolumes: [WeeklyVolume]) -> some View {
+        // The regular five-week window, current week highlighted. (A lapsed exercise shows no chart
+        // at all — see the tile body — so there's no last-trained-weeks variant here anymore.)
+        let shownVolumes = weeklyVolumes.filter { $0.week >= chartStartDate }
         return Chart {
             ForEach(shownVolumes) { weeklyVolume in
                 BarMark(
@@ -86,13 +86,13 @@ struct ExerciseVolumeTile: View {
                     width: TileBarChartStyle.barWidth
                 )
                 .foregroundStyle(
-                    highlightedWeek.map({ Calendar.current.isDate(weeklyVolume.week, equalTo: $0, toGranularity: .weekOfYear) }) == true
+                    Calendar.current.isDate(weeklyVolume.week, equalTo: Date.now.startOfWeek, toGranularity: .weekOfYear)
                         ? (exercise.muscleGroup?.color ?? .accentColor) : Color.fill
                 )
                 .tileBarStyle()
             }
         }
-        .chartXScale(domain: domainStart ... domainEnd)
+        .chartXScale(domain: chartStartDate ... Date.now.endOfWeek)
         .chartXAxis {}
         .chartYAxis {}
     }

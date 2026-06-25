@@ -75,6 +75,8 @@
 "creatingTemplateFailedText" = "Assicurati che l'immagine selezionata contenga un allenamento.";
 "currentBest" = "Migliore attuale";
 "previousBest" = "Migliore precedente";
+"lastBest" = "Ultima migliore";
+"lastBestInfo" = "Mostrato quando non alleni questo esercizio da più di 4 settimane: il tuo risultato migliore dall'ultima sessione.";
 "newRecord" = "Nuovo record";
 "currentBestInfo" = "Il tuo migliore attuale è il valore più alto delle ultime 4 settimane. L'andamento mostra quanto è più alto rispetto al tuo migliore nelle 4 settimane precedenti.";
 "currentBestComparisonInfo" = "Il tuo migliore attuale (a destra) è il valore più alto delle ultime 4 settimane. Il distintivo mostra come si confronta con il tuo migliore nel periodo mostrato a sinistra; scorri per confrontare con qualsiasi periodo.";

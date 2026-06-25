@@ -75,6 +75,8 @@
 "creatingTemplateFailedText" = "Make sure the selected image contains a workout.";
 "currentBest" = "Current Best";
 "previousBest" = "Previous Best";
+"lastBest" = "Last Best";
+"lastBestInfo" = "Shown when you haven't trained this exercise in over 4 weeks — your best from the most recent session you logged.";
 "newRecord" = "New Record";
 "currentBestInfo" = "Your current best is the highest value in the last 4 weeks. The trend shows how much higher it is than your best in the 4 weeks before you reached it.";
 "currentBestComparisonInfo" = "Your current best (right) is the highest value in the last 4 weeks. The badge shows how it compares to your best in the shown period on the left — scroll to compare against any time.";

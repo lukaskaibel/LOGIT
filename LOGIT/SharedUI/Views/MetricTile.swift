@@ -64,6 +64,11 @@ struct MetricTile<ChartContent: View>: View {
     /// Last session this tile's metric has a value from, when that session predates the metric's
     /// window — renders the gray "time since" capsule in the trend pill's slot.
     var lapsedSince: Date? = nil
+    /// The date of the "last best" entry — the most recent session's best, shown when a metric's
+    /// current-best window is empty. Renders an absolute-date capsule in the trend pill's slot, the
+    /// dated companion to the value above. Distinct from `lapsedSince`, which shows a *relative*
+    /// "time since" for the weekly tiles; this stamps the exact day the value was last reached.
+    var lastBestDate: Date? = nil
     /// Swaps subtitle, value, and chart for the centered ghost placeholder — for tiles whose metric
     /// has no usable data at all (the weight tiles of a bodyweight exercise). The content keeps
     /// rendering hidden underneath so the tile stays exactly as tall as its row neighbor.
@@ -161,6 +166,8 @@ struct MetricTile<ChartContent: View>: View {
             )
         } else if let lapsedSince {
             TileLapsedPill(date: lapsedSince)
+        } else if let lastBestDate {
+            TileDatePill(date: lastBestDate)
         }
     }
 
@@ -194,6 +201,35 @@ private struct TileLapsedPill: View {
         .fixedSize()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(date, format: .relative(presentation: .named)))
+    }
+}
+
+// MARK: - Date Pill
+
+/// The absolute-date companion to `TileLapsedPill`, in the trend pill's slot on a tile showing its
+/// "last best" (the most recent session's best, when the current-best window is empty). Same compact
+/// capsule anatomy as the lapsed pill, but a calendar glyph and an exact date — the dated stamp on
+/// the value above, "when this was last done" — rather than a relative "time since".
+private struct TileDatePill: View {
+    let date: Date
+
+    var body: some View {
+        ProgressIndicatorPill(symbol: "calendar", color: .secondary, size: .compact) {
+            Text(dateText)
+                .font(.system(.caption2, design: .rounded, weight: .bold))
+        }
+        // The pill never compresses or wraps — the title next to it shrinks instead.
+        .fixedSize()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(date, format: .dateTime.day().month().year()))
+    }
+
+    /// Day and month, with the year only when it isn't the current one — a stale metric is often
+    /// from an earlier year, where the year is the point.
+    private var dateText: String {
+        date.isInCurrentYear
+            ? date.formatted(.dateTime.day().month())
+            : date.formatted(.dateTime.day().month().year())
     }
 }
 

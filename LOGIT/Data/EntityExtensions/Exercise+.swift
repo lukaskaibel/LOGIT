@@ -138,6 +138,38 @@ extension Exercise {
               best.volume(for: self) > 0 else { return nil }
         return best
     }
+
+    /// The set holding this exercise's best `metric` on the most recent day it was trained — its
+    /// "last best". Shown in place of the current best on the metric tiles and chart headers when the
+    /// current-best window is empty (untrained for over a month), so a lapsed metric reads as the real
+    /// value it last reached, dated, instead of a "––". Nil when no set has a usable value.
+    func lastBestSet(for metric: ExercisePrimaryMetric, in sets: [WorkoutSet]? = nil) -> WorkoutSet? {
+        Self.bestOnMostRecentDay(in: sets ?? self.sets) { workoutSet in
+            switch metric {
+            case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: self)
+            case .weight: return workoutSet.maximum(.weight, for: self)
+            case .repetitions: return workoutSet.maximum(.repetitions, for: self)
+            }
+        }
+    }
+
+    /// The set holding this exercise's best single-set volume on the most recent day it was trained —
+    /// the set-volume sibling of `lastBestSet(for:)` (set volume isn't an `ExercisePrimaryMetric`).
+    func lastBestSetVolumeSet(in sets: [WorkoutSet]? = nil) -> WorkoutSet? {
+        Self.bestOnMostRecentDay(in: sets ?? self.sets) { $0.volume(for: self) }
+    }
+
+    /// The set with the highest `value` on the most recent day any set has a positive value — the
+    /// shared core of the "last best" lookups. Nil when no set has a positive value for the metric.
+    private static func bestOnMostRecentDay(in sets: [WorkoutSet], value: (WorkoutSet) -> Int) -> WorkoutSet? {
+        let withValue = sets.filter { value($0) > 0 }
+        guard let lastDate = withValue.compactMap({ $0.workout?.date }).max() else { return nil }
+        let calendar = Calendar.current
+        let lastDay = calendar.startOfDay(for: lastDate)
+        return withValue
+            .filter { calendar.isDate($0.workout?.date ?? .distantPast, inSameDayAs: lastDay) }
+            .max(by: { value($0) < value($1) })
+    }
 }
 
 extension Array: @retroactive Identifiable where Element: Exercise {

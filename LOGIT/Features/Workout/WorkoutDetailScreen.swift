@@ -220,6 +220,7 @@ struct WorkoutDetailScreen: View {
                 Text(workout.name ?? "")
                     .screenHeaderStyle()
                     .lineLimit(2)
+                    .minimumScaleFactor(0.6)
             }
             // The donut matches the height of date + title (like the workout cell's header row),
             // measured so a wrapping title scales it rather than leaving it floating.

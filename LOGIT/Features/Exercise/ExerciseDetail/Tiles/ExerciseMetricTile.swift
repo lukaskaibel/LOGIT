@@ -321,10 +321,11 @@ struct ExerciseTileSparkline: View {
         .frame(maxWidth: .infinity)
         .frame(height: height)
         // The all-time window spans the full width and skips `.clipped()` and the leading fade — its
-        // whole point is to show where the history begins and ends. The windowed sparklines clip and
-        // fade in from the left.
+        // whole point is to show where the history begins and ends — but it still fades its area out
+        // at the bottom so the full-bleed fill melts into the card border instead of being clipped
+        // while still tinted. The windowed sparklines clip and fade in from the left (and bottom).
         if window == .allTime {
-            base
+            base.tileSparklineBottomFadeMask()
         } else {
             base.clipped().tileSparklineFadeMask()
         }

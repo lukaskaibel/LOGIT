@@ -223,15 +223,7 @@ struct WorkoutPersonalBestsTile: View {
         let shown = Array(tileRecords.prefix(maxShown))
         let remaining = report.prRecords.count - shown.count
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(workout.muscleGroups.gradient(startPoint: .bottomLeading, endPoint: .topTrailing).opacity(0.15))
-                        .frame(width: 30, height: 30)
-                    Image(systemName: "trophy.fill")
-                        .font(.system(size: 14))
-                        .muscleGroupGradientStyle(for: workout.muscleGroups)
-                }
+            HStack(spacing: 6) {
                 Text(NSLocalizedString("personalRecords", comment: ""))
                     .tileHeaderStyle()
                 Spacer(minLength: 0)
@@ -255,14 +247,22 @@ struct WorkoutPersonalBestsTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// One record on its own secondary tile: the exercise and metric on the left, the new best in its
-    /// muscle-group gradient on the right with the gain over the value it beat in a matching pill
-    /// beneath it. The tile stays neutral (`tertiaryBackground`, a step up from the records tile around
-    /// it) so the muscle colour reads from the value and the gain pill alone.
+    /// One record on its own secondary tile: a muscle-tinted trophy badge leads the exercise and
+    /// metric, with the new best in its muscle-group gradient on the right and the gain over the value
+    /// it beat in a matching pill beneath it. The tile stays neutral (`tertiaryBackground`, a step up
+    /// from the records tile around it) so the muscle colour reads from the badge, value and pill.
     private func row(for record: WorkoutProgressReport.PRRecord) -> some View {
         let color = record.exercise.muscleGroup?.color ?? .accentColor
         let gain = record.value - record.previousBest
         return HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 34, height: 34)
+                Image(systemName: "trophy.fill")
+                    .font(.caption)
+                    .foregroundStyle(color.gradient)
+            }
             VStack(alignment: .leading, spacing: 2) {
                 Text(record.exercise.displayName)
                     .font(.subheadline.weight(.semibold))
@@ -374,8 +374,9 @@ struct WorkoutPersonalRecordsScreen: View {
     }
 }
 
-/// One record on `WorkoutPersonalRecordsScreen`: the exercise and metric, the new best in its
-/// muscle-group gradient with the gain over the value it beat, and a line chart of the exercise's
+/// One record on `WorkoutPersonalRecordsScreen`: a trophy badge leading the exercise and metric with
+/// the gain over the value it beat as a pill top-right, the new best below in its muscle-group
+/// gradient beside the previous best it beat (a muted history pill), and a line chart of the exercise's
 /// entire history for this metric — cresting at this record, so the all-time best stands out.
 struct WorkoutPersonalRecordCard: View {
     let workout: Workout
@@ -384,25 +385,32 @@ struct WorkoutPersonalRecordCard: View {
     var body: some View {
         let color = record.exercise.muscleGroup?.color ?? .accentColor
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 38, height: 38)
+                    Image(systemName: "trophy.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(color.gradient)
+                }
                 VStack(alignment: .leading, spacing: 1) {
                     Text(record.exercise.displayName)
                         .font(.body.weight(.semibold))
                         .foregroundStyle(Color.label)
+                        .lineLimit(1)
                     Text(record.metric.title)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Spacer()
-                Image(systemName: "trophy.fill")
-                    .font(.subheadline)
-                    .foregroundStyle(color.gradient)
+                Spacer(minLength: 8)
+                gainPill(color: color)
             }
-            HStack(alignment: .lastTextBaseline) {
+            HStack(alignment: .firstTextBaseline) {
                 personalRecordValueView(for: record, configuration: .large)
                     .foregroundStyle(color.gradient)
-                Spacer()
-                gainPill(color: color)
+                Spacer(minLength: 8)
+                previousBestPill
             }
             ExerciseTileSparkline(points: sparklinePoints, color: color, window: .allTime, height: 96)
         }
@@ -419,6 +427,18 @@ struct WorkoutPersonalRecordCard: View {
         if gain > 0 {
             let display = personalRecordDisplay(gain, metric: record.metric)
             ProgressIndicatorPill(symbol: "chevron.up", style: AnyShapeStyle(color.gradient)) {
+                UnitView(value: display.value, unit: display.unit, configuration: .small)
+            }
+        }
+    }
+
+    /// The record this one beat, as a muted history pill: the previous personal best for this metric,
+    /// so the card shows the jump from it to the new best rather than the new number alone.
+    @ViewBuilder
+    private var previousBestPill: some View {
+        if record.previousBest > 0 {
+            let display = personalRecordDisplay(record.previousBest, metric: record.metric)
+            ProgressIndicatorPill(symbol: "clock.arrow.circlepath", color: .secondary, size: .compact) {
                 UnitView(value: display.value, unit: display.unit, configuration: .small)
             }
         }

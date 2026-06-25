@@ -223,7 +223,15 @@ struct WorkoutPersonalBestsTile: View {
         let shown = Array(tileRecords.prefix(maxShown))
         let remaining = report.prRecords.count - shown.count
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(workout.muscleGroups.gradient(startPoint: .bottomLeading, endPoint: .topTrailing).opacity(0.15))
+                        .frame(width: 30, height: 30)
+                    Image(systemName: "trophy.fill")
+                        .font(.system(size: 14))
+                        .muscleGroupGradientStyle(for: workout.muscleGroups)
+                }
                 Text(NSLocalizedString("personalRecords", comment: ""))
                     .tileHeaderStyle()
                 Spacer(minLength: 0)
@@ -231,15 +239,12 @@ struct WorkoutPersonalBestsTile: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.tertiaryLabel)
             }
-            VStack(spacing: 0) {
-                ForEach(Array(shown.enumerated()), id: \.element.id) { index, record in
-                    if index > 0 {
-                        Divider().overlay(Color.primary.opacity(0.06))
-                    }
+            VStack(spacing: 8) {
+                ForEach(shown) { record in
                     row(for: record)
                 }
             }
-            .padding(.top, 6)
+            .padding(.top, 8)
             if remaining > 0 {
                 Text(String(format: NSLocalizedString("personalRecordsMoreCount", comment: ""), remaining))
                     .font(.footnote.weight(.semibold))
@@ -250,8 +255,10 @@ struct WorkoutPersonalBestsTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// One record, full width: the exercise and metric on the left, the new best in its muscle-group
-    /// gradient on the right with the gain over the value it beat beneath it.
+    /// One record on its own secondary tile: the exercise and metric on the left, the new best in its
+    /// muscle-group gradient on the right with the gain over the value it beat in a matching pill
+    /// beneath it. The tile stays neutral (`tertiaryBackground`, a step up from the records tile around
+    /// it) so the muscle colour reads from the value and the gain pill alone.
     private func row(for record: WorkoutProgressReport.PRRecord) -> some View {
         let color = record.exercise.muscleGroup?.color ?? .accentColor
         let gain = record.value - record.previousBest
@@ -266,26 +273,25 @@ struct WorkoutPersonalBestsTile: View {
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 1) {
+            VStack(alignment: .trailing, spacing: 5) {
                 personalRecordValueView(for: record, configuration: .normal)
                     .foregroundStyle(color.gradient)
                 if gain > 0 {
                     let display = personalRecordDisplay(gain, metric: record.metric)
-                    HStack(spacing: 2) {
-                        Image(systemName: "chevron.up")
-                            .font(.caption2.weight(.bold))
-                        UnitView(
-                            value: display.value,
-                            unit: display.unit,
-                            configuration: .extraSmall,
-                            unitColor: .secondary
-                        )
+                    ProgressIndicatorPill(
+                        symbol: "chevron.up",
+                        style: AnyShapeStyle(color.gradient),
+                        size: .compact
+                    ) {
+                        UnitView(value: display.value, unit: display.unit, configuration: .extraSmall)
                     }
-                    .foregroundStyle(.secondary)
                 }
             }
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .secondaryTileStyle()
     }
 }
 
@@ -337,7 +343,7 @@ struct WorkoutPersonalRecordsScreen: View {
         VStack(spacing: 10) {
             ZStack {
                 Circle()
-                    .fill((workout.muscleGroups.first?.color ?? .accentColor).opacity(0.15))
+                    .fill(workout.muscleGroups.gradient(startPoint: .bottomLeading, endPoint: .topTrailing).opacity(0.15))
                     .frame(width: 64, height: 64)
                 Image(systemName: "trophy.fill")
                     .font(.system(size: 28))

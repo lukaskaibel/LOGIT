@@ -68,10 +68,10 @@ struct ExerciseDetailScreen: View {
             ScrollView {
                 VStack(spacing: SECTION_SPACING) {
                     header
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
 
                     metricTiles(workoutSets: workoutSets)
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
 
                     VStack(spacing: SECTION_HEADER_SPACING) {
                         HStack {
@@ -111,7 +111,7 @@ struct ExerciseDetailScreen: View {
                         }
                         .padding(.top, 5)
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
                     .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                 }
                 .animation(.easeInOut, value: workoutSetGroups)

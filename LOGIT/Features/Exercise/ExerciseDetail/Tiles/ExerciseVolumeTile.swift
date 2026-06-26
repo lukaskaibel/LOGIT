@@ -60,7 +60,8 @@ struct ExerciseVolumeTile: View {
             isRecord: isRecordWeek(volume: thisWeekVolume, in: weeklyVolumes),
             requiresPro: true,
             lastBestDate: lastBestDate,
-            showsEmptyPlaceholder: weeklyVolumes.isEmpty
+            showsEmptyPlaceholder: weeklyVolumes.isEmpty,
+            chartBleeds: false
         ) {
             // Lapsed → no chart, matching the four best-value tiles (the date carries the story); the
             // empty slot keeps the row height. Otherwise the regular five-week bars.
@@ -83,7 +84,7 @@ struct ExerciseVolumeTile: View {
                 BarMark(
                     x: .value("Week", weeklyVolume.week, unit: .weekOfYear),
                     y: .value("Volume in week", convertWeightForDisplayingDecimal(weeklyVolume.volume)),
-                    width: TileBarChartStyle.barWidth
+                    width: TileBarChartStyle.footerBarWidth
                 )
                 .foregroundStyle(
                     Calendar.current.isDate(weeklyVolume.week, equalTo: Date.now.startOfWeek, toGranularity: .weekOfYear)

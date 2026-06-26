@@ -62,7 +62,8 @@ struct ExerciseSetsTile: View {
             isRecord: isRecordWeek(count: thisWeekCount, in: weeklySets),
             requiresPro: true,
             lastBestDate: lastBestDate,
-            showsEmptyPlaceholder: weeklySets.isEmpty
+            showsEmptyPlaceholder: weeklySets.isEmpty,
+            chartBleeds: false
         ) {
             // Lapsed → no chart, matching the four best-value tiles (the date carries the story); the
             // empty slot keeps the row height. Otherwise the regular five-week bars.
@@ -85,7 +86,7 @@ struct ExerciseSetsTile: View {
                 BarMark(
                     x: .value("Week", weeklySet.week, unit: .weekOfYear),
                     y: .value("Sets in week", weeklySet.count),
-                    width: TileBarChartStyle.barWidth
+                    width: TileBarChartStyle.footerBarWidth
                 )
                 .foregroundStyle(
                     Calendar.current.isDate(weeklySet.week, equalTo: Date.now.startOfWeek, toGranularity: .weekOfYear)

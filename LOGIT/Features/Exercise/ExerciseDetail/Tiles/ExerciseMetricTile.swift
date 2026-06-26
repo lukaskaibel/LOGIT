@@ -265,7 +265,13 @@ struct ExerciseTileSparkline: View {
     let color: Color
     var window: Window = .currentBest
     /// Chart height. Taller suits the all-time window, where the full history needs room to read.
+    /// Ignored when `bleeds` is set — the footer fills whatever height the tile hands it.
     var height: CGFloat = 56
+    /// The metric-tile footer treatment: the sparkline fills the slot it's given and runs edge to
+    /// edge — no clip — with the carry-forward dash reaching the right edge and the bottom fade melting
+    /// the fill into the card border, easing IN at its left edge (just right of the trend pill). Off
+    /// for the windowed corner sparklines, which clip and fade in from the left at a fixed height.
+    var bleeds: Bool = false
 
     /// How many sessions the recent-history window shows.
     private static let recentHistoryCount = 6
@@ -278,7 +284,9 @@ struct ExerciseTileSparkline: View {
         let margin: (Date) -> Date = { Calendar.current.date(byAdding: .day, value: 2, to: $0) ?? $0 }
         switch window {
         case .currentBest:
-            return Exercise.currentBestWindowStart ... margin(.now)
+            // Bleeding to the right edge means the carry-forward dash must reach `.now` exactly; the
+            // corner sparkline keeps the +2-day margin so its trailing dot clears the edge.
+            return Exercise.currentBestWindowStart ... (bleeds ? .now : margin(.now))
         case .recentHistory:
             let shown = points.suffix(Self.recentHistoryCount)
             guard let first = shown.first?.date, let last = shown.last?.date else {
@@ -303,7 +311,7 @@ struct ExerciseTileSparkline: View {
         // Over a long span catmullRom waggles between sessions; monotone keeps the all-time line a
         // clean trend that never overshoots its own crest.
         let interpolation: InterpolationMethod = window == .allTime ? .monotone : .catmullRom
-        let base = Chart {
+        let chartView = Chart {
             tileSparklineMarks(
                 points: points,
                 color: color,
@@ -318,16 +326,27 @@ struct ExerciseTileSparkline: View {
         .chartYScale(domain: 0 ... max(maxValue * 1.15, 1))
         .chartXAxis {}
         .chartYAxis {}
-        .frame(maxWidth: .infinity)
-        .frame(height: height)
-        // The all-time window spans the full width and skips `.clipped()` and the leading fade — its
-        // whole point is to show where the history begins and ends — but it still fades its area out
-        // at the bottom so the full-bleed fill melts into the card border instead of being clipped
-        // while still tinted. The windowed sparklines clip and fade in from the left (and bottom).
-        if window == .allTime {
-            base.tileSparklineBottomFadeMask()
+
+        // The bleeding footer (metric tiles) fills the slot the tile hands it and runs edge to edge to
+        // the trailing + bottom edges — no clip — but fades IN from the left so it eases in at its left
+        // edge (just right of the trend pill). The all-time line spans the full width at a fixed height
+        // with only the bottom fade (its point is to show where the history begins and ends). The
+        // windowed corner sparklines clip and fade in from the left.
+        if bleeds {
+            chartView
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .tileSparklineBleedFadeMask()
+        } else if window == .allTime {
+            chartView
+                .frame(maxWidth: .infinity)
+                .frame(height: height)
+                .tileSparklineBottomFadeMask()
         } else {
-            base.clipped().tileSparklineFadeMask()
+            chartView
+                .frame(maxWidth: .infinity)
+                .frame(height: height)
+                .clipped()
+                .tileSparklineFadeMask()
         }
     }
 }
@@ -380,14 +399,14 @@ struct ExerciseBestMetricTile: View {
         ) {
             if isLapsed {
                 // No chart in the last-best state — a single carry-forward dash says nothing. The
-                // empty slot keeps the bottom row's height so the tile matches its grid neighbour.
+                // empty footer keeps the tile's fixed height so it matches its grid neighbours.
                 Color.clear
             } else {
                 ExerciseTileSparkline(
                     points: dailyBestPoints(in: sets),
                     color: color,
                     window: .currentBest,
-                    height: CompactChartFrame.height
+                    bleeds: true
                 )
             }
         }

@@ -170,16 +170,6 @@ private func personalRecordsHeadline(count: Int) -> String {
         : String(format: NSLocalizedString("personalRecordsCount", comment: ""), count)
 }
 
-/// A record's base value as a display string and its unit, in the metric's units. The tile and the
-/// card both render it through `UnitView`, which uppercases the unit, so the casing can't drift.
-private func personalRecordDisplay(_ base: Int, metric: ExercisePrimaryMetric) -> (value: String, unit: String) {
-    switch metric {
-    case .estimatedOneRepMax: return (formatEstimatedOneRepMax(base), WeightUnit.used.rawValue)
-    case .weight: return (formatWeightForDisplay(base), WeightUnit.used.rawValue)
-    case .repetitions: return (String(base), NSLocalizedString("reps", comment: ""))
-    }
-}
-
 /// The metric's base value of a single set for `exercise` — the per-day series behind the records
 /// screen's sparkline, matching the detection in `WorkoutProgressReport.compute`.
 private func personalRecordSetValue(_ workoutSet: WorkoutSet, exercise: Exercise, metric: ExercisePrimaryMetric) -> Int {
@@ -188,15 +178,6 @@ private func personalRecordSetValue(_ workoutSet: WorkoutSet, exercise: Exercise
     case .weight: return workoutSet.maximum(.weight, for: exercise)
     case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
     }
-}
-
-/// A record's value as `UnitView` — the caller tints it in the exercise's muscle-group gradient.
-private func personalRecordValueView(
-    for record: WorkoutProgressReport.PRRecord,
-    configuration: UnitViewConfiguration = .normal
-) -> some View {
-    let display = personalRecordDisplay(record.value, metric: record.metric)
-    return UnitView(value: display.value, unit: display.unit, configuration: configuration)
 }
 
 // MARK: - Records tile
@@ -249,12 +230,15 @@ struct WorkoutPersonalBestsTile: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .padding([.top, .horizontal], CELL_PADDING)
             VStack(spacing: 8) {
                 ForEach(shown) { record in
                     PersonalBestRow(record: record)
                 }
             }
             .padding(.top, 8)
+            .padding(.horizontal, CELL_PADDING / 2)
+            .padding(.bottom, CELL_PADDING / 2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -504,44 +488,5 @@ struct WorkoutPersonalRecords_Previews: PreviewProvider {
     static var previews: some View {
         PreviewWrapperView()
             .previewEnvironmentObjects()
-    }
-}
-
-// MARK: - Shared record row
-
-/// One record on its own secondary tile — the muscle-tinted trophy badge, the exercise + metric, and
-/// the new best in its muscle-group gradient. Shared by the workout-detail records tile and the
-/// Summary records tile so the rows render identically.
-struct PersonalBestRow: View {
-    let record: WorkoutProgressReport.PRRecord
-
-    var body: some View {
-        let color = record.exercise.muscleGroup?.color ?? .accentColor
-        return HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.15))
-                    .frame(width: 34, height: 34)
-                Image(systemName: "trophy.fill")
-                    .font(.caption)
-                    .foregroundStyle(color.gradient)
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(record.exercise.displayName)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                Text(record.metric.title)
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 8)
-            personalRecordValueView(for: record, configuration: .normal)
-                .foregroundStyle(color.gradient)
-        }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .secondaryTileStyle(insetShadow: true)
     }
 }

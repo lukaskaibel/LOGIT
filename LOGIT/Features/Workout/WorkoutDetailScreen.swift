@@ -276,7 +276,6 @@ struct WorkoutDetailScreen: View {
             isShowingPersonalRecords = true
         } label: {
             WorkoutPersonalBestsTile(workout: workout, report: progressReport ?? .empty)
-                .padding(CELL_PADDING)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .tileStyle()
         }

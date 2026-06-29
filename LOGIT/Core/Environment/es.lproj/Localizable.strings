@@ -988,3 +988,8 @@
 "bestStreakLabel" = "Mejor · %d sem";
 "monthWorkoutsCount" = "%d entrenamientos";
 "muscleBalanceEmptySubtitle" = "Registra un entrenamiento para ver tu reparto muscular.";
+"pinKeyLifts" = "Fija tus ejercicios clave";
+"chooseExercises" = "Elegir ejercicios";
+"pinAMeasurement" = "Fijar una medida";
+"trackMeasurements" = "Registra tus medidas";
+"unlockWithPro" = "Desbloquear con Pro";

@@ -988,3 +988,8 @@
 "bestStreakLabel" = "Record · %d sem";
 "monthWorkoutsCount" = "%d séances";
 "muscleBalanceEmptySubtitle" = "Enregistre une séance pour voir ta répartition musculaire.";
+"pinKeyLifts" = "Épingle tes exercices clés";
+"chooseExercises" = "Choisir des exercices";
+"pinAMeasurement" = "Épingler une mesure";
+"trackMeasurements" = "Suis tes mesures";
+"unlockWithPro" = "Débloquer avec Pro";

@@ -988,3 +988,8 @@
 "bestStreakLabel" = "최고 · %d주";
 "monthWorkoutsCount" = "%d회";
 "muscleBalanceEmptySubtitle" = "운동을 기록하면 근육 분포가 표시됩니다.";
+"pinKeyLifts" = "주요 운동 고정";
+"chooseExercises" = "운동 선택";
+"pinAMeasurement" = "측정값 고정";
+"trackMeasurements" = "측정값 추적";
+"unlockWithPro" = "Pro로 잠금 해제";

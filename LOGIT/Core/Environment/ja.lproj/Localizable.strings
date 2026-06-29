@@ -988,3 +988,8 @@
 "bestStreakLabel" = "最高 · %d週";
 "monthWorkoutsCount" = "%d回";
 "muscleBalanceEmptySubtitle" = "ワークアウトを記録すると筋肉の配分が表示されます。";
+"pinKeyLifts" = "主要種目をピン留め";
+"chooseExercises" = "種目を選ぶ";
+"pinAMeasurement" = "測定値をピン留め";
+"trackMeasurements" = "測定値を記録";
+"unlockWithPro" = "Proで解除";

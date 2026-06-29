@@ -164,10 +164,10 @@ struct HomeScreen: View {
                                 )
                             }
 
-                            measurementsSection
+                            exercisesSection
                                 .padding(.horizontal)
 
-                            exercisesSection
+                            measurementsSection
                                 .padding(.horizontal)
                             }
 
@@ -358,22 +358,12 @@ struct HomeScreen: View {
                 }
             }
             VStack(spacing: 8) {
-                if pinnedMeasurements.isEmpty && isShowingMeasurementsTip {
-                    TipView(
-                        title: NSLocalizedString("pinMeasurementsTip", comment: ""),
-                        description: NSLocalizedString("pinMeasurementsTipDescription", comment: ""),
-                        buttonAction: .init(
-                            title: NSLocalizedString("addPin", comment: ""),
-                            action: { isShowingMeasurementsEditSheet = true }
-                        ),
-                        isShown: $isShowingMeasurementsTip
-                    )
-                }
-                if !pinnedMeasurements.isEmpty {
+                if pinnedMeasurements.isEmpty {
+                    MeasurementsEmptyState(onAdd: { isShowingMeasurementsEditSheet = true })
+                } else {
                     MeasurementWatchlist(types: pinnedMeasurements) { measurementType in
                         homeNavigationCoordinator.path.append(.measurementDetail(measurementType))
                     }
-                }
                 
                 Button {
                     homeNavigationCoordinator.path.append(.measurements)
@@ -394,8 +384,9 @@ struct HomeScreen: View {
                     .tileStyle()
                 }
                 .buttonStyle(TileButtonStyle())
+                }
             }
-            .isBlockedWithoutPro()
+            .isBlockedWithoutPro(!pinnedMeasurements.isEmpty)
         }
     }
     
@@ -429,17 +420,9 @@ struct HomeScreen: View {
                 .fontWeight(.semibold)
             }
             VStack(spacing: 8) {
-                if pinnedExerciseTiles.isEmpty && isShowingExercisesTip {
-                    TipView(
-                        title: NSLocalizedString("pinExercisesTip", comment: ""),
-                        description: NSLocalizedString("pinExercisesTipDescription", comment: ""),
-                        buttonAction: .init(
-                            title: NSLocalizedString("addPin", comment: ""),
-                            action: { isShowingExercisesPinEditSheet = true }
-                        ),
-                        isShown: $isShowingExercisesTip
-                    )
-                }
+                if pinnedExerciseTiles.isEmpty {
+                    PinnedExercisesEmptyState(onAdd: { isShowingExercisesPinEditSheet = true })
+                } else {
                 LazyVGrid(
                     columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
                     spacing: 8
@@ -469,6 +452,7 @@ struct HomeScreen: View {
                     .tileStyle()
                 }
                 .buttonStyle(TileButtonStyle())
+                }
             }
         }
     }

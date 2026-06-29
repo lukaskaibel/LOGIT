@@ -988,3 +988,8 @@
 "bestStreakLabel" = "Best · %d wks";
 "monthWorkoutsCount" = "%d workouts";
 "muscleBalanceEmptySubtitle" = "Log a workout to see your muscle split.";
+"pinKeyLifts" = "Pin your key lifts";
+"chooseExercises" = "Choose exercises";
+"pinAMeasurement" = "Pin a measurement";
+"trackMeasurements" = "Track your measurements";
+"unlockWithPro" = "Unlock with Pro";

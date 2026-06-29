@@ -33,8 +33,11 @@ struct TileSparklinePoint: Identifiable {
 enum TileSparklineStyle {
     /// Stroke width of the line (and the carry-forward rule).
     static let lineWidth: CGFloat = 3
-    /// Smoothing of the line — a soft curve through the daily points.
-    static let interpolation: InterpolationMethod = .catmullRom
+    /// Smoothing of the line — a soft curve through the daily points. Monotone cubic, not catmullRom:
+    /// a cardinal spline overshoots, so a value that dips between two close sessions bows the line into
+    /// a zig-zag (a dip-then-spike that isn't in the data). Monotone never overshoots a point, so the
+    /// curve stays a clean trend. Matches the detail chart screens, which all interpolate monotone.
+    static let interpolation: InterpolationMethod = .monotone
     /// Diameter of a daily-best dot.
     static let pointDiameter: CGFloat = 6
     /// Dash pattern of the carry-forward line from the last point to today.

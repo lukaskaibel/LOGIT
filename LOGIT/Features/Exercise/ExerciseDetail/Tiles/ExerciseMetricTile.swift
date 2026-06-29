@@ -308,14 +308,10 @@ struct ExerciseTileSparkline: View {
 
     var body: some View {
         let maxValue = points.map(\.value).max() ?? 1
-        // Over a long span catmullRom waggles between sessions; monotone keeps the all-time line a
-        // clean trend that never overshoots its own crest.
-        let interpolation: InterpolationMethod = window == .allTime ? .monotone : .catmullRom
         let chartView = Chart {
             tileSparklineMarks(
                 points: points,
                 color: color,
-                interpolation: interpolation,
                 // The all-time line is a single clean curve — no per-session dots, no crest marker.
                 // The windowed sparklines keep a dot per session.
                 showsSymbols: window != .allTime,

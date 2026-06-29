@@ -79,10 +79,6 @@ struct MetricTile<ChartContent: View>: View {
     /// The chart's height once the tile is no longer fixed-height (accessibility sizes): the footer
     /// can't fill the leftover space, so it takes a flat height instead of collapsing.
     private static var accessibilityChartHeight: CGFloat { 64 }
-    /// The small inset a non-bleeding (bar) chart takes so its outermost, rounded bars clear the tile's
-    /// rounded corners instead of being sliced. Smaller than `CELL_PADDING` so the bars still read as
-    /// nearly full-bleed — just pulled off the corners.
-    private static var nonBleedingChartInset: CGFloat { 10 }
 
     private var usesFixedHeight: Bool { !dynamicTypeSize.isAccessibilitySize }
 
@@ -144,28 +140,18 @@ struct MetricTile<ChartContent: View>: View {
             .minimumScaleFactor(0.7)
     }
 
-    /// The chart with its trend pill. For a bleeding (line) chart the pill sits at the bottom-leading
-    /// corner and the line fills the space to its RIGHT — it starts past the pill, never under it — and
-    /// still bleeds to the trailing + bottom edges. A bar chart keeps its full width (the slim bars read
-    /// fine behind the pill), the pill overlaid on the bottom-leading corner.
-    @ViewBuilder
+    /// The chart and its trend pill, side by side: the pill sits at the bottom-leading corner and the
+    /// chart fills the space to its RIGHT, so the two never overlap and the gap between them stays
+    /// constant. The line bleeds to the trailing + bottom edges; a bar chart takes a small inset there
+    /// so its rounded bars clear the corners.
     private var chartFooter: some View {
-        if chartBleeds {
-            HStack(alignment: .bottom, spacing: 8) {
-                if hasPill {
-                    pill
-                        .padding(.leading, CELL_PADDING)
-                        .padding(.bottom, CELL_PADDING)
-                }
-                chartContent
+        HStack(alignment: .bottom, spacing: 8) {
+            if hasPill {
+                pill
+                    .padding(.leading, CELL_PADDING)
+                    .padding(.bottom, CELL_PADDING)
             }
-        } else {
             chartContent
-                .overlay(alignment: .bottomLeading) {
-                    pill
-                        .padding(.leading, CELL_PADDING)
-                        .padding(.bottom, CELL_PADDING)
-                }
         }
     }
 
@@ -185,17 +171,18 @@ struct MetricTile<ChartContent: View>: View {
         }
     }
 
-    /// Zero for a bleeding chart (the line sparklines run to the edges), a small leading/trailing/
-    /// bottom inset for a non-bleeding one (the bar charts) so its rounded bars clear the corners.
+    /// Zero for a bleeding (line) chart — it runs to the edges, the only chart with reduced padding for
+    /// now. A bar chart sits inside the tile's normal `CELL_PADDING`, like the header and value above it:
+    /// full trailing + bottom padding, and full leading too unless a pill sits beside it (then the pill
+    /// + HStack spacing already hold the bars in).
     private var chartFooterInsets: EdgeInsets {
-        chartBleeds
-            ? EdgeInsets()
-            : EdgeInsets(
-                top: 0,
-                leading: Self.nonBleedingChartInset,
-                bottom: Self.nonBleedingChartInset,
-                trailing: Self.nonBleedingChartInset
-            )
+        guard !chartBleeds else { return EdgeInsets() }
+        return EdgeInsets(
+            top: 0,
+            leading: hasPill ? 0 : CELL_PADDING,
+            bottom: CELL_PADDING,
+            trailing: CELL_PADDING
+        )
     }
 
     @ViewBuilder

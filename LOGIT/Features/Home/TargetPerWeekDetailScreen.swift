@@ -14,7 +14,7 @@ struct TargetPerWeekDetailScreen: View {
 
     private static let logger = Logger(
         subsystem: ".com.lukaskbl.LOGIT",
-        category: "MuscleGroupSplitScreen"
+        category: "TargetPerWeekDetailScreen"
     )
 
     // MARK: - AppStorage

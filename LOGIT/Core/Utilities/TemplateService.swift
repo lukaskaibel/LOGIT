@@ -11,7 +11,7 @@ import OSLog
 import SwiftUI
 
 class TemplateService: ObservableObject {
-    private static let logger = Logger(subsystem: "com.lukaskbl.LOGIT", category: "TemplateService")
+    private static let logger = Logger(subsystem: ".com.lukaskbl.LOGIT", category: "TemplateService")
 
     enum Error: Swift.Error {
         case emptyResponse, invalidData, invalidImage, jsonParsingError, keysNotMatching,

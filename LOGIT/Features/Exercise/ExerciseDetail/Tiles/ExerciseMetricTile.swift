@@ -284,9 +284,9 @@ struct ExerciseTileSparkline: View {
         let margin: (Date) -> Date = { Calendar.current.date(byAdding: .day, value: 2, to: $0) ?? $0 }
         switch window {
         case .currentBest:
-            // Bleeding to the right edge means the carry-forward dash must reach `.now` exactly; the
-            // corner sparkline keeps the +2-day margin so its trailing dot clears the edge.
-            return Exercise.currentBestWindowStart ... (bleeds ? .now : margin(.now))
+            // Keep the +2-day margin so the latest dot clears the right edge instead of being sliced;
+            // the area is carried out to that edge separately (see `carryForwardArea`).
+            return Exercise.currentBestWindowStart ... margin(.now)
         case .recentHistory:
             let shown = points.suffix(Self.recentHistoryCount)
             guard let first = shown.first?.date, let last = shown.last?.date else {
@@ -308,6 +308,7 @@ struct ExerciseTileSparkline: View {
 
     var body: some View {
         let maxValue = points.map(\.value).max() ?? 1
+        let domain = xDomain()
         let chartView = Chart {
             tileSparklineMarks(
                 points: points,
@@ -315,10 +316,13 @@ struct ExerciseTileSparkline: View {
                 // The all-time line is a single clean curve — no per-session dots, no crest marker.
                 // The windowed sparklines keep a dot per session.
                 showsSymbols: window != .allTime,
-                showsCarryForward: window == .currentBest
+                showsCarryForward: window == .currentBest,
+                // Carry the area (and the dashed carry-forward) out to the domain's trailing edge so the
+                // fill bleeds to the tile's right edge, past where the latest dot sits.
+                carryForwardArea: window == .currentBest ? domain.upperBound : nil
             )
         }
-        .chartXScale(domain: xDomain())
+        .chartXScale(domain: domain)
         .chartYScale(domain: 0 ... max(maxValue * 1.15, 1))
         .chartXAxis {}
         .chartYAxis {}

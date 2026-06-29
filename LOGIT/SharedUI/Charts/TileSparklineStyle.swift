@@ -98,7 +98,8 @@ func tileSparklineMarks(
     interpolation: InterpolationMethod = TileSparklineStyle.interpolation,
     showsSymbols: Bool = true,
     showsCarryForward: Bool = true,
-    carryForwardEnd: Date = .now
+    carryForwardEnd: Date = .now,
+    carryForwardArea: Date? = nil
 ) -> some ChartContent {
     // Leading entry pinned to the far past so the line and area enter from the left edge instead of
     // starting mid-chart (the domain clips it).
@@ -128,12 +129,20 @@ func tileSparklineMarks(
             .interpolationMethod(interpolation)
             .foregroundStyle(TileSparklineStyle.areaGradient(color))
     }
+    // Extend the area flat to the chart's trailing edge, so the gradient fill bleeds all the way to
+    // the tile's right edge even though the latest dot (and the window) stop short of it — including
+    // under the dashed carry-forward line.
+    if let carryForwardArea, let last = points.last {
+        AreaMark(x: .value("Date", carryForwardArea, unit: .day), y: .value("Value", last.value))
+            .interpolationMethod(interpolation)
+            .foregroundStyle(TileSparklineStyle.areaGradient(color))
+    }
     if showsCarryForward, let last = points.last,
        last.date < carryForwardEnd,
        !Calendar.current.isDate(last.date, inSameDayAs: carryForwardEnd) {
         RuleMark(
             xStart: .value("Start", last.date),
-            xEnd: .value("End", carryForwardEnd),
+            xEnd: .value("End", carryForwardArea ?? carryForwardEnd),
             y: .value("Value", last.value)
         )
         .foregroundStyle(color.opacity(TileSparklineStyle.carryForwardOpacity))

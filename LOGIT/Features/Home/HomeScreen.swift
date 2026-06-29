@@ -8,7 +8,6 @@
 import ColorfulX
 import CoreData
 import SwiftUI
-import WishKit
 
 struct HomeScreen: View {
     // MARK: - AppStorage
@@ -27,13 +26,16 @@ struct HomeScreen: View {
 
     // MARK: - State
 
+    @StateObject private var summaryViewModel = SummaryViewModel()
+
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingSettings = false
-    @State private var isShowingWishkit = false
     @State private var isShowingMeasurementsEditSheet = false
     @State private var isShowingExercisesPinEditSheet = false
     @State private var isShowingMeasurementsTip = true
     @State private var isShowingExercisesTip = true
+    @State private var isShowingStartWorkoutSheet = false
+    @State private var summaryRecords: [WorkoutProgressReport.PRRecord] = []
 
     // MARK: - Body
 
@@ -96,52 +98,79 @@ struct HomeScreen: View {
                                 .padding(.horizontal)
                             }
 
-                            VStack(spacing: SECTION_HEADER_SPACING) {
-                                Text(NSLocalizedString("thisWeek", comment: ""))
-                                    .sectionHeaderStyle2()
+                            if summaryViewModel.mode(workouts: workouts) == .firstOpen {
+                                SummaryWelcomeView(
+                                    onStartWorkout: { isShowingStartWorkoutSheet = true },
+                                    onBrowseTemplates: { homeNavigationCoordinator.path.append(.templateList) }
+                                )
+                                .padding(.horizontal)
+                            } else {
+                            VStack(spacing: 8) {
+                                weeklyGoalHero(workouts: workouts)
+                                PeriodPicker(selection: Binding(
+                                    get: { summaryViewModel.selectedPeriod },
+                                    set: { summaryViewModel.userSelected($0) }
+                                ))
+                                .padding(.vertical, 2)
+                                if summaryViewModel.didAutoFallback {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "info.circle")
+                                        Text(summaryViewModel.selectedPeriod == .year
+                                            ? NSLocalizedString("summaryEmptyWeekHintYear", comment: "")
+                                            : NSLocalizedString("summaryEmptyWeekHintMonth", comment: ""))
+                                    }
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                VStack(spacing: 8) {
-                                    currentWeekWeeklyTargetWidget
-                                    Button {
-                                        homeNavigationCoordinator.path.append(.overallSets)
-                                    } label: {
-                                        OverallSetsTile(workouts: workouts)
-                                            .contentShape(Rectangle())
+                                }
+                                SummaryStatTileGrid(
+                                    viewModel: summaryViewModel,
+                                    workouts: workouts,
+                                    onOpenDetail: { metric in
+                                        homeNavigationCoordinator.path.append(.summaryStat(metric))
                                     }
-                                    .buttonStyle(TileButtonStyle())
+                                )
+                                Button {
+                                    homeNavigationCoordinator.path.append(.muscleGroupsOverview)
+                                } label: {
+                                    MuscleBalanceTile(
+                                        workouts: summaryViewModel.filtered(workouts, to: summaryViewModel.selectedPeriod),
+                                        period: summaryViewModel.selectedPeriod
+                                    )
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(TileButtonStyle())
+                                if !summaryRecords.isEmpty {
                                     Button {
-                                        homeNavigationCoordinator.path.append(.volume)
+                                        homeNavigationCoordinator.path.append(.summaryRecords(summaryViewModel.selectedPeriod))
                                     } label: {
-                                        VolumeTile(workouts: workouts)
-                                    }
-                                    .buttonStyle(TileButtonStyle())
-                                    Button {
-                                        homeNavigationCoordinator.path.append(.muscleGroupsOverview)
-                                    } label: {
-                                        MuscleGroupSplitTile(workouts: workouts)
-                                            .contentShape(Rectangle())
+                                        SummaryRecordsTile(
+                                            records: summaryRecords,
+                                            period: summaryViewModel.selectedPeriod
+                                        )
+                                        .contentShape(Rectangle())
                                     }
                                     .buttonStyle(TileButtonStyle())
                                 }
                             }
                             .padding(.horizontal)
+                            .onAppear {
+                                summaryViewModel.resolveInitialPeriod(workouts: workouts)
+                            }
+                            .task(id: "\(summaryViewModel.selectedPeriod.rawValue)-\(workouts.count)") {
+                                summaryRecords = SummaryRecords.records(
+                                    in: summaryViewModel.filtered(workouts, to: summaryViewModel.selectedPeriod),
+                                    database: database
+                                )
+                            }
 
                             measurementsSection
                                 .padding(.horizontal)
 
                             exercisesSection
                                 .padding(.horizontal)
-
-                            VStack {
-                                Button {
-                                    isShowingWishkit = true
-                                } label: {
-                                    Label(NSLocalizedString("whatsStillMissing", comment: ""), systemImage: "questionmark.bubble.fill")
-                                }
-                                .buttonStyle(SecondaryButtonStyle())
                             }
-                            .padding(.horizontal)
-                            .padding(.top, 30)
+
                         }
                         .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                         .padding(.top)
@@ -172,14 +201,8 @@ struct HomeScreen: View {
                             }
                     }
                 }
-                .sheet(isPresented: $isShowingWishkit) {
-                    WishKit.FeedbackListView().withNavigation()
-                        .onAppear {
-                            WishKit.configure(with: WISHKIT_API_KEY)
-                            WishKit.config.allowUndoVote = true
-                            WishKit.theme.primaryColor = .accentColor
-                            WishKit.config.buttons.saveButton.textColor = .setBoth(to: .black)
-                        }
+                .sheet(isPresented: $isShowingStartWorkoutSheet) {
+                    WorkoutStartSheet()
                 }
                 .sheet(isPresented: $isShowingMeasurementsEditSheet) {
                     MeasurementsEditSheet(pinnedMeasurements: Binding(
@@ -202,9 +225,25 @@ struct HomeScreen: View {
                         MeasurementDetailScreen(measurementType: measurementType)
                     case .measurements: MeasurementsScreen()
                     case .muscleGroupsOverview:
-                        MuscleGroupSplitScreen()
+                        MuscleGroupsOverviewScreen()
+                    case .muscleTargetSplit:
+                        MuscleTargetSplitScreen()
+                    case let .muscleGroupDetail(group):
+                        MuscleGroupDetailScreen(muscleGroup: group)
                     case .overallSets: OverallSetsScreen(workouts: workouts)
+                    case let .summaryStat(metric):
+                        SummaryStatScreen(
+                            metric: metric,
+                            workouts: workouts,
+                            initialPeriod: summaryViewModel.selectedPeriod
+                        )
+                    case let .summaryRecords(period):
+                        SummaryRecordsScreen(
+                            workouts: summaryViewModel.filtered(workouts, to: period),
+                            period: period
+                        )
                     case .targetPerWeek: TargetPerWeekDetailScreen()
+                    case .weeklyGoal: WorkoutGoalScreen(workouts: workouts)
                     case let .template(template):
                         TemplateDetailScreen(template: template)
                     case .templateList: TemplateListScreen()
@@ -258,13 +297,13 @@ struct HomeScreen: View {
 
     @State private var isShowingWorkoutGoalSheet = false
 
-    private var currentWeekWeeklyTargetWidget: some View {
+    private func weeklyGoalHero(workouts: [Workout]) -> some View {
         Group {
             if targetPerWeek > 0 {
                 Button {
-                    homeNavigationCoordinator.path.append(.targetPerWeek)
+                    homeNavigationCoordinator.path.append(.weeklyGoal)
                 } label: {
-                    CurrentWeekWeeklyTargetTile()
+                    WeeklyGoalHeroTile(workouts: workouts)
                 }
                 .buttonStyle(TileButtonStyle())
             } else {
@@ -330,13 +369,10 @@ struct HomeScreen: View {
                         isShown: $isShowingMeasurementsTip
                     )
                 }
-                ForEach(pinnedMeasurements, id: \.rawValue) { measurementType in
-                    Button {
+                if !pinnedMeasurements.isEmpty {
+                    MeasurementWatchlist(types: pinnedMeasurements) { measurementType in
                         homeNavigationCoordinator.path.append(.measurementDetail(measurementType))
-                    } label: {
-                        MeasurementTile(measurementType: measurementType)
                     }
-                    .buttonStyle(TileButtonStyle())
                 }
                 
                 Button {
@@ -382,7 +418,7 @@ struct HomeScreen: View {
     private var exercisesSection: some View {
         VStack(spacing: SECTION_HEADER_SPACING) {
             HStack {
-                Text(NSLocalizedString("exercises", comment: ""))
+                Text(NSLocalizedString("pinnedExercises", comment: ""))
                     .sectionHeaderStyle2()
                 Spacer()
                 Button {
@@ -404,9 +440,14 @@ struct HomeScreen: View {
                         isShown: $isShowingExercisesTip
                     )
                 }
-                ForEach(pinnedExerciseTiles, id: \.id) { pinnedTile in
-                    if let exercise = database.getExercise(byID: pinnedTile.exerciseID) {
-                        pinnedExerciseTileView(for: exercise, tileType: pinnedTile.tileType)
+                LazyVGrid(
+                    columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
+                    spacing: 8
+                ) {
+                    ForEach(pinnedExerciseTiles.prefix(4), id: \.id) { pinnedTile in
+                        if let exercise = database.getExercise(byID: pinnedTile.exerciseID) {
+                            pinnedExerciseTileView(for: exercise, tileType: pinnedTile.tileType)
+                        }
                     }
                 }
                 
@@ -445,15 +486,15 @@ struct HomeScreen: View {
             } label: {
                 switch tileType {
                 case .weight:
-                    PinnedExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
                 case .repetitions:
-                    PinnedExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
                 case .volume:
-                    PinnedExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
                 case .setVolume:
-                    PinnedExerciseSetVolumeTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseSetVolumeTile(exercise: exercise, workoutSets: workoutSets)
                 case .estimatedOneRepMax:
-                    PinnedExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets)
                 }
             }
             .buttonStyle(TileButtonStyle())

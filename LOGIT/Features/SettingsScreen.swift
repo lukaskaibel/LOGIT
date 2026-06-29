@@ -10,6 +10,7 @@ import SwiftUI
 
 struct SettingsScreen: View {
     @EnvironmentObject private var purchaseManager: PurchaseManager
+    @Environment(\.requestReview) private var requestReview
 
     // MARK: - UserDefaults
 
@@ -28,114 +29,11 @@ struct SettingsScreen: View {
     var body: some View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
-                VStack(spacing: CELL_SPACING) {
-                    HStack {
-                        Text(NSLocalizedString("unit", comment: ""))
-                        Spacer()
-                        Picker(
-                            NSLocalizedString("unit", comment: ""),
-                            selection: $weightUnit,
-                            content: {
-                                Text("kg").tag(WeightUnit.kg)
-                                Text("lbs").tag(WeightUnit.lbs)
-                            }
-                        )
-                    }
-                    .padding(CELL_PADDING)
-                    .tileStyle()
-                }
-
-                VStack(spacing: CELL_SPACING) {
-                    VStack(alignment: .leading) {
-                        Toggle(NSLocalizedString("preventAutoLock", comment: ""), isOn: $preventAutoLock)
-                        Text(NSLocalizedString("preventAutoLockDescription", comment: ""))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(CELL_PADDING)
-                    .tileStyle()
-                    Toggle(NSLocalizedString("timerIsMuted", comment: ""), isOn: $timerIsMuted)
-                        .padding(CELL_PADDING)
-                        .tileStyle()
-                }
-
-                VStack(spacing: CELL_SPACING) {
-                    Link(destination: URL(string: "mailto:logit.fitness@gmail.com?subject=LOGIT%20Support")!) {
-                        HStack {
-                            Text(NSLocalizedString("support", comment: ""))
-                            Spacer()
-                            Image(systemName: "envelope")
-                        }
-                        .padding(CELL_PADDING)
-                        .tileStyle()
-                    }
-                    Button {
-                        isShowingPrivacyPolicy = true
-                    } label: {
-                        HStack {
-                            Text(NSLocalizedString("privacyPolicy", comment: ""))
-                            Spacer()
-                            NavigationChevron()
-                        }
-                        .padding(CELL_PADDING)
-                        .tileStyle()
-                    }
-                    Button {
-                        isShowingTermsAndConditions = true
-                    } label: {
-                        HStack {
-                            Text(NSLocalizedString("termsAndConditions", comment: ""))
-                            Spacer()
-                            NavigationChevron()
-                        }
-                        .padding(CELL_PADDING)
-                        .tileStyle()
-                    }
-                    Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
-                        HStack {
-                            Text(NSLocalizedString("licenceAgreement", comment: ""))
-                            Spacer()
-                            Image(systemName: "arrow.up.forward.square")
-                        }
-                        .padding(CELL_PADDING)
-                        .tileStyle()
-                    }
-                }
-
-                VStack(spacing: SECTION_HEADER_SPACING) {
-                    Text(NSLocalizedString("subscription", comment: ""))
-                        .sectionHeaderStyle2()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    VStack(spacing: CELL_SPACING) {
-                        Button {
-                            if purchaseManager.hasUnlockedPro {
-                                Task {
-                                    if let window = UIApplication.shared.connectedScenes.first {
-                                        do {
-                                            try await AppStore.showManageSubscriptions(in: window as! UIWindowScene)
-                                        } catch {
-                                            print("Error:(error)")
-                                        }
-                                    }
-                                }
-                            } else {
-                                isShowingUpgradeToPro = true
-                            }
-                        } label: {
-                            if purchaseManager.hasUnlockedPro {
-                                Text(NSLocalizedString("showSubscriptions", comment: ""))
-                            } else {
-                                HStack {
-                                    Image(systemName: "crown.fill")
-                                    Text(NSLocalizedString("upgradeTo", comment: ""))
-                                    LogitProLogo()
-                                        .environment(\.colorScheme, .light)
-                                }
-                            }
-                        }
-                        .buttonStyle(PrimaryButtonStyle())
-                    }
-                }
+                generalSection
+                workoutSection
+                feedbackSection
+                aboutSection
+                subscriptionSection
             }
             .padding(.horizontal)
         }
@@ -149,9 +47,7 @@ struct SettingsScreen: View {
                 PrivacyPolicyScreen()
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                isShowingPrivacyPolicy = false
-                            } label: {
+                            Button { isShowingPrivacyPolicy = false } label: {
                                 Text(NSLocalizedString("done", comment: ""))
                             }
                         }
@@ -164,9 +60,7 @@ struct SettingsScreen: View {
                 TermsAndConditionsScreen()
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                isShowingTermsAndConditions = false
-                            } label: {
+                            Button { isShowingTermsAndConditions = false } label: {
                                 Text(NSLocalizedString("done", comment: ""))
                             }
                         }
@@ -174,6 +68,162 @@ struct SettingsScreen: View {
                     .navigationBarTitleDisplayMode(.large)
             }
         }
+    }
+
+    // MARK: - Sections
+
+    @ViewBuilder
+    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: SECTION_HEADER_SPACING) {
+            Text(title)
+                .sectionHeaderStyle2()
+                .frame(maxWidth: .infinity, alignment: .leading)
+            content()
+        }
+    }
+
+    private var generalSection: some View {
+        section(NSLocalizedString("general", comment: "")) {
+            HStack {
+                Text(NSLocalizedString("unit", comment: ""))
+                Spacer()
+                Picker(NSLocalizedString("unit", comment: ""), selection: $weightUnit) {
+                    Text("kg").tag(WeightUnit.kg)
+                    Text("lbs").tag(WeightUnit.lbs)
+                }
+            }
+            .padding(CELL_PADDING)
+            .tileStyle()
+        }
+    }
+
+    private var workoutSection: some View {
+        section(NSLocalizedString("workout", comment: "")) {
+            VStack(spacing: CELL_SPACING) {
+                VStack(alignment: .leading) {
+                    Toggle(NSLocalizedString("preventAutoLock", comment: ""), isOn: $preventAutoLock)
+                    Text(NSLocalizedString("preventAutoLockDescription", comment: ""))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(CELL_PADDING)
+                .tileStyle()
+                Toggle(NSLocalizedString("timerIsMuted", comment: ""), isOn: $timerIsMuted)
+                    .padding(CELL_PADDING)
+                    .tileStyle()
+            }
+        }
+    }
+
+    private var feedbackSection: some View {
+        section(NSLocalizedString("feedbackAndSupport", comment: "")) {
+            VStack(spacing: CELL_SPACING) {
+                Link(destination: URL(string: "mailto:\(FEEDBACK_EMAIL)?subject=Feature%20Idea")!) {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "lightbulb.fill")
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(NSLocalizedString("suggestAFeature", comment: ""))
+                                .foregroundStyle(Color.label)
+                            Text(NSLocalizedString("suggestAFeatureSubtitle", comment: ""))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "envelope")
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(CELL_PADDING)
+                    .tileStyle()
+                }
+                Link(destination: URL(string: "mailto:\(FEEDBACK_EMAIL)?subject=LOGIT%20Support")!) {
+                    settingsRow(NSLocalizedString("support", comment: ""), icon: "questionmark.circle", trailingSystemImage: "envelope")
+                }
+                Button { requestReview() } label: {
+                    settingsRow(NSLocalizedString("rateLogit", comment: ""), icon: "star.fill", trailingChevron: true)
+                }
+            }
+        }
+    }
+
+    private var aboutSection: some View {
+        section(NSLocalizedString("about", comment: "")) {
+            VStack(spacing: CELL_SPACING) {
+                Button { isShowingPrivacyPolicy = true } label: {
+                    settingsRow(NSLocalizedString("privacyPolicy", comment: ""), trailingChevron: true)
+                }
+                Button { isShowingTermsAndConditions = true } label: {
+                    settingsRow(NSLocalizedString("termsAndConditions", comment: ""), trailingChevron: true)
+                }
+                Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                    settingsRow(NSLocalizedString("licenceAgreement", comment: ""), trailingSystemImage: "arrow.up.forward.square")
+                }
+            }
+        }
+    }
+
+    private var subscriptionSection: some View {
+        section(NSLocalizedString("subscription", comment: "")) {
+            Button {
+                if purchaseManager.hasUnlockedPro {
+                    Task {
+                        if let window = UIApplication.shared.connectedScenes.first {
+                            do {
+                                try await AppStore.showManageSubscriptions(in: window as! UIWindowScene)
+                            } catch {
+                                print("Error:(error)")
+                            }
+                        }
+                    }
+                } else {
+                    isShowingUpgradeToPro = true
+                }
+            } label: {
+                if purchaseManager.hasUnlockedPro {
+                    Text(NSLocalizedString("showSubscriptions", comment: ""))
+                } else {
+                    HStack {
+                        Image(systemName: "crown.fill")
+                        Text(NSLocalizedString("upgradeTo", comment: ""))
+                        LogitProLogo()
+                            .environment(\.colorScheme, .light)
+                    }
+                }
+            }
+            .buttonStyle(PrimaryButtonStyle())
+        }
+    }
+
+    // MARK: - Row helper
+
+    /// A standard settings row — an optional leading accent icon, the title, and either a trailing
+    /// chevron (a push) or a trailing system image (an external/link affordance).
+    private func settingsRow(
+        _ title: String,
+        icon: String? = nil,
+        trailingSystemImage: String? = nil,
+        trailingChevron: Bool = false
+    ) -> some View {
+        HStack(spacing: 12) {
+            if let icon {
+                Image(systemName: icon)
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 24)
+            }
+            Text(title)
+                .foregroundStyle(Color.label)
+            Spacer()
+            if let trailingSystemImage {
+                Image(systemName: trailingSystemImage)
+                    .foregroundStyle(.secondary)
+            }
+            if trailingChevron {
+                NavigationChevron()
+            }
+        }
+        .padding(CELL_PADDING)
+        .tileStyle()
     }
 }
 

@@ -208,6 +208,7 @@
 		E18E0521AED5762B30E5FA1F /* MuscleGroupDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */; };
 		D0AF3C855D8D73E72DA7AF92 /* SummaryWelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E62F41D02C28CB089872E955 /* SummaryWelcomeView.swift */; };
 		23A5FD0EA5AC115CC0EC34E6 /* SummaryRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADFEC5772AE8932AA1089603 /* SummaryRecords.swift */; };
+		79BB043F7BA96F3DE3739FB7 /* SummaryEmptyStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC42311A655A248061E11238 /* SummaryEmptyStates.swift */; };
 		BACD36D82914BE00C27FE040 /* MuscleTargetSplitScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C7068F531DB65831E8FA8F /* MuscleTargetSplitScreen.swift */; };
 		07A5D2C54CA81141164E3D9D /* MuscleGroupsOverviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54FB7DD2DDA0DE70BD366F9C /* MuscleGroupsOverviewScreen.swift */; };
 		85D5027D8B1FA8DB36998EBC /* SummaryStatScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE557E27ADC9A2C02BE79DBE /* SummaryStatScreen.swift */; };
@@ -477,6 +478,7 @@
 		FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupDetailScreen.swift; sourceTree = "<group>"; };
 		E62F41D02C28CB089872E955 /* SummaryWelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryWelcomeView.swift; sourceTree = "<group>"; };
 		ADFEC5772AE8932AA1089603 /* SummaryRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryRecords.swift; sourceTree = "<group>"; };
+		DC42311A655A248061E11238 /* SummaryEmptyStates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryEmptyStates.swift; sourceTree = "<group>"; };
 		80C7068F531DB65831E8FA8F /* MuscleTargetSplitScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleTargetSplitScreen.swift; sourceTree = "<group>"; };
 		54FB7DD2DDA0DE70BD366F9C /* MuscleGroupsOverviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupsOverviewScreen.swift; sourceTree = "<group>"; };
 		DE557E27ADC9A2C02BE79DBE /* SummaryStatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryStatScreen.swift; sourceTree = "<group>"; };
@@ -1024,6 +1026,7 @@
 				FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */,
 				E62F41D02C28CB089872E955 /* SummaryWelcomeView.swift */,
 				ADFEC5772AE8932AA1089603 /* SummaryRecords.swift */,
+				DC42311A655A248061E11238 /* SummaryEmptyStates.swift */,
 				80C7068F531DB65831E8FA8F /* MuscleTargetSplitScreen.swift */,
 				54FB7DD2DDA0DE70BD366F9C /* MuscleGroupsOverviewScreen.swift */,
 				DE557E27ADC9A2C02BE79DBE /* SummaryStatScreen.swift */,
@@ -1772,6 +1775,7 @@
 				E18E0521AED5762B30E5FA1F /* MuscleGroupDetailScreen.swift in Sources */,
 				D0AF3C855D8D73E72DA7AF92 /* SummaryWelcomeView.swift in Sources */,
 				23A5FD0EA5AC115CC0EC34E6 /* SummaryRecords.swift in Sources */,
+				79BB043F7BA96F3DE3739FB7 /* SummaryEmptyStates.swift in Sources */,
 				BACD36D82914BE00C27FE040 /* MuscleTargetSplitScreen.swift in Sources */,
 				07A5D2C54CA81141164E3D9D /* MuscleGroupsOverviewScreen.swift in Sources */,
 				85D5027D8B1FA8DB36998EBC /* SummaryStatScreen.swift in Sources */,

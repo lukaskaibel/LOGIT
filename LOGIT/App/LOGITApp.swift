@@ -94,18 +94,18 @@ struct LOGIT: App {
     var body: some Scene {
         WindowGroup {
             TabView {
-                    Tab("summary", systemImage: "house") {
+                    Tab("summary", systemImage: "square.grid.2x2.fill") {
                         HomeScreen()
         //                #if targetEnvironment(simulator)
         //                    .statusBarHidden(true)
         //                #endif
                     }
-                    Tab(NSLocalizedString("history", comment: ""), systemImage: "clock.arrow.circlepath") {
+                    Tab(NSLocalizedString("history", comment: ""), systemImage: "clock.fill") {
                         NavigationStack {
                             WorkoutListScreen()
                         }
                     }
-                    Tab(NSLocalizedString("templates", comment: ""), systemImage: "list.bullet.rectangle.portrait") {
+                    Tab(NSLocalizedString("templates", comment: ""), systemImage: "list.bullet.rectangle.portrait.fill") {
                         NavigationStack {
                             TemplateListScreen()
                         }

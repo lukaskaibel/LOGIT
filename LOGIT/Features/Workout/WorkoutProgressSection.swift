@@ -29,6 +29,9 @@ struct WorkoutProgressReport {
         /// When that previous best was first set — the earliest prior session to reach it — so the
         /// card can date it beside the new record. Nil if no dated prior session carried it.
         let previousBestDate: Date?
+        /// The date this record was set — the date of the workout it came from — so a card can date
+        /// it when records are aggregated across workouts (the Summary records screen).
+        let date: Date?
         var id: String { "\(exercise.objectID.uriRepresentation())-\(metric.rawValue)" }
     }
 
@@ -113,7 +116,8 @@ struct WorkoutProgressReport {
                             metric: metric,
                             value: current,
                             previousBest: priorBest,
-                            previousBestDate: previousBestDate
+                            previousBestDate: previousBestDate,
+                            date: workoutDate
                         )
                     )
                 }
@@ -247,7 +251,7 @@ struct WorkoutPersonalBestsTile: View {
             }
             VStack(spacing: 8) {
                 ForEach(shown) { record in
-                    row(for: record)
+                    PersonalBestRow(record: record)
                 }
             }
             .padding(.top, 8)
@@ -255,40 +259,6 @@ struct WorkoutPersonalBestsTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// One record on its own secondary tile: a muscle-tinted trophy badge leads the exercise and
-    /// metric, with the new best in its muscle-group gradient on the right. The tile stays neutral
-    /// (`tertiaryBackground`, recessed with the same inset shadow as the set cells) so the muscle
-    /// colour reads from the badge and value; the gain over the value it beat lives on the records
-    /// screen behind the tile rather than crowding the glance here.
-    private func row(for record: WorkoutProgressReport.PRRecord) -> some View {
-        let color = record.exercise.muscleGroup?.color ?? .accentColor
-        return HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.15))
-                    .frame(width: 34, height: 34)
-                Image(systemName: "trophy.fill")
-                    .font(.caption)
-                    .foregroundStyle(color.gradient)
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(record.exercise.displayName)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                Text(record.metric.title)
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 8)
-            personalRecordValueView(for: record, configuration: .normal)
-                .foregroundStyle(color.gradient)
-        }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .secondaryTileStyle(insetShadow: true)
-    }
 }
 
 // MARK: - Records screen
@@ -311,7 +281,7 @@ struct WorkoutPersonalRecordsScreen: View {
                 header
                 VStack(spacing: 10) {
                     ForEach(report.prRecords) { record in
-                        WorkoutPersonalRecordCard(workout: workout, record: record)
+                        WorkoutPersonalRecordCard(record: record)
                     }
                 }
                 footnote
@@ -376,7 +346,6 @@ struct WorkoutPersonalRecordsScreen: View {
 /// history for this metric that bleeds to the card's edges. The top-right corner is intentionally left
 /// free now that the gain reads from the scoreboard rather than a pill up there.
 struct WorkoutPersonalRecordCard: View {
-    let workout: Workout
     let record: WorkoutProgressReport.PRRecord
 
     var body: some View {
@@ -440,7 +409,7 @@ struct WorkoutPersonalRecordCard: View {
                 label: NSLocalizedString("newRecord", comment: ""),
                 value: current.value,
                 unit: current.unit,
-                caption: recordDateCaption(workout.date)
+                caption: recordDateCaption(record.date)
             ),
             trailingValueStyle: AnyShapeStyle(color.gradient),
             percentChange: percentChange,
@@ -461,7 +430,7 @@ struct WorkoutPersonalRecordCard: View {
     /// The exercise's daily best for this metric up to and including this workout — the same
     /// daily-best series the exercise detail tiles chart, ending at the record.
     private var sparklinePoints: [ExerciseTileSparkline.Point] {
-        let cutoff = workout.date ?? .now
+        let cutoff = record.date ?? .now
         let sets = record.exercise.sets.filter { ($0.workout?.date ?? .distantFuture) <= cutoff }
         let grouped = Dictionary(grouping: sets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
@@ -535,5 +504,44 @@ struct WorkoutPersonalRecords_Previews: PreviewProvider {
     static var previews: some View {
         PreviewWrapperView()
             .previewEnvironmentObjects()
+    }
+}
+
+// MARK: - Shared record row
+
+/// One record on its own secondary tile — the muscle-tinted trophy badge, the exercise + metric, and
+/// the new best in its muscle-group gradient. Shared by the workout-detail records tile and the
+/// Summary records tile so the rows render identically.
+struct PersonalBestRow: View {
+    let record: WorkoutProgressReport.PRRecord
+
+    var body: some View {
+        let color = record.exercise.muscleGroup?.color ?? .accentColor
+        return HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 34, height: 34)
+                Image(systemName: "trophy.fill")
+                    .font(.caption)
+                    .foregroundStyle(color.gradient)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(record.exercise.displayName)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.label)
+                    .lineLimit(1)
+                Text(record.metric.title)
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 8)
+            personalRecordValueView(for: record, configuration: .normal)
+                .foregroundStyle(color.gradient)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .secondaryTileStyle(insetShadow: true)
     }
 }

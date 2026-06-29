@@ -154,13 +154,10 @@
 		801BBDCB2DF7338A00CDB1FB /* MeasurementsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD062DF7338A00CDB1FB /* MeasurementsScreen.swift */; };
 		801BBDCC2DF7338A00CDB1FB /* DropSet+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCD02DF7338A00CDB1FB /* DropSet+.swift */; };
 		801BBDCD2DF7338A00CDB1FB /* Database+SetConvert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCC72DF7338A00CDB1FB /* Database+SetConvert.swift */; };
-		801BBDCE2DF7338A00CDB1FB /* MuscleGroupSplitScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD012DF7338A00CDB1FB /* MuscleGroupSplitScreen.swift */; };
 		801BBDCF2DF7338A00CDB1FB /* ExerciseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCB82DF7338A00CDB1FB /* ExerciseService.swift */; };
-		801BBDD02DF7338A00CDB1FB /* MuscleGroupSplitTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCFA2DF7338A00CDB1FB /* MuscleGroupSplitTile.swift */; };
 		801BBDD12DF7338A00CDB1FB /* Widget+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCDB2DF7338A00CDB1FB /* Widget+.swift */; };
 		801BBDD22DF7338A00CDB1FB /* MuscleGroupSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD542DF7338A00CDB1FB /* MuscleGroupSelector.swift */; };
 		801BBDD32DF7338A00CDB1FB /* SectionedFetchRequestWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCE22DF7338A00CDB1FB /* SectionedFetchRequestWrapper.swift */; };
-		801BBDD42DF7338A00CDB1FB /* CurrentWeekWeeklyTargetTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCF92DF7338A00CDB1FB /* CurrentWeekWeeklyTargetTile.swift */; };
 		801BBDD52DF7338A00CDB1FB /* WorkoutDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD212DF7338A00CDB1FB /* WorkoutDetailSheet.swift */; };
 		801BBDD62DF7338A00CDB1FB /* TipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD582DF7338A00CDB1FB /* TipView.swift */; };
 		801BBDD72DF7338A00CDB1FB /* TemplateSetCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD0A2DF7338A00CDB1FB /* TemplateSetCell.swift */; };
@@ -229,9 +226,6 @@
 		8085497F2EE9A37C00761706 /* default_exercises.json in Resources */ = {isa = PBXBuildFile; fileRef = 8085497D2EE9A37C00761706 /* default_exercises.json */; };
 		80A1D97B2EDC91B2004EE258 /* PinnedExerciseTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97A2EDC91B2004EE258 /* PinnedExerciseTile.swift */; };
 		80A1D97C2EDC91B2004EE258 /* ExercisesPinEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D9792EDC91B2004EE258 /* ExercisesPinEditSheet.swift */; };
-		80A1D9802EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */; };
-		80A1D9812EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */; };
-		80A1D9822EDC98E6004EE258 /* PinnedExerciseWeightTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */; };
 		80A7A0D12F2E6C5C00112233 /* logit_terms_and_conditions.md in Resources */ = {isa = PBXBuildFile; fileRef = 80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */; };
 		80AA00022F3A000100AA0001 /* RestDurationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00012F3A000100AA0001 /* RestDurationPicker.swift */; };
 		80AA00042F3A000100AA0001 /* RestTimerBetweenSetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */; };
@@ -287,8 +281,6 @@
 		B3DC6B7D9EF58D3A51C28227 /* LOGITScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */; };
 		E1E1E1000000000000000B01 /* ExerciseE1RMTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */; };
 		E1E1E1000000000000000B02 /* ExerciseE1RMScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */; };
-		E1E1E1000000000000000B03 /* PinnedExerciseE1RMTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F03 /* PinnedExerciseE1RMTile.swift */; };
-		E1E1E1000000000000000B04 /* PinnedExerciseSetVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F04 /* PinnedExerciseSetVolumeTile.swift */; };
 		E1E1E1000000000000000B05 /* ExerciseSetVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F05 /* ExerciseSetVolumeTile.swift */; };
 		E1E1E1000000000000000B06 /* ExerciseSetVolumeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F06 /* ExerciseSetVolumeScreen.swift */; };
 		E1E1E1000000000000000B07 /* AboutSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F07 /* AboutSection.swift */; };
@@ -470,8 +462,6 @@
 		801BBCF52DF7338A00CDB1FB /* ExerciseEditScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseEditScreen.swift; sourceTree = "<group>"; };
 		801BBCF62DF7338A00CDB1FB /* ExerciseListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseListScreen.swift; sourceTree = "<group>"; };
 		801BBCF72DF7338A00CDB1FB /* ExerciseSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSelectionScreen.swift; sourceTree = "<group>"; };
-		801BBCF92DF7338A00CDB1FB /* CurrentWeekWeeklyTargetTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentWeekWeeklyTargetTile.swift; sourceTree = "<group>"; };
-		801BBCFA2DF7338A00CDB1FB /* MuscleGroupSplitTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupSplitTile.swift; sourceTree = "<group>"; };
 		801BBCFB2DF7338A00CDB1FB /* OverallSetsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverallSetsTile.swift; sourceTree = "<group>"; };
 		547CD2BA3A17B483651496C5 /* MuscleBalanceTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleBalanceTile.swift; sourceTree = "<group>"; };
 		CF1126F67238BF3E85FCC8C8 /* WeeklyGoalHeroTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyGoalHeroTile.swift; sourceTree = "<group>"; };
@@ -480,7 +470,6 @@
 		801BBCFE2DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeWeeklyWorkoutGoalScreen.swift; sourceTree = "<group>"; };
 		801BBCFF2DF7338A00CDB1FB /* HomeNavigationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeNavigationCoordinator.swift; sourceTree = "<group>"; };
 		801BBD002DF7338A00CDB1FB /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
-		801BBD012DF7338A00CDB1FB /* MuscleGroupSplitScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupSplitScreen.swift; sourceTree = "<group>"; };
 		801BBD022DF7338A00CDB1FB /* OverallSetsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverallSetsScreen.swift; sourceTree = "<group>"; };
 		8BA376FF1C58639B7542A334 /* WorkoutGoalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutGoalScreen.swift; sourceTree = "<group>"; };
 		FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupDetailScreen.swift; sourceTree = "<group>"; };
@@ -580,9 +569,6 @@
 		8085497D2EE9A37C00761706 /* default_exercises.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = default_exercises.json; sourceTree = "<group>"; };
 		80A1D9792EDC91B2004EE258 /* ExercisesPinEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesPinEditSheet.swift; sourceTree = "<group>"; };
 		80A1D97A2EDC91B2004EE258 /* PinnedExerciseTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseTile.swift; sourceTree = "<group>"; };
-		80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseRepetitionsTile.swift; sourceTree = "<group>"; };
-		80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseVolumeTile.swift; sourceTree = "<group>"; };
-		80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseWeightTile.swift; sourceTree = "<group>"; };
 		80A7A0D02F2E6C5C00112233 /* logit_terms_and_conditions.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_terms_and_conditions.md; sourceTree = "<group>"; };
 		80AA00012F3A000100AA0001 /* RestDurationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDurationPicker.swift; sourceTree = "<group>"; };
 		80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestTimerBetweenSetsView.swift; sourceTree = "<group>"; };
@@ -642,8 +628,6 @@
 		DD50531C168D4EDFB527D76A /* SetEntityClasses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetEntityClasses.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseE1RMTile.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseE1RMScreen.swift; sourceTree = "<group>"; };
-		E1E1E1000000000000000F03 /* PinnedExerciseE1RMTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseE1RMTile.swift; sourceTree = "<group>"; };
-		E1E1E1000000000000000F04 /* PinnedExerciseSetVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedExerciseSetVolumeTile.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F05 /* ExerciseSetVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSetVolumeTile.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F06 /* ExerciseSetVolumeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSetVolumeScreen.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F07 /* AboutSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutSection.swift; sourceTree = "<group>"; };
@@ -1017,18 +1001,11 @@
 		801BBCFD2DF7338A00CDB1FB /* Tiles */ = {
 			isa = PBXGroup;
 			children = (
-				801BBCF92DF7338A00CDB1FB /* CurrentWeekWeeklyTargetTile.swift */,
-				801BBCFA2DF7338A00CDB1FB /* MuscleGroupSplitTile.swift */,
 				801BBCFB2DF7338A00CDB1FB /* OverallSetsTile.swift */,
 				547CD2BA3A17B483651496C5 /* MuscleBalanceTile.swift */,
 				CF1126F67238BF3E85FCC8C8 /* WeeklyGoalHeroTile.swift */,
 				336772BB4E860E3894BA7355 /* SummaryStatTiles.swift */,
 				801BBCFC2DF7338A00CDB1FB /* VolumeTile.swift */,
-				80A1D97D2EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift */,
-				80A1D97E2EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift */,
-				80A1D97F2EDC98E6004EE258 /* PinnedExerciseWeightTile.swift */,
-				E1E1E1000000000000000F03 /* PinnedExerciseE1RMTile.swift */,
-				E1E1E1000000000000000F04 /* PinnedExerciseSetVolumeTile.swift */,
 			);
 			path = Tiles;
 			sourceTree = "<group>";
@@ -1040,7 +1017,6 @@
 				801BBCFE2DF7338A00CDB1FB /* ChangeWeeklyWorkoutGoalScreen.swift */,
 				801BBCFF2DF7338A00CDB1FB /* HomeNavigationCoordinator.swift */,
 				801BBD002DF7338A00CDB1FB /* HomeScreen.swift */,
-				801BBD012DF7338A00CDB1FB /* MuscleGroupSplitScreen.swift */,
 				801BBD022DF7338A00CDB1FB /* OverallSetsScreen.swift */,
 				8BA376FF1C58639B7542A334 /* WorkoutGoalScreen.swift */,
 				FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */,
@@ -1626,11 +1602,6 @@
 				801BBD7D2DF7338A00CDB1FB /* Workout+.swift in Sources */,
 				801BBD7E2DF7338A00CDB1FB /* WorkoutSetCell.swift in Sources */,
 				801BBD7F2DF7338A00CDB1FB /* ReorderableForEach.swift in Sources */,
-				80A1D9802EDC98E6004EE258 /* PinnedExerciseVolumeTile.swift in Sources */,
-				80A1D9812EDC98E6004EE258 /* PinnedExerciseRepetitionsTile.swift in Sources */,
-				80A1D9822EDC98E6004EE258 /* PinnedExerciseWeightTile.swift in Sources */,
-				E1E1E1000000000000000B03 /* PinnedExerciseE1RMTile.swift in Sources */,
-				E1E1E1000000000000000B04 /* PinnedExerciseSetVolumeTile.swift in Sources */,
 				801BBD802DF7338A00CDB1FB /* TileStyle.swift in Sources */,
 				801BBD812DF7338A00CDB1FB /* ExerciseWeightScreen.swift in Sources */,
 				E1E1E1000000000000000B02 /* ExerciseE1RMScreen.swift in Sources */,
@@ -1733,13 +1704,10 @@
 				801BBDCB2DF7338A00CDB1FB /* MeasurementsScreen.swift in Sources */,
 				801BBDCC2DF7338A00CDB1FB /* DropSet+.swift in Sources */,
 				801BBDCD2DF7338A00CDB1FB /* Database+SetConvert.swift in Sources */,
-				801BBDCE2DF7338A00CDB1FB /* MuscleGroupSplitScreen.swift in Sources */,
 				801BBDCF2DF7338A00CDB1FB /* ExerciseService.swift in Sources */,
-				801BBDD02DF7338A00CDB1FB /* MuscleGroupSplitTile.swift in Sources */,
 				801BBDD12DF7338A00CDB1FB /* Widget+.swift in Sources */,
 				801BBDD22DF7338A00CDB1FB /* MuscleGroupSelector.swift in Sources */,
 				801BBDD32DF7338A00CDB1FB /* SectionedFetchRequestWrapper.swift in Sources */,
-				801BBDD42DF7338A00CDB1FB /* CurrentWeekWeeklyTargetTile.swift in Sources */,
 				801BBDD52DF7338A00CDB1FB /* WorkoutDetailSheet.swift in Sources */,
 				801BBDD62DF7338A00CDB1FB /* TipView.swift in Sources */,
 				801BBDD72DF7338A00CDB1FB /* TemplateSetCell.swift in Sources */,

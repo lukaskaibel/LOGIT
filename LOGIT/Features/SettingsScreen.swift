@@ -131,14 +131,14 @@ struct SettingsScreen: View {
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Image(systemName: "envelope")
+                        Image(systemName: "envelope.fill")
                             .foregroundStyle(.secondary)
                     }
                     .padding(CELL_PADDING)
                     .tileStyle()
                 }
                 Link(destination: URL(string: "mailto:\(FEEDBACK_EMAIL)?subject=LOGIT%20Support")!) {
-                    settingsRow(NSLocalizedString("support", comment: ""), icon: "questionmark.circle", trailingSystemImage: "envelope")
+                    settingsRow(NSLocalizedString("support", comment: ""), icon: "questionmark.circle.fill", trailingSystemImage: "envelope.fill")
                 }
                 Button { requestReview() } label: {
                     settingsRow(NSLocalizedString("rateLogit", comment: ""), icon: "star.fill", trailingChevron: true)
@@ -151,13 +151,13 @@ struct SettingsScreen: View {
         section(NSLocalizedString("about", comment: "")) {
             VStack(spacing: CELL_SPACING) {
                 Button { isShowingPrivacyPolicy = true } label: {
-                    settingsRow(NSLocalizedString("privacyPolicy", comment: ""), trailingChevron: true)
+                    settingsRow(NSLocalizedString("privacyPolicy", comment: ""), icon: "hand.raised.fill", trailingChevron: true)
                 }
                 Button { isShowingTermsAndConditions = true } label: {
-                    settingsRow(NSLocalizedString("termsAndConditions", comment: ""), trailingChevron: true)
+                    settingsRow(NSLocalizedString("termsAndConditions", comment: ""), icon: "doc.text.fill", trailingChevron: true)
                 }
                 Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
-                    settingsRow(NSLocalizedString("licenceAgreement", comment: ""), trailingSystemImage: "arrow.up.forward.square")
+                    settingsRow(NSLocalizedString("licenceAgreement", comment: ""), icon: "checkmark.seal.fill", trailingSystemImage: "arrow.up.forward.square")
                 }
             }
         }

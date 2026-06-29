@@ -52,14 +52,16 @@ struct SummaryRecordsTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
+                .padding([.top, .horizontal], CELL_PADDING)
             VStack(spacing: 8) {
                 ForEach(Array(records.prefix(maxShown))) { record in
                     PersonalBestRow(record: record)
                 }
             }
             .padding(.top, 10)
+            .padding(.horizontal, CELL_PADDING / 2)
+            .padding(.bottom, CELL_PADDING / 2)
         }
-        .padding(CELL_PADDING)
         .frame(maxWidth: .infinity, alignment: .leading)
         .tileStyle()
     }

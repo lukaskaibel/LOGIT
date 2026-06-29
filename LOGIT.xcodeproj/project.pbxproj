@@ -17,6 +17,7 @@
 		2BD2E4720FB2C657F8CA372B /* CompletionRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C72085C4C10146858277690 /* CompletionRing.swift */; };
 		77B7E6990E4C00B75D9BC6ED /* PeriodPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEA597E1519E8F6D2CBC8F9E /* PeriodPicker.swift */; };
 		E1E1E1000000000000000B12 /* ProgressIndicatorPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F12 /* ProgressIndicatorPill.swift */; };
+		E1E1E1000000000000000B16 /* PersonalBestRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F16 /* PersonalBestRow.swift */; };
 		E1E1E1000000000000000B15 /* MetricComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F15 /* MetricComparisonView.swift */; };
 		2A384BE3816900000002 /* ExerciseSuggestionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54EE2592821500000001 /* ExerciseSuggestionService.swift */; };
 		396ADE67CD8C1D14F7A8D82A /* LOGITWidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */; };
@@ -349,6 +350,7 @@
 		3C72085C4C10146858277690 /* CompletionRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionRing.swift; sourceTree = "<group>"; };
 		BEA597E1519E8F6D2CBC8F9E /* PeriodPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeriodPicker.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F12 /* ProgressIndicatorPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressIndicatorPill.swift; sourceTree = "<group>"; };
+		E1E1E1000000000000000F16 /* PersonalBestRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalBestRow.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F15 /* MetricComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricComparisonView.swift; sourceTree = "<group>"; };
 		0E384D0F4B54340F910F6813 /* ExerciseMergingSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergingSheet.swift; sourceTree = "<group>"; };
 		144AED8F76DE3EBB1A1752AD /* LOGITUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LOGITUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1248,6 +1250,7 @@
 				3C72085C4C10146858277690 /* CompletionRing.swift */,
 				BEA597E1519E8F6D2CBC8F9E /* PeriodPicker.swift */,
 				E1E1E1000000000000000F12 /* ProgressIndicatorPill.swift */,
+				E1E1E1000000000000000F16 /* PersonalBestRow.swift */,
 				E1E1E1000000000000000F15 /* MetricComparisonView.swift */,
 				801BBD5B2DF7338A00CDB1FB /* WidgetCollectionView.swift */,
 				80B387BA2EBA187100AD7EFC /* DecimalField.swift */,
@@ -1647,6 +1650,7 @@
 				2BD2E4720FB2C657F8CA372B /* CompletionRing.swift in Sources */,
 				77B7E6990E4C00B75D9BC6ED /* PeriodPicker.swift in Sources */,
 				E1E1E1000000000000000B12 /* ProgressIndicatorPill.swift in Sources */,
+				E1E1E1000000000000000B16 /* PersonalBestRow.swift in Sources */,
 				E1E1E1000000000000000B15 /* MetricComparisonView.swift in Sources */,
 				801BBD9D2DF7338A00CDB1FB /* SuperSet+.swift in Sources */,
 				801BBD9E2DF7338A00CDB1FB /* TileHeaderStyle.swift in Sources */,

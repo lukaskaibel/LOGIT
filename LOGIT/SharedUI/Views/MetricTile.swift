@@ -7,29 +7,19 @@
 
 import SwiftUI
 
-// MARK: - Compact Chart Frame
-
-/// The fixed size of a metric tile's bottom-right chart slot — small enough to sit beside the trend
-/// pill on one row, and shared by every tile so a line chart and a bar chart line up across a grid.
-/// The chart pins to the tile's trailing edge and gives up its leading edge first when a wide pill
-/// crowds the row, so the newest (rightmost) bar always stays visible.
-enum CompactChartFrame {
-    static let width: CGFloat = 72
-    static let height: CGFloat = 40
-}
-
 // MARK: - Metric Tile
 
 /// The shared metric tile behind every stat on the exercise-detail and workout-detail screens: a
-/// title row with an optional navigation chevron, an optional gray subtitle over the large
-/// label-colored value, and a bottom row carrying the trend pill on the left and a compact chart —
-/// a sparkline or a bar chart, supplied by the caller — in the bottom-right corner.
+/// title row with an optional navigation chevron, an optional gray subtitle, and the large label-
+/// colored value; beneath them a full-width chart supplied by the caller — a line sparkline bleeding to
+/// the tile's bottom and side edges, or a bar chart inset just enough (`chartBleeds: false`) that its
+/// rounded bars sit inside the corners — with the trend pill overlaid on the chart's bottom-leading
+/// corner (the line fades in from the left so it doesn't collide with the pill).
 ///
 /// The accent (a flat muscle color, or a workout's multi-muscle gradient) tints only the trend pill
 /// and, through the caller's chart, the highlighted bar/line; the number itself always stays neutral
-/// so the color reads as "progress", never decoration. One skeleton for every tile so tiles sharing
-/// a grid row always come out the same height — the chart's fixed height anchors the bottom row, and
-/// the empty state renders the real content hidden underneath to match its row neighbor.
+/// so the color reads as "progress", never decoration. Every tile is one fixed height so a grid row
+/// stays even — the chart fills the height the value block leaves, never growing the tile.
 struct MetricTile<ChartContent: View>: View {
     enum Label {
         case currentBest
@@ -73,23 +63,43 @@ struct MetricTile<ChartContent: View>: View {
     /// has no usable data at all (the weight tiles of a bodyweight exercise). The content keeps
     /// rendering hidden underneath so the tile stays exactly as tall as its row neighbor.
     var showsEmptyPlaceholder: Bool = false
+    /// Whether the chart bleeds to the tile's bottom and side edges. The default — the line sparklines
+    /// run edge to edge. Bar charts pass `false`: their outermost bars would be sliced by the tile's
+    /// rounded corners, so they take a small inset and sit just inside the corner instead.
+    var chartBleeds: Bool = true
     @ViewBuilder let chart: () -> ChartContent
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// Every tile is pinned to one height so a grid row stays even, and a value too long to share a
+    /// line with the trend pill pushes the pill onto its own line by stealing height from the chart
+    /// rather than growing the tile. Dropped at accessibility sizes, where the tiles stack in one
+    /// column and size to their content.
+    private static var fixedHeight: CGFloat { 172 }
+    /// The chart's height once the tile is no longer fixed-height (accessibility sizes): the footer
+    /// can't fill the leftover space, so it takes a flat height instead of collapsing.
+    private static var accessibilityChartHeight: CGFloat { 64 }
+    /// The small inset a non-bleeding (bar) chart takes so its outermost, rounded bars clear the tile's
+    /// rounded corners instead of being sliced. Smaller than `CELL_PADDING` so the bars still read as
+    /// nearly full-bleed — just pulled off the corners.
+    private static var nonBleedingChartInset: CGFloat { 10 }
+
+    private var usesFixedHeight: Bool { !dynamicTypeSize.isAccessibilitySize }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
+                .padding(.horizontal, CELL_PADDING)
+                .padding(.top, CELL_PADDING)
             if showsEmptyPlaceholder {
-                ZStack {
-                    content.hidden()
-                    placeholder
-                }
+                placeholderFooter
             } else {
                 content
                     .isBlockedWithoutPro(requiresPro, style: .compact)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(CELL_PADDING)
+        .frame(height: usesFixedHeight ? Self.fixedHeight : nil, alignment: .top)
         .tileStyle()
     }
 
@@ -109,19 +119,83 @@ struct MetricTile<ChartContent: View>: View {
         }
     }
 
+    /// The padded subtitle + value/pill block sitting above the full-bleed chart footer. The text
+    /// keeps the tile's `CELL_PADDING` inset; the chart carries none and bleeds to the rounded bottom
+    /// and side edges, the way the personal-record card's all-time line does.
     private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
-            subtitle
-                .padding(.top, 8)
-            UnitView(value: value ?? "––", unit: unit, configuration: .large, unitColor: .secondaryLabel)
-                .foregroundStyle(Color.label)
-                .padding(.top, 2)
-            // The bottom row sits a fixed gap below the value, the same on every tile, so tiles in a
-            // grid row keep their pills and charts on one line.
-            bottomRow
-                .padding(.top, 16)
+            VStack(alignment: .leading, spacing: 0) {
+                subtitle
+                    .padding(.top, 8)
+                valueView
+                    .padding(.top, 2)
+            }
+            .padding(.horizontal, CELL_PADDING)
+            chartFooter
+                .padding(.top, 14)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var valueView: some View {
+        UnitView(value: value ?? "––", unit: unit, configuration: .large, unitColor: .secondaryLabel)
+            .foregroundStyle(Color.label)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+    }
+
+    /// The chart with its trend pill. For a bleeding (line) chart the pill sits at the bottom-leading
+    /// corner and the line fills the space to its RIGHT — it starts past the pill, never under it — and
+    /// still bleeds to the trailing + bottom edges. A bar chart keeps its full width (the slim bars read
+    /// fine behind the pill), the pill overlaid on the bottom-leading corner.
+    @ViewBuilder
+    private var chartFooter: some View {
+        if chartBleeds {
+            HStack(alignment: .bottom, spacing: 8) {
+                if hasPill {
+                    pill
+                        .padding(.leading, CELL_PADDING)
+                        .padding(.bottom, CELL_PADDING)
+                }
+                chartContent
+            }
+        } else {
+            chartContent
+                .overlay(alignment: .bottomLeading) {
+                    pill
+                        .padding(.leading, CELL_PADDING)
+                        .padding(.bottom, CELL_PADDING)
+                }
+        }
+    }
+
+    /// The chart itself: on a fixed-height tile it fills whatever the value block leaves above it; at
+    /// accessibility sizes (no fixed height) it takes a flat height so the footer can't collapse.
+    @ViewBuilder
+    private var chartContent: some View {
+        if usesFixedHeight {
+            chart()
+                .padding(chartFooterInsets)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            chart()
+                .padding(chartFooterInsets)
+                .frame(maxWidth: .infinity)
+                .frame(height: Self.accessibilityChartHeight)
+        }
+    }
+
+    /// Zero for a bleeding chart (the line sparklines run to the edges), a small leading/trailing/
+    /// bottom inset for a non-bleeding one (the bar charts) so its rounded bars clear the corners.
+    private var chartFooterInsets: EdgeInsets {
+        chartBleeds
+            ? EdgeInsets()
+            : EdgeInsets(
+                top: 0,
+                leading: Self.nonBleedingChartInset,
+                bottom: Self.nonBleedingChartInset,
+                trailing: Self.nonBleedingChartInset
+            )
     }
 
     @ViewBuilder
@@ -141,17 +215,19 @@ struct MetricTile<ChartContent: View>: View {
         }
     }
 
-    /// Trend pill on the left, compact chart pinned to the trailing edge on the right. The chart's
-    /// fixed height anchors the row, so a tile with no pill (or the shorter lapsed pill) is exactly as
-    /// tall as one with a full trend pill — no height ruler needed. The chart frame is greedy and
-    /// trailing-aligned, so it keeps the chart in the corner and clips its leading edge first if a
-    /// wide pill ever crowds the row.
-    private var bottomRow: some View {
-        HStack(alignment: .bottom, spacing: 8) {
-            pill
-            chart()
-                .frame(width: CompactChartFrame.width, height: CompactChartFrame.height)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+    /// The empty-state body: the ghost sparkline + "no data" centered in the space below the header,
+    /// filling the same footer the chart would so an empty tile is exactly as tall as its neighbours.
+    @ViewBuilder
+    private var placeholderFooter: some View {
+        if usesFixedHeight {
+            placeholder
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(CELL_PADDING)
+        } else {
+            placeholder
+                .frame(maxWidth: .infinity)
+                .frame(height: Self.accessibilityChartHeight + 40)
+                .padding(CELL_PADDING)
         }
     }
 
@@ -169,6 +245,11 @@ struct MetricTile<ChartContent: View>: View {
         } else if let lastBestDate {
             TileDatePill(date: lastBestDate)
         }
+    }
+
+    /// Whether any pill applies — drives whether the bleeding line reserves the space to its left.
+    private var hasPill: Bool {
+        percentChange != nil || lapsedSince != nil || lastBestDate != nil
     }
 
     private var placeholder: some View {

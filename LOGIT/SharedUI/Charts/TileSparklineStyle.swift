@@ -43,6 +43,10 @@ enum TileSparklineStyle {
     static let carryForwardOpacity: CGFloat = 0.45
     /// Fraction of the width over which the leading edge fades in.
     static let leadingFadeLocation: CGFloat = 0.12
+    /// A longer leading fade for the full-bleed metric-tile line, which carries the trend pill at its
+    /// bottom-left corner: the line eases in over this span so it doesn't start abruptly at its left
+    /// edge (just to the right of the pill).
+    static let bleedLeadingFadeLocation: CGFloat = 0.33
 
     /// The translucent fill under the line — a top-heavy tint. Swift Charts won't reliably fade an
     /// `AreaMark` to clear at the baseline on its own (the fill gradient maps to a range far taller
@@ -179,5 +183,23 @@ extension View {
                 endPoint: .bottom
             )
         )
+    }
+
+    /// The full-bleed metric-tile line's fade: it dissolves IN from the leading edge over a longer span
+    /// than the corner sparklines (so it eases in at its left edge, just right of the trend pill) and
+    /// OUT toward the bottom, with no clip, so the line still runs to the trailing and bottom edges.
+    func tileSparklineBleedFadeMask() -> some View {
+        mask(
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: .clear, location: 0.0),
+                    .init(color: .black, location: TileSparklineStyle.bleedLeadingFadeLocation),
+                    .init(color: .black, location: 1.0),
+                ]),
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
+        .tileSparklineBottomFadeMask()
     }
 }

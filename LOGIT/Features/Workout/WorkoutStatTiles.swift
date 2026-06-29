@@ -297,7 +297,7 @@ struct WorkoutRunsBarChart: View {
                     BarMark(
                         x: .value("Run", String(bar.slot)),
                         y: .value("Value", bar.value),
-                        width: TileBarChartStyle.barWidth
+                        width: TileBarChartStyle.footerBarWidth
                     )
                     .foregroundStyle(bar.isCurrent ? currentStyle : AnyShapeStyle(Color.fill))
                     .tileBarStyle()
@@ -355,7 +355,8 @@ struct WorkoutStatTile: View {
             accentColor: accentColor,
             percentChange: history.percentChange(for: metric),
             isRecord: false,
-            requiresPro: metric.requiresPro
+            requiresPro: metric.requiresPro,
+            chartBleeds: false
         ) {
             WorkoutRunsBarChart(bars: runBars, currentStyle: barStyle)
         }

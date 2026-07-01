@@ -993,3 +993,12 @@
 "pinAMeasurement" = "Fijar una medida";
 "trackMeasurements" = "Registra tus medidas";
 "unlockWithPro" = "Desbloquear con Pro";
+
+"currentWeekNumber" = "Semana %d";
+"nextMilestone" = "Próximo hito";
+"streakFactHalfYear" = "Medio año";
+"streakFactMonth" = "Un mes completo";
+"streakFactQuarter" = "Un trimestre completo";
+"streakFactTwoYears" = "Dos años";
+"streakFactYear" = "Un año completo";
+"weeks" = "Semanas";

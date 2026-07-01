@@ -989,3 +989,12 @@
 "pinAMeasurement" = "Maß anheften";
 "trackMeasurements" = "Verfolge deine Maße";
 "unlockWithPro" = "Mit Pro freischalten";
+
+"currentWeekNumber" = "Woche %d";
+"nextMilestone" = "Nächster Meilenstein";
+"streakFactHalfYear" = "Ein halbes Jahr";
+"streakFactMonth" = "Ein ganzer Monat";
+"streakFactQuarter" = "Ein ganzes Quartal";
+"streakFactTwoYears" = "Zwei Jahre";
+"streakFactYear" = "Ein ganzes Jahr";
+"weeks" = "Wochen";

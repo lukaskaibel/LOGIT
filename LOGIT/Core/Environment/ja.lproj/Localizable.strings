@@ -993,3 +993,12 @@
 "pinAMeasurement" = "測定値をピン留め";
 "trackMeasurements" = "測定値を記録";
 "unlockWithPro" = "Proで解除";
+
+"currentWeekNumber" = "第%d週";
+"nextMilestone" = "次のマイルストーン";
+"streakFactHalfYear" = "半年";
+"streakFactMonth" = "まる1か月";
+"streakFactQuarter" = "まる3か月";
+"streakFactTwoYears" = "2年";
+"streakFactYear" = "まる1年";
+"weeks" = "週";

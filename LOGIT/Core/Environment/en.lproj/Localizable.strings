@@ -993,3 +993,12 @@
 "pinAMeasurement" = "Pin a measurement";
 "trackMeasurements" = "Track your measurements";
 "unlockWithPro" = "Unlock with Pro";
+
+"currentWeekNumber" = "Week %d";
+"nextMilestone" = "Next Milestone";
+"streakFactHalfYear" = "Half a year";
+"streakFactMonth" = "A full month";
+"streakFactQuarter" = "A full quarter";
+"streakFactTwoYears" = "Two years";
+"streakFactYear" = "A full year";
+"weeks" = "Weeks";

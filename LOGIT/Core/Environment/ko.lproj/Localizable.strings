@@ -993,3 +993,12 @@
 "pinAMeasurement" = "측정값 고정";
 "trackMeasurements" = "측정값 추적";
 "unlockWithPro" = "Pro로 잠금 해제";
+
+"currentWeekNumber" = "%d주차";
+"nextMilestone" = "다음 마일스톤";
+"streakFactHalfYear" = "반년";
+"streakFactMonth" = "꼬박 한 달";
+"streakFactQuarter" = "꼬박 한 분기";
+"streakFactTwoYears" = "2년";
+"streakFactYear" = "꼬박 1년";
+"weeks" = "주";

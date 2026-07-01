@@ -141,4 +141,74 @@ final class SummaryViewModel: ObservableObject {
         }
         return streak
     }
+
+    /// The all-time longest run of consecutive weeks meeting the target — the record the current
+    /// streak is chasing. Walks every week from the first workout to now so empty weeks break the run.
+    nonisolated static func longestWeeklyStreak(workouts: [Workout], target: Int) -> Int {
+        var countsByWeek: [Date: Int] = [:]
+        for workout in workouts where !workout.isEmpty {
+            guard let date = workout.date else { continue }
+            countsByWeek[date.startOfWeek, default: 0] += 1
+        }
+        return longestWeeklyStreak(countsByWeek: countsByWeek, target: target)
+    }
+
+    /// The pure core of the longest-streak calc, keyed by week-start → workout count, so it can be
+    /// unit-tested without a Core Data store. Iterates week-by-week (not just weeks with workouts) so
+    /// an empty week correctly resets the run.
+    nonisolated static func longestWeeklyStreak(countsByWeek: [Date: Int], target: Int, reference: Date = .now) -> Int {
+        guard target > 0, let earliest = countsByWeek.keys.min() else { return 0 }
+        let calendar = Calendar.current
+        var best = 0
+        var run = 0
+        var weekStart = earliest
+        let lastWeek = reference.startOfWeek
+        while weekStart <= lastWeek {
+            if (countsByWeek[weekStart] ?? 0) >= target {
+                run += 1
+                best = max(best, run)
+            } else {
+                run = 0
+            }
+            weekStart = (calendar.date(byAdding: .weekOfYear, value: 1, to: weekStart) ?? weekStart).startOfWeek
+        }
+        return best
+    }
+
+    /// The longest COMPLETED weekly streak that is not the current ongoing run — i.e. the record the
+    /// current streak is chasing, or the one it just surpassed. Excludes the run ending at `reference`.
+    nonisolated static func previousBestWeeklyStreak(workouts: [Workout], target: Int) -> Int {
+        var countsByWeek: [Date: Int] = [:]
+        for workout in workouts where !workout.isEmpty {
+            guard let date = workout.date else { continue }
+            countsByWeek[date.startOfWeek, default: 0] += 1
+        }
+        return previousBestWeeklyStreak(countsByWeek: countsByWeek, target: target)
+    }
+
+    nonisolated static func previousBestWeeklyStreak(countsByWeek: [Date: Int], target: Int, reference: Date = .now) -> Int {
+        guard target > 0, let earliest = countsByWeek.keys.min() else { return 0 }
+        let calendar = Calendar.current
+        var runs: [Int] = []
+        var run = 0
+        var weekStart = earliest
+        let referenceWeekStart = reference.startOfWeek
+        while weekStart <= referenceWeekStart {
+            if (countsByWeek[weekStart] ?? 0) >= target {
+                run += 1
+            } else {
+                if run > 0 { runs.append(run) }
+                run = 0
+            }
+            weekStart = (calendar.date(byAdding: .weekOfYear, value: 1, to: weekStart) ?? weekStart).startOfWeek
+        }
+        if run > 0 { runs.append(run) }
+        // The most recent run (last element) is the current ongoing streak; the record being chased is
+        // the longest of the rest. With no current run, every run counts.
+        let current = weeklyStreak(countsByWeek: countsByWeek, target: target, reference: reference)
+        if current > 0 {
+            return runs.dropLast().max() ?? 0
+        }
+        return runs.max() ?? 0
+    }
 }

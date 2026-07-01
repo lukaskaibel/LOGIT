@@ -10,7 +10,8 @@ import SwiftUI
 /// The always-on weekly-goal hero at the top of the Summary screen — the fix for the dead Monday: it
 /// has something to show even before the first workout of the week. Shows the shared `WeeklyGoalStrip`
 /// (this week's 7 days as muscle-group rings with the weekday letter + the week's completion ring) and,
-/// once a run is going, the streak scoreboard (the goal ahead vs. the current streak). Free.
+/// once a run is going, a minimal flame streak line. Free. The full milestone scoreboard lives on the
+/// Workout Goal detail screen this tile taps into — the Summary stays a glance.
 struct WeeklyGoalHeroTile: View {
     let workouts: [Workout]
 
@@ -27,9 +28,7 @@ struct WeeklyGoalHeroTile: View {
             }
             WeeklyGoalStrip(workouts: workouts, target: target)
             if streak > 0 {
-                StreakScoreboard(current: streak, target: streakGoal.value, targetIsBest: streakGoal.isBest)
-                    .padding(CELL_PADDING - 2)
-                    .secondaryTileStyle()
+                StreakLine(streak: streak)
             }
         }
         .padding(CELL_PADDING)
@@ -38,15 +37,6 @@ struct WeeklyGoalHeroTile: View {
 
     private var streak: Int {
         SummaryViewModel.currentWeeklyStreak(workouts: workouts, target: target)
-    }
-
-    private var previousBest: Int {
-        SummaryViewModel.previousBestWeeklyStreak(workouts: workouts, target: target)
-    }
-
-    /// The goal shown in the scoreboard — the next milestone, or the best when it's the nearer goal.
-    private var streakGoal: (value: Int, isBest: Bool) {
-        StreakMilestone.target(current: streak, previousBest: previousBest)
     }
 }
 

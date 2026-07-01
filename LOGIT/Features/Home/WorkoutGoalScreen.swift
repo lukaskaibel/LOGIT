@@ -123,6 +123,7 @@ struct WorkoutGoalScreen: View {
         return VStack(alignment: .leading, spacing: 14) {
             Text(NSLocalizedString("thisWeek", comment: ""))
                 .tileHeaderStyle()
+                .padding(.leading, CELL_PADDING / 2)
                 .frame(maxWidth: .infinity, alignment: .leading)
             WeeklyGoalStrip(workouts: workouts, target: target, showsDate: true)
             if streak > 0 {
@@ -203,9 +204,17 @@ struct WorkoutGoalScreen: View {
         // the nearer goal — see StreakMilestone.target. A bigger past record beyond the milestone keeps its
         // own row below instead, so it's never lost.
         let goal = StreakMilestone.target(current: current, previousBest: previousBest)
+        let showBest = allTimeBest > current && !goal.isBest
+        // Drop the milestone list (and the VStack spacing above it) when there's nothing to show — no
+        // achieved milestones and no personal-best row — so the tile isn't bottom-heavy.
+        let hasMilestones = showBest || StreakMilestone.all.contains { $0 <= current }
         return VStack(alignment: .leading, spacing: 12) {
+            Text(NSLocalizedString("streak", comment: ""))
+                .tileHeaderStyle()
             StreakScoreboard(current: current, target: goal.value, targetIsBest: goal.isBest)
-            milestoneList(current: current, best: allTimeBest, showBest: allTimeBest > current && !goal.isBest)
+            if hasMilestones {
+                milestoneList(current: current, best: allTimeBest, showBest: showBest)
+            }
         }
         .padding(CELL_PADDING)
         .tileStyle()

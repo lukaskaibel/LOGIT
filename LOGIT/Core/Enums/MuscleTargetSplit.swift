@@ -70,8 +70,8 @@ struct MuscleTargetSplit: Codable, Equatable {
 
     // MARK: - Defaults
 
-    /// How many percentage points under target a group must fall before it's flagged "behind" — the
-    /// editor's threshold note and `MuscleBalanceCalculator`'s `isBehind` both read this.
+    /// How many percentage points off target a group must fall before it counts as under/over — the
+    /// editor's threshold note, the on-target band, and `MuscleBalanceEntry.state` all read this.
     static let behindThreshold = 5
 
     /// The app's default target split — the balanced preset.

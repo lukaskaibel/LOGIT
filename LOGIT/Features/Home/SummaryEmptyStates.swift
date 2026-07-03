@@ -124,8 +124,8 @@ private func callToAction(title: String, buttonTitle: String, onAdd: @escaping (
     }
 }
 
-/// A dimmed sample of a pinned exercise tile — mirrors the `MetricTile` pinned look (muscle dot + name,
-/// Est. 1RM caption, value, corner sparkline) closely enough to read as a believable preview.
+/// A dimmed sample of a pinned exercise tile — mirrors the `MetricTile` pinned look (name, Est. 1RM
+/// caption, value, corner sparkline) closely enough to read as a believable preview.
 private struct GhostExerciseTile: View {
     let name: String
     let value: String
@@ -136,7 +136,6 @@ private struct GhostExerciseTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 6) {
-                RoundedRectangle(cornerRadius: 3).fill(color).frame(width: 9, height: 9)
                 Text(name)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.label)

@@ -1003,3 +1003,11 @@
 "streakFactYear" = "Un anno intero";
 "weeks" = "Settimane";
 "streak" = "Serie";
+
+/* Muscle Balance — donut overview, sections & history chart */
+"muscleBalanceMore" = "+%d altri";
+"muscleBalanceOverTime" = "Equilibrio nel tempo";
+"muscleDetailEmptySubtitle" = "Non hai allenato questo muscolo nel periodo selezionato.";
+"muscleBalanceBelowTarget" = "Sotto il target";
+"muscleBalanceAboveTarget" = "Sopra il target";
+"muscleBalanceOnTargetSection" = "A target";

@@ -7,9 +7,14 @@
 
 import Foundation
 
+/// Where a muscle group sits against its target — under (too little), on target, or over (too much).
+enum MuscleBalanceState {
+    case under, onTarget, over
+}
+
 /// One muscle group's standing against its target, for a given period: how many sets trained it, what
 /// share of the period that is, and how far that share sits from the user's target. The diverging
-/// `MuscleBalanceBar` and the Summary tile render off these.
+/// `MuscleBalanceBar` (Summary tile, overview sections, single-muscle detail) renders off these.
 struct MuscleBalanceEntry: Identifiable {
     let muscleGroup: MuscleGroup
     /// Set occurrences training this group in the period (a super set counts toward both its groups,
@@ -23,44 +28,33 @@ struct MuscleBalanceEntry: Identifiable {
 
     var id: MuscleGroup { muscleGroup }
 
-    /// Signed gap from target in percentage points — negative means under-trained.
+    /// Signed gap from target in percentage points — negative means under-trained. The diverging
+    /// `MuscleBalanceBar` grows out of the target tick by this much, left (under) or right (over).
     var deviation: Int { actualPercent - targetPercent }
 
-    /// Under target by more than the threshold — the only state the bars and insight ever call out
-    /// (over is never flagged; muscle hues are identity, not warning).
-    var isBehind: Bool { deviation < -MuscleTargetSplit.behindThreshold }
+    /// Where the group sits relative to target: under / over (more than `behindThreshold` points off)
+    /// or on target (within the band). Drives the grouped lists and the state pill.
+    var state: MuscleBalanceState {
+        if deviation < -MuscleTargetSplit.behindThreshold { return .under }
+        if deviation > MuscleTargetSplit.behindThreshold { return .over }
+        return .onTarget
+    }
+
+    /// Under target by more than the threshold ("build up").
+    var isBehind: Bool { state == .under }
 
     /// Within the threshold band either side of target.
-    var isOnTarget: Bool { abs(deviation) <= MuscleTargetSplit.behindThreshold }
+    var isOnTarget: Bool { state == .onTarget }
 }
 
-/// A period-aware, one-line read of a balance — what the Summary Muscle Balance tile leads with. Kept
-/// as data (not a localized string) so the calculator stays pure and testable; the view turns it into
-/// period-aware copy ("Legs 3 sets to go" for a week, "Legs light this month" for a month).
-enum MuscleBalanceInsight: Equatable {
-    /// No sets logged in the period.
-    case empty
-    /// A major/compound group (legs, back) is meaningfully under target. `setsToGo` is how many more
-    /// sets would reach the target share — the concrete week framing.
-    case behind(MuscleGroup, setsToGo: Int)
-    /// One group dominates the spread, but nothing's under target — a neutral "most trained" read.
-    case mostTrained(MuscleGroup)
-    /// Everything sits close to target.
-    case balanced
-}
-
-/// Turns a period's workouts + the user's target split into per-group balance entries and a single
-/// non-nagging insight. Period-agnostic: the caller supplies the date window (filtering the top-level
-/// `[Workout]` in memory, or via `WorkoutPredicateFactory.getWorkouts(from:to:)`).
+/// Turns a period's workouts + the user's target split into per-group balance entries. Period-agnostic:
+/// the caller supplies the date window (filtering the top-level `[Workout]` in memory, or via
+/// `WorkoutPredicateFactory.getWorkouts(from:to:)`).
 struct MuscleBalanceCalculator {
     /// One entry per muscle group, in `MuscleGroup.allCases` order (zero-filled for untrained groups).
     let entries: [MuscleBalanceEntry]
     /// Total set occurrences across all groups in the period.
     let totalSets: Int
-
-    /// Major/compound groups — the only ones whose under-training the insight will flag, per the
-    /// non-nagging rule (never nag a deliberately-light abs/cardio, never flag "over").
-    private static let majorGroups: [MuscleGroup] = [.legs, .back]
 
     init(
         workouts: [Workout],
@@ -92,42 +86,15 @@ struct MuscleBalanceCalculator {
         entries.filter(\.isOnTarget).count
     }
 
-    /// Entries sorted most-under-target first — the Overview list and the Summary tile show the
-    /// largest gaps at the top.
-    func worstGapSorted() -> [MuscleBalanceEntry] {
-        entries.sorted { $0.deviation < $1.deviation }
+    /// Under-target groups, most points under first (longest bar first) — the "Below target" list;
+    /// the Summary tile leads with these.
+    func underTargets() -> [MuscleBalanceEntry] {
+        entries.filter { $0.state == .under }.sorted { $0.deviation < $1.deviation }
     }
 
-    // MARK: - Insight
-
-    func insight(for period: StatPeriod) -> MuscleBalanceInsight {
-        guard totalSets > 0 else { return .empty }
-
-        // Weekly set counts are noisy, so a week needs a wider gap before it flags anything.
-        let tolerance = period == .week
-            ? MuscleTargetSplit.behindThreshold + 3
-            : MuscleTargetSplit.behindThreshold
-
-        let behindMajor = entries
-            .filter { Self.majorGroups.contains($0.muscleGroup) && $0.deviation <= -tolerance }
-            .min { $0.deviation < $1.deviation }
-        if let entry = behindMajor {
-            return .behind(entry.muscleGroup, setsToGo: setsToGo(for: entry))
-        }
-
-        // Nothing under target. Call out a clearly-dominant group, else read as balanced.
-        if let top = entries.max(by: { $0.deviation < $1.deviation }),
-           top.deviation >= MuscleTargetSplit.behindThreshold,
-           top.setCount > 0 {
-            return .mostTrained(top.muscleGroup)
-        }
-        return .balanced
-    }
-
-    /// How many more sets the group needs to reach its target share of the current total.
-    private func setsToGo(for entry: MuscleBalanceEntry) -> Int {
-        let targetSets = Int((Double(entry.targetPercent) / 100.0 * Double(totalSets)).rounded())
-        return max(0, targetSets - entry.setCount)
+    /// Over-target groups, most over first — the "Above target" list, shown after the under ones.
+    func overTargets() -> [MuscleBalanceEntry] {
+        entries.filter { $0.state == .over }.sorted { $0.deviation > $1.deviation }
     }
 
     // MARK: - Rounding

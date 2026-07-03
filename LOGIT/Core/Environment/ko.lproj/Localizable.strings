@@ -1003,3 +1003,11 @@
 "streakFactYear" = "꼬박 1년";
 "weeks" = "주";
 "streak" = "연속 기록";
+
+/* Muscle Balance — donut overview, sections & history chart */
+"muscleBalanceMore" = "외 %d개";
+"muscleBalanceOverTime" = "기간별 균형";
+"muscleDetailEmptySubtitle" = "선택한 기간에 이 부위를 운동하지 않았습니다.";
+"muscleBalanceBelowTarget" = "목표 미만";
+"muscleBalanceAboveTarget" = "목표 초과";
+"muscleBalanceOnTargetSection" = "목표 달성";

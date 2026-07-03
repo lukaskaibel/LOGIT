@@ -7,21 +7,21 @@
 
 import SwiftUI
 
-/// The shared "balance vs target" diverging bar (`balance-row-lab.html` variant 1): a centred white
-/// tick marks the target, and a capsule in the muscle's own colour grows left (under target) or right
-/// (over target) by how far the actual share sits from it — never amber/red, since muscle hues are
-/// identity, not warning. The target percent is printed above the tick; the signed deviation sits to
-/// the right. Shared by the Summary Muscle Balance tile, the Muscle Groups overview list, and the
-/// muscle-detail target-share tile.
+/// The shared "balance vs target" diverging bar: a centred white tick marks the target, and a fill in
+/// the muscle's own colour grows out of it — left when under target, right when over — by how far the
+/// actual share sits from it. The fill is flat on the side that touches the tick and rounded only at
+/// its outer end, so it visibly grows out of the target. The target percent sits above the tick; the
+/// signed deviation to the right. Never amber/red — muscle hues are identity, not warning. Shared by
+/// the Summary Muscle Balance tile, the Muscle Groups overview sections, and the single-muscle
+/// detail's target-share tile.
 struct MuscleBalanceBar: View {
     let entry: MuscleBalanceEntry
-    /// Leading muscle name + colour dot — on in the lists, off where a row already names the group.
+    /// Leading muscle name in its colour — on in the lists, off where a row already names the group.
     var showsName: Bool = false
     /// Trailing signed deviation label.
     var showsDelta: Bool = true
 
-    /// A deviation of this many percentage points fills half the track; beyond it the capsule is
-    /// clamped to the half-track. 10pt → half.
+    /// A deviation of this many percentage points fills half the track; beyond it the fill clamps.
     private static let half: Double = 10
 
     private var color: Color { entry.muscleGroup.color }
@@ -30,35 +30,27 @@ struct MuscleBalanceBar: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            if showsName {
-                name
-            }
+            if showsName { name }
             VStack(spacing: 5) {
                 Text("\(entry.targetPercent)%")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
                 bar
             }
-            if showsDelta {
-                delta
-            }
+            if showsDelta { delta }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
     }
 
     private var name: some View {
-        HStack(spacing: 7) {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(color)
-                .frame(width: 9, height: 9)
-            Text(entry.muscleGroup.description)
-                .font(.system(size: 13, weight: .semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-        .frame(width: 78, alignment: .leading)
+        Text(entry.muscleGroup.description)
+            .font(.system(size: 13, weight: .bold, design: .rounded))
+            .foregroundStyle(color)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .frame(width: 78, alignment: .leading)
     }
 
     private var bar: some View {
@@ -69,10 +61,17 @@ struct MuscleBalanceBar: View {
                 Capsule()
                     .fill(Color.white.opacity(0.06))
                     .frame(height: 2)
-                Capsule()
-                    .fill(color)
-                    .frame(width: fillWidth, height: 9)
-                    .offset(x: deviation >= 0 ? fillWidth / 2 : -fillWidth / 2)
+                // Flat against the tick, rounded only at the outer end — the fill grows out of the
+                // target rather than floating beside it.
+                UnevenRoundedRectangle(
+                    topLeadingRadius: deviation < 0 ? 4 : 0,
+                    bottomLeadingRadius: deviation < 0 ? 4 : 0,
+                    bottomTrailingRadius: deviation > 0 ? 4 : 0,
+                    topTrailingRadius: deviation > 0 ? 4 : 0
+                )
+                .fill(color)
+                .frame(width: fillWidth, height: 9)
+                .offset(x: deviation >= 0 ? fillWidth / 2 : -fillWidth / 2)
                 Rectangle()
                     .fill(Color.white)
                     .frame(width: 2, height: 15)
@@ -84,15 +83,17 @@ struct MuscleBalanceBar: View {
 
     private var delta: some View {
         Text(deltaText)
-            .font(.system(size: 12, weight: .bold))
+            .font(.system(size: 12, weight: .bold, design: .rounded))
             .foregroundStyle(.secondary)
             .monospacedDigit()
-            .frame(width: 32, alignment: .trailing)
+            .lineLimit(1)
+            .fixedSize()
+            .frame(width: 44, alignment: .trailing)
     }
 
     private var deltaText: String {
-        if deviation == 0 { return "±0" }
-        return deviation > 0 ? "+\(deviation)" : "−\(abs(deviation))"
+        if deviation == 0 { return "±0%" }
+        return deviation > 0 ? "+\(deviation)%" : "−\(abs(deviation))%"
     }
 
     private var accessibilityLabel: Text {
@@ -109,18 +110,10 @@ struct MuscleBalanceBar: View {
 
 #Preview {
     VStack(spacing: 16) {
-        MuscleBalanceBar(
-            entry: MuscleBalanceEntry(muscleGroup: .chest, setCount: 47, actualPercent: 24, targetPercent: 16),
-            showsName: true
-        )
-        MuscleBalanceBar(
-            entry: MuscleBalanceEntry(muscleGroup: .legs, setCount: 18, actualPercent: 9, targetPercent: 20),
-            showsName: true
-        )
-        MuscleBalanceBar(
-            entry: MuscleBalanceEntry(muscleGroup: .back, setCount: 30, actualPercent: 18, targetPercent: 18),
-            showsName: true
-        )
+        MuscleBalanceBar(entry: MuscleBalanceEntry(muscleGroup: .legs, setCount: 17, actualPercent: 13, targetPercent: 20), showsName: true)
+        MuscleBalanceBar(entry: MuscleBalanceEntry(muscleGroup: .chest, setCount: 30, actualPercent: 23, targetPercent: 16), showsName: true)
+        MuscleBalanceBar(entry: MuscleBalanceEntry(muscleGroup: .back, setCount: 24, actualPercent: 18, targetPercent: 18), showsName: true)
     }
     .padding()
+    .preferredColorScheme(.dark)
 }

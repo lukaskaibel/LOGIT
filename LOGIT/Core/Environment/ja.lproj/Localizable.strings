@@ -1003,3 +1003,11 @@
 "streakFactYear" = "まる1年";
 "weeks" = "週";
 "streak" = "連続記録";
+
+/* Muscle Balance — donut overview, sections & history chart */
+"muscleBalanceMore" = "他%d件";
+"muscleBalanceOverTime" = "時間ごとのバランス";
+"muscleDetailEmptySubtitle" = "選択した期間にこの部位はトレーニングしていません。";
+"muscleBalanceBelowTarget" = "目標未満";
+"muscleBalanceAboveTarget" = "目標超過";
+"muscleBalanceOnTargetSection" = "目標どおり";

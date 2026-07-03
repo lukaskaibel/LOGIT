@@ -78,11 +78,10 @@ struct MuscleTargetSplitScreen: View {
 
     private func row(_ group: MuscleGroup) -> some View {
         HStack(spacing: 11) {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(group.color)
-                .frame(width: 9, height: 9)
+            // Muscle names carry their colour themselves — bold, rounded, no identity dot.
             Text(group.description)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(group.color)
             Spacer()
             stepper(group)
         }

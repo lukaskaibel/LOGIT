@@ -7,13 +7,17 @@
 
 import SwiftUI
 
-/// The Muscle Groups overview (`muscle-group-screens.html` screen 1): a period-scoped set-distribution
-/// donut, a neutral "on target" insight banner (no alarm colour — muscle hues are identity, not
-/// warning), the full eight-group balance-vs-target list (worst gap first) built from the shared
-/// `MuscleBalanceBar`, and a row into the target-split editor. The full breakdown is Pro; the
-/// Summary's Muscle Balance tile is the free hook into it. Replaces the 2022 `MuscleGroupSplitScreen`.
+/// The Muscle Groups overview: the muscle-group occurrence donut leads — the same circle the app uses
+/// everywhere for muscle groups, with the period's total sets in its centre — over the groups grouped
+/// by standing (↓ Below target · ↑ Above target · ✓ On target), each row the diverging
+/// `MuscleBalanceBar` growing out of the target tick. Below, the slim segmented "Balance over time"
+/// chart: Week / Month / Year sets its grouping and tapping a bar rebinds the donut and sections to
+/// that period. Rows tap through to the muscle's own page. Pro; the Summary's Muscle Balance tile is
+/// the free hook into it.
 struct MuscleGroupsOverviewScreen: View {
     @State private var period: StatPeriod = .month
+    /// The bar the gesture last selected (a bucket id), or nil for "none tapped yet" → newest with data.
+    @State private var rawSelection: String?
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     @EnvironmentObject private var targetSplitStore: MuscleTargetSplitStore
@@ -25,33 +29,62 @@ struct MuscleGroupsOverviewScreen: View {
             sortDescriptors: [SortDescriptor(\.date, order: .reverse)],
             predicate: WorkoutPredicateFactory.getWorkouts()
         ) { allWorkouts in
-            let range = period.currentRange()
-            content(workouts: allWorkouts.filter { ($0.date).map { range.contains($0) } ?? false })
+            content(allWorkouts: allWorkouts)
         }
     }
 
-    private func content(workouts: [Workout]) -> some View {
-        let occurrences = muscleGroupService.getMuscleGroupOccurances(in: workouts)
-        let totalSets = occurrences.reduce(0) { $0 + $1.1 }
-        let calculator = MuscleBalanceCalculator(
-            workouts: workouts,
-            target: targetSplitStore.split,
+    private func content(allWorkouts: [Workout]) -> some View {
+        let target = targetSplitStore.split
+        let buckets = MuscleBalanceHistory.buckets(
+            from: allWorkouts,
+            period: period,
+            target: target,
             muscleGroupService: muscleGroupService
         )
+        let orderedGroups = orderedGroups(for: target)
+        let hasData = buckets.contains { $0.totalSets > 0 }
+        let selected = resolveSelected(in: buckets)
+
         return ScrollView {
             VStack(spacing: SECTION_SPACING) {
-                VStack(spacing: 16) {
-                    PeriodPicker(selection: $period)
-                    donut(occurrences: occurrences, totalSets: totalSets)
-                    insightBanner(calculator)
+                PeriodPicker(selection: $period)
+                if hasData {
+                    if selected.totalSets > 0 {
+                        donutHero(selected)
+                        section(
+                            titleKey: "muscleBalanceBelowTarget",
+                            systemImage: "arrow.down",
+                            entries: selected.calculator.underTargets()
+                        )
+                        section(
+                            titleKey: "muscleBalanceAboveTarget",
+                            systemImage: "arrow.up",
+                            entries: selected.calculator.overTargets()
+                        )
+                        section(
+                            titleKey: "muscleBalanceOnTargetSection",
+                            systemImage: "checkmark",
+                            entries: selected.calculator.entries
+                                .filter(\.isOnTarget)
+                                .sorted { $0.actualPercent > $1.actualPercent },
+                            isGood: true
+                        )
+                    } else {
+                        emptyBucketNote
+                    }
+                    chartSection(buckets: buckets, orderedGroups: orderedGroups, selectedID: selected.id)
+                } else {
+                    emptyState
                 }
-                balanceList(calculator)
                 adjustRow
             }
             .padding(.horizontal)
             .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
+        // Selecting a bar re-splits the sections, morphs the donut, and ticks a selection haptic.
+        .animation(.snappy(duration: 0.3), value: selected.id)
+        .sensoryFeedback(.selection, trigger: selected.id)
         .isBlockedWithoutPro()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -60,82 +93,159 @@ struct MuscleGroupsOverviewScreen: View {
                     .font(.headline)
             }
         }
+        .onChange(of: period) { rawSelection = nil }
     }
 
-    private func donut(occurrences: [(MuscleGroup, Int)], totalSets: Int) -> some View {
-        ZStack {
-            MuscleGroupOccurancesChart(muscleGroupOccurances: occurrences)
-                .frame(width: 170, height: 170)
-            VStack(spacing: 2) {
-                Text("\(totalSets)")
-                    .font(.system(size: 34, weight: .bold))
-                    .fontDesign(.rounded)
-                Text(NSLocalizedString("sets", comment: ""))
-                    .font(.caption2.weight(.semibold))
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-    }
+    // MARK: - Donut hero
 
-    private func insightBanner(_ calculator: MuscleBalanceCalculator) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "chart.pie.fill")
-                .font(.body)
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 32, height: 32)
-                .background(Circle().fill(Color.accentColor.opacity(0.15)))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(bannerTitle(calculator))
-                    .font(.subheadline.weight(.bold))
-                Text(String(format: NSLocalizedString("muscleBalanceOnTarget", comment: ""), calculator.onTargetCount()))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-        .padding(CELL_PADDING)
-        .tileStyle()
-    }
-
-    private func bannerTitle(_ calculator: MuscleBalanceCalculator) -> String {
-        if calculator.totalSets == 0 { return NSLocalizedString("muscleBalanceEmpty", comment: "") }
-        return calculator.onTargetCount() >= 6
-            ? NSLocalizedString("muscleBalanceOnTrack", comment: "")
-            : NSLocalizedString("muscleBalanceRoomToBalance", comment: "")
-    }
-
-    private func balanceList(_ calculator: MuscleBalanceCalculator) -> some View {
-        VStack(spacing: SECTION_HEADER_SPACING) {
-            Text(NSLocalizedString("balanceVsTarget", comment: ""))
-                .sectionHeaderStyle2()
-                .frame(maxWidth: .infinity, alignment: .leading)
-            let entries = calculator.worstGapSorted()
-            VStack(spacing: 0) {
-                ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
-                    Button {
-                        homeNavigationCoordinator.path.append(.muscleGroupDetail(entry.muscleGroup))
-                    } label: {
-                        HStack(spacing: 8) {
-                            MuscleBalanceBar(entry: entry, showsName: true, showsDelta: true)
-                            NavigationChevron()
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.vertical, 10)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    if index < entries.count - 1 {
-                        Divider()
-                    }
+    /// The muscle-group occurrence donut with the period's total sets in the centre and the period's
+    /// name beneath — the name keeps time-travel legible when a past bar is selected.
+    private func donutHero(_ bucket: MuscleBalanceBucket) -> some View {
+        VStack(spacing: 12) {
+            ZStack {
+                MuscleGroupOccurancesChart(muscleGroupOccurances: occurrences(in: bucket))
+                VStack(spacing: 1) {
+                    Text("\(bucket.totalSets)")
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                        .foregroundStyle(Color.label)
+                    Text(NSLocalizedString("sets", comment: ""))
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .textCase(.uppercase)
+                        .foregroundStyle(.secondary)
                 }
             }
-            .padding(.horizontal, CELL_PADDING)
+            .frame(width: 190, height: 190)
+            Text(bucket.title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .contentTransition(.numericText())
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 6)
+    }
+
+    /// The donut's input: this bucket's set occurrences per group, canonical order, untrained groups
+    /// omitted (the chart draws slices only for what was trained).
+    private func occurrences(in bucket: MuscleBalanceBucket) -> [(MuscleGroup, Int)] {
+        bucket.calculator.entries
+            .filter { $0.setCount > 0 }
+            .map { ($0.muscleGroup, $0.setCount) }
+    }
+
+    // MARK: - Grouped sections
+
+    @ViewBuilder
+    private func section(
+        titleKey: String,
+        systemImage: String,
+        entries: [MuscleBalanceEntry],
+        isGood: Bool = false
+    ) -> some View {
+        if !entries.isEmpty {
+            VStack(spacing: SECTION_HEADER_SPACING) {
+                HStack(spacing: 8) {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(isGood ? Color.accentColor : Color.secondaryLabel)
+                        .frame(width: 24, height: 24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7)
+                                .fill(isGood ? Color.accentColor.opacity(0.16) : Color.fill)
+                        )
+                    Text(NSLocalizedString(titleKey, comment: ""))
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(Color.label)
+                    Spacer()
+                    Text("\(entries.count)")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(.tertiary)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                }
+                .padding(.horizontal, 4)
+                VStack(spacing: 0) {
+                    ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
+                        Button {
+                            homeNavigationCoordinator.path.append(.muscleGroupDetail(entry.muscleGroup))
+                        } label: {
+                            barRow(entry)
+                        }
+                        .buttonStyle(.plain)
+                        if index < entries.count - 1 {
+                            Divider()
+                        }
+                    }
+                }
+                .padding(.horizontal, CELL_PADDING)
+                .tileStyle()
+            }
+        }
+    }
+
+    private func barRow(_ entry: MuscleBalanceEntry) -> some View {
+        HStack(spacing: 8) {
+            MuscleBalanceBar(entry: entry, showsName: true, showsDelta: true)
+            NavigationChevron()
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
+    }
+
+    // MARK: - Chart
+
+    private func chartSection(
+        buckets: [MuscleBalanceBucket],
+        orderedGroups: [MuscleGroup],
+        selectedID: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
+            Text(NSLocalizedString("muscleBalanceOverTime", comment: ""))
+                .sectionHeaderStyle2()
+                .frame(maxWidth: .infinity, alignment: .leading)
+            MuscleBalanceHistoryChart(
+                buckets: buckets,
+                orderedGroups: orderedGroups,
+                selectedID: selectedID,
+                rawSelection: $rawSelection
+            )
+            .padding(CELL_PADDING)
             .tileStyle()
         }
     }
+
+    // MARK: - Empty states
+
+    /// The selected bucket has no sets (the user tapped an empty bar) though other periods do.
+    private var emptyBucketNote: some View {
+        Text(NSLocalizedString("noData", comment: ""))
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 30)
+            .tileStyle()
+    }
+
+    /// No sets anywhere in the window — nothing to chart at all.
+    private var emptyState: some View {
+        VStack(spacing: 10) {
+            BodyMapFigure(highlighted: nil)
+                .frame(width: 44, height: 92)
+                .opacity(0.7)
+            Text(NSLocalizedString("muscleBalanceEmpty", comment: ""))
+                .font(.headline)
+            Text(NSLocalizedString("muscleBalanceEmptySubtitle", comment: ""))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+    }
+
+    // MARK: - Adjust
 
     private var adjustRow: some View {
         Button {
@@ -156,6 +266,29 @@ struct MuscleGroupsOverviewScreen: View {
             .tileStyle()
         }
         .buttonStyle(TileButtonStyle())
+    }
+
+    // MARK: - Helpers
+
+    /// The bar currently selected, or — before any tap, or after a period switch — the most recent
+    /// bucket that has sets (so the donut and sections always open on real data).
+    private func resolveSelected(in buckets: [MuscleBalanceBucket]) -> MuscleBalanceBucket {
+        if let rawSelection, let match = buckets.first(where: { $0.id == rawSelection }) {
+            return match
+        }
+        return buckets.last(where: { $0.totalSets > 0 }) ?? buckets[buckets.count - 1]
+    }
+
+    /// Chart stack order: biggest target share first, so the composition is stable across periods.
+    private func orderedGroups(for target: MuscleTargetSplit) -> [MuscleGroup] {
+        MuscleGroup.allCases.sorted {
+            let lhs = target.percentage(for: $0)
+            let rhs = target.percentage(for: $1)
+            if lhs != rhs { return lhs > rhs }
+            let li = MuscleGroup.allCases.firstIndex(of: $0) ?? 0
+            let ri = MuscleGroup.allCases.firstIndex(of: $1) ?? 0
+            return li < ri
+        }
     }
 }
 

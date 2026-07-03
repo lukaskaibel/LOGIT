@@ -1003,3 +1003,11 @@
 "streakFactYear" = "A full year";
 "weeks" = "Weeks";
 "streak" = "Streak";
+
+/* Muscle Balance — donut overview, sections & history chart */
+"muscleBalanceMore" = "+%d more";
+"muscleBalanceOverTime" = "Balance over time";
+"muscleDetailEmptySubtitle" = "You haven't trained this muscle in the selected period.";
+"muscleBalanceBelowTarget" = "Below target";
+"muscleBalanceAboveTarget" = "Above target";
+"muscleBalanceOnTargetSection" = "On target";

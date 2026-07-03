@@ -9,9 +9,10 @@ import Charts
 import CoreData
 import SwiftUI
 
-/// The single-muscle detail (`muscle-group-screens.html` screen 2): a muscle-coloured gradient header
-/// with the `BodyMapFigure`, a target-share tile, a 2×2 stat grid, a 12-week sets chart, and the top
-/// exercises that train it. Pro — the full per-muscle breakdown is the analytics behind the wall.
+/// The single-muscle detail: a target-share tile (the diverging `MuscleBalanceBar` showing how the
+/// group's share sits against target, with a "↓ Below target / ↑ Above target / ✓ On target" pill),
+/// a 2×2 stat grid, a 12-week sets chart, and the top exercises that train it. Pro — the full
+/// per-muscle breakdown is the analytics behind the wall.
 struct MuscleGroupDetailScreen: View {
     let muscleGroup: MuscleGroup
 
@@ -50,61 +51,104 @@ struct MuscleGroupDetailScreen: View {
 
         return ScrollView {
             VStack(spacing: SECTION_SPACING) {
-                header(percent: percent)
-                VStack(spacing: 16) {
-                    PeriodPicker(selection: $period)
-                    targetShareTile(entry: entry)
+                PeriodPicker(selection: $period)
+                if groupSetCount > 0 {
+                    targetShare(entry: entry, percent: percent)
                     statGrid(setCount: groupSetCount, volume: volume, sessions: sessions, rank: rank)
                     weeklyChart(allWorkouts: allWorkouts)
                     topExercises(in: periodWorkouts)
+                } else {
+                    emptyState
+                        .containerRelativeFrame(.vertical, alignment: .center) { height, _ in
+                            max(height - 96, 320)
+                        }
                 }
-                .padding(.horizontal)
             }
+            .padding(.horizontal)
+            .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
         .isBlockedWithoutPro()
         .navigationBarTitleDisplayMode(.inline)
-        .ignoresSafeArea(edges: .top)
-    }
-
-    // MARK: - Header
-
-    private func header(percent: Int) -> some View {
-        HStack(spacing: 16) {
-            BodyMapFigure(
-                highlighted: BodyRegion(muscleGroup),
-                color: .black.opacity(0.5),
-                baseColor: .black.opacity(0.28)
-            )
-            .frame(width: 52, height: 116)
-            VStack(alignment: .leading, spacing: 4) {
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                // Muscle names carry their colour themselves — bold, rounded, no identity dot.
                 Text(muscleGroup.description)
-                    .font(.largeTitle.weight(.bold))
-                    .foregroundStyle(.black)
-                Text(String(format: NSLocalizedString("muscleDetailPercentOfSets", comment: ""), percent))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.black.opacity(0.6))
+                    .font(.system(.headline, design: .rounded, weight: .bold))
+                    .foregroundStyle(color)
             }
-            Spacer()
         }
-        .padding(.horizontal)
-        .padding(.top, 60)
-        .padding(.bottom, 20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(color.gradient)
     }
 
-    // MARK: - Target share
+    // MARK: - Hero
 
-    private func targetShareTile(entry: MuscleBalanceEntry) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("targetShare", comment: ""))
-                .font(.subheadline.weight(.semibold))
+    /// The target-share tile: the group's standing (↓ Below target / ↑ Above target / ✓ On target) +
+    /// its share of sets, over the diverging `MuscleBalanceBar` — the fill grows out of the centred
+    /// target tick, left when under, right when over.
+    private func targetShare(entry: MuscleBalanceEntry, percent: Int) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(NSLocalizedString("targetShare", comment: ""))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.label)
+                    Text(String(format: NSLocalizedString("muscleDetailPercentOfSets", comment: ""), percent))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                stateBadge(entry.state)
+            }
             MuscleBalanceBar(entry: entry, showsName: false, showsDelta: true)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(CELL_PADDING)
         .tileStyle()
+    }
+
+    private func stateBadge(_ state: MuscleBalanceState) -> some View {
+        let word: String
+        let icon: String
+        let isGood: Bool
+        switch state {
+        case .under: word = "muscleBalanceBelowTarget"; icon = "arrow.down"; isGood = false
+        case .over: word = "muscleBalanceAboveTarget"; icon = "arrow.up"; isGood = false
+        case .onTarget: word = "muscleBalanceOnTargetSection"; icon = "checkmark"; isGood = true
+        }
+        return HStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.caption2.weight(.bold))
+            Text(NSLocalizedString(word, comment: ""))
+                .font(.caption.weight(.bold))
+        }
+        .foregroundStyle(isGood ? Color.accentColor : Color.secondaryLabel)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(Capsule().fill(isGood ? Color.accentColor.opacity(0.16) : Color.secondaryFill))
+    }
+
+    // MARK: - Empty
+
+    private var emptyState: some View {
+        VStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.16))
+                    .frame(width: 76, height: 76)
+                Image(systemName: "dumbbell.fill")
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(color.gradient)
+            }
+            VStack(spacing: 6) {
+                Text(NSLocalizedString("muscleBalanceEmpty", comment: ""))
+                    .font(.headline)
+                Text(NSLocalizedString("muscleDetailEmptySubtitle", comment: ""))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal)
     }
 
     // MARK: - Stat grid

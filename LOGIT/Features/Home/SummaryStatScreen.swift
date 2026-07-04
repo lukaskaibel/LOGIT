@@ -94,6 +94,10 @@ struct SummaryStatScreen: View {
     private var chart: some View {
         let buckets = self.buckets
         let maxValue = buckets.map(\.value).max() ?? 0
+        // At most ~4 axis labels, counted back from the current bucket so "now" is always labeled —
+        // one label per bucket sat shoulder-to-shoulder on the week view.
+        let labelStride = max(1, Int((Double(buckets.count) / 4.0).rounded(.up)))
+        let labeledDates = stride(from: buckets.count - 1, through: 0, by: -labelStride).map { buckets[$0].date }
         return Chart {
             ForEach(buckets) { bucket in
                 BarMark(
@@ -111,13 +115,18 @@ struct SummaryStatScreen: View {
         }
         .chartYScale(domain: 0 ... max(maxValue, 1))
         .chartXAxis {
-            AxisMarks(values: .stride(by: strideComponent)) { value in
+            AxisMarks(values: labeledDates) { value in
                 if let date = value.as(Date.self) {
+                    let isCurrent = period.currentRange().contains(date)
                     AxisGridLine()
                         .foregroundStyle(Color.gray.opacity(0.4))
-                    AxisValueLabel(axisLabel(for: date))
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.secondary)
+                    // Styling lives on the Text inside the label closure — hierarchical styles on the
+                    // AxisMark itself resolve against the chart's accent on iOS 26 (labels turned lime).
+                    AxisValueLabel {
+                        Text(axisLabel(for: date))
+                            .font(.caption.weight(isCurrent ? .bold : .semibold))
+                            .foregroundStyle(isCurrent ? Color.label : Color.secondaryLabel)
+                    }
                 }
             }
         }

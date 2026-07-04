@@ -474,6 +474,7 @@
 // MARK: - W
 
 "week" = "週";
+"weeks" = "週";
 "weekly" = "毎週";
 "weeklyAverage" = "週平均";
 "weeklyTarget" = "週間目標";
@@ -490,6 +491,20 @@
 "weekOfThe" = "の週";
 "workout" = "ワークアウト";
 "workoutGoal" = "ワークアウトの目標";
+
+// MARK: - Workout Goal screen
+"streakStartPrompt" = "週間目標を達成してストリークを始めよう";
+"streakFactMonth" = "まる1か月";
+"streakFactQuarter" = "まる3か月";
+"streakFactHalfYear" = "半年";
+"streakFactYear" = "まる1年";
+"streakFactTwoYears" = "2年";
+"nextMilestone" = "次のマイルストーン";
+"streakToGoalOne" = "次のマイルストーンまであと1週";
+"streakToGoalMany" = "次のマイルストーンまであと%d週";
+"streakAtBest" = "自己ベストのストリーク";
+"streakToBeatRecordOne" = "記録更新まであと1週";
+"streakToBeatRecordMany" = "記録更新まであと%d週";
 "workoutHistory" = "歴史";
 "workouts" = "ワークアウト";
 "workoutTarget" = "トレーニングターゲット";
@@ -985,23 +1000,45 @@
 "muscleDetailPercentOfSets" = "セットの%d%%";
 "weekStreakSuffix" = "週連続";
 "yearWeeksOnTarget" = "%2$d週中%1$d週が目標達成";
+"currentWeekNumber" = "第%d週";
 "bestStreakLabel" = "最高 · %d週";
 "monthWorkoutsCount" = "%d回";
 "muscleBalanceEmptySubtitle" = "ワークアウトを記録すると筋肉の配分が表示されます。";
+"muscleBalanceOverTime" = "時間ごとのバランス";
+"muscleBalanceGridCaption" = "セットの割合・目標スプリット比";
+"muscleBalanceOnTargetShort" = "8つ中%dつが目標内";
+"muscleBalanceOnTrack" = "順調";
+"muscleDetailRingCaption" = "リングが満ちる＝目標達成・目標 %d%%";
+"muscleDetailShareOverTime" = "割合の推移";
+"muscleBalanceBelowTarget" = "目標未満";
+"muscleBalanceAboveTarget" = "目標超過";
 "pinKeyLifts" = "主要種目をピン留め";
 "chooseExercises" = "種目を選ぶ";
 "pinAMeasurement" = "測定値をピン留め";
 "trackMeasurements" = "測定値を記録";
 "unlockWithPro" = "Proで解除";
 
-"currentWeekNumber" = "第%d週";
-"nextMilestone" = "次のマイルストーン";
-"streakFactHalfYear" = "半年";
-"streakFactMonth" = "まる1か月";
-"streakFactQuarter" = "まる3か月";
-"streakFactTwoYears" = "2年";
-"streakFactYear" = "まる1年";
-"weeks" = "週";
+/* Muscle Balance — ring grouping (under / over / on target) */
+"muscleBalanceBuildUp" = "増やす";
+"muscleBalanceAhead" = "超過";
+"muscleBalanceOnTargetSection" = "目標どおり";
+
+/* Muscle detail — ring hero + empty state */
+"muscleDetailTargetCaption" = "目標 %d%%";
+"muscleDetailEmptySubtitle" = "選択した期間にこの部位はトレーニングしていません。";
+
+/* Muscle Balance — tile "+N more" hint */
+"muscleBalanceMore" = "他%d件";
+
+
+/* Progress tab — overall progress trend */
+"overallProgress" = "全体の進捗";
+"trendingUp" = "上昇傾向";
+"trendingSteady" = "横ばい";
+"trendingDown" = "下降傾向";
+"byMuscleGroup" = "筋群別";
+"overallProgressBasis" = "推定1RM · 直近8週間 vs その前の8週間";
+"overallProgressEmpty" = "ワークアウトを記録すると全体の傾向が表示されます。";
 "streak" = "連続記録";
 
 /* Muscle Balance — donut overview, sections & history chart */

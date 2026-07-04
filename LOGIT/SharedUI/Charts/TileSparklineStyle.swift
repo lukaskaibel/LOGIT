@@ -46,9 +46,9 @@ enum TileSparklineStyle {
     static let carryForwardOpacity: CGFloat = 0.45
     /// Fraction of the width over which the leading edge fades in.
     static let leadingFadeLocation: CGFloat = 0.12
-    /// A longer leading fade for the full-bleed metric-tile line, which carries the trend pill at its
-    /// bottom-left corner: the line eases in over this span so it doesn't start abruptly at its left
-    /// edge (just to the right of the pill).
+    /// A longer leading fade for the full-bleed metric-tile line, which carries the trend pill over its
+    /// bottom-left corner: the line dissolves to transparent under the pill so it emerges to the pill's
+    /// right instead of starting abruptly behind it.
     static let bleedLeadingFadeLocation: CGFloat = 0.33
 
     /// The translucent fill under the line — a top-heavy tint. Swift Charts won't reliably fade an
@@ -129,9 +129,9 @@ func tileSparklineMarks(
             .interpolationMethod(interpolation)
             .foregroundStyle(TileSparklineStyle.areaGradient(color))
     }
-    // Extend the area flat to the chart's trailing edge, so the gradient fill bleeds all the way to
-    // the tile's right edge even though the latest dot (and the window) stop short of it — including
-    // under the dashed carry-forward line.
+    // Carry the area flat under the dashed line to the chart's trailing edge so the fill reaches the
+    // tile's right edge; the bleed mask's trailing fade then dissolves it into the edge rather than
+    // letting it end on a hard vertical cut.
     if let carryForwardArea, let last = points.last {
         AreaMark(x: .value("Date", carryForwardArea, unit: .day), y: .value("Value", last.value))
             .interpolationMethod(interpolation)
@@ -198,8 +198,9 @@ extension View {
     }
 
     /// The full-bleed metric-tile line's fade: it dissolves IN from the leading edge over a longer span
-    /// than the corner sparklines (so it eases in at its left edge, just right of the trend pill) and
-    /// OUT toward the bottom, with no clip, so the line still runs to the trailing and bottom edges.
+    /// than the corner sparklines — far enough to clear the trend pill the tile overlays at the bottom-
+    /// left — and OUT toward the bottom, with no clip, so the line still runs to the trailing and bottom
+    /// edges. The leading fade is why the line doesn't start abruptly behind the pill.
     func tileSparklineBleedFadeMask() -> some View {
         mask(
             LinearGradient(

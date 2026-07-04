@@ -14,15 +14,18 @@ import SwiftUI
 /// history bar chart with the current period highlighted. Parallel to `WorkoutStatTile` (which is
 /// hardwired to "this workout vs prior runs"), but reading the period block's window instead.
 ///
-/// Volume, sets and reps use the app accent; duration stays neutral gray — a longer week is neither
-/// better nor worse — so its trend pill and current bar read quiet, matching the mockup.
+/// The highlighted bar always uses the app accent — it marks "this week" (the current period), which
+/// matters for every metric. The trend pill, though, stays neutral gray for duration: a longer week is
+/// neither better nor worse, so only volume, sets and reps tint their pill with the accent.
 struct SummaryStatTile: View {
     let metric: WorkoutStatMetric
     let data: SummaryViewModel.StatData
     let onOpen: () -> Void
 
     private var isDuration: Bool { metric == .duration }
-    private var accentColor: Color { isDuration ? .secondary : .accentColor }
+    /// The trend pill's tint: neutral gray for duration (a longer week is neither better nor worse),
+    /// the app accent for volume / sets / reps.
+    private var pillColor: Color { isDuration ? .secondary : .accentColor }
 
     var body: some View {
         Button(action: onOpen) {
@@ -34,13 +37,15 @@ struct SummaryStatTile: View {
                 // reads as a misleading "100 % decline".
                 value: metric.formattedValue(fromRaw: data.rawValue),
                 unit: metric.unit,
-                accent: AnyShapeStyle(accentColor),
-                accentColor: accentColor,
+                accent: AnyShapeStyle(pillColor),
+                accentColor: pillColor,
                 percentChange: data.rawValue > 0 ? data.percentChange : nil,
                 requiresPro: metric.requiresPro,
                 chartBleeds: false
             ) {
-                WorkoutRunsBarChart(bars: bars, currentStyle: AnyShapeStyle(accentColor))
+                // The highlighted "this week" bar always uses the accent, even for duration — it marks
+                // the current period, not a judgement, so it reads the same as the other tiles.
+                WorkoutRunsBarChart(bars: bars, currentStyle: AnyShapeStyle(Color.accentColor))
             }
         }
         .buttonStyle(TileButtonStyle())

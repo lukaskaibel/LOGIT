@@ -198,7 +198,14 @@ struct MetricTile<ChartContent: View>: View {
         case let .info(text, explanation):
             MetricTileInfoLabel(text: text, explanation: explanation)
         case .none:
-            EmptyView()
+            // Reserve one subtitle line's height so the value keeps the same fixed vertical position
+            // as tiles that do have a subtitle. Without it the value floats up into the empty slot and
+            // the chart below — which fills the leftover height — grows too tall (the Summary bars).
+            Text(" ")
+                .font(.footnote)
+                .fontWeight(.semibold)
+                .hidden()
+                .accessibilityHidden(true)
         }
     }
 

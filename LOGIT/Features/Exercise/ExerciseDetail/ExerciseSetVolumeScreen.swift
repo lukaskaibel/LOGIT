@@ -25,6 +25,13 @@ struct ExerciseSetVolumeScreen: View {
         // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
         let bestVisibleSetVolume = bestSetVolumeInGranularity(workoutSets)
+        let yScaleCap = chartYScaleCap(
+            visibleMax: chartVisibleLineMax(
+                of: chartPoints(from: allDailyMaxSets),
+                from: chartScrollPosition,
+                to: visibleEndDate
+            )
+        )
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -162,7 +169,7 @@ struct ExerciseSetVolumeScreen: View {
                         }
                     }
                     .chartXScale(domain: xDomain(for: workoutSets))
-                    .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeSetVolumePR(in: workoutSets)))
+                    .chartYScale(domain: 0 ... yScaleCap)
                     .chartScrollableAxes(.horizontal)
                     .chartScrollPosition(x: $chartScrollPosition)
                     .chartScrollTargetBehavior(
@@ -172,6 +179,10 @@ struct ExerciseSetVolumeScreen: View {
                     )
                     .chartXSelection(value: $selectedDate)
                     .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+                    // Rebuild the chart when the granularity flips: reusing the chart across visible-domain
+                    // changes leaves its scroll offset stale (the viewport shows a window months away from
+                    // chartScrollPosition), so give each granularity its own chart identity.
+                    .id(chartGranularity)
                     .chartXAxis {
                         AxisMarks(
                             position: .bottom,
@@ -187,8 +198,7 @@ struct ExerciseSetVolumeScreen: View {
                         }
                     }
                     .chartYAxis {
-                        let chartYScaleMax = chartYScaleMax(maxYValue: allTimeSetVolumePR(in: workoutSets))
-                        AxisMarks(values: [0, chartYScaleMax / 2, chartYScaleMax])
+                        AxisMarks(values: .automatic(desiredCount: 3))
                     }
                     .emptyPlaceholder(allDailyMaxSets) {
                         Text(NSLocalizedString("noData", comment: ""))
@@ -301,16 +311,6 @@ struct ExerciseSetVolumeScreen: View {
         }
     }
 
-    private func allTimeSetVolumePR(in workoutSets: [WorkoutSet]) -> Int {
-        convertWeightForDisplaying(
-            workoutSets
-                .map {
-                    $0.volume(for: exercise)
-                }
-                .max() ?? 0
-        )
-    }
-
     /// The header's left value and the comparison baseline: the best single-set volume in the visible
     /// window *other than* the current best, falling back to the most recent day's best before the
     /// window when it holds no other value (see `exerciseOtherBestBaseline`).
@@ -323,14 +323,13 @@ struct ExerciseSetVolumeScreen: View {
         ) { $0.volume(for: exercise) }
     }
 
-    /// Set volume has no practical upper bound, so unlike the weight and e1RM screens (which pick
-    /// from a fixed list of axis caps) the cap is the PR rounded up to a clean half-magnitude step
-    /// — keeping the mid axis mark (cap / 2) a round number too.
-    private func chartYScaleMax(maxYValue: Int) -> Int {
-        guard maxYValue > 0 else { return 10 }
-        let magnitude = pow(10.0, floor(log10(Double(maxYValue))))
-        let step = magnitude / 2
-        return Int((Double(maxYValue) / step).rounded(.up) * step)
+    /// The plotted daily-max series as plain (day, displayed value) points — the input for the
+    /// visible-window y-scale.
+    private func chartPoints(from sets: [WorkoutSet]) -> [(date: Date, value: Double)] {
+        sets.map { (
+            Calendar.current.startOfDay(for: $0.workout?.date ?? .now),
+            convertWeightForDisplayingDecimal($0.volume(for: exercise))
+        ) }
     }
 
     /// The fixed right-hand anchor of the header scoreboard, independent of scroll: the current best

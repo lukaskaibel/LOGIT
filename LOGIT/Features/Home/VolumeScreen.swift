@@ -23,6 +23,17 @@ struct VolumeScreen: View {
     var body: some View {
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }
             .sorted { $0.key < $1.key }
+        // The stacked bar's full height is the week's total volume, whichever muscle group is picked.
+        let weeklyPoints = groupedWorkoutSets.map { (date: $0.0, value: volume(for: $0.1)) }
+        let yScaleCap = chartYScaleCap(
+            visibleMax: chartVisibleMax(
+                of: weeklyPoints,
+                from: chartScrollPosition,
+                to: visibleEndDate,
+                bucketLength: 7 * 24 * 3600
+            ),
+            fallbackMax: weeklyPoints.map(\.value).max()
+        )
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -127,6 +138,7 @@ struct VolumeScreen: View {
                         }
                     }
                     .chartXScale(domain: xDomain(for: groupedWorkoutSets.map { $0.1 }))
+                    .chartYScale(domain: 0 ... yScaleCap)
                     .chartScrollableAxes(.horizontal)
                     .chartScrollPosition(x: $chartScrollPosition)
                     .chartScrollTargetBehavior(
@@ -136,6 +148,10 @@ struct VolumeScreen: View {
                     )
                     .chartXSelection(value: $selectedDate)
                     .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+                    // Rebuild the chart when the granularity flips: reusing the chart across visible-domain
+                    // changes leaves its scroll offset stale (the viewport shows a window months away from
+                    // chartScrollPosition), so give each granularity its own chart identity.
+                    .id(chartGranularity)
                     .chartXAxis {
                         AxisMarks(
                             position: .bottom,
@@ -170,6 +186,18 @@ struct VolumeScreen: View {
             let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
             chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!
         }
+        .onChange(of: chartGranularity) {
+            // Re-initialize scroll position when switching granularity to avoid desync with visible window
+            let anchor: Date
+            switch chartGranularity {
+            case .month:
+                anchor = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
+            case .year:
+                // Align right edge roughly to next month for a stable yearly view
+                anchor = Calendar.current.date(byAdding: .month, value: 1, to: .now.startOfMonth)!
+            }
+            chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: anchor)!
+        }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -191,6 +219,10 @@ struct VolumeScreen: View {
     // MARK: - Private Helpers
 
     private var visibleChartDomainInSeconds: Int { 3600 * 24 * (chartGranularity == .month ? 35 : 365) }
+
+    private var visibleEndDate: Date {
+        Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
+    }
 
     private var xUnit: Calendar.Component {
         switch chartGranularity {

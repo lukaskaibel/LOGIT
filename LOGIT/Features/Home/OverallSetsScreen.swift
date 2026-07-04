@@ -66,6 +66,16 @@ struct OverallSetsScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     let grouped = setsGroupedByGranularity(workouts)
+                    let points = grouped.map { (date: $0.date, value: Double($0.workoutSets.count)) }
+                    let yScaleCap = chartYScaleCap(
+                        visibleMax: chartVisibleMax(
+                            of: points,
+                            from: chartScrollPosition,
+                            to: Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!,
+                            bucketLength: bucketLengthInSeconds
+                        ),
+                        fallbackMax: points.map(\.value).max()
+                    )
                     Chart {
                         ForEach(grouped, id: \.date) { data in
                             if data.workoutSets.count > 0 {
@@ -113,6 +123,7 @@ struct OverallSetsScreen: View {
                         }
                     }
                     .chartXScale(domain: xDomain(for: grouped.map { $0.workoutSets }))
+                    .chartYScale(domain: 0 ... yScaleCap)
                     .chartScrollableAxes(.horizontal)
                     .chartScrollPosition(x: $chartScrollPosition)
                     .chartScrollTargetBehavior(
@@ -122,6 +133,10 @@ struct OverallSetsScreen: View {
                     )
                     .chartXSelection(value: $selectedDate)
                     .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+                    // Rebuild the chart when the granularity flips: reusing the chart across visible-domain
+                    // changes leaves its scroll offset stale (the viewport shows a window months away from
+                    // chartScrollPosition), so give each granularity its own chart identity.
+                    .id(chartGranularity)
                     .chartXAxis {
                         AxisMarks(
                             position: .bottom,
@@ -168,6 +183,15 @@ struct OverallSetsScreen: View {
         case .week: return 3600 * 24 * 7
         case .month: return 3600 * 24 * 35
         case .year: return 3600 * 24 * 365
+        }
+    }
+
+    /// How long one bar's bucket spans on the x-axis — a day, a week, or a month of sets.
+    private var bucketLengthInSeconds: TimeInterval {
+        switch chartGranularity {
+        case .week: return 3600 * 24
+        case .month: return 3600 * 24 * 7
+        case .year: return 3600 * 24 * 31
         }
     }
 

@@ -14,9 +14,14 @@ import SwiftUI
 /// a 2×2 stat grid, a 12-week sets chart, and the top exercises that train it. Pro — the full
 /// per-muscle breakdown is the analytics behind the wall.
 struct MuscleGroupDetailScreen: View {
+    /// The weekly-sets chart shows 12 weeks at a time and can be panned back through history.
+    private static let twelveWeeksInSeconds = 3600 * 24 * 7 * 12
+
     let muscleGroup: MuscleGroup
 
     @State private var period: StatPeriod = .month
+    @State private var weeklyChartScrollPosition: Date = .now
+    @State private var selectedWeekDate: Date?
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     @EnvironmentObject private var targetSplitStore: MuscleTargetSplitStore
@@ -77,6 +82,14 @@ struct MuscleGroupDetailScreen: View {
                     .font(.system(.headline, design: .rounded, weight: .bold))
                     .foregroundStyle(color)
             }
+        }
+        .onAppear {
+            // Right edge shows the current week.
+            weeklyChartScrollPosition = Calendar.current.date(
+                byAdding: .second,
+                value: -Self.twelveWeeksInSeconds,
+                to: Date.now.endOfWeek
+            )!
         }
     }
 
@@ -185,11 +198,19 @@ struct MuscleGroupDetailScreen: View {
     private func weeklyChart(allWorkouts: [Workout]) -> some View {
         let sets = setsTraining(in: allWorkouts)
         let grouped = Dictionary(grouping: sets) { ($0.workout?.date ?? .now).startOfWeek }
-        let weeks: [(date: Date, count: Int)] = (0 ..< 12).reversed().map { weeksAgo in
-            let start = (Calendar.current.date(byAdding: .weekOfYear, value: -weeksAgo, to: .now) ?? .now).startOfWeek
-            return (start, grouped[start]?.count ?? 0)
-        }
-        let maxCount = weeks.map(\.count).max() ?? 0
+        let weeks = grouped
+            .map { (date: $0.key, count: $0.value.count) }
+            .sorted { $0.date < $1.date }
+        let points = weeks.map { (date: $0.date, value: Double($0.count)) }
+        let yScaleCap = chartYScaleCap(
+            visibleMax: chartVisibleMax(
+                of: points,
+                from: weeklyChartScrollPosition,
+                to: Calendar.current.date(byAdding: .second, value: Self.twelveWeeksInSeconds, to: weeklyChartScrollPosition)!,
+                bucketLength: 3600 * 24 * 7
+            ),
+            fallbackMax: points.map(\.value).max()
+        )
         return VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
             HStack {
                 Text(NSLocalizedString("weeklySets", comment: ""))
@@ -208,15 +229,68 @@ struct MuscleGroupDetailScreen: View {
                     )
                     .foregroundStyle(Calendar.current.isDate(week.date, equalTo: .now, toGranularity: .weekOfYear) ? color : Color.fill)
                     .clipShape(RoundedRectangle(cornerRadius: 3))
+                    .opacity(selectedWeekDate == nil || selectedWeekDate?.startOfWeek == week.date ? 1.0 : 0.4)
+                }
+                if let selectedWeekDate {
+                    let snapped = selectedWeekDate.startOfWeek
+                    let count = weeks.first { $0.date == snapped }?.count ?? 0
+                    RuleMark(x: .value("Selected", snapped, unit: .weekOfYear))
+                        .foregroundStyle(color.opacity(0.35))
+                        .lineStyle(StrokeStyle(lineWidth: 2))
+                        .annotation(
+                            position: .top,
+                            overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
+                        ) {
+                            VStack(alignment: .leading) {
+                                UnitView(value: "\(count)", unit: NSLocalizedString("sets", comment: ""), unitColor: .secondaryLabel)
+                                    .foregroundStyle(color.gradient)
+                                Text("\(snapped.formatted(.dateTime.day().month())) - \(snapped.endOfWeek.formatted(.dateTime.day().month()))")
+                                    .fontWeight(.bold)
+                                    .fontDesign(.rounded)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
+                        }
                 }
             }
-            .chartYScale(domain: 0 ... max(maxCount, 1))
-            .chartXAxis(.hidden)
+            .chartXScale(domain: weeklyXDomain(earliestWeek: weeks.first?.date))
+            .chartYScale(domain: 0 ... yScaleCap)
+            .chartScrollableAxes(.horizontal)
+            .chartScrollPosition(x: $weeklyChartScrollPosition)
+            .chartScrollTargetBehavior(.valueAligned(matching: DateComponents(weekday: Calendar.current.firstWeekday)))
+            .chartXSelection(value: $selectedWeekDate)
+            .chartXVisibleDomain(length: Self.twelveWeeksInSeconds)
+            .chartXAxis {
+                AxisMarks(values: .stride(by: .month)) { value in
+                    // A month tick within days of the domain's end has no room for its label —
+                    // it would clip to "…" — so the newest label only appears once its month
+                    // has properly begun.
+                    if let date = value.as(Date.self),
+                       date < Calendar.current.date(byAdding: .day, value: -10, to: Date.now.endOfWeek)! {
+                        AxisValueLabel {
+                            Text(date.formatted(.dateTime.month(.abbreviated)))
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(Color.secondaryLabel)
+                        }
+                    }
+                }
+            }
             .chartYAxis { AxisMarks(values: .automatic(desiredCount: 3)) }
-            .frame(height: 120)
+            .frame(height: 150)
             .padding(CELL_PADDING)
             .tileStyle()
         }
+    }
+
+    /// From the first trained week (or one full window back, whichever is earlier) to the end of
+    /// the current week.
+    private func weeklyXDomain(earliestWeek: Date?) -> ClosedRange<Date> {
+        let endDate = Date.now.endOfWeek
+        let minStartDate = Calendar.current.date(byAdding: .second, value: -Self.twelveWeeksInSeconds, to: endDate)!
+        guard let earliestWeek, earliestWeek < minStartDate else { return minStartDate ... endDate }
+        return earliestWeek ... endDate
     }
 
     // MARK: - Top exercises

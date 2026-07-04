@@ -219,6 +219,10 @@ struct WorkoutStatScreen: View {
         )
         .chartXSelection(value: $selectedDate)
         .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+        // Rebuild the chart when the granularity flips: reusing the chart across visible-domain
+        // changes leaves its scroll offset stale (the viewport shows a window months away from
+        // chartScrollPosition), so give each granularity its own chart identity.
+        .id(chartGranularity)
         .chartXAxis {
             AxisMarks(
                 position: .bottom,
@@ -234,7 +238,7 @@ struct WorkoutStatScreen: View {
             }
         }
         .chartYAxis {
-            AxisMarks(values: [0, yScaleMax / 2, yScaleMax])
+            AxisMarks(values: .automatic(desiredCount: 3))
         }
         .emptyPlaceholder(points) {
             Text(NSLocalizedString("noData", comment: ""))
@@ -386,15 +390,18 @@ struct WorkoutStatScreen: View {
         }
     }
 
-    /// Smallest "nice" number (1/2/2.5/5 × power of ten) at or above the largest bar, so the
-    /// y-axis marks land on round values whatever unit the stat uses.
+    /// The y-axis ceiling: the tallest bar in the visible window plus ~1/5 headroom, re-fitting as
+    /// the chart scrolls; the overall max backstops windows with no bars.
     private func chartYScaleMax(for points: [StatPoint]) -> Double {
-        let maxValue = points.map(\.value).max() ?? 0
-        guard maxValue > 0 else { return 1 }
-        let magnitude = pow(10, floor(log10(maxValue)))
-        let normalized = maxValue / magnitude
-        let niceNormalized: Double = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 2.5 ? 2.5 : normalized <= 5 ? 5 : 10
-        return niceNormalized * magnitude
+        chartYScaleCap(
+            visibleMax: chartVisibleMax(
+                of: points.map { (date: $0.date, value: $0.value) },
+                from: chartScrollPosition,
+                to: visibleEndDate,
+                bucketLength: chartGranularity == .month ? 3600 * 24 : 3600 * 24 * 31
+            ),
+            fallbackMax: points.map(\.value).max()
+        )
     }
 
     // MARK: - Selection

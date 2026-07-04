@@ -13,8 +13,6 @@ struct ExerciseRepetitionsScreen: View {
         case month, year
     }
 
-    private let yAxisMaxValues = [10, 20, 50, 100, 200]
-
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
 
@@ -27,6 +25,13 @@ struct ExerciseRepetitionsScreen: View {
         // Determine the snapped selected set only when a selection exists; snap to the overall nearest datapoint
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxRepsSets) : nil
         let bestRepsInGranularity: Int? = bestRepetitionsInGranularity(in: workoutSets)
+        let yScaleCap = chartYScaleCap(
+            visibleMax: chartVisibleLineMax(
+                of: chartPoints(from: allDailyMaxRepsSets),
+                from: chartScrollPosition,
+                to: visibleEndDate
+            )
+        )
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -165,7 +170,7 @@ struct ExerciseRepetitionsScreen: View {
                 }
             }
             .chartXScale(domain: xDomain(for: workoutSets))
-            .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeRepetitionsPR(in: workoutSets)))
+            .chartYScale(domain: 0 ... yScaleCap)
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
@@ -175,6 +180,10 @@ struct ExerciseRepetitionsScreen: View {
             )
             .chartXSelection(value: $selectedDate)
             .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+            // Rebuild the chart when the granularity flips: reusing the chart across visible-domain
+            // changes leaves its scroll offset stale (the viewport shows a window months away from
+            // chartScrollPosition), so give each granularity its own chart identity.
+            .id(chartGranularity)
             .chartXAxis {
                 AxisMarks(
                     position: .bottom,
@@ -190,8 +199,7 @@ struct ExerciseRepetitionsScreen: View {
                 }
             }
             .chartYAxis {
-                let chartYScaleMax = chartYScaleMax(maxYValue: allTimeRepetitionsPR(in: workoutSets))
-                AxisMarks(values: [0, chartYScaleMax / 2, chartYScaleMax])
+                AxisMarks(values: .automatic(desiredCount: 3))
             }
             .emptyPlaceholder(allDailyMaxRepsSets) {
                 Text(NSLocalizedString("noData", comment: ""))
@@ -308,14 +316,6 @@ struct ExerciseRepetitionsScreen: View {
         }
     }
 
-    private func allTimeRepetitionsPR(in workoutSets: [WorkoutSet]) -> Int {
-        workoutSets
-            .map {
-                $0.maximum(.repetitions, for: exercise)
-            }
-            .max() ?? 0
-    }
-
     /// The header's left value and the comparison baseline: the best reps in the visible window
     /// *other than* the current best, falling back to the most recent day's best before the window
     /// when it holds no other value (see `exerciseOtherBestBaseline`).
@@ -328,9 +328,13 @@ struct ExerciseRepetitionsScreen: View {
         ) { $0.maximum(.repetitions, for: exercise) }
     }
 
-    private func chartYScaleMax(maxYValue: Int) -> Int {
-        let nextBiggerYAxisMaxValue = yAxisMaxValues.filter { $0 > maxYValue }.min()
-        return nextBiggerYAxisMaxValue ?? maxYValue
+    /// The plotted daily-max series as plain (day, value) points — the input for the
+    /// visible-window y-scale.
+    private func chartPoints(from sets: [WorkoutSet]) -> [(date: Date, value: Double)] {
+        sets.map { (
+            Calendar.current.startOfDay(for: $0.workout?.date ?? .now),
+            Double($0.maximum(.repetitions, for: exercise))
+        ) }
     }
 
     /// The fixed right-hand anchor of the header scoreboard, independent of scroll: the current best

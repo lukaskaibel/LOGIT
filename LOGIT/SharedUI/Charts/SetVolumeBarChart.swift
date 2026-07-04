@@ -125,12 +125,21 @@ struct SetVolumeBarChart: View {
             }
         }
         .chartXScale(domain: (1 ... max(setCount, 1)).map { String($0) })
+        .chartYScale(domain: 0 ... chartYScaleCap(visibleMax: maxStackedVolume))
         .chartXSelection(value: $rawSelection)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
     }
 
     // MARK: - Computed Properties
+
+    /// The tallest bar — a super set's bar stacks both segments — in display units.
+    private var maxStackedVolume: Double {
+        Dictionary(grouping: segments) { $0.setIndex }
+            .values
+            .map { $0.reduce(0.0) { $0 + convertWeightForDisplayingDecimal($1.volume) } }
+            .max() ?? 0
+    }
 
     /// The set the gesture currently points at, snapped to the nearest set that has volume.
     private var selectedSetIndex: Int? {

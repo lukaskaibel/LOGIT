@@ -26,6 +26,16 @@ struct ExerciseSetsScreen: View {
 
     var body: some View {
         let groupedWorkoutSets = Dictionary(grouping: workoutSets) { $0.workout?.date?.startOfWeek ?? .now }.sorted { $0.key < $1.key }
+        let weeklyPoints = groupedWorkoutSets.map { (date: $0.0, value: Double(setCount(for: $0.1))) }
+        let yScaleCap = chartYScaleCap(
+            visibleMax: chartVisibleMax(
+                of: weeklyPoints,
+                from: chartScrollPosition,
+                to: visibleEndDate,
+                bucketLength: 7 * 24 * 3600
+            ),
+            fallbackMax: weeklyPoints.map(\.value).max()
+        )
         let shownWeeklyAverage = averageWeekly(from: chartScrollPosition, to: visibleEndDate)
         let recentWeeklyAverage = averageWeekly(from: Exercise.currentBestWindowStart, to: .now)
         let averageTrendPercentage: Double? = {
@@ -103,6 +113,7 @@ struct ExerciseSetsScreen: View {
                     }
                 }
                 .chartXScale(domain: xDomain(for: groupedWorkoutSets.map { $0.1 }))
+                .chartYScale(domain: 0 ... yScaleCap)
                 .chartScrollableAxes(.horizontal)
                 .chartScrollPosition(x: $chartScrollPosition)
                 .chartScrollTargetBehavior(
@@ -112,6 +123,10 @@ struct ExerciseSetsScreen: View {
                 )
                 .chartXSelection(value: $selectedDate)
                 .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+                // Rebuild the chart when the granularity flips: reusing the chart across visible-domain
+                // changes leaves its scroll offset stale (the viewport shows a window months away from
+                // chartScrollPosition), so give each granularity its own chart identity.
+                .id(chartGranularity)
                 .chartXAxis {
                     AxisMarks(
                         position: .bottom,
@@ -151,6 +166,18 @@ struct ExerciseSetsScreen: View {
         .onAppear {
             let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
             chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!
+        }
+        .onChange(of: chartGranularity) {
+            // Re-initialize scroll position when switching granularity to avoid desync with visible window
+            let anchor: Date
+            switch chartGranularity {
+            case .month:
+                anchor = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
+            case .year:
+                // Align right edge roughly to next month for a stable yearly view
+                anchor = Calendar.current.date(byAdding: .month, value: 1, to: .now.startOfMonth)!
+            }
+            chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: anchor)!
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

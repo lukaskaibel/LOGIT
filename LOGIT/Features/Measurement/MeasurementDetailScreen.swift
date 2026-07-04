@@ -74,6 +74,13 @@ struct MeasurementDetailScreen: View {
     private var chartSection: some View {
         let snappedSelectedEntry = selectedDate != nil ? nearestEntry(to: selectedDate) : nil
         let latestEntry = entries.first
+        let yScaleCap = chartYScaleCap(
+            visibleMax: chartVisibleLineMax(
+                of: chartPoints,
+                from: chartScrollPosition,
+                to: visibleEndDate
+            )
+        )
 
         VStack {
             Picker("Select Chart Granularity", selection: $chartGranularity) {
@@ -209,7 +216,7 @@ struct MeasurementDetailScreen: View {
                 }
             }
             .chartXScale(domain: xDomain)
-            .chartYScale(domain: 0.0 ... chartYScaleMax)
+            .chartYScale(domain: 0.0 ... yScaleCap)
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
@@ -219,6 +226,10 @@ struct MeasurementDetailScreen: View {
             )
             .chartXSelection(value: $selectedDate)
             .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+            // Rebuild the chart when the granularity flips: reusing the chart across visible-domain
+            // changes leaves its scroll offset stale (the viewport shows a window months away from
+            // chartScrollPosition), so give each granularity its own chart identity.
+            .id(chartGranularity)
             .chartXAxis {
                 AxisMarks(
                     position: .bottom,
@@ -234,7 +245,7 @@ struct MeasurementDetailScreen: View {
                 }
             }
             .chartYAxis {
-                AxisMarks(values: [0.0, chartYScaleMax / 2.0, chartYScaleMax])
+                AxisMarks(values: .automatic(desiredCount: 3))
             }
             .emptyPlaceholder(entries) {
                 Text(NSLocalizedString("noData", comment: ""))
@@ -375,10 +386,13 @@ struct MeasurementDetailScreen: View {
         return startDate ... endDate
     }
 
-    private var chartYScaleMax: Double {
-        let maxValue = entries.map { $0.decimalValue }.max() ?? 100
-        let yAxisMaxValues: [Double] = [10, 25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000]
-        return yAxisMaxValues.filter { $0 > maxValue }.min() ?? maxValue
+    /// The plotted series as plain (day, value) points, oldest first — the input for the
+    /// visible-window y-scale.
+    private var chartPoints: [(date: Date, value: Double)] {
+        entries.reversed().map { (
+            Calendar.current.startOfDay(for: $0.date ?? .now),
+            $0.decimalValue
+        ) }
     }
 
     private func xAxisDateString(for date: Date) -> String {

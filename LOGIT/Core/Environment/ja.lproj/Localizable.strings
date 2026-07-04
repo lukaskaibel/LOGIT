@@ -1003,6 +1003,7 @@
 "currentWeekNumber" = "第%d週";
 "bestStreakLabel" = "最高 · %d週";
 "monthWorkoutsCount" = "%d回";
+"monthWorkoutCount" = "%d回";
 "muscleBalanceEmptySubtitle" = "ワークアウトを記録すると筋肉の配分が表示されます。";
 "muscleBalanceOverTime" = "時間ごとのバランス";
 "muscleBalanceGridCaption" = "セットの割合・目標スプリット比";
@@ -1048,3 +1049,6 @@
 "muscleBalanceBelowTarget" = "目標未満";
 "muscleBalanceAboveTarget" = "目標超過";
 "muscleBalanceOnTargetSection" = "目標どおり";
+
+"filters" = "フィルタ";
+"fromTemplate" = "テンプレートから";

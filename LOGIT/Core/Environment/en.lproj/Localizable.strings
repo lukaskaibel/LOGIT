@@ -1003,6 +1003,7 @@
 "currentWeekNumber" = "Week %d";
 "bestStreakLabel" = "Best · %d wks";
 "monthWorkoutsCount" = "%d workouts";
+"monthWorkoutCount" = "%d workout";
 "muscleBalanceEmptySubtitle" = "Log a workout to see your muscle split.";
 "muscleBalanceOverTime" = "Balance over time";
 "muscleBalanceGridCaption" = "% of sets · vs your target split";
@@ -1048,3 +1049,6 @@
 "muscleBalanceBelowTarget" = "Below target";
 "muscleBalanceAboveTarget" = "Above target";
 "muscleBalanceOnTargetSection" = "On target";
+
+"filters" = "Filters";
+"fromTemplate" = "From a Template";

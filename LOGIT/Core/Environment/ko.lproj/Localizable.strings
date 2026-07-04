@@ -1003,6 +1003,7 @@
 "currentWeekNumber" = "%d주차";
 "bestStreakLabel" = "최고 · %d주";
 "monthWorkoutsCount" = "%d회";
+"monthWorkoutCount" = "%d회";
 "muscleBalanceEmptySubtitle" = "운동을 기록하면 근육 분포가 표시됩니다.";
 "muscleBalanceOverTime" = "기간별 균형";
 "muscleBalanceGridCaption" = "세트 비율 · 목표 분배 대비";
@@ -1048,3 +1049,6 @@
 "muscleBalanceBelowTarget" = "목표 미만";
 "muscleBalanceAboveTarget" = "목표 초과";
 "muscleBalanceOnTargetSection" = "목표 달성";
+
+"filters" = "필터";
+"fromTemplate" = "템플릿에서";

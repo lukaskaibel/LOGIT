@@ -999,6 +999,7 @@
 "currentWeekNumber" = "Woche %d";
 "bestStreakLabel" = "Best · %d Wo.";
 "monthWorkoutsCount" = "%d Workouts";
+"monthWorkoutCount" = "%d Workout";
 "muscleBalanceEmptySubtitle" = "Logge ein Workout, um deine Muskelverteilung zu sehen.";
 "muscleBalanceOverTime" = "Balance im Zeitverlauf";
 "muscleBalanceGridCaption" = "Anteil an Sätzen · vs. Ziel-Split";
@@ -1044,3 +1045,6 @@
 "muscleBalanceBelowTarget" = "Unter dem Ziel";
 "muscleBalanceAboveTarget" = "Über dem Ziel";
 "muscleBalanceOnTargetSection" = "Im Ziel";
+
+"filters" = "Filter";
+"fromTemplate" = "Aus Vorlage";

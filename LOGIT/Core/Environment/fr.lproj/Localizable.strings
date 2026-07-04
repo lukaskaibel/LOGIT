@@ -1003,6 +1003,7 @@
 "currentWeekNumber" = "Semaine %d";
 "bestStreakLabel" = "Record · %d sem";
 "monthWorkoutsCount" = "%d séances";
+"monthWorkoutCount" = "%d séance";
 "muscleBalanceEmptySubtitle" = "Enregistre une séance pour voir ta répartition musculaire.";
 "muscleBalanceOverTime" = "Équilibre dans le temps";
 "muscleBalanceGridCaption" = "% des séries · vs ta répartition cible";
@@ -1048,3 +1049,6 @@
 "muscleBalanceBelowTarget" = "Sous la cible";
 "muscleBalanceAboveTarget" = "Au-dessus de la cible";
 "muscleBalanceOnTargetSection" = "Dans la cible";
+
+"filters" = "Filtres";
+"fromTemplate" = "Depuis un modèle";

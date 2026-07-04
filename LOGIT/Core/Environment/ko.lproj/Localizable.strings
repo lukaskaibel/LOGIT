@@ -474,6 +474,7 @@
 // MARK: - W
 
 "week" = "주";
+"weeks" = "주";
 "weekly" = "주간";
 "weeklyAverage" = "주간 평균";
 "weeklyTarget" = "주간 목표";
@@ -490,6 +491,20 @@
 "weekOfThe" = "주";
 "workout" = "운동";
 "workoutGoal" = "운동 목표";
+
+// MARK: - Workout Goal screen
+"streakStartPrompt" = "주간 목표를 달성해 연속 기록을 시작하세요";
+"streakFactMonth" = "꼬박 한 달";
+"streakFactQuarter" = "꼬박 한 분기";
+"streakFactHalfYear" = "반년";
+"streakFactYear" = "꼬박 1년";
+"streakFactTwoYears" = "2년";
+"nextMilestone" = "다음 마일스톤";
+"streakToGoalOne" = "다음 마일스톤까지 1주";
+"streakToGoalMany" = "다음 마일스톤까지 %d주";
+"streakAtBest" = "역대 최고 연속 기록";
+"streakToBeatRecordOne" = "기록 경신까지 1주";
+"streakToBeatRecordMany" = "기록 경신까지 %d주";
 "workoutHistory" = "기록";
 "workouts" = "운동";
 "workoutTarget" = "운동 목표";
@@ -985,23 +1000,45 @@
 "muscleDetailPercentOfSets" = "세트의 %d%%";
 "weekStreakSuffix" = "주 연속";
 "yearWeeksOnTarget" = "%2$d주 중 %1$d주 목표 달성";
+"currentWeekNumber" = "%d주차";
 "bestStreakLabel" = "최고 · %d주";
 "monthWorkoutsCount" = "%d회";
 "muscleBalanceEmptySubtitle" = "운동을 기록하면 근육 분포가 표시됩니다.";
+"muscleBalanceOverTime" = "기간별 균형";
+"muscleBalanceGridCaption" = "세트 비율 · 목표 분배 대비";
+"muscleBalanceOnTargetShort" = "8개 중 %d개 목표 내";
+"muscleBalanceOnTrack" = "순조로움";
+"muscleDetailRingCaption" = "링이 가득 차면 목표 달성 · 목표 %d%%";
+"muscleDetailShareOverTime" = "비율 추이";
+"muscleBalanceBelowTarget" = "목표 미만";
+"muscleBalanceAboveTarget" = "목표 초과";
 "pinKeyLifts" = "주요 운동 고정";
 "chooseExercises" = "운동 선택";
 "pinAMeasurement" = "측정값 고정";
 "trackMeasurements" = "측정값 추적";
 "unlockWithPro" = "Pro로 잠금 해제";
 
-"currentWeekNumber" = "%d주차";
-"nextMilestone" = "다음 마일스톤";
-"streakFactHalfYear" = "반년";
-"streakFactMonth" = "꼬박 한 달";
-"streakFactQuarter" = "꼬박 한 분기";
-"streakFactTwoYears" = "2년";
-"streakFactYear" = "꼬박 1년";
-"weeks" = "주";
+/* Muscle Balance — ring grouping (under / over / on target) */
+"muscleBalanceBuildUp" = "더 늘리기";
+"muscleBalanceAhead" = "초과";
+"muscleBalanceOnTargetSection" = "목표 달성";
+
+/* Muscle detail — ring hero + empty state */
+"muscleDetailTargetCaption" = "목표 %d%%";
+"muscleDetailEmptySubtitle" = "선택한 기간에 이 부위를 운동하지 않았습니다.";
+
+/* Muscle Balance — tile "+N more" hint */
+"muscleBalanceMore" = "외 %d개";
+
+
+/* Progress tab — overall progress trend */
+"overallProgress" = "전체 진행 상황";
+"trendingUp" = "상승세";
+"trendingSteady" = "유지";
+"trendingDown" = "하락세";
+"byMuscleGroup" = "근육군별";
+"overallProgressBasis" = "추정 1RM · 최근 8주 vs 이전 8주";
+"overallProgressEmpty" = "운동을 계속 기록하면 전체 추세를 볼 수 있습니다.";
 "streak" = "연속 기록";
 
 /* Muscle Balance — donut overview, sections & history chart */

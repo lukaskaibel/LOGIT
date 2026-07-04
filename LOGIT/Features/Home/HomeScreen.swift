@@ -36,6 +36,7 @@ struct HomeScreen: View {
     @State private var isShowingExercisesTip = true
     @State private var isShowingStartWorkoutSheet = false
     @State private var summaryRecords: [WorkoutProgressReport.PRRecord] = []
+    @State private var selectedTab: SummaryTab = .thisWeek
 
     // MARK: - Body
 
@@ -106,51 +107,52 @@ struct HomeScreen: View {
                                 .padding(.horizontal)
                             } else {
                             VStack(spacing: 8) {
-                                weeklyGoalHero(workouts: workouts)
-                                PeriodPicker(selection: Binding(
-                                    get: { summaryViewModel.selectedPeriod },
-                                    set: { summaryViewModel.userSelected($0) }
-                                ))
+                                SummaryTabPicker(selection: $selectedTab)
                                 .padding(.vertical, 2)
-                                if summaryViewModel.didAutoFallback {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "info.circle")
-                                        Text(summaryViewModel.selectedPeriod == .year
-                                            ? NSLocalizedString("summaryEmptyWeekHintYear", comment: "")
-                                            : NSLocalizedString("summaryEmptyWeekHintMonth", comment: ""))
+                                if selectedTab == .thisWeek {
+                                    weeklyGoalHero(workouts: workouts)
+                                    if summaryViewModel.didAutoFallback {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "info.circle")
+                                            Text(summaryViewModel.selectedPeriod == .year
+                                                ? NSLocalizedString("summaryEmptyWeekHintYear", comment: "")
+                                                : NSLocalizedString("summaryEmptyWeekHintMonth", comment: ""))
+                                        }
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     }
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                                SummaryStatTileGrid(
-                                    viewModel: summaryViewModel,
-                                    workouts: workouts,
-                                    onOpenDetail: { metric in
-                                        homeNavigationCoordinator.path.append(.summaryStat(metric))
-                                    }
-                                )
-                                Button {
-                                    homeNavigationCoordinator.path.append(.muscleGroupsOverview)
-                                } label: {
-                                    MuscleBalanceTile(
-                                        workouts: summaryViewModel.filtered(workouts, to: summaryViewModel.selectedPeriod),
-                                        period: summaryViewModel.selectedPeriod
+                                    SummaryStatTileGrid(
+                                        viewModel: summaryViewModel,
+                                        workouts: workouts,
+                                        onOpenDetail: { metric in
+                                            homeNavigationCoordinator.path.append(.summaryStat(metric))
+                                        }
                                     )
-                                    .contentShape(Rectangle())
-                                }
-                                .buttonStyle(TileButtonStyle())
-                                if !summaryRecords.isEmpty {
                                     Button {
-                                        homeNavigationCoordinator.path.append(.summaryRecords(summaryViewModel.selectedPeriod))
+                                        homeNavigationCoordinator.path.append(.muscleGroupsOverview)
                                     } label: {
-                                        SummaryRecordsTile(
-                                            records: summaryRecords,
+                                        MuscleBalanceTile(
+                                            workouts: summaryViewModel.filtered(workouts, to: summaryViewModel.selectedPeriod),
                                             period: summaryViewModel.selectedPeriod
                                         )
                                         .contentShape(Rectangle())
                                     }
                                     .buttonStyle(TileButtonStyle())
+                                    if !summaryRecords.isEmpty {
+                                        Button {
+                                            homeNavigationCoordinator.path.append(.summaryRecords(summaryViewModel.selectedPeriod))
+                                        } label: {
+                                            SummaryRecordsTile(
+                                                records: summaryRecords,
+                                                period: summaryViewModel.selectedPeriod
+                                            )
+                                            .contentShape(Rectangle())
+                                        }
+                                        .buttonStyle(TileButtonStyle())
+                                    }
+                                } else {
+                                    SummaryProgressTab(workouts: workouts)
                                 }
                             }
                             .padding(.horizontal)

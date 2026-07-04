@@ -474,6 +474,7 @@
 // MARK: - W
 
 "week" = "Week";
+"weeks" = "Weeks";
 "weekly" = "Weekly";
 "weeklyAverage" = "Weekly Average";
 "weeklyTarget" = "Weekly Target";
@@ -490,6 +491,20 @@
 "weekOfThe" = "Week of the";
 "workout" = "Workout";
 "workoutGoal" = "Workout Goal";
+
+// MARK: - Workout Goal screen
+"streakStartPrompt" = "Hit your weekly goal to start a streak";
+"streakFactMonth" = "A full month";
+"streakFactQuarter" = "A full quarter";
+"streakFactHalfYear" = "Half a year";
+"streakFactYear" = "A full year";
+"streakFactTwoYears" = "Two years";
+"nextMilestone" = "Next Milestone";
+"streakToGoalOne" = "1 week to your next milestone";
+"streakToGoalMany" = "%d weeks to your next milestone";
+"streakAtBest" = "Your best streak yet";
+"streakToBeatRecordOne" = "1 week to beat your record";
+"streakToBeatRecordMany" = "%d weeks to beat your record";
 "workoutHistory" = "History";
 "workouts" = "Workouts";
 "workoutTarget" = "Workout target";
@@ -985,23 +1000,45 @@
 "muscleDetailPercentOfSets" = "%d%% of sets";
 "weekStreakSuffix" = "week streak";
 "yearWeeksOnTarget" = "%1$d of %2$d weeks on target";
+"currentWeekNumber" = "Week %d";
 "bestStreakLabel" = "Best · %d wks";
 "monthWorkoutsCount" = "%d workouts";
 "muscleBalanceEmptySubtitle" = "Log a workout to see your muscle split.";
+"muscleBalanceOverTime" = "Balance over time";
+"muscleBalanceGridCaption" = "% of sets · vs your target split";
+"muscleBalanceOnTargetShort" = "%d of 8 on target";
+"muscleBalanceOnTrack" = "On track";
+"muscleDetailRingCaption" = "Full ring = on target · Target %d%%";
+"muscleDetailShareOverTime" = "Share over time";
+"muscleBalanceBelowTarget" = "Below target";
+"muscleBalanceAboveTarget" = "Above target";
 "pinKeyLifts" = "Pin your key lifts";
 "chooseExercises" = "Choose exercises";
 "pinAMeasurement" = "Pin a measurement";
 "trackMeasurements" = "Track your measurements";
 "unlockWithPro" = "Unlock with Pro";
 
-"currentWeekNumber" = "Week %d";
-"nextMilestone" = "Next Milestone";
-"streakFactHalfYear" = "Half a year";
-"streakFactMonth" = "A full month";
-"streakFactQuarter" = "A full quarter";
-"streakFactTwoYears" = "Two years";
-"streakFactYear" = "A full year";
-"weeks" = "Weeks";
+/* Muscle Balance — ring grouping (under / over / on target) */
+"muscleBalanceBuildUp" = "Build up";
+"muscleBalanceAhead" = "Ahead";
+"muscleBalanceOnTargetSection" = "On target";
+
+/* Muscle detail — ring hero + empty state */
+"muscleDetailTargetCaption" = "Target %d%%";
+"muscleDetailEmptySubtitle" = "You haven't trained this muscle in the selected period.";
+
+/* Muscle Balance — tile "+N more" hint */
+"muscleBalanceMore" = "+%d more";
+
+
+/* Progress tab — overall progress trend */
+"overallProgress" = "Overall Progress";
+"trendingUp" = "Trending up";
+"trendingSteady" = "Holding steady";
+"trendingDown" = "Trending down";
+"byMuscleGroup" = "By muscle group";
+"overallProgressBasis" = "Estimated 1RM · last 8 weeks vs the 8 before";
+"overallProgressEmpty" = "Keep logging workouts to see your overall trend.";
 "streak" = "Streak";
 
 /* Muscle Balance — donut overview, sections & history chart */

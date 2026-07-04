@@ -268,9 +268,9 @@ struct ExerciseTileSparkline: View {
     /// Ignored when `bleeds` is set — the footer fills whatever height the tile hands it.
     var height: CGFloat = 56
     /// The metric-tile footer treatment: the sparkline fills the slot it's given and runs edge to
-    /// edge — no clip — with the carry-forward dash reaching the right edge and the bottom fade melting
-    /// the fill into the card border, easing IN at its left edge (just right of the trend pill). Off
-    /// for the windowed corner sparklines, which clip and fade in from the left at a fixed height.
+    /// edge — no clip, no leading fade, the carry-forward dash reaching the right edge — with only the
+    /// bottom fade melting the fill into the card border, the way the all-time line bleeds. Off for
+    /// the windowed corner sparklines, which clip and fade in from the left at a fixed height.
     var bleeds: Bool = false
 
     /// How many sessions the recent-history window shows.
@@ -328,10 +328,10 @@ struct ExerciseTileSparkline: View {
         .chartYAxis {}
 
         // The bleeding footer (metric tiles) fills the slot the tile hands it and runs edge to edge to
-        // the trailing + bottom edges — no clip — but fades IN from the left so it eases in at its left
-        // edge (just right of the trend pill). The all-time line spans the full width at a fixed height
-        // with only the bottom fade (its point is to show where the history begins and ends). The
-        // windowed corner sparklines clip and fade in from the left.
+        // the trailing + bottom edges — no clip — but fades IN from the left so it doesn't start
+        // abruptly behind the trend pill the tile overlays at its bottom-left. The all-time line spans
+        // the full width at a fixed height with only the bottom fade (its point is to show where the
+        // history begins and ends). The windowed corner sparklines clip and fade in from the left.
         if bleeds {
             chartView
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

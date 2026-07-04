@@ -119,7 +119,7 @@ struct SettingsScreen: View {
         section(NSLocalizedString("feedbackAndSupport", comment: "")) {
             VStack(spacing: CELL_SPACING) {
                 Link(destination: URL(string: "mailto:\(FEEDBACK_EMAIL)?subject=Feature%20Idea")!) {
-                    HStack(alignment: .top, spacing: 12) {
+                    HStack(spacing: 12) {
                         Image(systemName: "lightbulb.fill")
                             .foregroundStyle(Color.accentColor)
                             .frame(width: 24)

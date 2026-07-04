@@ -358,6 +358,29 @@ final class EntityExtensionTests: XCTestCase {
 
     // MARK: - Exercise Current Best Tests
 
+    func testCurrentBestWindowIsExactlyFourWeeks() {
+        // The UI copy promises "last 4 weeks" everywhere a current best is explained — the window
+        // must be 28 days, not a calendar month.
+        let anchor = Date(timeIntervalSince1970: 1_780_000_000)
+        XCTAssertEqual(
+            Exercise.currentBestWindowStart(endingAt: anchor),
+            Calendar.current.date(byAdding: .day, value: -28, to: anchor)
+        )
+    }
+
+    func testCurrentBestSetExcludesSetJustOutsideFourWeekWindow() {
+        let exercise = builder.createExercise(name: "Test")
+        let outsideWorkout = builder.createWorkout(date: Calendar.current.date(byAdding: .day, value: -29, to: .now)!)
+        builder.createStandardSet(repetitions: 5, weight: 100_000, exercise: exercise, workout: outsideWorkout)
+        let insideWorkout = builder.createWorkout(date: Calendar.current.date(byAdding: .day, value: -27, to: .now)!)
+        let insideSet = builder.createStandardSet(repetitions: 8, weight: 80_000, exercise: exercise, workout: insideWorkout)
+
+        XCTAssertEqual(
+            exercise.currentBestSet(for: .weight), insideSet,
+            "A set 29 days ago sits outside the 4-week window; the 27-day-old set is the current best"
+        )
+    }
+
     func testCurrentBestSetIgnoresSetsOutsideWindow() {
         let exercise = builder.createExercise(name: "Test")
         let oldWorkout = builder.createWorkout(date: Calendar.current.date(byAdding: .month, value: -2, to: .now)!)

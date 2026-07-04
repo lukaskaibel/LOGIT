@@ -30,14 +30,9 @@ struct MuscleBalanceBucket: Identifiable {
 /// per period back from now — reusing `StatPeriod.range(periodsAgo:)` (the same windowing every trend
 /// pill uses) so the week boundary respects the user's locale.
 enum MuscleBalanceHistory {
-    /// How many periods back the chart shows for each granularity — sized for the slim-candle chart,
-    /// which trades bar width for a longer window.
+    /// How many periods back the chart shows — the app-wide history depth rule.
     static func bucketCount(for period: StatPeriod) -> Int {
-        switch period {
-        case .week: return 12
-        case .month: return 12
-        case .year: return 6
-        }
+        period.historyBucketCount
     }
 
     /// The history strip, oldest bucket first → newest last (index `count - 1` is the current period).

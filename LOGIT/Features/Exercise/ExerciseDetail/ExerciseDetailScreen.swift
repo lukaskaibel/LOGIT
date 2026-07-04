@@ -12,10 +12,6 @@ import SafariServices
 import SwiftUI
 
 struct ExerciseDetailScreen: View {
-    enum TimeSpan {
-        case threeMonths, year, allTime
-    }
-
     // MARK: - Environment
 
     @Environment(\.dismiss) var dismiss
@@ -24,10 +20,6 @@ struct ExerciseDetailScreen: View {
 
     // MARK: - State
 
-    @State private var selectedTimeSpanForWeight: DateLineChart.DateDomain = .threeMonths
-    @State private var selectedTimeSpanForRepetitions: DateLineChart.DateDomain = .threeMonths
-    @State private var selectedTimeSpanForVolume: DateLineChart.DateDomain = .threeMonths
-    @State private var selectedTimeSpanForSetsPerWeek: DateLineChart.DateDomain = .threeMonths
     @State private var showDeletionAlert = false
     @State private var showingEditExercise = false
     @State private var isShowingExerciseHistoryScreen = false

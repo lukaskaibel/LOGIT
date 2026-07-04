@@ -11,12 +11,18 @@ import SwiftUI
 
 /// The single-muscle detail: a target-share tile (the diverging `MuscleBalanceBar` showing how the
 /// group's share sits against target, with a "↓ Below target / ↑ Above target / ✓ On target" pill),
-/// a 2×2 stat grid, a 12-week sets chart, and the top exercises that train it. Pro — the full
-/// per-muscle breakdown is the analytics behind the wall.
+/// a 2×2 stat grid, a sets-history chart following the selected period, and the top exercises that
+/// train it. Opens scoped to the period the caller was showing (the overview's picker carries over).
+/// Pro — the full per-muscle breakdown is the analytics behind the wall.
 struct MuscleGroupDetailScreen: View {
     let muscleGroup: MuscleGroup
 
-    @State private var period: StatPeriod = .month
+    @State private var period: StatPeriod
+
+    init(muscleGroup: MuscleGroup, initialPeriod: StatPeriod = .month) {
+        self.muscleGroup = muscleGroup
+        _period = State(initialValue: initialPeriod)
+    }
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     @EnvironmentObject private var targetSplitStore: MuscleTargetSplitStore
@@ -55,7 +61,7 @@ struct MuscleGroupDetailScreen: View {
                 if groupSetCount > 0 {
                     targetShare(entry: entry, percent: percent)
                     statGrid(setCount: groupSetCount, volume: volume, sessions: sessions, rank: rank)
-                    weeklyChart(allWorkouts: allWorkouts)
+                    setsHistoryChart(allWorkouts: allWorkouts)
                     topExercises(in: periodWorkouts)
                 } else {
                     emptyState
@@ -180,33 +186,35 @@ struct MuscleGroupDetailScreen: View {
         .tileStyle()
     }
 
-    // MARK: - Weekly chart
+    // MARK: - Sets history chart
 
-    private func weeklyChart(allWorkouts: [Workout]) -> some View {
+    /// Sets per period over recent history, following the selected period like every other
+    /// period-scoped history chart (12 weeks / 12 months / 6 years), current period highlighted.
+    private func setsHistoryChart(allWorkouts: [Workout]) -> some View {
         let sets = setsTraining(in: allWorkouts)
-        let grouped = Dictionary(grouping: sets) { ($0.workout?.date ?? .now).startOfWeek }
-        let weeks: [(date: Date, count: Int)] = (0 ..< 12).reversed().map { weeksAgo in
-            let start = (Calendar.current.date(byAdding: .weekOfYear, value: -weeksAgo, to: .now) ?? .now).startOfWeek
+        let grouped = Dictionary(grouping: sets) { periodStart(of: $0.workout?.date ?? .now) }
+        let buckets: [(date: Date, count: Int)] = (0 ..< period.historyBucketCount).reversed().map { periodsAgo in
+            let start = period.range(periodsAgo: periodsAgo).lowerBound
             return (start, grouped[start]?.count ?? 0)
         }
-        let maxCount = weeks.map(\.count).max() ?? 0
+        let maxCount = buckets.map(\.count).max() ?? 0
         return VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
             HStack {
-                Text(NSLocalizedString("weeklySets", comment: ""))
+                Text(setsHistoryTitle)
                     .sectionHeaderStyle2()
                 Spacer()
-                Text(NSLocalizedString("twelveWeeks", comment: ""))
+                Text(setsHistoryCaption)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
             Chart {
-                ForEach(weeks, id: \.date) { week in
+                ForEach(buckets, id: \.date) { bucket in
                     BarMark(
-                        x: .value("Week", week.date, unit: .weekOfYear),
-                        y: .value("Sets", week.count),
+                        x: .value("Period", bucket.date, unit: period.calendarComponent),
+                        y: .value("Sets", bucket.count),
                         width: .ratio(0.6)
                     )
-                    .foregroundStyle(Calendar.current.isDate(week.date, equalTo: .now, toGranularity: .weekOfYear) ? color : Color.fill)
+                    .foregroundStyle(period.currentRange().contains(bucket.date) ? color : Color.fill)
                     .clipShape(RoundedRectangle(cornerRadius: 3))
                 }
             }
@@ -216,6 +224,32 @@ struct MuscleGroupDetailScreen: View {
             .frame(height: 120)
             .padding(CELL_PADDING)
             .tileStyle()
+        }
+    }
+
+    private var setsHistoryTitle: String {
+        switch period {
+        case .week: return NSLocalizedString("setsPerWeekTitle", comment: "")
+        case .month: return NSLocalizedString("setsPerMonthTitle", comment: "")
+        case .year: return NSLocalizedString("setsPerYearTitle", comment: "")
+        }
+    }
+
+    private var setsHistoryCaption: String {
+        switch period {
+        case .week: return NSLocalizedString("twelveWeeks", comment: "")
+        case .month: return NSLocalizedString("twelveMonths", comment: "")
+        case .year: return NSLocalizedString("sixYears", comment: "")
+        }
+    }
+
+    /// The period-start key matching `StatPeriod.range(periodsAgo:).lowerBound`, so grouped sets land
+    /// in the right bucket.
+    private func periodStart(of date: Date) -> Date {
+        switch period {
+        case .week: return date.startOfWeek
+        case .month: return date.startOfMonth
+        case .year: return date.startOfYear
         }
     }
 
@@ -279,11 +313,7 @@ struct MuscleGroupDetailScreen: View {
     // MARK: - Helpers
 
     private var periodCaption: String {
-        switch period {
-        case .week: return NSLocalizedString("thisWeek", comment: "")
-        case .month: return NSLocalizedString("thisMonth", comment: "")
-        case .year: return NSLocalizedString("thisYear", comment: "")
-        }
+        period.currentPeriodLabel
     }
 
     private func setGroupsTraining(in workouts: [Workout]) -> [WorkoutSetGroup] {

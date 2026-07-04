@@ -10,9 +10,8 @@ import Foundation
 
 /// Backs the redesigned Summary screen's period-scoped block. Holds the selected Week/Month/Year
 /// period and the one-time auto-fallback state, and filters the already-fetched top-level `[Workout]`
-/// **in memory** by date range (no new Core Data fetches) — the way `OverallSetsTile`/`VolumeTile`
-/// already do. The period selector, the 2×2 core-stats grid, the Muscle Balance tile and the Records
-/// tile all read their window off this.
+/// **in memory** by date range (no new Core Data fetches). The period selector, the 2×2 core-stats
+/// grid, the Muscle Balance tile and the Records tile all read their window off this.
 @MainActor
 final class SummaryViewModel: ObservableObject {
     /// The user-facing scope governing the whole scoped block. Defaults to the current week; the
@@ -26,6 +25,10 @@ final class SummaryViewModel: ObservableObject {
     private var userHasSelected = false
 
     /// The number of history buckets the core-stat mini bar charts show (current + 4 prior periods).
+    /// Buckets in a stat tile's mini bar chart — the fixed five-slot preview idiom shared with the
+    /// workout tiles' run bars. Deliberately shorter than `StatPeriod.historyBucketCount`, which
+    /// every labeled detail history follows; the tile is a glanceable teaser, the screen the reading
+    /// surface.
     static let statBucketCount = 5
 
     // MARK: - Stat Data

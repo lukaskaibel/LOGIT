@@ -66,10 +66,10 @@ struct SummaryProgressTab: View {
         }
     }
 
-    /// Workouts of the last 30 days — the window the highlights are drawn from, so the feed stays
-    /// "recent" rather than all-time.
+    /// Workouts of the last 4 weeks — the same rolling window "current best" uses everywhere, so the
+    /// highlights feed stays "recent" rather than all-time and matches the app's standard window.
     private var recentWorkouts: [Workout] {
-        let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: .now) ?? .now
+        let cutoff = Exercise.currentBestWindowStart
         return workouts.filter { !$0.isEmpty && ($0.date ?? .distantPast) >= cutoff }
     }
 }

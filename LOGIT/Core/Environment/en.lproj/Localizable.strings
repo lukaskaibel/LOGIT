@@ -27,7 +27,6 @@
 "all" = "All";
 "allEntries" = "All Entries";
 "allSetsCompleted" = "All sets completed";
-"allTime" = "All Time";
 "alreadyExists" = "already exists.";
 "areYouSure?" = "Are you sure?";
 "autoRenewMonth" = "Automatically renews every month";
@@ -38,10 +37,6 @@
 
 "back" = "Back";
 "best" = "Best";
-"bestPerDay" = "Best per Day";
-"bestThisMonth" = "Best this Month";
-"bestWeightPerDay" = "Best Weight per Day";
-"bestRepetitionsPerDay" = "Best Reps per Day";
 "biceps" = "Biceps";
 "bicepsLeft" = "Biceps Left";
 "bicepsRight" = "Biceps Right";
@@ -80,8 +75,6 @@
 "newRecord" = "New Record";
 "currentBestInfo" = "Your current best is the highest value in the last 4 weeks. The trend shows how much higher it is than your best in the 4 weeks before you reached it.";
 "currentBestComparisonInfo" = "Your current best (right) is the highest value in the last 4 weeks. The badge shows how it compares to your best in the shown period on the left — scroll to compare against any time.";
-"averageComparisonInfo" = "The right value is your weekly average over the last 4 weeks. The badge shows how it compares to the average of the shown period on the left — scroll to compare against any time.";
-"lastFourWeeks" = "Last 4 weeks";
 "currentWorkout" = "Current Workout";
 
 // MARK: - D
@@ -133,10 +126,8 @@
 "five" = "Five";
 "focus" = "Focus";
 "focusedOn" = "Focused On";
-"focusThisWeek" = "Focus This Week";
 "four" = "Four";
 "fourWeeksAgo" = "Four weeks ago";
-"fromLastWeek" = "from last week";
 "FromPhoto" = "From Photo";
 "failedToLoadPrivacyPolicy" = "Failed to load privacy policy.";
 "failedToLoadTermsAndConditions" = "Failed to load terms and conditions.";
@@ -169,7 +160,6 @@
 
 "incompleteSetsWillNotBeSaved" = "Incomplete sets will not be saved.";
 "importError" = "Import Error";
-"inSelectedWeek" = "In Selected Week";
 "instructions" = "Instructions";
 "inviteToWorkout" = "Invite to Workout";
 
@@ -181,7 +171,6 @@
 
 "latest" = "Latest";
 "lastMonth" = "Last month";
-"lastTenWorkouts" = "In Last 10 Workouts";
 "lastUsed" = "Last used";
 "lastWeek" = "Last week";
 "lastSetReferencePrefix" = "Last";
@@ -197,8 +186,6 @@
 
 // MARK: - M
 
-"maximumWeight" = "Maximum Weight";
-"maximumRepetitions" = "Maximum Repetitions";
 "measurementBodyweight" = "Bodyweight";
 "measurementCaloriesBurned" = "Calories Burned";
 "chest" = "Chest";
@@ -222,7 +209,6 @@
 "morning" = "Morning";
 "muscleGroup" = "Muscle Group";
 "muscleGroups" = "Muscle Groups";
-"muscleGroupsInLastTen" = "Muscle Group Overview";
 "muscleGroupSplit" = "Muscle Group Split";
 "muscleMass" = "Muscle Mass";
 "myTemplates" = "My Templates";
@@ -298,8 +284,6 @@
 "pinMeasurementsTipDescription" = "Pin measurements to monitor changes over time.";
 "pinned" = "Pinned";
 "addPin" = "Add Pin";
-"PerDay" = "Per Day";
-"PerMonth" = "Per Month";
 "perWeek" = "per week";
 "PerWeek" = "Per Week";
 "planAhead" = "Plan Ahead";
@@ -357,7 +341,6 @@
 "set" = "Set";
 "sets" = "Sets";
 "setsIncomplete" = "Sets incomplete";
-"setsPerWeek" = "Overall Sets per Week";
 "setType" = "Set Type";
 "settings" = "Settings";
 "seven" = "Seven";
@@ -413,7 +396,6 @@
 "ThisWeek" = "This Week";
 "thisYear" = "This Year";
 "three" = "Three";
-"threeMonths" = "3 Months";
 "threeWeeksAgo" = "Three weeks ago";
 "time" = "time";
 "tip" = "Tip";
@@ -469,14 +451,12 @@
 // MARK: - W
 "viewTemplate" = "View Template";
 "volume" = "Volume";
-"volumeThisWeek" = "Volume this Week";
 
 // MARK: - W
 
 "week" = "Week";
 "weeks" = "Weeks";
 "weekly" = "Weekly";
-"weeklyAverage" = "Weekly Average";
 "weeklyTarget" = "Weekly Target";
 "weeklyTargetDescription" = "Select how many workouts you want to do per week.";
 "weeklyWorkoutGoal" = "Weekly Workout Goal";
@@ -536,9 +516,7 @@
 // MARK: - OverallSets Highlights (Comparison Sentences)
 "avgMoreSetsPerWorkoutThisWeekThanLastWeek" = "You're averaging more sets per workout this week than last week.";
 "avgFewerSetsPerWorkoutThisWeekThanLastWeek" = "You're averaging fewer sets per workout this week than last week.";
-"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "You're averaging more sets per workout this month than last month.";
 "avgFewerSetsPerWorkoutThisMonthThanLastMonth" = "You're averaging fewer sets per workout this month than last month.";
-"avgMoreSetsPerWorkoutThisYearThanLastYear" = "You're averaging more sets per workout this year than last year.";
 "avgFewerSetsPerWorkoutThisYearThanLastYear" = "You're averaging fewer sets per workout this year than last year.";
 
 // MARK: - Default Exercise Names
@@ -876,8 +854,8 @@
 "aboutMetric" = "About %@";
 "weightInfo" = "The heaviest weight you’ve lifted in a single set, shown for each day. Moving more weight over time is the most direct sign of growing strength.";
 "repetitionsInfo" = "The most reps you’ve done in a single set, shown for each day. More reps at the same weight builds muscular endurance — another way to keep progressing.";
-"volumeInfo" = "Volume is the total weight you’ve moved: weight × reps, summed over all sets in a week. More volume means more total work — a key driver of muscle growth.";
-"setsInfo" = "Sets count the working sets you logged for this exercise each week — only sets you actually completed. Weekly hard sets are the standard measure of training volume, and doing enough of them is a key driver of strength and muscle growth.";
+"volumeInfo" = "Volume is the total weight you’ve moved: weight × reps, summed over every set in the period. More volume means more total work — a key driver of muscle growth. The trend compares the current period with the one before.";
+"setsInfo" = "Sets count the working sets you logged for this exercise — only sets you actually completed. Doing enough hard sets is a key driver of strength and muscle growth. The chart shows the sets of recent periods; the trend compares the current period with the one before.";
 
 "progressMetric" = "Progress Metric";
 
@@ -904,7 +882,7 @@
 "thisWorkout" = "This Workout";
 "firstTimeForThisWorkout" = "First time doing this workout — future sessions will be compared against it.";
 "workoutPRInfo" = "A personal record means a set in this workout beat your best weight, reps, or estimated 1RM from all workouts before it — even if you've surpassed it since.";
-"workoutTrendInfo" = "Each exercise's trend compares this workout's best value of its progress metric with your best from the month before it — the same comparison the exercise badges below show.";
+"workoutTrendInfo" = "Each exercise's trend compares this workout's best value of its progress metric with your best from the four weeks before it — the same comparison the exercise badges below show.";
 "workoutVolumeCompareInfo" = "Total volume (weight × reps of every set) compared with the last time you did this workout.";
 "improvedCount" = "%d improved";
 
@@ -924,27 +902,10 @@
 "volumePerSet" = "Volume per Set";
 "workoutStatCompareSameInfo" = "The trend compares this workout with your previous run of the same workout. The bars show its most recent runs — this workout is the highlighted bar on the right.";
 "workoutStatCompareRecentInfo" = "This workout has no previous runs, so the trend compares it with the average of your most recent workouts. The bars show those workouts — this one is the highlighted bar on the right.";
-"workoutStatAverageInfo" = "The average per workout over the visible period. The trend compares it with the period before. Each bar is one workout, colored by its most-trained muscle group; the year view shows monthly averages.";
 "workoutVolumeAboutInfo" = "Volume is the total weight moved in a workout — weight × reps, summed over every set. Compared across workouts, it shows how much overall work your sessions contain.";
 "workoutDurationAboutInfo" = "Duration is the time from starting a workout to finishing it. Neither longer nor shorter is better by itself — read it together with volume to see how dense your training is.";
 "workoutSetsAboutInfo" = "The number of sets logged in a workout — a simple measure of how much you did in a session, independent of the weight on the bar.";
 "workoutRepsAboutInfo" = "All repetitions logged in a workout, summed across every set. Together with sets and volume, it describes how much work a session contained.";
-"avgMoreWorkoutVolumeThisMonthThanLastMonth" = "More volume per workout this month than last month.";
-"avgLessWorkoutVolumeThisMonthThanLastMonth" = "Less volume per workout this month than last month.";
-"avgMoreWorkoutVolumeThisYearThanLastYear" = "More volume per workout this year than last year.";
-"avgLessWorkoutVolumeThisYearThanLastYear" = "Less volume per workout this year than last year.";
-"avgLongerWorkoutsThisMonthThanLastMonth" = "Longer workouts this month than last month.";
-"avgShorterWorkoutsThisMonthThanLastMonth" = "Shorter workouts this month than last month.";
-"avgLongerWorkoutsThisYearThanLastYear" = "Longer workouts this year than last year.";
-"avgShorterWorkoutsThisYearThanLastYear" = "Shorter workouts this year than last year.";
-"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "More sets per workout this month than last month.";
-"avgLessSetsPerWorkoutThisMonthThanLastMonth" = "Fewer sets per workout this month than last month.";
-"avgMoreSetsPerWorkoutThisYearThanLastYear" = "More sets per workout this year than last year.";
-"avgLessSetsPerWorkoutThisYearThanLastYear" = "Fewer sets per workout this year than last year.";
-"avgMoreRepsPerWorkoutThisMonthThanLastMonth" = "More reps per workout this month than last month.";
-"avgLessRepsPerWorkoutThisMonthThanLastMonth" = "Fewer reps per workout this month than last month.";
-"avgMoreRepsPerWorkoutThisYearThanLastYear" = "More reps per workout this year than last year.";
-"avgLessRepsPerWorkoutThisYearThanLastYear" = "Fewer reps per workout this year than last year.";
 "period" = "Period";
 "weeklyGoal" = "Weekly Goal";
 "weeklyGoalReached" = "Goal reached";
@@ -994,7 +955,6 @@
 "rank" = "Rank";
 "muscleDetailRankCaption" = "of 8 groups";
 "targetShare" = "Target Share";
-"weeklySets" = "Weekly Sets";
 "twelveWeeks" = "12 weeks";
 "topExercises" = "Top Exercises";
 "muscleDetailPercentOfSets" = "%d%% of sets";
@@ -1048,3 +1008,14 @@
 "muscleBalanceBelowTarget" = "Below target";
 "muscleBalanceAboveTarget" = "Above target";
 "muscleBalanceOnTargetSection" = "On target";
+
+// Timeframe unification: shared chart ranges + per-period muscle history
+"range" = "Range";
+"rangeThreeMonths" = "3M";
+"rangeYear" = "1Y";
+"rangeAllTime" = "All";
+"setsPerWeekTitle" = "Sets per Week";
+"setsPerMonthTitle" = "Sets per Month";
+"setsPerYearTitle" = "Sets per Year";
+"twelveMonths" = "12 months";
+"sixYears" = "6 years";

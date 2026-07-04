@@ -9,25 +9,19 @@ import Charts
 import SwiftUI
 
 /// Detail screen behind a workout stat tile: the stat across *every* workout over time — the tile
-/// zooms into this workout's recent runs, the screen zooms out to the whole landscape. One bar per
-/// workout in the month view (the year view averages each month into one bar); the bar for the
-/// workout the screen was opened from wears the workout's muscle-group gradient (its identity
-/// color), a tapped bar lights up white, every other stays a quiet gray. The header is a two-value
-/// scoreboard like the in-workout metric popover: the average per workout across the *shown* time
-/// frame (the reference — neutral, and it moves as you scroll) on one side, this workout's own value
-/// (the bold white constant) on the other, and a pill between them reading this workout against that
-/// average. Scroll the chart and the average + pill retarget while this workout stays the anchor —
-/// we're in its detail, after all. The muscle color lives on the accents: the current chart bar and
-/// the pill. Otherwise the exercise chart screens' anatomy (picker, header, scrollable chart with
-/// tap-to-inspect, about). One screen serves all four
-/// stats — `WorkoutStatMetric` supplies values, formatting, and texts.
+/// zooms into this workout's recent runs, the screen zooms out to the whole landscape. Scoped by the
+/// shared `RangePicker` (3M / 1Y / All) like every scrollable capability chart: one bar per workout
+/// in the 3M view, monthly averages in the 1Y and All views. The bar for the workout the screen was
+/// opened from wears the workout's muscle-group gradient (its identity color), a tapped bar lights
+/// up white, every other stays a quiet gray. The header is a two-value scoreboard like the
+/// in-workout metric popover: the average per workout across the *shown* window (the reference —
+/// neutral, and it moves as you scroll) on one side, this workout's own value (the bold white
+/// constant) on the other, and a pill between them reading this workout against that average.
+/// Scroll the chart and the average + pill retarget while this workout stays the anchor — we're in
+/// its detail, after all. One screen serves all four stats — `WorkoutStatMetric` supplies values,
+/// formatting, and texts.
 struct WorkoutStatScreen: View {
-    private enum ChartGranularity {
-        case month, year
-    }
-
-    /// A bar of the chart: a single workout in month granularity, a whole month's average in year
-    /// granularity.
+    /// A bar of the chart: a single workout in the 3M range, a whole month's average in 1Y / All.
     private struct StatPoint: Identifiable {
         let id: AnyHashable
         let date: Date
@@ -38,7 +32,7 @@ struct WorkoutStatScreen: View {
         /// The bar for the workout the screen was opened from — drawn with the workout's muscle-group
         /// gradient; every other bar stays a quiet gray (a tapped bar lights up white).
         let isCurrent: Bool
-        /// The single workout behind this bar — nil for a year-granularity month bar.
+        /// The single workout behind this bar — nil for a monthly average bar.
         let workout: Workout?
         let workoutCount: Int
     }
@@ -55,7 +49,7 @@ struct WorkoutStatScreen: View {
 
     // MARK: - State
 
-    @State private var chartGranularity: ChartGranularity = .month
+    @State private var chartRange: ChartRange = .threeMonths
     @State private var chartScrollPosition: Date = .now
     @State private var selectedDate: Date?
 
@@ -74,25 +68,21 @@ struct WorkoutStatScreen: View {
     }
 
     private func screen(workouts: [Workout]) -> some View {
+        let firstDataDate = workouts.first?.date
+        let visibleEnd = visibleEndDate(firstDataDate: firstDataDate)
         let points = statPoints(in: workouts)
-        let snappedPoint = selectedDate != nil ? nearestPoint(to: selectedDate, in: points) : nil
+        let snappedPoint = selectedDate != nil ? nearestPoint(to: selectedDate, in: points, visibleEnd: visibleEnd) : nil
         // The average per workout across the visible window — recomputed as the chart scrolls, so the
-        // header's reference value and its pill always describe the period currently on screen.
-        let visibleAverage = averageRaw(in: workouts, from: chartScrollPosition, to: visibleEndDate)
+        // header's reference value and its pill always describe the window currently on screen.
+        let visibleAverage = averageRaw(in: workouts, from: chartScrollPosition, to: visibleEnd)
         return ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
-                    Picker("Select Chart Granularity", selection: $chartGranularity) {
-                        Text(NSLocalizedString("month", comment: ""))
-                            .tag(ChartGranularity.month)
-                        Text(NSLocalizedString("year", comment: ""))
-                            .tag(ChartGranularity.year)
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.vertical)
-                    .padding(.horizontal)
-                    header(visibleAverage: visibleAverage)
-                    chart(points: points, snappedPoint: snappedPoint)
+                    RangePicker(selection: $chartRange)
+                        .padding(.vertical)
+                        .padding(.horizontal)
+                    header(visibleAverage: visibleAverage, firstDataDate: firstDataDate)
+                    chart(points: points, snappedPoint: snappedPoint, firstDataDate: firstDataDate)
                 }
 
                 AboutSection(metricTitle: metric.title, text: metric.aboutText)
@@ -115,42 +105,26 @@ struct WorkoutStatScreen: View {
             }
         }
         .onAppear {
-            let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
-            chartScrollPosition = Calendar.current.date(
-                byAdding: .second,
-                value: -visibleChartDomainInSeconds,
-                to: firstDayOfNextWeek
-            )!
+            chartScrollPosition = chartRange.initialScrollPosition(firstDataDate: firstDataDate)
         }
-        .onChange(of: chartGranularity) {
-            // Re-initialize scroll position when switching granularity to avoid desync with the
+        .onChange(of: chartRange) {
+            // Re-initialize scroll position when switching ranges to avoid desync with the
             // visible window (same fix as the exercise chart screens).
-            let anchor: Date
-            switch chartGranularity {
-            case .month:
-                anchor = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
-            case .year:
-                anchor = Calendar.current.date(byAdding: .month, value: 1, to: .now.startOfMonth)!
-            }
-            chartScrollPosition = Calendar.current.date(
-                byAdding: .second,
-                value: -visibleChartDomainInSeconds,
-                to: anchor
-            )!
+            chartScrollPosition = chartRange.initialScrollPosition(firstDataDate: firstDataDate)
         }
     }
 
     // MARK: - Header
 
-    /// A scoreboard like the in-workout metric popover: the average across the shown period (the
+    /// A scoreboard like the in-workout metric popover: the average across the shown window (the
     /// reference, neutral, moving with the scroll) on the left, this workout's own value (the bold
     /// white constant) on the right, the pill between them reading this workout against that average.
     /// We're in the workout detail, so this workout is always the subject — scrolling retargets the
     /// average and the pill, never the side they're compared to.
-    private func header(visibleAverage: Double?) -> some View {
+    private func header(visibleAverage: Double?, firstDataDate: Date?) -> some View {
         // This workout's own value for the metric — "––" when it has none (e.g. duration with no end).
         let raw = metric.rawValue(of: workout)
-        // This workout vs the visible period's average — positive when this session beat it. Duration
+        // This workout vs the visible window's average — positive when this session beat it. Duration
         // stays neutral gray (longer is neither better nor worse), matching its tile.
         let percentChange: Double? = {
             guard let average = visibleAverage, average > 0, raw > 0 else { return nil }
@@ -162,7 +136,7 @@ struct WorkoutStatScreen: View {
                 label: NSLocalizedString("average", comment: ""),
                 value: visibleAverage.map { metric.formattedAverage(rawAverage: $0) } ?? "––",
                 unit: metric.unit,
-                caption: visibleDomainDescription
+                caption: chartRange.visibleWindowDescription(from: chartScrollPosition, firstDataDate: firstDataDate)
             ),
             trailing: .init(
                 label: NSLocalizedString("thisWorkout", comment: ""),
@@ -181,7 +155,7 @@ struct WorkoutStatScreen: View {
 
     // MARK: - Chart
 
-    private func chart(points: [StatPoint], snappedPoint: StatPoint?) -> some View {
+    private func chart(points: [StatPoint], snappedPoint: StatPoint?, firstDataDate: Date?) -> some View {
         let yScaleMax = chartYScaleMax(for: points)
         return Chart {
             if let snappedPoint {
@@ -199,36 +173,33 @@ struct WorkoutStatScreen: View {
                 BarMark(
                     x: .value("Date", point.date, unit: barUnit),
                     y: .value("Value", point.value),
-                    width: .ratio(chartGranularity == .month ? 0.6 : 0.5)
+                    width: .ratio(chartRange == .threeMonths ? 0.6 : 0.5)
                 )
                 .foregroundStyle(barStyle(for: point, snappedPoint: snappedPoint))
                 .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
                 .opacity(snappedPoint == nil || snappedPoint?.id == point.id ? 1.0 : 0.4)
             }
         }
-        .chartXScale(domain: xDomain(for: points))
+        .chartXScale(domain: chartRange.xDomain(firstDataDate: firstDataDate))
         .chartYScale(domain: 0 ... yScaleMax)
         .chartScrollableAxes(.horizontal)
         .chartScrollPosition(x: $chartScrollPosition)
         .chartScrollTargetBehavior(
-            .valueAligned(
-                matching: chartGranularity == .month
-                    ? DateComponents(weekday: Calendar.current.firstWeekday)
-                    : DateComponents(month: 1, day: 1)
-            )
+            .valueAligned(matching: chartRange.scrollSnapComponents)
         )
         .chartXSelection(value: $selectedDate)
-        .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+        .chartXVisibleDomain(length: chartRange.visibleDomainSeconds(firstDataDate: firstDataDate))
         .chartXAxis {
+            let axisStride = chartRange.axisStride(firstDataDate: firstDataDate)
             AxisMarks(
                 position: .bottom,
-                values: .stride(by: chartGranularity == .month ? .weekOfYear : .month)
+                values: .stride(by: axisStride.component, count: axisStride.count)
             ) { value in
                 if let date = value.as(Date.self) {
                     AxisGridLine()
                         .foregroundStyle(Color.gray.opacity(0.5))
-                    AxisValueLabel(xAxisDateString(for: date))
-                        .foregroundStyle(isDateNow(date) ? Color.primary : .secondary)
+                    AxisValueLabel(chartRange.axisLabel(for: date, firstDataDate: firstDataDate))
+                        .foregroundStyle(chartRange.isCurrentAxisMark(date, firstDataDate: firstDataDate) ? Color.primary : .secondary)
                         .font(.caption.weight(.bold))
                 }
             }
@@ -259,19 +230,19 @@ struct WorkoutStatScreen: View {
     }
 
     private func annotationValue(for point: StatPoint) -> String {
-        switch chartGranularity {
-        case .month: return metric.formattedValue(fromRaw: Int(point.rawValue.rounded()))
-        case .year: return metric.formattedAverage(rawAverage: point.rawValue)
+        switch chartRange {
+        case .threeMonths: return metric.formattedValue(fromRaw: Int(point.rawValue.rounded()))
+        case .year, .allTime: return metric.formattedAverage(rawAverage: point.rawValue)
         }
     }
 
     private func annotationSubtitle(for point: StatPoint) -> String {
-        switch chartGranularity {
-        case .month:
+        switch chartRange {
+        case .threeMonths:
             let day = point.date.formatted(.dateTime.day().month())
             guard let name = point.workout?.name, !name.isEmpty else { return day }
             return "\(name) · \(day)"
-        case .year:
+        case .year, .allTime:
             let month = point.date.formatted(.dateTime.month(.abbreviated).year())
             return "\(month) · \(point.workoutCount) \(NSLocalizedString("workouts", comment: ""))"
         }
@@ -280,8 +251,8 @@ struct WorkoutStatScreen: View {
     // MARK: - Points
 
     private func statPoints(in workouts: [Workout]) -> [StatPoint] {
-        switch chartGranularity {
-        case .month:
+        switch chartRange {
+        case .threeMonths:
             return workouts.map { workout in
                 let raw = metric.rawValue(of: workout)
                 return StatPoint(
@@ -294,7 +265,7 @@ struct WorkoutStatScreen: View {
                     workoutCount: 1
                 )
             }
-        case .year:
+        case .year, .allTime:
             let grouped = Dictionary(grouping: workouts) { $0.date?.startOfMonth ?? .now }
             return grouped
                 .map { month, monthWorkouts in
@@ -314,9 +285,9 @@ struct WorkoutStatScreen: View {
         }
     }
 
-    /// Bars are single days in month granularity, whole months in year granularity.
+    /// Bars are single days in the 3M range, whole months in 1Y / All.
     private var barUnit: Calendar.Component {
-        chartGranularity == .month ? .day : .month
+        chartRange == .threeMonths ? .day : .month
     }
 
     // MARK: - Averages & Trend
@@ -335,55 +306,12 @@ struct WorkoutStatScreen: View {
 
     // MARK: - Chart Window
 
-    private var visibleChartDomainInSeconds: Int {
-        3600 * 24 * (chartGranularity == .month ? 35 : 365)
-    }
-
-    private var visibleEndDate: Date {
-        Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
-    }
-
-    /// The shown period as a date range ("25 May - 29 Jun") — the time frame the header's average is
-    /// taken over, captioned beneath it; moves with the scroll.
-    private var visibleDomainDescription: String {
-        let endDate = visibleEndDate
-        switch chartGranularity {
-        case .month:
-            return "\(chartScrollPosition.isInCurrentYear ? chartScrollPosition.formatted(.dateTime.day().month()) : chartScrollPosition.formatted(.dateTime.day().month().year())) - \(endDate.isInCurrentYear ? endDate.formatted(.dateTime.day().month()) : endDate.formatted(.dateTime.day().month().year()))"
-        case .year:
-            return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
-        }
-    }
-
-    private func xDomain(for points: [StatPoint]) -> some ScaleDomain {
-        let maxStartDate = Calendar.current.date(
-            byAdding: chartGranularity == .month ? .month : .year,
-            value: -1,
-            to: .now
+    private func visibleEndDate(firstDataDate: Date?) -> Date {
+        Calendar.current.date(
+            byAdding: .second,
+            value: chartRange.visibleDomainSeconds(firstDataDate: firstDataDate),
+            to: chartScrollPosition
         )!
-        let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
-        guard let firstDate = points.first?.date, firstDate < maxStartDate
-        else { return maxStartDate ... endDate }
-        let startDate = chartGranularity == .month ? firstDate.startOfMonth : firstDate.startOfYear
-        return startDate ... endDate
-    }
-
-    private func xAxisDateString(for date: Date) -> String {
-        switch chartGranularity {
-        case .month:
-            return date.formatted(.dateTime.day().month(.defaultDigits))
-        case .year:
-            return date.formatted(Date.FormatStyle().month(.narrow))
-        }
-    }
-
-    private func isDateNow(_ date: Date) -> Bool {
-        switch chartGranularity {
-        case .month:
-            return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.weekOfYear, .yearForWeekOfYear])
-        case .year:
-            return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.month, .year])
-        }
     }
 
     /// Smallest "nice" number (1/2/2.5/5 × power of ten) at or above the largest bar, so the
@@ -399,9 +327,9 @@ struct WorkoutStatScreen: View {
 
     // MARK: - Selection
 
-    private func nearestPoint(to date: Date?, in points: [StatPoint]) -> StatPoint? {
+    private func nearestPoint(to date: Date?, in points: [StatPoint], visibleEnd: Date) -> StatPoint? {
         guard let target = date else { return nil }
-        let visiblePoints = points.filter { $0.date >= chartScrollPosition && $0.date <= visibleEndDate }
+        let visiblePoints = points.filter { $0.date >= chartScrollPosition && $0.date <= visibleEnd }
         let candidates = visiblePoints.isEmpty ? points : visiblePoints
         return candidates.min { lhs, rhs in
             abs(lhs.date.timeIntervalSince(target)) < abs(rhs.date.timeIntervalSince(target))

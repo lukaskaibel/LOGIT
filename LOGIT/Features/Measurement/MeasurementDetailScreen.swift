@@ -9,15 +9,11 @@ import Charts
 import SwiftUI
 
 struct MeasurementDetailScreen: View {
-    private enum ChartGranularity {
-        case month, year
-    }
-
     @EnvironmentObject var measurementController: MeasurementEntryController
 
     let measurementType: MeasurementEntryType
 
-    @State private var chartGranularity: ChartGranularity = .month
+    @State private var chartRange: ChartRange = .threeMonths
     @State private var chartScrollPosition: Date = .now
     @State private var selectedDate: Date?
     @State private var isAddingEntry = false
@@ -63,7 +59,7 @@ struct MeasurementDetailScreen: View {
         .onAppear {
             initializeChartScrollPosition()
         }
-        .onChange(of: chartGranularity) {
+        .onChange(of: chartRange) {
             initializeChartScrollPosition()
         }
     }
@@ -76,14 +72,8 @@ struct MeasurementDetailScreen: View {
         let latestEntry = entries.first
 
         VStack {
-            Picker("Select Chart Granularity", selection: $chartGranularity) {
-                Text(NSLocalizedString("month", comment: ""))
-                    .tag(ChartGranularity.month)
-                Text(NSLocalizedString("year", comment: ""))
-                    .tag(ChartGranularity.year)
-            }
-            .pickerStyle(.segmented)
-            .padding(.vertical)
+            RangePicker(selection: $chartRange)
+                .padding(.vertical)
 
             VStack(alignment: .leading) {
                 Text(NSLocalizedString("latest", comment: ""))
@@ -98,7 +88,7 @@ struct MeasurementDetailScreen: View {
                     )
                     .foregroundStyle(Color.accentColor.gradient)
                 }
-                Text(chartHeaderTitle)
+                Text(chartRange.visibleWindowDescription(from: chartScrollPosition, firstDataDate: firstDataDate))
                     .fontWeight(.bold)
                     .foregroundStyle(.secondary)
             }
@@ -208,27 +198,26 @@ struct MeasurementDetailScreen: View {
                     )
                 }
             }
-            .chartXScale(domain: xDomain)
+            .chartXScale(domain: chartRange.xDomain(firstDataDate: firstDataDate))
             .chartYScale(domain: 0.0 ... chartYScaleMax)
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
-                .valueAligned(
-                    matching: chartGranularity == .month ? DateComponents(weekday: Calendar.current.firstWeekday) : DateComponents(month: 1, day: 1)
-                )
+                .valueAligned(matching: chartRange.scrollSnapComponents)
             )
             .chartXSelection(value: $selectedDate)
             .chartXVisibleDomain(length: visibleChartDomainInSeconds)
             .chartXAxis {
+                let axisStride = chartRange.axisStride(firstDataDate: firstDataDate)
                 AxisMarks(
                     position: .bottom,
-                    values: .stride(by: chartGranularity == .month ? .weekOfYear : .month)
+                    values: .stride(by: axisStride.component, count: axisStride.count)
                 ) { value in
                     if let date = value.as(Date.self) {
                         AxisGridLine()
                             .foregroundStyle(Color.gray.opacity(0.5))
-                        AxisValueLabel(xAxisDateString(for: date))
-                            .foregroundStyle(isDateNow(date) ? Color.primary : .secondary)
+                        AxisValueLabel(chartRange.axisLabel(for: date, firstDataDate: firstDataDate))
+                            .foregroundStyle(chartRange.isCurrentAxisMark(date, firstDataDate: firstDataDate) ? Color.primary : .secondary)
                             .font(.caption.weight(.bold))
                     }
                 }
@@ -335,14 +324,7 @@ struct MeasurementDetailScreen: View {
     // MARK: - Private Methods
 
     private func initializeChartScrollPosition() {
-        let anchor: Date
-        switch chartGranularity {
-        case .month:
-            anchor = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
-        case .year:
-            anchor = Calendar.current.date(byAdding: .month, value: 1, to: .now.startOfMonth)!
-        }
-        chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: anchor)!
+        chartScrollPosition = chartRange.initialScrollPosition(firstDataDate: firstDataDate)
     }
 
     private func resetNewEntry() {
@@ -358,55 +340,19 @@ struct MeasurementDetailScreen: View {
         return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.1f", value)
     }
 
-    private var visibleChartDomainInSeconds: Int {
-        3600 * 24 * (chartGranularity == .month ? 35 : 365)
+    /// Earliest entry date — anchors the scrollable domain and the All range (entries are newest-first).
+    private var firstDataDate: Date? {
+        entries.last?.date
     }
 
-    private var xDomain: ClosedRange<Date> {
-        let maxStartDate = Calendar.current.date(
-            byAdding: chartGranularity == .month ? .month : .year,
-            value: -1,
-            to: .now
-        )!
-        let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
-        guard let firstEntryDate = entries.last?.date, firstEntryDate < maxStartDate
-        else { return maxStartDate ... endDate }
-        let startDate = chartGranularity == .month ? firstEntryDate.startOfMonth : firstEntryDate.startOfYear
-        return startDate ... endDate
+    private var visibleChartDomainInSeconds: Int {
+        chartRange.visibleDomainSeconds(firstDataDate: firstDataDate)
     }
 
     private var chartYScaleMax: Double {
         let maxValue = entries.map { $0.decimalValue }.max() ?? 100
         let yAxisMaxValues: [Double] = [10, 25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000]
         return yAxisMaxValues.filter { $0 > maxValue }.min() ?? maxValue
-    }
-
-    private func xAxisDateString(for date: Date) -> String {
-        switch chartGranularity {
-        case .month:
-            return date.formatted(.dateTime.day().month(.defaultDigits))
-        case .year:
-            return date.formatted(Date.FormatStyle().month(.narrow))
-        }
-    }
-
-    private func isDateNow(_ date: Date) -> Bool {
-        switch chartGranularity {
-        case .month:
-            return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.weekOfYear, .yearForWeekOfYear])
-        case .year:
-            return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.month, .year])
-        }
-    }
-
-    private var chartHeaderTitle: String {
-        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
-        switch chartGranularity {
-        case .month:
-            return "\(chartScrollPosition.isInCurrentYear ? chartScrollPosition.formatted(.dateTime.day().month()) : chartScrollPosition.formatted(.dateTime.day().month().year())) - \(endDate.isInCurrentYear ? endDate.formatted(.dateTime.day().month()) : endDate.formatted(.dateTime.day().month().year()))"
-        case .year:
-            return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
-        }
     }
 
     private var visibleEndDate: Date {

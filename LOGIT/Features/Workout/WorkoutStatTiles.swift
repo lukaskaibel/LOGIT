@@ -81,8 +81,17 @@ enum WorkoutStatMetric: Int, CaseIterable, Identifiable {
         switch self {
         case .volume: return String(Int(convertWeightForDisplayingDecimal(Int(rawAverage.rounded())).rounded()))
         case .duration: return formattedWorkoutDuration(minutes: Int(rawAverage.rounded()))
-        case .sets, .repetitions: return HighlightView.formatNumber(rawAverage)
+        case .sets, .repetitions: return Self.formatAverageNumber(rawAverage)
         }
+    }
+
+    /// "18.5"-style average formatting — at most one decimal, none when whole.
+    private static func formatAverageNumber(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 1
+        formatter.minimumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.1f", value)
     }
 
     // MARK: Detail screen texts
@@ -94,46 +103,6 @@ enum WorkoutStatMetric: Int, CaseIterable, Identifiable {
         case .sets: return NSLocalizedString("workoutSetsAboutInfo", comment: "")
         case .repetitions: return NSLocalizedString("workoutRepsAboutInfo", comment: "")
         }
-    }
-
-    func highlightHeadline(isMore: Bool, isYearGranularity: Bool) -> String {
-        let key: String
-        switch self {
-        case .volume:
-            key = isYearGranularity
-                ? (isMore ? "avgMoreWorkoutVolumeThisYearThanLastYear" : "avgLessWorkoutVolumeThisYearThanLastYear")
-                : (isMore ? "avgMoreWorkoutVolumeThisMonthThanLastMonth" : "avgLessWorkoutVolumeThisMonthThanLastMonth")
-        case .duration:
-            key = isYearGranularity
-                ? (isMore ? "avgLongerWorkoutsThisYearThanLastYear" : "avgShorterWorkoutsThisYearThanLastYear")
-                : (isMore ? "avgLongerWorkoutsThisMonthThanLastMonth" : "avgShorterWorkoutsThisMonthThanLastMonth")
-        case .sets:
-            key = isYearGranularity
-                ? (isMore ? "avgMoreSetsPerWorkoutThisYearThanLastYear" : "avgLessSetsPerWorkoutThisYearThanLastYear")
-                : (isMore ? "avgMoreSetsPerWorkoutThisMonthThanLastMonth" : "avgLessSetsPerWorkoutThisMonthThanLastMonth")
-        case .repetitions:
-            key = isYearGranularity
-                ? (isMore ? "avgMoreRepsPerWorkoutThisYearThanLastYear" : "avgLessRepsPerWorkoutThisYearThanLastYear")
-                : (isMore ? "avgMoreRepsPerWorkoutThisMonthThanLastMonth" : "avgLessRepsPerWorkoutThisMonthThanLastMonth")
-        }
-        return NSLocalizedString(key, comment: "")
-    }
-
-    /// "kg/Workout"-style unit for the highlight tile.
-    var highlightUnit: String {
-        let perWorkout = "/\(NSLocalizedString("workout", comment: ""))"
-        switch self {
-        case .volume: return WeightUnit.used.rawValue + perWorkout
-        case .duration: return NSLocalizedString("min", comment: "") + perWorkout
-        case .sets: return NSLocalizedString("sets", comment: "") + perWorkout
-        case .repetitions: return NSLocalizedString("rps", comment: "") + perWorkout
-        }
-    }
-
-    /// Highlight tile value — duration shows plain minutes there ("69"), since its formatted
-    /// form ("1h 9m") can't sit in front of the "min/Workout" unit.
-    func highlightValue(rawAverage: Double) -> String {
-        self == .duration ? HighlightView.formatNumber(rawAverage) : formattedAverage(rawAverage: rawAverage)
     }
 }
 

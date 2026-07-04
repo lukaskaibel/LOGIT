@@ -168,7 +168,7 @@ struct MuscleGroupsOverviewScreen: View {
                 VStack(spacing: 0) {
                     ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                         Button {
-                            homeNavigationCoordinator.path.append(.muscleGroupDetail(entry.muscleGroup))
+                            homeNavigationCoordinator.path.append(.muscleGroupDetail(entry.muscleGroup, period))
                         } label: {
                             barRow(entry)
                         }

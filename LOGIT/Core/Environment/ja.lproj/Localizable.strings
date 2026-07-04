@@ -27,7 +27,6 @@
 "all" = "全て";
 "allEntries" = "すべてのエントリー";
 "allSetsCompleted" = "全セット完成";
-"allTime" = "オールタイム";
 "alreadyExists" = "すでに存在します。";
 "areYouSure?" = "本気ですか？";
 "autoRenewMonth" = "毎月自動更新";
@@ -38,10 +37,6 @@
 
 "back" = "戻る";
 "best" = "最高";
-"bestPerDay" = "一日あたりのベスト";
-"bestThisMonth" = "今月のベスト";
-"bestWeightPerDay" = "1日あたりのベスト体重";
-"bestRepetitionsPerDay" = "1日あたりのベストレップ数";
 "biceps" = "上腕二頭筋";
 "bicepsLeft" = "左上腕二頭筋";
 "bicepsRight" = "右上腕二頭筋";
@@ -80,8 +75,6 @@
 "newRecord" = "新記録";
 "currentBestInfo" = "現在のベストは、直近4週間の最高値です。トレンドは、その値に達する前の4週間のベストよりどれだけ高いかを示します。";
 "currentBestComparisonInfo" = "現在のベスト（右）は直近4週間の最高値です。バッジは、左に表示された期間のベストと比べてどうかを示します。スクロールして任意の期間と比較できます。";
-"averageComparisonInfo" = "右の値は直近4週間の週平均です。バッジは、左に表示された期間の平均と比べてどうかを示します。スクロールして任意の期間と比較できます。";
-"lastFourWeeks" = "直近4週間";
 "currentWorkout" = "現在のトレーニング";
 
 // MARK: - D
@@ -133,10 +126,8 @@
 "five" = "五";
 "focus" = "集中";
 "focusedOn" = "焦点を当てた";
-"focusThisWeek" = "今週の焦点";
 "four" = "4";
 "fourWeeksAgo" = "4週間前";
-"fromLastWeek" = "先週から";
 "FromPhoto" = "写真から";
 "failedToLoadPrivacyPolicy" = "プライバシー ポリシーの読み込みに失敗しました。";
 "failedToLoadTermsAndConditions" = "利用規約を読み込めませんでした。";
@@ -169,7 +160,6 @@
 
 "incompleteSetsWillNotBeSaved" = "不完全なセットは保存されません。";
 "importError" = "インポートエラー";
-"inSelectedWeek" = "選択した週に";
 "instructions" = "説明書";
 "inviteToWorkout" = "ワークアウトに招待する";
 
@@ -181,7 +171,6 @@
 
 "latest" = "最新";
 "lastMonth" = "先月";
-"lastTenWorkouts" = "過去 10 回のワークアウトで";
 "lastUsed" = "最後に使用した";
 "lastWeek" = "先週";
 "lastSetReferencePrefix" = "前回";
@@ -197,8 +186,6 @@
 
 // MARK: - M
 
-"maximumWeight" = "最大重量";
-"maximumRepetitions" = "最大繰り返し回数";
 "measurementBodyweight" = "体重";
 "measurementCaloriesBurned" = "消費カロリー";
 "chest" = "胸";
@@ -222,7 +209,6 @@
 "morning" = "朝";
 "muscleGroup" = "筋肉グループ";
 "muscleGroups" = "筋肉群";
-"muscleGroupsInLastTen" = "筋肉グループの概要";
 "muscleGroupSplit" = "筋肉グループの分割";
 "muscleMass" = "筋肉量";
 "myTemplates" = "私のテンプレート";
@@ -298,8 +284,6 @@
 "pinMeasurementsTipDescription" = "時間の経過に伴う変化を監視するためのピン測定。";
 "pinned" = "固定された";
 "addPin" = "ピンを追加";
-"PerDay" = "1日あたり";
-"PerMonth" = "月あたり";
 "perWeek" = "週あたり";
 "PerWeek" = "週あたり";
 "planAhead" = "事前に計画を立てる";
@@ -357,7 +341,6 @@
 "set" = "セット";
 "sets" = "セット";
 "setsIncomplete" = "不完全なセット";
-"setsPerWeek" = "週あたりの全体的なセット数";
 "setType" = "セットタイプ";
 "settings" = "設定";
 "seven" = "セブン";
@@ -413,7 +396,6 @@
 "ThisWeek" = "今週";
 "thisYear" = "今年";
 "three" = "三つ";
-"threeMonths" = "3ヶ月";
 "threeWeeksAgo" = "3週間前";
 "time" = "時間";
 "tip" = "ヒント";
@@ -469,14 +451,12 @@
 // MARK: - W
 "viewTemplate" = "テンプレートの表示";
 "volume" = "音量";
-"volumeThisWeek" = "今週のボリューム";
 
 // MARK: - W
 
 "week" = "週";
 "weeks" = "週";
 "weekly" = "毎週";
-"weeklyAverage" = "週平均";
 "weeklyTarget" = "週間目標";
 "weeklyTargetDescription" = "1 週間に行うワークアウトの数を選択します。";
 "weeklyWorkoutGoal" = "毎週のトレーニング目標";
@@ -536,9 +516,7 @@
 // MARK: - OverallSets Highlights (Comparison Sentences)
 "avgMoreSetsPerWorkoutThisWeekThanLastWeek" = "今週は先週よりもワークアウトあたりの平均セット数が増えています。";
 "avgFewerSetsPerWorkoutThisWeekThanLastWeek" = "今週は先週よりもワークアウトあたりの平均セット数が少なくなりました。";
-"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "今月は先月よりもワークアウトあたりの平均セット数が増えています。";
 "avgFewerSetsPerWorkoutThisMonthThanLastMonth" = "今月は先月よりもワークアウトあたりの平均セット数が少なくなります。";
-"avgMoreSetsPerWorkoutThisYearThanLastYear" = "今年は昨年よりもワークアウトあたりの平均セット数が増えています。";
 "avgFewerSetsPerWorkoutThisYearThanLastYear" = "今年は昨年よりもワークアウトあたりの平均セット数が減っています。";
 
 // MARK: - Default Exercise Names
@@ -876,8 +854,8 @@
 "aboutMetric" = "「%@」について";
 "weightInfo" = "1セットで挙げた最も重い重量を日ごとに表示します。扱う重量が時間とともに増えることは、筋力向上の最も直接的なサインです。";
 "repetitionsInfo" = "1セットで行った最多レップ数を日ごとに表示します。同じ重量でより多くのレップをこなすと筋持久力が高まり、進歩のもう一つの形になります。";
-"volumeInfo" = "ボリュームは動かした総重量です。重量 × レップ数を1週間の全セットで合計します。ボリュームが多いほど総仕事量が多く、筋肥大の重要な要因になります。";
-"setsInfo" = "セット数は、1週間にこのエクササイズで記録した有効なセットの数です（実際に完了したセットのみをカウントします）。週あたりのセット数はトレーニングボリュームの標準的な指標で、毎週十分なセットをこなすことが筋力と筋肉の成長の重要な要因になります。";
+"volumeInfo" = "ボリュームは動かした総重量です。重量 × レップ数を期間内の全セットで合計します。ボリュームが多いほど総仕事量が多く、筋肥大の重要な要因になります。トレンドは現在の期間をその前の期間と比較します。";
+"setsInfo" = "セット数は、このエクササイズで記録した有効なセットの数です（実際に完了したセットのみをカウントします）。十分なセットをこなすことが筋力と筋肉の成長の重要な要因になります。グラフは直近の期間ごとのセット数を示し、トレンドは現在の期間をその前の期間と比較します。";
 
 "progressMetric" = "進捗指標";
 
@@ -904,7 +882,7 @@
 "thisWorkout" = "今回のワークアウト";
 "firstTimeForThisWorkout" = "このワークアウトは今回が初めてです。今後のセッションはこれと比較されます。";
 "workoutPRInfo" = "自己ベストとは、このワークアウトのセットが、それ以前のすべてのワークアウトでの最高重量・最多回数・推定1RMを上回ったことを意味します。後で更新されても、この日の記録として残ります。";
-"workoutTrendInfo" = "各種目のトレンドは、このワークアウトでの進捗指標のベスト値を、その前の1か月間のベストと比較します — 下の種目バッジと同じ比較です。";
+"workoutTrendInfo" = "各種目のトレンドは、このワークアウトでの進捗指標のベスト値を、その前の4週間のベストと比較します — 下の種目バッジと同じ比較です。";
 "workoutVolumeCompareInfo" = "総ボリューム（各セットの重量×回数）を、前回同じワークアウトを行ったときと比較します。";
 "improvedCount" = "%d種目向上";
 
@@ -924,27 +902,10 @@
 "volumePerSet" = "セットごとのボリューム";
 "workoutStatCompareSameInfo" = "トレンドは、このワークアウトを同じワークアウトの前回の実施と比較します。バーは直近の実施を示し、右端の強調されたバーがこのワークアウトです。";
 "workoutStatCompareRecentInfo" = "このワークアウトには過去の実施がないため、トレンドは直近のワークアウトの平均と比較します。バーはそれらのワークアウトを示し、右端の強調されたバーがこのワークアウトです。";
-"workoutStatAverageInfo" = "表示期間におけるワークアウトごとの平均です。トレンドは直前の期間と比較します。各バーは1回のワークアウトで、最も鍛えた筋肉グループの色が付きます。年表示では月ごとの平均を示します。";
 "workoutVolumeAboutInfo" = "ボリュームはワークアウトで動かした総重量です — 重量 × 回数を全セットで合計したもの。ワークアウト間で比較すると、セッションに含まれる仕事量がわかります。";
 "workoutDurationAboutInfo" = "間隔はワークアウトの開始から終了までの時間です。長くても短くてもそれ自体は良し悪しではありません — ボリュームと合わせて、トレーニングの密度を見ましょう。";
 "workoutSetsAboutInfo" = "ワークアウトで記録したセット数 — バーの重量に関係なく、セッションでどれだけ行ったかを示すシンプルな指標です。";
 "workoutRepsAboutInfo" = "ワークアウトで記録したすべての回数を全セットで合計したものです。セット数とボリュームと合わせて、セッションの仕事量を表します。";
-"avgMoreWorkoutVolumeThisMonthThanLastMonth" = "今月はワークアウトごとのボリュームが先月より多いです。";
-"avgLessWorkoutVolumeThisMonthThanLastMonth" = "今月はワークアウトごとのボリュームが先月より少ないです。";
-"avgMoreWorkoutVolumeThisYearThanLastYear" = "今年はワークアウトごとのボリュームが昨年より多いです。";
-"avgLessWorkoutVolumeThisYearThanLastYear" = "今年はワークアウトごとのボリュームが昨年より少ないです。";
-"avgLongerWorkoutsThisMonthThanLastMonth" = "今月のワークアウトは先月より長いです。";
-"avgShorterWorkoutsThisMonthThanLastMonth" = "今月のワークアウトは先月より短いです。";
-"avgLongerWorkoutsThisYearThanLastYear" = "今年のワークアウトは昨年より長いです。";
-"avgShorterWorkoutsThisYearThanLastYear" = "今年のワークアウトは昨年より短いです。";
-"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "今月はワークアウトごとのセット数が先月より多いです。";
-"avgLessSetsPerWorkoutThisMonthThanLastMonth" = "今月はワークアウトごとのセット数が先月より少ないです。";
-"avgMoreSetsPerWorkoutThisYearThanLastYear" = "今年はワークアウトごとのセット数が昨年より多いです。";
-"avgLessSetsPerWorkoutThisYearThanLastYear" = "今年はワークアウトごとのセット数が昨年より少ないです。";
-"avgMoreRepsPerWorkoutThisMonthThanLastMonth" = "今月はワークアウトごとの回数が先月より多いです。";
-"avgLessRepsPerWorkoutThisMonthThanLastMonth" = "今月はワークアウトごとの回数が先月より少ないです。";
-"avgMoreRepsPerWorkoutThisYearThanLastYear" = "今年はワークアウトごとの回数が昨年より多いです。";
-"avgLessRepsPerWorkoutThisYearThanLastYear" = "今年はワークアウトごとの回数が昨年より少ないです。";
 "period" = "期間";
 "weeklyGoal" = "週間目標";
 "weeklyGoalReached" = "目標達成";
@@ -994,7 +955,6 @@
 "rank" = "順位";
 "muscleDetailRankCaption" = "8グループ中";
 "targetShare" = "目標シェア";
-"weeklySets" = "週間セット";
 "twelveWeeks" = "12週間";
 "topExercises" = "トップ種目";
 "muscleDetailPercentOfSets" = "セットの%d%%";
@@ -1048,3 +1008,14 @@
 "muscleBalanceBelowTarget" = "目標未満";
 "muscleBalanceAboveTarget" = "目標超過";
 "muscleBalanceOnTargetSection" = "目標どおり";
+
+// Timeframe unification: shared chart ranges + per-period muscle history
+"range" = "範囲";
+"rangeThreeMonths" = "3か月";
+"rangeYear" = "1年";
+"rangeAllTime" = "全期間";
+"setsPerWeekTitle" = "週ごとのセット数";
+"setsPerMonthTitle" = "月ごとのセット数";
+"setsPerYearTitle" = "年ごとのセット数";
+"twelveMonths" = "12か月";
+"sixYears" = "6年";

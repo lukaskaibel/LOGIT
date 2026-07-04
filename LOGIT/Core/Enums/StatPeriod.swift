@@ -37,8 +37,47 @@ enum StatPeriod: String, CaseIterable, Identifiable {
         range(periodsAgo: 1, from: date)
     }
 
+    /// How many periods of history a period-scoped chart shows — the current period plus its recent
+    /// past. One rule for every such chart in the app: 12 recent weeks, 12 recent months or 6 recent
+    /// years, so switching screens never silently changes how far back "history" reaches.
+    var historyBucketCount: Int {
+        switch self {
+        case .week, .month: return 12
+        case .year: return 6
+        }
+    }
+
+    /// Localized "This Week" / "This Month" / "This Year" — the header label above a stat scoped to
+    /// the current period.
+    var currentPeriodLabel: String {
+        switch self {
+        case .week: return NSLocalizedString("thisWeek", comment: "")
+        case .month: return NSLocalizedString("thisMonth", comment: "")
+        case .year: return NSLocalizedString("thisYear", comment: "")
+        }
+    }
+
+    /// The calendar component one period spans — the x-axis unit of one history bar.
+    var calendarComponent: Calendar.Component {
+        switch self {
+        case .week: return .weekOfYear
+        case .month: return .month
+        case .year: return .year
+        }
+    }
+
+    /// Axis label for a history bucket's start date ("9 Jun" / "J" / "2026"), shared by every
+    /// period-scoped history chart.
+    func axisLabel(for date: Date) -> String {
+        switch self {
+        case .week: return date.formatted(.dateTime.day().month(.abbreviated))
+        case .month: return date.formatted(.dateTime.month(.narrow))
+        case .year: return date.formatted(.dateTime.year())
+        }
+    }
+
     /// The closed range of the period `n` periods before the one containing `date` — `n == 0` is the
-    /// current period, `n == 1` the previous. Powers the stats grid's 5-bucket history bars and the
+    /// current period, `n == 1` the previous. Powers the stats grid's history bars and the
     /// detail screen's recent-periods chart.
     func range(periodsAgo n: Int, from date: Date = .now) -> ClosedRange<Date> {
         let component: Calendar.Component

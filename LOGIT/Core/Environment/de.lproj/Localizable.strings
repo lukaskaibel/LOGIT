@@ -27,7 +27,6 @@
 "all" = "Alle";
 "allEntries" = "Alle Einträge";
 "allSetsCompleted" = "Alle Sätze vollständig";
-"allTime" = "Aller Zeiten";
 "alreadyExists" = "existiert schon.";
 "areYouSure?" = "Bist du sicher?";
 "autoRenewMonth" = "Erneuert automatisch am Ende des Monats";
@@ -38,10 +37,6 @@
 
 "back" = "Rücken";
 "best" = "Max";
-"bestPerDay" = "Höchstes pro Tag";
-"bestThisMonth" = "Max diesen Monat";
-"bestWeightPerDay" = "Höchstes Gewicht pro Tag";
-"bestRepetitionsPerDay" = "Höchste Wdh. pro Tag";
 "biceps" = "Bizeps";
 "bicepsLeft" = "Linker Bizeps";
 "bicepsRight" = "Rechter Bizeps";
@@ -80,8 +75,6 @@
 "newRecord" = "Neuer Rekord";
 "currentBestInfo" = "Dein aktueller Bestwert ist der höchste Wert der letzten 4 Wochen. Der Trend zeigt, wie viel höher er ist als dein Bestwert in den 4 Wochen davor.";
 "currentBestComparisonInfo" = "Dein aktueller Bestwert (rechts) ist der höchste Wert der letzten 4 Wochen. Das Abzeichen zeigt, wie er sich zu deinem Bestwert im angezeigten Zeitraum links verhält – scrolle, um mit beliebigen Zeiträumen zu vergleichen.";
-"averageComparisonInfo" = "Der Wert rechts ist dein Wochendurchschnitt der letzten 4 Wochen. Das Abzeichen zeigt, wie er sich zum Durchschnitt des angezeigten Zeitraums links verhält – scrolle, um mit beliebigen Zeiträumen zu vergleichen.";
-"lastFourWeeks" = "Letzte 4 Wochen";
 "currentWorkout" = "Aktuelles Workout";
 
 // MARK: - D
@@ -133,10 +126,8 @@
 "five" = "Fünf";
 "focus" = "Fokus";
 "focusedOn" = "Fokussiert auf";
-"focusThisWeek" = "Fokus diese Woche";
 "four" = "Vier";
 "fourWeeksAgo" = "Vor 4 Wochen";
-"fromLastWeek" = "zu letzter Woche";
 "FromPhoto" = "Aus Foto";
 "failedToLoadPrivacyPolicy" = "Datenschutz konnte nicht geladen werden.";
 "failedToLoadTermsAndConditions" = "Nutzungsbedingungen konnten nicht geladen werden.";
@@ -166,7 +157,6 @@
 
 "incompleteSetsWillNotBeSaved" = "Unvollständige Sätze werden nicht gespeichert.";
 "importError" = "Importfehler";
-"inSelectedWeek" = "Gewählte Woche";
 "instructions" = "Anleitung";
 "inviteToWorkout" = "Zum Workout einladen";
 // MARK: - K
@@ -176,7 +166,6 @@
 
 "latest" = "Aktuell";
 "lastMonth" = "Letzter Monat";
-"lastTenWorkouts" = "In Letzten 10 Workouts";
 "lastUsed" = "Zuletzt benutzt";
 "lastWeek" = "Letzte Woche";
 "lastSetReferencePrefix" = "Letztes";
@@ -192,8 +181,6 @@
 
 // MARK: - M
 
-"maximumWeight" = "Maximales Gewicht";
-"maximumRepetitions" = "Maximale Wiederholungen";
 "measurementBodyweight" = "Körpergewicht";
 "measurementCaloriesBurned" = "Verbrannte Kalorien";
 "chest" = "Brust";
@@ -217,7 +204,6 @@
 "morning" = "Morgen";
 "muscleGroup" = "Muskelgruppe";
 "muscleGroups" = "Muskelgruppen";
-"muscleGroupsInLastTen" = "Muskelgruppen Übersicht";
 "muscleGroupSplit" = "Muskelgruppen Aufteilung";
 "muscleMass" = "Muskelmasse";
 "myTemplates" = "Meine Vorlagen";
@@ -287,8 +273,6 @@
 "performed" = "Ausführungen:";
 "personalBest" = "Bestleistung";
 "perDay" = "pro Tag";
-"PerDay" = "Pro Tag";
-"PerMonth" = "Pro Monat";
 "perWeek" = "pro Woche";
 "PerWeek" = "Pro Woche";
 "pinExercises" = "Übungen anpinnen";
@@ -353,7 +337,6 @@
 "set" = "Satz";
 "sets" = "Sätze";
 "setsIncomplete" = "Sätze unvollständig";
-"setsPerWeek" = "Gesamte Sätze pro Woche";
 "setType" = "Satz Art";
 "settings" = "Einstellungen";
 "seven" = "Sieben";
@@ -409,7 +392,6 @@
 "ThisWeek" = "Diese Woche";
 "thisYear" = "Dieses Jahr";
 "three" = "Drei";
-"threeMonths" = "3 Monate";
 "threeWeeksAgo" = "Vor 3 Wochen";
 "time" = "mal";
 "tip" = "Tipp";
@@ -465,14 +447,12 @@
 // MARK: - V
 "viewTemplate" = "Vorlage anzeigen";
 "volume" = "Volumen";
-"volumeThisWeek" = "Volumen diese Woche";
 
 // MARK: - W
 
 "week" = "Woche";
 "weeks" = "Wochen";
 "weekly" = "Wöchentlich";
-"weeklyAverage" = "Wochenschnitt";
 "weeklyTarget" = "Wochenziel";
 "weeklyTargetDescription" = "Wähle aus, wie viele Workouts du pro Woche machen möchtest.";
 "weeklyWorkoutGoal" = "Wöchentliches Workout Ziel";
@@ -532,9 +512,7 @@
 // MARK: - OverallSets Highlights (Vergleichssätze)
 "avgMoreSetsPerWorkoutThisWeekThanLastWeek" = "Du machst im Durchschnitt mehr Sätze pro Workout diese Woche als letzte Woche.";
 "avgFewerSetsPerWorkoutThisWeekThanLastWeek" = "Du machst im Durchschnitt weniger Sätze pro Workout diese Woche als letzte Woche.";
-"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "Du machst im Durchschnitt mehr Sätze pro Workout diesen Monat als letzten Monat.";
 "avgFewerSetsPerWorkoutThisMonthThanLastMonth" = "Du machst im Durchschnitt weniger Sätze pro Workout diesen Monat als letzten Monat.";
-"avgMoreSetsPerWorkoutThisYearThanLastYear" = "Du machst im Durchschnitt mehr Sätze pro Workout dieses Jahr als letztes Jahr.";
 "avgFewerSetsPerWorkoutThisYearThanLastYear" = "Du machst im Durchschnitt weniger Sätze pro Workout dieses Jahr als letztes Jahr.";
 
 // MARK: - Standard-Übungsnamen
@@ -872,8 +850,8 @@
 "aboutMetric" = "Über „%@“";
 "weightInfo" = "Das höchste Gewicht, das du an einem Tag in einem einzelnen Satz bewegt hast. Mehr Gewicht über die Zeit ist das deutlichste Zeichen für wachsende Kraft.";
 "repetitionsInfo" = "Die meisten Wiederholungen, die du an einem Tag in einem einzelnen Satz geschafft hast. Mehr Wiederholungen bei gleichem Gewicht stärken die Kraftausdauer – ein weiterer Weg, Fortschritte zu machen.";
-"volumeInfo" = "Das Volumen ist das insgesamt bewegte Gewicht: Gewicht × Wiederholungen, summiert über alle Sätze einer Woche. Mehr Volumen bedeutet mehr Gesamtarbeit – ein wichtiger Treiber für Muskelwachstum.";
-"setsInfo" = "Die Sätze sind die Anzahl der Arbeitssätze, die du in einer Woche für diese Übung protokolliert hast – nur tatsächlich ausgeführte Sätze zählen. Sätze pro Woche sind das Standardmaß für das Trainingsvolumen: Genügend harte Sätze pro Woche sind ein wichtiger Treiber für Kraft- und Muskelwachstum.";
+"volumeInfo" = "Das Volumen ist das insgesamt bewegte Gewicht: Gewicht × Wiederholungen, summiert über alle Sätze des Zeitraums. Mehr Volumen bedeutet mehr Gesamtarbeit – ein wichtiger Treiber für Muskelwachstum. Der Trend vergleicht den aktuellen Zeitraum mit dem davor.";
+"setsInfo" = "Die Sätze sind die Anzahl der Arbeitssätze, die du für diese Übung protokolliert hast – nur tatsächlich ausgeführte Sätze zählen. Genügend harte Sätze sind ein wichtiger Treiber für Kraft- und Muskelwachstum. Das Diagramm zeigt die Sätze der letzten Zeiträume; der Trend vergleicht den aktuellen Zeitraum mit dem davor.";
 
 "progressMetric" = "Fortschrittsmetrik";
 
@@ -900,7 +878,7 @@
 "thisWorkout" = "Dieses Workout";
 "firstTimeForThisWorkout" = "Erstes Mal bei diesem Workout — künftige Einheiten werden damit verglichen.";
 "workoutPRInfo" = "Ein persönlicher Rekord bedeutet: Ein Satz in diesem Workout hat dein bestes Gewicht, deine meisten Wiederholungen oder dein bestes geschätztes 1RM aus allen früheren Workouts übertroffen — auch wenn du ihn inzwischen überboten hast.";
-"workoutTrendInfo" = "Der Trend jeder Übung vergleicht den Bestwert dieses Workouts in ihrer Fortschrittsmetrik mit deinem Bestwert aus dem Monat davor — derselbe Vergleich wie auf den Übungs-Abzeichen unten.";
+"workoutTrendInfo" = "Der Trend jeder Übung vergleicht den Bestwert dieses Workouts in ihrer Fortschrittsmetrik mit deinem Bestwert aus den vier Wochen davor — derselbe Vergleich wie auf den Übungs-Abzeichen unten.";
 "workoutVolumeCompareInfo" = "Gesamtvolumen (Gewicht × Wiederholungen aller Sätze) im Vergleich zum letzten Mal, als du dieses Workout gemacht hast.";
 "improvedCount" = "%d verbessert";
 
@@ -920,27 +898,10 @@
 "volumePerSet" = "Volumen pro Satz";
 "workoutStatCompareSameInfo" = "Der Trend vergleicht dieses Workout mit deiner vorherigen Ausführung desselben Workouts. Die Balken zeigen die letzten Ausführungen — dieses Workout ist der hervorgehobene Balken rechts.";
 "workoutStatCompareRecentInfo" = "Dieses Workout hat keine vorherigen Ausführungen, daher vergleicht der Trend es mit dem Durchschnitt deiner letzten Workouts. Die Balken zeigen diese Workouts — dieses ist der hervorgehobene Balken rechts.";
-"workoutStatAverageInfo" = "Der Durchschnitt pro Workout im sichtbaren Zeitraum. Der Trend vergleicht ihn mit dem Zeitraum davor. Jeder Balken ist ein Workout, gefärbt nach seiner meisttrainierten Muskelgruppe; die Jahresansicht zeigt Monatsdurchschnitte.";
 "workoutVolumeAboutInfo" = "Das Volumen ist das insgesamt bewegte Gewicht eines Workouts — Gewicht × Wiederholungen, summiert über alle Sätze. Im Vergleich über Workouts hinweg zeigt es, wie viel Arbeit in deinen Einheiten steckt.";
 "workoutDurationAboutInfo" = "Die Dauer ist die Zeit vom Start eines Workouts bis zum Abschluss. Länger oder kürzer ist für sich genommen weder besser noch schlechter — zusammen mit dem Volumen zeigt sie, wie dicht dein Training ist.";
 "workoutSetsAboutInfo" = "Die Anzahl der in einem Workout erfassten Sätze — ein einfaches Maß dafür, wie viel du in einer Einheit gemacht hast, unabhängig vom Gewicht auf der Stange.";
 "workoutRepsAboutInfo" = "Alle in einem Workout erfassten Wiederholungen, summiert über alle Sätze. Zusammen mit Sätzen und Volumen beschreibt sie, wie viel Arbeit eine Einheit enthielt.";
-"avgMoreWorkoutVolumeThisMonthThanLastMonth" = "Diesen Monat mehr Volumen pro Workout als letzten Monat.";
-"avgLessWorkoutVolumeThisMonthThanLastMonth" = "Diesen Monat weniger Volumen pro Workout als letzten Monat.";
-"avgMoreWorkoutVolumeThisYearThanLastYear" = "Dieses Jahr mehr Volumen pro Workout als letztes Jahr.";
-"avgLessWorkoutVolumeThisYearThanLastYear" = "Dieses Jahr weniger Volumen pro Workout als letztes Jahr.";
-"avgLongerWorkoutsThisMonthThanLastMonth" = "Diesen Monat längere Workouts als letzten Monat.";
-"avgShorterWorkoutsThisMonthThanLastMonth" = "Diesen Monat kürzere Workouts als letzten Monat.";
-"avgLongerWorkoutsThisYearThanLastYear" = "Dieses Jahr längere Workouts als letztes Jahr.";
-"avgShorterWorkoutsThisYearThanLastYear" = "Dieses Jahr kürzere Workouts als letztes Jahr.";
-"avgMoreSetsPerWorkoutThisMonthThanLastMonth" = "Diesen Monat mehr Sätze pro Workout als letzten Monat.";
-"avgLessSetsPerWorkoutThisMonthThanLastMonth" = "Diesen Monat weniger Sätze pro Workout als letzten Monat.";
-"avgMoreSetsPerWorkoutThisYearThanLastYear" = "Dieses Jahr mehr Sätze pro Workout als letztes Jahr.";
-"avgLessSetsPerWorkoutThisYearThanLastYear" = "Dieses Jahr weniger Sätze pro Workout als letztes Jahr.";
-"avgMoreRepsPerWorkoutThisMonthThanLastMonth" = "Diesen Monat mehr Wiederholungen pro Workout als letzten Monat.";
-"avgLessRepsPerWorkoutThisMonthThanLastMonth" = "Diesen Monat weniger Wiederholungen pro Workout als letzten Monat.";
-"avgMoreRepsPerWorkoutThisYearThanLastYear" = "Dieses Jahr mehr Wiederholungen pro Workout als letztes Jahr.";
-"avgLessRepsPerWorkoutThisYearThanLastYear" = "Dieses Jahr weniger Wiederholungen pro Workout als letztes Jahr.";
 "period" = "Zeitraum";
 "weeklyGoal" = "Wochenziel";
 "weeklyGoalReached" = "Ziel erreicht";
@@ -990,7 +951,6 @@
 "rank" = "Rang";
 "muscleDetailRankCaption" = "von 8 Gruppen";
 "targetShare" = "Zielanteil";
-"weeklySets" = "Sätze pro Woche";
 "twelveWeeks" = "12 Wochen";
 "topExercises" = "Top-Übungen";
 "muscleDetailPercentOfSets" = "%d%% der Sätze";
@@ -1044,3 +1004,14 @@
 "muscleBalanceBelowTarget" = "Unter dem Ziel";
 "muscleBalanceAboveTarget" = "Über dem Ziel";
 "muscleBalanceOnTargetSection" = "Im Ziel";
+
+// Timeframe unification: shared chart ranges + per-period muscle history
+"range" = "Bereich";
+"rangeThreeMonths" = "3M";
+"rangeYear" = "1J";
+"rangeAllTime" = "Alle";
+"setsPerWeekTitle" = "Sätze pro Woche";
+"setsPerMonthTitle" = "Sätze pro Monat";
+"setsPerYearTitle" = "Sätze pro Jahr";
+"twelveMonths" = "12 Monate";
+"sixYears" = "6 Jahre";

@@ -82,23 +82,24 @@ extension Exercise {
 // MARK: - Current Best
 
 extension Exercise {
-    /// Start of the "current best" window: one month back from now.
+    /// Start of the "current best" window: four weeks (28 days) back from now — exactly the
+    /// "last 4 weeks" the UI copy promises wherever a current best is explained.
     ///
-    /// "Current best" is the app-wide term for the best value of a metric within the last month —
-    /// a measure of present capability, unlike the all-time "personal best". Whenever a value is
-    /// labeled "current best" it must come from this window. Whether the workout currently being
-    /// recorded counts is the caller's choice: the home tiles include it, while the in-workout
-    /// badge and the exercise-detail tiles exclude it — they compare against the current best, and
-    /// a baseline that moved with every entered set couldn't be one.
+    /// "Current best" is the app-wide term for the best value of a metric within the last four
+    /// weeks — a measure of present capability, unlike the all-time "personal best". Whenever a
+    /// value is labeled "current best" it must come from this window. Whether the workout currently
+    /// being recorded counts is the caller's choice: the home tiles include it, while the
+    /// in-workout badge and the exercise-detail tiles exclude it — they compare against the current
+    /// best, and a baseline that moved with every entered set couldn't be one.
     static var currentBestWindowStart: Date {
         currentBestWindowStart(endingAt: .now)
     }
 
     /// The window start anchored at an arbitrary moment — used when a finished workout's detail
-    /// tells the story of *that day*: its badges compare against the month before the workout,
-    /// not the month before now, so a later, better session can't rewrite an old trend.
+    /// tells the story of *that day*: its badges compare against the four weeks before the workout,
+    /// not the four weeks before now, so a later, better session can't rewrite an old trend.
     static func currentBestWindowStart(endingAt anchor: Date) -> Date {
-        Calendar.current.date(byAdding: .month, value: -1, to: anchor) ?? anchor
+        Calendar.current.date(byAdding: .day, value: -28, to: anchor) ?? anchor
     }
 
     /// The set holding this exercise's current best (see `currentBestWindowStart`) for `metric`,

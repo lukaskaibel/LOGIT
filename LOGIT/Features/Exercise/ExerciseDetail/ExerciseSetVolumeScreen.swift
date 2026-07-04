@@ -9,14 +9,10 @@ import Charts
 import SwiftUI
 
 struct ExerciseSetVolumeScreen: View {
-    private enum ChartGranularity {
-        case month, year
-    }
-
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
 
-    @State private var chartGranularity: ChartGranularity = .month
+    @State private var chartRange: ChartRange = .threeMonths
     @State private var chartScrollPosition: Date = .now
     @State private var selectedDate: Date?
 
@@ -24,17 +20,11 @@ struct ExerciseSetVolumeScreen: View {
         let allDailyMaxSets = allDailyMaxSetVolumeSets(in: workoutSets)
         // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
-        let bestVisibleSetVolume = bestSetVolumeInGranularity(workoutSets)
+        let bestVisibleSetVolume = bestSetVolumeInVisibleWindow(workoutSets)
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
-                    Picker("Select Chart Granularity", selection: $chartGranularity) {
-                        Text(NSLocalizedString("month", comment: ""))
-                            .tag(ChartGranularity.month)
-                        Text(NSLocalizedString("year", comment: ""))
-                            .tag(ChartGranularity.year)
-                    }
-                    .pickerStyle(.segmented)
+                    RangePicker(selection: $chartRange)
                     .padding(.vertical)
                     .padding(.horizontal)
                     MetricComparisonView(
@@ -42,7 +32,7 @@ struct ExerciseSetVolumeScreen: View {
                             label: NSLocalizedString("previousBest", comment: ""),
                             value: bestVisibleSetVolume.map(formatWeightForDisplay) ?? "––",
                             unit: WeightUnit.used.rawValue,
-                            caption: chartHeaderTitle
+                            caption: chartRange.visibleWindowDescription(from: chartScrollPosition, firstDataDate: firstDataDate)
                         ),
                         trailing: .init(
                             label: NSLocalizedString(bestAnchor?.isLapsed == true ? "lastBest" : "currentBest", comment: ""),
@@ -161,27 +151,26 @@ struct ExerciseSetVolumeScreen: View {
                             )
                         }
                     }
-                    .chartXScale(domain: xDomain(for: workoutSets))
+                    .chartXScale(domain: chartRange.xDomain(firstDataDate: firstDataDate))
                     .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeSetVolumePR(in: workoutSets)))
                     .chartScrollableAxes(.horizontal)
                     .chartScrollPosition(x: $chartScrollPosition)
                     .chartScrollTargetBehavior(
-                        .valueAligned(
-                            matching: chartGranularity == .month ? DateComponents(weekday: Calendar.current.firstWeekday) : DateComponents(month: 1, day: 1)
-                        )
+                        .valueAligned(matching: chartRange.scrollSnapComponents)
                     )
                     .chartXSelection(value: $selectedDate)
                     .chartXVisibleDomain(length: visibleChartDomainInSeconds)
                     .chartXAxis {
+                        let axisStride = chartRange.axisStride(firstDataDate: firstDataDate)
                         AxisMarks(
                             position: .bottom,
-                            values: .stride(by: chartGranularity == .month ? .weekOfYear : .month)
+                            values: .stride(by: axisStride.component, count: axisStride.count)
                         ) { value in
                             if let date = value.as(Date.self) {
                                 AxisGridLine()
                                     .foregroundStyle(Color.gray.opacity(0.5))
-                                AxisValueLabel(xAxisDateString(for: date))
-                                    .foregroundStyle(isDateNow(date, for: chartGranularity) ? Color.primary : .secondary)
+                                AxisValueLabel(chartRange.axisLabel(for: date, firstDataDate: firstDataDate))
+                                    .foregroundStyle(chartRange.isCurrentAxisMark(date, firstDataDate: firstDataDate) ? Color.primary : .secondary)
                                     .font(.caption.weight(.bold))
                             }
                         }
@@ -222,20 +211,11 @@ struct ExerciseSetVolumeScreen: View {
             }
         }
         .onAppear {
-            let firstDayOfNextWeek = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
-            chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: firstDayOfNextWeek)!
+            chartScrollPosition = chartRange.initialScrollPosition(firstDataDate: firstDataDate)
         }
-        .onChange(of: chartGranularity) {
-            // Re-initialize scroll position when switching granularity to avoid desync with visible window
-            let anchor: Date
-            switch chartGranularity {
-            case .month:
-                anchor = Calendar.current.date(byAdding: .day, value: 1, to: .now.endOfWeek)!
-            case .year:
-                // Align right edge roughly to next month for a stable yearly view
-                anchor = Calendar.current.date(byAdding: .month, value: 1, to: .now.startOfMonth)!
-            }
-            chartScrollPosition = Calendar.current.date(byAdding: .second, value: -visibleChartDomainInSeconds, to: anchor)!
+        .onChange(of: chartRange) {
+            // Re-initialize scroll position when switching ranges to avoid desync with visible window
+            chartScrollPosition = chartRange.initialScrollPosition(firstDataDate: firstDataDate)
         }
     }
 
@@ -252,54 +232,22 @@ struct ExerciseSetVolumeScreen: View {
         return maxSetsPerDay
     }
 
-    private var visibleChartDomainInSeconds: Int {
-        3600 * 24 * (chartGranularity == .month ? 35 : 365)
+    /// Earliest day with a value — anchors the scrollable domain and the All range.
+    private var firstDataDate: Date? {
+        allDailyMaxSetVolumeSets(in: workoutSets).first?.workout?.date
     }
 
-    private func xDomain(for workoutSets: [WorkoutSet]) -> some ScaleDomain {
-        let maxStartDate = Calendar.current.date(
-            byAdding: chartGranularity == .month ? .month : .year,
-            value: -1,
-            to: .now
-        )!
-        let endDate = chartGranularity == .month ? Date.now.endOfWeek : Date.now.endOfYear
-        guard let firstSetDate = allDailyMaxSetVolumeSets(in: workoutSets).first?.workout?.date, firstSetDate < maxStartDate
-        else { return maxStartDate ... endDate }
-        let startDate = chartGranularity == .month ? firstSetDate.startOfMonth : firstSetDate.startOfYear
-        return startDate ... endDate
+    private var visibleChartDomainInSeconds: Int {
+        chartRange.visibleDomainSeconds(firstDataDate: firstDataDate)
     }
+
 
     private var exerciseMuscleGroupColor: Color {
         exercise.muscleGroup?.color ?? Color.accentColor
     }
 
-    private func xAxisDateString(for date: Date) -> String {
-        switch chartGranularity {
-        case .month:
-            return date.formatted(.dateTime.day().month(.defaultDigits))
-        case .year:
-            return date.formatted(Date.FormatStyle().month(.narrow))
-        }
-    }
 
-    private func isDateNow(_ date: Date, for _: ChartGranularity) -> Bool {
-        switch chartGranularity {
-        case .month:
-            return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.weekOfYear, .yearForWeekOfYear])
-        case .year:
-            return Calendar.current.isDate(date, equalTo: .now, toGranularity: [.month, .year])
-        }
-    }
 
-    private var chartHeaderTitle: String {
-        let endDate = Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
-        switch chartGranularity {
-        case .month:
-            return "\(chartScrollPosition.isInCurrentYear ? chartScrollPosition.formatted(.dateTime.day().month()) : chartScrollPosition.formatted(.dateTime.day().month().year())) - \(endDate.isInCurrentYear ? endDate.formatted(.dateTime.day().month()) : endDate.formatted(.dateTime.day().month().year()))"
-        case .year:
-            return "\(chartScrollPosition.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
-        }
-    }
 
     private func allTimeSetVolumePR(in workoutSets: [WorkoutSet]) -> Int {
         convertWeightForDisplaying(
@@ -314,7 +262,7 @@ struct ExerciseSetVolumeScreen: View {
     /// The header's left value and the comparison baseline: the best single-set volume in the visible
     /// window *other than* the current best, falling back to the most recent day's best before the
     /// window when it holds no other value (see `exerciseOtherBestBaseline`).
-    private func bestSetVolumeInGranularity(_ workoutSets: [WorkoutSet]) -> Int? {
+    private func bestSetVolumeInVisibleWindow(_ workoutSets: [WorkoutSet]) -> Int? {
         exerciseOtherBestBaseline(
             sets: workoutSets,
             windowStart: chartScrollPosition,

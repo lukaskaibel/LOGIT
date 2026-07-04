@@ -81,6 +81,83 @@ final class StatPeriodTests: XCTestCase {
             XCTAssertFalse(period.title.isEmpty)
         }
     }
+
+    // MARK: - History depth
+
+    func testHistoryBucketCountFollowsTheAppWideRule() {
+        XCTAssertEqual(StatPeriod.week.historyBucketCount, 12)
+        XCTAssertEqual(StatPeriod.month.historyBucketCount, 12)
+        XCTAssertEqual(StatPeriod.year.historyBucketCount, 6)
+    }
+}
+
+// MARK: - ChartRange
+
+final class ChartRangeTests: XCTestCase {
+    private let calendar = Calendar.current
+
+    private func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+        components.hour = 12
+        return calendar.date(from: components)!
+    }
+
+    func testThreeMonthDomainWithoutDataStartsThreeMonthsBack() {
+        let now = date(2026, 7, 4)
+        let domain = ChartRange.threeMonths.xDomain(firstDataDate: nil, now: now)
+        XCTAssertEqual(domain.lowerBound, calendar.date(byAdding: .month, value: -3, to: now))
+        XCTAssertEqual(domain.upperBound, now.endOfWeek)
+    }
+
+    func testDomainExtendsBackToFirstDataDateStartOfMonth() {
+        let now = date(2026, 7, 4)
+        let firstData = date(2025, 11, 20)
+        let domain = ChartRange.threeMonths.xDomain(firstDataDate: firstData, now: now)
+        XCTAssertEqual(domain.lowerBound, firstData.startOfMonth)
+    }
+
+    func testYearDomainEndsAtEndOfYear() {
+        let now = date(2026, 7, 4)
+        let domain = ChartRange.year.xDomain(firstDataDate: nil, now: now)
+        XCTAssertEqual(domain.upperBound, now.endOfYear)
+    }
+
+    func testVisibleWindowLengths() {
+        XCTAssertEqual(ChartRange.threeMonths.visibleDomainSeconds(firstDataDate: nil), 3600 * 24 * 91)
+        XCTAssertEqual(ChartRange.year.visibleDomainSeconds(firstDataDate: nil), 3600 * 24 * 365)
+    }
+
+    func testAllTimeVisibleWindowEqualsDomainSpan() {
+        let now = date(2026, 7, 4)
+        let firstData = date(2022, 3, 9)
+        let domain = ChartRange.allTime.xDomain(firstDataDate: firstData, now: now)
+        let seconds = ChartRange.allTime.visibleDomainSeconds(firstDataDate: firstData, now: now)
+        XCTAssertEqual(Double(seconds), domain.upperBound.timeIntervalSince(domain.lowerBound), accuracy: 1)
+    }
+
+    func testAllTimeInitialScrollPositionIsDomainStart() {
+        let now = date(2026, 7, 4)
+        let firstData = date(2022, 3, 9)
+        let domain = ChartRange.allTime.xDomain(firstDataDate: firstData, now: now)
+        let position = ChartRange.allTime.initialScrollPosition(firstDataDate: firstData, now: now)
+        XCTAssertEqual(position.timeIntervalSince(domain.lowerBound), 0, accuracy: 1)
+    }
+
+    func testAllTimeAxisStrideScalesWithSpan() {
+        let now = date(2026, 7, 4)
+        XCTAssertEqual(ChartRange.allTime.axisStride(firstDataDate: nil).component, .month)
+        // ~4 years of data → yearly marks.
+        XCTAssertEqual(ChartRange.allTime.axisStride(firstDataDate: calendar.date(byAdding: .year, value: -4, to: now)).component, .year)
+    }
+
+    func testTitlesAreNonEmpty() {
+        for range in ChartRange.allCases {
+            XCTAssertFalse(range.title.isEmpty)
+        }
+    }
 }
 
 // MARK: - MuscleTargetSplit

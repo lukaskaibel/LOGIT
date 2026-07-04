@@ -57,7 +57,7 @@ struct SummaryStatScreen: View {
     private var header: some View {
         HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(periodLabel)
+                Text(period.currentPeriodLabel)
                     .font(.footnote)
                     .fontWeight(.semibold)
                     .textCase(.uppercase)
@@ -101,7 +101,7 @@ struct SummaryStatScreen: View {
         return Chart {
             ForEach(buckets) { bucket in
                 BarMark(
-                    x: .value("Period", bucket.date, unit: barUnit),
+                    x: .value("Period", bucket.date, unit: period.calendarComponent),
                     y: .value(metric.title, bucket.value),
                     width: .ratio(0.6)
                 )
@@ -123,7 +123,7 @@ struct SummaryStatScreen: View {
                     // Styling lives on the Text inside the label closure — hierarchical styles on the
                     // AxisMark itself resolve against the chart's accent on iOS 26 (labels turned lime).
                     AxisValueLabel {
-                        Text(axisLabel(for: date))
+                        Text(period.axisLabel(for: date))
                             .font(.caption.weight(isCurrent ? .bold : .semibold))
                             .foregroundStyle(isCurrent ? Color.label : Color.secondaryLabel)
                     }
@@ -152,7 +152,7 @@ struct SummaryStatScreen: View {
     }
 
     private var buckets: [Bucket] {
-        let count = chartBucketCount
+        let count = period.historyBucketCount
         return (0 ..< count).map { index in
             let periodsAgo = count - 1 - index
             let range = period.range(periodsAgo: periodsAgo)
@@ -163,48 +163,6 @@ struct SummaryStatScreen: View {
                 value: metric.displayValue(fromRaw: raw),
                 isCurrent: periodsAgo == 0
             )
-        }
-    }
-
-    private var chartBucketCount: Int {
-        switch period {
-        case .week: return 8
-        case .month: return 12
-        case .year: return 6
-        }
-    }
-
-    // MARK: - Formatting
-
-    private var periodLabel: String {
-        switch period {
-        case .week: return NSLocalizedString("thisWeek", comment: "")
-        case .month: return NSLocalizedString("thisMonth", comment: "")
-        case .year: return NSLocalizedString("thisYear", comment: "")
-        }
-    }
-
-    private var barUnit: Calendar.Component {
-        switch period {
-        case .week: return .weekOfYear
-        case .month: return .month
-        case .year: return .year
-        }
-    }
-
-    private var strideComponent: Calendar.Component {
-        switch period {
-        case .week: return .weekOfYear
-        case .month: return .month
-        case .year: return .year
-        }
-    }
-
-    private func axisLabel(for date: Date) -> String {
-        switch period {
-        case .week: return date.formatted(.dateTime.day().month(.abbreviated))
-        case .month: return date.formatted(.dateTime.month(.narrow))
-        case .year: return date.formatted(.dateTime.year())
         }
     }
 }

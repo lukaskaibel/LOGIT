@@ -230,9 +230,8 @@ struct HomeScreen: View {
                         MuscleGroupsOverviewScreen()
                     case .muscleTargetSplit:
                         MuscleTargetSplitScreen()
-                    case let .muscleGroupDetail(group):
-                        MuscleGroupDetailScreen(muscleGroup: group)
-                    case .overallSets: OverallSetsScreen(workouts: workouts)
+                    case let .muscleGroupDetail(group, initialPeriod):
+                        MuscleGroupDetailScreen(muscleGroup: group, initialPeriod: initialPeriod)
                     case let .summaryStat(metric):
                         SummaryStatScreen(
                             metric: metric,
@@ -249,7 +248,6 @@ struct HomeScreen: View {
                     case let .template(template):
                         TemplateDetailScreen(template: template)
                     case .templateList: TemplateListScreen()
-                    case .volume: VolumeScreen(workoutSets: workouts.flatMap(\.sets))
                     case let .workout(workout):
                         WorkoutDetailScreen(
                             workout: workout,

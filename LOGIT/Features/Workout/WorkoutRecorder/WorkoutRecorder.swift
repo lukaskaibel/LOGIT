@@ -87,11 +87,13 @@ final class WorkoutRecorder: ObservableObject {
 
         workout.isCurrentWorkout = false
         objectWillChange.send()
-        // Use a local copy of the workout for the background operations to avoid race conditions
+        // Use a local copy of the workout for the deferred cleanup to avoid race conditions
         let workoutCopy = workout
         self.workout = nil
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        // The context is main-queue-confined, so the workout must only be read and mutated
+        // on its queue — never on a global background queue.
+        database.context.perform { [weak self] in
             guard let database = self?.database else {
                 Self.logger.error("Failed to clean up workout after finish: self already uninitialized")
                 return
@@ -112,14 +114,14 @@ final class WorkoutRecorder: ObservableObject {
 
             workoutCopy.sets.filter { !$0.hasEntry }.forEach { database.delete($0) }
 
-            // This refresh is needed, as otherwise workoutCopy.isEmpty will still put out false
-            // even if all the WorkoutSetGroups have been deleted, as the workoutCopy object has not refreshed yet
-
-            if workoutCopy.isEmpty {
-                database.delete(workoutCopy, saveContext: true)
+            // database.delete only enqueues the deletions on the context's queue, so evaluate
+            // isEmpty in a follow-up block that runs after they have been processed.
+            database.context.perform {
+                if workoutCopy.isEmpty {
+                    database.delete(workoutCopy, saveContext: true)
+                }
+                database.save()
             }
-
-            database.save()
         }
     }
 
@@ -135,7 +137,8 @@ final class WorkoutRecorder: ObservableObject {
         let workoutCopy = workout
         self.workout = nil
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        // See saveWorkout: the workout must only be accessed on the context's queue.
+        database.context.perform { [weak self] in
             guard let database = self?.database else {
                 Self.logger.error("Failed to discard workout: self already uninitialized")
                 return

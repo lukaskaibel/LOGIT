@@ -45,7 +45,8 @@ struct PinnedExercisesEmptyState: View {
 
 /// The measurements echo of the pinned teaser — two dimmed sample watchlist rows in a single card
 /// (the same dimming as the pinned tiles) behind a "Track your measurements" call-to-action, so the
-/// two sections read as one family.
+/// two sections read as one family. The samples are the real watchlist row rendered with made-up
+/// values, so they always match the current row design.
 struct MeasurementsEmptyState: View {
     @EnvironmentObject private var purchaseManager: PurchaseManager
     let onAdd: () -> Void
@@ -54,9 +55,9 @@ struct MeasurementsEmptyState: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                ghostRow(icon: "scalemass", name: NSLocalizedString("bodyweight", comment: ""), value: "78.4", unit: WeightUnit.used.rawValue, points: [0.75, 0.55, 0.6, 0.4, 0.45, 0.3])
+                SampleMeasurementRow(type: .bodyweight, values: [79.8, 79.2, 79.3, 78.7, 78.9, 78.4])
                 Divider()
-                ghostRow(icon: "percentage", name: NSLocalizedString("bodyFatPercentage", comment: ""), value: "14.2", unit: "%", points: [0.85, 0.7, 0.6, 0.5, 0.4, 0.35])
+                SampleMeasurementRow(type: .bodyFatPercentage, values: [15.2, 14.9, 14.7, 14.5, 14.3, 14.2])
             }
             .padding(.horizontal, CELL_PADDING)
             .tileStyle()
@@ -83,29 +84,29 @@ struct MeasurementsEmptyState: View {
             NavigationStack { UpgradeToProScreen() }
         }
     }
+}
 
-    private func ghostRow(icon: String, name: String, value: String, unit: String, points: [CGFloat]) -> some View {
-        HStack(spacing: 11) {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .frame(width: 22)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(name)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                Text(NSLocalizedString("current", comment: ""))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 8)
-            GhostTrendLine(points: points, color: .secondary)
-                .frame(width: 50, height: 22)
-            UnitView(value: value, unit: unit, unitColor: .secondaryLabel)
-                .foregroundStyle(Color.label)
+/// A dimmed sample of a measurement watchlist row: the real `MeasurementWatchlistRowContent` with
+/// the real tile sparkline and change pill, rendered from made-up values — deliberately not a
+/// hand-drawn replica, so a row redesign can never leave this preview showing the old look. The
+/// real type supplies the icon, title, and unit; only the numbers are fake.
+private struct SampleMeasurementRow: View {
+    let type: MeasurementEntryType
+    /// Made-up measurement values, oldest → newest; the last one is the "current" value the row shows.
+    let values: [Double]
+
+    var body: some View {
+        MeasurementWatchlistRowContent(measurementType: type, points: samplePoints)
+    }
+
+    /// The values on real dates — one point a week, newest today — matching the cadence of a real
+    /// weekly measurement habit, so the sparkline plots like a real row's.
+    private var samplePoints: [TileSparklinePoint] {
+        values.enumerated().map { index, value in
+            let daysAgo = (values.count - 1 - index) * 7
+            let date = Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now) ?? .now
+            return TileSparklinePoint(date: date, value: value)
         }
-        .padding(.vertical, 11)
     }
 }
 
@@ -162,7 +163,8 @@ private struct GhostExerciseTile: View {
     }
 }
 
-/// A simple rounded-cap line through normalized 0…1 points — the sample sparkline on both empty states.
+/// A simple rounded-cap line through normalized 0…1 points — the sample sparkline on the
+/// pinned-exercises empty state's ghost tiles.
 private struct GhostTrendLine: View {
     let points: [CGFloat]
     let color: Color

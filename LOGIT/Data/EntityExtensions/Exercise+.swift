@@ -45,13 +45,7 @@ extension Exercise {
     }
 
     var setGroups: [WorkoutSetGroup] {
-        return (setGroupOrder ?? .emptyList)
-            .compactMap { id in
-                (setGroups_?.allObjects as? [WorkoutSetGroup])?
-                    .first { setGroup in
-                        setGroup.id == id
-                    }
-            }
+        resolvedOrder(of: setGroups_, by: setGroupOrder)
     }
 
     @objc var firstLetterOfName: String {
@@ -59,14 +53,7 @@ extension Exercise {
     }
 
     var templateSetGroups: [TemplateSetGroup] {
-        return (templateSetGroupOrder ?? .emptyList)
-            .compactMap { id in
-                (templateSetGroups_?.allObjects as? [TemplateSetGroup])?
-                    .first {
-                        templateSetGroup in
-                        templateSetGroup.id == id
-                    }
-            }
+        resolvedOrder(of: templateSetGroups_, by: templateSetGroupOrder)
     }
 
     var sets: [WorkoutSet] {

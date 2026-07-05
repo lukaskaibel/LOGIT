@@ -18,8 +18,7 @@ public extension WorkoutSetGroup {
 
     internal var sets: [WorkoutSet] {
         get {
-            return (setOrder ?? .emptyList)
-                .compactMap { id in (sets_?.allObjects as? [WorkoutSet])?.first { $0.id == id } }
+            resolvedOrder(of: sets_, by: setOrder)
         }
         set {
             setOrder = newValue.map { $0.id! }
@@ -37,8 +36,7 @@ public extension WorkoutSetGroup {
 
     private var exercises: [Exercise] {
         get {
-            return (exerciseOrder ?? .emptyList)
-                .compactMap { id in (exercises_?.allObjects as? [Exercise])?.first { $0.id == id } }
+            resolvedOrder(of: exercises_, by: exerciseOrder)
         }
         set {
             exerciseOrder = newValue.map { $0.id! }

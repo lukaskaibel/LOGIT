@@ -24,6 +24,37 @@ extension Workout {
     }
 }
 
+// MARK: - Ordered Relationship Resolution
+
+/// Common shape of every entity that lives in an ordered to-many
+/// relationship: the id its parent's persisted order list refers to.
+protocol UUIDOrderable: NSObject {
+    var id: UUID? { get }
+}
+
+extension WorkoutSetGroup: UUIDOrderable {}
+extension WorkoutSet: UUIDOrderable {}
+extension Exercise: UUIDOrderable {}
+extension TemplateSetGroup: UUIDOrderable {}
+extension TemplateSet: UUIDOrderable {}
+
+/// Resolves a parent's persisted id-order list against its unordered to-many
+/// relationship in linear time. The straightforward per-id
+/// `allObjects.first { $0.id == id }` lookup is quadratic — it bridges the
+/// NSSet to an array and scans it once per id — which made every read of an
+/// ordered relationship a hot spot: the workout recorder walks these
+/// relationships on each UI update, and exercises accumulate hundreds of set
+/// groups over time.
+func resolvedOrder<Entity: UUIDOrderable>(of members: NSSet?, by order: [UUID]?) -> [Entity] {
+    guard let order, !order.isEmpty, let members, members.count > 0 else { return [] }
+    var byId = [UUID: Entity](minimumCapacity: members.count)
+    for case let member as Entity in members {
+        guard let id = member.id, byId[id] == nil else { continue }
+        byId[id] = member
+    }
+    return order.compactMap { byId[$0] }
+}
+
 // MARK: - Workout Extension
 
 extension Workout {
@@ -41,13 +72,7 @@ extension Workout {
 
     var setGroups: [WorkoutSetGroup] {
         get {
-            return (setGroupOrder ?? .emptyList)
-                .compactMap { id in
-                    (setGroups_?.allObjects as? [WorkoutSetGroup])?
-                        .first { setGroup in
-                            setGroup.id == id
-                        }
-                }
+            resolvedOrder(of: setGroups_, by: setGroupOrder)
         }
         set {
             setGroupOrder = newValue.map { $0.id! }

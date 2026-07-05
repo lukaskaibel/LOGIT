@@ -39,27 +39,29 @@ extension WorkoutRecorderScreen {
                             )
                         }
                     }
+                    let previousIndex = previousIntegerFieldIndex()
+                    let nextIndex = nextIntegerFieldIndex()
                     HStack(spacing: 0) {
                         Button {
-                            focusedIntegerFieldIndex = previousIntegerFieldIndex()
+                            focusedIntegerFieldIndex = previousIndex
                         } label: {
                             Image(systemName: "chevron.up")
                                 .foregroundColor(
-                                    previousIntegerFieldIndex() == nil ? Color.placeholder : .label
+                                    previousIndex == nil ? Color.placeholder : .label
                                 )
                                 .keyboardToolbarButtonStyle()
                         }
-                        .disabled(previousIntegerFieldIndex() == nil)
+                        .disabled(previousIndex == nil)
                         Button {
-                            focusedIntegerFieldIndex = nextIntegerFieldIndex()
+                            focusedIntegerFieldIndex = nextIndex
                         } label: {
                             Image(systemName: "chevron.down")
                                 .foregroundColor(
-                                    nextIntegerFieldIndex() == nil ? Color.placeholder : .label
+                                    nextIndex == nil ? Color.placeholder : .label
                                 )
                                 .keyboardToolbarButtonStyle()
                         }
-                        .disabled(nextIntegerFieldIndex() == nil)
+                        .disabled(nextIndex == nil)
                     }
                 }
                 Button {

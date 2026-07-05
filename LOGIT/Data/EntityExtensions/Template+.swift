@@ -82,13 +82,7 @@ extension Template {
 
     var setGroups: [TemplateSetGroup] {
         get {
-            return (templateSetGroupOrder ?? .emptyList)
-                .compactMap { id in
-                    (setGroups_?.allObjects as? [TemplateSetGroup])?
-                        .first { templateSetGroup in
-                            templateSetGroup.id == id
-                        }
-                }
+            resolvedOrder(of: setGroups_, by: templateSetGroupOrder)
         }
         set {
             templateSetGroupOrder = newValue.map { $0.id! }

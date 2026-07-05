@@ -216,7 +216,14 @@ struct WorkoutEditorScreen: View {
                             Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")
                         }
                         Button {
-                            isEditingStartEndDate = true
+                            // Defer presenting to the next runloop turn so the Menu's dismissal and the
+                            // sheet's presentation land in separate transactions. Flipping this flag
+                            // synchronously inside the Menu action entangles the two, and because the
+                            // date editor is a sheet-on-sheet, the entanglement makes it bounce in and
+                            // out several times before settling.
+                            DispatchQueue.main.async {
+                                isEditingStartEndDate = true
+                            }
                         } label: {
                             Label(NSLocalizedString("editDateTime", comment: ""), systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
                         }

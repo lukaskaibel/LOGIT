@@ -681,6 +681,129 @@ final class WorkoutRecorderTests: XCTestCase {
         XCTAssertEqual(restBehavior, .timer(120))
     }
 
+    // MARK: - Save / Discard Workout
+
+    /// saveWorkout and discardWorkout run their cleanup asynchronously on the context's
+    /// queue, and those blocks enqueue follow-up blocks of their own. Each round waits for
+    /// one sentinel block, so `depth` rounds drain `depth` levels of nested enqueues.
+    private func drainContextQueue(depth: Int = 5) {
+        for _ in 0..<depth {
+            let drained = expectation(description: "context queue drained")
+            database.context.perform { drained.fulfill() }
+            wait(for: [drained], timeout: 2)
+        }
+    }
+
+    private func fetchWorkout(with id: UUID) -> Workout? {
+        (database.fetch(
+            Workout.self,
+            predicate: NSPredicate(format: "id == %@", id as CVarArg)
+        ) as? [Workout])?.first
+    }
+
+    func testSaveWorkoutPersistsWorkoutAndDeletesSetsWithoutEntries() {
+        workoutRecorder.startWorkout()
+        guard let workoutID = workoutRecorder.workout?.id else {
+            XCTFail("Expected started workout with id")
+            return
+        }
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: database.newExercise(name: "Bench Press", muscleGroup: .chest),
+            workout: workoutRecorder.workout
+        )
+        database.newStandardSet(repetitions: 12, weight: 60000, setGroup: setGroup)
+        database.newStandardSet(setGroup: setGroup)
+
+        workoutRecorder.saveWorkout()
+
+        XCTAssertNil(workoutRecorder.workout)
+
+        drainContextQueue()
+
+        guard let workout = fetchWorkout(with: workoutID) else {
+            XCTFail("Expected workout to be persisted")
+            return
+        }
+        XCTAssertFalse(workout.isCurrentWorkout)
+        XCTAssertFalse(workout.name?.isEmpty ?? true)
+        XCTAssertNotNil(workout.endDate)
+        XCTAssertEqual(workout.sets.count, 1)
+        XCTAssertTrue(workout.sets.allSatisfy { $0.hasEntry })
+    }
+
+    func testSaveWorkoutDeletesWorkoutWhenNoSetHasEntries() {
+        workoutRecorder.startWorkout()
+        guard let workoutID = workoutRecorder.workout?.id else {
+            XCTFail("Expected started workout with id")
+            return
+        }
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workoutRecorder.workout
+        )
+        database.newStandardSet(setGroup: setGroup)
+
+        workoutRecorder.saveWorkout()
+        drainContextQueue()
+
+        XCTAssertNil(workoutRecorder.workout)
+        XCTAssertNil(fetchWorkout(with: workoutID))
+    }
+
+    func testSaveWorkoutConvertsSuperSetsWithoutSecondaryExerciseToStandardSets() {
+        workoutRecorder.startWorkout()
+        guard let workoutID = workoutRecorder.workout?.id else {
+            XCTFail("Expected started workout with id")
+            return
+        }
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workoutRecorder.workout
+        )
+        database.newSuperSet(
+            repetitionsFirstExercise: 10,
+            weightFirstExercise: 50000,
+            setGroup: setGroup
+        )
+
+        workoutRecorder.saveWorkout()
+        drainContextQueue()
+
+        guard let workout = fetchWorkout(with: workoutID) else {
+            XCTFail("Expected workout to be persisted")
+            return
+        }
+        XCTAssertEqual(workout.sets.count, 1)
+        guard let standardSet = workout.sets.first as? StandardSet else {
+            XCTFail("Expected super set to be converted to a standard set")
+            return
+        }
+        XCTAssertEqual(standardSet.repetitions, 10)
+        XCTAssertEqual(standardSet.weight, 50000)
+    }
+
+    func testDiscardWorkoutDeletesWorkout() {
+        workoutRecorder.startWorkout()
+        guard let workoutID = workoutRecorder.workout?.id else {
+            XCTFail("Expected started workout with id")
+            return
+        }
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workoutRecorder.workout
+        )
+        database.newStandardSet(repetitions: 10, weight: 50000, setGroup: setGroup)
+
+        workoutRecorder.discardWorkout()
+
+        XCTAssertNil(workoutRecorder.workout)
+
+        drainContextQueue()
+
+        XCTAssertNil(fetchWorkout(with: workoutID))
+    }
+
 }
 
 final class ChronographTests: XCTestCase {

@@ -24,14 +24,20 @@ public class Database: ObservableObject {
 
     // MARK: - Init
 
-    init(isPreview: Bool = false) {
+    /// - Parameters:
+    ///   - isPreview: seeds the curated preview dataset (SwiftUI previews, fastlane fixtures).
+    ///   - inMemory: backs the store with `/dev/null` instead of the on-disk SQLite file.
+    ///     Defaults to `isPreview`; pass `true` on its own for an unseeded throwaway store
+    ///     (launch scenarios, see `TestScenario`).
+    init(isPreview: Bool = false, inMemory: Bool? = nil) {
         self.isPreview = isPreview
+        let usesInMemoryStore = inMemory ?? isPreview
         container = NSPersistentCloudKitContainer(name: "LOGIT")
         let description = container.persistentStoreDescriptions.first
         description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
         description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
 
-        if isPreview {
+        if usesInMemoryStore {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
         loadStores()

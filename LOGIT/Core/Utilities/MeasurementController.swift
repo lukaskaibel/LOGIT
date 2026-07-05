@@ -60,7 +60,8 @@ class MeasurementEntryController: ObservableObject {
 
     // MARK: - Setup Controller for Preview
 
-    private func setupPreviewMeasurementEntries() {
+    // Internal so scenario launches can seed measurements explicitly (see TestScenario).
+    func setupPreviewMeasurementEntries() {
         // Starting weight in grams (for example, 100,000 grams or 100 kg)
         var currentWeight = 100
 

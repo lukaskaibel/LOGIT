@@ -8,7 +8,10 @@
 import Foundation
 
 extension Database {
-    func setupPreviewDatabase() {
+    /// Seeds the curated preview dataset. `includeCurrentWorkout: false` skips the
+    /// in-progress workout (and with it the recorder mini bar) — used by the `many`
+    /// launch scenario, while previews and fastlane fixtures keep the default.
+    func setupPreviewDatabase(includeCurrentWorkout: Bool = true) {
         let database = self
 
         (database.fetch(Workout.self) as! [Workout]).forEach { database.delete($0) }
@@ -335,41 +338,43 @@ extension Database {
         // We mark the first few sets of each exercise as "entered" (non-zero
         // reps + weight) so the screenshot shows completed work in the log,
         // and leave later sets empty so the "what's next" state is obvious.
-        let inProgressStart = Calendar.current.date(byAdding: .minute, value: -23, to: .now)!
-        let currentPushDay = database.newWorkout(name: NSLocalizedString("previewPushDay", comment: ""), date: inProgressStart)
-        currentPushDay.isCurrentWorkout = true
+        if includeCurrentWorkout {
+            let inProgressStart = Calendar.current.date(byAdding: .minute, value: -23, to: .now)!
+            let currentPushDay = database.newWorkout(name: NSLocalizedString("previewPushDay", comment: ""), date: inProgressStart)
+            currentPushDay.isCurrentWorkout = true
 
-        // Ordering matters for the screenshot: the recorder scrolls its set
-        // list to the bottom on appear, so we put the exercise with the most
-        // filled-in sets (Benchpress) LAST so it's fully visible when the
-        // capture test fires.
-        let currentOhpGroup = database.newWorkoutSetGroup(
-            createFirstSetAutomatically: false,
-            exercise: overheadPress,
-            workout: currentPushDay
-        )
-        database.newStandardSet(repetitions: 8, weight: 45000, setGroup: currentOhpGroup)
-        database.newStandardSet(repetitions: 8, weight: 45000, setGroup: currentOhpGroup)
-        database.newStandardSet(repetitions: 0, weight: 0, setGroup: currentOhpGroup)
+            // Ordering matters for the screenshot: the recorder scrolls its set
+            // list to the bottom on appear, so we put the exercise with the most
+            // filled-in sets (Benchpress) LAST so it's fully visible when the
+            // capture test fires.
+            let currentOhpGroup = database.newWorkoutSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: overheadPress,
+                workout: currentPushDay
+            )
+            database.newStandardSet(repetitions: 8, weight: 45000, setGroup: currentOhpGroup)
+            database.newStandardSet(repetitions: 8, weight: 45000, setGroup: currentOhpGroup)
+            database.newStandardSet(repetitions: 0, weight: 0, setGroup: currentOhpGroup)
 
-        let currentInclineGroup = database.newWorkoutSetGroup(
-            createFirstSetAutomatically: false,
-            exercise: inclinedBenchpress,
-            workout: currentPushDay
-        )
-        database.newStandardSet(repetitions: 10, weight: 55000, setGroup: currentInclineGroup)
-        database.newStandardSet(repetitions: 10, weight: 55000, setGroup: currentInclineGroup)
-        database.newStandardSet(repetitions: 9, weight: 55000, setGroup: currentInclineGroup)
+            let currentInclineGroup = database.newWorkoutSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: inclinedBenchpress,
+                workout: currentPushDay
+            )
+            database.newStandardSet(repetitions: 10, weight: 55000, setGroup: currentInclineGroup)
+            database.newStandardSet(repetitions: 10, weight: 55000, setGroup: currentInclineGroup)
+            database.newStandardSet(repetitions: 9, weight: 55000, setGroup: currentInclineGroup)
 
-        let currentBenchGroup = database.newWorkoutSetGroup(
-            createFirstSetAutomatically: false,
-            exercise: benchpress,
-            workout: currentPushDay
-        )
-        database.newStandardSet(repetitions: 8, weight: 70000, setGroup: currentBenchGroup)
-        database.newStandardSet(repetitions: 8, weight: 70000, setGroup: currentBenchGroup)
-        database.newStandardSet(repetitions: 7, weight: 70000, setGroup: currentBenchGroup)
-        database.newStandardSet(repetitions: 0, weight: 0, setGroup: currentBenchGroup)
+            let currentBenchGroup = database.newWorkoutSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: benchpress,
+                workout: currentPushDay
+            )
+            database.newStandardSet(repetitions: 8, weight: 70000, setGroup: currentBenchGroup)
+            database.newStandardSet(repetitions: 8, weight: 70000, setGroup: currentBenchGroup)
+            database.newStandardSet(repetitions: 7, weight: 70000, setGroup: currentBenchGroup)
+            database.newStandardSet(repetitions: 0, weight: 0, setGroup: currentBenchGroup)
+        }
 
         // MARK: Completed NSLocalizedString("previewArmDay", comment: "") workout with superset + drop set
         //

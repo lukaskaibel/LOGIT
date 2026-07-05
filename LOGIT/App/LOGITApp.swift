@@ -53,19 +53,40 @@ struct LOGIT: App {
         #if DEBUG
         DemoWorkoutSeeder.prepareUserDefaultsIfNeeded()
         #endif
+        TestScenario.active?.prepareUserDefaults()
 
         let database: Database
         if ScreenshotFixtures.isEnabled {
             // Fastlane snapshot run: use the seeded in-memory preview store so
             // every captured screen shows the same curated, photogenic data.
             database = Database(isPreview: true)
+        } else if let scenario = TestScenario.active {
+            // Scenario launch (-SCENARIO empty|one|many): fresh in-memory
+            // store seeded for one critical data state; the real store and
+            // defaults stay untouched.
+            database = Database(inMemory: true)
+            scenario.seedAtLaunch(into: database)
         } else {
             database = Database()
         }
 
+        let measurementController = MeasurementEntryController(database: database)
+        TestScenario.active?.seedMeasurements(using: measurementController)
+
+        let defaultExerciseService = DefaultExerciseService(database: database)
+        let defaultTemplateService = DefaultTemplateService(database: database)
+        if let scenario = TestScenario.active {
+            // Scenario stores are ephemeral: import the default content and
+            // seed synchronously so the very first frame already shows the
+            // final state (the `.task` import would race the initial render).
+            defaultExerciseService.loadDefaultExercisesIfNeeded()
+            defaultTemplateService.loadDefaultTemplatesIfNeeded()
+            scenario.seedAfterDefaultContentLoaded(database: database)
+        }
+
         _database = StateObject(wrappedValue: database)
         _templateService = StateObject(wrappedValue: TemplateService(database: database))
-        _measurementController = StateObject(wrappedValue: MeasurementEntryController(database: database))
+        _measurementController = StateObject(wrappedValue: measurementController)
         let workoutRecorder = WorkoutRecorder(database: database)
         _workoutRecorder = StateObject(wrappedValue: workoutRecorder)
         let chronograph = Chronograph()
@@ -79,8 +100,8 @@ struct LOGIT: App {
         )
         _muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
         _homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
-        _defaultExerciseService = StateObject(wrappedValue: DefaultExerciseService(database: database))
-        _defaultTemplateService = StateObject(wrappedValue: DefaultTemplateService(database: database))
+        _defaultExerciseService = StateObject(wrappedValue: defaultExerciseService)
+        _defaultTemplateService = StateObject(wrappedValue: defaultTemplateService)
         _exerciseSuggestionService = StateObject(wrappedValue: ExerciseSuggestionService(database: database))
 
         UserDefaults.standard.register(defaults: [
@@ -165,11 +186,14 @@ struct LOGIT: App {
                     if !setupDone {
                         isShowingWelcome = true
                     }
-                    defaultExerciseService.loadDefaultExercisesIfNeeded()
-                    // Skipped for fastlane screenshot runs so the curated fixture data stays
-                    // exactly what the marketing screenshots expect.
-                    if !ScreenshotFixtures.isEnabled {
-                        defaultTemplateService.loadDefaultTemplatesIfNeeded()
+                    // Scenario launches already imported default content in init.
+                    if TestScenario.active == nil {
+                        defaultExerciseService.loadDefaultExercisesIfNeeded()
+                        // Skipped for fastlane screenshot runs so the curated fixture data stays
+                        // exactly what the marketing screenshots expect.
+                        if !ScreenshotFixtures.isEnabled {
+                            defaultTemplateService.loadDefaultTemplatesIfNeeded()
+                        }
                     }
                     #if DEBUG
                     DemoWorkoutSeeder.seedIfRequested(database: database)

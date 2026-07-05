@@ -1,4 +1,71 @@
-If you are making UI/UX changes, please verify the design in the simulator!
+# UI verification: scenario matrix (mandatory for UI changes)
+
+Every user-visible UI change must be verified in the simulator across the
+app's critical data states, and the screenshots must be shown to the user in
+the final response (clickable file paths per scenario; for larger matrices
+also render an HTML contact sheet so the states can be compared side by side).
+Point out any scenario where the change looks wrong or degenerate.
+
+The states, all driven by launch arguments (DEBUG builds only, implemented in
+`LOGIT/App/TestScenarios.swift`):
+
+| State | Launch arguments |
+| --- | --- |
+| Empty (brand-new user, 0 workouts, no goal) | `-SCENARIO empty` |
+| One workout (single data points, fresh trends) | `-SCENARIO one` |
+| Many workouts (long-time user, rich history) | `-SCENARIO many` |
+| Free tier (Pro locked) | add `-UITEST_FORCE_FREE` to any scenario |
+
+Standard matrix for a change: **empty, one, many (Pro implied on the
+simulator) + the free variant of the most relevant scenario.** If the change
+touches a Pro-gated feature, always show Pro vs. free side by side.
+
+How scenarios work (so you don't fight them):
+
+- A scenario boots a **fresh in-memory store** seeded for that state plus
+  session-only UserDefaults overrides in the argument domain. Nothing
+  persists, every launch is identical, and the simulator's real store and
+  defaults are untouched. Flip side: overridden keys (`setupDone`,
+  `weightUnit`, `workoutPerWeekTarget`, `pinnedExercises`,
+  `pinnedMeasurements`, `muscleTargetSplit`, default-content version keys)
+  read as pinned for the whole session, so tests/interactions that must
+  *change* one of those keys should launch without the scenario instead.
+- `many` is the curated preview dataset **without** the in-progress workout.
+  Use `-UITEST_FIXTURES 1` when the mid-workout state (recorder, mini bar)
+  is itself under test.
+- Pro is force-unlocked in DEBUG simulator builds; `-UITEST_FORCE_FREE` is
+  the only way to see locked/teaser states.
+
+Capturing the matrix (agents; user is usually away — never wait for manual
+checks):
+
+1. Run the standing suite `LOGITUITests/ScenarioScreenshots.swift` — it walks
+   the four tab roots per scenario and attaches screenshots:
+
+   ```
+   xcodebuild test -workspace LOGIT.xcworkspace -scheme LOGITScreenshots \
+     -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.4' \
+     -only-testing:LOGITUITests/ScenarioScreenshots \
+     -resultBundlePath /tmp/scenarios.xcresult
+   xcrun xcresulttool export attachments --path /tmp/scenarios.xcresult \
+     --output-path /tmp/scenario-shots
+   ```
+
+   Use the **iOS 26.4** simulator runtime — the 26.0 runner dies
+   nondeterministically. To capture only the states relevant to a small
+   change, narrow further, e.g.
+   `-only-testing:LOGITUITests/ScenarioScreenshots/testEmptyScenario`.
+2. If the changed screen is not a tab root, temporarily add a test method to
+   `ScenarioScreenshots.swift` that uses `launchApp(scenario:)` and navigates
+   to it in each relevant scenario (one launch per test method — relaunching
+   within a method kills the iOS 26 test runner). Remove the temp method
+   afterwards.
+3. Read the exported PNGs to verify the change yourself before showing them.
+
+For manual testing there are shared schemes with the arguments preconfigured:
+**LOGIT Empty / LOGIT One Workout / LOGIT Many Workouts** (each also carries a
+disabled `-UITEST_FORCE_FREE` toggle — tick it in Edit Scheme for the free
+tier). The plain LOGIT scheme keeps using the real on-disk store.
 
 # App Store automation (Fastlane)
 

@@ -20,6 +20,7 @@ struct WorkoutSetGroupList: View {
     var reduceShadow: Bool = false
     var showDetailAsSheet: Bool = false
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
+    var onReorderSetGroups: (() -> Void)? = nil
     var onTapPreviousSet: ((Exercise) -> Void)? = nil
     var onTapExerciseName: ((Exercise) -> Void)? = nil
 
@@ -40,6 +41,7 @@ struct WorkoutSetGroupList: View {
                         supplementaryText: nil,
                         showDetailAsSheet: showDetailAsSheet,
                         onTapRestDuration: onTapRestDuration,
+                        onReorderSetGroups: onReorderSetGroups,
                         onTapPreviousSet: onTapPreviousSet,
                         onTapExerciseName: onTapExerciseName
                     )

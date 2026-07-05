@@ -104,6 +104,17 @@ struct WorkoutEditorScreen: View {
                                 canReorder: true,
                                 reduceShadow: true,
                                 showDetailAsSheet: true,
+                                // Defer the flag to the next runloop turn so the set-group Menu's
+                                // dismissal and the reorder sheet's presentation land in separate
+                                // transactions — flipping it synchronously inside the Menu action
+                                // entangles the two and, because the reorder sheet is a sheet-on-sheet,
+                                // the entanglement keeps it from ever presenting (same reason as the
+                                // editDateTime button below).
+                                onReorderSetGroups: {
+                                    DispatchQueue.main.async {
+                                        isShowingReorderSheet = true
+                                    }
+                                },
                                 onTapPreviousSet: { exerciseForDetailSheet = $0 }
                             )
                             .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? (UIScreen.current?.bounds.height ?? 0) * 0.5 : BOTTOM_SHEET_SMALL)
@@ -286,8 +297,20 @@ struct WorkoutEditorScreen: View {
                             Spacer()
                             Button {
                                 focusedIntegerFieldIndex = nil
+                                // Defer — same transaction entanglement as the
+                                // editDateTime button above.
+                                DispatchQueue.main.async {
+                                    isShowingReorderSheet = true
+                                }
+                            } label: {
+                                Image(systemName: "arrow.up.arrow.down")
+                                    .keyboardToolbarButtonStyle()
+                            }
+                            Button {
+                                focusedIntegerFieldIndex = nil
                             } label: {
                                 Image(systemName: "keyboard.chevron.compact.down")
+                                    .keyboardToolbarButtonStyle()
                             }
                         }
                     }

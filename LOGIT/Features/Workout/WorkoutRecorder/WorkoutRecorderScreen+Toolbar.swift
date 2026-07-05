@@ -13,31 +13,18 @@ extension WorkoutRecorderScreen {
             HStack {
                 Spacer()
                 if focusedIntegerFieldIndex != nil {
-                    if let workoutSet = selectedWorkoutSet {
-                        if let templateSet = workoutRecorder.templateSet(for: workoutSet), templateSet.hasEntry {
-                            Button {
-                                workoutRecorder.toggleSetCompleted(for: workoutSet)
-                            } label: {
-                                Image(systemName: "\(workoutSet.hasEntry ? "xmark" : "checkmark")")
-                                    .keyboardToolbarButtonStyle()
-                            }
-                        } else {
-                            Button {
-                                workoutRecorder.toggleCopyPrevious(for: workoutSet)
-                            } label: {
-                                Image(systemName: "\(workoutSet.hasEntry ? "xmark" : "plus.square.on.square")")
-                                    .foregroundColor(
-                                        !(workoutSet.previousSetInSetGroup?.hasEntry ?? false)
-                                            && !workoutSet.hasEntry
-                                            ? Color.placeholder : .primary
-                                    )
-                                    .keyboardToolbarButtonStyle()
-                            }
-                            .disabled(
-                                !(workoutSet.previousSetInSetGroup?.hasEntry ?? false)
-                                    && !workoutSet.hasEntry
-                            )
+                    Button {
+                        focusedIntegerFieldIndex = nil
+                        // Defer so the keyboard's dismissal and the reorder sheet's
+                        // presentation land in separate transactions — same
+                        // entanglement the workout editor documents on its
+                        // editDateTime button; here it hangs the presentation.
+                        DispatchQueue.main.async {
+                            isShowingReorderSheet = true
                         }
+                    } label: {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .keyboardToolbarButtonStyle()
                     }
                     let previousIndex = previousIntegerFieldIndex()
                     let nextIndex = nextIntegerFieldIndex()

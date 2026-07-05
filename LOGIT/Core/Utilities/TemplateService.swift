@@ -67,6 +67,9 @@ class TemplateService: ObservableObject {
             .flatMap { [unowned self] in generateTemplateJSONText(from: $0) }
             .flatMap { TextProcessing.extractJsonDataFromString($0) }
             .flatMap { [unowned self] in createTemplateDTO(from: $0) }
+            // The DTO-to-entity step inserts into the main-queue viewContext and must not
+            // run on the background queue used for OCR, OpenAI and JSON processing above.
+            .receive(on: DispatchQueue.main)
             .flatMap { [unowned self] in createTemplateFromDTO($0) }
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()

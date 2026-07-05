@@ -82,6 +82,9 @@ class ExerciseService {
         .flatMap { text -> AnyPublisher<Data, Swift.Error> in
             return TextProcessing.extractJsonDataFromString(text)
         }
+        // getExercises(withNameIncluding:) fetches on the main-queue viewContext, so hop off
+        // the OpenAI callback thread before touching the database.
+        .receive(on: DispatchQueue.main)
         .flatMap { jsonData -> AnyPublisher<[String: Exercise?], Swift.Error> in
             return Future<[String: Exercise?], Swift.Error> { [unowned self] promise in
                 guard
@@ -162,6 +165,9 @@ class ExerciseService {
         .flatMap { text -> AnyPublisher<Data, Swift.Error> in
             return TextProcessing.extractJsonDataFromString(text)
         }
+        // newExercise inserts into the main-queue viewContext, so hop off the OpenAI
+        // callback thread before creating the entity.
+        .receive(on: DispatchQueue.main)
         .flatMap { [unowned self] jsonData -> AnyPublisher<Exercise, Swift.Error> in
             return createExercise(from: jsonData)
         }

@@ -512,8 +512,44 @@ final class EntityExtensionTests: XCTestCase {
             workout: workout
         )
         database.newStandardSet(repetitions: 0, weight: 0, setGroup: setGroup)
-        
+
         XCTAssertFalse(workout.hasEntries, "Workout with empty sets should not have entries")
+    }
+
+    // MARK: - Save Eligibility Tests
+
+    /// A workout with a date and at least one set group can be saved even with no end date —
+    /// duration is optional, so the editor must not require it (the "0:00" default is never
+    /// fabricated).
+    func testCanBeSavedToHistoryWithoutDuration() {
+        let workout = database.newWorkout(name: "No Duration")
+        database.newWorkoutSetGroup(workout: workout)
+        XCTAssertNil(workout.endDate, "newWorkout leaves the end date unset")
+
+        XCTAssertTrue(
+            workout.canBeSavedToHistory,
+            "A dated workout with set groups is saveable without a duration"
+        )
+    }
+
+    /// An empty workout (no set groups) still can't be saved, duration or not.
+    func testCannotSaveEmptyWorkout() {
+        let workout = database.newWorkout(name: "Empty")
+        workout.endDate = workout.date?.addingTimeInterval(3600)
+
+        XCTAssertFalse(
+            workout.canBeSavedToHistory,
+            "A workout with no set groups is not saveable even with a duration"
+        )
+    }
+
+    /// A workout with a duration set is of course still saveable.
+    func testCanBeSavedToHistoryWithDuration() {
+        let workout = database.newWorkout(name: "With Duration")
+        database.newWorkoutSetGroup(workout: workout)
+        workout.endDate = workout.date?.addingTimeInterval(3600)
+
+        XCTAssertTrue(workout.canBeSavedToHistory)
     }
     
     // MARK: - WorkoutSet Match Tests

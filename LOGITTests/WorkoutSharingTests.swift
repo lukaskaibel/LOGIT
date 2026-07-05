@@ -969,13 +969,75 @@ final class WorkoutSharingServiceTests: XCTestCase {
         
         XCTAssertEqual(importedWorkout.name, "Import Test")
         XCTAssertEqual(importedWorkout.setGroups.count, 2)
-        
+
         for setGroup in importedWorkout.setGroups {
             XCTAssertEqual(setGroup.sets.count, 3)
             XCTAssertNotNil(setGroup.exercise)
         }
     }
-    
+
+    // LOGITApp.handleIncomingFile dispatches imports to a background queue, so the
+    // service must confine entity creation to the context's queue itself.
+
+    func testImportWorkoutFromBackgroundQueue() throws {
+        let originalWorkout = builder.createCompleteWorkout(name: "Background Import", exerciseCount: 2, setsPerExercise: 3)
+        guard let exportURL = sharingService.exportWorkout(originalWorkout) else {
+            XCTFail("Export returned nil")
+            return
+        }
+        defer { try? FileManager.default.removeItem(at: exportURL) }
+
+        let importDB = Database(isPreview: true)
+        let importService = WorkoutSharingService(database: importDB)
+
+        let importCompleted = expectation(description: "Import completed")
+        var importResult: Result<Workout, Error>?
+        DispatchQueue.global(qos: .userInitiated).async {
+            importResult = Result { try importService.importWorkout(from: exportURL) }
+            importCompleted.fulfill()
+        }
+        wait(for: [importCompleted], timeout: 10)
+
+        let imported = try XCTUnwrap(importResult).get()
+        XCTAssertEqual(imported.name, "Background Import")
+        XCTAssertEqual(imported.setGroups.count, 2)
+        for setGroup in imported.setGroups {
+            XCTAssertEqual(setGroup.sets.count, 3)
+            XCTAssertNotNil(setGroup.exercise)
+        }
+    }
+
+    func testImportTemplateFromBackgroundQueue() throws {
+        let exercise = builder.createExercise(name: "Cable Row Custom", muscleGroup: .back)
+        let template = database.newTemplate(name: "Background Template Import")
+        let sg = database.newTemplateSetGroup(createFirstSetAutomatically: false, exercise: exercise, template: template)
+        database.newTemplateStandardSet(repetitions: 12, weight: 60000, setGroup: sg)
+        database.newTemplateStandardSet(repetitions: 10, weight: 65000, setGroup: sg)
+
+        guard let exportURL = sharingService.exportTemplate(template) else {
+            XCTFail("Export returned nil")
+            return
+        }
+        defer { try? FileManager.default.removeItem(at: exportURL) }
+
+        let importDB = Database(isPreview: true)
+        let importService = WorkoutSharingService(database: importDB)
+
+        let importCompleted = expectation(description: "Import completed")
+        var importResult: Result<Template, Error>?
+        DispatchQueue.global(qos: .userInitiated).async {
+            importResult = Result { try importService.importTemplate(from: exportURL) }
+            importCompleted.fulfill()
+        }
+        wait(for: [importCompleted], timeout: 10)
+
+        let imported = try XCTUnwrap(importResult).get()
+        XCTAssertEqual(imported.name, "Background Template Import")
+        XCTAssertEqual(imported.setGroups.count, 1)
+        XCTAssertEqual(imported.setGroups[0].sets.count, 2)
+        XCTAssertNotNil(imported.setGroups[0].exercise)
+    }
+
     func testImportWorkoutWithSuperSets() throws {
         let workout = database.newWorkout(name: "Superset Import", date: Date())
         let exA = builder.createExercise(name: "Bench Press", muscleGroup: .chest)

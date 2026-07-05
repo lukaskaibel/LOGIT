@@ -12,6 +12,22 @@ import OSLog
 public class Database: ObservableObject {
     // MARK: - Constants
 
+    /// Loaded exactly once and shared by every container. Each additional
+    /// `NSManagedObjectModel(contentsOf:)` copy — which `NSPersistentContainer(name:)` performs
+    /// per instance — registers a competing entity claim for every `NSManagedObject` subclass,
+    /// making `+entity`, and with it `Entity(context:)`, ambiguous as soon as a second `Database`
+    /// exists (tests, previews). An object bound to one copy but saved through a coordinator
+    /// holding another fails with Core Data error 134020.
+    static let model: NSManagedObjectModel = {
+        guard
+            let modelURL = Bundle(for: Database.self).url(forResource: "LOGIT", withExtension: "momd"),
+            let model = NSManagedObjectModel(contentsOf: modelURL)
+        else {
+            fatalError("Database: Failed to load the LOGIT Core Data model from the app bundle")
+        }
+        return model
+    }()
+
     private let container: NSPersistentContainer
     private let TEMPORARY_OBJECT_IDS_KEY = "temporaryObjectIds"
     private var cancellables = Set<AnyCancellable>()
@@ -30,19 +46,29 @@ public class Database: ObservableObject {
 
     /// - Parameters:
     ///   - isPreview: seeds the curated preview dataset (SwiftUI previews, fastlane fixtures).
-    ///   - inMemory: backs the store with `/dev/null` instead of the on-disk SQLite file.
-    ///     Defaults to `isPreview`; pass `true` on its own for an unseeded throwaway store
-    ///     (launch scenarios, see `TestScenario`).
+    ///   - inMemory: backs the store with a per-instance throwaway temporary file instead
+    ///     of the app's SQLite store. Defaults to `isPreview`; pass `true` on its own for
+    ///     an unseeded throwaway store (launch scenarios, see `TestScenario`).
     init(isPreview: Bool = false, inMemory: Bool? = nil) {
         self.isPreview = isPreview
         let usesInMemoryStore = inMemory ?? isPreview
-        container = NSPersistentCloudKitContainer(name: "LOGIT")
+        container = NSPersistentCloudKitContainer(name: "LOGIT", managedObjectModel: Self.model)
         let description = container.persistentStoreDescriptions.first
         description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
         description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
 
         if usesInMemoryStore {
-            container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+            // The URL must be unique per instance: throwaway stores sharing one URL (the
+            // old /dev/null trick) collide — when a later container re-initializes the
+            // shared store, saves still queued on an earlier instance (finished tests,
+            // discarded previews) fail with Core Data 134020 "model configuration is
+            // incompatible".
+            container.persistentStoreDescriptions.first!.url = FileManager.default
+                .temporaryDirectory
+                .appendingPathComponent("LOGIT-ephemeral-\(UUID().uuidString).sqlite")
+            // Unlike /dev/null, this is a real SQLite file the CloudKit mirror could
+            // sync; throwaway stores must stay strictly local.
+            description?.cloudKitContainerOptions = nil
         }
         loadStores()
         if isPreview {

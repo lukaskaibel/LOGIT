@@ -381,8 +381,13 @@ final class TemplateModelMigrationTests: XCTestCase {
             NSManagedObjectModel(contentsOf: momdURL.appendingPathComponent("LOGIT 6.0.mom")),
             "Model version 6 must stay in the bundle for migration"
         )
-        // Loading the .momd itself resolves to the current version (7)
-        let currentModel = try XCTUnwrap(NSManagedObjectModel(contentsOf: momdURL))
+        // This throwaway copy must not claim the NSManagedObject subclasses — a second claim
+        // makes `+entity` ambiguous for every test that runs afterwards (see `Database.model`).
+        // The v6 side only uses string-keyed inserts and KVC, so plain NSManagedObject suffices.
+        // Version hashes come from the schema alone, so migration behavior is unaffected.
+        v6Model.entities.forEach { $0.managedObjectClassName = "NSManagedObject" }
+        // The current version must be the shared model, never a second loaded copy (same reason).
+        let currentModel = Database.model
         XCTAssertNotNil(
             currentModel.entitiesByName["Template"]?.attributesByName["descriptionText"],
             "Current model must be version 7 with the new attributes"

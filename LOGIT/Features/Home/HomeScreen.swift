@@ -468,17 +468,19 @@ struct HomeScreen: View {
             Button {
                 homeNavigationCoordinator.path.append(.exercise(exercise))
             } label: {
+                // Pinned tiles stand alone with no exercise heading around them, so each leads with
+                // the exercise name and carries its metric name in the subtitle (`showsExerciseName`).
                 switch tileType {
                 case .weight:
-                    ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
                 case .repetitions:
-                    ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
                 case .volume:
-                    ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
                 case .setVolume:
-                    ExerciseSetVolumeTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseSetVolumeTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
                 case .estimatedOneRepMax:
-                    ExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets)
+                    ExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
                 }
             }
             .buttonStyle(TileButtonStyle())

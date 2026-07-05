@@ -17,6 +17,9 @@ import SwiftUI
 struct ExerciseVolumeTile: View {
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
+    /// Leads the tile with the exercise name and moves the metric name into the subtitle (the pinned
+    /// Summary grid); see `ExerciseBestMetricTile`. Off by default (the detail screen).
+    var showsExerciseName: Bool = false
 
     private struct WeeklyVolume: Identifiable {
         let week: Date
@@ -43,8 +46,14 @@ struct ExerciseVolumeTile: View {
         let lastBestDate = isLapsed ? sets.filter { $0.volume(for: exercise) > 0 }.compactMap({ $0.workout?.date }).max() : nil
         let muscleColor = exercise.muscleGroup?.color ?? .accentColor
         MetricTile(
-            title: NSLocalizedString("volume", comment: ""),
-            label: .plain(NSLocalizedString(isLapsed ? "lastBest" : "thisWeek", comment: "")),
+            title: showsExerciseName ? exercise.displayName : NSLocalizedString("volume", comment: ""),
+            // Pinned: the exercise name is the title, so the subtitle names the metric ("Volume").
+            // Detail: the metric name is already the title, so the subtitle qualifies the value's span
+            // ("This Week", or "Last Best" once the exercise has lapsed).
+            label: .plain(NSLocalizedString(
+                showsExerciseName ? "volume" : (isLapsed ? "lastBest" : "thisWeek"),
+                comment: ""
+            )),
             value: weeklyVolumes.isEmpty
                 ? nil
                 : formatWeightForDisplay(isLapsed ? weeklyVolumes.last?.volume ?? 0 : thisWeekVolume),

@@ -10,6 +10,8 @@ import SwiftUI
 struct ExerciseE1RMTile: View {
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
+    /// Leads the tile with the exercise name (the pinned Summary grid); see `ExerciseBestMetricTile`.
+    var showsExerciseName: Bool = false
 
     var body: some View {
         ExerciseBestMetricTile(
@@ -18,6 +20,7 @@ struct ExerciseE1RMTile: View {
             title: NSLocalizedString("e1RM", comment: ""),
             unit: WeightUnit.used.rawValue,
             requiresPro: true,
+            showsExerciseName: showsExerciseName,
             metricValue: { $0.estimatedOneRepMax(for: exercise) },
             formattedValue: { formatEstimatedOneRepMax($0) },
             chartValue: { convertWeightForDisplayingDecimal($0) }

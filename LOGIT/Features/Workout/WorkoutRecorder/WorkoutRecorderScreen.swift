@@ -50,7 +50,7 @@ struct WorkoutRecorderScreen: View {
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isShowingDetailsSheet = false
     @State private var isShowingExerciseSelectionSheet = false
-    @State private var isShowingReorderSheet = false
+    @State var isShowingReorderSheet = false
     @State private var selectedRestDurationSet: WorkoutSet?
     @State private var exerciseForDetailSheet: Exercise?
     /// When the exercise-detail sheet is opened from the metric popover, the metric whose chart
@@ -86,6 +86,14 @@ struct WorkoutRecorderScreen: View {
                                     canReorder: true,
                                     showDetailAsSheet: true,
                                     onTapRestDuration: { selectedRestDurationSet = $0 },
+                                    // Deferred for the same Menu-dismissal / sheet-on-sheet
+                                    // entanglement the workout editor documents on its
+                                    // onReorderSetGroups.
+                                    onReorderSetGroups: {
+                                        DispatchQueue.main.async {
+                                            isShowingReorderSheet = true
+                                        }
+                                    },
                                     onTapPreviousSet: { scrollToRecentAttempts = true; exerciseDetailAutoMetric = nil; exerciseForDetailSheet = $0 },
                                     onTapExerciseName: { scrollToRecentAttempts = false; exerciseDetailAutoMetric = nil; exerciseForDetailSheet = $0 }
                                 )

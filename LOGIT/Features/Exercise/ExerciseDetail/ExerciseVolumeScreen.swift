@@ -5,7 +5,6 @@
 //  Created by Lukas Kaibel on 03.12.24.
 //
 
-import Charts
 import SwiftUI
 
 /// Training volume per period for a single exercise — the detail screen behind the weekly Volume
@@ -62,8 +61,10 @@ struct ExerciseVolumeScreen: View {
                     .fontWeight(.semibold)
                     .textCase(.uppercase)
                     .foregroundStyle(.secondary)
+                // A period sum is a real value even at zero ("0 kg this week"), clearer than a
+                // "––" no-data dash — same rule as the stat tiles.
                 UnitView(
-                    value: currentRawVolume > 0 ? formatWeightForDisplay(currentRawVolume) : "––",
+                    value: formatWeightForDisplay(currentRawVolume),
                     unit: WeightUnit.used.rawValue,
                     configuration: .large,
                     unitColor: .secondaryLabel
@@ -84,49 +85,13 @@ struct ExerciseVolumeScreen: View {
 
     // MARK: - Chart
 
-    private struct Bucket: Identifiable {
-        let id: Int
-        let date: Date
-        let value: Double
-        let isCurrent: Bool
-    }
-
     private var chart: some View {
-        let buckets = self.buckets
-        let maxValue = buckets.map(\.value).max() ?? 0
-        // At most ~4 axis labels, counted back from the current bucket so "now" is always labeled.
-        let labelStride = max(1, Int((Double(buckets.count) / 4.0).rounded(.up)))
-        let labeledDates = stride(from: buckets.count - 1, through: 0, by: -labelStride).map { buckets[$0].date }
-        return Chart {
-            ForEach(buckets) { bucket in
-                BarMark(
-                    x: .value("Period", bucket.date, unit: period.calendarComponent),
-                    y: .value(NSLocalizedString("volume", comment: ""), bucket.value),
-                    width: .ratio(0.6)
-                )
-                .foregroundStyle(bucket.isCurrent ? AnyShapeStyle(muscleGroupColor.gradient) : AnyShapeStyle(Color.fill))
-                .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-            }
-        }
-        .chartYScale(domain: 0 ... max(maxValue, 1))
-        .chartXAxis {
-            AxisMarks(values: labeledDates) { value in
-                if let date = value.as(Date.self) {
-                    let isCurrent = period.currentRange().contains(date)
-                    AxisGridLine()
-                        .foregroundStyle(Color.gray.opacity(0.4))
-                    AxisValueLabel {
-                        Text(period.axisLabel(for: date))
-                            .font(.caption.weight(isCurrent ? .bold : .semibold))
-                            .foregroundStyle(isCurrent ? Color.label : Color.secondaryLabel)
-                    }
-                }
-            }
-        }
-        .chartYAxis {
-            AxisMarks(values: .automatic(desiredCount: 3))
-        }
-        .frame(height: 260)
+        PeriodHistoryChart(
+            buckets: buckets,
+            period: period,
+            valueLabel: NSLocalizedString("volume", comment: ""),
+            currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient)
+        )
     }
 
     // MARK: - Data
@@ -135,9 +100,7 @@ struct ExerciseVolumeScreen: View {
     private var previousRawVolume: Int { rawVolume(in: period.previousRange()) }
 
     private var percentChange: Double? {
-        previousRawVolume > 0
-            ? (Double(currentRawVolume) - Double(previousRawVolume)) / Double(previousRawVolume) * 100
-            : nil
+        PeriodHistoryChart.trendPercentChange(current: currentRawVolume, previous: previousRawVolume)
     }
 
     /// Total volume (weight × reps over every set) in the range, in raw storage units.
@@ -149,18 +112,8 @@ struct ExerciseVolumeScreen: View {
         return getVolume(of: sets, for: exercise)
     }
 
-    private var buckets: [Bucket] {
-        let count = period.historyBucketCount
-        return (0 ..< count).map { index in
-            let periodsAgo = count - 1 - index
-            let range = period.range(periodsAgo: periodsAgo)
-            return Bucket(
-                id: index,
-                date: range.lowerBound,
-                value: convertWeightForDisplayingDecimal(rawVolume(in: range)),
-                isCurrent: periodsAgo == 0
-            )
-        }
+    private var buckets: [PeriodHistoryChart.Bucket] {
+        PeriodHistoryChart.buckets(for: period) { convertWeightForDisplayingDecimal(rawVolume(in: $0)) }
     }
 
     private var muscleGroupColor: Color {

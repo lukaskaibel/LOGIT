@@ -5,7 +5,6 @@
 //  Created by Lukas Kaibel on 22.06.26.
 //
 
-import Charts
 import SwiftUI
 
 /// Working sets per period for a single exercise — the detail screen behind the weekly Sets tile.
@@ -62,8 +61,10 @@ struct ExerciseSetsScreen: View {
                     .fontWeight(.semibold)
                     .textCase(.uppercase)
                     .foregroundStyle(.secondary)
+                // A period count is a real value even at zero ("0 this week"), clearer than a
+                // "––" no-data dash — same rule as the stat tiles.
                 UnitView(
-                    value: currentCount > 0 ? "\(currentCount)" : "––",
+                    value: "\(currentCount)",
                     unit: "",
                     configuration: .large,
                     unitColor: .secondaryLabel
@@ -84,49 +85,13 @@ struct ExerciseSetsScreen: View {
 
     // MARK: - Chart
 
-    private struct Bucket: Identifiable {
-        let id: Int
-        let date: Date
-        let value: Int
-        let isCurrent: Bool
-    }
-
     private var chart: some View {
-        let buckets = self.buckets
-        let maxValue = buckets.map(\.value).max() ?? 0
-        // At most ~4 axis labels, counted back from the current bucket so "now" is always labeled.
-        let labelStride = max(1, Int((Double(buckets.count) / 4.0).rounded(.up)))
-        let labeledDates = stride(from: buckets.count - 1, through: 0, by: -labelStride).map { buckets[$0].date }
-        return Chart {
-            ForEach(buckets) { bucket in
-                BarMark(
-                    x: .value("Period", bucket.date, unit: period.calendarComponent),
-                    y: .value(NSLocalizedString("sets", comment: ""), bucket.value),
-                    width: .ratio(0.6)
-                )
-                .foregroundStyle(bucket.isCurrent ? AnyShapeStyle(muscleGroupColor.gradient) : AnyShapeStyle(Color.fill))
-                .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-            }
-        }
-        .chartYScale(domain: 0 ... max(maxValue, 1))
-        .chartXAxis {
-            AxisMarks(values: labeledDates) { value in
-                if let date = value.as(Date.self) {
-                    let isCurrent = period.currentRange().contains(date)
-                    AxisGridLine()
-                        .foregroundStyle(Color.gray.opacity(0.4))
-                    AxisValueLabel {
-                        Text(period.axisLabel(for: date))
-                            .font(.caption.weight(isCurrent ? .bold : .semibold))
-                            .foregroundStyle(isCurrent ? Color.label : Color.secondaryLabel)
-                    }
-                }
-            }
-        }
-        .chartYAxis {
-            AxisMarks(values: .automatic(desiredCount: 3))
-        }
-        .frame(height: 260)
+        PeriodHistoryChart(
+            buckets: buckets,
+            period: period,
+            valueLabel: NSLocalizedString("sets", comment: ""),
+            currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient)
+        )
     }
 
     // MARK: - Data
@@ -135,7 +100,7 @@ struct ExerciseSetsScreen: View {
     private var previousCount: Int { setCount(in: period.previousRange()) }
 
     private var percentChange: Double? {
-        previousCount > 0 ? (Double(currentCount) - Double(previousCount)) / Double(previousCount) * 100 : nil
+        PeriodHistoryChart.trendPercentChange(current: currentCount, previous: previousCount)
     }
 
     /// Working-set count in the range — only sets with a recorded entry, matching the weekly tile.
@@ -149,18 +114,8 @@ struct ExerciseSetsScreen: View {
             .count
     }
 
-    private var buckets: [Bucket] {
-        let count = period.historyBucketCount
-        return (0 ..< count).map { index in
-            let periodsAgo = count - 1 - index
-            let range = period.range(periodsAgo: periodsAgo)
-            return Bucket(
-                id: index,
-                date: range.lowerBound,
-                value: setCount(in: range),
-                isCurrent: periodsAgo == 0
-            )
-        }
+    private var buckets: [PeriodHistoryChart.Bucket] {
+        PeriodHistoryChart.buckets(for: period) { Double(setCount(in: $0)) }
     }
 
     private var muscleGroupColor: Color {

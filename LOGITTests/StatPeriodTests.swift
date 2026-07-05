@@ -160,6 +160,37 @@ final class ChartRangeTests: XCTestCase {
     }
 }
 
+// MARK: - PeriodHistoryChart helpers
+
+final class PeriodHistoryChartTests: XCTestCase {
+    func testBucketsFollowHistoryDepthOldestFirstCurrentLast() {
+        let buckets = PeriodHistoryChart.buckets(for: .week) { _ in 1 }
+        XCTAssertEqual(buckets.count, StatPeriod.week.historyBucketCount)
+        XCTAssertEqual(buckets.last?.isCurrent, true)
+        XCTAssertEqual(buckets.filter(\.isCurrent).count, 1)
+        XCTAssertEqual(buckets.first?.date, StatPeriod.week.range(periodsAgo: buckets.count - 1).lowerBound)
+        XCTAssertEqual(buckets.last?.date, StatPeriod.week.currentRange().lowerBound)
+    }
+
+    func testBucketsPullValuesFromTheirPeriodRange() {
+        // Value = days since the current week's start, so each bucket must carry its own range.
+        let currentStart = StatPeriod.week.currentRange().lowerBound
+        let buckets = PeriodHistoryChart.buckets(for: .week) { range in
+            range.lowerBound.timeIntervalSince(currentStart) / (3600 * 24)
+        }
+        XCTAssertEqual(buckets.last?.value, 0)
+        XCTAssertEqual(buckets[buckets.count - 2].value, -7, accuracy: 0.1)
+    }
+
+    func testTrendSuppressedUnlessBothPeriodsHaveData() {
+        XCTAssertNil(PeriodHistoryChart.trendPercentChange(current: 0, previous: 10), "Fresh period must not read as −100%")
+        XCTAssertNil(PeriodHistoryChart.trendPercentChange(current: 10, previous: 0))
+        XCTAssertNil(PeriodHistoryChart.trendPercentChange(current: 0, previous: 0))
+        XCTAssertEqual(PeriodHistoryChart.trendPercentChange(current: 15, previous: 10) ?? 0, 50, accuracy: 0.001)
+        XCTAssertEqual(PeriodHistoryChart.trendPercentChange(current: 5, previous: 10) ?? 0, -50, accuracy: 0.001)
+    }
+}
+
 // MARK: - MuscleTargetSplit
 
 final class MuscleTargetSplitTests: XCTestCase {

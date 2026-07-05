@@ -88,6 +88,16 @@ extension Workout {
         }
     }
 
+    /// Whether the workout holds enough to be saved to history from the editor: a start date (its
+    /// place in the timeline) and at least one set group.
+    ///
+    /// Duration is deliberately *not* required. A workout with no end date simply has no duration —
+    /// every consumer (history cell, detail screen, duration stat) already omits it when `endDate`
+    /// is nil — so forcing one would only fabricate a value the user never entered.
+    var canBeSavedToHistory: Bool {
+        date != nil && !setGroups.isEmpty
+    }
+
     func remove(setGroup: WorkoutSetGroup) {
         setGroups = setGroups.filter { $0 != setGroup }
     }

@@ -13,6 +13,11 @@ struct WorkoutEditorScreen: View {
         case workoutName, workoutSetEntry(index: IntegerField.Index)
     }
 
+    /// One iOS context-menu dismissal animation. The date/time editor is deferred by this long
+    /// after its menu item is tapped so its (sheet-on-sheet) presentation doesn't overlap the
+    /// menu closing; see the "Edit date & time" button.
+    private static let menuDismissAnimationDuration: TimeInterval = 0.35
+
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
@@ -216,12 +221,14 @@ struct WorkoutEditorScreen: View {
                             Label(NSLocalizedString("rename", comment: ""), systemImage: "pencil")
                         }
                         Button {
-                            // Defer presenting to the next runloop turn so the Menu's dismissal and the
-                            // sheet's presentation land in separate transactions. Flipping this flag
-                            // synchronously inside the Menu action entangles the two, and because the
-                            // date editor is a sheet-on-sheet, the entanglement makes it bounce in and
-                            // out several times before settling.
-                            DispatchQueue.main.async {
+                            // Present only after the menu's dismissal animation has finished. The date
+                            // editor is a sheet-on-sheet (it opens from the always-present exercise
+                            // selection sheet), so its presentation is fragile while another transition
+                            // is in flight: flipping the flag synchronously made it bounce in and out,
+                            // and deferring by a single runloop turn (`main.async`) still overlapped the
+                            // menu dismissal — the dismissal then cancelled the presentation and nothing
+                            // appeared. Waiting one menu-animation cycle lets the two stay separate.
+                            DispatchQueue.main.asyncAfter(deadline: .now() + Self.menuDismissAnimationDuration) {
                                 isEditingStartEndDate = true
                             }
                         } label: {
@@ -236,8 +243,10 @@ struct WorkoutEditorScreen: View {
                                     .lineLimit(1)
                                 HStack(spacing: 5) {
                                     Text(workout.date?.formatted(.dateTime.day().month().year()) ?? "")
-                                    Text("•")
-                                    Text(workoutDurationString)
+                                    if let workoutDurationString {
+                                        Text("•")
+                                        Text(workoutDurationString)
+                                    }
                                 }
                                 .font(.caption)
                                 .foregroundStyle(Color.secondaryLabel)
@@ -285,9 +294,11 @@ struct WorkoutEditorScreen: View {
                 }
             }
             .onAppear {
+                // Guarantee a start date (a workout's place in history); `newWorkout()` already sets
+                // one, this is just defensive. The end date stays untouched — duration is optional,
+                // so a workout with none is saved without one rather than getting a fabricated value.
                 if workout.date == nil {
                     workout.date = .now
-                    workout.endDate = .now.addingTimeInterval(1000)
                 }
                 refreshOnChange()
                 exerciseSelectionPresentationDetent = workout.isEmpty ? .medium : .height(BOTTOM_SHEET_SMALL)
@@ -301,8 +312,10 @@ struct WorkoutEditorScreen: View {
         Binding(get: { workout.name ?? "" }, set: { workout.name = $0 })
     }
 
-    private var workoutDurationString: String {
-        guard let start = workout.date, let end = workout.endDate else { return "0:00" }
+    /// The header's duration string, or nil when the workout has no end date — a workout without a
+    /// logged duration shows no duration rather than a fabricated "0:00".
+    private var workoutDurationString: String? {
+        guard let start = workout.date, let end = workout.endDate else { return nil }
         let hours = Calendar.current.dateComponents([.hour], from: start, to: end).hour ?? 0
         let minutes =
             (Calendar.current.dateComponents([.minute], from: start, to: end).minute ?? 0) % 60
@@ -310,7 +323,7 @@ struct WorkoutEditorScreen: View {
     }
 
     private var canSaveWorkout: Bool {
-        workout.date != nil && workout.endDate != nil && !workout.setGroups.isEmpty
+        workout.canBeSavedToHistory
     }
 
     // MARK: - Autosave

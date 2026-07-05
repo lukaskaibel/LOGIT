@@ -10,6 +10,8 @@ import SwiftUI
 struct ExerciseRepetitionsTile: View {
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
+    /// Leads the tile with the exercise name (the pinned Summary grid); see `ExerciseBestMetricTile`.
+    var showsExerciseName: Bool = false
 
     var body: some View {
         ExerciseBestMetricTile(
@@ -17,6 +19,7 @@ struct ExerciseRepetitionsTile: View {
             workoutSets: workoutSets,
             title: ExercisePrimaryMetric.repetitions.shortTitle,
             unit: NSLocalizedString("rps", comment: ""),
+            showsExerciseName: showsExerciseName,
             metricValue: { $0.maximum(.repetitions, for: exercise) },
             formattedValue: { String($0) },
             chartValue: { Double($0) }

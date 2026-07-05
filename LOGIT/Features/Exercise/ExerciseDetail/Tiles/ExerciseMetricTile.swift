@@ -364,6 +364,11 @@ struct ExerciseBestMetricTile: View {
     let unit: String
     /// Pro-gates the tile's data (see `MetricTile.requiresPro`).
     var requiresPro: Bool = false
+    /// Leads the tile with the exercise's name and demotes the metric name (`title`) to the subtitle
+    /// — the pinned Summary tiles, which stand alone with no exercise heading around them, unlike the
+    /// detail screen where the exercise is already the screen title and the metric name belongs up top.
+    /// Off by default (the detail screen); the pinned grid turns it on. Mirrors `SampleExerciseTile`.
+    var showsExerciseName: Bool = false
     /// The metric's base value of a single set, in raw storage units (grams for weights).
     let metricValue: (WorkoutSet) -> Int
     /// Display string for a base value (handles unit conversion).
@@ -383,10 +388,15 @@ struct ExerciseBestMetricTile: View {
         let isLapsed = trend.currentBest == nil && trend.allTimeBest != nil
         let lastBest = isLapsed ? lastSessionBest(in: sets) : nil
         MetricTile(
-            title: title,
-            label: isLapsed
-                ? .info(NSLocalizedString("lastBest", comment: ""), explanation: NSLocalizedString("lastBestInfo", comment: ""))
-                : .currentBest,
+            title: showsExerciseName ? exercise.displayName : title,
+            // Pinned tiles put the exercise name in the title, so the metric name moves down to the
+            // subtitle here; the pill still carries the current-vs-last-best distinction. The detail
+            // screen keeps "current best" / "last best", where the metric name is already the title.
+            label: showsExerciseName
+                ? .plain(title)
+                : (isLapsed
+                    ? .info(NSLocalizedString("lastBest", comment: ""), explanation: NSLocalizedString("lastBestInfo", comment: ""))
+                    : .currentBest),
             value: trend.currentBest.map(formattedValue) ?? lastBest.map { formattedValue($0.value) },
             unit: unit,
             accent: AnyShapeStyle(color),

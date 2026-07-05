@@ -142,7 +142,9 @@ private struct SampleExerciseTile: View {
     var body: some View {
         MetricTile(
             title: name,
-            label: .plain(NSLocalizedString("estimatedOneRepMax", comment: "")),
+            // The metric name the real E1RM pinned tile shows in its subtitle — kept in step so this
+            // teaser matches a real pinned tile rather than drifting to a different label.
+            label: .plain(NSLocalizedString("e1RM", comment: "")),
             value: value,
             unit: WeightUnit.used.rawValue,
             accent: AnyShapeStyle(color),

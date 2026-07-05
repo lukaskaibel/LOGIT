@@ -243,6 +243,112 @@ final class DatabaseTests: XCTestCase {
         XCTAssertEqual(setGroup.sets.count, 2)
         XCTAssertEqual(setGroup.sets.last?.restDurationSeconds, 75)
     }
+
+    // MARK: - Predicate Factory Tests
+
+    /// @FetchRequest evaluates *pending* (unsaved) objects in memory, where a UUID attribute never
+    /// equals a uuidString. The factories must therefore compare against the UUID itself, or a
+    /// just-edited workout stays invisible on the exercise detail screen until it is persisted.
+    func testEditorPredicatesMatchPendingUnsavedObjects() throws {
+        let exercise = database.newExercise(name: "Benchpress", muscleGroup: .chest)
+        let workout = database.newWorkout(name: "Push Day")
+        let setGroup = database.newWorkoutSetGroup(exercise: exercise, workout: workout)
+        let workoutSet = try XCTUnwrap(setGroup.sets.first)
+
+        let setGroupPredicate = try XCTUnwrap(
+            WorkoutSetGroupPredicateFactory.getWorkoutSetGroups(withExercise: exercise)
+        )
+        XCTAssertTrue(
+            setGroupPredicate.evaluate(with: setGroup),
+            "Pending set group must match the exercise-detail predicate before it is saved"
+        )
+
+        let setPredicate = try XCTUnwrap(WorkoutSetPredicateFactory.getWorkoutSets(with: exercise))
+        XCTAssertTrue(
+            setPredicate.evaluate(with: workoutSet),
+            "Pending workout set must match the per-exercise predicate before it is saved"
+        )
+
+        let workoutSetPredicate = try XCTUnwrap(WorkoutSetPredicateFactory.getWorkoutSets(in: workout))
+        XCTAssertTrue(
+            workoutSetPredicate.evaluate(with: workoutSet),
+            "Pending workout set must match the per-workout predicate before it is saved"
+        )
+    }
+
+    /// The flip side of the pending-object test: the same predicates still match through SQLite
+    /// once the objects are persisted (the store must accept the UUID argument).
+    func testEditorPredicatesMatchPersistedObjectsThroughStore() throws {
+        let exercise = database.newExercise(name: "Benchpress", muscleGroup: .chest)
+        let workout = database.newWorkout(name: "Push Day")
+        let setGroup = database.newWorkoutSetGroup(exercise: exercise, workout: workout)
+        try database.context.save()
+
+        let fetchedSetGroups = database.fetch(
+            WorkoutSetGroup.self,
+            predicate: WorkoutSetGroupPredicateFactory.getWorkoutSetGroups(withExercise: exercise)
+        ) as? [WorkoutSetGroup]
+        XCTAssertEqual(fetchedSetGroups?.contains(setGroup), true)
+
+        let fetchedSets = database.fetch(
+            WorkoutSet.self,
+            predicate: WorkoutSetPredicateFactory.getWorkoutSets(with: exercise)
+        ) as? [WorkoutSet]
+        XCTAssertEqual(fetchedSets?.contains(where: { $0.setGroup == setGroup }), true)
+    }
+
+    // MARK: - Save Conflict Tests
+
+    /// Reproduces the on-device data loss: another writer (the CloudKit mirroring delegate in
+    /// production) updates a row behind the view context's back, making its snapshot stale. With
+    /// the default error merge policy the next save throws an unresolved merge conflict, which
+    /// used to be swallowed — the workout lived on in memory and vanished with the next launch.
+    /// The context must resolve the conflict in favor of the local edit and actually persist it.
+    func testSaveSurvivesConcurrentStoreWriteToSameObject() throws {
+        let workout = database.newWorkout(name: "Original")
+        try database.context.save()
+        let workoutID = workout.objectID
+
+        // Local pending edit, made while the row is about to go stale underneath us
+        workout.name = "Local Edit"
+
+        // Simulate the CloudKit mirroring delegate: a direct store write from another context
+        let coordinator = try XCTUnwrap(database.context.persistentStoreCoordinator)
+        let backgroundContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        backgroundContext.persistentStoreCoordinator = coordinator
+        try backgroundContext.performAndWait {
+            let backgroundWorkout = try XCTUnwrap(
+                backgroundContext.existingObject(with: workoutID) as? Workout
+            )
+            backgroundWorkout.name = "Remote Edit"
+            try backgroundContext.save()
+        }
+
+        database.save()
+
+        // save() runs async on the context's queue; perform blocks execute in order,
+        // so an expectation enqueued after it fires once the save has finished.
+        let saveCompleted = expectation(description: "save block completed")
+        database.context.perform { saveCompleted.fulfill() }
+        wait(for: [saveCompleted], timeout: 5)
+        // The failure flag is published via the main queue; drain it before asserting.
+        let mainQueueDrained = expectation(description: "main queue drained")
+        DispatchQueue.main.async { mainQueueDrained.fulfill() }
+        wait(for: [mainQueueDrained], timeout: 5)
+
+        XCTAssertFalse(database.lastSaveFailed, "The conflicting save must be resolved, not dropped")
+
+        // The store — not the in-memory context — must hold the local edit: verify through a
+        // fresh context so a silently failed save can't masquerade as success.
+        let verificationContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        verificationContext.persistentStoreCoordinator = coordinator
+        try verificationContext.performAndWait {
+            let persistedWorkout = try XCTUnwrap(
+                verificationContext.existingObject(with: workoutID) as? Workout
+            )
+            XCTAssertEqual(persistedWorkout.name, "Local Edit")
+        }
+    }
 }
 
 // MARK: - Model Version 7 Migration Tests

@@ -316,6 +316,8 @@
 
 "save" = "Save";
 "saveAsTemplate" = "Save as Template";
+"saveFailedMessage" = "Your latest changes couldn't be saved. They may be lost when the app is closed. Please try again.";
+"saveFailedTitle" = "Saving Failed";
 "saveTemplate" = "Save Template";
 "saveTime" = "Save Time";
 "scanATemplate" = "Scan a Template";

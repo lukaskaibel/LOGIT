@@ -316,6 +316,8 @@
 
 "save" = "保存";
 "saveAsTemplate" = "テンプレートとして保存";
+"saveFailedMessage" = "最新の変更を保存できませんでした。アプリを終了すると失われる可能性があります。もう一度お試しください。";
+"saveFailedTitle" = "保存に失敗しました";
 "saveTemplate" = "テンプレートの保存";
 "saveTime" = "時間を節約する";
 "scanATemplate" = "テンプレートをスキャンする";

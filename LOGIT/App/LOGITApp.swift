@@ -273,6 +273,17 @@ struct LOGIT: App {
                 } message: {
                     Text(importErrorMessage)
                 }
+                // Persisting to disk failed even after the retry: without this, the data loss
+                // would be silent — the UI keeps showing the in-memory objects until the app is
+                // relaunched, and only then does the user find their workout gone.
+                .alert(
+                    NSLocalizedString("saveFailedTitle", comment: ""),
+                    isPresented: $database.lastSaveFailed
+                ) {
+                    Button(NSLocalizedString("ok", comment: ""), role: .cancel) {}
+                } message: {
+                    Text(NSLocalizedString("saveFailedMessage", comment: ""))
+                }
         }
     }
 

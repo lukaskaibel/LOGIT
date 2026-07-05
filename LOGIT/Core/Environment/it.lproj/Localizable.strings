@@ -316,6 +316,8 @@
 
 "save" = "Salva";
 "saveAsTemplate" = "Salva come modello";
+"saveFailedMessage" = "Non è stato possibile salvare le ultime modifiche. Potrebbero andare perse alla chiusura dell'app. Riprova.";
+"saveFailedTitle" = "Salvataggio non riuscito";
 "saveTemplate" = "Salva modello";
 "saveTime" = "Risparmia tempo";
 "scanATemplate" = "Scansiona un modello";

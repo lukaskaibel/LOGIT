@@ -16,9 +16,12 @@ enum WorkoutSetGroupPredicateFactory {
         var subpredicates = [NSPredicate]()
 
         if let exerciseId = exercise?.id {
+            // Compare against the UUID itself, not its string. SQLite coerces a string to the
+            // UUID attribute, but pending (unsaved) objects are matched in memory, where
+            // UUID == String is always false — set groups would stay invisible until persisted.
             let exercisePredicate = NSPredicate(
                 format: "ANY exercises_.id == %@",
-                exerciseId.uuidString
+                exerciseId as CVarArg
             )
             subpredicates.append(exercisePredicate)
         }

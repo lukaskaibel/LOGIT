@@ -23,6 +23,7 @@ struct WorkoutRecorderScreen: View {
     @Environment(\.fullScreenDraggableCoverIsDragging) var fullScreenDraggableCoverIsDragging
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
+    @Environment(\.scenePhase) private var scenePhase
 
     @EnvironmentObject private var database: Database
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
@@ -43,7 +44,7 @@ struct WorkoutRecorderScreen: View {
     @State var isShowingChronoSheet = false
     @State private var didAppear = false
     @State private var progress: Float = 0
-    @State private var cancellable: AnyCancellable?
+    @State private var cancellables: [AnyCancellable] = []
 
     @State private var isShowingFinishConfirmation = false
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
@@ -343,6 +344,15 @@ struct WorkoutRecorderScreen: View {
         }
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false
+            // Flush anything the debounced autosave hasn't written yet.
+            database.save()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // Backgrounding must not race the debounced autosave — persist
+            // pending edits while the process is still guaranteed to run.
+            if newPhase != .active {
+                database.save()
+            }
         }
         .scrollDismissesKeyboard(.interactively)
         #if targetEnvironment(simulator)
@@ -491,13 +501,19 @@ struct WorkoutRecorderScreen: View {
     }
 
     private func updateProgress() {
-        guard let workout = workoutRecorder.workout else {
-            progress = 0
-            return
+        let newProgress: Float
+        if let workout = workoutRecorder.workout {
+            let sets = workout.sets
+            let completedSets = sets.filter { $0.hasEntry }.count
+            newProgress = sets.isEmpty ? 0 : Float(completedSets) / Float(sets.count)
+        } else {
+            newProgress = 0
         }
-        let totalSets = workout.sets.count
-        let completedSets = workout.sets.filter { $0.hasEntry }.count
-        progress = totalSets > 0 ? Float(completedSets) / Float(totalSets) : 0
+        // Writing an unchanged @State still invalidates the screen body —
+        // and most keystrokes don't move the completed-sets ratio.
+        if progress != newProgress {
+            progress = newProgress
+        }
     }
 
     private func checkForNewSetEntries() {
@@ -704,12 +720,38 @@ struct WorkoutRecorderScreen: View {
 
     // MARK: - Autosave
 
+    /// Typing into a set field mutates only that set, so this pipeline does two
+    /// things the set-level observation can't: refresh workout-level views and
+    /// persist the edit. Both used to run on *every* context change — one
+    /// keystroke = one full re-render of every set group cell (with the metric
+    /// badges re-scanning the exercise's whole history) plus one synchronous
+    /// store commit with a CloudKit export cycle — which made the recorder
+    /// visibly stutter while typing. Batching them keeps typing smooth without
+    /// changing what ends up on screen or on disk.
     private func setUpAutoSaveForWorkout() {
-        cancellable = NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
-            .sink { _ in
-                self.workoutRecorder.workout?.objectWillChange.send()
-                self.database.save()
-            }
+        let contextDidChange = NotificationCenter.default.publisher(
+            for: .NSManagedObjectContextObjectsDidChange,
+            object: database.context
+        )
+        cancellables = [
+            // Workout-level observers (progress, muscle chart, metric badges)
+            // re-render at most a few times per second; the edited cell itself
+            // updates instantly through its own @ObservedObject set.
+            contextDidChange
+                .throttle(for: .milliseconds(300), scheduler: RunLoop.main, latest: true)
+                .sink { _ in
+                    self.workoutRecorder.workout?.objectWillChange.send()
+                },
+            // Persist at typing pauses. The debounce only defers the save, it
+            // never skips it: finishing/discarding saves explicitly, and the
+            // scene-phase/disappear hooks in `body` flush pending changes
+            // whenever the recorder leaves the screen.
+            contextDidChange
+                .debounce(for: .seconds(1.5), scheduler: RunLoop.main)
+                .sink { _ in
+                    self.database.save()
+                },
+        ]
     }
 }
 

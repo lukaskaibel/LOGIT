@@ -12,6 +12,10 @@
 //              trends without a prior period, singular strings
 //      many    long-time user: the curated preview dataset (same as the
 //              marketing screenshots) minus the in-progress workout
+//      stress  power user: two years of dense history (hundreds of workouts,
+//              thousands of sets) plus an in-progress workout — for
+//              performance work; combine with -UITEST_SHOW_RECORDER to land
+//              in the recorder mid-session
 //
 //  Combine with `-UITEST_FORCE_FREE` to see the free tier (DEBUG simulator
 //  builds force-unlock Pro otherwise). Scenarios are ignored in Release
@@ -25,6 +29,7 @@ enum TestScenario: String {
     case empty
     case one
     case many
+    case stress
 
     /// Parsed once at process start from `-SCENARIO <name>`. Always `nil` in
     /// Release builds, so scenario branches are unreachable outside DEBUG.
@@ -35,7 +40,7 @@ enum TestScenario: String {
               args.indices.contains(flagIndex + 1)
         else { return nil }
         guard let scenario = TestScenario(rawValue: args[flagIndex + 1]) else {
-            NSLog("TestScenario: unknown scenario '%@' — expected empty|one|many", args[flagIndex + 1])
+            NSLog("TestScenario: unknown scenario '%@' — expected empty|one|many|stress", args[flagIndex + 1])
             return nil
         }
         return scenario
@@ -58,7 +63,7 @@ enum TestScenario: String {
         overrides["setupDone"] = true
         overrides["weightUnit"] = WeightUnit.kg.rawValue
         // `empty` shows the no-goal state, the other scenarios a realistic goal.
-        overrides["workoutPerWeekTarget"] = self == .empty ? -1 : 4
+        overrides["workoutPerWeekTarget"] = self == .empty ? -1 : self == .stress ? 2 : 4
         // Per-user layout state stored as Data (object URIs / JSON) must not
         // leak in from the real store — the URIs wouldn't resolve against the
         // in-memory store anyway. A string value makes the Data reads fail so
@@ -87,7 +92,7 @@ enum TestScenario: String {
     /// created, before any views or services read from it.
     func seedAtLaunch(into database: Database) {
         switch self {
-        case .empty, .one:
+        case .empty, .one, .stress:
             break
         case .many:
             // The curated dataset the marketing screenshots use, but without
@@ -109,6 +114,10 @@ enum TestScenario: String {
     /// so the single workout references built-in exercises instead of
     /// creating duplicate-looking copies (same approach as DemoWorkoutSeeder).
     func seedAfterDefaultContentLoaded(database: Database) {
+        if self == .stress {
+            seedStressData(database: database)
+            return
+        }
         guard self == .one else { return }
 
         let bench = exercise("_default.exercise.barbellBenchPress", "Bench Press", .chest, database)
@@ -138,6 +147,83 @@ enum TestScenario: String {
 
         database.save()
         NSLog("TestScenario: seeded single-workout scenario")
+    }
+
+    /// Two years of dense, deterministic history — two sessions per week
+    /// alternating push/pull, four exercises with four sets each — plus an
+    /// in-progress push workout (`isCurrentWorkout`). This is the data shape
+    /// where per-keystroke work in the recorder becomes visible: every main
+    /// exercise accumulates 400+ historical sets, so anything that scans an
+    /// exercise's history per UI update gets amplified to realistic cost.
+    private func seedStressData(database: Database) {
+        let bench = exercise("_default.exercise.barbellBenchPress", "Bench Press", .chest, database)
+        let overheadPress = exercise("_default.exercise.overheadPress", "Overhead Press", .shoulders, database)
+        let inclineBench = exercise("_default.exercise.inclineBenchPress", "Incline Bench Press", .chest, database)
+        let tricepsExtensions = exercise("_default.exercise.tricepsExtensions", "Triceps Extensions", .triceps, database)
+        let deadlift = exercise("_default.exercise.deadlift", "Deadlift", .back, database)
+        let rows = exercise("_default.exercise.barbellRows", "Barbell Rows", .back, database)
+        let latPulldowns = exercise("_default.exercise.latPulldowns", "Lat Pulldowns", .back, database)
+        let bicepsCurls = exercise("_default.exercise.bicepsCurls", "Biceps Curls", .biceps, database)
+
+        let pushExercises = [bench, overheadPress, inclineBench, tricepsExtensions]
+        let pullExercises = [deadlift, rows, latPulldowns, bicepsCurls]
+        let baseWeights = [60000, 40000, 45000, 25000, 120000, 70000, 55000, 30000]
+
+        let calendar = Calendar.current
+        let sessionCount = 208 // 2 years, 2 sessions/week
+        for session in 0 ..< sessionCount {
+            let daysBack = (sessionCount - session) * 7 / 2 + 1
+            let date = calendar.date(byAdding: .day, value: -daysBack, to: .now)!
+            let isPush = session % 2 == 0
+            let workout = database.newWorkout(name: isPush ? "Push Day" : "Pull Day", date: date)
+            workout.endDate = date.addingTimeInterval(70 * 60)
+            let exercises = isPush ? pushExercises : pullExercises
+            for (slot, exercise) in exercises.enumerated() {
+                let weightIndex = (isPush ? 0 : 4) + slot
+                // Slow linear progression with a deterministic wobble so
+                // trends, records, and current bests all have real signal.
+                let progress = session / 8 * 2500
+                let wobble = (session % 3) * 1250 - 1250
+                let weight = baseWeights[weightIndex] + progress + wobble
+                let group = database.newWorkoutSetGroup(
+                    createFirstSetAutomatically: false,
+                    exercise: exercise,
+                    workout: workout
+                )
+                for setIndex in 0 ..< 4 {
+                    database.newStandardSet(
+                        repetitions: 12 - setIndex - (session % 3),
+                        weight: weight,
+                        setGroup: group
+                    )
+                }
+            }
+        }
+
+        // The in-progress workout the recorder picks up: push day, first
+        // half of the sets already entered, the rest waiting for input.
+        let start = Date.now.addingTimeInterval(-23 * 60)
+        let current = database.newWorkout(name: "Push Day", date: start)
+        current.isCurrentWorkout = true
+        for (slot, exercise) in pushExercises.enumerated() {
+            let group = database.newWorkoutSetGroup(
+                createFirstSetAutomatically: false,
+                exercise: exercise,
+                workout: current
+            )
+            let weight = baseWeights[slot] + sessionCount / 8 * 2500
+            for setIndex in 0 ..< 4 {
+                let isEntered = slot < 2 || (slot == 2 && setIndex < 2)
+                database.newStandardSet(
+                    repetitions: isEntered ? 12 - setIndex : 0,
+                    weight: isEntered ? weight : 0,
+                    setGroup: group
+                )
+            }
+        }
+
+        database.save()
+        NSLog("TestScenario: seeded stress scenario (%d workouts)", sessionCount + 1)
     }
 
     /// The built-in exercise matching the default-library name key, or a new

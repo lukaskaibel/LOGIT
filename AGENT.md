@@ -15,6 +15,7 @@ The states, all driven by launch arguments (DEBUG builds only, implemented in
 | One workout (single data points, fresh trends) | `-SCENARIO one` |
 | Many workouts (long-time user, rich history) | `-SCENARIO many` |
 | Free tier (Pro locked) | add `-UITEST_FORCE_FREE` to any scenario |
+| Stress (2 years dense history + in-progress workout; for performance work, not part of the standard matrix) | `-SCENARIO stress`, add `-UITEST_SHOW_RECORDER 1` to land in the recorder |
 
 Standard matrix for a change: **empty, one, many (Pro implied on the
 simulator) + the free variant of the most relevant scenario.** If the change

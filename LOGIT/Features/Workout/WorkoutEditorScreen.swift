@@ -316,7 +316,11 @@ struct WorkoutEditorScreen: View {
     // MARK: - Autosave
 
     private func refreshOnChange() {
+        // Throttled: typing into a set field fires a context change per
+        // keystroke, and rebroadcasting each one re-rendered the whole screen
+        // per digit (see the recorder's autosave pipeline for the same fix).
         cancellable = NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
+            .throttle(for: .milliseconds(300), scheduler: RunLoop.main, latest: true)
             .sink { _ in
                 self.workout.objectWillChange.send()
             }

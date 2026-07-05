@@ -18,8 +18,7 @@ extension TemplateSetGroup {
 
     public var sets: [TemplateSet] {
         get {
-            return (setOrder ?? .emptyList)
-                .compactMap { id in (sets_?.allObjects as? [TemplateSet])?.first { $0.id == id } }
+            resolvedOrder(of: sets_, by: setOrder)
         }
         set {
             setOrder = newValue.map { $0.id! }
@@ -29,8 +28,7 @@ extension TemplateSetGroup {
 
     private var exercises: [Exercise] {
         get {
-            return (exerciseOrder ?? .emptyList)
-                .compactMap { id in (exercises_?.allObjects as? [Exercise])?.first { $0.id == id } }
+            resolvedOrder(of: exercises_, by: exerciseOrder)
         }
         set {
             exerciseOrder = newValue.map { $0.id! }

@@ -249,6 +249,7 @@
 		A1000000000000000000001B /* logit_terms_and_conditions_ja.md in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000005B /* logit_terms_and_conditions_ja.md */; };
 		A1000000000000000000001C /* logit_terms_and_conditions_ko.md in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000005C /* logit_terms_and_conditions_ko.md */; };
 		A1000000000000000000001D /* logit_terms_and_conditions_it.md in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000005D /* logit_terms_and_conditions_it.md */; };
+		A10F7CBC23FBD8F36CC4A1D6 /* TestScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9071DE852500F5E9CEA5CC7 /* TestScenarios.swift */; };
 		A1B2C3D4E5F600000001B001 /* MuscleBalanceHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600000001F001 /* MuscleBalanceHistory.swift */; };
 		A1B2C3D4E5F600000003B003 /* MuscleBalanceHistoryChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600000003F003 /* MuscleBalanceHistoryChart.swift */; };
 		A1B2C3D4E5F600000007B007 /* MuscleBalanceBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600000007F007 /* MuscleBalanceBar.swift */; };
@@ -264,6 +265,7 @@
 		CFBDBE49B12AA1C06C620875 /* ChartRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82BC4F48812B4D49D4E38E2 /* ChartRange.swift */; };
 		D0AF3C855D8D73E72DA7AF92 /* SummaryWelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E62F41D02C28CB089872E955 /* SummaryWelcomeView.swift */; };
 		D1D1D1000000000000000B01 /* MetricTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D1D1000000000000000F01 /* MetricTile.swift */; };
+		E01F0F57C3115A2C00EB638E /* ScenarioScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6EBE9FCA104B46ACA995DE /* ScenarioScreenshots.swift */; };
 		E18E0521AED5762B30E5FA1F /* MuscleGroupDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */; };
 		E1E1E1000000000000000B01 /* ExerciseE1RMTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */; };
 		E1E1E1000000000000000B02 /* ExerciseE1RMScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */; };
@@ -607,6 +609,7 @@
 		D1D1D1000000000000000F01 /* MetricTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTile.swift; sourceTree = "<group>"; };
 		DC42311A655A248061E11238 /* SummaryEmptyStates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryEmptyStates.swift; sourceTree = "<group>"; };
 		DD50531C168D4EDFB527D76A /* SetEntityClasses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetEntityClasses.swift; sourceTree = "<group>"; };
+		DD6EBE9FCA104B46ACA995DE /* ScenarioScreenshots.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScenarioScreenshots.swift; sourceTree = "<group>"; };
 		DE557E27ADC9A2C02BE79DBE /* SummaryStatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryStatScreen.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseE1RMTile.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseE1RMScreen.swift; sourceTree = "<group>"; };
@@ -624,6 +627,7 @@
 		E1E1E1000000000000000F15 /* MetricComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricComparisonView.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F16 /* PersonalBestRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalBestRow.swift; sourceTree = "<group>"; };
 		E62F41D02C28CB089872E955 /* SummaryWelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryWelcomeView.swift; sourceTree = "<group>"; };
+		E9071DE852500F5E9CEA5CC7 /* TestScenarios.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TestScenarios.swift; sourceTree = "<group>"; };
 		EF956F5D14BBB78133BD528A /* ExerciseMergeServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeServiceTests.swift; sourceTree = "<group>"; };
 		F3C48765200C9745764F2EAA /* PeriodHistoryChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PeriodHistoryChart.swift; sourceTree = "<group>"; };
 		FE01CA11AB1E5077AE000001 /* SummaryProgressTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryProgressTab.swift; sourceTree = "<group>"; };
@@ -676,6 +680,7 @@
 			children = (
 				0400C2E827A4AEAF03BACDC6 /* SnapshotHelper.swift */,
 				3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */,
+				DD6EBE9FCA104B46ACA995DE /* ScenarioScreenshots.swift */,
 			);
 			path = LOGITUITests;
 			sourceTree = "<group>";
@@ -757,6 +762,7 @@
 				801BBC962DF7338A00CDB1FB /* LOGITApp.swift */,
 				C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */,
 				9D2E7A012F30AA0100C1D2E1 /* DemoWorkoutSeeder.swift */,
+				E9071DE852500F5E9CEA5CC7 /* TestScenarios.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -1534,6 +1540,7 @@
 			files = (
 				5701E3D211A49E43B531E6D8 /* SnapshotHelper.swift in Sources */,
 				B3DC6B7D9EF58D3A51C28227 /* LOGITScreenshots.swift in Sources */,
+				E01F0F57C3115A2C00EB638E /* ScenarioScreenshots.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1794,6 +1801,7 @@
 				CFBDBE49B12AA1C06C620875 /* ChartRange.swift in Sources */,
 				28E43ABE4881F802FBBACCE9 /* RangePicker.swift in Sources */,
 				5F6C92E180BAAEC435086790 /* PeriodHistoryChart.swift in Sources */,
+				A10F7CBC23FBD8F36CC4A1D6 /* TestScenarios.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -16,7 +16,10 @@ struct WorkoutListScreen: View {
 
     @State private var searchedText: String = ""
     @State private var selectedMuscleGroup: MuscleGroup? = nil
-    @State private var isShowingAddWorkout = false
+    /// The workout being added via the editor sheet. Created once on button tap — creating it
+    /// inside the sheet's ViewBuilder inserts a fresh orphan workout into the context on every
+    /// re-evaluation of the builder, and they all get persisted by the next save.
+    @State private var workoutToAdd: Workout?
     @State private var selectedWorkout: Workout?
 
     // MARK: - Body
@@ -90,14 +93,14 @@ struct WorkoutListScreen: View {
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button {
-                        isShowingAddWorkout = true
+                        workoutToAdd = database.newWorkout()
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
-            .sheet(isPresented: $isShowingAddWorkout) {
-                WorkoutEditorScreen(workout: database.newWorkout(), isAddingNewWorkout: true)
+            .sheet(item: $workoutToAdd) { workout in
+                WorkoutEditorScreen(workout: workout, isAddingNewWorkout: true)
             }
         }
         .navigationDestination(item: $selectedWorkout) { workout in

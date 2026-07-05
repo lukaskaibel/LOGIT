@@ -316,6 +316,8 @@
 
 "save" = "Ahorrar";
 "saveAsTemplate" = "Guardar como plantilla";
+"saveFailedMessage" = "No se pudieron guardar tus últimos cambios. Podrían perderse al cerrar la app. Inténtalo de nuevo.";
+"saveFailedTitle" = "Error al guardar";
 "saveTemplate" = "Guardar plantilla";
 "saveTime" = "Ahorra tiempo";
 "scanATemplate" = "Escanear una plantilla";

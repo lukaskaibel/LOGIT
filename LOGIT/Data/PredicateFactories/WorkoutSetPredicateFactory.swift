@@ -19,7 +19,9 @@ enum WorkoutSetPredicateFactory {
         var subpredicates = [NSPredicate]()
 
         if let exerciseId = exercise?.id {
-            let exercisePredicate = NSPredicate(format: "ANY setGroup.exercises_.id == %@", exerciseId.uuidString)
+            // UUID, not uuidString: string comparison works in SQLite but never matches during
+            // the in-memory evaluation of pending objects (see WorkoutSetGroupPredicateFactory).
+            let exercisePredicate = NSPredicate(format: "ANY setGroup.exercises_.id == %@", exerciseId as CVarArg)
             subpredicates.append(exercisePredicate)
         }
 
@@ -34,7 +36,7 @@ enum WorkoutSetPredicateFactory {
         }
         
         if let workoutId = workout?.id {
-            let workoutPredicate = NSPredicate(format: "setGroup.workout.id == %@", workoutId.uuidString)
+            let workoutPredicate = NSPredicate(format: "setGroup.workout.id == %@", workoutId as CVarArg)
             subpredicates.append(workoutPredicate)
         }
 

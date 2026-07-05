@@ -20,6 +20,10 @@ public class Database: ObservableObject {
 
     @Published var canUndo: Bool = false
     @Published var canRedo: Bool = false
+    /// Set when persisting to disk failed even after retrying. The app shows an alert for it:
+    /// a failed save means everything still on screen is memory-only and would vanish with the
+    /// next relaunch, so the user must know — silently swallowing it loses their training data.
+    @Published var lastSaveFailed = false
     var isPreview: Bool
 
     // MARK: - Init
@@ -44,6 +48,17 @@ public class Database: ObservableObject {
         if isPreview {
             setupPreviewDatabase()
         }
+
+        // The CloudKit mirroring delegate writes to the store through its own background
+        // contexts. Without merging those changes into the view context, its row snapshots go
+        // stale, and the next save fails optimistic locking with an NSMergeConflict (the default
+        // NSErrorMergePolicy refuses to resolve it). Since that only happens with live iCloud
+        // sync, it surfaces on real devices: a saved workout survives in memory for the session,
+        // then is gone after a relaunch. Merge remote changes automatically, and on conflict keep
+        // the user's local edits property by property — on this device, what the user just
+        // entered is the truth.
+        container.viewContext.automaticallyMergesChangesFromParent = true
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
         container.viewContext.undoManager = UndoManager()
         observeUndoManager()
@@ -110,7 +125,28 @@ public class Database: ObservableObject {
                 try self.context.save()
                 os_log("Database: Context saved successfully", type: .info)
             } catch {
-                os_log("Database: Failed to save context: %@", type: .error, error.localizedDescription)
+                // Most likely a merge conflict from row snapshots gone stale under CloudKit
+                // mirroring. Refreshing re-reads the store rows while keeping the unsaved
+                // edits on top, so one retry usually recovers. Log the full error —
+                // localizedDescription of an NSMergeConflict is uselessly generic, and
+                // non-public log arguments are redacted to "<private>" on device.
+                os_log(
+                    "Database: Failed to save context, retrying after refresh: %{public}@",
+                    type: .error, String(describing: error)
+                )
+                self.context.refreshAllObjects()
+                do {
+                    try self.context.save()
+                    os_log("Database: Context saved successfully on retry", type: .info)
+                } catch {
+                    os_log(
+                        "Database: Failed to save context after retry: %{public}@",
+                        type: .fault, String(describing: error)
+                    )
+                    DispatchQueue.main.async {
+                        self.lastSaveFailed = true
+                    }
+                }
             }
         }
     }

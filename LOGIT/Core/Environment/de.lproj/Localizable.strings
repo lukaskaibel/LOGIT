@@ -312,6 +312,8 @@
 
 "save" = "Speichern";
 "saveAsTemplate" = "Als Vorlage";
+"saveFailedMessage" = "Deine letzten Änderungen konnten nicht gespeichert werden. Sie gehen möglicherweise verloren, wenn die App geschlossen wird. Bitte versuche es erneut.";
+"saveFailedTitle" = "Speichern fehlgeschlagen";
 "saveTemplate" = "Vorlage speichern";
 "saveTime" = "Spare Zeit";
 "scanATemplate" = "Scanne eine Vorlage";

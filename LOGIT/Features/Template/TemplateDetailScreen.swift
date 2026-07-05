@@ -124,7 +124,7 @@ struct TemplateDetailScreen: View {
             }
         }
         .sheet(item: $templateShareFileURL) { url in
-            ShareSheet(activityItems: [WorkoutActivityItemSource(fileURL: url, title: template.name ?? NSLocalizedString("template", comment: ""))])
+            ShareSheet(activityItems: [WorkoutActivityItemSource(fileURL: url, title: template.resolvedName ?? NSLocalizedString("template", comment: ""))])
                 .onDisappear {
                     do {
                         try FileManager.default.removeItem(at: url)
@@ -151,9 +151,15 @@ struct TemplateDetailScreen: View {
         VStack(alignment: .leading) {
             Text(NSLocalizedString("template", comment: ""))
                 .screenHeaderTertiaryStyle()
-            Text(template.name ?? "")
+            Text(template.resolvedName ?? "")
                 .screenHeaderStyle()
                 .lineLimit(2)
+            if let description = template.displayDescription {
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 2)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

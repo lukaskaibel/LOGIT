@@ -31,6 +31,7 @@ struct LOGIT: App {
     @StateObject private var homeNavigationCoordinator = HomeNavigationCoordinator()
     @StateObject private var chronograph: Chronograph
     @StateObject private var defaultExerciseService: DefaultExerciseService
+    @StateObject private var defaultTemplateService: DefaultTemplateService
     @StateObject private var exerciseSuggestionService: ExerciseSuggestionService
 
     @State private var selectedTab: TabType = .home
@@ -79,6 +80,7 @@ struct LOGIT: App {
         _muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
         _homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
         _defaultExerciseService = StateObject(wrappedValue: DefaultExerciseService(database: database))
+        _defaultTemplateService = StateObject(wrappedValue: DefaultTemplateService(database: database))
         _exerciseSuggestionService = StateObject(wrappedValue: ExerciseSuggestionService(database: database))
 
         UserDefaults.standard.register(defaults: [
@@ -164,6 +166,11 @@ struct LOGIT: App {
                         isShowingWelcome = true
                     }
                     defaultExerciseService.loadDefaultExercisesIfNeeded()
+                    // Skipped for fastlane screenshot runs so the curated fixture data stays
+                    // exactly what the marketing screenshots expect.
+                    if !ScreenshotFixtures.isEnabled {
+                        defaultTemplateService.loadDefaultTemplatesIfNeeded()
+                    }
                     #if DEBUG
                     DemoWorkoutSeeder.seedIfRequested(database: database)
                     #endif

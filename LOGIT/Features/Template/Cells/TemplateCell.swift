@@ -37,11 +37,17 @@ struct TemplateCell: View {
                     Text(NSLocalizedString("template", comment: "").uppercased())
                         .font(.footnote.weight(.medium))
                         .foregroundStyle(.secondary)
-                    Text(template.name ?? NSLocalizedString("noName", comment: ""))
+                    Text(template.displayName)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
                         .lineLimit(1)
                 }
+            }
+            if let description = template.displayDescription {
+                Text(description)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -305,7 +305,10 @@ struct TemplateEditorScreen: View {
     // MARK: - Computed Properties
 
     private var templateName: Binding<String> {
-        Binding(get: { template.name ?? "" }, set: { template.name = $0 })
+        // Resolve `_default.` keys so bundled templates show their localized name here. Once
+        // the user types, the literal text is stored and the template stops being localized —
+        // renaming makes it theirs.
+        Binding(get: { template.resolvedName ?? "" }, set: { template.name = $0 })
     }
 
     /// The template set whose rep/weight field currently holds focus, derived from the keyboard

@@ -13,7 +13,7 @@ import Ifrit
 extension Template {
     var searchProperties: [FuseProp] {
         var props: [FuseProp] = []
-        if let name = name {
+        if let name = resolvedName {
             props.append(FuseProp(name, weight: 1.0))
         }
         let exerciseNames = exercises.compactMap { $0.displayName }.joined(separator: " ")
@@ -27,6 +27,35 @@ extension Template {
 // MARK: - Template Extension
 
 extension Template {
+    /// `name` with `_default.` localization keys resolved (bundled templates store the key, not
+    /// a language-specific string, so every device shows its own language). Preserves nil and
+    /// empty names — use this wherever `template.name` used to be read directly.
+    var resolvedName: String? {
+        guard let name = name else { return nil }
+        return name.hasPrefix("_default.") ? NSLocalizedString(name, comment: "") : name
+    }
+
+    /// The name to render in cells and headers, mirroring `Exercise.displayName`.
+    var displayName: String {
+        guard let resolvedName = resolvedName, !resolvedName.isEmpty else {
+            return NSLocalizedString("noName", comment: "")
+        }
+        return resolvedName
+    }
+
+    var isDefaultTemplate: Bool {
+        name?.hasPrefix("_default.") ?? false
+    }
+
+    /// Localized description for display, or nil when there is none. Bundled templates store a
+    /// `_default.` localization key in `descriptionText`; user descriptions are literal text.
+    var displayDescription: String? {
+        guard let descriptionText = descriptionText, !descriptionText.isEmpty else { return nil }
+        return descriptionText.hasPrefix("_default.")
+            ? NSLocalizedString(descriptionText, comment: "")
+            : descriptionText
+    }
+
     var workouts: [Workout] {
         get {
             (workouts_?.allObjects as? [Workout] ?? .emptyList)

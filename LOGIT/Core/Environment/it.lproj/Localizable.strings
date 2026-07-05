@@ -722,6 +722,19 @@
 "_default.exercise.ringPushups" = "Push-up ad anello";
 "_default.exercise.ringRows" = "Righe ad anello";
 
+// MARK: - Default Template Names & Descriptions
+
+"_default.template.fullBodyA" = "Full Body A";
+"_default.template.fullBodyA.description" = "Squat, distensioni e rematore: il classico allenamento per iniziare. Alternalo con Full Body B in 2–3 giorni non consecutivi a settimana e aumenta un po' il peso quando tutte le serie risultano gestibili.";
+"_default.template.fullBodyB" = "Full Body B";
+"_default.template.fullBodyB.description" = "Il complemento di Full Body A, con stacco, distensioni per le spalle e lat machine. Alternali per una routine semplice ed equilibrata.";
+"_default.template.pushDay" = "Giorno Push";
+"_default.template.pushDay.description" = "Petto, spalle e tricipiti: tutto ciò che spinge. Parte del classico split push/pull/gambe, insieme a Giorno Pull e Giorno Gambe.";
+"_default.template.pullDay" = "Giorno Pull";
+"_default.template.pullDay.description" = "Schiena e bicipiti: tutto ciò che tira. Parte del classico split push/pull/gambe, insieme a Giorno Push e Giorno Gambe.";
+"_default.template.legDay" = "Giorno Gambe";
+"_default.template.legDay.description" = "Quadricipiti, femorali, glutei e polpacci. Parte del classico split push/pull/gambe, insieme a Giorno Push e Giorno Pull.";
+
 // MARK: - Volume Highlights
 "avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "Stai registrando in media più volume per allenamento questo mese rispetto al mese scorso.";
 "avgLessVolumePerWorkoutThisMonthThanLastMonth" = "Questo mese stai registrando un volume medio per allenamento inferiore rispetto al mese scorso.";

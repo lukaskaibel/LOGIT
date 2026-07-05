@@ -722,6 +722,19 @@
 "_default.exercise.ringPushups" = "Flexiones de anillo";
 "_default.exercise.ringRows" = "Filas de anillos";
 
+// MARK: - Default Template Names & Descriptions
+
+"_default.template.fullBodyA" = "Cuerpo completo A";
+"_default.template.fullBodyA.description" = "Sentadilla, press y remo: el entrenamiento clásico para empezar. Altérnalo con Cuerpo completo B 2–3 días no consecutivos por semana y sube un poco el peso cuando todas las series te resulten manejables.";
+"_default.template.fullBodyB" = "Cuerpo completo B";
+"_default.template.fullBodyB.description" = "El complemento de Cuerpo completo A, con peso muerto, press de hombros y jalón. Alterna ambos para una rutina sencilla y equilibrada.";
+"_default.template.pushDay" = "Día de empuje";
+"_default.template.pushDay.description" = "Pecho, hombros y tríceps: todo lo que empuja. Parte del clásico split de empuje/tirón/pierna, junto con Día de tirón y Día de pierna.";
+"_default.template.pullDay" = "Día de tirón";
+"_default.template.pullDay.description" = "Espalda y bíceps: todo lo que tira. Parte del clásico split de empuje/tirón/pierna, junto con Día de empuje y Día de pierna.";
+"_default.template.legDay" = "Día de pierna";
+"_default.template.legDay.description" = "Cuádriceps, femorales, glúteos y gemelos. Parte del clásico split de empuje/tirón/pierna, junto con Día de empuje y Día de tirón.";
+
 // MARK: - Volume Highlights
 "avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "Estás promediando más volumen por entrenamiento este mes que el mes pasado.";
 "avgLessVolumePerWorkoutThisMonthThanLastMonth" = "Estás promediando menos volumen por entrenamiento este mes que el mes pasado.";

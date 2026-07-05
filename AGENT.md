@@ -128,7 +128,10 @@ that are committed to the repo.
   copy or screenshots, update every matching `fastlane/metadata/<locale>` and
   `fastlane/screenshots/<locale>` file. If the change touches default
   exercises, localize both the `_default.exercise.*` names and the localized
-  instruction arrays in `LOGIT/Resources/default_exercises.json`.
+  instruction arrays in `LOGIT/Resources/default_exercises.json`. Default
+  templates (`LOGIT/Resources/default_templates.json`) keep their structure in
+  the JSON but localize their `_default.template.*` names and descriptions in
+  every `Localizable.strings` file.
 - Keep translations close to the English length where possible, but do not make
   them awkward. Use natural Apple-style platform wording, preserve product
   terms such as iCloud, App Store, Live Activity, Dynamic Island, and LOGIT Pro,

@@ -42,12 +42,13 @@ struct DefaultExercise: Codable {
 
 class DefaultExerciseService: ObservableObject {
     private let database: Database
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private let lastLoadedVersionKey = "lastLoadedDefaultExercisesVersion"
     private let lastLoadedLocaleKey = "lastLoadedDefaultExercisesLocale"
-    
-    init(database: Database) {
+
+    init(database: Database, defaults: UserDefaults = .standard) {
         self.database = database
+        self.defaults = defaults
     }
     
     func loadDefaultExercisesIfNeeded() {
@@ -94,37 +95,9 @@ class DefaultExerciseService: ObservableObject {
     }
     
     private func generateUUID(from defaultId: String) -> UUID {
-        // Create deterministic UUID from default ID
-        // Use MD5 hash to generate UUID v3-style identifier
-        let namespace = "com.logit.defaultexercise"
-        let input = namespace + defaultId
-        
-        guard let data = input.data(using: .utf8) else {
-            return UUID()
-        }
-        
-        // Simple hash-based UUID generation
-        var hash = data.withUnsafeBytes { bytes -> [UInt8] in
-            var result = [UInt8](repeating: 0, count: 16)
-            for (index, byte) in bytes.enumerated() {
-                result[index % 16] ^= byte
-            }
-            return result
-        }
-        
-        // Set version (3) and variant bits for UUID
-        hash[6] = (hash[6] & 0x0F) | 0x30
-        hash[8] = (hash[8] & 0x3F) | 0x80
-        
-        let uuidString = String(format: "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-                               hash[0], hash[1], hash[2], hash[3],
-                               hash[4], hash[5], hash[6], hash[7],
-                               hash[8], hash[9], hash[10], hash[11],
-                               hash[12], hash[13], hash[14], hash[15])
-        
-        return UUID(uuidString: uuidString) ?? UUID()
+        DeterministicUUID.make(namespace: "com.logit.defaultexercise", id: defaultId)
     }
-    
+
     private func fetchExerciseByDefaultId(_ defaultId: String) -> Exercise? {
         let uuid = generateUUID(from: defaultId)
         

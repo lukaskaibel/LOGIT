@@ -718,6 +718,19 @@
 "_default.exercise.ringPushups" = "Ring Liegestütze";
 "_default.exercise.ringRows" = "Ring Rudern";
 
+// MARK: - Default Template Names & Descriptions
+
+"_default.template.fullBodyA" = "Ganzkörper A";
+"_default.template.fullBodyA.description" = "Kniebeugen, Drücken und Rudern – das klassische Einsteiger-Workout. Wechsle an 2–3 nicht aufeinanderfolgenden Tagen pro Woche mit Ganzkörper B ab und steigere das Gewicht leicht, sobald alle Sätze gut machbar sind.";
+"_default.template.fullBodyB" = "Ganzkörper B";
+"_default.template.fullBodyB.description" = "Das Gegenstück zu Ganzkörper A – mit Kreuzheben, Schulterdrücken und Latzug. Im Wechsel ergeben beide eine einfache, ausgewogene Routine.";
+"_default.template.pushDay" = "Push-Tag";
+"_default.template.pushDay.description" = "Brust, Schultern und Trizeps – alles, was drückt. Teil des klassischen Push/Pull/Beine-Splits, zusammen mit Pull-Tag und Beintag.";
+"_default.template.pullDay" = "Pull-Tag";
+"_default.template.pullDay.description" = "Rücken und Bizeps – alles, was zieht. Teil des klassischen Push/Pull/Beine-Splits, zusammen mit Push-Tag und Beintag.";
+"_default.template.legDay" = "Beintag";
+"_default.template.legDay.description" = "Quadrizeps, Beinbeuger, Gesäß und Waden. Teil des klassischen Push/Pull/Beine-Splits, zusammen mit Push-Tag und Pull-Tag.";
+
 // MARK: - Volume Highlights
 "avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "Du bewegst im Durchschnitt mehr Volumen pro Workout diesen Monat als letzten Monat.";
 "avgLessVolumePerWorkoutThisMonthThanLastMonth" = "Du bewegst im Durchschnitt weniger Volumen pro Workout diesen Monat als letzten Monat.";

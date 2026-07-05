@@ -11,15 +11,17 @@ import SwiftUI
 /// Detail screen behind a workout stat tile: the stat across *every* workout over time — the tile
 /// zooms into this workout's recent runs, the screen zooms out to the whole landscape. Scoped by the
 /// shared `RangePicker` (3M / 1Y / All) like every scrollable capability chart: one bar per workout
-/// in the 3M view, monthly averages in the 1Y and All views. The bar for the workout the screen was
-/// opened from wears the workout's muscle-group gradient (its identity color), a tapped bar lights
-/// up white, every other stays a quiet gray. The header is a two-value scoreboard like the
-/// in-workout metric popover: the average per workout across the *shown* window (the reference —
-/// neutral, and it moves as you scroll) on one side, this workout's own value (the bold white
-/// constant) on the other, and a pill between them reading this workout against that average.
-/// Scroll the chart and the average + pill retarget while this workout stays the anchor — we're in
-/// its detail, after all. One screen serves all four stats — `WorkoutStatMetric` supplies values,
-/// formatting, and texts.
+/// in the 3M view — this workout's bar in its muscle-group gradient — and monthly averages in the
+/// 1Y and All views, where this workout instead gets its own dedicated column at the far right,
+/// outside the month grid: the months stay honest averages, never dressed up as this workout, yet
+/// its gradient bar always exists to read them against. A tapped bar lights up white, every other
+/// stays a quiet gray. The header is a
+/// two-value scoreboard like the in-workout metric popover: the average per workout across the
+/// *shown* window (the reference — neutral, and it moves as you scroll) on one side, this workout's
+/// own value (the bold white constant) on the other, and a pill between them reading this workout
+/// against that average. Scroll the chart and the average + pill retarget while this workout stays
+/// the anchor — we're in its detail, after all. One screen serves all four stats —
+/// `WorkoutStatMetric` supplies values, formatting, and texts.
 struct WorkoutStatScreen: View {
     /// A bar of the chart: a single workout in the 3M range, a whole month's average in 1Y / All.
     private struct StatPoint: Identifiable {
@@ -29,8 +31,9 @@ struct WorkoutStatScreen: View {
         let rawValue: Double
         /// Display units for the chart's y-axis.
         let value: Double
-        /// The bar for the workout the screen was opened from — drawn with the workout's muscle-group
-        /// gradient; every other bar stays a quiet gray (a tapped bar lights up white).
+        /// The 3M bar for the workout the screen was opened from — drawn with the workout's
+        /// muscle-group gradient; every other bar stays a quiet gray (a tapped bar lights up
+        /// white). At month zoom no bar is current — this workout has its own column there.
         let isCurrent: Bool
         /// The single workout behind this bar — nil for a monthly average bar.
         let workout: Workout?
@@ -105,13 +108,26 @@ struct WorkoutStatScreen: View {
             }
         }
         .onAppear {
-            chartScrollPosition = chartRange.initialScrollPosition(firstDataDate: firstDataDate)
+            chartScrollPosition = initialScrollPosition(firstDataDate: firstDataDate)
         }
         .onChange(of: chartRange) {
             // Re-initialize scroll position when switching ranges to avoid desync with the
             // visible window (same fix as the exercise chart screens).
-            chartScrollPosition = chartRange.initialScrollPosition(firstDataDate: firstDataDate)
+            chartScrollPosition = initialScrollPosition(firstDataDate: firstDataDate)
         }
+    }
+
+    /// The shared initial position, but framing *this workout* instead of today: the window opens
+    /// with this workout's bar at its right edge — an off-screen subject reads as a missing one, and
+    /// the visible average then compares it against the workouts leading up to it. For recent
+    /// workouts this lands exactly on the shared anchor; All shows everything anyway. Clamped to the
+    /// domain start so a subject near the first data point doesn't aim past the left edge.
+    private func initialScrollPosition(firstDataDate: Date?) -> Date {
+        guard chartRange != .allTime, let workoutDate = workout.date else {
+            return chartRange.initialScrollPosition(firstDataDate: firstDataDate)
+        }
+        let anchored = chartRange.initialScrollPosition(firstDataDate: firstDataDate, now: workoutDate)
+        return max(anchored, chartRange.xDomain(firstDataDate: firstDataDate).lowerBound)
     }
 
     // MARK: - Header
@@ -157,13 +173,43 @@ struct WorkoutStatScreen: View {
 
     private func chart(points: [StatPoint], snappedPoint: StatPoint?, firstDataDate: Date?) -> some View {
         let yScaleMax = chartYScaleMax(for: points)
-        return Chart {
+        // At month zoom this workout gets its own dedicated column at the far right instead of a
+        // bar inside the month grid; in 3M its bar already stands among the other workouts.
+        let ownColumnValue = chartRange == .threeMonths ? nil : thisWorkoutDisplayValue
+        return HStack(alignment: .top, spacing: 8) {
+            historyChart(
+                points: points,
+                snappedPoint: snappedPoint,
+                firstDataDate: firstDataDate,
+                yScaleMax: yScaleMax,
+                showsYAxisLabels: ownColumnValue == nil
+            )
+            if let ownColumnValue {
+                thisWorkoutColumn(value: ownColumnValue, yScaleMax: yScaleMax)
+            }
+        }
+        .frame(height: 300)
+        .padding(.leading)
+        .padding(.trailing, 5)
+    }
+
+    /// The scrollable history: one bar per workout in 3M, month averages in 1Y / All. When this
+    /// workout's dedicated column stands beside it, the y-axis labels move over there — the shared
+    /// scale reads once, at the far right — and this chart keeps just the gridlines.
+    private func historyChart(
+        points: [StatPoint],
+        snappedPoint: StatPoint?,
+        firstDataDate: Date?,
+        yScaleMax: Double,
+        showsYAxisLabels: Bool
+    ) -> some View {
+        Chart {
             if let snappedPoint {
                 RuleMark(x: .value("Selected", snappedPoint.date, unit: barUnit))
                     .foregroundStyle(Color.label.opacity(0.35))
                     .lineStyle(StrokeStyle(lineWidth: 2))
                     .annotation(
-                        position: .top,
+                        position: annotationPosition(for: snappedPoint, firstDataDate: firstDataDate),
                         overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
                     ) {
                         annotationCard(for: snappedPoint)
@@ -180,7 +226,7 @@ struct WorkoutStatScreen: View {
                 .opacity(snappedPoint == nil || snappedPoint?.id == point.id ? 1.0 : 0.4)
             }
         }
-        .chartXScale(domain: chartRange.xDomain(firstDataDate: firstDataDate))
+        .chartXScale(domain: xDomain(firstDataDate: firstDataDate))
         .chartYScale(domain: 0 ... yScaleMax)
         .chartScrollableAxes(.horizontal)
         .chartScrollPosition(x: $chartScrollPosition)
@@ -188,7 +234,7 @@ struct WorkoutStatScreen: View {
             .valueAligned(matching: chartRange.scrollSnapComponents)
         )
         .chartXSelection(value: $selectedDate)
-        .chartXVisibleDomain(length: chartRange.visibleDomainSeconds(firstDataDate: firstDataDate))
+        .chartXVisibleDomain(length: visibleDomainSeconds(firstDataDate: firstDataDate))
         .chartXAxis {
             let axisStride = chartRange.axisStride(firstDataDate: firstDataDate)
             AxisMarks(
@@ -205,14 +251,60 @@ struct WorkoutStatScreen: View {
             }
         }
         .chartYAxis {
-            AxisMarks(values: [0, yScaleMax / 2, yScaleMax])
+            AxisMarks(values: [0, yScaleMax / 2, yScaleMax]) { _ in
+                AxisGridLine()
+                if showsYAxisLabels {
+                    AxisValueLabel()
+                }
+            }
         }
         .emptyPlaceholder(points) {
             Text(NSLocalizedString("noData", comment: ""))
         }
-        .frame(height: 300)
-        .padding(.leading)
-        .padding(.trailing, 5)
+    }
+
+    /// This workout's dedicated column at the far right of the month-zoom charts: its own bar in
+    /// the workout's gradient, standing outside the month grid — the months stay honest averages,
+    /// never dressed up as this workout, yet its bar is always there to read them against. The
+    /// column carries the row's y-axis labels, and its x label is the workout's day, highlighted
+    /// like the axis' "now" marks.
+    private func thisWorkoutColumn(value: Double, yScaleMax: Double) -> some View {
+        Chart {
+            BarMark(
+                x: .value("Workout", "thisWorkout"),
+                y: .value("Value", value),
+                width: .fixed(16)
+            )
+            .foregroundStyle(workout.sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top))
+            .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+        }
+        .chartYScale(domain: 0 ... yScaleMax)
+        .chartXAxis {
+            AxisMarks { _ in
+                AxisValueLabel {
+                    Text(workout.date?.formatted(.dateTime.day().month()) ?? "")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Color.primary)
+                }
+            }
+        }
+        .chartYAxis {
+            AxisMarks(values: [0, yScaleMax / 2, yScaleMax])
+        }
+        .frame(width: 84)
+    }
+
+    /// Where the tooltip hangs off the rule mark: bars in the right third of the visible window get
+    /// a leading card, the left third a trailing one. `fit(to: .chart)` alone can't keep the card
+    /// on screen here — the plot scrolls, so "the chart" includes off-viewport months and an edge
+    /// bar's card happily lays out into them, clipped by the viewport.
+    private func annotationPosition(for point: StatPoint, firstDataDate: Date?) -> AnnotationPosition {
+        let windowSeconds = Double(visibleDomainSeconds(firstDataDate: firstDataDate))
+        guard windowSeconds > 0 else { return .top }
+        let fraction = point.date.timeIntervalSince(chartScrollPosition) / windowSeconds
+        if fraction > 0.66 { return .topLeading }
+        if fraction < 0.33 { return .topTrailing }
+        return .top
     }
 
     private func annotationCard(for point: StatPoint) -> some View {
@@ -230,10 +322,11 @@ struct WorkoutStatScreen: View {
     }
 
     private func annotationValue(for point: StatPoint) -> String {
-        switch chartRange {
-        case .threeMonths: return metric.formattedValue(fromRaw: Int(point.rawValue.rounded()))
-        case .year, .allTime: return metric.formattedAverage(rawAverage: point.rawValue)
-        }
+        // A bar backed by a single workout shows that workout's exact value whatever the range;
+        // only month bars format as averages.
+        point.workout != nil
+            ? metric.formattedValue(fromRaw: Int(point.rawValue.rounded()))
+            : metric.formattedAverage(rawAverage: point.rawValue)
     }
 
     private func annotationSubtitle(for point: StatPoint) -> String {
@@ -266,6 +359,9 @@ struct WorkoutStatScreen: View {
                 )
             }
         case .year, .allTime:
+            // At month zoom every bar is an honest whole-month average (this workout included) —
+            // a month is never dressed up as a single workout. This workout itself stands in its
+            // dedicated column beside the chart, not in the month grid.
             let grouped = Dictionary(grouping: workouts) { $0.date?.startOfMonth ?? .now }
             return grouped
                 .map { month, monthWorkouts in
@@ -276,7 +372,7 @@ struct WorkoutStatScreen: View {
                         date: month,
                         rawValue: rawAverage,
                         value: metric.displayValue(fromRaw: Int(rawAverage.rounded())),
-                        isCurrent: workout.date?.startOfMonth == month,
+                        isCurrent: false,
                         workout: nil,
                         workoutCount: monthWorkouts.count
                     )
@@ -306,18 +402,47 @@ struct WorkoutStatScreen: View {
 
     // MARK: - Chart Window
 
+    /// The shared range domain, except All extends through the current month's end: this screen
+    /// draws whole-month bars at that zoom, and the shared week-aligned end would clip the newest
+    /// month's bar — usually this workout's own — to an invisible sliver.
+    private func xDomain(firstDataDate: Date?) -> ClosedRange<Date> {
+        let domain = chartRange.xDomain(firstDataDate: firstDataDate)
+        guard chartRange == .allTime else { return domain }
+        return domain.lowerBound ... max(domain.upperBound, Date.now.endOfMonth)
+    }
+
+    /// Matches `xDomain`: All fits its (month-extended) domain into view, the scrolling ranges
+    /// keep the shared window lengths.
+    private func visibleDomainSeconds(firstDataDate: Date?) -> Int {
+        guard chartRange == .allTime else {
+            return chartRange.visibleDomainSeconds(firstDataDate: firstDataDate)
+        }
+        let domain = xDomain(firstDataDate: firstDataDate)
+        return Int(domain.upperBound.timeIntervalSince(domain.lowerBound).rounded(.up))
+    }
+
     private func visibleEndDate(firstDataDate: Date?) -> Date {
         Calendar.current.date(
             byAdding: .second,
-            value: chartRange.visibleDomainSeconds(firstDataDate: firstDataDate),
+            value: visibleDomainSeconds(firstDataDate: firstDataDate),
             to: chartScrollPosition
         )!
     }
 
-    /// Smallest "nice" number (1/2/2.5/5 × power of ten) at or above the largest bar, so the
-    /// y-axis marks land on round values whatever unit the stat uses.
+    /// This workout's value in display units — the height of its dedicated column's bar; nil when
+    /// the workout has no usable value (e.g. duration without a recorded end), which also hides
+    /// the column, matching the header's "––".
+    private var thisWorkoutDisplayValue: Double? {
+        let raw = metric.rawValue(of: workout)
+        guard raw > 0 else { return nil }
+        return metric.displayValue(fromRaw: raw)
+    }
+
+    /// Smallest "nice" number (1/2/2.5/5 × power of ten) at or above the largest bar (this
+    /// workout's dedicated column included, when it tops every history bar), so the y-axis marks
+    /// land on round values whatever unit the stat uses.
     private func chartYScaleMax(for points: [StatPoint]) -> Double {
-        let maxValue = points.map(\.value).max() ?? 0
+        let maxValue = max(points.map(\.value).max() ?? 0, thisWorkoutDisplayValue ?? 0)
         guard maxValue > 0 else { return 1 }
         let magnitude = pow(10, floor(log10(maxValue)))
         let normalized = maxValue / magnitude
@@ -338,10 +463,11 @@ struct WorkoutStatScreen: View {
 
     // MARK: - Colors
 
-    /// The bar for the workout the screen was opened from wears the workout's own muscle-group
-    /// gradient — its identity color, the screen's accent. A bar tapped to inspect lights up white
-    /// ("now showing this"); every other bar stays a quiet gray. `isCurrent` wins when the current
-    /// bar is itself the tapped one — its gradient already stands out.
+    /// The bar for the workout the screen was opened from (only the 3M view has one inside the
+    /// history — at month zoom this workout stands in its own column) wears the workout's own
+    /// muscle-group gradient — its identity color, the screen's accent. A bar tapped to inspect
+    /// lights up white ("now showing this"); every other bar stays a quiet gray. `isCurrent` wins
+    /// when the current bar is itself the tapped one — its gradient already stands out.
     private func barStyle(for point: StatPoint, snappedPoint: StatPoint?) -> AnyShapeStyle {
         if point.isCurrent { return workout.sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top) }
         if snappedPoint?.id == point.id { return AnyShapeStyle(Color.label) }

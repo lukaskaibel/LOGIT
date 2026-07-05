@@ -2,9 +2,18 @@
 
 Every user-visible UI change must be verified in the simulator across the
 app's critical data states, and the screenshots must be shown to the user in
-the final response (clickable file paths per scenario; for larger matrices
-also render an HTML contact sheet so the states can be compared side by side).
-Point out any scenario where the change looks wrong or degenerate.
+the final response. Point out any scenario where the change looks wrong or
+degenerate.
+
+Present the result as a visual overview Artifact, not just text — this is the
+expected closing deliverable for any substantial UI or behavioral change.
+Build an HTML contact sheet (load the `artifact-design` skill first) that
+embeds the simulator screenshots with one short caption per shot saying what
+changed, so the states (and before/after) can be compared at a glance; still
+include clickable file paths per scenario as a fallback. Reuse the same
+Artifact across iterations of one change (redeploy the same file path). A
+trivial or non-visual change just gets a concise written summary — don't force
+an artifact for a one-liner.
 
 The states, all driven by launch arguments (DEBUG builds only, implemented in
 `LOGIT/App/TestScenarios.swift`):

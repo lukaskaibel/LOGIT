@@ -10,26 +10,27 @@ import SwiftUI
 // MARK: - Pinned exercises empty state
 
 /// Shown in the Summary's pinned-exercises section when nothing is pinned: two dimmed sample tiles
-/// behind a "Pin your key lifts" call-to-action. The samples preview the real pinned-tile look —
-/// which doubles as a Pro teaser, since the marquee metrics they show (Est. 1RM, volume) are exactly
-/// what's gated. Replaces the old gray tip card.
+/// behind a "Pin your key lifts" call-to-action. The samples are the real `MetricTile` rendered
+/// with made-up numbers, so they always match the current pinned-tile design. They double as a Pro
+/// teaser, since the marquee metrics they show (Est. 1RM, volume) are exactly what's gated. Replaces
+/// the old gray tip card.
 struct PinnedExercisesEmptyState: View {
     let onAdd: () -> Void
 
     var body: some View {
         ZStack {
             HStack(spacing: 8) {
-                GhostExerciseTile(
+                SampleExerciseTile(
                     name: "Bench Press",
                     value: "102",
-                    unit: WeightUnit.used.rawValue,
+                    percentChange: 4.2,
                     color: MuscleGroup.chest.color,
                     points: [0.35, 0.5, 0.45, 0.7, 1.0]
                 )
-                GhostExerciseTile(
+                SampleExerciseTile(
                     name: "Squat",
                     value: "145",
-                    unit: WeightUnit.used.rawValue,
+                    percentChange: 2.8,
                     color: MuscleGroup.legs.color,
                     points: [0.4, 0.55, 0.5, 0.8, 1.0]
                 )
@@ -124,45 +125,51 @@ private func callToAction(title: String, buttonTitle: String, onAdd: @escaping (
     }
 }
 
-/// A dimmed sample of a pinned exercise tile — mirrors the `MetricTile` pinned look (name, Est. 1RM
-/// caption, value, corner sparkline) closely enough to read as a believable preview.
-private struct GhostExerciseTile: View {
+/// A dimmed sample of a pinned exercise tile: the real `MetricTile` with the real tile sparkline,
+/// rendered from made-up numbers — deliberately not a hand-drawn replica, so a tile redesign can
+/// never leave this preview showing the old look. Same anatomy as `ExerciseBestMetricTile`, with
+/// the exercise name in the title slot and the metric as the subtitle so the preview reads as
+/// "your key lifts".
+private struct SampleExerciseTile: View {
     let name: String
     let value: String
-    let unit: String
+    let percentChange: Double
     let color: Color
-    let points: [CGFloat]
+    /// Normalized 0…1 progression, oldest → newest, laid out weekly across the current-best window.
+    let points: [Double]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
-                Text(name)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                Spacer(minLength: 0)
-            }
-            Text(NSLocalizedString("estimatedOneRepMax", comment: ""))
-                .font(.caption2.weight(.bold))
-                .textCase(.uppercase)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .padding(.top, 10)
-            UnitView(value: value, unit: unit, configuration: .large, unitColor: .secondaryLabel)
-                .foregroundStyle(Color.label)
-                .padding(.top, 2)
-            Spacer(minLength: 8)
-            GhostTrendLine(points: points, color: color)
-                .frame(height: 24)
+        MetricTile(
+            title: name,
+            label: .plain(NSLocalizedString("estimatedOneRepMax", comment: "")),
+            value: value,
+            unit: WeightUnit.used.rawValue,
+            accent: AnyShapeStyle(color),
+            accentColor: color,
+            percentChange: percentChange
+        ) {
+            ExerciseTileSparkline(
+                points: samplePoints,
+                color: color,
+                window: .currentBest,
+                bleeds: true
+            )
         }
-        .padding(CELL_PADDING)
-        .frame(height: 150, alignment: .topLeading)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .tileStyle()
+    }
+
+    /// The normalized progression on real dates — one point a week, newest today — so the sparkline
+    /// plots inside the same current-best window a real pinned tile shows.
+    private var samplePoints: [ExerciseTileSparkline.Point] {
+        points.enumerated().map { index, value in
+            let daysAgo = (points.count - 1 - index) * 7
+            let date = Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now) ?? .now
+            return ExerciseTileSparkline.Point(date: date, value: value)
+        }
     }
 }
 
-/// A simple rounded-cap line through normalized 0…1 points — the sample sparkline on both empty states.
+/// A simple rounded-cap line through normalized 0…1 points — the sample sparkline on the
+/// measurements empty state's ghost rows.
 private struct GhostTrendLine: View {
     let points: [CGFloat]
     let color: Color

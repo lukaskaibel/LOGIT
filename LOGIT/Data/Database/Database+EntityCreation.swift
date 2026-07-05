@@ -143,6 +143,7 @@ extension Database {
         setGroups: [TemplateSetGroup] = [TemplateSetGroup]()
     ) -> Template {
         let template = Template(context: context)
+        template.id = UUID()
         template.name = name
         template.creationDate = Date.now
         template.setGroups = setGroups

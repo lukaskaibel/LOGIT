@@ -722,6 +722,19 @@
 "_default.exercise.ringPushups" = "リングプッシュアップ";
 "_default.exercise.ringRows" = "リングロウ";
 
+// MARK: - Default Template Names & Descriptions
+
+"_default.template.fullBodyA" = "全身トレーニング A";
+"_default.template.fullBodyA.description" = "スクワット、プレス、ロウイングを組み合わせた定番の入門ワークアウト。全身トレーニング B と交互に、週2〜3回(連続しない日)で行い、全セットを余裕でこなせるようになったら少しずつ重量を増やしましょう。";
+"_default.template.fullBodyB" = "全身トレーニング B";
+"_default.template.fullBodyB.description" = "全身トレーニング A と対になるワークアウト。デッドリフト、ショルダープレス、ラットプルダウンが中心です。2つを交互に行えば、シンプルでバランスの良いルーティンになります。";
+"_default.template.pushDay" = "プッシュデイ";
+"_default.template.pushDay.description" = "胸・肩・上腕三頭筋など「押す」筋肉を鍛える日。プルデイ、レッグデイと組み合わせる定番のプッシュ/プル/レッグ分割法の一部です。";
+"_default.template.pullDay" = "プルデイ";
+"_default.template.pullDay.description" = "背中と上腕二頭筋など「引く」筋肉を鍛える日。プッシュデイ、レッグデイと組み合わせる定番のプッシュ/プル/レッグ分割法の一部です。";
+"_default.template.legDay" = "レッグデイ";
+"_default.template.legDay.description" = "大腿四頭筋、ハムストリングス、臀筋、ふくらはぎを鍛える日。プッシュデイ、プルデイと組み合わせる定番の分割法の一部です。";
+
 // MARK: - Volume Highlights
 "avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "今月は先月よりもワークアウトごとの平均ボリュームが増えています。";
 "avgLessVolumePerWorkoutThisMonthThanLastMonth" = "今月は先月よりもワークアウトごとの平均ボリュームが減少しています。";

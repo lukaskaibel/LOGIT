@@ -39,10 +39,10 @@ struct TemplateListScreen: View {
         ) { allTemplates in
             let templates = FuzzySearchService.shared.searchTemplates(searchedText, in: allTemplates)
             let sortedTemplates = searchedText.isEmpty
-                ? templates.sorted { ($0.name ?? "").localizedCompare($1.name ?? "") == .orderedAscending }
+                ? templates.sorted { ($0.resolvedName ?? "").localizedCompare($1.resolvedName ?? "") == .orderedAscending }
                 : templates // Keep fuzzy search order when searching
             let groupedTemplates = Dictionary(grouping: sortedTemplates, by: {
-                String($0.name?.prefix(1) ?? "")
+                String(($0.resolvedName ?? "").prefix(1))
             }).sorted { $0.key < $1.key }
             let isSearching = !searchedText.isEmpty
             ScrollView {

@@ -61,7 +61,7 @@ final class WorkoutSharingService {
     /// - Returns: URL to the temporary file, or nil if export failed
     func exportTemplate(_ template: Template) -> URL? {
         let dto = TemplateDTO(from: template)
-        return exportToFile(dto, filename: sanitizeFilename(template.name ?? NSLocalizedString("template", comment: "")), extension: "logittemplate")
+        return exportToFile(dto, filename: sanitizeFilename(template.resolvedName ?? NSLocalizedString("template", comment: "")), extension: "logittemplate")
     }
     
     /// Exports a workout as a template file
@@ -267,6 +267,7 @@ final class WorkoutSharingService {
     
     private func createTemplate(from dto: TemplateDTO) throws -> Template {
         let template = database.newTemplate(name: dto.name, setGroups: [])
+        template.descriptionText = dto.description
         
         // Flag template as temporary until user confirms
         database.flagAsTemporary(template)

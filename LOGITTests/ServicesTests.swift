@@ -776,3 +776,145 @@ final class ChronographTests: XCTestCase {
         XCTAssertEqual(schedule, [.init(minuteMark: 3, timeInterval: 60)])
     }
 }
+
+// MARK: - DefaultTemplateService Tests
+
+final class DefaultTemplateServiceTests: XCTestCase {
+
+    private var database: Database!
+    private var defaults: UserDefaults!
+    private var defaultsSuiteName: String!
+    private var exerciseService: DefaultExerciseService!
+    private var templateService: DefaultTemplateService!
+
+    override func setUp() {
+        super.setUp()
+        database = Database(isPreview: true)
+        // Fresh suite per test so version gates and tombstones from earlier runs can't leak in
+        defaultsSuiteName = "DefaultTemplateServiceTests-\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: defaultsSuiteName)
+        exerciseService = DefaultExerciseService(database: database, defaults: defaults)
+        templateService = DefaultTemplateService(database: database, defaults: defaults)
+    }
+
+    override func tearDown() {
+        defaults.removePersistentDomain(forName: defaultsSuiteName)
+        database = nil
+        defaults = nil
+        exerciseService = nil
+        templateService = nil
+        super.tearDown()
+    }
+
+    private var defaultTemplates: [Template] {
+        (database.fetch(Template.self) as! [Template]).filter { $0.isDefaultTemplate }
+    }
+
+    func testSeedsDefaultTemplatesWithSetGroupsAndLocalizedNames() {
+        exerciseService.loadDefaultExercisesIfNeeded()
+        templateService.loadDefaultTemplatesIfNeeded()
+
+        let templates = defaultTemplates
+        XCTAssertEqual(templates.count, 5, "All 5 bundled templates should be seeded")
+
+        for template in templates {
+            XCTAssertNotNil(template.id, "Seeded templates need a deterministic id")
+            XCTAssertFalse(template.setGroups.isEmpty, "Seeded templates need set groups")
+            for setGroup in template.setGroups {
+                let exercise = try? XCTUnwrap(setGroup.exercise)
+                XCTAssertEqual(exercise?.isDefaultExercise, true, "Templates must reference default exercises")
+                XCTAssertFalse(setGroup.sets.isEmpty, "Each set group needs sets")
+            }
+            XCTAssertFalse(
+                template.displayName.hasPrefix("_default."),
+                "Name key \(template.name ?? "") must resolve to a localized name"
+            )
+            let description = try? XCTUnwrap(template.displayDescription)
+            XCTAssertEqual(
+                description?.hasPrefix("_default."), false,
+                "Description key \(template.descriptionText ?? "") must resolve to localized text"
+            )
+        }
+    }
+
+    func testSeedingTwiceCreatesNoDuplicates() {
+        exerciseService.loadDefaultExercisesIfNeeded()
+        templateService.loadDefaultTemplatesIfNeeded()
+        let countAfterFirst = defaultTemplates.count
+
+        templateService.loadDefaultTemplatesIfNeeded()
+
+        XCTAssertEqual(defaultTemplates.count, countAfterFirst)
+    }
+
+    func testDeletedDefaultTemplateStaysDeleted() {
+        exerciseService.loadDefaultExercisesIfNeeded()
+        templateService.loadDefaultTemplatesIfNeeded()
+
+        let victim = defaultTemplates.first!
+        database.context.performAndWait {
+            self.database.context.delete(victim)
+        }
+
+        // Simulate a future version bump re-running the seeding pass
+        defaults.set(0, forKey: "lastLoadedDefaultTemplatesVersion")
+        templateService.loadDefaultTemplatesIfNeeded()
+
+        XCTAssertEqual(defaultTemplates.count, 4, "A deleted default template must not be resurrected")
+    }
+
+    func testEditedDefaultTemplateIsNotOverwritten() {
+        exerciseService.loadDefaultExercisesIfNeeded()
+        templateService.loadDefaultTemplatesIfNeeded()
+
+        let template = defaultTemplates.first!
+        template.name = "My Custom Name"
+
+        defaults.set(0, forKey: "lastLoadedDefaultTemplatesVersion")
+        templateService.loadDefaultTemplatesIfNeeded()
+
+        XCTAssertEqual(template.name, "My Custom Name")
+        XCTAssertEqual(
+            (database.fetch(Template.self) as! [Template]).filter { $0.name == "My Custom Name" }.count,
+            1,
+            "The renamed template must not be re-seeded as a duplicate"
+        )
+    }
+
+    func testSeedingWaitsForDefaultExercises() {
+        // Exercises intentionally not loaded: nothing to attach templates to
+        templateService.loadDefaultTemplatesIfNeeded()
+        XCTAssertTrue(defaultTemplates.isEmpty, "Without default exercises no template should be seeded")
+
+        // Next launch, exercises are there — seeding must retry because the version was not advanced
+        exerciseService.loadDefaultExercisesIfNeeded()
+        templateService.loadDefaultTemplatesIfNeeded()
+        XCTAssertEqual(defaultTemplates.count, 5)
+    }
+
+    func testBackfillAssignsIdsToPreexistingTemplates() {
+        // Templates created before model version 7 have no id
+        let legacyTemplate = Template(context: database.context)
+        legacyTemplate.name = "Legacy"
+        XCTAssertNil(legacyTemplate.id)
+
+        templateService.loadDefaultTemplatesIfNeeded()
+
+        XCTAssertNotNil(legacyTemplate.id, "Backfill should assign ids to legacy templates")
+    }
+
+    func testResolvedNameAndDisplayDescription() {
+        let template = database.newTemplate(name: "_default.template.pushDay")
+        template.descriptionText = "_default.template.pushDay.description"
+
+        XCTAssertTrue(template.isDefaultTemplate)
+        XCTAssertEqual(template.resolvedName, NSLocalizedString("_default.template.pushDay", comment: ""))
+        XCTAssertFalse(template.displayName.hasPrefix("_default."))
+        XCTAssertEqual(template.displayDescription, NSLocalizedString("_default.template.pushDay.description", comment: ""))
+
+        let custom = database.newTemplate(name: "Mein Plan")
+        XCTAssertEqual(custom.resolvedName, "Mein Plan")
+        XCTAssertFalse(custom.isDefaultTemplate)
+        XCTAssertNil(custom.displayDescription)
+    }
+}

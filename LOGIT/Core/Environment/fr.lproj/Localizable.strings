@@ -722,6 +722,19 @@
 "_default.exercise.ringPushups" = "Pompes à anneaux";
 "_default.exercise.ringRows" = "Rangées d'anneaux";
 
+// MARK: - Default Template Names & Descriptions
+
+"_default.template.fullBodyA" = "Full Body A";
+"_default.template.fullBodyA.description" = "Squat, développé et rowing : la séance classique pour débuter. Alternez avec Full Body B 2 à 3 jours non consécutifs par semaine, et ajoutez un peu de poids dès que toutes les séries passent bien.";
+"_default.template.fullBodyB" = "Full Body B";
+"_default.template.fullBodyB.description" = "Le pendant de Full Body A, autour du soulevé de terre, du développé épaules et du tirage. Alternez les deux pour une routine simple et équilibrée.";
+"_default.template.pushDay" = "Séance Push";
+"_default.template.pushDay.description" = "Pectoraux, épaules et triceps : tout ce qui pousse. Élément du classique split push/pull/jambes, avec la Séance Pull et la Séance Jambes.";
+"_default.template.pullDay" = "Séance Pull";
+"_default.template.pullDay.description" = "Dos et biceps : tout ce qui tire. Élément du classique split push/pull/jambes, avec la Séance Push et la Séance Jambes.";
+"_default.template.legDay" = "Séance Jambes";
+"_default.template.legDay.description" = "Quadriceps, ischio-jambiers, fessiers et mollets. Élément du classique split push/pull/jambes, avec la Séance Push et la Séance Pull.";
+
 // MARK: - Volume Highlights
 "avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "Vous réalisez en moyenne plus de volume par entraînement ce mois-ci que le mois dernier.";
 "avgLessVolumePerWorkoutThisMonthThanLastMonth" = "Vous réalisez en moyenne moins de volume par entraînement ce mois-ci que le mois dernier.";

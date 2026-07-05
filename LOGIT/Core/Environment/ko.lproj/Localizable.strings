@@ -722,6 +722,19 @@
 "_default.exercise.ringPushups" = "링 푸쉬업";
 "_default.exercise.ringRows" = "링 로우";
 
+// MARK: - Default Template Names & Descriptions
+
+"_default.template.fullBodyA" = "전신 운동 A";
+"_default.template.fullBodyA.description" = "스쿼트, 프레스, 로우로 구성된 클래식 입문 루틴입니다. 전신 운동 B와 번갈아 가며 주 2~3회(연속되지 않는 날) 진행하고, 모든 세트가 수월해지면 무게를 조금씩 올려 보세요.";
+"_default.template.fullBodyB" = "전신 운동 B";
+"_default.template.fullBodyB.description" = "전신 운동 A와 짝을 이루는 루틴으로 데드리프트, 숄더 프레스, 랫 풀다운이 중심입니다. 두 루틴을 번갈아 하면 간단하고 균형 잡힌 프로그램이 됩니다.";
+"_default.template.pushDay" = "푸시 데이";
+"_default.template.pushDay.description" = "가슴, 어깨, 삼두 등 미는 근육을 단련하는 날입니다. 풀 데이, 레그 데이와 함께 하는 클래식 푸시/풀/레그 분할의 일부입니다.";
+"_default.template.pullDay" = "풀 데이";
+"_default.template.pullDay.description" = "등과 이두 등 당기는 근육을 단련하는 날입니다. 푸시 데이, 레그 데이와 함께 하는 클래식 푸시/풀/레그 분할의 일부입니다.";
+"_default.template.legDay" = "레그 데이";
+"_default.template.legDay.description" = "대퇴사두, 햄스트링, 둔근, 종아리를 단련하는 날입니다. 푸시 데이, 풀 데이와 함께 하는 클래식 분할의 일부입니다.";
+
 // MARK: - Volume Highlights
 "avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "이번 달에는 지난 달보다 평균적으로 더 많은 운동량을 기록하고 있습니다.";
 "avgLessVolumePerWorkoutThisMonthThanLastMonth" = "이번 달에는 지난 달보다 평균 운동량의 양이 적습니다.";

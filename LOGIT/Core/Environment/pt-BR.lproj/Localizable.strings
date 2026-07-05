@@ -722,6 +722,19 @@
 "_default.exercise.ringPushups" = "Flexões de anel";
 "_default.exercise.ringRows" = "Linhas de anel";
 
+// MARK: - Default Template Names & Descriptions
+
+"_default.template.fullBodyA" = "Full Body A";
+"_default.template.fullBodyA.description" = "Agachamento, supino e remada: o treino clássico para começar. Alterne com o Full Body B em 2–3 dias não consecutivos por semana e aumente um pouco a carga quando todas as séries ficarem confortáveis.";
+"_default.template.fullBodyB" = "Full Body B";
+"_default.template.fullBodyB.description" = "O par do Full Body A, com levantamento terra, desenvolvimento de ombros e puxada. Alterne os dois para uma rotina simples e equilibrada.";
+"_default.template.pushDay" = "Treino Push";
+"_default.template.pushDay.description" = "Peito, ombros e tríceps: tudo que empurra. Parte do clássico split push/pull/pernas, junto com o Treino Pull e o Treino de Pernas.";
+"_default.template.pullDay" = "Treino Pull";
+"_default.template.pullDay.description" = "Costas e bíceps: tudo que puxa. Parte do clássico split push/pull/pernas, junto com o Treino Push e o Treino de Pernas.";
+"_default.template.legDay" = "Treino de Pernas";
+"_default.template.legDay.description" = "Quadríceps, posteriores, glúteos e panturrilhas. Parte do clássico split push/pull/pernas, junto com o Treino Push e o Treino Pull.";
+
 // MARK: - Volume Highlights
 "avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "Você está obtendo em média mais volume por treino neste mês do que no mês passado.";
 "avgLessVolumePerWorkoutThisMonthThanLastMonth" = "Você está obtendo em média menos volume por treino este mês do que no mês passado.";

@@ -48,7 +48,7 @@ final class WorkoutRecorder: ObservableObject {
         workout?.isCurrentWorkout = true
         if let template = template {
             template.workouts.append(workout!)
-            workout!.name = template.name
+            workout!.name = template.resolvedName
             for templateSetGroup in template.setGroups {
                 let setGroup = database.newWorkoutSetGroup(
                     createFirstSetAutomatically: false,

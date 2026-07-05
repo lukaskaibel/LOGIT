@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "default_template_001",
+      "nameKey": "_default.template.fullBodyA",
+      "descriptionKey": "_default.template.fullBodyA.description",
+      "setGroups": [
+        { "exerciseId": "default_023", "sets": 3, "repetitions": 8, "restDuration": 120 },
+        { "exerciseId": "default_002", "sets": 3, "repetitions": 8, "restDuration": 120 },
+        { "exerciseId": "default_015", "sets": 3, "repetitions": 8, "restDuration": 120 },
+        { "exerciseId": "default_057", "sets": 3, "repetitions": 12, "restDuration": 60 },
+        { "exerciseId": "default_065", "sets": 3, "repetitions": 15, "restDuration": 60 }
+      ]
+    },
+    {
+      "id": "default_template_002",
+      "nameKey": "_default.template.fullBodyB",
+      "descriptionKey": "_default.template.fullBodyB.description",
+      "setGroups": [
+        { "exerciseId": "default_021", "sets": 3, "repetitions": 8, "restDuration": 120 },
+        { "exerciseId": "default_041", "sets": 3, "repetitions": 8, "restDuration": 90 },
+        { "exerciseId": "default_014", "sets": 3, "repetitions": 10, "restDuration": 90 },
+        { "exerciseId": "default_049", "sets": 3, "repetitions": 12, "restDuration": 60 },
+        { "exerciseId": "default_067", "sets": 3, "repetitions": 12, "restDuration": 60 }
+      ]
+    },
+    {
+      "id": "default_template_003",
+      "nameKey": "_default.template.pushDay",
+      "descriptionKey": "_default.template.pushDay.description",
+      "setGroups": [
+        { "exerciseId": "default_002", "sets": 3, "repetitions": 8, "restDuration": 120 },
+        { "exerciseId": "default_005", "sets": 3, "repetitions": 10, "restDuration": 90 },
+        { "exerciseId": "default_041", "sets": 3, "repetitions": 10, "restDuration": 90 },
+        { "exerciseId": "default_043", "sets": 3, "repetitions": 12, "restDuration": 60 },
+        { "exerciseId": "default_049", "sets": 3, "repetitions": 12, "restDuration": 60 }
+      ]
+    },
+    {
+      "id": "default_template_004",
+      "nameKey": "_default.template.pullDay",
+      "descriptionKey": "_default.template.pullDay.description",
+      "setGroups": [
+        { "exerciseId": "default_014", "sets": 3, "repetitions": 10, "restDuration": 90 },
+        { "exerciseId": "default_015", "sets": 3, "repetitions": 8, "restDuration": 120 },
+        { "exerciseId": "default_017", "sets": 3, "repetitions": 10, "restDuration": 90 },
+        { "exerciseId": "default_022", "sets": 3, "repetitions": 15, "restDuration": 60 },
+        { "exerciseId": "default_056", "sets": 3, "repetitions": 12, "restDuration": 60 }
+      ]
+    },
+    {
+      "id": "default_template_005",
+      "nameKey": "_default.template.legDay",
+      "descriptionKey": "_default.template.legDay.description",
+      "setGroups": [
+        { "exerciseId": "default_023", "sets": 3, "repetitions": 8, "restDuration": 120 },
+        { "exerciseId": "default_025", "sets": 3, "repetitions": 10, "restDuration": 90 },
+        { "exerciseId": "default_030", "sets": 3, "repetitions": 12, "restDuration": 60 },
+        { "exerciseId": "default_029", "sets": 3, "repetitions": 12, "restDuration": 60 },
+        { "exerciseId": "default_031", "sets": 3, "repetitions": 15, "restDuration": 60 }
+      ]
+    }
+  ]
+}

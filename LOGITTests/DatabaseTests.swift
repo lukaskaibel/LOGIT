@@ -244,3 +244,84 @@ final class DatabaseTests: XCTestCase {
         XCTAssertEqual(setGroup.sets.last?.restDurationSeconds, 75)
     }
 }
+
+// MARK: - Model Version 7 Migration Tests
+
+/// Proves that a store created with model version 6 opens under the current model via the same
+/// automatic lightweight migration `Database.init` configures — existing user data must survive
+/// the new `Template.id` / `Template.descriptionText` attributes.
+final class TemplateModelMigrationTests: XCTestCase {
+
+    private var storeURL: URL!
+
+    override func setUp() {
+        super.setUp()
+        storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("MigrationTest-\(UUID().uuidString).sqlite")
+    }
+
+    override func tearDown() {
+        for suffix in ["", "-wal", "-shm"] {
+            try? FileManager.default.removeItem(atPath: storeURL.path + suffix)
+        }
+        storeURL = nil
+        super.tearDown()
+    }
+
+    func testLightweightMigrationFromModelVersion6PreservesTemplates() throws {
+        let bundle = Bundle(for: Database.self)
+        let momdURL = try XCTUnwrap(bundle.url(forResource: "LOGIT", withExtension: "momd"))
+        let v6Model = try XCTUnwrap(
+            NSManagedObjectModel(contentsOf: momdURL.appendingPathComponent("LOGIT 6.0.mom")),
+            "Model version 6 must stay in the bundle for migration"
+        )
+        // Loading the .momd itself resolves to the current version (7)
+        let currentModel = try XCTUnwrap(NSManagedObjectModel(contentsOf: momdURL))
+        XCTAssertNotNil(
+            currentModel.entitiesByName["Template"]?.attributesByName["descriptionText"],
+            "Current model must be version 7 with the new attributes"
+        )
+
+        // 1. Create a v6 store containing a template with a set group
+        let v6Coordinator = NSPersistentStoreCoordinator(managedObjectModel: v6Model)
+        try v6Coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: storeURL)
+        let v6Context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        v6Context.persistentStoreCoordinator = v6Coordinator
+        let v6Template = NSEntityDescription.insertNewObject(forEntityName: "Template", into: v6Context)
+        v6Template.setValue("My Old Template", forKey: "name")
+        v6Template.setValue(Date(), forKey: "creationDate")
+        let v6SetGroup = NSEntityDescription.insertNewObject(forEntityName: "TemplateSetGroup", into: v6Context)
+        v6SetGroup.setValue(UUID(), forKey: "id")
+        v6SetGroup.setValue(v6Template, forKey: "workout")
+        try v6Context.save()
+        try v6Coordinator.remove(v6Coordinator.persistentStores[0])
+
+        // 2. Reopen with the current model and the options Database.init uses
+        let coordinator = NSPersistentStoreCoordinator(managedObjectModel: currentModel)
+        try coordinator.addPersistentStore(
+            ofType: NSSQLiteStoreType,
+            configurationName: nil,
+            at: storeURL,
+            options: [
+                NSMigratePersistentStoresAutomaticallyOption: true,
+                NSInferMappingModelAutomaticallyOption: true,
+            ]
+        )
+        let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        context.persistentStoreCoordinator = coordinator
+
+        // 3. The old data survived and the new attributes are usable
+        let request = NSFetchRequest<NSManagedObject>(entityName: "Template")
+        let migrated = try context.fetch(request)
+        XCTAssertEqual(migrated.count, 1)
+        let template = try XCTUnwrap(migrated.first)
+        XCTAssertEqual(template.value(forKey: "name") as? String, "My Old Template")
+        XCTAssertEqual((template.value(forKey: "setGroups_") as? NSSet)?.count, 1)
+        XCTAssertNil(template.value(forKey: "id"), "Migrated templates start without an id (backfilled later)")
+        XCTAssertNil(template.value(forKey: "descriptionText"))
+
+        template.setValue(UUID(), forKey: "id")
+        template.setValue("A description", forKey: "descriptionText")
+        try context.save()
+    }
+}

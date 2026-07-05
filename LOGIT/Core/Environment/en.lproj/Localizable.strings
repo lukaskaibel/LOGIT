@@ -722,6 +722,19 @@
 "_default.exercise.ringPushups" = "Ring Push-ups";
 "_default.exercise.ringRows" = "Ring Rows";
 
+// MARK: - Default Template Names & Descriptions
+
+"_default.template.fullBodyA" = "Full Body A";
+"_default.template.fullBodyA.description" = "Squat, press and row — the classic starter workout. Alternate with Full Body B on 2–3 non-consecutive days per week, and add a little weight once all sets feel manageable.";
+"_default.template.fullBodyB" = "Full Body B";
+"_default.template.fullBodyB.description" = "The partner workout to Full Body A, built around the deadlift, shoulder press and pulldown. Alternate the two for a simple, balanced routine.";
+"_default.template.pushDay" = "Push Day";
+"_default.template.pushDay.description" = "Chest, shoulders and triceps — everything that pushes. Part of the classic push/pull/legs split, together with Pull Day and Leg Day.";
+"_default.template.pullDay" = "Pull Day";
+"_default.template.pullDay.description" = "Back and biceps — everything that pulls. Part of the classic push/pull/legs split, together with Push Day and Leg Day.";
+"_default.template.legDay" = "Leg Day";
+"_default.template.legDay.description" = "Quads, hamstrings, glutes and calves. Part of the classic push/pull/legs split, together with Push Day and Pull Day.";
+
 // MARK: - Volume Highlights
 "avgMoreVolumePerWorkoutThisMonthThanLastMonth" = "You're averaging more volume per workout this month than last month.";
 "avgLessVolumePerWorkoutThisMonthThanLastMonth" = "You're averaging less volume per workout this month than last month.";

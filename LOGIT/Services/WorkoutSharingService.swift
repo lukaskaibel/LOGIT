@@ -117,13 +117,15 @@ final class WorkoutSharingService {
     
     /// Imports a workout from a .logitworkout file
     /// Creates the workout and all necessary exercises, flagging new entities as temporary
+    /// Safe to call from any thread: file reading and decoding run on the calling
+    /// thread, entity creation on the context's queue.
     /// - Parameter url: URL to the .logitworkout file
     /// - Returns: The imported Workout, or throws an error
     func importWorkout(from url: URL) throws -> Workout {
         guard url.pathExtension.lowercased() == "logitworkout" else {
             throw ImportError.invalidFileFormat
         }
-        
+
         let data: Data
         if url.startAccessingSecurityScopedResource() {
             defer { url.stopAccessingSecurityScopedResource() }
@@ -131,7 +133,7 @@ final class WorkoutSharingService {
         } else {
             data = try Data(contentsOf: url)
         }
-        
+
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let workoutDTO: WorkoutDTO
@@ -140,19 +142,25 @@ final class WorkoutSharingService {
         } catch {
             throw ImportError.decodingFailed(error)
         }
-        
-        return try createWorkout(from: workoutDTO)
+
+        // The viewContext is main-queue-confined, but imports arrive on a
+        // background queue (see LOGITApp.handleIncomingFile).
+        return try database.context.performAndWait {
+            try createWorkout(from: workoutDTO)
+        }
     }
     
     /// Imports a template from a .logittemplate file
     /// Creates the template and all necessary exercises, flagging new entities as temporary
+    /// Safe to call from any thread: file reading and decoding run on the calling
+    /// thread, entity creation on the context's queue.
     /// - Parameter url: URL to the .logittemplate file
     /// - Returns: The imported Template, or throws an error
     func importTemplate(from url: URL) throws -> Template {
         guard url.pathExtension.lowercased() == "logittemplate" else {
             throw ImportError.invalidFileFormat
         }
-        
+
         let data: Data
         if url.startAccessingSecurityScopedResource() {
             defer { url.stopAccessingSecurityScopedResource() }
@@ -160,7 +168,7 @@ final class WorkoutSharingService {
         } else {
             data = try Data(contentsOf: url)
         }
-        
+
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let templateDTO: TemplateDTO
@@ -169,8 +177,12 @@ final class WorkoutSharingService {
         } catch {
             throw ImportError.decodingFailed(error)
         }
-        
-        return try createTemplate(from: templateDTO)
+
+        // The viewContext is main-queue-confined, but imports arrive on a
+        // background queue (see LOGITApp.handleIncomingFile).
+        return try database.context.performAndWait {
+            try createTemplate(from: templateDTO)
+        }
     }
     
     // MARK: - Private Export Helpers

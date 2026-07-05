@@ -189,10 +189,12 @@ public class Database: ObservableObject {
 
     func delete(_ object: NSManagedObject?, saveContext: Bool = false) {
         guard let object = object else { return }
-        if let workoutSet = object as? WorkoutSet,
-           let setGroup = workoutSet.setGroup
-        {
-            context.perform {
+        // Even reading workoutSet.setGroup can fire a fault, so the entire branch belongs on
+        // the context's queue.
+        context.perform {
+            if let workoutSet = object as? WorkoutSet,
+               let setGroup = workoutSet.setGroup
+            {
                 var updatedSets = setGroup.sets
                 if let index = updatedSets.firstIndex(of: workoutSet) {
                     updatedSets.remove(at: index)
@@ -204,9 +206,7 @@ public class Database: ObservableObject {
                     self.context.delete(workoutSet)
                 }
                 self.objectWillChange.send()
-            }
-        } else {
-            context.perform {
+            } else {
                 self.context.delete(object)
             }
         }

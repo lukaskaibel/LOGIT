@@ -5,7 +5,6 @@
 //  Created by Lukas Kaibel on 29.06.26.
 //
 
-import Charts
 import CoreData
 import SwiftUI
 
@@ -192,12 +191,9 @@ struct MuscleGroupDetailScreen: View {
     /// period-scoped history chart (12 weeks / 12 months / 6 years), current period highlighted.
     private func setsHistoryChart(allWorkouts: [Workout]) -> some View {
         let sets = setsTraining(in: allWorkouts)
-        let grouped = Dictionary(grouping: sets) { periodStart(of: $0.workout?.date ?? .now) }
-        let buckets: [(date: Date, count: Int)] = (0 ..< period.historyBucketCount).reversed().map { periodsAgo in
-            let start = period.range(periodsAgo: periodsAgo).lowerBound
-            return (start, grouped[start]?.count ?? 0)
+        let buckets = PeriodHistoryChart.buckets(for: period) { range in
+            Double(sets.filter { ($0.workout?.date).map { range.contains($0) } ?? false }.count)
         }
-        let maxCount = buckets.map(\.count).max() ?? 0
         return VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
             HStack {
                 Text(setsHistoryTitle)
@@ -207,21 +203,18 @@ struct MuscleGroupDetailScreen: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
-            Chart {
-                ForEach(buckets, id: \.date) { bucket in
-                    BarMark(
-                        x: .value("Period", bucket.date, unit: period.calendarComponent),
-                        y: .value("Sets", bucket.count),
-                        width: .ratio(0.6)
-                    )
-                    .foregroundStyle(period.currentRange().contains(bucket.date) ? color : Color.fill)
-                    .clipShape(RoundedRectangle(cornerRadius: 3))
-                }
-            }
-            .chartYScale(domain: 0 ... max(maxCount, 1))
-            .chartXAxis(.hidden)
-            .chartYAxis { AxisMarks(values: .automatic(desiredCount: 3)) }
-            .frame(height: 120)
+            // The shared period-history chart in its compact tile form — the same bars as the Summary
+            // and exercise detail screens, so tapping to inspect a period works here too, just without
+            // the x-axis labels the surrounding header already stands in for.
+            PeriodHistoryChart(
+                buckets: buckets,
+                period: period,
+                valueLabel: NSLocalizedString("sets", comment: ""),
+                currentBarStyle: AnyShapeStyle(color),
+                unit: NSLocalizedString("sets", comment: ""),
+                height: 120,
+                showsXAxisLabels: false
+            )
             .padding(CELL_PADDING)
             .tileStyle()
         }
@@ -240,16 +233,6 @@ struct MuscleGroupDetailScreen: View {
         case .week: return NSLocalizedString("twelveWeeks", comment: "")
         case .month: return NSLocalizedString("twelveMonths", comment: "")
         case .year: return NSLocalizedString("sixYears", comment: "")
-        }
-    }
-
-    /// The period-start key matching `StatPeriod.range(periodsAgo:).lowerBound`, so grouped sets land
-    /// in the right bucket.
-    private func periodStart(of date: Date) -> Date {
-        switch period {
-        case .week: return date.startOfWeek
-        case .month: return date.startOfMonth
-        case .year: return date.startOfYear
         }
     }
 

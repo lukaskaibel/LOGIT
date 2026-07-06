@@ -90,7 +90,8 @@ struct SummaryStatScreen: View {
             buckets: buckets,
             period: period,
             valueLabel: metric.title,
-            currentBarStyle: AnyShapeStyle(isDuration ? Color.secondary : Color.accentColor)
+            currentBarStyle: AnyShapeStyle(isDuration ? Color.secondary : Color.accentColor),
+            unit: metric.unit
         )
     }
 
@@ -110,6 +111,10 @@ struct SummaryStatScreen: View {
     }
 
     private var buckets: [PeriodHistoryChart.Bucket] {
-        PeriodHistoryChart.buckets(for: period) { metric.displayValue(fromRaw: sum(in: $0)) }
+        PeriodHistoryChart.buckets(
+            for: period,
+            value: { metric.displayValue(fromRaw: sum(in: $0)) },
+            formatted: { metric.formattedValue(fromRaw: sum(in: $0)) }
+        )
     }
 }

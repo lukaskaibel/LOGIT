@@ -9,17 +9,26 @@ import Charts
 import SwiftUI
 
 /// The shared recent-periods bar chart behind every period-scoped stat detail — the Summary stat
-/// screens and the exercise Sets / Volume screens. One bar per period (`StatPeriod.historyBucketCount`
-/// of them, current highlighted), at most ~4 axis labels counted back from the current bucket so
-/// "now" is always labeled. The newest label is anchored trailing so it renders fully instead of
-/// truncating at the plot edge ("Jul 4", not "J…"). One component, so the history charts can't
-/// drift apart again.
+/// screens, the exercise Sets / Volume screens, and the muscle-group detail's sets tile. One bar per
+/// period (`StatPeriod.historyBucketCount` of them, current highlighted), at most ~4 axis labels
+/// counted back from the current bucket so "now" is always labeled. The newest label is anchored
+/// trailing so it renders fully instead of truncating at the plot edge ("Jul 4", not "J…").
+///
+/// Tap or press-and-hold any bar to inspect it: a rule mark and a value card name the exact value and
+/// period, the touched bar lights up and the rest dim — the same gesture the scrollable capability
+/// charts use. The y-axis keeps ~1/6 headroom above the tallest bar so a peak never touches the
+/// ceiling (matching the stat tiles). One component, so the history charts can't drift apart again —
+/// the compact muscle tile is this same chart with `height` / `showsXAxisLabels` turned down, not a
+/// hand-rolled copy.
 struct PeriodHistoryChart: View {
     struct Bucket: Identifiable {
         let id: Int
         let date: Date
         let value: Double
         let isCurrent: Bool
+        /// The value as printed in the selection tooltip ("1,234", "12.5", "8"). Kept apart from
+        /// `value` (which only sets the bar's height) so each screen formats it in its own units.
+        var formattedValue: String
     }
 
     let buckets: [Bucket]
@@ -28,6 +37,15 @@ struct PeriodHistoryChart: View {
     let valueLabel: String
     /// Fill of the current period's bar; past bars stay the quiet `Color.fill`.
     let currentBarStyle: AnyShapeStyle
+    /// Unit shown after the value in the selection tooltip ("kg", "sets", "" for a bare count).
+    var unit: String = ""
+    /// Plot height — the full detail charts stand tall; the muscle tile turns it down.
+    var height: CGFloat = 260
+    /// Whether the x-axis draws its period labels. Off for the compact tile, whose surrounding
+    /// header already names the window it shows.
+    var showsXAxisLabels: Bool = true
+
+    @State private var selectedDate: Date?
 
     var body: some View {
         let maxValue = buckets.map(\.value).max() ?? 0
@@ -35,32 +53,51 @@ struct PeriodHistoryChart: View {
         // one label per bucket sat shoulder-to-shoulder on the week view.
         let labelStride = max(1, Int((Double(buckets.count) / 4.0).rounded(.up)))
         let labeledDates = stride(from: buckets.count - 1, through: 0, by: -labelStride).map { buckets[$0].date }
+        let selectedBucket = selectedDate.flatMap { nearestBucket(to: $0) }
         Chart {
+            if let selectedBucket {
+                RuleMark(x: .value("Selected", selectedBucket.date, unit: period.calendarComponent))
+                    .foregroundStyle(Color.label.opacity(0.35))
+                    .lineStyle(StrokeStyle(lineWidth: 2))
+                    .annotation(
+                        position: annotationPosition(for: selectedBucket),
+                        overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
+                    ) {
+                        annotationCard(for: selectedBucket)
+                    }
+            }
             ForEach(buckets) { bucket in
                 BarMark(
                     x: .value("Period", bucket.date, unit: period.calendarComponent),
                     y: .value(valueLabel, bucket.value),
                     width: .ratio(0.6)
                 )
-                .foregroundStyle(bucket.isCurrent ? currentBarStyle : AnyShapeStyle(Color.fill))
+                .foregroundStyle(barStyle(for: bucket, selected: selectedBucket))
                 .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+                // A tapped bar stays lit; every other bar goes quiet while one is inspected.
+                .opacity(selectedBucket == nil || selectedBucket?.id == bucket.id ? 1.0 : 0.4)
             }
         }
-        .chartYScale(domain: 0 ... max(maxValue, 1))
+        // ~1/6 headroom above the tallest bar so a peak never touches the ceiling (matches the tiles).
+        .chartYScale(domain: 0 ... max(maxValue * 1.15, 1))
+        .chartXSelection(value: $selectedDate)
         .chartXAxis {
-            AxisMarks(values: labeledDates) { value in
-                if let date = value.as(Date.self) {
-                    let isCurrent = period.currentRange().contains(date)
-                    AxisGridLine()
-                        .foregroundStyle(Color.gray.opacity(0.4))
-                    // Styling lives on the Text inside the label closure — hierarchical styles on the
-                    // AxisMark itself resolve against the chart's accent on iOS 26 (labels turned lime).
-                    // The current period's label is always the newest (labels stride back from it) and
-                    // sits at the plot edge — hang it trailing off its mark so the edge can't clip it.
-                    AxisValueLabel(anchor: isCurrent ? .topTrailing : nil) {
-                        Text(period.axisLabel(for: date))
-                            .font(.caption.weight(isCurrent ? .bold : .semibold))
-                            .foregroundStyle(isCurrent ? Color.label : Color.secondaryLabel)
+            if showsXAxisLabels {
+                AxisMarks(values: labeledDates) { value in
+                    if let date = value.as(Date.self) {
+                        let isCurrent = period.currentRange().contains(date)
+                        AxisGridLine()
+                            .foregroundStyle(Color.gray.opacity(0.4))
+                        // Styling lives on the Text inside the label closure — hierarchical styles on
+                        // the AxisMark itself resolve against the chart's accent on iOS 26 (labels
+                        // turned lime). The current period's label is always the newest (labels stride
+                        // back from it) and sits at the plot edge — hang it trailing off its mark so
+                        // the edge can't clip it.
+                        AxisValueLabel(anchor: isCurrent ? .topTrailing : nil) {
+                            Text(period.axisLabel(for: date))
+                                .font(.caption.weight(isCurrent ? .bold : .semibold))
+                                .foregroundStyle(isCurrent ? Color.label : Color.secondaryLabel)
+                        }
                     }
                 }
             }
@@ -68,27 +105,96 @@ struct PeriodHistoryChart: View {
         .chartYAxis {
             AxisMarks(values: .automatic(desiredCount: 3))
         }
-        .frame(height: 260)
+        .frame(height: height)
+    }
+
+    // MARK: - Selection
+
+    /// The bucket whose bar sits nearest the raw selection point — snaps the tap/drag onto a bar.
+    private func nearestBucket(to date: Date) -> Bucket? {
+        buckets.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }
+    }
+
+    /// The current bar keeps its highlight; the inspected past bar lights up white, the rest stay the
+    /// quiet fill — the opacity dim (applied on the mark) does the rest. Matches the workout stat
+    /// screen's bars so the inspect gesture reads the same everywhere.
+    private func barStyle(for bucket: Bucket, selected: Bucket?) -> AnyShapeStyle {
+        if bucket.isCurrent { return currentBarStyle }
+        if selected?.id == bucket.id { return AnyShapeStyle(Color.label) }
+        return AnyShapeStyle(Color.fill)
+    }
+
+    /// Hang the card leading when the inspected bar sits in the right third of the chart, trailing in
+    /// the left third, centred otherwise — so an edge bar's card never lays out past the plot.
+    private func annotationPosition(for bucket: Bucket) -> AnnotationPosition {
+        guard buckets.count > 1, let index = buckets.firstIndex(where: { $0.id == bucket.id }) else { return .top }
+        let fraction = Double(index) / Double(buckets.count - 1)
+        if fraction > 0.66 { return .topLeading }
+        if fraction < 0.33 { return .topTrailing }
+        return .top
+    }
+
+    private func annotationCard(for bucket: Bucket) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            UnitView(value: bucket.formattedValue, unit: unit, unitColor: .secondaryLabel)
+                .foregroundStyle(Color.label)
+            Text(periodDescription(for: bucket.date))
+                .font(.caption)
+                .fontWeight(.bold)
+                .fontDesign(.rounded)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondaryBackground))
+    }
+
+    /// The inspected period spelled out for the card: the week's span, the month, or the year.
+    private func periodDescription(for date: Date) -> String {
+        switch period {
+        case .week:
+            let start = date.startOfWeek.formatted(.dateTime.day().month())
+            let end = date.endOfWeek.formatted(.dateTime.day().month())
+            return "\(start) – \(end)"
+        case .month:
+            return date.formatted(.dateTime.month(.abbreviated).year())
+        case .year:
+            return date.formatted(.dateTime.year())
+        }
     }
 }
 
 extension PeriodHistoryChart {
     /// The standard history buckets for `period` — one per recent period
     /// (`StatPeriod.historyBucketCount`), oldest first, the current period last — with each
-    /// period's value pulled from `value`. The one bucket-building loop for every consumer, so
-    /// "recent history" can't quietly mean different windows on different screens.
-    static func buckets(for period: StatPeriod, value: (ClosedRange<Date>) -> Double) -> [Bucket] {
+    /// period's value pulled from `value`. `formatted` supplies the tooltip string for a period
+    /// (defaulting to the rounded value) so a screen can print it in its own units. The one
+    /// bucket-building loop for every consumer, so "recent history" can't quietly mean different
+    /// windows on different screens.
+    static func buckets(
+        for period: StatPeriod,
+        value: (ClosedRange<Date>) -> Double,
+        formatted: ((ClosedRange<Date>) -> String)? = nil
+    ) -> [Bucket] {
         let count = period.historyBucketCount
         return (0 ..< count).map { index in
             let periodsAgo = count - 1 - index
             let range = period.range(periodsAgo: periodsAgo)
+            let bucketValue = value(range)
             return Bucket(
                 id: index,
                 date: range.lowerBound,
-                value: value(range),
-                isCurrent: periodsAgo == 0
+                value: bucketValue,
+                isCurrent: periodsAgo == 0,
+                formattedValue: formatted?(range) ?? defaultFormattedValue(bucketValue)
             )
         }
+    }
+
+    /// Tooltip text when a screen doesn't supply its own formatter: the value as a plain rounded
+    /// integer, right for the bare set counts the muscle tile and the exercise Sets screen show.
+    static func defaultFormattedValue(_ value: Double) -> String {
+        String(Int(value.rounded()))
     }
 
     /// The period-over-period trend for a stat header, or nil unless both periods have data — a
@@ -103,16 +209,19 @@ extension PeriodHistoryChart {
 #Preview {
     PeriodHistoryChart(
         buckets: (0 ..< 12).map { index in
-            PeriodHistoryChart.Bucket(
+            let value = Double((index * 37) % 90) + 10
+            return PeriodHistoryChart.Bucket(
                 id: index,
                 date: StatPeriod.week.range(periodsAgo: 11 - index).lowerBound,
-                value: Double((index * 37) % 90) + 10,
-                isCurrent: index == 11
+                value: value,
+                isCurrent: index == 11,
+                formattedValue: String(Int(value))
             )
         },
         period: .week,
         valueLabel: "Volume",
-        currentBarStyle: AnyShapeStyle(Color.accentColor)
+        currentBarStyle: AnyShapeStyle(Color.accentColor),
+        unit: "kg"
     )
     .padding()
 }

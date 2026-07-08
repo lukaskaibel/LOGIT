@@ -90,7 +90,8 @@ struct ExerciseVolumeScreen: View {
             buckets: buckets,
             period: period,
             valueLabel: NSLocalizedString("volume", comment: ""),
-            currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient)
+            currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient),
+            unit: WeightUnit.used.rawValue
         )
     }
 
@@ -113,7 +114,11 @@ struct ExerciseVolumeScreen: View {
     }
 
     private var buckets: [PeriodHistoryChart.Bucket] {
-        PeriodHistoryChart.buckets(for: period) { convertWeightForDisplayingDecimal(rawVolume(in: $0)) }
+        PeriodHistoryChart.buckets(
+            for: period,
+            value: { convertWeightForDisplayingDecimal(rawVolume(in: $0)) },
+            formatted: { formatWeightForDisplay(rawVolume(in: $0)) }
+        )
     }
 
     private var muscleGroupColor: Color {

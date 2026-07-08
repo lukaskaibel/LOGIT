@@ -14,16 +14,32 @@ struct ExerciseWeightScreen: View {
 
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
+    /// Daily-max sets, grouped once at init. The chart, the header baseline, the y-scale, the domain
+    /// and the selection all read from this — so scrolling or inspecting never regroups every set
+    /// again. (The selection lag came from `firstDataDate` re-grouping all sets once per axis mark,
+    /// every frame.)
+    private let dailyMaxSets: [WorkoutSet]
+    /// Earliest day with a recorded weight — anchors the scrollable domain and the All range. Derived
+    /// once from `dailyMaxSets`, not recomputed on every scroll/selection frame.
+    private let firstDataDate: Date?
 
     @State private var chartRange: ChartRange = .threeMonths
     @State private var chartScrollPosition: Date = .now
     @State private var selectedDate: Date?
 
+    init(exercise: Exercise, workoutSets: [WorkoutSet]) {
+        self.exercise = exercise
+        self.workoutSets = workoutSets
+        let daily = Self.dailyMaxWeightSets(in: workoutSets, for: exercise)
+        self.dailyMaxSets = daily
+        self.firstDataDate = daily.first?.workout?.date
+    }
+
     var body: some View {
-        let allDailyMaxSets = allDailyMaxWeightSets(in: workoutSets)
+        let allDailyMaxSets = dailyMaxSets
         // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
-        let bestVisibleWeight = bestWeightInVisibleWindow(workoutSets)
+        let bestVisibleWeight = bestWeightInVisibleWindow()
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -155,7 +171,7 @@ struct ExerciseWeightScreen: View {
                 }
             }
             .chartXScale(domain: chartRange.xDomain(firstDataDate: firstDataDate))
-            .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeWeightPR(in: workoutSets)))
+            .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeWeightPR))
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
@@ -179,7 +195,7 @@ struct ExerciseWeightScreen: View {
                 }
             }
             .chartYAxis {
-                let chartYScaleMax = chartYScaleMax(maxYValue: allTimeWeightPR(in: workoutSets))
+                let chartYScaleMax = chartYScaleMax(maxYValue: allTimeWeightPR)
                 AxisMarks(values: [0, chartYScaleMax / 2, chartYScaleMax])
             }
             .emptyPlaceholder(allDailyMaxSets) {
@@ -222,22 +238,16 @@ struct ExerciseWeightScreen: View {
         }
     }
 
-    private func allDailyMaxWeightSets(in workoutSets: [WorkoutSet]) -> [WorkoutSet] {
+    private static func dailyMaxWeightSets(in workoutSets: [WorkoutSet], for exercise: Exercise) -> [WorkoutSet] {
         let groupedSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
             .map { $0.1 }
-        let maxSetsPerDay = groupedSets
+        return groupedSets
             .compactMap { setsPerDay -> WorkoutSet? in
-                return setsPerDay.max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
+                setsPerDay.max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
             }
             .filter { $0.maximum(.weight, for: exercise) > 0 }
-        return maxSetsPerDay
-    }
-
-    /// Earliest day with a recorded weight — anchors the scrollable domain and the All range.
-    private var firstDataDate: Date? {
-        allDailyMaxWeightSets(in: workoutSets).first?.workout?.date
     }
 
     private var visibleChartDomainInSeconds: Int {
@@ -248,13 +258,11 @@ struct ExerciseWeightScreen: View {
         exercise.muscleGroup?.color ?? Color.accentColor
     }
 
-    private func allTimeWeightPR(in workoutSets: [WorkoutSet]) -> Int {
+    /// The all-time best max-weight in display units — the y-axis cap. Read from `dailyMaxSets` (each
+    /// day's max already includes that day's best), so it scans days, not every set.
+    private var allTimeWeightPR: Int {
         convertWeightForDisplaying(
-            workoutSets
-                .map {
-                    $0.maximum(.weight, for: exercise)
-                }
-                .max() ?? 0
+            dailyMaxSets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
         )
     }
 
@@ -262,9 +270,12 @@ struct ExerciseWeightScreen: View {
     /// *other than* the current best, so the pill measures the current best against the rest of the
     /// shown period rather than itself when the peak is in view. Falls back to the most recent day's
     /// best before the window when it holds no other value (see `exerciseOtherBestBaseline`).
-    private func bestWeightInVisibleWindow(_ workoutSets: [WorkoutSet]) -> Int? {
+    /// The header's left value and the pill baseline, read from `dailyMaxSets` (a per-day max is the
+    /// day's best, so the best over the window is the same as over every set) — a day scan, not a
+    /// full-set scan on every scroll/selection frame.
+    private func bestWeightInVisibleWindow() -> Int? {
         exerciseOtherBestBaseline(
-            sets: workoutSets,
+            sets: dailyMaxSets,
             windowStart: chartScrollPosition,
             windowEnd: visibleEndDate,
             currentBestDay: bestAnchor?.date

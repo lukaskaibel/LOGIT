@@ -23,8 +23,22 @@ struct ExerciseSetsScreen: View {
             VStack(spacing: SECTION_SPACING) {
                 VStack(spacing: 16) {
                     PeriodPicker(selection: $period)
-                    header
-                    chart
+                    PeriodStatChartView(
+                        period: period,
+                        buckets: buckets,
+                        firstDataDate: firstDataDate,
+                        valueLabel: NSLocalizedString("sets", comment: ""),
+                        unit: "",
+                        currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient),
+                        currentLabel: period.currentPeriodLabel,
+                        currentValue: "\(currentCount)",
+                        currentRaw: currentCount,
+                        trailingValueStyle: AnyShapeStyle(muscleGroupColor.gradient),
+                        positiveColor: muscleGroupColor,
+                        formatAverage: { "\($0)" },
+                        displayAverage: { Double($0) },
+                        explanation: NSLocalizedString("averageComparisonInfo", comment: "")
+                    )
                 }
                 .padding(.horizontal)
                 AboutSection(
@@ -51,67 +65,36 @@ struct ExerciseSetsScreen: View {
         }
     }
 
-    // MARK: - Header
-
-    private var header: some View {
-        MetricComparisonView(
-            leading: .init(
-                label: NSLocalizedString("average", comment: ""),
-                value: averageSetCount.map { "\($0)" } ?? "––",
-                unit: "",
-                caption: period.rangeCaption(period.completedHistoryRange())
-            ),
-            trailing: .init(
-                label: period.currentPeriodLabel,
-                // A period count is a real value even at zero ("0 this week"), clearer than a
-                // "––" no-data dash — same rule as the stat tiles.
-                value: "\(currentCount)",
-                unit: "",
-                caption: period.rangeCaption(period.currentRange())
-            ),
-            trailingValueStyle: AnyShapeStyle(muscleGroupColor.gradient),
-            percentChange: percentChange,
-            positiveColor: muscleGroupColor,
-            explanation: NSLocalizedString("averageComparisonInfo", comment: "")
-        )
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Chart
-
-    private var chart: some View {
-        PeriodHistoryChart(
-            buckets: buckets,
-            period: period,
-            valueLabel: NSLocalizedString("sets", comment: ""),
-            currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient),
-            averageLine: averageSetCount.map(Double.init)
-        )
-    }
-
     // MARK: - Data
 
     private var currentCount: Int { setCount(in: period.currentRange()) }
 
-    /// Working-set counts of the completed periods on screen — every history bucket except the
-    /// current, still-growing one, and only periods actually trained (a rest period is "no data"
-    /// for the average, the same rule the trend already uses). The comparison baseline and the
-    /// dashed average line both read from this one value.
-    private var completedSetCounts: [Int] {
-        (1 ..< period.historyBucketCount)
-            .map { setCount(in: period.range(periodsAgo: $0)) }
-            .filter { $0 > 0 }
+    /// Earliest recorded set — the left end of the scrollable domain.
+    private var firstDataDate: Date? {
+        workoutSets.compactMap { $0.workout?.date }.min()
     }
 
-    private var averageSetCount: Int? {
-        guard !completedSetCounts.isEmpty else { return nil }
-        return Int((Double(completedSetCounts.reduce(0, +)) / Double(completedSetCounts.count)).rounded())
+    /// Working-set count per period start, built in one pass so the scrollable chart looks each period
+    /// up instead of re-filtering the sets per bar. Only sets with a recorded entry count, matching
+    /// the weekly tile; keyed the same way `scrollableBuckets` keys its lookups.
+    private var countByPeriodStart: [Date: Int] {
+        var dict: [Date: Int] = [:]
+        for set in workoutSets where set.hasEntry {
+            guard let date = set.workout?.date else { continue }
+            let start = period.currentRange(containing: date).lowerBound
+            dict[start, default: 0] += 1
+        }
+        return dict
     }
 
-    /// The current period against the average of the completed periods shown — nil (pill hidden)
-    /// until both the current period and the history hold data, the same suppression as the tiles.
-    private var percentChange: Double? {
-        PeriodHistoryChart.trendPercentChange(current: currentCount, previous: averageSetCount ?? 0)
+    private var buckets: [PeriodHistoryChart.Bucket] {
+        PeriodHistoryChart.scrollableBuckets(
+            for: period,
+            rawByPeriodStart: countByPeriodStart,
+            firstDataDate: firstDataDate,
+            display: { Double($0) },
+            formatted: { "\($0)" }
+        )
     }
 
     /// Working-set count in the range — only sets with a recorded entry, matching the weekly tile.
@@ -123,10 +106,6 @@ struct ExerciseSetsScreen: View {
             }
             .filter(\.hasEntry)
             .count
-    }
-
-    private var buckets: [PeriodHistoryChart.Bucket] {
-        PeriodHistoryChart.buckets(for: period) { Double(setCount(in: $0)) }
     }
 
     private var muscleGroupColor: Color {

@@ -126,3 +126,60 @@ enum StatPeriod: String, CaseIterable, Identifiable {
         }
     }
 }
+
+// MARK: - Scrollable chart geometry
+
+/// The scrollable-timeline math for the period-history charts — the mirror of `ChartRange`'s for the
+/// capability charts, but derived from `range(periodsAgo:)` so a "week" window is exactly the twelve
+/// calendar weeks it shows, not an approximate span. Living here (not per screen) keeps every period
+/// chart scrolling, snapping and framing the current period identically.
+extension StatPeriod {
+    /// The visible window in seconds — exactly the most recent `historyBucketCount` periods, which is
+    /// what `chartXVisibleDomain` expects and the fixed width the chart showed before it scrolled.
+    func visibleDomainSeconds(now: Date = .now) -> Int {
+        let start = range(periodsAgo: historyBucketCount - 1, from: now).lowerBound
+        let end = currentRange(containing: now).upperBound
+        return Int(end.timeIntervalSince(start).rounded(.up))
+    }
+
+    /// The full scrollable domain: from the period containing the first data point through the current
+    /// period's end, but never shorter than one visible window so a young history still fills the chart.
+    func scrollableXDomain(firstDataDate: Date?, now: Date = .now) -> ClosedRange<Date> {
+        let end = currentRange(containing: now).upperBound
+        let windowStart = range(periodsAgo: historyBucketCount - 1, from: now).lowerBound
+        guard let firstDataDate, firstDataDate < windowStart else { return windowStart ... end }
+        return currentRange(containing: firstDataDate).lowerBound ... end
+    }
+
+    /// The initial scroll position (the visible window's left edge) placing the current period at the
+    /// right edge — the chart opens on the most recent periods, the fixed view it replaced.
+    func initialScrollPosition(now: Date = .now) -> Date {
+        let end = currentRange(containing: now).upperBound
+        return Calendar.current.date(byAdding: .second, value: -visibleDomainSeconds(now: now), to: end) ?? end
+    }
+
+    /// What scroll positions snap to: the start of a week / month / year.
+    var scrollSnapComponents: DateComponents {
+        switch self {
+        case .week: return DateComponents(weekday: Calendar.current.firstWeekday)
+        case .month: return DateComponents(day: 1)
+        case .year: return DateComponents(month: 1, day: 1)
+        }
+    }
+
+    /// X-axis mark cadence on the scrollable chart — about six marks across the visible window.
+    var scrollAxisStride: (component: Calendar.Component, count: Int) {
+        switch self {
+        case .week: return (.weekOfYear, 2)
+        case .month: return (.month, 2)
+        case .year: return (.year, 1)
+        }
+    }
+
+    /// The visible window as a date range — `[scrollPosition, scrollPosition + one window]` — for the
+    /// header's moving "average" caption and the visible-window average it labels.
+    func visibleWindowRange(from scrollPosition: Date, now: Date = .now) -> ClosedRange<Date> {
+        let end = Calendar.current.date(byAdding: .second, value: visibleDomainSeconds(now: now), to: scrollPosition) ?? scrollPosition
+        return scrollPosition ... end
+    }
+}

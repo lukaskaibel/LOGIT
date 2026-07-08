@@ -31,8 +31,22 @@ struct SummaryStatScreen: View {
             VStack(spacing: SECTION_SPACING) {
                 VStack(spacing: 16) {
                     PeriodPicker(selection: $period)
-                    header
-                    chart
+                    PeriodStatChartView(
+                        period: period,
+                        buckets: buckets,
+                        firstDataDate: firstDataDate,
+                        valueLabel: metric.title,
+                        unit: metric.unit,
+                        currentBarStyle: AnyShapeStyle(isDuration ? Color.secondary : Color.accentColor),
+                        currentLabel: period.currentPeriodLabel,
+                        currentValue: metric.formattedValue(fromRaw: currentRaw),
+                        currentRaw: currentRaw,
+                        trailingValueStyle: isDuration ? AnyShapeStyle(Color.label) : AnyShapeStyle(Color.accentColor.gradient),
+                        positiveColor: isDuration ? .secondary : .accentColor,
+                        formatAverage: { metric.formattedAverage(rawAverage: Double($0)) },
+                        displayAverage: { metric.displayValue(fromRaw: $0) },
+                        explanation: NSLocalizedString("averageComparisonInfo", comment: "")
+                    )
                 }
                 .padding(.horizontal)
                 AboutSection(metricTitle: metric.title, text: metric.aboutText)
@@ -51,57 +65,26 @@ struct SummaryStatScreen: View {
         }
     }
 
-    // MARK: - Header
-
-    private var header: some View {
-        HStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(period.currentPeriodLabel)
-                    .font(.footnote)
-                    .fontWeight(.semibold)
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-                // A period sum is a real value even at zero ("0 sets this week"), clearer than a
-                // "––" no-data dash — same rule as the stat tiles.
-                UnitView(
-                    value: metric.formattedValue(fromRaw: currentRaw),
-                    unit: metric.unit,
-                    configuration: .large,
-                    unitColor: .secondaryLabel
-                )
-                .foregroundStyle(isDuration ? AnyShapeStyle(Color.label) : AnyShapeStyle(Color.accentColor.gradient))
-            }
-            Spacer()
-            if let percentChange {
-                TrendIndicatorView(
-                    percentChange: percentChange,
-                    positiveColor: isDuration ? .secondary : .accentColor
-                )
-                .animation(.snappy, value: percentChange)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Chart
-
-    private var chart: some View {
-        PeriodHistoryChart(
-            buckets: buckets,
-            period: period,
-            valueLabel: metric.title,
-            currentBarStyle: AnyShapeStyle(isDuration ? Color.secondary : Color.accentColor),
-            unit: metric.unit
-        )
-    }
-
     // MARK: - Data
 
     private var currentRaw: Int { sum(in: period.currentRange()) }
-    private var previousRaw: Int { sum(in: period.previousRange()) }
 
-    private var percentChange: Double? {
-        PeriodHistoryChart.trendPercentChange(current: currentRaw, previous: previousRaw)
+    /// Earliest recorded workout — the left end of the scrollable domain.
+    private var firstDataDate: Date? {
+        workouts.compactMap { $0.date }.min()
+    }
+
+    /// The metric summed per period start, in one pass over the workouts so the scrollable chart looks
+    /// each period up instead of re-summing per bar. Keyed the same way `scrollableBuckets` keys its
+    /// lookups — `currentRange(containing:).lowerBound`.
+    private var rawByPeriodStart: [Date: Int] {
+        var dict: [Date: Int] = [:]
+        for workout in workouts {
+            guard let date = workout.date else { continue }
+            let start = period.currentRange(containing: date).lowerBound
+            dict[start, default: 0] += metric.rawValue(of: workout)
+        }
+        return dict
     }
 
     private func sum(in range: ClosedRange<Date>) -> Int {
@@ -111,10 +94,12 @@ struct SummaryStatScreen: View {
     }
 
     private var buckets: [PeriodHistoryChart.Bucket] {
-        PeriodHistoryChart.buckets(
+        PeriodHistoryChart.scrollableBuckets(
             for: period,
-            value: { metric.displayValue(fromRaw: sum(in: $0)) },
-            formatted: { metric.formattedValue(fromRaw: sum(in: $0)) }
+            rawByPeriodStart: rawByPeriodStart,
+            firstDataDate: firstDataDate,
+            display: { metric.displayValue(fromRaw: $0) },
+            formatted: { metric.formattedValue(fromRaw: $0) }
         )
     }
 }

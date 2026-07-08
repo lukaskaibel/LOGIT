@@ -11,16 +11,32 @@ import SwiftUI
 struct ExerciseSetVolumeScreen: View {
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
+    /// Daily-max sets, grouped once at init. The chart, the header baseline, the y-scale, the domain
+    /// and the selection all read from this — so scrolling or inspecting never regroups every set
+    /// again. (The selection lag came from `firstDataDate` re-grouping all sets once per axis mark,
+    /// every frame.)
+    private let dailyMaxSets: [WorkoutSet]
+    /// Earliest day with data — anchors the scrollable domain and the All range. Derived once from
+    /// `dailyMaxSets`, not recomputed on every scroll/selection frame.
+    private let firstDataDate: Date?
 
     @State private var chartRange: ChartRange = .threeMonths
     @State private var chartScrollPosition: Date = .now
     @State private var selectedDate: Date?
 
+    init(exercise: Exercise, workoutSets: [WorkoutSet]) {
+        self.exercise = exercise
+        self.workoutSets = workoutSets
+        let daily = Self.dailyMaxSetVolumeSets(in: workoutSets, for: exercise)
+        self.dailyMaxSets = daily
+        self.firstDataDate = daily.first?.workout?.date
+    }
+
     var body: some View {
-        let allDailyMaxSets = allDailyMaxSetVolumeSets(in: workoutSets)
+        let allDailyMaxSets = dailyMaxSets
         // Determine the snapped selected set only when a selection exists; snap to the nearest datapoint (prefer visible)
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxSets) : nil
-        let bestVisibleSetVolume = bestSetVolumeInVisibleWindow(workoutSets)
+        let bestVisibleSetVolume = bestSetVolumeInVisibleWindow()
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -152,7 +168,7 @@ struct ExerciseSetVolumeScreen: View {
                         }
                     }
                     .chartXScale(domain: chartRange.xDomain(firstDataDate: firstDataDate))
-                    .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeSetVolumePR(in: workoutSets)))
+                    .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeSetVolumePR))
                     .chartScrollableAxes(.horizontal)
                     .chartScrollPosition(x: $chartScrollPosition)
                     .chartScrollTargetBehavior(
@@ -176,7 +192,7 @@ struct ExerciseSetVolumeScreen: View {
                         }
                     }
                     .chartYAxis {
-                        let chartYScaleMax = chartYScaleMax(maxYValue: allTimeSetVolumePR(in: workoutSets))
+                        let chartYScaleMax = chartYScaleMax(maxYValue: allTimeSetVolumePR)
                         AxisMarks(values: [0, chartYScaleMax / 2, chartYScaleMax])
                     }
                     .emptyPlaceholder(allDailyMaxSets) {
@@ -219,7 +235,7 @@ struct ExerciseSetVolumeScreen: View {
         }
     }
 
-    private func allDailyMaxSetVolumeSets(in workoutSets: [WorkoutSet]) -> [WorkoutSet] {
+    private static func dailyMaxSetVolumeSets(in workoutSets: [WorkoutSet], for exercise: Exercise) -> [WorkoutSet] {
         let groupedSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
@@ -230,11 +246,6 @@ struct ExerciseSetVolumeScreen: View {
             }
             .filter { $0.volume(for: exercise) > 0 }
         return maxSetsPerDay
-    }
-
-    /// Earliest day with a value — anchors the scrollable domain and the All range.
-    private var firstDataDate: Date? {
-        allDailyMaxSetVolumeSets(in: workoutSets).first?.workout?.date
     }
 
     private var visibleChartDomainInSeconds: Int {
@@ -249,9 +260,9 @@ struct ExerciseSetVolumeScreen: View {
 
 
 
-    private func allTimeSetVolumePR(in workoutSets: [WorkoutSet]) -> Int {
+    private var allTimeSetVolumePR: Int {
         convertWeightForDisplaying(
-            workoutSets
+            dailyMaxSets
                 .map {
                     $0.volume(for: exercise)
                 }
@@ -262,9 +273,9 @@ struct ExerciseSetVolumeScreen: View {
     /// The header's left value and the comparison baseline: the best single-set volume in the visible
     /// window *other than* the current best, falling back to the most recent day's best before the
     /// window when it holds no other value (see `exerciseOtherBestBaseline`).
-    private func bestSetVolumeInVisibleWindow(_ workoutSets: [WorkoutSet]) -> Int? {
+    private func bestSetVolumeInVisibleWindow() -> Int? {
         exerciseOtherBestBaseline(
-            sets: workoutSets,
+            sets: dailyMaxSets,
             windowStart: chartScrollPosition,
             windowEnd: visibleEndDate,
             currentBestDay: bestAnchor?.date

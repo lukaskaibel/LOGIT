@@ -13,16 +13,32 @@ struct ExerciseRepetitionsScreen: View {
 
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
+    /// Daily-max sets, grouped once at init. The chart, the header baseline, the y-scale, the domain
+    /// and the selection all read from this — so scrolling or inspecting never regroups every set
+    /// again. (The selection lag came from `firstDataDate` re-grouping all sets once per axis mark,
+    /// every frame.)
+    private let dailyMaxSets: [WorkoutSet]
+    /// Earliest day with data — anchors the scrollable domain and the All range. Derived once from
+    /// `dailyMaxSets`, not recomputed on every scroll/selection frame.
+    private let firstDataDate: Date?
 
     @State private var chartRange: ChartRange = .threeMonths
     @State private var chartScrollPosition: Date = .now
     @State private var selectedDate: Date?
 
+    init(exercise: Exercise, workoutSets: [WorkoutSet]) {
+        self.exercise = exercise
+        self.workoutSets = workoutSets
+        let daily = Self.dailyMaxRepetitionsSets(in: workoutSets, for: exercise)
+        self.dailyMaxSets = daily
+        self.firstDataDate = daily.first?.workout?.date
+    }
+
     var body: some View {
-        let allDailyMaxRepsSets = allDailyMaxRepetitionsSets(in: workoutSets)
+        let allDailyMaxRepsSets = dailyMaxSets
         // Determine the snapped selected set only when a selection exists; snap to the overall nearest datapoint
         let snappedSelectedSet: WorkoutSet? = selectedDate != nil ? nearestSet(to: selectedDate, in: allDailyMaxRepsSets) : nil
-        let bestRepsInVisibleWindow: Int? = bestRepetitionsInVisibleWindow(in: workoutSets)
+        let bestRepsInVisibleWindow: Int? = bestRepetitionsInVisibleWindow()
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 VStack {
@@ -155,7 +171,7 @@ struct ExerciseRepetitionsScreen: View {
                 }
             }
             .chartXScale(domain: chartRange.xDomain(firstDataDate: firstDataDate))
-            .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeRepetitionsPR(in: workoutSets)))
+            .chartYScale(domain: 0 ... chartYScaleMax(maxYValue: allTimeRepetitionsPR))
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
@@ -179,7 +195,7 @@ struct ExerciseRepetitionsScreen: View {
                 }
             }
             .chartYAxis {
-                let chartYScaleMax = chartYScaleMax(maxYValue: allTimeRepetitionsPR(in: workoutSets))
+                let chartYScaleMax = chartYScaleMax(maxYValue: allTimeRepetitionsPR)
                 AxisMarks(values: [0, chartYScaleMax / 2, chartYScaleMax])
             }
             .emptyPlaceholder(allDailyMaxRepsSets) {
@@ -226,7 +242,7 @@ struct ExerciseRepetitionsScreen: View {
 
     // MARK: - Private Methods
 
-    private func allDailyMaxRepetitionsSets(in workoutSets: [WorkoutSet]) -> [WorkoutSet] {
+    private static func dailyMaxRepetitionsSets(in workoutSets: [WorkoutSet], for exercise: Exercise) -> [WorkoutSet] {
         let groupedSets = Dictionary(grouping: workoutSets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }.sorted { $0.key < $1.key }
@@ -237,11 +253,6 @@ struct ExerciseRepetitionsScreen: View {
             }
             .filter { $0.maximum(.repetitions, for: exercise) > 0 }
         return maxSetsPerDay
-    }
-
-    /// Earliest day with a value — anchors the scrollable domain and the All range.
-    private var firstDataDate: Date? {
-        allDailyMaxRepetitionsSets(in: workoutSets).first?.workout?.date
     }
 
     private var visibleChartDomainInSeconds: Int {
@@ -256,8 +267,8 @@ struct ExerciseRepetitionsScreen: View {
 
 
 
-    private func allTimeRepetitionsPR(in workoutSets: [WorkoutSet]) -> Int {
-        workoutSets
+    private var allTimeRepetitionsPR: Int {
+        dailyMaxSets
             .map {
                 $0.maximum(.repetitions, for: exercise)
             }
@@ -267,9 +278,9 @@ struct ExerciseRepetitionsScreen: View {
     /// The header's left value and the comparison baseline: the best reps in the visible window
     /// *other than* the current best, falling back to the most recent day's best before the window
     /// when it holds no other value (see `exerciseOtherBestBaseline`).
-    private func bestRepetitionsInVisibleWindow(in workoutSets: [WorkoutSet]) -> Int? {
+    private func bestRepetitionsInVisibleWindow() -> Int? {
         exerciseOtherBestBaseline(
-            sets: workoutSets,
+            sets: dailyMaxSets,
             windowStart: chartScrollPosition,
             windowEnd: visibleEndDate,
             currentBestDay: bestAnchor?.date

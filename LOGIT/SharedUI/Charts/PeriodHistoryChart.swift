@@ -44,6 +44,10 @@ struct PeriodHistoryChart: View {
     /// Whether the x-axis draws its period labels. Off for the compact tile, whose surrounding
     /// header already names the window it shows.
     var showsXAxisLabels: Bool = true
+    /// An optional reference value drawn as a dashed horizontal rule across the plot — the average
+    /// of the periods shown, excluding the current, still-growing one. Nil draws nothing, so the
+    /// Summary stat chart that doesn't pass it is unchanged. In the buckets' own value units.
+    var averageLine: Double? = nil
 
     @State private var selectedDate: Date?
 
@@ -76,6 +80,12 @@ struct PeriodHistoryChart: View {
                 .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
                 // A tapped bar stays lit; every other bar goes quiet while one is inspected.
                 .opacity(selectedBucket == nil || selectedBucket?.id == bucket.id ? 1.0 : 0.4)
+            }
+            // The average of the completed periods shown, as a dashed reference the current bar can
+            // be read against. Drawn after the bars so it sits on top; only when a value is supplied.
+            if let averageLine {
+                RuleMark(y: .value(NSLocalizedString("average", comment: ""), averageLine))
+                    .averageLineStyle()
             }
         }
         // ~1/6 headroom above the tallest bar so a peak never touches the ceiling (matches the tiles).
@@ -203,6 +213,17 @@ extension PeriodHistoryChart {
     static func trendPercentChange(current: Int, previous: Int) -> Double? {
         guard current > 0, previous > 0 else { return nil }
         return (Double(current) - Double(previous)) / Double(previous) * 100
+    }
+}
+
+extension ChartContent {
+    /// The one shared look of the dashed "average" reference line drawn across the stat charts — a
+    /// neutral, slightly wide rule with rounded dashes, set apart from the bars it sits over. Defined
+    /// once so every average line matches wherever it appears (the exercise Volume / Sets charts
+    /// today, the Summary stat charts next).
+    func averageLineStyle() -> some ChartContent {
+        foregroundStyle(Color.secondaryLabel)
+            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, dash: [5, 10]))
     }
 }
 

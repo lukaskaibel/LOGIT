@@ -75,6 +75,7 @@
 "newRecord" = "Neuer Rekord";
 "currentBestInfo" = "Dein aktueller Bestwert ist der höchste Wert der letzten 4 Wochen. Der Trend zeigt, wie viel höher er ist als dein Bestwert in den 4 Wochen davor.";
 "currentBestComparisonInfo" = "Dein aktueller Bestwert (rechts) ist der höchste Wert der letzten 4 Wochen. Das Abzeichen zeigt, wie er sich zu deinem Bestwert im angezeigten Zeitraum links verhält – scrolle, um mit beliebigen Zeiträumen zu vergleichen.";
+"averageComparisonInfo" = "Der Durchschnitt (links) ist dein typischer Wert über die angezeigten Zeiträume, ohne den laufenden aktuellen Zeitraum. Das Abzeichen zeigt, wie sich der aktuelle Zeitraum (rechts) dazu verhält.";
 "currentWorkout" = "Aktuelles Workout";
 
 // MARK: - D
@@ -865,8 +866,8 @@
 "aboutMetric" = "Über „%@“";
 "weightInfo" = "Das höchste Gewicht, das du an einem Tag in einem einzelnen Satz bewegt hast. Mehr Gewicht über die Zeit ist das deutlichste Zeichen für wachsende Kraft.";
 "repetitionsInfo" = "Die meisten Wiederholungen, die du an einem Tag in einem einzelnen Satz geschafft hast. Mehr Wiederholungen bei gleichem Gewicht stärken die Kraftausdauer – ein weiterer Weg, Fortschritte zu machen.";
-"volumeInfo" = "Das Volumen ist das insgesamt bewegte Gewicht: Gewicht × Wiederholungen, summiert über alle Sätze des Zeitraums. Mehr Volumen bedeutet mehr Gesamtarbeit – ein wichtiger Treiber für Muskelwachstum. Der Trend vergleicht den aktuellen Zeitraum mit dem davor.";
-"setsInfo" = "Die Sätze sind die Anzahl der Arbeitssätze, die du für diese Übung protokolliert hast – nur tatsächlich ausgeführte Sätze zählen. Genügend harte Sätze sind ein wichtiger Treiber für Kraft- und Muskelwachstum. Das Diagramm zeigt die Sätze der letzten Zeiträume; der Trend vergleicht den aktuellen Zeitraum mit dem davor.";
+"volumeInfo" = "Das Volumen ist das insgesamt bewegte Gewicht: Gewicht × Wiederholungen, summiert über alle Sätze des Zeitraums. Mehr Volumen bedeutet mehr Gesamtarbeit – ein wichtiger Treiber für Muskelwachstum. Das Abzeichen vergleicht diesen Zeitraum mit dem Durchschnitt der angezeigten Zeiträume – der gestrichelten Linie.";
+"setsInfo" = "Die Sätze sind die Anzahl der Arbeitssätze, die du für diese Übung protokolliert hast – nur tatsächlich ausgeführte Sätze zählen. Genügend harte Sätze sind ein wichtiger Treiber für Kraft- und Muskelwachstum. Das Diagramm zeigt die Sätze der letzten Zeiträume; das Abzeichen vergleicht diesen Zeitraum mit ihrem Durchschnitt – der gestrichelten Linie.";
 
 "progressMetric" = "Fortschrittsmetrik";
 

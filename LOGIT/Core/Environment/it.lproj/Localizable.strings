@@ -75,6 +75,7 @@
 "newRecord" = "Nuovo record";
 "currentBestInfo" = "Il tuo migliore attuale è il valore più alto delle ultime 4 settimane. L'andamento mostra quanto è più alto rispetto al tuo migliore nelle 4 settimane precedenti.";
 "currentBestComparisonInfo" = "Il tuo migliore attuale (a destra) è il valore più alto delle ultime 4 settimane. Il distintivo mostra come si confronta con il tuo migliore nel periodo mostrato a sinistra; scorri per confrontare con qualsiasi periodo.";
+"averageComparisonInfo" = "La media (a sinistra) è il tuo valore tipico nei periodi mostrati, senza contare quello attuale in corso. Il distintivo mostra come il periodo attuale (a destra) si confronta con essa.";
 "currentWorkout" = "Allenamento attuale";
 
 // MARK: - D
@@ -869,8 +870,8 @@
 "aboutMetric" = "Informazioni su “%@”";
 "weightInfo" = "Il peso più alto sollevato in una singola serie, mostrato per giorno. Sollevare più peso nel tempo è il segnale più diretto di un aumento della forza.";
 "repetitionsInfo" = "Il numero più alto di ripetizioni completate in una singola serie, mostrato per giorno. Più ripetizioni con lo stesso peso sviluppano la resistenza muscolare: un altro modo per progredire.";
-"volumeInfo" = "Il volume è il peso totale spostato: peso × ripetizioni, sommato su tutte le serie del periodo. Più volume significa più lavoro totale: un fattore chiave per la crescita muscolare. Il trend confronta il periodo attuale con quello precedente.";
-"setsInfo" = "Le serie indicano quante serie di lavoro hai registrato per questo esercizio, contando solo quelle effettivamente completate. Farne abbastanza è un fattore chiave per aumentare forza e massa muscolare. Il grafico mostra le serie dei periodi recenti; il trend confronta il periodo attuale con quello precedente.";
+"volumeInfo" = "Il volume è il peso totale spostato: peso × ripetizioni, sommato su tutte le serie del periodo. Più volume significa più lavoro totale: un fattore chiave per la crescita muscolare. Il distintivo confronta questo periodo con la media dei periodi mostrati: la linea tratteggiata.";
+"setsInfo" = "Le serie indicano quante serie di lavoro hai registrato per questo esercizio, contando solo quelle effettivamente completate. Farne abbastanza è un fattore chiave per aumentare forza e massa muscolare. Il grafico mostra le serie dei periodi recenti; il distintivo confronta questo periodo con la loro media: la linea tratteggiata.";
 
 "progressMetric" = "Metrica di progresso";
 

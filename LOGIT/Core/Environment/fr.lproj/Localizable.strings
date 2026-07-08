@@ -75,6 +75,7 @@
 "newRecord" = "Nouveau record";
 "currentBestInfo" = "Ton meilleur actuel est la valeur la plus élevée des 4 dernières semaines. La tendance indique de combien il dépasse ton meilleur des 4 semaines précédentes.";
 "currentBestComparisonInfo" = "Ton meilleur actuel (à droite) est la valeur la plus élevée des 4 dernières semaines. Le badge indique comment il se compare à ton meilleur sur la période affichée à gauche ; fais défiler pour comparer avec n'importe quelle période.";
+"averageComparisonInfo" = "La moyenne (à gauche) est ta valeur habituelle sur les périodes affichées, sans compter la période en cours. Le badge indique comment la période actuelle (à droite) se compare à elle.";
 "currentWorkout" = "Entraînement actuel";
 
 // MARK: - D
@@ -869,8 +870,8 @@
 "aboutMetric" = "À propos de « %@ »";
 "weightInfo" = "Le poids le plus lourd soulevé en une seule série, affiché par jour. Soulever plus lourd au fil du temps est le signe le plus direct d’un gain de force.";
 "repetitionsInfo" = "Le plus grand nombre de répétitions effectuées en une seule série, affiché par jour. Plus de répétitions au même poids développe l’endurance musculaire — une autre façon de progresser.";
-"volumeInfo" = "Le volume est le poids total déplacé : poids × répétitions, additionné sur toutes les séries de la période. Plus de volume signifie plus de travail total — un facteur clé de la croissance musculaire. La tendance compare la période en cours à la précédente.";
-"setsInfo" = "Les séries comptabilisent le nombre de séries de travail que vous avez enregistrées pour cet exercice — uniquement celles réellement terminées. En faire suffisamment est un facteur clé pour gagner en force et en masse musculaire. Le graphique montre les séries des dernières périodes ; la tendance compare la période en cours à la précédente.";
+"volumeInfo" = "Le volume est le poids total déplacé : poids × répétitions, additionné sur toutes les séries de la période. Plus de volume signifie plus de travail total — un facteur clé de la croissance musculaire. Le badge compare cette période à la moyenne des périodes affichées — la ligne pointillée.";
+"setsInfo" = "Les séries comptabilisent le nombre de séries de travail que vous avez enregistrées pour cet exercice — uniquement celles réellement terminées. En faire suffisamment est un facteur clé pour gagner en force et en masse musculaire. Le graphique montre les séries des dernières périodes ; le badge compare cette période à leur moyenne — la ligne pointillée.";
 
 "progressMetric" = "Métrique de progression";
 

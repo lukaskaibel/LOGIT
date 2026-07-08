@@ -245,7 +245,7 @@ struct WorkoutDetailScreen: View {
         let style = improved > 0
             ? workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
             : AnyShapeStyle(Color.secondary)
-        return ProgressIndicatorPill(symbol: improved > 0 ? "chevron.up" : nil, style: style) {
+        return ProgressIndicatorPill(symbol: improved > 0 ? "arrow.up" : nil, style: style) {
             Text(String(format: NSLocalizedString("improvedCount", comment: ""), improved))
                 .font(.system(.footnote, design: .rounded, weight: .bold))
                 .monospacedDigit()

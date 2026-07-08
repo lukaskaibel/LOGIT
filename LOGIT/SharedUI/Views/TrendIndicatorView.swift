@@ -9,9 +9,9 @@ import SwiftUI
 
 /// Capsule badge showing the percent change of a metric versus the previous period.
 /// An upward trend uses the exercise's muscle-group color; a decline is muted gray with
-/// a down chevron and no change is muted gray with no chevron at all — just the percent —
+/// a down arrow and no change is muted gray with no arrow at all — just the percent —
 /// so a flat result is never mistaken for a decline. The same up/down semantic as the
-/// set-delta chevrons in the workout recorder.
+/// set-delta arrows in the workout recorder.
 struct TrendIndicatorView: View {
     let percentChange: Double
     var positiveColor: Color = .accentColor
@@ -19,7 +19,7 @@ struct TrendIndicatorView: View {
     /// workout stat tiles pass the workout's multi-muscle-group gradient here, which a single
     /// `Color` can't carry. Decline and no change stay muted gray regardless.
     var positiveStyle: AnyShapeStyle? = nil
-    /// While the value stands at a personal record the chevron gives way to a trophy, the percent to
+    /// While the value stands at a personal record the arrow gives way to a trophy, the percent to
     /// "PR", and the pill keeps the positive tint regardless of direction — a record is always a win,
     /// and a percentage beside a record has no baseline to be a percentage *of*.
     var isRecord: Bool = false
@@ -45,13 +45,13 @@ struct TrendIndicatorView: View {
         return positiveStyle ?? AnyShapeStyle(positiveColor)
     }
 
-    /// No chevron for a flat result — the muted gray percent carries the "no change"
+    /// No arrow for a flat result — the muted gray percent carries the "no change"
     /// signal on its own, and an icon here would read like a decline.
     private var symbolName: String? {
         if isRecord { return "trophy.fill" }
         switch direction {
-        case .up: return "chevron.up"
-        case .down: return "chevron.down"
+        case .up: return "arrow.up"
+        case .down: return "arrow.down"
         case .flat: return nil
         }
     }

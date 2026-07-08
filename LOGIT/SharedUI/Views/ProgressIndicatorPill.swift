@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-/// The app's single progress-indicator pill: an optional leading SF Symbol — a trend chevron, a
+/// The app's single progress-indicator pill: an optional leading SF Symbol — a trend arrow, a
 /// trophy, an arrow, a clock — beside a label, on a translucent capsule tinted with an accent
-/// style. Every trend, record, gain and lapsed pill in the app is built from this so the chevron
+/// style. Every trend, record, gain and lapsed pill in the app is built from this so the symbol
 /// weight, capsule fill and 0.15 tint stay identical everywhere.
 ///
 /// The accent is an `AnyShapeStyle`, so it can be a flat `Color` or a gradient — a single `Color`
@@ -52,7 +52,7 @@ struct ProgressIndicatorPill<Label: View>: View {
         }
     }
 
-    /// The leading SF Symbol — `chevron.up`/`chevron.down` for a trend, `trophy.fill` for a record,
+    /// The leading SF Symbol — `arrow.up`/`arrow.down` for a trend, `trophy.fill` for a record,
     /// `arrow.up` for a gain, `minus` for "no change". Nil draws the label alone: a flat trend shows
     /// no icon so it can't be mistaken for a decline.
     let symbol: String?
@@ -127,10 +127,10 @@ struct ProgressIndicatorPill<Label: View>: View {
 struct ProgressIndicatorPill_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 12) {
-            ProgressIndicatorPill(symbol: "chevron.up", color: .green) {
+            ProgressIndicatorPill(symbol: "arrow.up", color: .green) {
                 Text("12 %").font(.system(.footnote, design: .rounded, weight: .bold))
             }
-            ProgressIndicatorPill(symbol: "chevron.down", color: .secondary) {
+            ProgressIndicatorPill(symbol: "arrow.down", color: .secondary) {
                 Text("8 %").font(.system(.footnote, design: .rounded, weight: .bold))
             }
             ProgressIndicatorPill(

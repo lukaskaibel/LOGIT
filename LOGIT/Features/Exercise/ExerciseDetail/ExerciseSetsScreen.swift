@@ -54,32 +54,26 @@ struct ExerciseSetsScreen: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(period.currentPeriodLabel)
-                    .font(.footnote)
-                    .fontWeight(.semibold)
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
+        MetricComparisonView(
+            leading: .init(
+                label: NSLocalizedString("average", comment: ""),
+                value: averageSetCount.map { "\($0)" } ?? "––",
+                unit: "",
+                caption: period.rangeCaption(period.completedHistoryRange())
+            ),
+            trailing: .init(
+                label: period.currentPeriodLabel,
                 // A period count is a real value even at zero ("0 this week"), clearer than a
                 // "––" no-data dash — same rule as the stat tiles.
-                UnitView(
-                    value: "\(currentCount)",
-                    unit: "",
-                    configuration: .large,
-                    unitColor: .secondaryLabel
-                )
-                .foregroundStyle(muscleGroupColor.gradient)
-            }
-            Spacer()
-            if let percentChange {
-                TrendIndicatorView(
-                    percentChange: percentChange,
-                    positiveColor: muscleGroupColor
-                )
-                .animation(.snappy, value: percentChange)
-            }
-        }
+                value: "\(currentCount)",
+                unit: "",
+                caption: period.rangeCaption(period.currentRange())
+            ),
+            trailingValueStyle: AnyShapeStyle(muscleGroupColor.gradient),
+            percentChange: percentChange,
+            positiveColor: muscleGroupColor,
+            explanation: NSLocalizedString("averageComparisonInfo", comment: "")
+        )
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -90,17 +84,34 @@ struct ExerciseSetsScreen: View {
             buckets: buckets,
             period: period,
             valueLabel: NSLocalizedString("sets", comment: ""),
-            currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient)
+            currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient),
+            averageLine: averageSetCount.map(Double.init)
         )
     }
 
     // MARK: - Data
 
     private var currentCount: Int { setCount(in: period.currentRange()) }
-    private var previousCount: Int { setCount(in: period.previousRange()) }
 
+    /// Working-set counts of the completed periods on screen — every history bucket except the
+    /// current, still-growing one, and only periods actually trained (a rest period is "no data"
+    /// for the average, the same rule the trend already uses). The comparison baseline and the
+    /// dashed average line both read from this one value.
+    private var completedSetCounts: [Int] {
+        (1 ..< period.historyBucketCount)
+            .map { setCount(in: period.range(periodsAgo: $0)) }
+            .filter { $0 > 0 }
+    }
+
+    private var averageSetCount: Int? {
+        guard !completedSetCounts.isEmpty else { return nil }
+        return Int((Double(completedSetCounts.reduce(0, +)) / Double(completedSetCounts.count)).rounded())
+    }
+
+    /// The current period against the average of the completed periods shown — nil (pill hidden)
+    /// until both the current period and the history hold data, the same suppression as the tiles.
     private var percentChange: Double? {
-        PeriodHistoryChart.trendPercentChange(current: currentCount, previous: previousCount)
+        PeriodHistoryChart.trendPercentChange(current: currentCount, previous: averageSetCount ?? 0)
     }
 
     /// Working-set count in the range — only sets with a recorded entry, matching the weekly tile.

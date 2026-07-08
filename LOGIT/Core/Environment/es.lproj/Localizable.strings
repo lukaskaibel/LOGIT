@@ -75,6 +75,7 @@
 "newRecord" = "Nuevo récord";
 "currentBestInfo" = "Tu mejor marca actual es el valor más alto de las últimas 4 semanas. La tendencia muestra cuánto más alto es que tu mejor marca de las 4 semanas anteriores.";
 "currentBestComparisonInfo" = "Tu mejor marca actual (derecha) es el valor más alto de las últimas 4 semanas. La insignia muestra cómo se compara con tu mejor marca del periodo mostrado a la izquierda; desliza para comparar con cualquier momento.";
+"averageComparisonInfo" = "El promedio (izquierda) es tu valor típico en los periodos mostrados, sin contar el actual en curso. La insignia muestra cómo se compara el periodo actual (derecha) con él.";
 "currentWorkout" = "Entrenamiento actual";
 
 // MARK: - D
@@ -869,8 +870,8 @@
 "aboutMetric" = "Acerca de “%@”";
 "weightInfo" = "El mayor peso que has levantado en una sola serie, mostrado por día. Levantar más peso con el tiempo es la señal más directa de que ganas fuerza.";
 "repetitionsInfo" = "El mayor número de repeticiones que has hecho en una sola serie, mostrado por día. Más repeticiones con el mismo peso desarrollan la resistencia muscular: otra forma de progresar.";
-"volumeInfo" = "El volumen es el peso total que has movido: peso × repeticiones, sumado en todas las series del período. Más volumen significa más trabajo total, un factor clave para el crecimiento muscular. La tendencia compara el período actual con el anterior.";
-"setsInfo" = "Las series son la cantidad de series efectivas que has registrado para este ejercicio, contando solo las que realmente has completado. Hacer suficientes series exigentes es un factor clave para ganar fuerza y músculo. El gráfico muestra las series de los últimos períodos; la tendencia compara el período actual con el anterior.";
+"volumeInfo" = "El volumen es el peso total que has movido: peso × repeticiones, sumado en todas las series del período. Más volumen significa más trabajo total, un factor clave para el crecimiento muscular. La insignia compara este período con el promedio de los períodos mostrados: la línea discontinua.";
+"setsInfo" = "Las series son la cantidad de series efectivas que has registrado para este ejercicio, contando solo las que realmente has completado. Hacer suficientes series exigentes es un factor clave para ganar fuerza y músculo. El gráfico muestra las series de los últimos períodos; la insignia compara este período con su promedio: la línea discontinua.";
 
 "progressMetric" = "Métrica de progreso";
 

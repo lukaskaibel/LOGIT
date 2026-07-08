@@ -89,4 +89,40 @@ enum StatPeriod: String, CaseIterable, Identifiable {
         let shifted = Calendar.current.date(byAdding: component, value: -n, to: date) ?? date
         return currentRange(containing: shifted)
     }
+
+    /// The span the history average covers — the oldest history bucket through the last finished
+    /// period, excluding the current, in-progress one. Anchors the "Average" caption on the stat
+    /// detail headers so the number reads against a legible window.
+    func completedHistoryRange(now: Date = .now) -> ClosedRange<Date> {
+        let start = range(periodsAgo: historyBucketCount - 1, from: now).lowerBound
+        let end = range(periodsAgo: 1, from: now).upperBound
+        return start ... end
+    }
+
+    /// A compact "start – end" caption for a date span at this granularity — days for weeks
+    /// ("14 Apr - 29 Jun"), month + year for months, the year for years — collapsing to a single
+    /// token when both ends land in the same unit ("Jul 2026", "2026"). The year is dropped from a
+    /// week span sitting entirely in the current year, matching the scrollable chart-range headers.
+    func rangeCaption(_ range: ClosedRange<Date>) -> String {
+        let lower = range.lowerBound
+        let upper = range.upperBound
+        switch self {
+        case .week:
+            let start = lower.isInCurrentYear
+                ? lower.formatted(.dateTime.day().month())
+                : lower.formatted(.dateTime.day().month().year())
+            let end = upper.isInCurrentYear
+                ? upper.formatted(.dateTime.day().month())
+                : upper.formatted(.dateTime.day().month().year())
+            return "\(start) - \(end)"
+        case .month:
+            let start = lower.formatted(.dateTime.month().year())
+            let end = upper.formatted(.dateTime.month().year())
+            return start == end ? start : "\(start) - \(end)"
+        case .year:
+            let start = lower.formatted(.dateTime.year())
+            let end = upper.formatted(.dateTime.year())
+            return start == end ? start : "\(start) - \(end)"
+        }
+    }
 }

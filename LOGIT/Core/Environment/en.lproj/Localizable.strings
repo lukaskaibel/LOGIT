@@ -75,6 +75,7 @@
 "newRecord" = "New Record";
 "currentBestInfo" = "Your current best is the highest value in the last 4 weeks. The trend shows how much higher it is than your best in the 4 weeks before you reached it.";
 "currentBestComparisonInfo" = "Your current best (right) is the highest value in the last 4 weeks. The badge shows how it compares to your best in the shown period on the left — scroll to compare against any time.";
+"averageComparisonInfo" = "The average (left) is your typical value over the periods shown, not counting the current one still in progress. The badge shows how the current period (right) compares to it.";
 "currentWorkout" = "Current Workout";
 
 // MARK: - D
@@ -869,8 +870,8 @@
 "aboutMetric" = "About %@";
 "weightInfo" = "The heaviest weight you’ve lifted in a single set, shown for each day. Moving more weight over time is the most direct sign of growing strength.";
 "repetitionsInfo" = "The most reps you’ve done in a single set, shown for each day. More reps at the same weight builds muscular endurance — another way to keep progressing.";
-"volumeInfo" = "Volume is the total weight you’ve moved: weight × reps, summed over every set in the period. More volume means more total work — a key driver of muscle growth. The trend compares the current period with the one before.";
-"setsInfo" = "Sets count the working sets you logged for this exercise — only sets you actually completed. Doing enough hard sets is a key driver of strength and muscle growth. The chart shows the sets of recent periods; the trend compares the current period with the one before.";
+"volumeInfo" = "Volume is the total weight you’ve moved: weight × reps, summed over every set in the period. More volume means more total work — a key driver of muscle growth. The badge compares this period against the average of the periods shown — the dashed line.";
+"setsInfo" = "Sets count the working sets you logged for this exercise — only sets you actually completed. Doing enough hard sets is a key driver of strength and muscle growth. The chart shows the sets of recent periods; the badge compares this period against their average — the dashed line.";
 
 "progressMetric" = "Progress Metric";
 

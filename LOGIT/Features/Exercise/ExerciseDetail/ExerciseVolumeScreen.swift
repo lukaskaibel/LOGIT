@@ -54,32 +54,26 @@ struct ExerciseVolumeScreen: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(period.currentPeriodLabel)
-                    .font(.footnote)
-                    .fontWeight(.semibold)
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
+        MetricComparisonView(
+            leading: .init(
+                label: NSLocalizedString("average", comment: ""),
+                value: averageDisplayVolume.map { "\($0)" } ?? "––",
+                unit: WeightUnit.used.rawValue,
+                caption: period.rangeCaption(period.completedHistoryRange())
+            ),
+            trailing: .init(
+                label: period.currentPeriodLabel,
                 // A period sum is a real value even at zero ("0 kg this week"), clearer than a
                 // "––" no-data dash — same rule as the stat tiles.
-                UnitView(
-                    value: formatWeightForDisplay(currentRawVolume),
-                    unit: WeightUnit.used.rawValue,
-                    configuration: .large,
-                    unitColor: .secondaryLabel
-                )
-                .foregroundStyle(muscleGroupColor.gradient)
-            }
-            Spacer()
-            if let percentChange {
-                TrendIndicatorView(
-                    percentChange: percentChange,
-                    positiveColor: muscleGroupColor
-                )
-                .animation(.snappy, value: percentChange)
-            }
-        }
+                value: formatWeightForDisplay(currentRawVolume),
+                unit: WeightUnit.used.rawValue,
+                caption: period.rangeCaption(period.currentRange())
+            ),
+            trailingValueStyle: AnyShapeStyle(muscleGroupColor.gradient),
+            percentChange: percentChange,
+            positiveColor: muscleGroupColor,
+            explanation: NSLocalizedString("averageComparisonInfo", comment: "")
+        )
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -91,17 +85,42 @@ struct ExerciseVolumeScreen: View {
             period: period,
             valueLabel: NSLocalizedString("volume", comment: ""),
             currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient),
-            unit: WeightUnit.used.rawValue
+            unit: WeightUnit.used.rawValue,
+            averageLine: averageDisplayVolume.map { Double($0) }
         )
     }
 
     // MARK: - Data
 
     private var currentRawVolume: Int { rawVolume(in: period.currentRange()) }
-    private var previousRawVolume: Int { rawVolume(in: period.previousRange()) }
 
+    /// Raw volumes of the completed periods on screen — every history bucket except the current,
+    /// still-growing one, and only periods actually trained (a rest period is "no data" for the
+    /// average, the same rule the trend already uses). The comparison baseline and the dashed
+    /// average line both read from this, so "average" means the same in the header and on the chart.
+    private var completedRawVolumes: [Int] {
+        (1 ..< period.historyBucketCount)
+            .map { rawVolume(in: period.range(periodsAgo: $0)) }
+            .filter { $0 > 0 }
+    }
+
+    private var averageRawVolume: Int? {
+        guard !completedRawVolumes.isEmpty else { return nil }
+        return completedRawVolumes.reduce(0, +) / completedRawVolumes.count
+    }
+
+    /// The average as a whole display-unit value. Volumes run to thousands, so the mean's fractional
+    /// tail (`formatWeightForDisplay` keeps up to 3 decimals) only wraps the large header number onto
+    /// a second line — round it. Feeds the header and the chart's dashed line so the two stay in step;
+    /// the pill reads `averageRawVolume`, where the ratio is exact.
+    private var averageDisplayVolume: Int? {
+        averageRawVolume.map { Int(convertWeightForDisplayingDecimal($0).rounded()) }
+    }
+
+    /// The current period against the average of the completed periods shown — nil (pill hidden)
+    /// until both the current period and the history hold data, the same suppression as the tiles.
     private var percentChange: Double? {
-        PeriodHistoryChart.trendPercentChange(current: currentRawVolume, previous: previousRawVolume)
+        PeriodHistoryChart.trendPercentChange(current: currentRawVolume, previous: averageRawVolume ?? 0)
     }
 
     /// Total volume (weight × reps over every set) in the range, in raw storage units.

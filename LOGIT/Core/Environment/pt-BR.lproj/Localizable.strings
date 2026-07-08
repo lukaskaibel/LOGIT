@@ -75,6 +75,7 @@
 "newRecord" = "Novo recorde";
 "currentBestInfo" = "Seu melhor atual é o valor mais alto das últimas 4 semanas. A tendência mostra o quanto ele é mais alto do que seu melhor nas 4 semanas anteriores.";
 "currentBestComparisonInfo" = "Seu melhor atual (à direita) é o valor mais alto das últimas 4 semanas. O selo mostra como ele se compara ao seu melhor no período exibido à esquerda; deslize para comparar com qualquer período.";
+"averageComparisonInfo" = "A média (à esquerda) é o seu valor típico nos períodos exibidos, sem contar o atual em andamento. O selo mostra como o período atual (à direita) se compara a ela.";
 "currentWorkout" = "Treino atual";
 
 // MARK: - D
@@ -869,8 +870,8 @@
 "aboutMetric" = "Sobre “%@”";
 "weightInfo" = "O maior peso que você levantou em uma única série, mostrado por dia. Levantar mais peso ao longo do tempo é o sinal mais direto de ganho de força.";
 "repetitionsInfo" = "O maior número de repetições que você fez em uma única série, mostrado por dia. Mais repetições com o mesmo peso desenvolvem a resistência muscular — outra forma de progredir.";
-"volumeInfo" = "Volume é o peso total que você moveu: peso × repetições, somado em todas as séries do período. Mais volume significa mais trabalho total — um fator-chave para o crescimento muscular. A tendência compara o período atual com o anterior.";
-"setsInfo" = "As séries indicam quantas séries de trabalho você registrou para este exercício, contando apenas as que você realmente completou. Fazer um número suficiente de séries intensas é um fator-chave para ganhar força e massa muscular. O gráfico mostra as séries dos períodos recentes; a tendência compara o período atual com o anterior.";
+"volumeInfo" = "Volume é o peso total que você moveu: peso × repetições, somado em todas as séries do período. Mais volume significa mais trabalho total — um fator-chave para o crescimento muscular. O selo compara este período com a média dos períodos exibidos — a linha tracejada.";
+"setsInfo" = "As séries indicam quantas séries de trabalho você registrou para este exercício, contando apenas as que você realmente completou. Fazer um número suficiente de séries intensas é um fator-chave para ganhar força e massa muscular. O gráfico mostra as séries dos períodos recentes; o selo compara este período com a média deles — a linha tracejada.";
 
 "progressMetric" = "Métrica de progresso";
 

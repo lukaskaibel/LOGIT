@@ -594,7 +594,7 @@ private struct SetGroupMetricComparison {
 
 /// The progress-metric badge shown on each set group, styled like the trend pill on the exercise
 /// chart screens: how this session's best compares to the exercise's current best (last month,
-/// excluding this workout) — the percent change with an up/down chevron, or a dash at 0% — with the
+/// excluding this workout) — the percent change with an up/down arrow, or a dash at 0% — with the
 /// chosen metric's name in fine print
 /// beneath it. The metric is switched from the info panel a tap opens (also where it's explained); the badge
 /// itself has no switching gesture. While the displayed metric stands at a personal record, the
@@ -775,7 +775,7 @@ private struct MetricBadgeView: View {
         .animation(MetricPeekController.rollAnimation, value: metric)
     }
 
-    /// Mirrors `TrendIndicatorView` (the trend pill on the chart screens) — chevron weight, percent
+    /// Mirrors `TrendIndicatorView` (the trend pill on the chart screens) — arrow weight, percent
     /// formatting, tint, capsule fill (translucent accent as soon as the trend is positive, never a
     /// border) — with the metric's name in fine print beneath the value. It can't embed that view
     /// directly because the record state swaps the trend row for a trophy and the record value
@@ -854,8 +854,8 @@ private struct MetricBadgeView: View {
     /// Nil for a flat trend — see `pill(accent:)`; the muted percent carries "no change" on its own.
     private func symbolName(for direction: TrendDirection) -> String? {
         switch direction {
-        case .up: return "chevron.up"
-        case .down: return "chevron.down"
+        case .up: return "arrow.up"
+        case .down: return "arrow.down"
         case .flat: return nil
         }
     }

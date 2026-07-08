@@ -156,7 +156,7 @@ enum SetValueComparison: Equatable {
     case declined
 }
 
-/// A small up/down triangle plus the absolute difference versus the previous workout's
+/// A small up/down arrow plus the absolute difference versus the previous workout's
 /// value for a single set field. Positive (improved) uses the exercise's muscle-group
 /// color; negative (declined) is muted gray.
 struct SetValueDeltaLabel: View {
@@ -168,8 +168,8 @@ struct SetValueDeltaLabel: View {
         HStack(spacing: 1) {
             Image(
                 systemName: comparison == .improved
-                    ? "chevron.up"
-                    : "chevron.down"
+                    ? "arrow.up"
+                    : "arrow.down"
             )
             .font(.system(size: 7, weight: .bold))
             Text(text)

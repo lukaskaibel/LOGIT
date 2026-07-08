@@ -174,28 +174,28 @@ private func trendColor(_ percent: Double) -> Color {
     trendIsUp(percent) ? .accentColor : .secondaryLabel
 }
 
-/// Continuous arrow angle in degrees (0 = flat/right, positive = up), scaled from the percent and
-/// clamped so big swings still read as "steeply up/down" without spinning past vertical.
-private func trendAngle(_ percent: Double) -> Double {
-    min(max(percent * 6, -62), 80)
-}
-
 private func signedPercent(_ percent: Double, fractionDigits: Int) -> String {
     String(format: "%+.\(fractionDigits)f%%", percent)
 }
 
-/// A right-pointing arrow rotated to the trend angle — the shared glyph for the hero and the
-/// per-muscle rows. Positive angle rotates it up (counter-clockwise).
+/// A strict up / down / steady arrow — the shared glyph for the hero and the per-muscle rows. No
+/// magnitude-scaled rotation: the direction alone is the signal (`arrow.up` up, `arrow.down` down,
+/// `arrow.right` for a flat trend holding steady), with the percent beside it carrying the size.
 private struct TrendArrow: View {
     let percent: Double
     let color: Color
     let size: CGFloat
 
+    private var symbolName: String {
+        if trendIsUp(percent) { return "arrow.up" }
+        if trendIsDown(percent) { return "arrow.down" }
+        return "arrow.right"
+    }
+
     var body: some View {
-        Image(systemName: "arrow.right")
+        Image(systemName: symbolName)
             .font(.system(size: size, weight: .bold))
             .foregroundStyle(color)
-            .rotationEffect(.degrees(-trendAngle(percent)))
     }
 }
 

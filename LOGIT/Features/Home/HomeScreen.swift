@@ -166,8 +166,10 @@ struct HomeScreen: View {
                                 )
                             }
 
-                            exercisesSection
-                                .padding(.horizontal)
+                            if selectedTab == .progress {
+                                exercisesSection
+                                    .padding(.horizontal)
+                            }
 
                             measurementsSection
                                 .padding(.horizontal)

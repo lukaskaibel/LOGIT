@@ -952,6 +952,7 @@
 "summaryRecordsCountMany" = "%d nouveaux records";
 "summaryRecordsNone" = "Aucun nouveau record";
 "current" = "Actuel";
+"highest" = "Maximum";
 "pinnedExercises" = "Exercices épinglés";
 "general" = "Général";
 "about" = "À propos";

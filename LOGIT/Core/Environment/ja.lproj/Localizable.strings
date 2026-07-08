@@ -952,6 +952,7 @@
 "summaryRecordsCountMany" = "新記録%d件";
 "summaryRecordsNone" = "新記録なし";
 "current" = "現在";
+"highest" = "最高値";
 "pinnedExercises" = "ピン留めした種目";
 "general" = "一般";
 "about" = "情報";

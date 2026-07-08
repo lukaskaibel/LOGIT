@@ -948,6 +948,7 @@
 "summaryRecordsCountMany" = "%d neue Rekorde";
 "summaryRecordsNone" = "Keine neuen Rekorde";
 "current" = "Aktuell";
+"highest" = "Höchster";
 "pinnedExercises" = "Angeheftete Übungen";
 "general" = "Allgemein";
 "about" = "Über";

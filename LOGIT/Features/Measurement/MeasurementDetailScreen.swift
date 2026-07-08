@@ -68,31 +68,28 @@ struct MeasurementDetailScreen: View {
 
     @ViewBuilder
     private var chartSection: some View {
-        let snappedSelectedEntry = selectedDate != nil ? nearestEntry(to: selectedDate) : nil
+        // Fetch the entries once for this render — `getMeasurementEntries` hits Core Data, and it was
+        // read ~a dozen times per frame (once per axis mark through `firstDataDate`, plus the y-scale,
+        // the selection and every mark), which churned while scrolling or inspecting.
+        let entries = entries
+        let firstDataDate = entries.last?.date
+        let visibleDomainSeconds = chartRange.visibleDomainSeconds(firstDataDate: firstDataDate)
+        let visibleEnd = Calendar.current.date(byAdding: .second, value: visibleDomainSeconds, to: chartScrollPosition) ?? chartScrollPosition
         let latestEntry = entries.first
+        let snappedSelectedEntry = selectedDate != nil ? nearestEntry(to: selectedDate, in: entries, visibleEnd: visibleEnd) : nil
+        // The highest value in the window on screen — moves as you scroll; the reference the current
+        // measurement is read against in the header.
+        let highestVisible = entries
+            .filter { ($0.date).map { $0 >= chartScrollPosition && $0 <= visibleEnd } ?? false }
+            .map(\.decimalValue)
+            .max()
+        let yMax = chartYScaleMax(in: entries)
 
         VStack {
             RangePicker(selection: $chartRange)
                 .padding(.vertical)
 
-            VStack(alignment: .leading) {
-                Text(NSLocalizedString("latest", comment: ""))
-                    .font(.footnote)
-                    .fontWeight(.medium)
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-                if let latestEntry = latestEntry {
-                    UnitView(
-                        value: formatDecimal(latestEntry.decimalValue),
-                        unit: measurementType.unit
-                    )
-                    .foregroundStyle(Color.accentColor.gradient)
-                }
-                Text(chartRange.visibleWindowDescription(from: chartScrollPosition, firstDataDate: firstDataDate))
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            comparisonHeader(latest: latestEntry, highestVisible: highestVisible, firstDataDate: firstDataDate)
 
             Chart {
                 if selectedDate != nil, let selectedEntry = snappedSelectedEntry, let sDate = selectedEntry.date {
@@ -199,14 +196,14 @@ struct MeasurementDetailScreen: View {
                 }
             }
             .chartXScale(domain: chartRange.xDomain(firstDataDate: firstDataDate))
-            .chartYScale(domain: 0.0 ... chartYScaleMax)
+            .chartYScale(domain: 0.0 ... yMax)
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
                 .valueAligned(matching: chartRange.scrollSnapComponents)
             )
             .chartXSelection(value: $selectedDate)
-            .chartXVisibleDomain(length: visibleChartDomainInSeconds)
+            .chartXVisibleDomain(length: visibleDomainSeconds)
             .chartXAxis {
                 let axisStride = chartRange.axisStride(firstDataDate: firstDataDate)
                 AxisMarks(
@@ -223,7 +220,7 @@ struct MeasurementDetailScreen: View {
                 }
             }
             .chartYAxis {
-                AxisMarks(values: [0.0, chartYScaleMax / 2.0, chartYScaleMax])
+                AxisMarks(values: [0.0, yMax / 2.0, yMax])
             }
             .emptyPlaceholder(entries) {
                 Text(NSLocalizedString("noData", comment: ""))
@@ -237,6 +234,7 @@ struct MeasurementDetailScreen: View {
 
     @ViewBuilder
     private var entriesListSection: some View {
+        let entries = entries
         VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
             Text(NSLocalizedString("allEntries", comment: "All Entries"))
                 .tileHeaderStyle()
@@ -345,33 +343,55 @@ struct MeasurementDetailScreen: View {
         entries.last?.date
     }
 
-    private var visibleChartDomainInSeconds: Int {
-        chartRange.visibleDomainSeconds(firstDataDate: firstDataDate)
-    }
-
-    private var chartYScaleMax: Double {
+    private func chartYScaleMax(in entries: [MeasurementEntry]) -> Double {
         let maxValue = entries.map { $0.decimalValue }.max() ?? 100
         let yAxisMaxValues: [Double] = [10, 25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000]
         return yAxisMaxValues.filter { $0 > maxValue }.min() ?? maxValue
     }
 
-    private var visibleEndDate: Date {
-        Calendar.current.date(byAdding: .second, value: visibleChartDomainInSeconds, to: chartScrollPosition)!
-    }
-
-    private func nearestEntry(to date: Date?) -> MeasurementEntry? {
+    private func nearestEntry(to date: Date?, in entries: [MeasurementEntry], visibleEnd: Date) -> MeasurementEntry? {
         let visibleEntries = entries.filter {
             guard let d = $0.date else { return false }
-            return d >= chartScrollPosition && d <= visibleEndDate
+            return d >= chartScrollPosition && d <= visibleEnd
         }
         let candidates = visibleEntries.isEmpty ? entries : visibleEntries
-        guard !candidates.isEmpty else { return nil }
-        guard let target = date else { return nil }
+        guard !candidates.isEmpty, let target = date else { return nil }
         return candidates.min { a, b in
             let ad = a.date ?? .distantPast
             let bd = b.date ?? .distantPast
             return abs(ad.timeIntervalSince(target)) < abs(bd.timeIntervalSince(target))
         }
+    }
+
+    // MARK: - Comparison header
+
+    /// The scoreboard: the current measurement on the trailing side (the fixed subject), the highest
+    /// value in the visible window on the leading side (the reference — it moves as you scroll), and
+    /// the badge reading one against the other. Neutral, like Duration: a measurement sitting higher or
+    /// lower isn't better or worse on its own.
+    private func comparisonHeader(latest: MeasurementEntry?, highestVisible: Double?, firstDataDate: Date?) -> some View {
+        let percentChange: Double? = {
+            guard let latest, let highest = highestVisible, highest > 0 else { return nil }
+            return (latest.decimalValue - highest) / highest * 100
+        }()
+        return MetricComparisonView(
+            leading: .init(
+                label: NSLocalizedString("highest", comment: ""),
+                value: highestVisible.map(formatDecimal) ?? "––",
+                unit: measurementType.unit,
+                caption: chartRange.visibleWindowDescription(from: chartScrollPosition, firstDataDate: firstDataDate)
+            ),
+            trailing: .init(
+                label: NSLocalizedString("current", comment: ""),
+                value: latest.map { formatDecimal($0.decimalValue) } ?? "––",
+                unit: measurementType.unit,
+                caption: latest?.date.map { $0.formatted(.dateTime.day().month()) }
+            ),
+            trailingValueStyle: AnyShapeStyle(Color.accentColor.gradient),
+            percentChange: percentChange,
+            positiveColor: .secondary
+        )
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

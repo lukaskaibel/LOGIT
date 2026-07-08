@@ -952,6 +952,7 @@
 "summaryRecordsCountMany" = "신기록 %d개";
 "summaryRecordsNone" = "신기록 없음";
 "current" = "현재";
+"highest" = "최고";
 "pinnedExercises" = "고정된 운동";
 "general" = "일반";
 "about" = "정보";

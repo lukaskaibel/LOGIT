@@ -36,7 +36,12 @@ struct HomeScreen: View {
     @State private var isShowingExercisesTip = true
     @State private var isShowingStartWorkoutSheet = false
     @State private var summaryRecords: [WorkoutProgressReport.PRRecord] = []
-    @State private var selectedTab: SummaryTab = .thisWeek
+    // Default to the tab a marketing screenshot asked for (`-UITEST_DEEPLINK
+    // progress`) so the Progress capture opens without a visible tab flip;
+    // real launches always start on This Week.
+    @State private var selectedTab: SummaryTab =
+        ScreenshotFixtures.deepLinkTarget == "progress" ? .progress : .thisWeek
+    @State private var didApplyScreenshotDeepLink = false
 
     // MARK: - Body
 
@@ -47,6 +52,7 @@ struct HomeScreen: View {
             predicate: WorkoutPredicateFactory.getWorkouts()
         ) { workouts in
             NavigationStack(path: $homeNavigationCoordinator.path) {
+                ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: 5) {
                         if #unavailable(iOS 26.0) {
@@ -158,6 +164,7 @@ struct HomeScreen: View {
                             .padding(.horizontal)
                             .onAppear {
                                 summaryViewModel.resolveInitialPeriod(workouts: workouts)
+                                applyScreenshotDeepLinkIfNeeded(workouts: workouts)
                             }
                             .task(id: "\(summaryViewModel.selectedPeriod.rawValue)-\(workouts.count)") {
                                 summaryRecords = SummaryRecords.records(
@@ -167,6 +174,11 @@ struct HomeScreen: View {
                             }
 
                             if selectedTab == .progress {
+                                // Fixed scroll anchor for the Progress marketing
+                                // screenshot (see the `.task` on the ScrollView).
+                                Color.clear
+                                    .frame(height: 1)
+                                    .id("screenshotPinnedAnchor")
                                 exercisesSection
                                     .padding(.horizontal)
 
@@ -275,6 +287,20 @@ struct HomeScreen: View {
                     }
                 }
                 .navigationTitle("Summary")
+                .task {
+                    // Screenshot-only, deterministic scroll for the Progress
+                    // capture: once the tab has laid out and seeded its pins, jump
+                    // to a fixed anchor so the pinned tiles clear the Start Workout
+                    // bar while the Highlights stay in view. The UI test can't do
+                    // this — its gesture flick travels an unpredictable, per-run
+                    // distance — so the app positions it instead. No-op for real
+                    // users (guarded on the fixtures + deep-link flags).
+                    guard ScreenshotFixtures.isEnabled,
+                          ScreenshotFixtures.deepLinkTarget == "progress" else { return }
+                    try? await Task.sleep(nanoseconds: 600_000_000)
+                    proxy.scrollTo("screenshotPinnedAnchor", anchor: UnitPoint(x: 0.5, y: 0.63))
+                }
+                }
             }
             .scrollContentBackground(.hidden)
         }
@@ -326,6 +352,66 @@ struct HomeScreen: View {
                 }
             }
         }
+    }
+
+    // MARK: - Marketing screenshot deep links
+
+    /// Opens the screen named by `-UITEST_DEEPLINK` once the summary has data.
+    /// Detail targets push onto the nav path; `progress` is already handled by
+    /// `selectedTab`'s initial value. Gated on `ScreenshotFixtures.isEnabled`
+    /// so this can never run for a real user (App Store builds can't be handed
+    /// launch arguments anyway).
+    private func applyScreenshotDeepLinkIfNeeded(workouts: [Workout]) {
+        guard ScreenshotFixtures.isEnabled,
+              !didApplyScreenshotDeepLink,
+              let target = ScreenshotFixtures.deepLinkTarget else { return }
+        didApplyScreenshotDeepLink = true
+        switch target {
+        case "progress":
+            // selectedTab is already .progress (its initial value); pin a few
+            // seeded lifts so the Progress tab shows real, climbing tiles
+            // instead of the empty-state teaser.
+            let all = (database.fetch(Exercise.self) as? [Exercise]) ?? []
+            let tiles: [PinnedExerciseTile] = ["previewBenchPress", "previewSquat", "previewDeadlift", "previewOverheadPress"].compactMap { key in
+                let name = NSLocalizedString(key, comment: "")
+                guard let id = all.first(where: { $0.name == name })?.id else { return nil }
+                return PinnedExerciseTile(exerciseID: id, tileType: .estimatedOneRepMax)
+            }
+            setPinnedExerciseTiles(tiles)
+            // Pin the two seeded measurements (bodyweight + body fat) so the
+            // watchlist shows real trends instead of the empty-state teaser.
+            setPinnedMeasurements([.bodyweight, .bodyFatPercentage])
+        case "goal":
+            homeNavigationCoordinator.path = [.weeklyGoal]
+        case "muscleOverview":
+            homeNavigationCoordinator.path = [.muscleGroupsOverview]
+        case "measurement":
+            homeNavigationCoordinator.path = [.measurementDetail(.bodyFatPercentage)]
+        case "exerciseDetail":
+            if let exercise = screenshotFixtureExercise(named: "previewBenchPress") {
+                homeNavigationCoordinator.path = [.exercise(exercise)]
+            }
+        case "workoutDetail":
+            if let workout = screenshotFixtureWorkout(named: "previewArmDay", in: workouts) {
+                homeNavigationCoordinator.path = [.workout(workout)]
+            }
+        default:
+            break // unknown values no-op.
+        }
+    }
+
+    /// Resolves a seeded fixture exercise by its localized name (the app can
+    /// read its own `NSLocalizedString`, so this stays correct in every
+    /// capture locale), falling back to the first exercise.
+    private func screenshotFixtureExercise(named key: String) -> Exercise? {
+        let name = NSLocalizedString(key, comment: "")
+        let all = (database.fetch(Exercise.self) as? [Exercise]) ?? []
+        return all.first { $0.name == name } ?? all.first
+    }
+
+    private func screenshotFixtureWorkout(named key: String, in workouts: [Workout]) -> Workout? {
+        let name = NSLocalizedString(key, comment: "")
+        return workouts.first { $0.name == name } ?? workouts.first
     }
 
     // MARK: - Measurements Section

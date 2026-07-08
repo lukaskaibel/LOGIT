@@ -1,8 +1,9 @@
-"01_Home" = "운동 현황을\n한눈에.";
-"02_MuscleGroupBack" = "근육 그룹을\n균형 있게.";
-"03_ExerciseDetail" = "개인 기록을\n바로 확인.";
-"04_WorkoutDetail" = "반복과 세트를\n모두 기록.";
-"05_WorkoutRecorder" = "빠르게 기록하고\n흐름 유지.";
-"06_SuperDropSet" = "슈퍼세트와\n드롭 세트까지.";
-"07_LiveActivity" = "잠금 화면에서\n운동 확인.";
-"08_BodyFat" = "몸의 변화를\n확인하세요.";
+"01_Summary" = "운동 현황을\n한눈에.";
+"02_Progress" = "근력이 오르는\n순간을 확인.";
+"03_Streak" = "연속 기록을\n이어 가세요.";
+"04_MuscleBalance" = "근육 그룹을\n균형 있게.";
+"05_ExerciseDetail" = "개인 기록을\n바로 확인.";
+"06_Recorder" = "빠르게 기록하고\n흐름 유지.";
+"07_SuperDropSet" = "슈퍼세트와\n드롭 세트까지.";
+"08_LiveActivity" = "잠금 화면에서\n운동 확인.";
+"09_BodyMeasurements" = "몸의 변화를\n확인하세요.";

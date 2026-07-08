@@ -1,13 +1,29 @@
-LOGIT ist ein übersichtlicher, leistungsstarker und datenschutzfreundlicher Workout Tracker für dein iPhone. Er ist für alle gemacht, die smart trainieren, konsequent bleiben und ihren Fortschritt sehen wollen - ohne Ablenkung, Werbung oder Tracking.
+LOGIT – Workout Tracker & Fitness-Log
 
-FUNKTIONEN
+Trainiere mit Plan, protokolliere jeden Satz in Sekunden und beobachte, wie über die Zeit echter Fortschritt entsteht. Übersichtlich, leistungsstark und datenschutzfreundlich – ohne Ablenkung, Werbung oder Tracking.
 
-- Eigene Workouts: Erstelle und verwalte Trainingspläne mit eigenen Übungen, Supersets, Drop-Sets und Pausen-Timer.
-- Fortschritts-Charts: Visualisiere deine Leistung über die Zeit, pro Übung, Datum oder Kategorie.
-- Persönliche Bestwerte: Rekorde für Wiederholungen, Gewicht und Volumen werden automatisch erfasst.
-- Schnelles Protokollieren: Für den Gebrauch direkt im Gym mit sinnvollen Defaults und wiederverwendbaren Plänen.
-- Smart Import: Scanne einen handschriftlichen Plan und wandle ihn in einen digitalen Trainingsplan um.
-- iCloud Sync: Deine Workouts werden automatisch auf all deinen iOS-Geräten synchronisiert.
-- Keine Werbung, kein Tracking: Deine Fitnessdaten gehören dir.
+Protokollieren & planen
+· Workouts blitzschnell protokollieren und konsequent bleiben
+· Eigene Übungsbibliothek aufbauen
+· Vorlagen speichern – oder mit fertigen loslegen
+· Supersets und Drop-Sets aufzeichnen und ans Limit gehen
+· Übungen direkt beim Training neu anordnen
+· Mit iCloud über all deine Geräte synchronisieren
 
-Lade LOGIT, erstelle deine erste Vorlage und starte dein Training in Sekunden.
+Deinen Fortschritt sehen
+· Ein eigener Fortschritt-Tab mit deinem gesamten Kraftverlauf
+· Persönliche Bestwerte und aktuelle Highlights zu jeder Übung
+· Wochenziele mit Serien, die deinen Schwung erhalten
+· Muskel-Balance, die zeigt, was du trainierst – und was du vernachlässigst
+· Hefte deine liebsten Übungen und Messwerte an, um sie im Blick zu behalten
+
+LOGIT Pro
+· Charts: Visualisiere Gewicht, Wiederholungen, Volumen und geschätztes 1RM über die Zeit
+· Messwerte: Erfasse Körpergewicht, Körperfett und mehr
+· Workout scannen: Verwandle ein Foto in eine Vorlage und leg sofort los
+
+Keine Werbung, kein Tracking – deine Fitnessdaten gehören dir.
+
+Lade LOGIT und starte noch heute in bessere Trainingsgewohnheiten.
+
+Weitere Details findest du in unseren Nutzungsbedingungen (EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/

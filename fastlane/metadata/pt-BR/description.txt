@@ -1,20 +1,25 @@
 LOGIT — Tracker de Treinos e registro fitness
 
-Treine com um plano, registre treinos rapidamente e veja seu progresso real ao longo do tempo.
+Treine com um plano, registre cada série em segundos e veja seu progresso real crescer ao longo do tempo.
 
-Recursos
+Registre e planeje
 · Registre treinos rapidamente e mantenha a consistência
 · Crie sua própria biblioteca de exercícios
-· Acompanhe o progresso por exercício: peso, repetições e volume
-· Defina metas semanais para manter o ritmo
-· Veja grupos musculares treinados recentemente de relance
-· Salve modelos e repita suas rotinas favoritas
-· Registre supersets e drop sets para treinar com intensidade
-· Sincronize seus dados entre dispositivos com iCloud
+· Salve modelos — ou comece com modelos prontos
+· Registre supersets e drop sets para superar seus limites
+· Reordene exercícios na hora enquanto você treina
+· Sincronize seus dados entre todos os dispositivos com iCloud
+
+Veja seu progresso
+· Uma aba Progresso dedicada com sua tendência geral de força
+· Recordes pessoais e destaques recentes de cada exercício
+· Metas semanais com sequências para manter seu ritmo
+· Equilíbrio muscular que mostra o que você treina — e o que você negligencia
+· Fixe seus exercícios e medidas favoritos para ficar de olho neles
 
 LOGIT Pro
-· Gráficos: visualize peso, repetições, volume e séries ao longo do tempo
-· Medidas: acompanhe peso corporal, calorias e outras métricas
+· Gráficos: visualize peso, repetições, volume e 1RM estimado ao longo do tempo
+· Medidas: acompanhe peso corporal, percentual de gordura e mais
 · Escanear Treino: transforme uma foto em um modelo de treino e comece na hora
 
 Baixe o LOGIT e comece hoje a criar melhores hábitos de treino.

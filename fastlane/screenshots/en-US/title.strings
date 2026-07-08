@@ -1,8 +1,9 @@
-"01_Home" = "Your training\nat a glance.";
-"02_MuscleGroupBack" = "Balance every\nmuscle group.";
-"03_ExerciseDetail" = "Know your\npersonal bests.";
-"04_WorkoutDetail" = "Every rep,\nevery set, logged.";
-"05_WorkoutRecorder" = "Log sets fast,\nstay in the zone.";
-"06_SuperDropSet" = "Super sets,\ndrop sets, done.";
-"07_LiveActivity" = "Your workout\non the Lock Screen.";
-"08_BodyFat" = "Watch your body\ntransform.";
+"01_Summary" = "Your training\nat a glance.";
+"02_Progress" = "Watch your\nstrength climb.";
+"03_Streak" = "Keep your\nstreak alive.";
+"04_MuscleBalance" = "Balance every\nmuscle group.";
+"05_ExerciseDetail" = "Know your\npersonal bests.";
+"06_Recorder" = "Log sets fast,\nstay in the zone.";
+"07_SuperDropSet" = "Supersets and\ndropsets, built in.";
+"08_LiveActivity" = "Right on your\nLock Screen.";
+"09_BodyMeasurements" = "Watch your body\ntransform.";

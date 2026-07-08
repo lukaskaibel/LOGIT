@@ -1,8 +1,9 @@
-"01_Home" = "ENTRAÎNER";
-"02_MuscleGroupBack" = "ÉQUILIBRE";
-"03_ExerciseDetail" = "RECORDS";
-"04_WorkoutDetail" = "SUIVI";
-"05_WorkoutRecorder" = "LIVE";
-"06_SuperDropSet" = "INTENSITÉ";
-"07_LiveActivity" = "LIVE";
-"08_BodyFat" = "PROGRÈS";
+"01_Summary" = "ENTRAÎNER";
+"02_Progress" = "PROGRÈS";
+"03_Streak" = "SÉRIE";
+"04_MuscleBalance" = "ÉQUILIBRE";
+"05_ExerciseDetail" = "RECORDS";
+"06_Recorder" = "CONSIGNER";
+"07_SuperDropSet" = "INTENSITÉ";
+"08_LiveActivity" = "LIVE";
+"09_BodyMeasurements" = "MESURER";

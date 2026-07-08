@@ -14,18 +14,17 @@ import SwiftUI
 /// history bar chart with the current period highlighted. Parallel to `WorkoutStatTile` (which is
 /// hardwired to "this workout vs prior runs"), but reading the period block's window instead.
 ///
-/// The highlighted bar always uses the app accent — it marks "this week" (the current period), which
-/// matters for every metric. The trend pill, though, stays neutral gray for duration: a longer week is
-/// neither better nor worse, so only volume, sets and reps tint their pill with the accent.
+/// The highlighted bar always uses the app accent — it marks "this week" (the current period). The
+/// trend pill tints with the accent for a genuine gain and mutes to gray for a decline or no change
+/// (handled by `TrendIndicatorView`) — the same rule for every metric, duration included.
 struct SummaryStatTile: View {
     let metric: WorkoutStatMetric
     let data: SummaryViewModel.StatData
     let onOpen: () -> Void
 
-    private var isDuration: Bool { metric == .duration }
-    /// The trend pill's tint: neutral gray for duration (a longer week is neither better nor worse),
-    /// the app accent for volume / sets / reps.
-    private var pillColor: Color { isDuration ? .secondary : .accentColor }
+    /// Positive trends carry the app accent; `TrendIndicatorView` mutes declines and flat weeks to
+    /// gray on its own, so the pill just supplies the accent as the "up" tint.
+    private var pillColor: Color { .accentColor }
 
     var body: some View {
         Button(action: onOpen) {

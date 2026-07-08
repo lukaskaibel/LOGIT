@@ -1,8 +1,9 @@
-"01_Home" = "Il tuo workout\na colpo d’occhio.";
-"02_MuscleGroupBack" = "Bilancia ogni\ngruppo muscolare.";
-"03_ExerciseDetail" = "Conosci i tuoi\nrecord personali.";
-"04_WorkoutDetail" = "Ogni ripetizione,\nogni serie.";
-"05_WorkoutRecorder" = "Registra veloce,\nresta concentrato.";
-"06_SuperDropSet" = "Superset e\ndrop set pronti.";
-"07_LiveActivity" = "Il workout sulla\nschermata di blocco.";
-"08_BodyFat" = "Guarda il corpo\nche cambia.";
+"01_Summary" = "Il tuo allenamento\na colpo d’occhio.";
+"02_Progress" = "Guarda la tua\nforza crescere.";
+"03_Streak" = "Mantieni viva\nla tua streak.";
+"04_MuscleBalance" = "Bilancia ogni\ngruppo muscolare.";
+"05_ExerciseDetail" = "Conosci i tuoi\nrecord personali.";
+"06_Recorder" = "Registra veloce,\nresta concentrato.";
+"07_SuperDropSet" = "Superset e\ndrop set pronti.";
+"08_LiveActivity" = "Il workout sulla\nschermata di blocco.";
+"09_BodyMeasurements" = "Guarda il corpo\nche cambia.";

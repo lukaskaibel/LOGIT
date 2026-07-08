@@ -1,8 +1,22 @@
-Live Activity: tieni il workout sempre in primo piano.
+LOGIT 5.0 è il nostro aggiornamento più grande di sempre: un Riepilogo ridisegnato e un modo tutto nuovo di vedere i tuoi progressi.
 
-· La nuova Live Activity mostra il workout attivo sulla schermata di blocco e nella Dynamic Island: esercizio corrente, serie e timer di recupero senza aprire l’app.
-· Il timer di recupero ora è accanto alle serie, così non perdi mai il ritmo tra le ripetizioni.
-· Miglioramenti a modelli, cronologia workout e dettagli esercizio.
-· Correzioni di bug e miglioramenti delle prestazioni.
+Scheda Progressi
+Osserva l'andamento della tua forza a colpo d'occhio. I record personali recenti e un punteggio di progresso complessivo mostrano con esattezza quanta strada hai fatto, suddiviso per gruppo muscolare.
 
-Grazie per allenarti con LOGIT!
+Obiettivo settimanale e streak
+La nuova schermata Obiettivo settimanale tiene traccia della tua streak settimana dopo settimana e ti spinge verso il prossimo traguardo. Tutta la settimana è sempre lì, nel Riepilogo.
+
+Equilibrio muscolare
+La panoramica dei Gruppi muscolari, ricostruita da zero, mostra come distribuisci l'allenamento sul corpo e segnala i gruppi rimasti indietro, così non trascuri nulla.
+
+Record personali, ripensati
+I dettagli degli esercizi ora si aprono con riquadri chiari, confronti affiancati e grafici per peso, ripetizioni, volume e 1RM stimato.
+
+Altro in 5.0
+· Fissa esercizi e misurazioni preferiti nella scheda Progressi
+· Parti più in fretta con i modelli di workout pronti all'uso
+· Riordina gli esercizi nell'editor e nel registratore
+· Un registratore più fluido e veloce mentre inserisci le serie
+· Importanti correzioni di stabilità, tra cui la risoluzione di una rara perdita di dati durante la sincronizzazione iCloud
+
+Grazie per allenarti con LOGIT. Continua così!

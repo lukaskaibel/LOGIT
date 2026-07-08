@@ -9,7 +9,7 @@
 
 // MARK: - A
 
-"abdominals" = "abdominales";
+"abdominals" = "Abdominales";
 "acceptPrivacyPolicy" = "Aceptar Política de Privacidad";
 "add" = "Agregar";
 "addExercise" = "Agregar ejercicio";
@@ -35,7 +35,7 @@
 
 // MARK: - B
 
-"back" = "Atrás";
+"back" = "Espalda";
 "best" = "Mejor";
 "biceps" = "Bíceps";
 "bicepsLeft" = "Bíceps Izquierdo";
@@ -199,7 +199,7 @@
 "calfRight" = "Pantorrilla Derecha";
 "forearmRight" = "antebrazo derecho";
 "thighRight" = "Muslo Derecho";
-"shoulders" = "Espalda";
+"shoulders" = "Hombros";
 "waist" = "Cintura";
 "measurements" = "Medidas";
 "min" = "mín.";
@@ -347,7 +347,7 @@
 "setType" = "Tipo de conjunto";
 "settings" = "Ajustes";
 "seven" = "Siete";
-"shoulders" = "Espalda";
+"shoulders" = "Hombros";
 "shareAsTemplate" = "Compartir como plantilla";
 "sharedTemplate" = "Plantilla compartida";
 "sharedTemplateDescription" = "Revise y guarde esta plantilla en su colección.";
@@ -428,7 +428,7 @@
 "trendUp" = "%@ más que en el período anterior";
 "trendFlat" = "Sin cambios respecto al período anterior";
 "trackMore" = "Seguimiento más";
-"triceps" = "tríceps";
+"triceps" = "Tríceps";
 "two" = "Dos";
 "twoWeeksAgo" = "Hace dos semanas";
 "autoRestStopwatch" = "Cronómetro de reposo automático";

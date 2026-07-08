@@ -41,6 +41,23 @@ enum ScreenshotFixtures {
             || args.contains("UITEST_LIVE_ACTIVITY_SHOWCASE")
     }
 
+    /// The screen a marketing screenshot wants to open straight to — the value
+    /// after `-UITEST_DEEPLINK` (e.g. `exerciseDetail`, `goal`, `progress`).
+    /// `HomeScreen` reads this on launch and navigates there directly, so
+    /// captures are language-independent: the old suite tapped cells by their
+    /// English label, which silently landed on the wrong screen for every
+    /// non-English locale (the shipped ja/es/… screenshots were broken).
+    static var deepLinkTarget: String? {
+        let args = ProcessInfo.processInfo.arguments
+        guard
+            let index = args.firstIndex(where: {
+                $0 == "-UITEST_DEEPLINK" || $0 == "UITEST_DEEPLINK"
+            }),
+            index + 1 < args.count
+        else { return nil }
+        return args[index + 1]
+    }
+
     /// Called very early in `LOGITApp.init` so defaults are in place before
     /// any `@AppStorage` reads happen.
     static func prepareUserDefaultsIfNeeded() {
@@ -51,7 +68,9 @@ enum ScreenshotFixtures {
         defaults.set(true, forKey: "setupDone")
         // Deterministic unit so screenshots are identical across locales.
         defaults.set(WeightUnit.kg.rawValue, forKey: "weightUnit")
-        // A visible weekly goal makes the home ring look populated.
-        defaults.set(4, forKey: "workoutPerWeekTarget")
+        // Match the seeded cadence (~3 workouts/week): with this target every
+        // seeded week counts as complete, so the goal ring fills and the
+        // Streak screen shows a real multi-week run instead of "0 weeks".
+        defaults.set(3, forKey: "workoutPerWeekTarget")
     }
 }

@@ -72,7 +72,13 @@ public class Database: ObservableObject {
         }
         loadStores()
         if isPreview {
-            setupPreviewDatabase()
+            // The in-progress workout (and its floating mini bar) is only wanted
+            // for the recorder marketing screenshot; every other fastlane capture
+            // reads cleaner without it. SwiftUI previews (fixtures disabled) keep
+            // the default so their mid-session state is unchanged.
+            let includeCurrentWorkout = !ScreenshotFixtures.isEnabled
+                || ScreenshotFixtures.shouldAutoPresentRecorder
+            setupPreviewDatabase(includeCurrentWorkout: includeCurrentWorkout)
         }
 
         // The CloudKit mirroring delegate writes to the store through its own background

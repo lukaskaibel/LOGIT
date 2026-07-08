@@ -1,8 +1,9 @@
-"01_Home" = "トレーニング";
-"02_MuscleGroupBack" = "バランス";
-"03_ExerciseDetail" = "記録";
-"04_WorkoutDetail" = "ログ";
-"05_WorkoutRecorder" = "ライブ";
-"06_SuperDropSet" = "強度";
-"07_LiveActivity" = "LIVE";
-"08_BodyFat" = "進捗";
+"01_Summary" = "トレーニング";
+"02_Progress" = "進捗";
+"03_Streak" = "連続記録";
+"04_MuscleBalance" = "バランス";
+"05_ExerciseDetail" = "自己ベスト";
+"06_Recorder" = "記録";
+"07_SuperDropSet" = "強度";
+"08_LiveActivity" = "LIVE";
+"09_BodyMeasurements" = "測定";

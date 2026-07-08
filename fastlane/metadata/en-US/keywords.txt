@@ -1,1 +1,1 @@
-Fitness, Workout, Gym, Tracking, Progress , Exercise, Weight, Repetitions, Weekly Target, Muscle
+fitness,workout,gym,tracker,progress,exercise,strength,weight,reps,muscle,streak,routine

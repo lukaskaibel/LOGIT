@@ -23,8 +23,24 @@ struct ExerciseVolumeScreen: View {
             VStack(spacing: SECTION_SPACING) {
                 VStack(spacing: 16) {
                     PeriodPicker(selection: $period)
-                    header
-                    chart
+                    PeriodStatChartView(
+                        period: period,
+                        buckets: buckets,
+                        firstDataDate: firstDataDate,
+                        valueLabel: NSLocalizedString("volume", comment: ""),
+                        unit: WeightUnit.used.rawValue,
+                        currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient),
+                        currentLabel: period.currentPeriodLabel,
+                        currentValue: formatWeightForDisplay(currentRawVolume),
+                        currentRaw: currentRawVolume,
+                        trailingValueStyle: AnyShapeStyle(muscleGroupColor.gradient),
+                        positiveColor: muscleGroupColor,
+                        // Volumes run to thousands, so round the mean to a whole unit — the raw
+                        // decimals only wrap the large header number onto a second line.
+                        formatAverage: { "\(Int(convertWeightForDisplayingDecimal($0).rounded()))" },
+                        displayAverage: { Double(Int(convertWeightForDisplayingDecimal($0).rounded())) },
+                        explanation: NSLocalizedString("averageComparisonInfo", comment: "")
+                    )
                 }
                 .padding(.horizontal)
                 AboutSection(
@@ -51,76 +67,36 @@ struct ExerciseVolumeScreen: View {
         }
     }
 
-    // MARK: - Header
-
-    private var header: some View {
-        MetricComparisonView(
-            leading: .init(
-                label: NSLocalizedString("average", comment: ""),
-                value: averageDisplayVolume.map { "\($0)" } ?? "––",
-                unit: WeightUnit.used.rawValue,
-                caption: period.rangeCaption(period.completedHistoryRange())
-            ),
-            trailing: .init(
-                label: period.currentPeriodLabel,
-                // A period sum is a real value even at zero ("0 kg this week"), clearer than a
-                // "––" no-data dash — same rule as the stat tiles.
-                value: formatWeightForDisplay(currentRawVolume),
-                unit: WeightUnit.used.rawValue,
-                caption: period.rangeCaption(period.currentRange())
-            ),
-            trailingValueStyle: AnyShapeStyle(muscleGroupColor.gradient),
-            percentChange: percentChange,
-            positiveColor: muscleGroupColor,
-            explanation: NSLocalizedString("averageComparisonInfo", comment: "")
-        )
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Chart
-
-    private var chart: some View {
-        PeriodHistoryChart(
-            buckets: buckets,
-            period: period,
-            valueLabel: NSLocalizedString("volume", comment: ""),
-            currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient),
-            unit: WeightUnit.used.rawValue,
-            averageLine: averageDisplayVolume.map { Double($0) }
-        )
-    }
-
     // MARK: - Data
 
     private var currentRawVolume: Int { rawVolume(in: period.currentRange()) }
 
-    /// Raw volumes of the completed periods on screen — every history bucket except the current,
-    /// still-growing one, and only periods actually trained (a rest period is "no data" for the
-    /// average, the same rule the trend already uses). The comparison baseline and the dashed
-    /// average line both read from this, so "average" means the same in the header and on the chart.
-    private var completedRawVolumes: [Int] {
-        (1 ..< period.historyBucketCount)
-            .map { rawVolume(in: period.range(periodsAgo: $0)) }
-            .filter { $0 > 0 }
+    /// Earliest recorded set — the left end of the scrollable domain.
+    private var firstDataDate: Date? {
+        workoutSets.compactMap { $0.workout?.date }.min()
     }
 
-    private var averageRawVolume: Int? {
-        guard !completedRawVolumes.isEmpty else { return nil }
-        return completedRawVolumes.reduce(0, +) / completedRawVolumes.count
+    /// Raw volume per period start, built in one pass over the sets so the scrollable chart can look
+    /// each period up instead of re-filtering the sets per bar. Keyed the same way `scrollableBuckets`
+    /// keys its lookups — `currentRange(containing:).lowerBound`.
+    private var rawByPeriodStart: [Date: Int] {
+        var dict: [Date: Int] = [:]
+        for set in workoutSets {
+            guard let date = set.workout?.date else { continue }
+            let start = period.currentRange(containing: date).lowerBound
+            dict[start, default: 0] += getVolume(of: [set], for: exercise)
+        }
+        return dict
     }
 
-    /// The average as a whole display-unit value. Volumes run to thousands, so the mean's fractional
-    /// tail (`formatWeightForDisplay` keeps up to 3 decimals) only wraps the large header number onto
-    /// a second line — round it. Feeds the header and the chart's dashed line so the two stay in step;
-    /// the pill reads `averageRawVolume`, where the ratio is exact.
-    private var averageDisplayVolume: Int? {
-        averageRawVolume.map { Int(convertWeightForDisplayingDecimal($0).rounded()) }
-    }
-
-    /// The current period against the average of the completed periods shown — nil (pill hidden)
-    /// until both the current period and the history hold data, the same suppression as the tiles.
-    private var percentChange: Double? {
-        PeriodHistoryChart.trendPercentChange(current: currentRawVolume, previous: averageRawVolume ?? 0)
+    private var buckets: [PeriodHistoryChart.Bucket] {
+        PeriodHistoryChart.scrollableBuckets(
+            for: period,
+            rawByPeriodStart: rawByPeriodStart,
+            firstDataDate: firstDataDate,
+            display: { convertWeightForDisplayingDecimal($0) },
+            formatted: { formatWeightForDisplay($0) }
+        )
     }
 
     /// Total volume (weight × reps over every set) in the range, in raw storage units.
@@ -130,14 +106,6 @@ struct ExerciseVolumeScreen: View {
             return range.contains(date)
         }
         return getVolume(of: sets, for: exercise)
-    }
-
-    private var buckets: [PeriodHistoryChart.Bucket] {
-        PeriodHistoryChart.buckets(
-            for: period,
-            value: { convertWeightForDisplayingDecimal(rawVolume(in: $0)) },
-            formatted: { formatWeightForDisplay(rawVolume(in: $0)) }
-        )
     }
 
     private var muscleGroupColor: Color {

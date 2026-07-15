@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Transmission
 
 @main
 struct LOGIT: App {
@@ -39,6 +40,15 @@ struct LOGIT: App {
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingStartWorkoutSheet = false
     @State private var isShowingLiveActivityShowcase = false
+    /// Mirrors the drag phase of the recorder's interactive dismissal (see
+    /// `WorkoutRecorderPresentationController`); feeds `\.workoutRecorderIsDragging`.
+    @State private var recorderIsDragging = false
+    /// True once the recorder's presentation slide-in has landed; feeds
+    /// `\.workoutRecorderIsSettled`, which gates the persistent exercise tray sheet.
+    @State private var recorderIsSettled = false
+    /// Lets the recorder's header drive the interactive dismissal from inside the
+    /// presented content (see `WorkoutRecorderDragDriver`).
+    @State private var recorderDragDriver = WorkoutRecorderDragDriver()
 
     // Import handling state
     @State private var importedWorkout: Workout?
@@ -143,6 +153,17 @@ struct LOGIT: App {
                     startAndCurrentWorkoutButton
                         .frame(maxWidth: .infinity)
                 }
+                // Anchored on the TabView (stable for the app's lifetime) rather than
+                // inside the accessory: TabView re-hosts the accessory content at
+                // times, and a presentation anchored in it would be torn down
+                // (auto-dismissed) with every re-host. The recorder slides up from the
+                // bottom and is dragged back down to dismiss, via Transmission.
+                .presentation(
+                    transition: recorderTransition,
+                    isPresented: $isShowingWorkoutRecorder
+                ) {
+                    workoutRecorderDestination
+                }
                 .environment(\.managedObjectContext, database.context)
                 .environmentObject(database)
                 .environmentObject(measurementController)
@@ -157,27 +178,6 @@ struct LOGIT: App {
                 .environmentObject(exerciseSuggestionService)
                 .environment(\.goHome) { selectedTab = .home }
                 .environment(\.presentWorkoutRecorder, showWorkoutRecorder)
-                .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
-                    WorkoutRecorderScreen()
-                        .environmentObject(database)
-                        .environmentObject(measurementController)
-                        .environmentObject(templateService)
-                        .environmentObject(purchaseManager)
-                        .environmentObject(networkMonitor)
-                        .environmentObject(workoutRecorder)
-                        .environmentObject(muscleGroupService)
-                        .environmentObject(muscleTargetSplitStore)
-                        .environmentObject(homeNavigationCoordinator)
-                        .environmentObject(chronograph)
-                        .environmentObject(exerciseSuggestionService)
-                        .environment(\.managedObjectContext, database.context)
-                        .environment(\.goHome) { selectedTab = .home }
-                        .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
-                }
-//                    .presentation(transition: .slide, isPresented: $isShowingWorkoutRecorder) {
-//                        TransitionReader { _ in
-//                        }
-//                    }
                 .sheet(isPresented: $isShowingWelcome) {
                     FirstStartScreen()
                         .interactiveDismissDisabled()
@@ -331,11 +331,10 @@ struct LOGIT: App {
                     } label: {
                         CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
                             .frame(maxWidth: .infinity)
-    //                        .background(.regularMaterial)
-    //                        .clipShape(RoundedRectangle(cornerRadius: 15))
-    //                        .shadow(radius: 10)
-    //                        .padding(.horizontal, 12)
-    //                        .padding(.bottom, 5)
+                            // Make the whole pill tappable, not just the name/timer:
+                            // the label's gaps and the maxWidth fill aren't hit-testable
+                            // without an explicit content shape.
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(TileButtonStyle())
                     .gesture(
@@ -358,6 +357,7 @@ struct LOGIT: App {
                         }
                         .frame(maxWidth: .infinity)
                         .fontWeight(.semibold)
+                        .contentShape(Rectangle())
                     }
                     .tint(Color.label)
                     .sheet(isPresented: $isShowingStartWorkoutSheet) {
@@ -433,15 +433,93 @@ struct LOGIT: App {
         }
     }
 
+    /// The recorder screen as presented by Transmission. The presentation hosts it in
+    /// its own `UIViewController`, so the environment is injected explicitly, exactly
+    /// like the old overlay-based cover did.
+    private var workoutRecorderDestination: some View {
+        WorkoutRecorderScreen()
+            .environmentObject(database)
+            .environmentObject(measurementController)
+            .environmentObject(templateService)
+            .environmentObject(purchaseManager)
+            .environmentObject(networkMonitor)
+            .environmentObject(workoutRecorder)
+            .environmentObject(muscleGroupService)
+            .environmentObject(muscleTargetSplitStore)
+            .environmentObject(homeNavigationCoordinator)
+            .environmentObject(chronograph)
+            .environmentObject(exerciseSuggestionService)
+            .environment(\.managedObjectContext, database.context)
+            .environment(\.goHome) { selectedTab = .home }
+            .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
+            .environment(\.workoutRecorderIsDragging, recorderIsDragging)
+            .environment(\.workoutRecorderIsSettled, recorderIsSettled)
+            .environment(\.workoutRecorderDragDriver, recorderDragDriver)
+            // The old cover ignored the keyboard at container level; the recorder
+            // manages keyboard overlap itself (scroll-to-focused-field + toolbar).
+            .ignoresSafeArea(.keyboard)
+    }
+
+    private var recorderTransition: PresentationLinkTransition {
+        .workoutRecorder(
+            dragDriver: recorderDragDriver,
+            onDragChanged: { dragging in
+                if dragging {
+                    // Tear the tray sheet down instantly: it must be gone before the
+                    // pan gesture ends, or UIKit would forward the recorder's
+                    // dismissal to it (see WorkoutRecorderPresentationController).
+                    var transaction = Transaction()
+                    transaction.disablesAnimations = true
+                    withTransaction(transaction) {
+                        recorderIsDragging = true
+                    }
+                } else {
+                    withAnimation {
+                        recorderIsDragging = false
+                    }
+                }
+            },
+            onPresentationSettled: { completed in
+                withAnimation {
+                    recorderIsSettled = completed
+                }
+            },
+            onDismissalEnded: { completed in
+                // Transmission already flips `isShowingWorkoutRecorder` through its
+                // presentation delegate; only the phase mirrors need resetting here.
+                if completed {
+                    recorderIsSettled = false
+                    recorderIsDragging = false
+                } else {
+                    withAnimation {
+                        recorderIsDragging = false
+                    }
+                }
+            }
+        )
+    }
+
     private func showWorkoutRecorder() {
+        recorderIsDragging = false
+        recorderIsSettled = false
         withAnimation {
             isShowingWorkoutRecorder = true
         }
     }
 
     private func dismissWorkoutRecorder() {
-        withAnimation {
-            isShowingWorkoutRecorder = false
+        // Drop the tray sheet first, without animation: when a presented stack is
+        // dismissed, UIKit only animates the topmost view controller — with the tray
+        // still up, the recorder would vanish instead of morphing back into the pill.
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            recorderIsSettled = false
+        }
+        DispatchQueue.main.async {
+            withAnimation {
+                isShowingWorkoutRecorder = false
+            }
         }
     }
     

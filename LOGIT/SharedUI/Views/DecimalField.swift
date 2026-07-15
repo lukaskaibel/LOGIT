@@ -208,15 +208,27 @@ struct DecimalField: View {
         return filtered
     }
 
+    /// Formatters are expensive to create and this runs twice per body evaluation (placeholder
+    /// and prompt) across every weight field on screen, so they are cached per decimal-place
+    /// count instead of rebuilt per call.
+    private static var formatters: [Int: NumberFormatter] = [:]
+
     private func formatNumber(_ number: Double) -> String {
         // Format the number to remove unnecessary trailing zeros
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = decimalPlaces
-        formatter.decimalSeparator = "."
-        formatter.groupingSeparator = ""
-        
+        let formatter: NumberFormatter
+        if let cached = Self.formatters[decimalPlaces] {
+            formatter = cached
+        } else {
+            let created = NumberFormatter()
+            created.numberStyle = .decimal
+            created.minimumFractionDigits = 0
+            created.maximumFractionDigits = decimalPlaces
+            created.decimalSeparator = "."
+            created.groupingSeparator = ""
+            Self.formatters[decimalPlaces] = created
+            formatter = created
+        }
+
         return formatter.string(from: NSNumber(value: number)) ?? "0"
     }
 }

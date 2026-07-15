@@ -82,6 +82,7 @@ struct WorkoutRecorderFloatingTimerButton: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel(for: displayState))
+        .accessibilityIdentifier("recorderFloatingTimerButton")
     }
 
     private func tint(for displayState: DisplayState) -> Color {

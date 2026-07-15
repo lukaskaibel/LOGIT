@@ -19,8 +19,8 @@ struct WorkoutRecorderScreen: View {
     // MARK: - Environment
 
     @Environment(\.goHome) var goHome
-    @Environment(\.fullScreenDraggableCoverTopInset) var fullScreenDraggableCoverTopInset
-    @Environment(\.fullScreenDraggableCoverIsDragging) var fullScreenDraggableCoverIsDragging
+    @Environment(\.workoutRecorderIsDragging) var workoutRecorderIsDragging
+    @Environment(\.workoutRecorderIsSettled) var workoutRecorderIsSettled
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
     @Environment(\.scenePhase) private var scenePhase
@@ -33,6 +33,7 @@ struct WorkoutRecorderScreen: View {
     /// screen it can present needs both.
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var networkMonitor: NetworkMonitor
+    @Environment(\.workoutRecorderDragDriver) private var recorderDragDriver
 
     // MARK: - Parameters
 
@@ -72,6 +73,12 @@ struct WorkoutRecorderScreen: View {
     @State var focusedIntegerFieldIndex: IntegerField.Index?
 
     @State private var enteredRepetitionSetIDs: Set<NSManagedObjectID> = []
+
+    // Full-screen drag-to-dismiss from the set list: only engages once the list is
+    // scrolled to the very top, then hands the drag to the same driver as the header.
+    @State private var scrollIsAtTop = false
+    @State private var listDragActive = false
+    @State private var listDragBaseline: CGFloat = 0
 
     @FocusState var isFocusingTitleTextfield: Bool
 
@@ -129,7 +136,6 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 }
                             }
-                            .fullScreenDraggableCoverTopInset()
                             .id(1)
                         }
                         .onAppear {
@@ -139,10 +145,45 @@ struct WorkoutRecorderScreen: View {
                             }
                         }
                         .scrollIndicators(.hidden)
+                        // Track whether the list is scrolled to the very top; only then
+                        // does a downward drag on the list dismiss the recorder.
+                        .onScrollGeometryChange(for: Bool.self) { geometry in
+                            geometry.contentOffset.y <= -geometry.contentInsets.top + 2
+                        } action: { _, atTop in
+                            scrollIsAtTop = atTop
+                        }
+                        // Freeze the list while a dismiss-drag is in flight so it can't
+                        // rubber-band against the screen the driver is translating.
+                        .scrollDisabled(listDragActive)
+                        // The whole set list is a drag handle once at the top: dragging
+                        // down from there drives the same interactive dismissal as the
+                        // header. Simultaneous so taps, scrolling and context menus keep
+                        // working; the gate below only latches on a downward drag at top.
+                        .simultaneousGesture(
+                            DragGesture(minimumDistance: 12, coordinateSpace: .global)
+                                .onChanged { value in
+                                    handleListDragChanged(value)
+                                }
+                                .onEnded { value in
+                                    handleListDragEnded(value)
+                                }
+                        )
                         .safeAreaInset(edge: .bottom) {
                             Color.clear.frame(height: 100)
                         }
-                        .sheet(isPresented: .constant(!isKbdTest && !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SHEET"))) {
+                        // The tray only presents once the recorder's morph has landed and
+                        // hides while the card is being dragged: a presented child sheet
+                        // would swallow the recorder's own interactive dismissal (UIKit
+                        // forwards `dismiss` to the presented child).
+                        .sheet(isPresented: Binding(
+                            get: {
+                                workoutRecorderIsSettled
+                                    && !workoutRecorderIsDragging
+                                    && !isKbdTest
+                                    && !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SHEET")
+                            },
+                            set: { _ in }  // interactive dismissal is disabled below
+                        )) {
                             NavigationStack {
                                 ExerciseSelectionScreen(
                                         selectedExercise: nil,
@@ -237,16 +278,11 @@ struct WorkoutRecorderScreen: View {
                                     isAtMediumDetent: exerciseSelectionPresentationDetent == .medium
                                 )
                             }
-                            .opacity(fullScreenDraggableCoverIsDragging ? 0 : 1)
-                            .animation(.easeOut(duration: 0.2), value: fullScreenDraggableCoverIsDragging)
                             .presentationDetents([.height(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
-                            .presentationDragIndicator(fullScreenDraggableCoverIsDragging ? .hidden : .visible)
+                            .presentationDragIndicator(.visible)
                             .ignoresSafeArea()
                             .interactiveDismissDisabled()
-                            .onChange(of: fullScreenDraggableCoverIsDragging) {
-                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            }
                         }
                         .overlay(alignment: .bottomTrailing) {
                             FloatingChronoControlsOverlay(
@@ -283,7 +319,38 @@ struct WorkoutRecorderScreen: View {
                 if !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_HEADER") {
                     Header
                         .frame(maxHeight: .infinity, alignment: .top)
-                        .fullScreenDraggableCoverDragArea()
+                        // The header is the recorder's drag handle, exactly like the
+                        // old draggable cover. The gesture lives inside the presented
+                        // content because the tray sheet's background-interaction
+                        // passthrough never delivers touches to the root-level pan
+                        // recognizer Transmission installs.
+                        .simultaneousGesture(
+                            DragGesture(coordinateSpace: .global)
+                                .onChanged { value in
+                                    recorderDragDriver.dragChanged(translation: value.translation)
+                                }
+                                .onEnded { value in
+                                    recorderDragDriver.dragEnded(
+                                        translation: value.translation,
+                                        velocity: value.velocity
+                                    )
+                                }
+                        )
+                }
+            }
+            // Pure black base: the recorder is presented modally, so the default
+            // NavigationStack/ScrollView `systemBackground` is its elevated grey.
+            .background(Color.black.ignoresSafeArea())
+            // Dragging the card resigns any active text field, exactly like the old
+            // draggable cover did before handing the view to the drag.
+            .onChange(of: workoutRecorderIsDragging) {
+                if workoutRecorderIsDragging {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                } else {
+                    // Safety net: whenever the drag settles (dismiss committed or
+                    // snapped back), re-enable scrolling even if the gesture's own
+                    // onEnded didn't fire (e.g. the scroll pan won the arbitration).
+                    listDragActive = false
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -396,9 +463,9 @@ struct WorkoutRecorderScreen: View {
                             .background(Color.accentColor.secondaryTranslucentBackground)
                             .clipShape(Circle())
                     }
+                    .accessibilityIdentifier("recorderCloseButton")
                 }
             }
-            .fullScreenDraggableCoverTopInset()
             .padding(.horizontal)
             .padding(.bottom)
             .background {
@@ -450,6 +517,34 @@ struct WorkoutRecorderScreen: View {
                 }
             }
         }
+    }
+
+    // MARK: - List drag-to-dismiss
+
+    /// Latches a dismiss-drag only when it begins at the top of the list and heads
+    /// downward, then drives the shared driver with the translation measured from the
+    /// moment it latched (so there's no jump if the finger crossed the top mid-scroll).
+    private func handleListDragChanged(_ value: DragGesture.Value) {
+        if !listDragActive {
+            guard scrollIsAtTop,
+                  value.translation.height > 0,
+                  value.translation.height > abs(value.translation.width)
+            else { return }
+            listDragActive = true
+            listDragBaseline = value.translation.height
+        }
+        recorderDragDriver.dragChanged(
+            translation: CGSize(width: 0, height: value.translation.height - listDragBaseline)
+        )
+    }
+
+    private func handleListDragEnded(_ value: DragGesture.Value) {
+        guard listDragActive else { return }
+        listDragActive = false
+        recorderDragDriver.dragEnded(
+            translation: CGSize(width: 0, height: value.translation.height - listDragBaseline),
+            velocity: CGSize(width: 0, height: value.velocity.height)
+        )
     }
 
     // MARK: - Supporting Methods / Computed Properties
@@ -759,7 +854,7 @@ final class RecorderSheetGeometry: ObservableObject {
 /// frequent publishes and the per-frame sheet-geometry updates re-render only this small
 /// overlay, never the whole recorder tree.
 private struct FloatingChronoControlsOverlay: View {
-    @Environment(\.fullScreenDraggableCoverIsDragging) private var fullScreenDraggableCoverIsDragging
+    @Environment(\.workoutRecorderIsDragging) private var workoutRecorderIsDragging
 
     @ObservedObject var chronograph: Chronograph
     @ObservedObject var workoutRecorder: WorkoutRecorder
@@ -770,7 +865,7 @@ private struct FloatingChronoControlsOverlay: View {
     let onCancelTimer: () -> Void
 
     var body: some View {
-        if sheetGeometry.sheetHeight > 0 && !fullScreenDraggableCoverIsDragging {
+        if sheetGeometry.sheetHeight > 0 && !workoutRecorderIsDragging {
             HStack {
                 WorkoutRecorderFloatingTimerButton(
                     chronograph: chronograph,

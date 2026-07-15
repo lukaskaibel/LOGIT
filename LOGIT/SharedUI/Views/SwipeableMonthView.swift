@@ -34,6 +34,12 @@ struct SwipeableMonthView<WeekdayHeader: View, Weeks: View>: View {
 
     private let calendar = Calendar.current
 
+    /// Vertical breathing room the page clip must leave so the day rings — whose centred strokes
+    /// overflow their cells by a point or two — aren't shaved on the top and bottom rows. The clip only
+    /// exists to hide the horizontally-offset neighbour page, so it's widened vertically and then pulled
+    /// back with a matching negative pad, leaving the layout unchanged (a horizontal-only clip).
+    private let ringBleed: CGFloat = 8
+
     /// The next month is reachable only while it isn't in the future.
     private var canGoForward: Bool { month.startOfMonth < Date.now.startOfMonth }
 
@@ -95,7 +101,11 @@ struct SwipeableMonthView<WeekdayHeader: View, Weeks: View>: View {
                     .onChange(of: geo.size.width) { pageWidth = $1 }
             }
         }
+        // Clip horizontally only (to hide the neighbour page); the vertical pad→clip→unpad keeps the
+        // top/bottom rows' rings from being shaved.
+        .padding(.vertical, ringBleed)
         .clipped()
+        .padding(.vertical, -ringBleed)
         .contentShape(Rectangle())
         .simultaneousGesture(pagingGesture)
     }

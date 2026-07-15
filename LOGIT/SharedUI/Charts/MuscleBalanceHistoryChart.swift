@@ -30,20 +30,7 @@ struct MuscleBalanceHistoryChart: View {
             ForEach(buckets) { bucket in
                 let stacked = stackedGroups(in: bucket)
                 ForEach(Array(stacked.enumerated()), id: \.element.group) { index, item in
-                    BarMark(
-                        x: .value("Period", bucket.id),
-                        y: .value("Share", item.percent),
-                        width: .fixed(Self.barWidth)
-                    )
-                    .foregroundStyle(item.group.color)
-                    .opacity(bucket.id == selectedID ? 1 : 0.32)
-                    // Segments fuse into one candle: square inner edges, the candle's own ends capped.
-                    .clipShape(UnevenRoundedRectangle(
-                        topLeadingRadius: index == stacked.count - 1 ? Self.capRadius : 0,
-                        bottomLeadingRadius: index == 0 ? Self.capRadius : 0,
-                        bottomTrailingRadius: index == 0 ? Self.capRadius : 0,
-                        topTrailingRadius: index == stacked.count - 1 ? Self.capRadius : 0
-                    ))
+                    candleSegment(bucket: bucket, item: item, index: index, count: stacked.count)
                 }
             }
         }
@@ -70,6 +57,35 @@ struct MuscleBalanceHistoryChart: View {
         }
         .animation(.snappy(duration: 0.3), value: selectedID)
         .frame(height: 150)
+    }
+
+    /// One stacked segment of a bucket's candle. Extracted from the `Chart` builder (with an
+    /// explicit `ChartContent` return type) so the compiler doesn't have to type-check the whole
+    /// nested mark-plus-rounded-rect expression at once — inline it timed out on CI.
+    @ChartContentBuilder
+    private func candleSegment(
+        bucket: MuscleBalanceBucket,
+        item: (group: MuscleGroup, percent: Int),
+        index: Int,
+        count: Int
+    ) -> some ChartContent {
+        let isBottom = index == 0
+        let isTop = index == count - 1
+        // Segments fuse into one candle: square inner edges, the candle's own ends capped.
+        let clip = UnevenRoundedRectangle(
+            topLeadingRadius: isTop ? Self.capRadius : 0,
+            bottomLeadingRadius: isBottom ? Self.capRadius : 0,
+            bottomTrailingRadius: isBottom ? Self.capRadius : 0,
+            topTrailingRadius: isTop ? Self.capRadius : 0
+        )
+        BarMark(
+            x: .value("Period", bucket.id),
+            y: .value("Share", item.percent),
+            width: .fixed(Self.barWidth)
+        )
+        .foregroundStyle(item.group.color)
+        .opacity(bucket.id == selectedID ? 1 : 0.32)
+        .clipShape(clip)
     }
 
     /// The bucket's trained groups in stack order (bottom first) — Charts stacks marks in declaration

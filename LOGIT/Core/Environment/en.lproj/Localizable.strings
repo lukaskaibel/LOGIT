@@ -1036,3 +1036,8 @@
 "setsPerYearTitle" = "Sets per Year";
 "twelveMonths" = "12 months";
 "sixYears" = "6 years";
+
+// History rework (week/month section recap + filter sheet)
+"monthWorkoutCount" = "%d workout";
+"filters" = "Filters";
+"fromTemplate" = "From a Template";

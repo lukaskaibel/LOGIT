@@ -1036,3 +1036,8 @@
 "setsPerYearTitle" = "연도별 세트 수";
 "twelveMonths" = "12개월";
 "sixYears" = "6년";
+
+// History rework (week/month section recap + filter sheet)
+"monthWorkoutCount" = "%d회";
+"filters" = "필터";
+"fromTemplate" = "템플릿에서";

@@ -145,38 +145,6 @@ func exerciseWindowTrendPercentage(
     return (current - baseline) / baseline * 100
 }
 
-/// The exercise chart headers' comparison baseline: the best value in the visible window *other than*
-/// the current best, so the header pill measures the current best against the rest of the shown
-/// period instead of against itself when the peak is on screen. `currentBestDay` — the day the
-/// current best was reached — is excluded from the window. When the window holds no other value, the
-/// baseline falls back to the most recent day's best before it; nil only when there's nothing earlier
-/// to compare against either. `value` extracts the per-set metric (a max for these screens).
-func exerciseOtherBestBaseline(
-    sets: [WorkoutSet],
-    windowStart: Date,
-    windowEnd: Date,
-    currentBestDay: Date?,
-    value: (WorkoutSet) -> Int
-) -> Int? {
-    let calendar = Calendar.current
-    let otherInWindow = sets.filter { set in
-        guard let date = set.workout?.date, date >= windowStart, date <= windowEnd else { return false }
-        if let currentBestDay, calendar.isDate(date, inSameDayAs: currentBestDay) { return false }
-        return value(set) > 0
-    }
-    if let best = otherInWindow.map(value).max(), best > 0 { return best }
-    // No other value in the shown window: the most recent day's best before it.
-    let prior = sets.filter { set in
-        guard let date = set.workout?.date, date < windowStart else { return false }
-        return value(set) > 0
-    }
-    guard let lastDate = prior.compactMap({ $0.workout?.date }).max() else { return nil }
-    return prior
-        .filter { calendar.isDate($0.workout?.date ?? .distantPast, inSameDayAs: lastDate) }
-        .map(value)
-        .max()
-}
-
 // MARK: - Ghost Sparkline
 
 /// The empty states' placeholder artwork: a dashed, muted curve rising toward a single

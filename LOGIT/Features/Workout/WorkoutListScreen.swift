@@ -23,8 +23,6 @@ struct WorkoutListScreen: View {
     @State private var workoutToAdd: Workout?
     @State private var isShowingFilters = false
     @State private var selectedWorkout: Workout?
-    /// The day tapped in the calendar header — rings it and is scrolled to. Purely a scrubbing aid.
-    @State private var selectedDay: Date?
     /// Object IDs of the fetched workouts that set at least one personal record, filled lazily while
     /// the "personal records only" filter is on (nil = not computed yet, so the list waits).
     @State private var personalRecordWorkoutIDs: Set<NSManagedObjectID>?
@@ -54,7 +52,7 @@ struct WorkoutListScreen: View {
                                 .padding(.top, 80)
                         } else {
                             if !displayed.isEmpty {
-                                HistoryCalendarView(workouts: displayed, selectedDay: $selectedDay) { day in
+                                HistoryCalendarView(workouts: displayed) { day in
                                     jump(to: day, in: displayed, proxy: proxy)
                                 }
                                 .padding(.horizontal)
@@ -157,14 +155,13 @@ struct WorkoutListScreen: View {
         return workouts.filter { ids.contains($0.objectID) }
     }
 
-    /// Scrolls the list to the workout on the tapped calendar day and rings that day. A scrubber —
-    /// the list itself is never filtered by the tap.
+    /// Scrolls the list down to the workout on the tapped calendar day. A scrubber — the list itself is
+    /// never filtered by the tap.
     private func jump(to day: Date, in workouts: [Workout], proxy: ScrollViewProxy) {
         guard let target = workouts.first(where: {
             guard let date = $0.date else { return false }
             return Calendar.current.isDate(date, inSameDayAs: day)
         }) else { return }
-        selectedDay = day
         withAnimation {
             proxy.scrollTo(target.objectID, anchor: .top)
         }
@@ -341,30 +338,20 @@ private struct WorkoutHistorySectionView: View {
 /// A month calendar shown at the top of History — each trained day carries a `MuscleOccurrenceRing`,
 /// the same muscle-group arcs the Weekly Goal calendar draws (sized by that day's set counts), so the
 /// two calendars read alike, but here without the goal's target column and per-week rings. Tapping a
-/// trained day calls `onSelectDate` so the list can jump to it, and rings the day as a scrubbing cue.
+/// trained day calls `onSelectDate` so the list can scroll down to that workout. The month is paged
+/// through `SwipeableMonthView` — swipe the grid horizontally or use the chevrons, both animating and
+/// ticking a selection haptic.
 private struct HistoryCalendarView: View {
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
 
     let workouts: [Workout]
-    @Binding var selectedDay: Date?
     let onSelectDate: (Date) -> Void
 
     @State private var displayedMonth: Date = .now.startOfMonth
     private let calendar = Calendar.current
 
     var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Button { changeMonth(-1) } label: { Image(systemName: "chevron.left") }
-                Spacer()
-                Text(displayedMonth.formatted(.dateTime.month(.wide).year()))
-                    .font(.headline)
-                Spacer()
-                Button { changeMonth(1) } label: { Image(systemName: "chevron.right") }
-                    .disabled(displayedMonth.startOfMonth >= Date.now.startOfMonth)
-            }
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, CELL_PADDING)
+        SwipeableMonthView(month: $displayedMonth) {
             HStack(spacing: 0) {
                 ForEach(weekdaySymbols, id: \.self) { symbol in
                     Text(symbol)
@@ -374,28 +361,27 @@ private struct HistoryCalendarView: View {
                 }
             }
             .padding(.horizontal, CELL_PADDING)
-            ForEach(weeksOfMonth, id: \.self) { week in
-                HStack(spacing: 0) {
-                    ForEach(week, id: \.self) { day in
-                        dayCell(day)
+        } weeks: { month in
+            VStack(spacing: 12) {
+                ForEach(weeks(of: month), id: \.self) { week in
+                    HStack(spacing: 0) {
+                        ForEach(week, id: \.self) { day in
+                            dayCell(day, in: month)
+                        }
                     }
+                    .padding(.horizontal, CELL_PADDING)
                 }
-                .padding(.horizontal, CELL_PADDING)
             }
         }
-        .padding(.top, CELL_PADDING)
-        .padding(.bottom, CELL_PADDING / 2)
-        .tileStyle()
     }
 
     @ViewBuilder
-    private func dayCell(_ day: Date) -> some View {
-        let inMonth = calendar.isDate(day, equalTo: displayedMonth, toGranularity: .month)
+    private func dayCell(_ day: Date, in month: Date) -> some View {
+        let inMonth = calendar.isDate(day, equalTo: month, toGranularity: .month)
         let isToday = calendar.isDateInToday(day)
         let isFuture = day > Date.now && !isToday
         let occurrences = muscleOccurrences(on: day)
         let hasWorkout = !occurrences.isEmpty
-        let isSelected = selectedDay.map { calendar.isDate($0, inSameDayAs: day) } ?? false
         let cell = ZStack {
             if isToday {
                 Circle()
@@ -411,11 +397,6 @@ private struct HistoryCalendarView: View {
                 .foregroundStyle(dayForeground(inMonth: inMonth, isToday: isToday, isFuture: isFuture, hasWorkout: hasWorkout))
         }
         .frame(width: 34, height: 34)
-        .overlay {
-            if isSelected {
-                Circle().strokeBorder(Color.accentColor, lineWidth: 2)
-            }
-        }
         .frame(maxWidth: .infinity)
         if hasWorkout {
             Button { onSelectDate(day) } label: { cell }
@@ -442,10 +423,10 @@ private struct HistoryCalendarView: View {
         return muscleGroupService.getMuscleGroupOccurances(in: dayWorkouts)
     }
 
-    private var weeksOfMonth: [[Date]] {
-        let monthEnd = displayedMonth.endOfMonth
+    private func weeks(of month: Date) -> [[Date]] {
+        let monthEnd = month.endOfMonth
         var weeks: [[Date]] = []
-        var cursor = displayedMonth.startOfMonth.startOfWeek
+        var cursor = month.startOfMonth.startOfWeek
         while cursor <= monthEnd, weeks.count < 6 {
             let week = (0 ..< 7).map { calendar.date(byAdding: .day, value: $0, to: cursor) ?? cursor }
             weeks.append(week)
@@ -458,12 +439,6 @@ private struct HistoryCalendarView: View {
         let symbols = calendar.veryShortWeekdaySymbols
         let first = calendar.firstWeekday - 1
         return Array(symbols[first...] + symbols[..<first])
-    }
-
-    private func changeMonth(_ delta: Int) {
-        withAnimation {
-            displayedMonth = (calendar.date(byAdding: .month, value: delta, to: displayedMonth) ?? displayedMonth).startOfMonth
-        }
     }
 }
 

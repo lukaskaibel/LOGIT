@@ -61,18 +61,9 @@ struct WorkoutGoalScreen: View {
     // MARK: - Calendar
 
     private var calendarTile: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Button { changeMonth(-1) } label: { Image(systemName: "chevron.left") }
-                Spacer()
-                Text(displayedMonth.formatted(.dateTime.month(.wide).year()))
-                    .font(.headline)
-                Spacer()
-                Button { changeMonth(1) } label: { Image(systemName: "chevron.right") }
-                    .disabled(displayedMonth.startOfMonth >= Date.now.startOfMonth)
-            }
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, CELL_PADDING)
+        // Month paging (swipe the grid horizontally or tap the chevrons, both animated + haptic) lives in
+        // `SwipeableMonthView`; here we hand it the target-column weekday row and this month's week rows.
+        SwipeableMonthView(month: $displayedMonth) {
             HStack(spacing: 0) {
                 ForEach(weekdaySymbols, id: \.self) { symbol in
                     Text(symbol)
@@ -87,17 +78,17 @@ struct WorkoutGoalScreen: View {
                     .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, CELL_PADDING)
-            ForEach(weeksOfMonth, id: \.self) { week in
-                weekRowView(week)
+        } weeks: { month in
+            VStack(spacing: 12) {
+                ForEach(weeks(of: month), id: \.self) { week in
+                    weekRowView(week, in: month)
+                }
             }
         }
-        .padding(.top, CELL_PADDING)
-        .padding(.bottom, CELL_PADDING / 2)
-        .tileStyle()
     }
 
     @ViewBuilder
-    private func weekRowView(_ week: [Date]) -> some View {
+    private func weekRowView(_ week: [Date], in month: Date) -> some View {
         if isCurrentWeek(week) {
             currentWeekRow(week)
         } else {
@@ -105,7 +96,7 @@ struct WorkoutGoalScreen: View {
             // ring isn't flush-right and the layout matches the shared `WeeklyGoalStrip` below.
             HStack(spacing: 0) {
                 ForEach(week, id: \.self) { day in
-                    dayCell(day)
+                    dayCell(day, in: month)
                 }
                 weekRing(for: week)
                     .frame(maxWidth: .infinity)
@@ -138,8 +129,8 @@ struct WorkoutGoalScreen: View {
         .padding(.horizontal, CELL_PADDING / 2)
     }
 
-    private func dayCell(_ day: Date) -> some View {
-        let inMonth = calendar.isDate(day, equalTo: displayedMonth, toGranularity: .month)
+    private func dayCell(_ day: Date, in month: Date) -> some View {
+        let inMonth = calendar.isDate(day, equalTo: month, toGranularity: .month)
         let isToday = calendar.isDateInToday(day)
         let isFuture = day > Date.now && !isToday
         let occurrences = muscleOccurrences(on: day)
@@ -445,10 +436,10 @@ struct WorkoutGoalScreen: View {
         week.contains { calendar.isDateInToday($0) }
     }
 
-    private var weeksOfMonth: [[Date]] {
-        let monthEnd = displayedMonth.endOfMonth
+    private func weeks(of month: Date) -> [[Date]] {
+        let monthEnd = month.endOfMonth
         var weeks: [[Date]] = []
-        var cursor = displayedMonth.startOfMonth.startOfWeek
+        var cursor = month.startOfMonth.startOfWeek
         while cursor <= monthEnd, weeks.count < 6 {
             let week = (0 ..< 7).map { calendar.date(byAdding: .day, value: $0, to: cursor) ?? cursor }
             weeks.append(week)
@@ -487,11 +478,5 @@ struct WorkoutGoalScreen: View {
         let symbols = calendar.veryShortWeekdaySymbols
         let first = calendar.firstWeekday - 1
         return Array(symbols[first...] + symbols[..<first])
-    }
-
-    private func changeMonth(_ delta: Int) {
-        withAnimation {
-            displayedMonth = (calendar.date(byAdding: .month, value: delta, to: displayedMonth) ?? displayedMonth).startOfMonth
-        }
     }
 }

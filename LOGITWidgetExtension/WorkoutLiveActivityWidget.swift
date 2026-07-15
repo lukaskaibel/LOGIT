@@ -1735,6 +1735,24 @@ private struct WorkoutCompactIslandTrailingContent: View {
     }
 }
 
+/// Reserves horizontal space for a live `Text(timerInterval:)`. In the compact Dynamic Island a bare
+/// `Text(timerInterval:)` under the trailing region's `fixedSize` does not lay out to a visible width,
+/// so the running countdown/stopwatch disappears while the leading icon (a normally-sized `Image`)
+/// still shows. A hidden monospaced `mm:ss` sizer pins the width; the live timer is drawn
+/// trailing-aligned over it.
+private struct WorkoutLiveActivityReservedTimerText: View {
+    let range: ClosedRange<Date>
+    let countsDown: Bool
+
+    var body: some View {
+        Text(verbatim: "00:00")
+            .hidden()
+            .overlay(alignment: .trailing) {
+                Text(timerInterval: range, countsDown: countsDown, showsHours: false)
+            }
+    }
+}
+
 /// In Live Activities the widget extension is only woken at Activity update points, so `TimelineView(.periodic)`
 /// does not drive continuous refreshes. Use `Text(timerInterval:countsDown:showsHours:)` which is rendered by the
 /// OS and advances in place for both the compact Dynamic Island and minimal.
@@ -1755,20 +1773,18 @@ private struct WorkoutCompactIslandChronoLabel: View {
         switch chip.phase {
         case .timerRunning:
             if let end = chip.timerEndDate {
-                Text(
-                    timerInterval: workoutLiveActivityCountdownRange(endingAt: end),
-                    countsDown: true,
-                    showsHours: false
+                WorkoutLiveActivityReservedTimerText(
+                    range: workoutLiveActivityCountdownRange(endingAt: end),
+                    countsDown: true
                 )
             } else {
                 Text("0:00").opacity(0)
             }
         case .stopwatchRunning:
             if let start = chip.stopwatchStartDate {
-                Text(
-                    timerInterval: workoutLiveActivityStopwatchRange(startingAt: start),
-                    countsDown: false,
-                    showsHours: false
+                WorkoutLiveActivityReservedTimerText(
+                    range: workoutLiveActivityStopwatchRange(startingAt: start),
+                    countsDown: false
                 )
             } else {
                 Text("0:00").opacity(0)

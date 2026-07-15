@@ -7,6 +7,7 @@
 
 import Charts
 import Combine
+import CoreData
 import SwiftUI
 
 struct WorkoutSetGroupCell: View {
@@ -25,10 +26,24 @@ struct WorkoutSetGroupCell: View {
     let supplementaryText: String?
     var showDetailAsSheet: Bool = false
     var showPendingRestInTertiary: Bool = false
+    /// Whether any set field is currently focused, passed as a plain value (instead of reading
+    /// `focusedIntegerFieldIndex` here) so this cell's body doesn't re-run for every focus move
+    /// between fields — only for the keyboard appearing or disappearing.
+    var isFieldFocused: Bool = false
+    /// Position of this group in the workout, passed by `WorkoutSetGroupList` so it is part of
+    /// this cell's `Equatable` inputs: with body skipping, deleting or reordering *another*
+    /// group must still refresh this cell's header number. Nil when the cell is used standalone
+    /// (previews), where the position is derived from the workout instead.
+    var indexInWorkout: Int? = nil
+    /// Flat index of this group's first set within the whole workout. Not rendered, but part of
+    /// `==`: the set cells derive their keyboard-focus indices from flat set positions, so a
+    /// structural change in an earlier group has to re-render this cell's children too.
+    var firstSetIndexInWorkout: Int = 0
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
     var onReorderSetGroups: (() -> Void)? = nil
     var onTapPreviousSet: ((Exercise) -> Void)? = nil
     var onTapExerciseName: ((Exercise) -> Void)? = nil
+    var onTapMetricBadge: ((WorkoutSetGroup, CGRect) -> Void)? = nil
 
     // MARK: - State
 
@@ -248,7 +263,8 @@ struct WorkoutSetGroupCell: View {
                 MetricBadgeView(
                     setGroup: setGroup,
                     workout: workout,
-                    isEditing: focusedIntegerFieldIndex != nil
+                    isEditing: isFieldFocused,
+                    onTapBadge: onTapMetricBadge
                 )
                 // The badge floats here without claiming layout space; feed its width back so the
                 // exercise name can reserve room and fade out before it (see `exerciseNameTrailingInset`).
@@ -286,7 +302,7 @@ struct WorkoutSetGroupCell: View {
     private var header: some View {
         VStack(spacing: 8) {
             HStack(spacing: 10) {
-                if let indexInWorkout = setGroup.workout?.setGroups.firstIndex(of: setGroup) {
+                if let indexInWorkout = indexInWorkout ?? setGroup.workout?.setGroups.firstIndex(of: setGroup) {
                     Text("\(indexInWorkout + 1)")
                         .font(.title)
                         .fontWeight(.medium)
@@ -504,7 +520,144 @@ struct WorkoutSetGroupCell: View {
     }
 }
 
+/// Lets SwiftUI skip this cell's body when a parent re-render didn't change what it draws. The
+/// recorder screen re-renders for reasons that don't concern individual cells (focus moves
+/// between fields, timer state, progress), and without this every such pass re-ran every cell.
+/// The comparison deliberately ignores the callback closures (their behavior is stable across
+/// renders) and the bindings (views reading a binding's value re-render on its changes on their
+/// own). Set-level edits still re-render instantly through the cell's `@ObservedObject setGroup`
+/// and the set cells' own observed sets, which bypass this check entirely.
+extension WorkoutSetGroupCell: Equatable {
+    static func == (lhs: WorkoutSetGroupCell, rhs: WorkoutSetGroupCell) -> Bool {
+        lhs.setGroup === rhs.setGroup
+            && lhs.supplementaryText == rhs.supplementaryText
+            && lhs.showDetailAsSheet == rhs.showDetailAsSheet
+            && lhs.showPendingRestInTertiary == rhs.showPendingRestInTertiary
+            && lhs.isFieldFocused == rhs.isFieldFocused
+            && lhs.indexInWorkout == rhs.indexInWorkout
+            && lhs.firstSetIndexInWorkout == rhs.firstSetIndexInWorkout
+    }
+}
+
 // MARK: - Session vs current best
+
+/// Cache for the history-derived side of `SetGroupMetricComparison` (`previousAllTimeBest` and
+/// `currentBest`). Both scan the exercise's entire set history — hundreds of sets for a trained
+/// exercise — and the badge consults them several times per render, which made every full
+/// recorder re-render pay dozens of history scans (the dominant main-thread cost while typing,
+/// focusing fields, or running the rest timer). During a session that history is static: both
+/// values exclude the workout being recorded. So the scans are cached here and recomputed only
+/// when something *outside* the current workout changes — a CloudKit import, deleting or editing
+/// an old workout, or an exercise change.
+private final class ExerciseHistoryBestsCache: @unchecked Sendable {
+    static let shared = ExerciseHistoryBestsCache()
+
+    enum Kind: Hashable {
+        case allTimeBest
+        case currentBest
+    }
+
+    private struct Key: Hashable {
+        let kind: Kind
+        let exercise: NSManagedObjectID
+        let metric: ExercisePrimaryMetric
+        let excludedWorkout: NSManagedObjectID?
+        let anchor: Date?
+    }
+
+    private let lock = NSLock()
+    private var values: [Key: Int?] = [:]
+
+    private init() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(contextObjectsDidChange),
+            name: .NSManagedObjectContextObjectsDidChange,
+            object: nil
+        )
+    }
+
+    func value(
+        _ kind: Kind,
+        exercise: Exercise,
+        metric: ExercisePrimaryMetric,
+        excludedWorkout: Workout?,
+        anchor: Date?,
+        compute: () -> Int?
+    ) -> Int? {
+        let key = Key(
+            kind: kind,
+            exercise: exercise.objectID,
+            metric: metric,
+            excludedWorkout: excludedWorkout?.objectID,
+            anchor: anchor
+        )
+        lock.lock()
+        if let cached = values[key] {
+            lock.unlock()
+            return cached
+        }
+        lock.unlock()
+        let computed = compute()
+        lock.lock()
+        values[key] = computed
+        lock.unlock()
+        return computed
+    }
+
+    private func invalidateAll() {
+        lock.lock()
+        values.removeAll()
+        lock.unlock()
+    }
+
+    /// The context-change notification arrives on the posting context's queue. Background
+    /// contexts (CloudKit imports) always concern history, so they invalidate wholesale.
+    /// Main-context changes are inspected on their own (main) queue: edits confined to the
+    /// workout currently being recorded (typing a set value, adding a set) don't touch prior
+    /// history and keep the cache.
+    @objc private func contextObjectsDidChange(_ notification: Notification) {
+        guard Thread.isMainThread else {
+            invalidateAll()
+            return
+        }
+        lock.lock()
+        let isEmpty = values.isEmpty
+        lock.unlock()
+        guard !isEmpty else { return }
+
+        let changeKeys = [
+            NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey,
+        ]
+        for changeKey in changeKeys {
+            guard let objects = notification.userInfo?[changeKey] as? Set<NSManagedObject> else {
+                continue
+            }
+            for object in objects {
+                let workout: Workout?
+                switch object {
+                case let workoutSet as WorkoutSet:
+                    workout = workoutSet.setGroup?.workout
+                case let setGroup as WorkoutSetGroup:
+                    workout = setGroup.workout
+                case let changedWorkout as Workout:
+                    workout = changedWorkout
+                case is Exercise:
+                    invalidateAll()
+                    return
+                default:
+                    continue
+                }
+                // Anything not clearly confined to the in-progress workout — including
+                // deletions, whose relationships are already severed — invalidates.
+                guard let workout, !workout.isDeleted, workout.isCurrentWorkout else {
+                    invalidateAll()
+                    return
+                }
+            }
+        }
+    }
+}
 
 /// The numbers behind the metric badge and its info panel: what this set group achieved per metric,
 /// the exercise's current best it's measured against, and the percent between them. One shared home
@@ -532,6 +685,20 @@ private struct SetGroupMetricComparison {
     /// comparison keeps telling that day's story even after later sessions surpass it. While
     /// recording, the window stays anchored at now — the two coincide there anyway.
     func currentBest(_ metric: ExercisePrimaryMetric) -> Int? {
+        guard let exercise = setGroup.exercise else { return nil }
+        let anchor = setGroup.workout?.isCurrentWorkout == true ? nil : setGroup.workout?.date
+        return ExerciseHistoryBestsCache.shared.value(
+            .currentBest,
+            exercise: exercise,
+            metric: metric,
+            excludedWorkout: setGroup.workout,
+            anchor: anchor
+        ) {
+            currentBestImpl(metric)
+        }
+    }
+
+    private func currentBestImpl(_ metric: ExercisePrimaryMetric) -> Int? {
         guard let exercise = setGroup.exercise else { return nil }
         let anchor = setGroup.workout?.isCurrentWorkout == true ? nil : setGroup.workout?.date
         var priorSets = exercise.sets.filter { $0.workout != setGroup.workout }
@@ -572,6 +739,19 @@ private struct SetGroupMetricComparison {
     /// record has to clear (all-time, intentionally NOT the current-best window). Excludes the
     /// current workout.
     func previousAllTimeBest(_ metric: ExercisePrimaryMetric) -> Int {
+        guard let exercise = setGroup.exercise else { return 0 }
+        return ExerciseHistoryBestsCache.shared.value(
+            .allTimeBest,
+            exercise: exercise,
+            metric: metric,
+            excludedWorkout: setGroup.workout,
+            anchor: nil
+        ) {
+            previousAllTimeBestImpl(metric)
+        } ?? 0
+    }
+
+    private func previousAllTimeBestImpl(_ metric: ExercisePrimaryMetric) -> Int {
         guard let exercise = setGroup.exercise else { return 0 }
         let priorSets = exercise.sets.filter { $0.workout != setGroup.workout }
         switch metric {
@@ -616,11 +796,13 @@ private struct MetricBadgeView: View {
     /// keyboard, which often pushes this badge out of view — so peeks found mid-edit are deferred
     /// until editing ends and the badge is back on screen.
     let isEditing: Bool
-    @StateObject private var peek = MetricPeekController()
     /// Set by the workout recorder. There the badge sits behind a persistent sheet, so presenting its
     /// own popover/sheet would tear that sheet down — instead the tap is routed up and the recorder
     /// presents the panel from the sheet's own context. Nil elsewhere, where the popover is fine.
-    @Environment(\.metricInfoRequest) private var metricInfoRequest
+    /// A plain parameter (not an environment value) so the recorder's per-render closure can't
+    /// register every badge as environment-dependent on it.
+    let onTapBadge: ((WorkoutSetGroup, CGRect) -> Void)?
+    @StateObject private var peek = MetricPeekController()
 
     @State private var primaryMetric: ExercisePrimaryMetric = .estimatedOneRepMax
     @State private var isShowingInfo = false
@@ -640,10 +822,16 @@ private struct MetricBadgeView: View {
 
     private var displayedIsRecord: Bool { comparison.isPersonalRecord(displayedMetric) }
 
-    init(setGroup: WorkoutSetGroup, workout: Workout, isEditing: Bool) {
+    init(
+        setGroup: WorkoutSetGroup,
+        workout: Workout,
+        isEditing: Bool,
+        onTapBadge: ((WorkoutSetGroup, CGRect) -> Void)? = nil
+    ) {
         _setGroup = ObservedObject(wrappedValue: setGroup)
         _workout = ObservedObject(wrappedValue: workout)
         self.isEditing = isEditing
+        self.onTapBadge = onTapBadge
         // Resolve the committed metric up front so the very first render already evaluates the right
         // metric: the idle/empty decision below shouldn't wait on `onAppear`, and it spares a
         // first-frame roll up from the `.estimatedOneRepMax` default.
@@ -675,9 +863,9 @@ private struct MetricBadgeView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                        if let metricInfoRequest {
+                        if let onTapBadge {
                             if badgeFrame != .zero {
-                                metricInfoRequest(setGroup, badgeFrame)
+                                onTapBadge(setGroup, badgeFrame)
                             }
                         } else {
                             isShowingInfo = true
@@ -1307,19 +1495,3 @@ struct MetricInfoPanel: View {
     }
 }
 
-// MARK: - Metric info request (environment)
-
-private struct MetricInfoRequestKey: EnvironmentKey {
-    static let defaultValue: ((WorkoutSetGroup, CGRect) -> Void)? = nil
-}
-
-extension EnvironmentValues {
-    /// Set by the workout recorder so a metric-badge tap presents the info popover from the
-    /// recorder's persistent sheet context, anchored at the badge's global frame — a popover
-    /// presented from the badge itself (which lives behind that sheet) tears the sheet down. Absent
-    /// elsewhere, where the badge presents its own popover.
-    var metricInfoRequest: ((WorkoutSetGroup, CGRect) -> Void)? {
-        get { self[MetricInfoRequestKey.self] }
-        set { self[MetricInfoRequestKey.self] = newValue }
-    }
-}

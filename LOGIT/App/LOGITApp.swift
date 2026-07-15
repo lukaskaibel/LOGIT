@@ -158,7 +158,7 @@ struct LOGIT: App {
                 .environment(\.goHome) { selectedTab = .home }
                 .environment(\.presentWorkoutRecorder, showWorkoutRecorder)
                 .fullScreenDraggableCover(isPresented: $isShowingWorkoutRecorder) {
-                    WorkoutRecorderScreen()
+                    WorkoutRecorderScreen(chronograph: chronograph)
                         .environmentObject(database)
                         .environmentObject(measurementController)
                         .environmentObject(templateService)

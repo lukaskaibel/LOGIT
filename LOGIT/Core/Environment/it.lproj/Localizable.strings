@@ -1036,3 +1036,8 @@
 "setsPerYearTitle" = "Serie all'anno";
 "twelveMonths" = "12 mesi";
 "sixYears" = "6 anni";
+
+// History rework (week/month section recap + filter sheet)
+"monthWorkoutCount" = "%d allenamento";
+"filters" = "Filtri";
+"fromTemplate" = "Da un modello";

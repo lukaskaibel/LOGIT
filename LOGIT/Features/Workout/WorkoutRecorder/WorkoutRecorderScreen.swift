@@ -28,7 +28,6 @@ struct WorkoutRecorderScreen: View {
     @EnvironmentObject private var database: Database
     @EnvironmentObject var workoutRecorder: WorkoutRecorder
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
-    @EnvironmentObject private var chronograph: Chronograph
     /// Re-injected into the metric-info popover's `UIHostingController` (environment objects don't
     /// cross the UIKit bridge): the panel's Pro gate reads `purchaseManager`, and the upgrade
     /// screen it can present needs both.
@@ -36,11 +35,16 @@ struct WorkoutRecorderScreen: View {
     @EnvironmentObject private var networkMonitor: NetworkMonitor
     @Environment(\.workoutRecorderDragDriver) private var recorderDragDriver
 
-    // MARK: - State
+    // MARK: - Parameters
 
-    @AppStorage("autoTimerEnabled") private var autoTimerEnabled: Bool = false
-    @AppStorage("autoStopwatchEnabled") private var autoStopwatchEnabled: Bool = false
-    @AppStorage("lastTimerDuration") private var lastTimerDuration: Int = 30
+    /// Deliberately a plain reference, not an `@EnvironmentObject`: the chronograph publishes on
+    /// every start/stop/adjustment, and observing it here re-rendered the whole recorder tree each
+    /// time. The screen only drives it imperatively; the views that *display* it
+    /// (`FloatingChronoControlsOverlay`, `TimerStopwatchView`, `RestTimerBetweenSetsView`)
+    /// observe it themselves.
+    let chronograph: Chronograph
+
+    // MARK: - State
 
     @State var isShowingChronoSheet = false
     @State private var didAppear = false
@@ -60,11 +64,11 @@ struct WorkoutRecorderScreen: View {
     @State private var metricInfoSetGroup: WorkoutSetGroup?
     @State private var metricInfoSourceRect: CGRect?
     @State private var scrollToRecentAttempts = false
-    @State private var sheetHeight: CGFloat = 0
-    @State private var mediumSheetHeight: CGFloat = 0
-    @State private var animationDuration: CGFloat = 0
-    @State private var toolbarOpacity: CGFloat = 1
-    @State private var safeAreaBottomInset: CGFloat = 0
+    /// Plain `@State` holding a reference type on purpose: the screen must keep the instance
+    /// alive WITHOUT subscribing to it (`@StateObject` would). The persistent sheet's height
+    /// changes on every frame of a detent or keyboard animation; only the floating chrono
+    /// overlay consumes it, so only that child observes it.
+    @State private var sheetGeometry = RecorderSheetGeometry()
 
     @State var focusedIntegerFieldIndex: IntegerField.Index?
 
@@ -102,17 +106,17 @@ struct WorkoutRecorderScreen: View {
                                         }
                                     },
                                     onTapPreviousSet: { scrollToRecentAttempts = true; exerciseDetailAutoMetric = nil; exerciseForDetailSheet = $0 },
-                                    onTapExerciseName: { scrollToRecentAttempts = false; exerciseDetailAutoMetric = nil; exerciseForDetailSheet = $0 }
+                                    onTapExerciseName: { scrollToRecentAttempts = false; exerciseDetailAutoMetric = nil; exerciseForDetailSheet = $0 },
+                                    // A metric-badge tap routes here instead of presenting from the
+                                    // badge: the badge sits behind the persistent exercise sheet, so a
+                                    // popover presented from it would dismiss that sheet. The popover
+                                    // is instead presented from the sheet's own view controller
+                                    // (below), anchored back to the badge, so the sheet survives.
+                                    onTapMetricBadge: { setGroup, frame in
+                                        metricInfoSetGroup = setGroup
+                                        metricInfoSourceRect = frame
+                                    }
                                 )
-                                // A metric-badge tap routes here instead of presenting from the badge:
-                                // the badge sits behind the persistent exercise sheet, so a popover
-                                // presented from it would dismiss that sheet. The popover is instead
-                                // presented from the sheet's own view controller (below), anchored back
-                                // to the badge, so the sheet survives.
-                                .environment(\.metricInfoRequest) { setGroup, frame in
-                                    metricInfoSetGroup = setGroup
-                                    metricInfoSourceRect = frame
-                                }
                                 .padding(.horizontal)
                                 .padding(.top, 90)
                                 .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? (UIScreen.current?.bounds.height ?? 0) * 0.5 : BOTTOM_SHEET_SMALL)
@@ -268,23 +272,11 @@ struct WorkoutRecorderScreen: View {
                             .onGeometryChange(for: CGFloat.self) {
                                 max($0.size.height, 0)
                             } action: { oldValue, newValue in
-                                sheetHeight = newValue
-
-                                if exerciseSelectionPresentationDetent == .medium {
-                                    mediumSheetHeight = newValue
-                                }
-
-                                if mediumSheetHeight > 0 {
-                                    let fadeStartHeight = mediumSheetHeight + 140
-                                    let progress = max(min((newValue - fadeStartHeight) / 72, 1), 0)
-                                    toolbarOpacity = 1 - progress
-                                } else {
-                                    toolbarOpacity = 1
-                                }
-
-                                let diff = abs(newValue - oldValue)
-                                let duration = max(min(diff / 180, 0.3), 0)
-                                animationDuration = duration
+                                sheetGeometry.update(
+                                    sheetHeight: newValue,
+                                    previousHeight: oldValue,
+                                    isAtMediumDetent: exerciseSelectionPresentationDetent == .medium
+                                )
                             }
                             .presentationDetents([.height(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
@@ -293,37 +285,20 @@ struct WorkoutRecorderScreen: View {
                             .interactiveDismissDisabled()
                         }
                         .overlay(alignment: .bottomTrailing) {
-                            if shouldShowFloatingTimerButton {
-                                HStack {
-                                    WorkoutRecorderFloatingTimerButton(
-                                        chronograph: chronograph,
-                                        workoutRecorder: workoutRecorder,
-                                        action: { isShowingChronoSheet = true }
-                                    )
-                                    if shouldShowFloatingStopwatchStopButton {
-                                        WorkoutRecorderFloatingStopwatchStopButton(
-                                            workoutRecorder: workoutRecorder,
-                                            action: stopStopwatch
-                                        )
-                                    } else if shouldShowFloatingTimerCancelButton {
-                                        WorkoutRecorderFloatingStopwatchStopButton(
-                                            workoutRecorder: workoutRecorder,
-                                            action: cancelTimer
-                                        )
-                                    }
-                                }
-                                .opacity(toolbarOpacity)
-                                .offset(y: -sheetHeight)
-                                .padding(.trailing, 15)
-                                .offset(y: floatingTimerBottomOffset)
-                                .animation(.easeInOut(duration: animationDuration), value: sheetHeight)
-                                .animation(.easeInOut(duration: animationDuration), value: floatingTimerBottomOffset)
-                            }
+                            FloatingChronoControlsOverlay(
+                                chronograph: chronograph,
+                                workoutRecorder: workoutRecorder,
+                                sheetGeometry: sheetGeometry,
+                                isAtSmallDetent: exerciseSelectionPresentationDetent == .height(BOTTOM_SHEET_SMALL),
+                                onOpenChronoSheet: { isShowingChronoSheet = true },
+                                onStopStopwatch: stopStopwatch,
+                                onCancelTimer: cancelTimer
+                            )
                         }
                         .onGeometryChange(for: CGFloat.self) {
                             $0.safeAreaInsets.bottom
                         } action: { newValue in
-                            safeAreaBottomInset = newValue
+                            sheetGeometry.safeAreaBottomInset = newValue
                         }
                     }
                     .onAppear {
@@ -502,22 +477,6 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
-    // MARK: - Floating Timer Button
-
-    private var shouldShowFloatingTimerButton: Bool {
-        sheetHeight > 0
-            && !workoutRecorderIsDragging
-            && workoutRecorderIsSettled
-    }
-
-    private var floatingTimerBottomOffset: CGFloat {
-        let base = safeAreaBottomInset - 10
-        if exerciseSelectionPresentationDetent == .height(BOTTOM_SHEET_SMALL) {
-            return base - 10
-        }
-        return base
-    }
-
     @ViewBuilder
     private func reorderSetGroupsSheet(for workout: Workout) -> some View {
         NavigationStack {
@@ -588,16 +547,6 @@ struct WorkoutRecorderScreen: View {
         )
     }
 
-    private var shouldShowFloatingStopwatchStopButton: Bool {
-        chronograph.mode == .stopwatch
-            && chronograph.status == .running
-    }
-
-    private var shouldShowFloatingTimerCancelButton: Bool {
-        chronograph.mode == .timer
-            && chronograph.status == .running
-    }
-
     // MARK: - Supporting Methods / Computed Properties
 
     private var workoutName: Binding<String> {
@@ -653,11 +602,19 @@ struct WorkoutRecorderScreen: View {
         guard workoutRecorder.activeRestTimerSet?.objectID != completedSet.objectID else { return }
         guard chronograph.status != .running else { return }
 
+        // Read at call time instead of via `@AppStorage`: these settings are only consumed
+        // here, and an `@AppStorage` subscription re-rendered the whole recorder tree on every
+        // write (the timer sheet writes `lastTimerDuration` on each preset/adjustment tap).
+        let defaults = UserDefaults.standard
+        let lastTimerDuration = defaults.object(forKey: "lastTimerDuration") == nil
+            ? 30
+            : defaults.integer(forKey: "lastTimerDuration")
+
         guard let autoRestBehavior = workoutRecorder.autoRestBehavior(
             forSet: completedSet,
             usesStopwatch: chronograph.mode == .stopwatch,
-            autoTimerEnabled: autoTimerEnabled,
-            autoStopwatchEnabled: autoStopwatchEnabled,
+            autoTimerEnabled: defaults.bool(forKey: "autoTimerEnabled"),
+            autoStopwatchEnabled: defaults.bool(forKey: "autoStopwatchEnabled"),
             timerDuration: lastTimerDuration
         ) else {
             return
@@ -859,6 +816,89 @@ struct WorkoutRecorderScreen: View {
     }
 }
 
+// MARK: - Sheet geometry + floating chrono controls
+
+/// Live geometry of the persistent exercise sheet. Written from the recorder's
+/// `onGeometryChange` callbacks and observed ONLY by `FloatingChronoControlsOverlay` — the sheet
+/// height changes on every frame of a detent or keyboard animation, and when these values were
+/// `@State` on the screen each frame re-rendered the entire recorder tree.
+final class RecorderSheetGeometry: ObservableObject {
+    @Published var sheetHeight: CGFloat = 0
+    @Published var toolbarOpacity: CGFloat = 1
+    @Published var animationDuration: CGFloat = 0
+    @Published var safeAreaBottomInset: CGFloat = 0
+    private var mediumSheetHeight: CGFloat = 0
+
+    func update(sheetHeight newHeight: CGFloat, previousHeight: CGFloat, isAtMediumDetent: Bool) {
+        sheetHeight = newHeight
+
+        if isAtMediumDetent {
+            mediumSheetHeight = newHeight
+        }
+
+        if mediumSheetHeight > 0 {
+            let fadeStartHeight = mediumSheetHeight + 140
+            let progress = max(min((newHeight - fadeStartHeight) / 72, 1), 0)
+            toolbarOpacity = 1 - progress
+        } else {
+            toolbarOpacity = 1
+        }
+
+        let diff = abs(newHeight - previousHeight)
+        animationDuration = max(min(diff / 180, 0.3), 0)
+    }
+}
+
+/// The floating timer/stopwatch button (with its stop/cancel companion) and the placement math
+/// that tracks the persistent sheet. Isolated from the recorder screen so the chronograph's
+/// frequent publishes and the per-frame sheet-geometry updates re-render only this small
+/// overlay, never the whole recorder tree.
+private struct FloatingChronoControlsOverlay: View {
+    @Environment(\.workoutRecorderIsDragging) private var workoutRecorderIsDragging
+
+    @ObservedObject var chronograph: Chronograph
+    @ObservedObject var workoutRecorder: WorkoutRecorder
+    @ObservedObject var sheetGeometry: RecorderSheetGeometry
+    let isAtSmallDetent: Bool
+    let onOpenChronoSheet: () -> Void
+    let onStopStopwatch: () -> Void
+    let onCancelTimer: () -> Void
+
+    var body: some View {
+        if sheetGeometry.sheetHeight > 0 && !workoutRecorderIsDragging {
+            HStack {
+                WorkoutRecorderFloatingTimerButton(
+                    chronograph: chronograph,
+                    workoutRecorder: workoutRecorder,
+                    action: onOpenChronoSheet
+                )
+                if chronograph.mode == .stopwatch, chronograph.status == .running {
+                    WorkoutRecorderFloatingStopwatchStopButton(
+                        workoutRecorder: workoutRecorder,
+                        action: onStopStopwatch
+                    )
+                } else if chronograph.mode == .timer, chronograph.status == .running {
+                    WorkoutRecorderFloatingStopwatchStopButton(
+                        workoutRecorder: workoutRecorder,
+                        action: onCancelTimer
+                    )
+                }
+            }
+            .opacity(sheetGeometry.toolbarOpacity)
+            .offset(y: -sheetGeometry.sheetHeight)
+            .padding(.trailing, 15)
+            .offset(y: bottomOffset)
+            .animation(.easeInOut(duration: sheetGeometry.animationDuration), value: sheetGeometry.sheetHeight)
+            .animation(.easeInOut(duration: sheetGeometry.animationDuration), value: bottomOffset)
+        }
+    }
+
+    private var bottomOffset: CGFloat {
+        let base = sheetGeometry.safeAreaBottomInset - 10
+        return isAtSmallDetent ? base - 10 : base
+    }
+}
+
 struct WorkoutMuscleGroupChart: View {
     @ObservedObject var workout: Workout
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
@@ -884,9 +924,10 @@ struct WorkoutMuscleGroupChart: View {
 private struct PreviewWrapperView: View {
     @EnvironmentObject private var database: Database
     @EnvironmentObject private var workoutRecorder: WorkoutRecorder
+    @EnvironmentObject private var chronograph: Chronograph
 
     var body: some View {
-        WorkoutRecorderScreen()
+        WorkoutRecorderScreen(chronograph: chronograph)
             .onAppear {
                 workoutRecorder.startWorkout(from: database.testTemplate)
             }

@@ -215,6 +215,19 @@ struct LOGIT: App {
                         try? await Task.sleep(nanoseconds: 600_000_000)
                         showWorkoutRecorder()
                     }
+                    #if DEBUG
+                    // Live Activity verification hook: deterministically start a rest timer so the
+                    // running-chrono Dynamic Island (compact/minimal) can be reproduced from the CLI.
+                    // Lives here (not in the recorder view) so it fires regardless of what is on screen.
+                    if ProcessInfo.processInfo.arguments.contains("-UITEST_START_REST_TIMER"),
+                       let restTimerSet = workoutRecorder.workout?.sets.first {
+                        try? await Task.sleep(nanoseconds: 800_000_000)
+                        workoutRecorder.activeRestTimerSet = restTimerSet
+                        chronograph.mode = .timer
+                        chronograph.setSeconds(90)
+                        chronograph.start()
+                    }
+                    #endif
                     // Fastlane screenshot trigger for the Live Activity
                     // marketing view. Swaps the whole screen for a
                     // Lock Screen-style composition of two Live Activity
@@ -437,7 +450,7 @@ struct LOGIT: App {
     /// its own `UIViewController`, so the environment is injected explicitly, exactly
     /// like the old overlay-based cover did.
     private var workoutRecorderDestination: some View {
-        WorkoutRecorderScreen()
+        WorkoutRecorderScreen(chronograph: chronograph)
             .environmentObject(database)
             .environmentObject(measurementController)
             .environmentObject(templateService)

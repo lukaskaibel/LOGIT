@@ -17,6 +17,7 @@
 		28E43ABE4881F802FBBACCE9 /* RangePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F685CCE0EE8FE86E8E0135C /* RangePicker.swift */; };
 		2A384BE3816900000002 /* ExerciseSuggestionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54EE2592821500000001 /* ExerciseSuggestionService.swift */; };
 		2BD2E4720FB2C657F8CA372B /* CompletionRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C72085C4C10146858277690 /* CompletionRing.swift */; };
+		9870C5C11EC204B609726272 /* SwipeableMonthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79EEE8722792E15D71C22DA3 /* SwipeableMonthView.swift */; };
 		34ED649B10150341352AE3D1 /* StatPeriodTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8CD271000D75928FAE0887 /* StatPeriodTests.swift */; };
 		396ADE67CD8C1D14F7A8D82A /* LOGITWidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */; };
 		435F070826CC8D1F8D7239B8 /* WorkoutDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */; };
@@ -232,6 +233,7 @@
 		8E306606440725A568FE5F1A /* ExerciseMergeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */; };
 		8F4A3C022E5A9B0100D4E5F2 /* SetVolumeBarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4A3C012E5A9B0100D4E5F1 /* SetVolumeBarChart.swift */; };
 		9392C43C9501E6676A02488A /* WorkoutLiveActivitySnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */; };
+		99A5C6A814E6BD98F45BDFF1 /* CapabilityChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BEA94B4E4E01D1D9185359 /* CapabilityChartView.swift */; };
 		9C03B11C8A034786C5544D2E /* ScreenshotFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05F3FE01CADB8E0526C799F /* ScreenshotFixtures.swift */; };
 		9D2E7A022F30AA0100C1D2E2 /* DemoWorkoutSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2E7A012F30AA0100C1D2E1 /* DemoWorkoutSeeder.swift */; };
 		9F68D70717290138E369B178 /* ExerciseMergingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E384D0F4B54340F910F6813 /* ExerciseMergingSheet.swift */; };
@@ -356,6 +358,7 @@
 		3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedWithYouBanner.swift; sourceTree = "<group>"; };
 		336772BB4E860E3894BA7355 /* SummaryStatTiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryStatTiles.swift; sourceTree = "<group>"; };
 		3C72085C4C10146858277690 /* CompletionRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionRing.swift; sourceTree = "<group>"; };
+		79EEE8722792E15D71C22DA3 /* SwipeableMonthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeableMonthView.swift; sourceTree = "<group>"; };
 		3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LOGITScreenshots.swift; sourceTree = "<group>"; };
 		4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutDTO.swift; sourceTree = "<group>"; };
 		4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivitySnapshotBuilder.swift; sourceTree = "<group>"; };
@@ -600,6 +603,7 @@
 		A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityShowcaseView.swift; sourceTree = "<group>"; };
 		ADFEC5772AE8932AA1089603 /* SummaryRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryRecords.swift; sourceTree = "<group>"; };
 		AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeService.swift; sourceTree = "<group>"; };
+		B5BEA94B4E4E01D1D9185359 /* CapabilityChartView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapabilityChartView.swift; sourceTree = "<group>"; };
 		BA2F6D7984C9394E060503E7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BBBF6087BB65A5971FB5F866 /* BodyMapFigure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyMapFigure.swift; sourceTree = "<group>"; };
 		BEA597E1519E8F6D2CBC8F9E /* PeriodPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeriodPicker.swift; sourceTree = "<group>"; };
@@ -1192,6 +1196,7 @@
 				E1E1E1000000000000000F13 /* TileBarChartStyle.swift */,
 				E1E1E1000000000000000F14 /* TileSparklineStyle.swift */,
 				F3C48765200C9745764F2EAA /* PeriodHistoryChart.swift */,
+				B5BEA94B4E4E01D1D9185359 /* CapabilityChartView.swift */,
 			);
 			path = Charts;
 			sourceTree = "<group>";
@@ -1247,6 +1252,7 @@
 				D1D1D1000000000000000F01 /* MetricTile.swift */,
 				BBBF6087BB65A5971FB5F866 /* BodyMapFigure.swift */,
 				3C72085C4C10146858277690 /* CompletionRing.swift */,
+				79EEE8722792E15D71C22DA3 /* SwipeableMonthView.swift */,
 				BEA597E1519E8F6D2CBC8F9E /* PeriodPicker.swift */,
 				E1E1E1000000000000000F12 /* ProgressIndicatorPill.swift */,
 				E1E1E1000000000000000F16 /* PersonalBestRow.swift */,
@@ -1648,6 +1654,7 @@
 				D1D1D1000000000000000B01 /* MetricTile.swift in Sources */,
 				73A9CED8C934FDF36F9C4061 /* BodyMapFigure.swift in Sources */,
 				2BD2E4720FB2C657F8CA372B /* CompletionRing.swift in Sources */,
+				9870C5C11EC204B609726272 /* SwipeableMonthView.swift in Sources */,
 				77B7E6990E4C00B75D9BC6ED /* PeriodPicker.swift in Sources */,
 				E1E1E1000000000000000B12 /* ProgressIndicatorPill.swift in Sources */,
 				E1E1E1000000000000000B16 /* PersonalBestRow.swift in Sources */,
@@ -1806,6 +1813,7 @@
 				28E43ABE4881F802FBBACCE9 /* RangePicker.swift in Sources */,
 				5F6C92E180BAAEC435086790 /* PeriodHistoryChart.swift in Sources */,
 				A10F7CBC23FBD8F36CC4A1D6 /* TestScenarios.swift in Sources */,
+				99A5C6A814E6BD98F45BDFF1 /* CapabilityChartView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

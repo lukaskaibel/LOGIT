@@ -42,7 +42,9 @@ struct WorkoutListScreen: View {
 
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(spacing: SECTION_SPACING) {
+                    // spacing 0: every section header and workout cell is a direct child here and
+                    // carries its own top gap (see below), so nothing gets a stray uniform space.
+                    LazyVStack(spacing: 0) {
                         if isSearching {
                             // Flat list when searching - results ordered by relevance
                             workoutList(displayed)
@@ -57,12 +59,28 @@ struct WorkoutListScreen: View {
                                 }
                                 .padding(.horizontal)
                             }
+                            // Section headers and cells are flattened into the LazyVStack as direct
+                            // children rather than nested inside a section view. The calendar's
+                            // tap-to-scroll uses ScrollViewReader, which can only reach `.id`s the
+                            // LazyVStack tracks — a cell hidden inside an off-screen section view has no
+                            // known position, so scrolling to an older (not-yet-realized) workout
+                            // silently did nothing. As direct children every cell is reachable. Spacing
+                            // that the section VStack used to own is reproduced with explicit top pads.
                             ForEach(historySections(for: displayed)) { section in
-                                WorkoutHistorySectionView(
-                                    title: section.title,
-                                    workouts: section.workouts,
-                                    selectedWorkout: $selectedWorkout
-                                )
+                                WorkoutHistorySectionHeader(title: section.title, workouts: section.workouts)
+                                    .padding(.horizontal)
+                                    .padding(.top, SECTION_SPACING)
+                                ForEach(Array(section.workouts.enumerated()), id: \.element.objectID) { index, workout in
+                                    Button {
+                                        selectedWorkout = workout
+                                    } label: {
+                                        WorkoutCell(workout: workout)
+                                    }
+                                    .buttonStyle(TileButtonStyle())
+                                    .id(workout.objectID)
+                                    .padding(.horizontal)
+                                    .padding(.top, index == 0 ? SECTION_HEADER_SPACING : 8)
+                                }
                             }
                         }
                         EmptyView()
@@ -243,17 +261,17 @@ private struct PersonalRecordFilterKey: Equatable {
 
 // MARK: - History section
 
-/// A single dated group in the history list — a relative week ("This Week", "Last Week") or a
-/// calendar month — headed by its name and a one-line recap of the workouts inside it: how many,
-/// their combined volume, and how many personal records they set. The recap mirrors the cell's own
-/// "date · duration · PR" grammar so the header and the rows read the same way. The cells below are
-/// unchanged.
-private struct WorkoutHistorySectionView: View {
+/// The recap header for one dated group in the history list — a relative week ("This Week", "Last
+/// Week") or a calendar month — showing the group's name and a one-line recap of the workouts inside
+/// it: how many, their combined volume, and how many personal records they set. The recap mirrors the
+/// cell's own "date · duration · PR" grammar so the header and the rows read the same way. The cells
+/// themselves are emitted as direct children of the list's LazyVStack — not by this view — so the
+/// calendar's tap-to-scroll can reach any of them.
+private struct WorkoutHistorySectionHeader: View {
     @EnvironmentObject private var database: Database
 
     let title: String
     let workouts: [Workout]
-    @Binding var selectedWorkout: Workout?
 
     /// Personal records across the whole section, summed from the same per-workout report the cells
     /// use so the header can never disagree with the "n PR" on the rows. Filled in `.task` rather
@@ -262,29 +280,15 @@ private struct WorkoutHistorySectionView: View {
     @State private var personalRecordCount: Int = 0
 
     var body: some View {
-        VStack(spacing: SECTION_HEADER_SPACING) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .sectionHeaderStyle2()
-                Text(statLine)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .padding(.leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            VStack(spacing: 8) {
-                ForEach(workouts) { workout in
-                    Button {
-                        selectedWorkout = workout
-                    } label: {
-                        WorkoutCell(workout: workout)
-                    }
-                    .buttonStyle(TileButtonStyle())
-                    .id(workout.objectID)
-                }
-            }
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .sectionHeaderStyle2()
+            Text(statLine)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .padding(.leading)
         }
-        .padding(.horizontal)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .task(id: workouts.map { $0.objectID }) {
             personalRecordCount = workouts.reduce(0) { partial, workout in
                 partial + WorkoutProgressReport.compute(for: workout, database: database).prRecords.count

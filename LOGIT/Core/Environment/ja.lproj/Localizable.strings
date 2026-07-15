@@ -1036,3 +1036,8 @@
 "setsPerYearTitle" = "年ごとのセット数";
 "twelveMonths" = "12か月";
 "sixYears" = "6年";
+
+// History rework (week/month section recap + filter sheet)
+"monthWorkoutCount" = "%d回";
+"filters" = "フィルタ";
+"fromTemplate" = "テンプレートから";

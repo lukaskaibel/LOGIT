@@ -227,6 +227,10 @@ enum WorkoutLiveActivitySnapshotBuilder {
         NSLocalizedString("reps", comment: "")
     }
 
+    private static var secondsLocalizedUnit: String {
+        NSLocalizedString("sec", comment: "")
+    }
+
     private static var liveActivityWeightUnit: String {
         WeightUnit.used.rawValue
     }
@@ -285,7 +289,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
                 performancePlaceholders.append(value.repetitions == 0)
             } else if value.type.usesDuration {
                 let shown = value.duration > 0 ? value.duration : (template?.duration ?? 0)
-                performanceSegments.append(formatEntryDuration(shown))
+                performanceSegments.append(String(shown))
                 performancePlaceholders.append(value.duration == 0)
             }
             if value.type.usesWeight {
@@ -298,7 +302,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
         return ExerciseMetricDisplay(
             repetitionSegments: performanceSegments,
             repetitionSegmentPlaceholders: performancePlaceholders,
-            repetitionsUnit: usesRepetitions ? repsLocalizedUnit : "",
+            repetitionsUnit: usesRepetitions ? repsLocalizedUnit : secondsLocalizedUnit,
             weightSegments: weightSegments,
             weightSegmentPlaceholders: weightPlaceholders,
             weightUnit: liveActivityWeightUnit
@@ -349,7 +353,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
             if value.type.usesRepetitions, value.repetitions > 0 {
                 performanceSegments.append(String(value.repetitions))
             } else if value.type.usesDuration, !value.type.usesRepetitions, value.duration > 0 {
-                performanceSegments.append(formatEntryDuration(value.duration))
+                performanceSegments.append(String(value.duration))
             }
             if value.type.usesWeight, value.weight > 0 {
                 weightSegments.append(formatWeightForDisplay(value.weight))
@@ -362,7 +366,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
         return ExerciseMetricDisplay(
             repetitionSegments: performanceSegments,
             repetitionSegmentPlaceholders: Array(repeating: false, count: performanceSegments.count),
-            repetitionsUnit: usesRepetitions ? repsLocalizedUnit : "",
+            repetitionsUnit: usesRepetitions ? repsLocalizedUnit : secondsLocalizedUnit,
             weightSegments: weightSegments,
             weightSegmentPlaceholders: Array(repeating: false, count: weightSegments.count),
             weightUnit: liveActivityWeightUnit

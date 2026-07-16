@@ -51,12 +51,10 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
             case .repsOnly:
                 repetitionsField(tertiary: 0)
             case .duration:
-                minutesField(tertiary: 0)
-                secondsField(tertiary: 1)
+                durationField(tertiary: 0)
             case .weightAndDuration:
                 weightField(tertiary: 0)
-                minutesField(tertiary: 1)
-                secondsField(tertiary: 2)
+                durationField(tertiary: 1)
             }
         }
     }
@@ -107,54 +105,30 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
         )
     }
 
-    private func minutesField(tertiary: Int) -> some View {
-        // The duration's trend and previous-value indicator live on the leading (minutes)
-        // field; the seconds field stays bare so the pair reads as one duration.
+    private func durationField(tertiary: Int) -> some View {
         let delta = durationDelta(current: entry.duration, previous: reference?.duration)
         return IntegerField(
-            placeholder: (placeholder?.duration ?? 0) / 60,
-            value: Binding(
-                get: { entry.duration / 60 },
-                set: { entry.duration = $0 * 60 + entry.duration % 60 }
-            ),
-            maxDigits: 3,
+            placeholder: placeholder?.duration ?? 0,
+            value: $entry.duration,
+            maxDigits: 4,
             index: fieldIndex(tertiary),
             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-            unit: NSLocalizedString("min", comment: ""),
+            unit: NSLocalizedString("sec", comment: ""),
             trend: delta.comparison,
             trendText: delta.text,
             trendColor: trendColor,
             previousValueText: (reference?.duration ?? 0) > 0
-                ? formatEntryDuration(reference!.duration) : nil,
+                ? String(reference!.duration) : nil,
             onTapPreviousValue: onTapPreviousValue
-        )
-    }
-
-    private func secondsField(tertiary: Int) -> some View {
-        IntegerField(
-            placeholder: (placeholder?.duration ?? 0) % 60,
-            value: Binding(
-                get: { entry.duration % 60 },
-                set: { entry.duration = (entry.duration / 60) * 60 + min(max($0, 0), 59) }
-            ),
-            maxDigits: 2,
-            index: fieldIndex(tertiary),
-            focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-            unit: NSLocalizedString("sec", comment: "")
         )
     }
 }
 
 // MARK: - Duration Helpers
 
-/// "1:30" — the compact set-duration format used for previous-value indicators and deltas.
-func formatEntryDuration(_ seconds: Int64) -> String {
-    String(format: "%d:%02d", seconds / 60, seconds % 60)
-}
-
 /// Compares an entered duration against the previous workout's value — longer is improved,
 /// matching how holds are trained. Returns `(nil, "")` when there is nothing meaningful to show.
 func durationDelta(current: Int64, previous: Int64?) -> (comparison: SetValueComparison?, text: String) {
     guard let previous, previous > 0, current > 0, current != previous else { return (nil, "") }
-    return (current > previous ? .improved : .declined, formatEntryDuration(abs(current - previous)))
+    return (current > previous ? .improved : .declined, String(abs(current - previous)))
 }

@@ -31,14 +31,14 @@ enum SetMeasurementType: String, CaseIterable, Codable, Identifiable {
         self == .duration || self == .weightAndDuration
     }
 
-    /// How many numeric input fields the recorder shows for one entry of this type: reps and
-    /// weight are one field each, a duration is two (minutes, seconds).
+    /// How many numeric input fields the recorder shows for one entry of this type — one per
+    /// tracked value (a duration is one field, entered in seconds).
     var inputFieldCount: Int {
         switch self {
         case .repsAndWeight: return 2
         case .repsOnly: return 1
-        case .duration: return 2
-        case .weightAndDuration: return 3
+        case .duration: return 1
+        case .weightAndDuration: return 2
         }
     }
 

@@ -186,6 +186,10 @@ struct WorkoutRecorderScreen: View {
                             }
                         }
                         .scrollIndicators(.hidden)
+                        // Run the list to the physical bottom edge, under the exercise-selection
+                        // sheet floating over it — the in-flow VStack would otherwise stop it at
+                        // the home-indicator safe area, clipping the list short of the sheet.
+                        .ignoresSafeArea(.container, edges: .bottom)
                         // Rows dissolve to transparent along the viewport's top edge as they
                         // scroll out under the header — a soft fade instead of an abrupt clip
                         // (the in-flow header has no background to hide them behind).

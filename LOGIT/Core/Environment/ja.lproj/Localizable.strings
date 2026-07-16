@@ -1042,3 +1042,10 @@
 "monthWorkoutCount" = "%d回";
 "filters" = "フィルタ";
 "fromTemplate" = "テンプレートから";
+
+// Per-workout vs total basis (Summary stat tiles + detail toggle)
+"perWorkout" = "ワークアウトあたり";
+"perWorkoutBasis" = "ワークアウトあたり";
+"basis" = "値";
+
+"buildingYourTrend" = "トレンドを作成中";

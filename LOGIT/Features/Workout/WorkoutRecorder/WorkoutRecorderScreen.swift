@@ -19,8 +19,8 @@ struct WorkoutRecorderScreen: View {
     // MARK: - Environment
 
     @Environment(\.goHome) var goHome
-    @Environment(\.fullScreenDraggableCoverTopInset) var fullScreenDraggableCoverTopInset
-    @Environment(\.fullScreenDraggableCoverIsDragging) var fullScreenDraggableCoverIsDragging
+    @Environment(\.workoutRecorderIsDragging) var workoutRecorderIsDragging
+    @Environment(\.workoutRecorderIsSettled) var workoutRecorderIsSettled
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
     @Environment(\.scenePhase) private var scenePhase
@@ -33,6 +33,7 @@ struct WorkoutRecorderScreen: View {
     /// screen it can present needs both.
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var networkMonitor: NetworkMonitor
+    @Environment(\.workoutRecorderDragDriver) private var recorderDragDriver
 
     // MARK: - Parameters
 
@@ -73,6 +74,12 @@ struct WorkoutRecorderScreen: View {
 
     @State private var enteredRepetitionSetIDs: Set<NSManagedObjectID> = []
 
+    // Full-screen drag-to-dismiss from the set list: only engages once the list is
+    // scrolled to the very top, then hands the drag to the same driver as the header.
+    @State private var scrollIsAtTop = false
+    @State private var listDragActive = false
+    @State private var listDragBaseline: CGFloat = 0
+
     @FocusState var isFocusingTitleTextfield: Bool
 
     /// Whether the header is unfolded into its live stats panel (progress, session stats,
@@ -84,9 +91,28 @@ struct WorkoutRecorderScreen: View {
     /// of this workout (or recent workouts), exactly the workout detail's basis. The current
     /// workout's values are read live; only the historical baseline is frozen.
     @State private var headerRunHistory: WorkoutRunHistory?
+    /// Natural (fully-revealed) height of the expanded stats panel, measured live so the drag
+    /// can interpolate against it — the panel is always in the tree (clipped to the current
+    /// reveal) so its height is known before the first drag.
+    @State private var headerPanelHeight: CGFloat = 0
+    /// Non-nil while a finger is dragging the header: the live vertical translation, added to the
+    /// resting reveal so the panel tracks the finger 1:1 (a real drag, not a threshold swipe).
+    @State private var headerDragTranslation: CGFloat?
 
-    /// One spring for every path that folds or unfolds the header (tap, drag, auto).
+    /// One spring for every path that folds or unfolds the header (tap, drag settle, auto).
     private var headerExpansionAnimation: Animation { .spring(response: 0.4, dampingFraction: 0.85) }
+
+    /// How much of the panel is currently shown: its resting height (0 collapsed, full expanded)
+    /// plus the live drag, clamped to the panel's natural height.
+    private var headerPanelRevealHeight: CGFloat {
+        let base = isHeaderExpanded ? headerPanelHeight : 0
+        guard let translation = headerDragTranslation else { return base }
+        return min(max(base + translation, 0), headerPanelHeight)
+    }
+
+    private func toggleHeaderExpansion() {
+        withAnimation(headerExpansionAnimation) { isHeaderExpanded.toggle() }
+    }
 
     // MARK: - Body
 
@@ -142,7 +168,6 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 }
                             }
-                            .fullScreenDraggableCoverTopInset()
                             .id(1)
                         }
                         .onAppear {
@@ -152,10 +177,45 @@ struct WorkoutRecorderScreen: View {
                             }
                         }
                         .scrollIndicators(.hidden)
+                        // Track whether the list is scrolled to the very top; only then
+                        // does a downward drag on the list dismiss the recorder.
+                        .onScrollGeometryChange(for: Bool.self) { geometry in
+                            geometry.contentOffset.y <= -geometry.contentInsets.top + 2
+                        } action: { _, atTop in
+                            scrollIsAtTop = atTop
+                        }
+                        // Freeze the list while a dismiss-drag is in flight so it can't
+                        // rubber-band against the screen the driver is translating.
+                        .scrollDisabled(listDragActive)
+                        // The whole set list is a drag handle once at the top: dragging
+                        // down from there drives the same interactive dismissal as the
+                        // header. Simultaneous so taps, scrolling and context menus keep
+                        // working; the gate below only latches on a downward drag at top.
+                        .simultaneousGesture(
+                            DragGesture(minimumDistance: 12, coordinateSpace: .global)
+                                .onChanged { value in
+                                    handleListDragChanged(value)
+                                }
+                                .onEnded { value in
+                                    handleListDragEnded(value)
+                                }
+                        )
                         .safeAreaInset(edge: .bottom) {
                             Color.clear.frame(height: 100)
                         }
-                        .sheet(isPresented: .constant(!isKbdTest && !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SHEET"))) {
+                        // The tray only presents once the recorder's morph has landed and
+                        // hides while the card is being dragged: a presented child sheet
+                        // would swallow the recorder's own interactive dismissal (UIKit
+                        // forwards `dismiss` to the presented child).
+                        .sheet(isPresented: Binding(
+                            get: {
+                                workoutRecorderIsSettled
+                                    && !workoutRecorderIsDragging
+                                    && !isKbdTest
+                                    && !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SHEET")
+                            },
+                            set: { _ in }  // interactive dismissal is disabled below
+                        )) {
                             NavigationStack {
                                 ExerciseSelectionScreen(
                                         selectedExercise: nil,
@@ -250,16 +310,11 @@ struct WorkoutRecorderScreen: View {
                                     isAtMediumDetent: exerciseSelectionPresentationDetent == .medium
                                 )
                             }
-                            .opacity(fullScreenDraggableCoverIsDragging ? 0 : 1)
-                            .animation(.easeOut(duration: 0.2), value: fullScreenDraggableCoverIsDragging)
                             .presentationDetents([.height(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
                             .presentationBackgroundInteraction(.enabled)
-                            .presentationDragIndicator(fullScreenDraggableCoverIsDragging ? .hidden : .visible)
+                            .presentationDragIndicator(.visible)
                             .ignoresSafeArea()
                             .interactiveDismissDisabled()
-                            .onChange(of: fullScreenDraggableCoverIsDragging) {
-                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            }
                         }
                         .overlay(alignment: .bottomTrailing) {
                             FloatingChronoControlsOverlay(
@@ -294,11 +349,26 @@ struct WorkoutRecorderScreen: View {
                     }
                 }
                 if !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_HEADER") {
-                    // No `.fullScreenDraggableCoverDragArea()` anymore: a header drag now
-                    // folds/unfolds the stats panel, and minimizing moved to the panel's
-                    // explicit button.
+                    // The header owns expand/collapse only (see the Header's own gesture).
+                    // The recorder is dismissed by the Minimize button and by the set list's
+                    // drag-to-dismiss when scrolled to the top — no longer by a header drag.
                     Header
                         .frame(maxHeight: .infinity, alignment: .top)
+                }
+            }
+            // Pure black base: the recorder is presented modally, so the default
+            // NavigationStack/ScrollView `systemBackground` is its elevated grey.
+            .background(Color.black.ignoresSafeArea())
+            // Dragging the card (from the set list at the top) resigns any active text field,
+            // exactly like the old draggable cover did before handing the view to the drag.
+            .onChange(of: workoutRecorderIsDragging) {
+                if workoutRecorderIsDragging {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                } else {
+                    // Safety net: whenever the drag settles (dismiss committed or
+                    // snapped back), re-enable scrolling even if the gesture's own
+                    // onEnded didn't fire (e.g. the scroll pan won the arbitration).
+                    listDragActive = false
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -382,26 +452,46 @@ struct WorkoutRecorderScreen: View {
 
     private var Header: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 12) {
+            VStack(spacing: 0) {
                 headerCompactRow
-                if isHeaderExpanded, let workout = workoutRecorder.workout {
+                // Present only while open or being dragged, so the panel's Finish / Minimize
+                // actions leave the accessibility tree (and XCUITest) the moment it folds —
+                // .accessibilityHidden on an always-present panel does not reliably hide the
+                // buttons. It measures itself the first time it appears and the height is cached
+                // in State, so every later drag already knows how far to open; it's clipped to
+                // the live reveal so the drag tracks the finger, and the frame animates on settle.
+                if let workout = workoutRecorder.workout, isHeaderExpanded || headerDragTranslation != nil {
                     headerExpandedPanel(for: workout)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                        .padding(.top, 12)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(
+                            GeometryReader { geometry in
+                                Color.clear
+                                    .onChange(of: geometry.size.height, initial: true) { _, height in
+                                        if height > 0 { headerPanelHeight = height }
+                                    }
+                            }
+                        )
+                        .frame(height: headerPanelRevealHeight, alignment: .top)
+                        .clipped()
+                        .opacity(headerPanelHeight > 0 ? min(headerPanelRevealHeight / headerPanelHeight, 1) : 1)
+                        .allowsHitTesting(isHeaderExpanded && headerDragTranslation == nil)
                 }
-                // The grab handle sits at the header's BOTTOM edge — the seam the stats
-                // panel unfolds from — and reads as "pull here": dragging it (or tapping
-                // anywhere in the header) toggles the panel. Minimizing the recorder is
-                // the panel's explicit button, no longer a header drag.
+                // The grab handle sits at the header's BOTTOM edge — the seam the panel unfolds
+                // from — and reads as "pull here": drag the header (or tap the handle / caption)
+                // to fold and unfold. Minimizing the recorder is the panel's own button.
                 Rectangle()
                     .frame(width: 40, height: 5)
                     .clipShape(Capsule())
                     .opacity(exerciseSelectionPresentationDetent == .large ? 0 : 1)
+                    .padding(.top, 12)
+                    .contentShape(Rectangle())
+                    .onTapGesture { toggleHeaderExpansion() }
             }
-            .fullScreenDraggableCoverTopInset()
             .padding(.horizontal)
             .padding(.bottom, 10)
             .background {
-                // Bottom corners echo the physical device corners (top edges follow them
+                // Bottom corners echo the physical device corners (the top edges follow them
                 // under the safe area), so the header reads as one rounded slab with the screen.
                 let deviceRadius = UIScreen.current?.displayCornerRadius ?? 30
                 Rectangle()
@@ -410,21 +500,29 @@ struct WorkoutRecorderScreen: View {
                     .edgesIgnoringSafeArea(.top)
             }
         }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            withAnimation(headerExpansionAnimation) {
-                isHeaderExpanded.toggle()
-            }
-        }
-        .gesture(
-            DragGesture(minimumDistance: 20)
+        // A finger on the header drags the panel open/closed 1:1 (simultaneous, so the title
+        // field and the caption's own tap still work); release snaps to whichever side the
+        // current reveal and the fling velocity favour.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    headerDragTranslation = value.translation.height
+                }
                 .onEnded { value in
+                    let base = isHeaderExpanded ? headerPanelHeight : 0
+                    let revealed = min(max(base + value.translation.height, 0), headerPanelHeight)
+                    let fraction = headerPanelHeight > 0 ? revealed / headerPanelHeight : 0
+                    let expand: Bool
+                    if value.velocity.height > 400 {
+                        expand = true
+                    } else if value.velocity.height < -400 {
+                        expand = false
+                    } else {
+                        expand = fraction >= 0.5
+                    }
                     withAnimation(headerExpansionAnimation) {
-                        if value.translation.height > 25 {
-                            isHeaderExpanded = true
-                        } else if value.translation.height < -25 {
-                            isHeaderExpanded = false
-                        }
+                        isHeaderExpanded = expand
+                        headerDragTranslation = nil
                     }
                 }
         )
@@ -444,6 +542,10 @@ struct WorkoutRecorderScreen: View {
                 }
                 .foregroundStyle(.secondary)
                 .font(.footnote.weight(.bold).monospacedDigit())
+                // The caption is a tap target for folding/unfolding; the title below it keeps
+                // its own tap to focus the text field for renaming.
+                .contentShape(Rectangle())
+                .onTapGesture { toggleHeaderExpansion() }
                 TextField(
                     "",
                     text: workoutName,
@@ -459,6 +561,8 @@ struct WorkoutRecorderScreen: View {
             if let workout = workoutRecorder.workout {
                 WorkoutMuscleGroupChart(workout: workout)
                     .animation(.interactiveSpring, value: workout.sets)
+                    .contentShape(Rectangle())
+                    .onTapGesture { toggleHeaderExpansion() }
             }
         }
     }
@@ -599,6 +703,34 @@ struct WorkoutRecorderScreen: View {
                 }
             }
         }
+    }
+
+    // MARK: - List drag-to-dismiss
+
+    /// Latches a dismiss-drag only when it begins at the top of the list and heads
+    /// downward, then drives the shared driver with the translation measured from the
+    /// moment it latched (so there's no jump if the finger crossed the top mid-scroll).
+    private func handleListDragChanged(_ value: DragGesture.Value) {
+        if !listDragActive {
+            guard scrollIsAtTop,
+                  value.translation.height > 0,
+                  value.translation.height > abs(value.translation.width)
+            else { return }
+            listDragActive = true
+            listDragBaseline = value.translation.height
+        }
+        recorderDragDriver.dragChanged(
+            translation: CGSize(width: 0, height: value.translation.height - listDragBaseline)
+        )
+    }
+
+    private func handleListDragEnded(_ value: DragGesture.Value) {
+        guard listDragActive else { return }
+        listDragActive = false
+        recorderDragDriver.dragEnded(
+            translation: CGSize(width: 0, height: value.translation.height - listDragBaseline),
+            velocity: CGSize(width: 0, height: value.velocity.height)
+        )
     }
 
     // MARK: - Supporting Methods / Computed Properties
@@ -908,7 +1040,7 @@ final class RecorderSheetGeometry: ObservableObject {
 /// frequent publishes and the per-frame sheet-geometry updates re-render only this small
 /// overlay, never the whole recorder tree.
 private struct FloatingChronoControlsOverlay: View {
-    @Environment(\.fullScreenDraggableCoverIsDragging) private var fullScreenDraggableCoverIsDragging
+    @Environment(\.workoutRecorderIsDragging) private var workoutRecorderIsDragging
 
     @ObservedObject var chronograph: Chronograph
     @ObservedObject var workoutRecorder: WorkoutRecorder
@@ -919,7 +1051,7 @@ private struct FloatingChronoControlsOverlay: View {
     let onCancelTimer: () -> Void
 
     var body: some View {
-        if sheetGeometry.sheetHeight > 0 && !fullScreenDraggableCoverIsDragging {
+        if sheetGeometry.sheetHeight > 0 && !workoutRecorderIsDragging {
             HStack {
                 WorkoutRecorderFloatingTimerButton(
                     chronograph: chronograph,

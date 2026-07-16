@@ -1042,3 +1042,10 @@
 "monthWorkoutCount" = "%d회";
 "filters" = "필터";
 "fromTemplate" = "템플릿에서";
+
+// Per-workout vs total basis (Summary stat tiles + detail toggle)
+"perWorkout" = "운동당";
+"perWorkoutBasis" = "운동당";
+"basis" = "값";
+
+"buildingYourTrend" = "추세 만드는 중";

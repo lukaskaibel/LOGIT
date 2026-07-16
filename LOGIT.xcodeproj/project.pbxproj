@@ -17,6 +17,7 @@
 		28E43ABE4881F802FBBACCE9 /* RangePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F685CCE0EE8FE86E8E0135C /* RangePicker.swift */; };
 		2A384BE3816900000002 /* ExerciseSuggestionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54EE2592821500000001 /* ExerciseSuggestionService.swift */; };
 		2BD2E4720FB2C657F8CA372B /* CompletionRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C72085C4C10146858277690 /* CompletionRing.swift */; };
+		9870C5C11EC204B609726272 /* SwipeableMonthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79EEE8722792E15D71C22DA3 /* SwipeableMonthView.swift */; };
 		34ED649B10150341352AE3D1 /* StatPeriodTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8CD271000D75928FAE0887 /* StatPeriodTests.swift */; };
 		396ADE67CD8C1D14F7A8D82A /* LOGITWidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */; };
 		435F070826CC8D1F8D7239B8 /* WorkoutDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */; };
@@ -31,6 +32,8 @@
 		781060648530454E63B22EB3 /* WorkoutSharingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB3B92BF7A5E9FE9E442716 /* WorkoutSharingService.swift */; };
 		7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7907FDE9289E99B1006AF271 /* CloudKit.framework */; };
 		791347B62AE2BEB100D20BB7 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 791347B52AE2BEB100D20BB7 /* MarkdownUI */; };
+		80AB10032F15AA0100AB1003 /* Transmission in Frameworks */ = {isa = PBXBuildFile; productRef = 80AB10022F15AA0100AB1002 /* Transmission */; };
+		80AB10052F15AA0100AB1005 /* RecorderPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AB10042F15AA0100AB1004 /* RecorderPresentation.swift */; };
 		792A3FF32AB478F000C6A097 /* DatabaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 792A3FF22AB478F000C6A097 /* DatabaseTests.swift */; };
 		794A8E5D2ACC211D006087EA /* TemplateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794A8E5C2ACC211D006087EA /* TemplateServiceTests.swift */; };
 		794A8E602ACC2184006087EA /* athleanx_total_body_A.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 794A8E5F2ACC2184006087EA /* athleanx_total_body_A.jpeg */; };
@@ -175,7 +178,6 @@
 		801BBDEF2DF7338A00CDB1FB /* CurrentWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD4E2DF7338A00CDB1FB /* CurrentWorkoutView.swift */; };
 		801BBDF02DF7338A00CDB1FB /* TemplateListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD142DF7338A00CDB1FB /* TemplateListScreen.swift */; };
 		801BBDF12DF7338A00CDB1FB /* TemplateStandardSetCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD0B2DF7338A00CDB1FB /* TemplateStandardSetCell.swift */; };
-		801BBDF32DF7338A00CDB1FB /* DraggableFullScreenCover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD3C2DF7338A00CDB1FB /* DraggableFullScreenCover.swift */; };
 		801BBDF42DF7338A00CDB1FB /* TextProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBD2DF7338A00CDB1FB /* TextProcessing.swift */; };
 		801BBDF52DF7338A00CDB1FB /* FirstStartScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD2C2DF7338A00CDB1FB /* FirstStartScreen.swift */; };
 		801BBDF72DF7338A00CDB1FB /* UpgradeToProScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD312DF7338A00CDB1FB /* UpgradeToProScreen.swift */; };
@@ -356,6 +358,7 @@
 		3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SharedWithYouBanner.swift; sourceTree = "<group>"; };
 		336772BB4E860E3894BA7355 /* SummaryStatTiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryStatTiles.swift; sourceTree = "<group>"; };
 		3C72085C4C10146858277690 /* CompletionRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionRing.swift; sourceTree = "<group>"; };
+		79EEE8722792E15D71C22DA3 /* SwipeableMonthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeableMonthView.swift; sourceTree = "<group>"; };
 		3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LOGITScreenshots.swift; sourceTree = "<group>"; };
 		4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutDTO.swift; sourceTree = "<group>"; };
 		4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivitySnapshotBuilder.swift; sourceTree = "<group>"; };
@@ -500,7 +503,7 @@
 		801BBD382DF7338A00CDB1FB /* PieGraph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieGraph.swift; sourceTree = "<group>"; };
 		801BBD3A2DF7338A00CDB1FB /* BlockedWithoutProModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedWithoutProModifier.swift; sourceTree = "<group>"; };
 		801BBD3B2DF7338A00CDB1FB /* CanEditModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanEditModifier.swift; sourceTree = "<group>"; };
-		801BBD3C2DF7338A00CDB1FB /* DraggableFullScreenCover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraggableFullScreenCover.swift; sourceTree = "<group>"; };
+		80AB10042F15AA0100AB1004 /* RecorderPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderPresentation.swift; sourceTree = "<group>"; };
 		801BBD3D2DF7338A00CDB1FB /* EmptyPlaceholderModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyPlaceholderModifier.swift; sourceTree = "<group>"; };
 		801BBD3E2DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoDataPlaceholderModifier.swift; sourceTree = "<group>"; };
 		801BBD3F2DF7338A00CDB1FB /* OnDeleteModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeleteModifier.swift; sourceTree = "<group>"; };
@@ -668,6 +671,7 @@
 				80036CE12EFEFFD100B7C7B4 /* Ifrit in Frameworks */,
 				80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */,
 				791347B62AE2BEB100D20BB7 /* MarkdownUI in Frameworks */,
+				80AB10032F15AA0100AB1003 /* Transmission in Frameworks */,
 				79C8FADF2AE3F657001EA5A7 /* OpenAIKit in Frameworks */,
 				7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */,
 				795767812AE706DB0040E327 /* Camera-SwiftUI in Frameworks */,
@@ -1119,6 +1123,7 @@
 				801BBD222DF7338A00CDB1FB /* SupportingViews */,
 				801BBD232DF7338A00CDB1FB /* WorkoutRecorder.swift */,
 				801BBD242DF7338A00CDB1FB /* WorkoutRecorderScreen.swift */,
+				80AB10042F15AA0100AB1004 /* RecorderPresentation.swift */,
 				801BBD252DF7338A00CDB1FB /* WorkoutRecorderScreen+Toolbar.swift */,
 			);
 			path = WorkoutRecorder;
@@ -1201,7 +1206,6 @@
 			children = (
 				801BBD3A2DF7338A00CDB1FB /* BlockedWithoutProModifier.swift */,
 				801BBD3B2DF7338A00CDB1FB /* CanEditModifier.swift */,
-				801BBD3C2DF7338A00CDB1FB /* DraggableFullScreenCover.swift */,
 				801BBD3D2DF7338A00CDB1FB /* EmptyPlaceholderModifier.swift */,
 				801BBD3E2DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift */,
 				801BBD3F2DF7338A00CDB1FB /* OnDeleteModifier.swift */,
@@ -1248,6 +1252,7 @@
 				D1D1D1000000000000000F01 /* MetricTile.swift */,
 				BBBF6087BB65A5971FB5F866 /* BodyMapFigure.swift */,
 				3C72085C4C10146858277690 /* CompletionRing.swift */,
+				79EEE8722792E15D71C22DA3 /* SwipeableMonthView.swift */,
 				BEA597E1519E8F6D2CBC8F9E /* PeriodPicker.swift */,
 				E1E1E1000000000000000F12 /* ProgressIndicatorPill.swift */,
 				E1E1E1000000000000000F16 /* PersonalBestRow.swift */,
@@ -1401,6 +1406,7 @@
 				795767802AE706DB0040E327 /* Camera-SwiftUI */,
 				80C2B98E2EC9362A00118FE2 /* ColorfulX */,
 				80036CE02EFEFFD100B7C7B4 /* Ifrit */,
+				80AB10022F15AA0100AB1002 /* Transmission */,
 			);
 			productName = WorkoutDiary;
 			productReference = 8065AA6B2686667F00F53A5A /* LOGIT.app */;
@@ -1464,6 +1470,7 @@
 				7957677F2AE706DB0040E327 /* XCRemoteSwiftPackageReference "Camera-SwiftUI" */,
 				80C2B98D2EC9362A00118FE2 /* XCRemoteSwiftPackageReference "ColorfulX" */,
 				80036CDF2EFEFFD100B7C7B4 /* XCRemoteSwiftPackageReference "Ifrit" */,
+				80AB10012F15AA0100AB1001 /* XCRemoteSwiftPackageReference "Transmission" */,
 			);
 			productRefGroup = 8065AA6C2686667F00F53A5A /* Products */;
 			projectDirPath = "";
@@ -1647,6 +1654,7 @@
 				D1D1D1000000000000000B01 /* MetricTile.swift in Sources */,
 				73A9CED8C934FDF36F9C4061 /* BodyMapFigure.swift in Sources */,
 				2BD2E4720FB2C657F8CA372B /* CompletionRing.swift in Sources */,
+				9870C5C11EC204B609726272 /* SwipeableMonthView.swift in Sources */,
 				77B7E6990E4C00B75D9BC6ED /* PeriodPicker.swift in Sources */,
 				E1E1E1000000000000000B12 /* ProgressIndicatorPill.swift in Sources */,
 				E1E1E1000000000000000B16 /* PersonalBestRow.swift in Sources */,
@@ -1749,7 +1757,7 @@
 				80036CDC2EFEF98C00B7C7B4 /* GlobalSearchScreen.swift in Sources */,
 				801BBDF02DF7338A00CDB1FB /* TemplateListScreen.swift in Sources */,
 				801BBDF12DF7338A00CDB1FB /* TemplateStandardSetCell.swift in Sources */,
-				801BBDF32DF7338A00CDB1FB /* DraggableFullScreenCover.swift in Sources */,
+				80AB10052F15AA0100AB1005 /* RecorderPresentation.swift in Sources */,
 				801BBDF42DF7338A00CDB1FB /* TextProcessing.swift in Sources */,
 				801BBDF52DF7338A00CDB1FB /* FirstStartScreen.swift in Sources */,
 				801BBDF72DF7338A00CDB1FB /* UpgradeToProScreen.swift in Sources */,
@@ -2265,6 +2273,14 @@
 				minimumVersion = 6.0.1;
 			};
 		};
+		80AB10012F15AA0100AB1001 /* XCRemoteSwiftPackageReference "Transmission" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nathantannar4/Transmission";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -2292,6 +2308,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 80C2B98D2EC9362A00118FE2 /* XCRemoteSwiftPackageReference "ColorfulX" */;
 			productName = ColorfulX;
+		};
+		80AB10022F15AA0100AB1002 /* Transmission */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 80AB10012F15AA0100AB1001 /* XCRemoteSwiftPackageReference "Transmission" */;
+			productName = Transmission;
 		};
 /* End XCSwiftPackageProductDependency section */
 

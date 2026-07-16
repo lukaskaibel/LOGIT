@@ -6,6 +6,7 @@
 //
 
 import Charts
+import ColorfulX
 import Combine
 import CoreData
 import SwiftUI
@@ -118,7 +119,13 @@ struct WorkoutRecorderScreen: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
+            VStack(spacing: 0) {
+                // The header lives IN FLOW above the list (not overlaid): rows scroll
+                // out under it through a soft fade, so it needs no background slab, and
+                // its height changes push the list like a large navigation title.
+                if !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_HEADER") {
+                    Header
+                }
                 if let workout = workoutRecorder.workout {
                     ScrollViewReader { proxy in
                         ScrollView {
@@ -150,7 +157,9 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 )
                                 .padding(.horizontal)
-                                .padding(.top, 90)
+                                // Clear the fade band along the viewport's top edge so rows
+                                // resting at the top aren't half-dissolved.
+                                .padding(.top, 24)
                                 .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? (UIScreen.current?.bounds.height ?? 0) * 0.5 : BOTTOM_SHEET_SMALL)
                                 .emptyPlaceholder(workout.setGroups) {
                                     Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
@@ -177,12 +186,37 @@ struct WorkoutRecorderScreen: View {
                             }
                         }
                         .scrollIndicators(.hidden)
-                        // Track whether the list is scrolled to the very top; only then
-                        // does a downward drag on the list dismiss the recorder.
-                        .onScrollGeometryChange(for: Bool.self) { geometry in
-                            geometry.contentOffset.y <= -geometry.contentInsets.top + 2
-                        } action: { _, atTop in
-                            scrollIsAtTop = atTop
+                        // Rows dissolve to transparent along the viewport's top edge as they
+                        // scroll out under the header — a soft fade instead of an abrupt clip
+                        // (the in-flow header has no background to hide them behind).
+                        .mask(
+                            VStack(spacing: 0) {
+                                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                                    .frame(height: 28)
+                                Color.black
+                            }
+                        )
+                        // One geometry observer, two jobs: `scrollIsAtTop` gates the list's
+                        // drag-to-dismiss, and the header behaves like a large navigation
+                        // title — unfolds when the list rests at the very top, folds as soon
+                        // as the user scrolls down into the content. A drag on the header
+                        // itself can still unfold it anywhere (see the Header's gesture).
+                        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+                            geometry.contentOffset.y + geometry.contentInsets.top
+                        } action: { oldOffset, newOffset in
+                            scrollIsAtTop = newOffset <= 2
+                            // Never fight an active header drag; its own settle wins.
+                            guard headerDragTranslation == nil else { return }
+                            if newOffset <= 2 {
+                                if !isHeaderExpanded {
+                                    withAnimation(headerExpansionAnimation) { isHeaderExpanded = true }
+                                }
+                            } else if newOffset > oldOffset + 0.5, isHeaderExpanded {
+                                // Any genuine downward scroll folds the panel (the 0.5pt
+                                // guard only filters float noise — slow scrolls move less
+                                // than a few points per frame).
+                                withAnimation(headerExpansionAnimation) { isHeaderExpanded = false }
+                            }
                         }
                         // Freeze the list while a dismiss-drag is in flight so it can't
                         // rubber-band against the screen the driver is translating.
@@ -348,14 +382,23 @@ struct WorkoutRecorderScreen: View {
                         checkForNewSetEntries()
                     }
                 }
-                if !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_HEADER") {
-                    // The header owns expand/collapse only (see the Header's own gesture).
-                    // The recorder is dismissed by the Minimize button and by the set list's
-                    // drag-to-dismiss when scrolled to the top — no longer by a header drag.
-                    Header
-                        .frame(maxHeight: .infinity, alignment: .top)
-                }
             }
+            // Ambient muscle-group wash at the top of the screen — the same ColorfulX
+            // treatment as the workout detail; it replaces the header's material slab.
+            .background(
+                VStack {
+                    ColorfulView(
+                        color: workoutRecorder.workout?.muscleGroups.map { $0.color } ?? [],
+                        speed: .constant(0)
+                    )
+                    .mask(
+                        LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
+                    )
+                    .frame(height: 300)
+                    Spacer()
+                }
+                .ignoresSafeArea(.all)
+            )
             // Pure black base: the recorder is presented modally, so the default
             // NavigationStack/ScrollView `systemBackground` is its elevated grey.
             .background(Color.black.ignoresSafeArea())
@@ -421,14 +464,6 @@ struct WorkoutRecorderScreen: View {
             // Flush anything the debounced autosave hasn't written yet.
             database.save()
         }
-        .onChange(of: workoutRecorder.workout?.hasEntries ?? false) { _, hasEntries in
-            // The header mirrors the workout's emptiness: it folds away on the first logged
-            // value and unfolds again if every entry is removed. Manual toggles in between
-            // stick — this only fires when emptiness actually flips.
-            withAnimation(headerExpansionAnimation) {
-                isHeaderExpanded = !hasEntries
-            }
-        }
         .onChange(of: scenePhase) { _, newPhase in
             // Backgrounding must not race the debounced autosave — persist
             // pending edits while the process is still guaranteed to run.
@@ -490,16 +525,11 @@ struct WorkoutRecorderScreen: View {
             }
             .padding(.horizontal)
             .padding(.bottom, 10)
-            .background {
-                // Bottom corners echo the physical device corners (the top edges follow them
-                // under the safe area), so the header reads as one rounded slab with the screen.
-                let deviceRadius = UIScreen.current?.displayCornerRadius ?? 30
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .clipShape(.rect(bottomLeadingRadius: deviceRadius, bottomTrailingRadius: deviceRadius, style: .continuous))
-                    .edgesIgnoringSafeArea(.top)
-            }
         }
+        // No background slab anymore: the header sits in flow above the list (which
+        // fades out before reaching it) over the ambient muscle-group wash. The shape
+        // keeps the whole header area draggable despite the transparent gaps.
+        .contentShape(Rectangle())
         // A finger on the header drags the panel open/closed 1:1 (simultaneous, so the title
         // field and the caption's own tap still work); release snaps to whichever side the
         // current reveal and the fling velocity favour.

@@ -240,10 +240,12 @@ final class ScenarioScreenshots: XCTestCase {
         waitABit(1)
         attach(app, "list_01_scrolled_to_top")
 
-        // Drag down from the list body → dismiss.
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)).press(
+        // Drag down from the list body → dismiss. Starts at 0.55: at the top the
+        // header is expanded (scroll-linked, like a large title) and occupies the
+        // upper ~45% of the screen, so higher origins would drag the header instead.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55)).press(
             forDuration: 0.1,
-            thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.86)),
+            thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)),
             withVelocity: 700,
             thenHoldForDuration: 0.1
         )
@@ -287,8 +289,10 @@ final class ScenarioScreenshots: XCTestCase {
         // one retry — the assertion is about the app's behavior once a drag lands.
         let trayGone = NSPredicate(format: "exists == false")
         var trayDismissed = false
+        // Origin 0.55: at the top the header is expanded (scroll-linked) and owns
+        // the upper part of the screen — higher origins would drag the header.
         for _ in 0 ..< 2 where !trayDismissed {
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)).press(
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55)).press(
                 forDuration: 0.1,
                 thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.86)),
                 withVelocity: 800,

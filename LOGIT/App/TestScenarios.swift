@@ -222,6 +222,40 @@ enum TestScenario: String {
             }
         }
 
+        // Non-rep measurement types at the end of the current workout (appended last so the
+        // coordinate-driven recorder UI tests, which interact with the top of the list, are
+        // unaffected): a timed hold and a weighted carry exercising the duration and
+        // weight+duration entry layouts.
+        let plank = exercise("_default.exercise.plank", "Plank", .abdominals, database)
+        plank.measurementType = .duration
+        let plankGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: plank,
+            workout: current
+        )
+        for setIndex in 0 ..< 3 {
+            let plankSet = database.newStandardSet(setGroup: plankGroup)
+            if setIndex < 2 {
+                plankSet.entries.first?.duration = Int64(75 - setIndex * 15)
+            }
+        }
+        let farmersCarry = exercise(
+            "_default.exercise.farmersCarry", "Farmers Carry", .shoulders, database
+        )
+        farmersCarry.measurementType = .weightAndDuration
+        let carryGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: farmersCarry,
+            workout: current
+        )
+        for setIndex in 0 ..< 2 {
+            let carrySet = database.newStandardSet(setGroup: carryGroup)
+            if setIndex == 0 {
+                carrySet.entries.first?.weight = 40000
+                carrySet.entries.first?.duration = 45
+            }
+        }
+
         database.save()
         NSLog("TestScenario: seeded stress scenario (%d workouts)", sessionCount + 1)
     }

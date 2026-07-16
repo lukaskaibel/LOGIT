@@ -27,6 +27,9 @@ struct MetricTile<ChartContent: View>: View {
         /// A plain label with an info button explaining the value — the workout stat tiles explain
         /// their comparison basis this way.
         case info(String, explanation: String)
+        /// A quiet, understated qualifier under the title — smaller and lighter than `.plain`, so it
+        /// reads as a soft annotation on the value ("per workout") rather than a second heading.
+        case caption(String)
         /// No subtitle line at all — the title and value carry the whole tile.
         case none
     }
@@ -197,6 +200,11 @@ struct MetricTile<ChartContent: View>: View {
                 .foregroundStyle(.secondary)
         case let .info(text, explanation):
             MetricTileInfoLabel(text: text, explanation: explanation)
+        case let .caption(text):
+            Text(text)
+                .font(.caption.weight(.medium))
+                .tracking(0.3)
+                .foregroundStyle(.tertiary)
         case .none:
             // Reserve one subtitle line's height so the value keeps the same fixed vertical position
             // as tiles that do have a subtitle. Without it the value floats up into the empty slot and

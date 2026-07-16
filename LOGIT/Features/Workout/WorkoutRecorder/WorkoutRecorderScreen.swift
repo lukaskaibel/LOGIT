@@ -706,77 +706,59 @@ struct WorkoutRecorderScreen: View {
         guard let focusedIndex = focusedIntegerFieldIndex,
               let focusedWorkoutSet = workout.sets.value(at: focusedIndex.primary)
         else { return nil }
-        if let _ = focusedWorkoutSet as? StandardSet {
-            guard focusedIndex.primary + 1 < workout.sets.count else { return nil }
-            return IntegerField.Index(
-                primary: focusedIndex.primary + 1,
-                secondary: 0,
-                tertiary: focusedIndex.tertiary
-            )
-        } else if let _ = focusedWorkoutSet as? SuperSet {
-            guard focusedIndex.secondary == 1 else {
-                return IntegerField.Index(
-                    primary: focusedIndex.primary,
-                    secondary: 1,
-                    tertiary: focusedIndex.tertiary
-                )
-            }
-            guard focusedIndex.primary + 1 < workout.sets.count else { return nil }
-            return IntegerField.Index(
-                primary: focusedIndex.primary + 1,
-                secondary: 0,
-                tertiary: focusedIndex.tertiary
-            )
-        } else if let dropSet = focusedWorkoutSet as? DropSet {
-            if focusedIndex.secondary + 1 < dropSet.numberOfDrops {
-                return IntegerField.Index(
-                    primary: focusedIndex.primary,
-                    secondary: focusedIndex.secondary + 1,
-                    tertiary: focusedIndex.tertiary
-                )
-            }
-            guard focusedIndex.primary + 1 < workout.sets.count else { return nil }
-            return IntegerField.Index(
-                primary: focusedIndex.primary + 1,
-                secondary: 0,
-                tertiary: focusedIndex.tertiary
+        // Advance entry by entry within the set (drops, super set sides), then set by set.
+        if focusedIndex.secondary + 1 < focusedWorkoutSet.entryValues.count {
+            return clampedIndex(
+                primary: focusedIndex.primary,
+                secondary: focusedIndex.secondary + 1,
+                tertiary: focusedIndex.tertiary,
+                in: workout
             )
         }
-        return nil
+        guard focusedIndex.primary + 1 < workout.sets.count else { return nil }
+        return clampedIndex(
+            primary: focusedIndex.primary + 1,
+            secondary: 0,
+            tertiary: focusedIndex.tertiary,
+            in: workout
+        )
     }
 
     func previousIntegerFieldIndex() -> IntegerField.Index? {
         guard let workout = workoutRecorder.workout else { return nil }
         guard let focusedIndex = focusedIntegerFieldIndex else { return nil }
         guard focusedIndex.secondary == 0 else {
-            return IntegerField.Index(
+            return clampedIndex(
                 primary: focusedIndex.primary,
                 secondary: focusedIndex.secondary - 1,
-                tertiary: focusedIndex.tertiary
+                tertiary: focusedIndex.tertiary,
+                in: workout
             )
         }
-        guard focusedIndex.primary > 0 else { return nil }
-        let previousSet = workout.sets.value(at: focusedIndex.primary - 1)
-        if let _ = previousSet as? StandardSet {
-            return IntegerField.Index(
-                primary: focusedIndex.primary - 1,
-                secondary: focusedIndex.secondary,
-                tertiary: focusedIndex.tertiary
-            )
-        } else if let _ = previousSet as? SuperSet {
-            return IntegerField.Index(
-                primary: focusedIndex.primary - 1,
-                secondary: 1,
-                tertiary: focusedIndex.tertiary
-            )
-        } else if let dropSet = previousSet as? DropSet {
-            return IntegerField.Index(
-                primary: focusedIndex.primary - 1,
-                secondary: dropSet.numberOfDrops - 1,
-                tertiary: focusedIndex.tertiary
-            )
-        }
-        return nil
+        guard focusedIndex.primary > 0,
+              let previousSet = workout.sets.value(at: focusedIndex.primary - 1)
+        else { return nil }
+        return clampedIndex(
+            primary: focusedIndex.primary - 1,
+            secondary: max(0, previousSet.entryValues.count - 1),
+            tertiary: focusedIndex.tertiary,
+            in: workout
+        )
+    }
+
+    /// Builds a focus index whose field column is clamped to the target entry's fields —
+    /// moving from a two-field reps+weight row onto a single-field reps-only row lands on
+    /// that row's last field instead of dropping focus.
+    private func clampedIndex(
+        primary: Int, secondary: Int, tertiary: Int, in workout: Workout
+    ) -> IntegerField.Index {
+        let targetType = workout.sets.value(at: primary)?
+            .entryValues.value(at: secondary)?.type ?? .repsAndWeight
+        return IntegerField.Index(
+            primary: primary,
+            secondary: secondary,
+            tertiary: min(tertiary, targetType.inputFieldCount - 1)
+        )
     }
 
     // MARK: - Autosave

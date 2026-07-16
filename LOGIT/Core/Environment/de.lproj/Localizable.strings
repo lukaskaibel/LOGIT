@@ -1037,3 +1037,10 @@
 "monthWorkoutCount" = "%d Workout";
 "filters" = "Filter";
 "fromTemplate" = "Aus Vorlage";
+
+"measurementType" = "Messung";
+"measurementType.repsAndWeight" = "Wdh. & Gewicht";
+"measurementType.repsOnly" = "Nur Wdh.";
+"measurementType.duration" = "Dauer";
+"measurementType.weightAndDuration" = "Gewicht & Dauer";
+"measurementTypeChangeInfo" = "Bestehende Sätze behalten ihre aufgezeichneten Werte. Nur neue Sätze verwenden die neue Messung.";

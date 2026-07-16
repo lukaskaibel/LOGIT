@@ -12,6 +12,7 @@ struct WorkoutSetCell: View {
 
     @Environment(\.canEdit) var canEdit: Bool
     @EnvironmentObject var database: Database
+    @EnvironmentObject var workoutRecorder: WorkoutRecorder
 
     // MARK: - Parameters
 
@@ -114,31 +115,68 @@ struct WorkoutSetCell: View {
 
     @ViewBuilder
     private var setContent: some View {
-        if let standardSet = workoutSet as? StandardSet {
-            StandardSetCell(
-                standardSet: standardSet,
-                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                referenceSet: referenceSet,
-                onTapPreviousSet: onTapPreviousSet
-            )
-            .padding(.vertical, CELL_SPACING / 2)
-        } else if let dropSet = workoutSet as? DropSet {
-            DropSetCell(
-                dropSet: dropSet,
-                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                referenceSet: referenceSet,
-                onTapPreviousSet: onTapPreviousSet
-            )
-            .padding(.vertical, CELL_SPACING / 2)
-        } else if let superSet = workoutSet as? SuperSet {
-            SuperSetCell(
-                superSet: superSet,
-                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                referenceSet: referenceSet,
-                onTapPreviousSet: onTapPreviousSet
-            )
+        if let indexInWorkout {
+            let referenceValues = referenceSet?.entryValues ?? []
+            let placeholderValues =
+                workoutRecorder.templateSet(for: workoutSet)?.entryValues ?? []
+            VStack(spacing: 0) {
+                ForEach(
+                    Array(workoutSet.entries.enumerated()), id: \.element.objectID
+                ) { entryIndex, entry in
+                    let entryExercise = workoutSet.owningExercise(of: entry)
+                    SetEntryFieldsRow(
+                        entry: entry,
+                        primaryIndex: indexInWorkout,
+                        secondaryIndex: entryIndex,
+                        focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                        reference: reference(for: entry, at: entryIndex, in: referenceValues),
+                        placeholder: placeholder(for: entry, at: entryIndex, in: placeholderValues),
+                        trendColor: entryExercise?.muscleGroup?.color ?? .accentColor,
+                        onTapPreviousValue: previousValueTapHandler(for: entryExercise)
+                    )
+                    .accentColor(entryExercise?.muscleGroup?.color)
+                }
+            }
             .padding(.vertical, CELL_SPACING / 2)
         }
+    }
+
+    private var indexInWorkout: Int? {
+        workoutSet.workout?.sets.firstIndex(of: workoutSet)
+    }
+
+    /// The like-for-like reference entry from the previous workout's matching set: compound
+    /// sets match by exercise (their entries may be ordered differently), everything else by
+    /// position. A type mismatch — e.g. a one-off timed set following a reps history — yields
+    /// no reference rather than a nonsensical comparison.
+    private func reference(
+        for entry: SetEntry, at index: Int, in referenceValues: [SetEntryValues]
+    ) -> SetEntryValues? {
+        let candidate: SetEntryValues?
+        if workoutSet is SuperSet {
+            let exercise = workoutSet.owningExercise(of: entry)
+            candidate = referenceValues.first { $0.exercise != nil && $0.exercise == exercise }
+                ?? referenceValues.value(at: index)
+        } else {
+            candidate = referenceValues.value(at: index)
+        }
+        guard let candidate, candidate.type == entry.type else { return nil }
+        return candidate
+    }
+
+    /// The template's planned entry for this position, used as field placeholders.
+    private func placeholder(
+        for entry: SetEntry, at index: Int, in placeholderValues: [SetEntryValues]
+    ) -> SetEntryValues? {
+        guard let value = placeholderValues.value(at: index), value.type == entry.type else {
+            return nil
+        }
+        return value
+    }
+
+    private func previousValueTapHandler(for exercise: Exercise?) -> (() -> Void)? {
+        guard let onTapPreviousSet, let exercise else { return nil }
+        return { onTapPreviousSet(exercise) }
     }
 
     @ViewBuilder

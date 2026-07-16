@@ -98,13 +98,17 @@ enum WorkoutLiveActivitySnapshotBuilder {
            let partnerExerciseName,
            !partnerExerciseName.isEmpty
         {
-            let focusesSecondExercise = superSet.repetitionsFirstExercise > 0
+            let focusesSecondExercise =
+                superSet.entryValues.first?.hasPerformanceValue ?? false
             primaryExerciseName = focusesSecondExercise ? partnerExerciseName : firstExerciseName
             secondaryExerciseName = focusesSecondExercise ? firstExerciseName : partnerExerciseName
             supersetPartnerIsLeading = focusesSecondExercise
-            primaryMetrics = focusesSecondExercise
-                ? currentDisplaySuperSecondary(superSet, templateSet: templateSet)
-                : currentDisplaySuperPrimary(superSet, templateSet: templateSet)
+            let focusedEntryIndex = focusesSecondExercise ? 1 : 0
+            primaryMetrics = metricDisplay(
+                values: [superSet.entryValues.value(at: focusedEntryIndex)].compactMap { $0 },
+                templateValues: [templateSet?.entryValues.value(at: focusedEntryIndex)]
+                    .compactMap { $0 }
+            )
             secondaryMetrics = nil
             themeMuscle = focusesSecondExercise
                 ? currentContext.setGroup.secondaryExercise?.muscleGroup
@@ -153,15 +157,6 @@ enum WorkoutLiveActivitySnapshotBuilder {
         let setIndex: Int
     }
 
-    private struct MetricValues {
-        let repetitions: [Int64]
-        let weights: [Int64]
-
-        var hasEntry: Bool {
-            repetitions.contains(where: { $0 > 0 }) || weights.contains(where: { $0 > 0 })
-        }
-    }
-
     private enum FocusedSupersetExercise {
         case first
         case second
@@ -202,18 +197,14 @@ enum WorkoutLiveActivitySnapshotBuilder {
     }
 
     private static func setHasStartedForLiveActivity(_ workoutSet: WorkoutSet) -> Bool {
-        if let superSet = workoutSet as? SuperSet {
-            return superSet.repetitionsFirstExercise > 0 || superSet.repetitionsSecondExercise > 0
-        }
-
-        return workoutSet.hasRepetitionEntry
+        workoutSet.hasRepetitionEntry
     }
 
     /// Supersets stay "current" until both exercise entries are complete, so the Live Activity can hand off from
     /// the first exercise to the second within the same set instead of jumping to the next untouched set.
     private static func setNeedsLiveActivityAttention(_ workoutSet: WorkoutSet) -> Bool {
-        if let superSet = workoutSet as? SuperSet {
-            return superSet.repetitionsFirstExercise == 0 || superSet.repetitionsSecondExercise == 0
+        if workoutSet is SuperSet {
+            return workoutSet.entryValues.contains { !$0.hasPerformanceValue }
         }
 
         return !workoutSet.hasRepetitionEntry
@@ -240,119 +231,76 @@ enum WorkoutLiveActivitySnapshotBuilder {
         WeightUnit.used.rawValue
     }
 
+    /// The values shown on the "current set" side: for compound sets the first exercise's
+    /// entry (the focused-side variant is built inline in `build`), otherwise all entries
+    /// (a drop set shows one segment per drop).
     private static func primaryMetricDisplay(
         for workoutSet: WorkoutSet,
         templateSet: TemplateSet?
     ) -> ExerciseMetricDisplay {
-        if let standardSet = workoutSet as? StandardSet {
-            return currentDisplayStandard(standardSet, templateSet: templateSet)
+        if workoutSet is SuperSet {
+            return metricDisplay(
+                values: [workoutSet.entryValues.first].compactMap { $0 },
+                templateValues: [templateSet?.entryValues.first].compactMap { $0 }
+            )
         }
-        if let dropSet = workoutSet as? DropSet {
-            return currentDisplayDrop(dropSet, templateSet: templateSet)
-        }
-        if let superSet = workoutSet as? SuperSet {
-            return currentDisplaySuperPrimary(superSet, templateSet: templateSet)
-        }
-        return .emptyForLiveActivity()
+        return metricDisplay(
+            values: workoutSet.entryValues,
+            templateValues: templateSet?.entryValues ?? []
+        )
     }
 
     private static func secondaryMetricDisplay(
         for workoutSet: WorkoutSet,
         templateSet: TemplateSet?
     ) -> ExerciseMetricDisplay? {
-        guard let superSet = workoutSet as? SuperSet else {
+        guard workoutSet is SuperSet else {
             return nil
         }
-        return currentDisplaySuperSecondary(superSet, templateSet: templateSet)
-    }
-
-    private static func currentDisplayStandard(
-        _ standardSet: StandardSet,
-        templateSet: TemplateSet?
-    ) -> ExerciseMetricDisplay {
-        let template = templateSet as? TemplateStandardSet
-        let rAct = standardSet.repetitions
-        let wAct = standardSet.weight
-        let rShow = rAct > 0 ? rAct : (template?.repetitions ?? 0)
-        let wShowGrams = wAct > 0 ? wAct : (template?.weight ?? 0)
-        return ExerciseMetricDisplay(
-            repetitionSegments: [String(rShow)],
-            repetitionSegmentPlaceholders: [rAct == 0],
-            repetitionsUnit: repsLocalizedUnit,
-            weightSegments: [formatWeightForDisplay(wShowGrams)],
-            weightSegmentPlaceholders: [wAct == 0],
-            weightUnit: liveActivityWeightUnit
+        return metricDisplay(
+            values: [workoutSet.entryValues.value(at: 1)].compactMap { $0 },
+            templateValues: [templateSet?.entryValues.value(at: 1)].compactMap { $0 }
         )
     }
 
-    private static func currentDisplayDrop(
-        _ dropSet: DropSet,
-        templateSet: TemplateSet?
+    /// One display from entry values: the performance segments carry repetitions for
+    /// rep-based entries and a formatted duration ("1:30") for time-based ones; the weight
+    /// segments only exist for weight-carrying entries. Template values fill untouched
+    /// fields as placeholders, position by position.
+    private static func metricDisplay(
+        values: [SetEntryValues],
+        templateValues: [SetEntryValues]
     ) -> ExerciseMetricDisplay {
-        let count = dropSet.repetitions?.count ?? 0
-        guard count > 0 else { return .emptyForLiveActivity() }
-        let template = templateSet as? TemplateDropSet
-        var rSeg: [String] = []
-        var rPh: [Bool] = []
-        var wSeg: [String] = []
-        var wPh: [Bool] = []
-        for i in 0 ..< count {
-            let ra = dropSet.repetitions?.value(at: i) ?? 0
-            let tr = template?.repetitions?.value(at: i) ?? 0
-            let rDisp = ra > 0 ? ra : tr
-            rSeg.append(String(rDisp))
-            rPh.append(ra == 0)
-
-            let wa = dropSet.weights?.value(at: i) ?? 0
-            let tw = template?.weights?.value(at: i) ?? 0
-            let wDisp = wa > 0 ? wa : tw
-            wSeg.append(formatWeightForDisplay(wDisp))
-            wPh.append(wa == 0)
+        guard !values.isEmpty else { return .emptyForLiveActivity() }
+        var performanceSegments: [String] = []
+        var performancePlaceholders: [Bool] = []
+        var weightSegments: [String] = []
+        var weightPlaceholders: [Bool] = []
+        for (index, value) in values.enumerated() {
+            let template = templateValues.value(at: index)
+            if value.type.usesRepetitions {
+                let shown = value.repetitions > 0
+                    ? value.repetitions : (template?.repetitions ?? 0)
+                performanceSegments.append(String(shown))
+                performancePlaceholders.append(value.repetitions == 0)
+            } else if value.type.usesDuration {
+                let shown = value.duration > 0 ? value.duration : (template?.duration ?? 0)
+                performanceSegments.append(formatEntryDuration(shown))
+                performancePlaceholders.append(value.duration == 0)
+            }
+            if value.type.usesWeight {
+                let shown = value.weight > 0 ? value.weight : (template?.weight ?? 0)
+                weightSegments.append(formatWeightForDisplay(shown))
+                weightPlaceholders.append(value.weight == 0)
+            }
         }
+        let usesRepetitions = values.first?.type.usesRepetitions ?? true
         return ExerciseMetricDisplay(
-            repetitionSegments: rSeg,
-            repetitionSegmentPlaceholders: rPh,
-            repetitionsUnit: repsLocalizedUnit,
-            weightSegments: wSeg,
-            weightSegmentPlaceholders: wPh,
-            weightUnit: liveActivityWeightUnit
-        )
-    }
-
-    private static func currentDisplaySuperPrimary(
-        _ superSet: SuperSet,
-        templateSet: TemplateSet?
-    ) -> ExerciseMetricDisplay {
-        let template = templateSet as? TemplateSuperSet
-        let rAct = superSet.repetitionsFirstExercise
-        let wAct = superSet.weightFirstExercise
-        let rShow = rAct > 0 ? rAct : (template?.repetitionsFirstExercise ?? 0)
-        let wShow = wAct > 0 ? wAct : (template?.weightFirstExercise ?? 0)
-        return ExerciseMetricDisplay(
-            repetitionSegments: [String(rShow)],
-            repetitionSegmentPlaceholders: [rAct == 0],
-            repetitionsUnit: repsLocalizedUnit,
-            weightSegments: [formatWeightForDisplay(wShow)],
-            weightSegmentPlaceholders: [wAct == 0],
-            weightUnit: liveActivityWeightUnit
-        )
-    }
-
-    private static func currentDisplaySuperSecondary(
-        _ superSet: SuperSet,
-        templateSet: TemplateSet?
-    ) -> ExerciseMetricDisplay {
-        let template = templateSet as? TemplateSuperSet
-        let rAct = superSet.repetitionsSecondExercise
-        let wAct = superSet.weightSecondExercise
-        let rShow = rAct > 0 ? rAct : (template?.repetitionsSecondExercise ?? 0)
-        let wShow = wAct > 0 ? wAct : (template?.weightSecondExercise ?? 0)
-        return ExerciseMetricDisplay(
-            repetitionSegments: [String(rShow)],
-            repetitionSegmentPlaceholders: [rAct == 0],
-            repetitionsUnit: repsLocalizedUnit,
-            weightSegments: [formatWeightForDisplay(wShow)],
-            weightSegmentPlaceholders: [wAct == 0],
+            repetitionSegments: performanceSegments,
+            repetitionSegmentPlaceholders: performancePlaceholders,
+            repetitionsUnit: usesRepetitions ? repsLocalizedUnit : "",
+            weightSegments: weightSegments,
+            weightSegmentPlaceholders: weightPlaceholders,
             weightUnit: liveActivityWeightUnit
         )
     }
@@ -366,89 +314,57 @@ enum WorkoutLiveActivitySnapshotBuilder {
         let sets = setGroup.sets
         guard beforeSetIndex <= sets.count else { return (nil, nil) }
         let previousSet = sets[beforeSetIndex - 1]
+        let previousValues = previousSet.entryValues
 
-        if let superSet = previousSet as? SuperSet, let focusedSupersetExercise {
-            let focusedDisplay: ExerciseMetricDisplay
-            switch focusedSupersetExercise {
-            case .first:
-                focusedDisplay = metricDisplayEntriesOnly(
-                    actual: MetricValues(
-                        repetitions: [superSet.repetitionsFirstExercise],
-                        weights: [superSet.weightFirstExercise]
-                    )
-                )
-            case .second:
-                focusedDisplay = metricDisplayEntriesOnly(
-                    actual: MetricValues(
-                        repetitions: [superSet.repetitionsSecondExercise],
-                        weights: [superSet.weightSecondExercise]
-                    )
-                )
-            }
+        if previousSet is SuperSet, let focusedSupersetExercise {
+            let focusedEntryIndex = focusedSupersetExercise == .first ? 0 : 1
+            let focusedDisplay = metricDisplayEntriesOnly(
+                values: [previousValues.value(at: focusedEntryIndex)].compactMap { $0 }
+            )
             return (focusedDisplay.isEmpty ? nil : focusedDisplay, nil)
         }
 
-        let primary = primaryMetricEntriesOnly(for: previousSet)
+        let primaryValues = previousSet is SuperSet
+            ? [previousValues.first].compactMap { $0 } : previousValues
+        let primary = metricDisplayEntriesOnly(values: primaryValues)
         let primaryOut = primary.isEmpty ? nil : primary
-        let secondaryOut = secondaryMetricEntriesOnly(for: previousSet)
+        let secondaryOut: ExerciseMetricDisplay?
+        if previousSet is SuperSet {
+            let secondary = metricDisplayEntriesOnly(
+                values: [previousValues.value(at: 1)].compactMap { $0 }
+            )
+            secondaryOut = secondary.isEmpty ? nil : secondary
+        } else {
+            secondaryOut = nil
+        }
         return (primaryOut, secondaryOut)
     }
 
-    private static func primaryMetricEntriesOnly(for workoutSet: WorkoutSet) -> ExerciseMetricDisplay {
-        if let standardSet = workoutSet as? StandardSet {
-            return metricDisplayEntriesOnly(
-                actual: MetricValues(
-                    repetitions: [standardSet.repetitions],
-                    weights: [standardSet.weight]
-                )
-            )
+    /// Like `metricDisplay(values:templateValues:)` but for the *previous* set's summary:
+    /// only recorded values appear — no placeholders.
+    private static func metricDisplayEntriesOnly(values: [SetEntryValues]) -> ExerciseMetricDisplay {
+        var performanceSegments: [String] = []
+        var weightSegments: [String] = []
+        for value in values {
+            if value.type.usesRepetitions, value.repetitions > 0 {
+                performanceSegments.append(String(value.repetitions))
+            } else if value.type.usesDuration, !value.type.usesRepetitions, value.duration > 0 {
+                performanceSegments.append(formatEntryDuration(value.duration))
+            }
+            if value.type.usesWeight, value.weight > 0 {
+                weightSegments.append(formatWeightForDisplay(value.weight))
+            }
         }
-        if let dropSet = workoutSet as? DropSet {
-            return metricDisplayEntriesOnly(
-                actual: MetricValues(
-                    repetitions: dropSet.repetitions ?? [],
-                    weights: dropSet.weights ?? []
-                )
-            )
-        }
-        if let superSet = workoutSet as? SuperSet {
-            return metricDisplayEntriesOnly(
-                actual: MetricValues(
-                    repetitions: [superSet.repetitionsFirstExercise],
-                    weights: [superSet.weightFirstExercise]
-                )
-            )
-        }
-        return .emptyForLiveActivity()
-    }
-
-    private static func secondaryMetricEntriesOnly(for workoutSet: WorkoutSet) -> ExerciseMetricDisplay? {
-        guard let superSet = workoutSet as? SuperSet else { return nil }
-        let display = metricDisplayEntriesOnly(
-            actual: MetricValues(
-                repetitions: [superSet.repetitionsSecondExercise],
-                weights: [superSet.weightSecondExercise]
-            )
-        )
-        return display.isEmpty ? nil : display
-    }
-
-    private static func metricDisplayEntriesOnly(actual: MetricValues) -> ExerciseMetricDisplay {
-        guard actual.hasEntry else {
+        guard !performanceSegments.isEmpty || !weightSegments.isEmpty else {
             return .emptyForLiveActivity()
         }
-        let repValues = actual.repetitions.filter { $0 > 0 }
-        let wValues = actual.weights.filter { $0 > 0 }
-        let rSeg = repValues.map(String.init)
-        let rPh = Array(repeating: false, count: rSeg.count)
-        let wSeg = wValues.map(formatWeightForDisplay)
-        let wPh = Array(repeating: false, count: wSeg.count)
+        let usesRepetitions = values.first?.type.usesRepetitions ?? true
         return ExerciseMetricDisplay(
-            repetitionSegments: rSeg,
-            repetitionSegmentPlaceholders: rPh,
-            repetitionsUnit: repsLocalizedUnit,
-            weightSegments: wSeg,
-            weightSegmentPlaceholders: wPh,
+            repetitionSegments: performanceSegments,
+            repetitionSegmentPlaceholders: Array(repeating: false, count: performanceSegments.count),
+            repetitionsUnit: usesRepetitions ? repsLocalizedUnit : "",
+            weightSegments: weightSegments,
+            weightSegmentPlaceholders: Array(repeating: false, count: weightSegments.count),
             weightUnit: liveActivityWeightUnit
         )
     }

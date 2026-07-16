@@ -377,32 +377,6 @@ struct ExerciseDetailScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Computed Properties
-
-    private func max(_ attribute: WorkoutSet.Attribute, in workoutSet: WorkoutSet) -> Int {
-        if let standardSet = workoutSet as? StandardSet {
-            return Int(attribute == .repetitions ? standardSet.repetitions : standardSet.weight)
-        }
-        if let dropSet = workoutSet as? DropSet {
-            return Int(
-                (attribute == .repetitions ? dropSet.repetitions : dropSet.weights)?.max() ?? 0
-            )
-        }
-        if let superSet = workoutSet as? SuperSet {
-            if superSet.setGroup?.exercise == exercise {
-                return Int(
-                    attribute == .repetitions
-                        ? superSet.repetitionsFirstExercise : superSet.weightFirstExercise
-                )
-            } else {
-                return Int(
-                    attribute == .repetitions
-                        ? superSet.repetitionsSecondExercise : superSet.weightSecondExercise
-                )
-            }
-        }
-        return 0
-    }
 }
 
 private struct PreviewWrapperView: View {

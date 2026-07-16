@@ -44,6 +44,14 @@ extension Exercise {
         set { muscleGroupString = newValue?.rawValue }
     }
 
+    /// How this exercise is tracked by default; new sets record these fields, and individual
+    /// sets may override. The nil-backed default is reps and weight — the only measurement
+    /// that existed before model v8, hence correct for every pre-existing exercise.
+    var measurementType: SetMeasurementType {
+        get { SetMeasurementType(rawValue: measurementTypeString ?? "") ?? .repsAndWeight }
+        set { measurementTypeString = newValue.rawValue }
+    }
+
     var setGroups: [WorkoutSetGroup] {
         resolvedOrder(of: setGroups_, by: setGroupOrder)
     }

@@ -8,8 +8,10 @@
 import Foundation
 
 struct TemplateDTO: Codable {
-    /// Format version for future compatibility
-    static let formatVersion = 1
+    /// Format version for future compatibility. Version 2 added per-set `entries` (measurement
+    /// types, durations); the legacy per-type fields stay populated so version-1 receivers can
+    /// still import the reps-and-weight portion.
+    static let formatVersion = 2
     
     let formatVersion: Int?
     let name: String

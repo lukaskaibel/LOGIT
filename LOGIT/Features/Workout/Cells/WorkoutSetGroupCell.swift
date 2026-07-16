@@ -453,6 +453,26 @@ struct WorkoutSetGroupCell: View {
             } header: {
                 Text(NSLocalizedString("setType", comment: ""))
             }
+            // Per-group measurement override on top of the exercise default. Hidden for super
+            // sets: their two exercises each bring their own measurement type.
+            if setGroup.setType != .superSet {
+                Section {
+                    ForEach(SetMeasurementType.allCases) { type in
+                        Button {
+                            setGroup.overrideMeasurementType(type)
+                        } label: {
+                            HStack {
+                                Text(type.title)
+                                if setGroup.measurementType == type {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Text(NSLocalizedString("measurementType", comment: ""))
+                }
+            }
             if let onReorderSetGroups {
                 Section {
                     Button {

@@ -1041,3 +1041,10 @@
 "monthWorkoutCount" = "%d回";
 "filters" = "フィルタ";
 "fromTemplate" = "テンプレートから";
+
+"measurementType" = "測定方法";
+"measurementType.repsAndWeight" = "回数と重量";
+"measurementType.repsOnly" = "回数のみ";
+"measurementType.duration" = "時間";
+"measurementType.weightAndDuration" = "重量と時間";
+"measurementTypeChangeInfo" = "既存のセットは記録された値を保持します。新しいセットのみ新しい測定方法を使用します。";

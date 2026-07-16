@@ -120,16 +120,7 @@ func formattedWorkoutDuration(minutes: Int) -> String {
 /// All repetitions recorded in a set — across drops of a drop set and both sides of a super set —
 /// as opposed to `maximum(.repetitions,for:)`, which is the best single entry for one exercise.
 private func totalRepetitions(of workoutSet: WorkoutSet) -> Int {
-    if let standardSet = workoutSet as? StandardSet {
-        return Int(standardSet.repetitions)
-    }
-    if let dropSet = workoutSet as? DropSet {
-        return Int(dropSet.repetitions?.reduce(0, +) ?? 0)
-    }
-    if let superSet = workoutSet as? SuperSet {
-        return Int(superSet.repetitionsFirstExercise + superSet.repetitionsSecondExercise)
-    }
-    return 0
+    workoutSet.entryValues.reduce(0) { $0 + Int($1.repetitions) }
 }
 
 // MARK: - Run History

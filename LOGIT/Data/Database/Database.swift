@@ -32,6 +32,20 @@ public class Database: ObservableObject {
     private let TEMPORARY_OBJECT_IDS_KEY = "temporaryObjectIds"
     private var cancellables = Set<AnyCancellable>()
 
+    /// The single home for every set-entry backfill sweep (see `Database+SetEntryBackfill`).
+    /// All sweeps run through this one context so its serial queue is the lock — a launch
+    /// sweep and a remote-change sweep can never process the same legacy set twice.
+    lazy var setEntryBackfillContext: NSManagedObjectContext = {
+        let context = container.newBackgroundContext()
+        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        return context
+    }()
+
+    /// Debounce for remote-change-triggered backfill sweeps. Remote change notifications fire
+    /// for every store write (including our own saves), so sweeps coalesce behind a short delay
+    /// and start with a cheap count check.
+    private var setEntryReconciliationDebounce: DispatchWorkItem?
+
     // MARK: - Properties
 
     @Published var canUndo: Bool = false
@@ -56,6 +70,12 @@ public class Database: ObservableObject {
         let description = container.persistentStoreDescriptions.first
         description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
         description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
+        // Devices still on pre-v8 app versions keep syncing legacy-shaped sets (no SetEntry
+        // rows) through CloudKit indefinitely. Remote change notifications are the trigger for
+        // re-running the set-entry backfill whenever such data arrives.
+        description?.setOption(
+            true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey
+        )
 
         if usesInMemoryStore {
             // The URL must be unique per instance: throwaway stores sharing one URL (the
@@ -94,6 +114,36 @@ public class Database: ObservableObject {
 
         container.viewContext.undoManager = UndoManager()
         observeUndoManager()
+
+        // Materialize SetEntry rows for legacy-shaped sets (pre-v8 store data now, old-version
+        // devices' sync arrivals forever after). Throwaway stores start empty and previews seed
+        // through the factories, which create entries natively — nothing legacy to sweep there.
+        if !usesInMemoryStore {
+            startSetEntryReconciliation()
+            backfillSetEntries()
+        }
+    }
+
+    // MARK: - Set Entry Reconciliation Trigger
+
+    /// Re-runs the set-entry backfill (debounced) whenever the store changes remotely — the
+    /// arrival path for legacy-shaped sets from devices on pre-v8 app versions. Our own saves
+    /// fire the notification too; the debounce plus the sweep's initial count check make those
+    /// wake-ups cheap, and a sweep that saves nothing triggers no follow-up sweep.
+    private func startSetEntryReconciliation() {
+        NotificationCenter.default.addObserver(
+            forName: .NSPersistentStoreRemoteChange,
+            object: container.persistentStoreCoordinator,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.setEntryReconciliationDebounce?.cancel()
+            let workItem = DispatchWorkItem { [weak self] in
+                self?.backfillSetEntries()
+            }
+            self.setEntryReconciliationDebounce = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: workItem)
+        }
     }
 
     // MARK: - Store Loading

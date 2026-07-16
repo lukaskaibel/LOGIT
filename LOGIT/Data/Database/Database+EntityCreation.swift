@@ -8,6 +8,17 @@
 import Foundation
 
 extension Database {
+    /// The measurement type for a factory-created entry: values passed in are always legacy
+    /// reps+weight data (previews, imports), so they keep that type no matter how the exercise
+    /// is tracked — recorded values must never become invisible behind a mismatched type.
+    /// Empty placeholders adopt the exercise's default.
+    private func factoryEntryType(
+        repetitions: Int, weight: Int, exercise: Exercise?
+    ) -> SetMeasurementType {
+        if repetitions != 0 || weight != 0 { return .repsAndWeight }
+        return exercise?.measurementType ?? .repsAndWeight
+    }
+
     // MARK: - Normal Entitiy Creation
 
     @discardableResult
@@ -52,10 +63,20 @@ extension Database {
     ) -> StandardSet {
         let standardSet = StandardSet(context: context)
         standardSet.id = UUID()
-        standardSet.repetitions = Int64(repetitions)
-        standardSet.weight = Int64(weight)
         standardSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(standardSet)
+        standardSet.insertEntry(
+            from: SetEntryValues(
+                type: factoryEntryType(
+                    repetitions: repetitions, weight: weight, exercise: setGroup?.exercise
+                ),
+                order: 0,
+                repetitions: Int64(repetitions),
+                weight: Int64(weight),
+                duration: 0,
+                exercise: setGroup?.exercise
+            )
+        )
         return standardSet
     }
 
@@ -68,10 +89,26 @@ extension Database {
     ) -> DropSet {
         let dropSet = DropSet(context: context)
         dropSet.id = UUID()
-        dropSet.repetitions = repetitions.map { Int64($0) }
-        dropSet.weights = weights.map { Int64($0) }
         dropSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(dropSet)
+        let dropCount = max(repetitions.count, weights.count, 1)
+        for index in 0..<dropCount {
+            let dropRepetitions = repetitions.value(at: index) ?? 0
+            let dropWeight = weights.value(at: index) ?? 0
+            dropSet.insertEntry(
+                from: SetEntryValues(
+                    type: factoryEntryType(
+                        repetitions: dropRepetitions, weight: dropWeight,
+                        exercise: setGroup?.exercise
+                    ),
+                    order: Int64(index),
+                    repetitions: Int64(dropRepetitions),
+                    weight: Int64(dropWeight),
+                    duration: 0,
+                    exercise: setGroup?.exercise
+                )
+            )
+        }
         return dropSet
     }
 
@@ -80,12 +117,25 @@ extension Database {
         from templateDropSet: TemplateDropSet,
         setGroup: WorkoutSetGroup? = nil
     ) -> DropSet {
-        return newDropSet(
-            repetitions: Array(repeatElement(0, count: templateDropSet.repetitions?.count ?? 0)),
-            weights: Array(repeating: 0, count: templateDropSet.weights?.count ?? 0),
-            restDuration: Int(templateDropSet.restDuration),
-            setGroup: setGroup
-        )
+        let dropSet = DropSet(context: context)
+        dropSet.id = UUID()
+        dropSet.restDuration = templateDropSet.restDuration
+        setGroup?.sets.append(dropSet)
+        // Mirror the template's planned structure — drop count and entry types — with empty
+        // values for the athlete to fill in.
+        for value in templateDropSet.entryValues {
+            dropSet.insertEntry(
+                from: SetEntryValues(
+                    type: value.type,
+                    order: value.order,
+                    repetitions: 0,
+                    weight: 0,
+                    duration: 0,
+                    exercise: setGroup?.exercise
+                )
+            )
+        }
+        return dropSet
     }
 
     @discardableResult
@@ -99,12 +149,34 @@ extension Database {
     ) -> SuperSet {
         let superSet = SuperSet(context: context)
         superSet.id = UUID()
-        superSet.repetitionsFirstExercise = Int64(repetitionsFirstExercise)
-        superSet.repetitionsSecondExercise = Int64(repetitionsSecondExercise)
-        superSet.weightFirstExercise = Int64(weightFirstExercise)
-        superSet.weightSecondExercise = Int64(weightSecondExercise)
         superSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(superSet)
+        superSet.insertEntry(
+            from: SetEntryValues(
+                type: factoryEntryType(
+                    repetitions: repetitionsFirstExercise, weight: weightFirstExercise,
+                    exercise: setGroup?.exercise
+                ),
+                order: 0,
+                repetitions: Int64(repetitionsFirstExercise),
+                weight: Int64(weightFirstExercise),
+                duration: 0,
+                exercise: setGroup?.exercise
+            )
+        )
+        superSet.insertEntry(
+            from: SetEntryValues(
+                type: factoryEntryType(
+                    repetitions: repetitionsSecondExercise, weight: weightSecondExercise,
+                    exercise: setGroup?.secondaryExercise
+                ),
+                order: 1,
+                repetitions: Int64(repetitionsSecondExercise),
+                weight: Int64(weightSecondExercise),
+                duration: 0,
+                exercise: setGroup?.secondaryExercise
+            )
+        )
         return superSet
     }
 
@@ -125,12 +197,14 @@ extension Database {
     func newExercise(
         name: String = "",
         muscleGroup: MuscleGroup? = nil,
+        measurementType: SetMeasurementType = .repsAndWeight,
         setGroups: [WorkoutSetGroup] = []
     ) -> Exercise {
         let exercise = Exercise(context: context)
         exercise.id = UUID()
         exercise.name = name
         exercise.muscleGroup = muscleGroup
+        exercise.measurementType = measurementType
         setGroups.forEach { $0.exercise = exercise }
         return exercise
     }
@@ -191,37 +265,29 @@ extension Database {
         from workoutSet: WorkoutSet,
         templateSetGroup: TemplateSetGroup? = nil
     ) -> TemplateSet {
-        if let standardSet = workoutSet as? StandardSet {
-            let templateStandardSet = TemplateStandardSet(context: context)
-            templateStandardSet.id = UUID()
-            templateStandardSet.repetitions = standardSet.repetitions
-            templateStandardSet.weight = standardSet.weight
-            templateStandardSet.restDuration = standardSet.restDuration
-            templateSetGroup?.sets.append(templateStandardSet)
-            return templateStandardSet
-
-        } else if let dropSet = workoutSet as? DropSet {
-            let templateDropSet = TemplateDropSet(context: context)
-            templateDropSet.id = UUID()
-            templateDropSet.repetitions = dropSet.repetitions
-            templateDropSet.weights = dropSet.weights
-            templateDropSet.restDuration = dropSet.restDuration
-            templateSetGroup?.sets.append(templateDropSet)
-            return templateDropSet
-        } else if let superSet = workoutSet as? SuperSet {
-            let templateSuperSet = TemplateSuperSet(context: context)
-            templateSuperSet.id = UUID()
-            templateSuperSet.repetitionsFirstExercise = superSet.repetitionsFirstExercise
-            templateSuperSet.repetitionsSecondExercise = superSet.repetitionsSecondExercise
-            templateSuperSet.weightFirstExercise = superSet.weightFirstExercise
-            templateSuperSet.weightSecondExercise = superSet.weightSecondExercise
-            templateSuperSet.restDuration = superSet.restDuration
-            templateSetGroup?.sets.append(templateSuperSet)
-            templateSetGroup?.secondaryExercise = superSet.secondaryExercise
-            return templateSuperSet
+        let templateSet: TemplateSet
+        if workoutSet is DropSet {
+            templateSet = TemplateDropSet(context: context)
+        } else if workoutSet is SuperSet {
+            templateSet = TemplateSuperSet(context: context)
         } else {
-            fatalError("Database: Not implemented for variation of TemplateSet.")
+            templateSet = TemplateStandardSet(context: context)
         }
+        templateSet.id = UUID()
+        templateSet.restDuration = workoutSet.restDuration
+        templateSetGroup?.sets.append(templateSet)
+        if workoutSet is SuperSet {
+            templateSetGroup?.secondaryExercise = workoutSet.setGroup?.secondaryExercise
+        }
+        // Carry the performed entries over as the template's planned entries. Exercise
+        // attribution is re-resolved against the template's own group.
+        for value in workoutSet.entryValues {
+            var resolved = value
+            resolved.exercise =
+                templateSet.positionalExercise(forOrder: value.order) ?? value.exercise
+            templateSet.insertEntry(from: resolved)
+        }
+        return templateSet
     }
 
     @discardableResult
@@ -233,10 +299,20 @@ extension Database {
     ) -> TemplateStandardSet {
         let templateSet = TemplateStandardSet(context: context)
         templateSet.id = UUID()
-        templateSet.repetitions = Int64(repetitions)
-        templateSet.weight = Int64(weight)
         templateSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(templateSet)
+        templateSet.insertEntry(
+            from: SetEntryValues(
+                type: factoryEntryType(
+                    repetitions: repetitions, weight: weight, exercise: setGroup?.exercise
+                ),
+                order: 0,
+                repetitions: Int64(repetitions),
+                weight: Int64(weight),
+                duration: 0,
+                exercise: setGroup?.exercise
+            )
+        )
         return templateSet
     }
 
@@ -249,10 +325,26 @@ extension Database {
     ) -> TemplateDropSet {
         let templateDropSet = TemplateDropSet(context: context)
         templateDropSet.id = UUID()
-        templateDropSet.repetitions = repetitions.map { Int64($0) }
-        templateDropSet.weights = weights.map { Int64($0) }
         templateDropSet.restDuration = Int64(restDuration)
         templateSetGroup?.sets.append(templateDropSet)
+        let dropCount = max(repetitions.count, weights.count, 1)
+        for index in 0..<dropCount {
+            let dropRepetitions = repetitions.value(at: index) ?? 0
+            let dropWeight = weights.value(at: index) ?? 0
+            templateDropSet.insertEntry(
+                from: SetEntryValues(
+                    type: factoryEntryType(
+                        repetitions: dropRepetitions, weight: dropWeight,
+                        exercise: templateSetGroup?.exercise
+                    ),
+                    order: Int64(index),
+                    repetitions: Int64(dropRepetitions),
+                    weight: Int64(dropWeight),
+                    duration: 0,
+                    exercise: templateSetGroup?.exercise
+                )
+            )
+        }
         return templateDropSet
     }
 
@@ -267,12 +359,34 @@ extension Database {
     ) -> TemplateSuperSet {
         let templateSuperSet = TemplateSuperSet(context: context)
         templateSuperSet.id = UUID()
-        templateSuperSet.repetitionsFirstExercise = Int64(repetitionsFirstExercise)
-        templateSuperSet.repetitionsSecondExercise = Int64(repetitionsSecondExercise)
-        templateSuperSet.weightFirstExercise = Int64(weightFirstExercise)
-        templateSuperSet.weightSecondExercise = Int64(weightSecondExercise)
         templateSuperSet.restDuration = Int64(restDuration)
         setGroup?.sets.append(templateSuperSet)
+        templateSuperSet.insertEntry(
+            from: SetEntryValues(
+                type: factoryEntryType(
+                    repetitions: repetitionsFirstExercise, weight: weightFirstExercise,
+                    exercise: setGroup?.exercise
+                ),
+                order: 0,
+                repetitions: Int64(repetitionsFirstExercise),
+                weight: Int64(weightFirstExercise),
+                duration: 0,
+                exercise: setGroup?.exercise
+            )
+        )
+        templateSuperSet.insertEntry(
+            from: SetEntryValues(
+                type: factoryEntryType(
+                    repetitions: repetitionsSecondExercise, weight: weightSecondExercise,
+                    exercise: setGroup?.secondaryExercise
+                ),
+                order: 1,
+                repetitions: Int64(repetitionsSecondExercise),
+                weight: Int64(weightSecondExercise),
+                duration: 0,
+                exercise: setGroup?.secondaryExercise
+            )
+        )
         return templateSuperSet
     }
 }

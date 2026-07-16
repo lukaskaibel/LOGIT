@@ -17,6 +17,7 @@ struct ExerciseEditScreen: View {
 
     @State private var exerciseName: String
     @State private var muscleGroup: MuscleGroup
+    @State private var measurementType: SetMeasurementType
     @State private var primaryMetric: ExercisePrimaryMetric
     @State private var showingExerciseExistsAlert: Bool = false
     @State private var showingExerciseNameEmptyAlert: Bool = false
@@ -41,6 +42,7 @@ struct ExerciseEditScreen: View {
         self.onEditFinished = onEditFinished
         _exerciseName = State(initialValue: initialExerciseName ?? exerciseToEdit?.displayName ?? "")
         _muscleGroup = State(initialValue: exerciseToEdit?.muscleGroup ?? initialMuscleGroup)
+        _measurementType = State(initialValue: exerciseToEdit?.measurementType ?? .repsAndWeight)
         _primaryMetric = State(initialValue: exerciseToEdit?.primaryMetric ?? .defaultMetric)
     }
 
@@ -69,6 +71,28 @@ struct ExerciseEditScreen: View {
                         selectedMuscleGroup: optionalMuscleGroupBinding,
                         canBeNil: false
                     )
+                }
+
+                VStack(alignment: .leading) {
+                    Text(NSLocalizedString("measurementType", comment: ""))
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
+                    Picker(NSLocalizedString("measurementType", comment: ""), selection: $measurementType) {
+                        ForEach(SetMeasurementType.allCases) { type in
+                            Text(type.title).tag(type)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .padding(.horizontal)
+                    // Changing the type never rewrites history: recorded entries keep the
+                    // fields they were performed with; only new sets record the new fields.
+                    if exerciseToEdit != nil, measurementType != exerciseToEdit?.measurementType {
+                        Text(NSLocalizedString("measurementTypeChangeInfo", comment: ""))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal)
+                    }
                 }
 
                 VStack(alignment: .leading) {
@@ -162,11 +186,13 @@ struct ExerciseEditScreen: View {
         if let exerciseToEdit = exerciseToEdit {
             exerciseToEdit.name = exerciseName.trimmingCharacters(in: .whitespacesAndNewlines)
             exerciseToEdit.muscleGroup = muscleGroup
+            exerciseToEdit.measurementType = measurementType
             exercise = exerciseToEdit
         } else {
             exercise = database.newExercise(
                 name: exerciseName.trimmingCharacters(in: .whitespacesAndNewlines),
-                muscleGroup: muscleGroup
+                muscleGroup: muscleGroup,
+                measurementType: measurementType
             )
         }
         database.save()

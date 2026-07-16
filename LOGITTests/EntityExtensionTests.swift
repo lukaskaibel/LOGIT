@@ -105,8 +105,8 @@ final class EntityExtensionTests: XCTestCase {
         dropSet.addDrop()
         
         XCTAssertEqual(dropSet.numberOfDrops, initialCount + 1, "Should have one more drop")
-        XCTAssertEqual(dropSet.repetitions?.last, 0, "New drop should have 0 reps")
-        XCTAssertEqual(dropSet.weights?.last, 0, "New drop should have 0 weight")
+        XCTAssertEqual(dropSet.entryValues.last?.repetitions, 0, "New drop should have 0 reps")
+        XCTAssertEqual(dropSet.entryValues.last?.weight, 0, "New drop should have 0 weight")
     }
     
     func testDropSetRemoveLastDrop() {
@@ -130,8 +130,8 @@ final class EntityExtensionTests: XCTestCase {
         
         dropSet.clearEntries()
         
-        XCTAssertEqual(dropSet.repetitions, [0, 0], "Reps should be cleared")
-        XCTAssertEqual(dropSet.weights, [0, 0], "Weights should be cleared")
+        XCTAssertEqual(dropSet.entryValues.map { $0.repetitions }, [0, 0], "Reps should be cleared")
+        XCTAssertEqual(dropSet.entryValues.map { $0.weight }, [0, 0], "Weights should be cleared")
         XCTAssertEqual(dropSet.numberOfDrops, 2, "Should keep same number of drops")
         XCTAssertFalse(dropSet.hasEntry, "Should have no entry after clearing")
     }
@@ -559,9 +559,9 @@ final class EntityExtensionTests: XCTestCase {
         let set2 = database.newStandardSet(repetitions: 10, weight: 50000)
         
         set1.match(set2)
-        
-        XCTAssertEqual(set1.repetitions, 10)
-        XCTAssertEqual(set1.weight, 50000)
+
+        XCTAssertEqual(set1.entryValues.map { $0.repetitions }, [10])
+        XCTAssertEqual(set1.entryValues.map { $0.weight }, [50000])
     }
     
     func testDropSetMatchFromWorkoutSet() {
@@ -569,9 +569,9 @@ final class EntityExtensionTests: XCTestCase {
         let dropSet2 = database.newDropSet(repetitions: [10, 8], weights: [50000, 40000])
         
         dropSet1.match(dropSet2)
-        
-        XCTAssertEqual(dropSet1.repetitions, [10, 8])
-        XCTAssertEqual(dropSet1.weights, [50000, 40000])
+
+        XCTAssertEqual(dropSet1.entryValues.map { $0.repetitions }, [10, 8])
+        XCTAssertEqual(dropSet1.entryValues.map { $0.weight }, [50000, 40000])
     }
     
     func testSuperSetMatchFromWorkoutSet() {
@@ -584,11 +584,9 @@ final class EntityExtensionTests: XCTestCase {
         )
         
         superSet1.match(superSet2)
-        
-        XCTAssertEqual(superSet1.repetitionsFirstExercise, 10)
-        XCTAssertEqual(superSet1.repetitionsSecondExercise, 12)
-        XCTAssertEqual(superSet1.weightFirstExercise, 50000)
-        XCTAssertEqual(superSet1.weightSecondExercise, 40000)
+
+        XCTAssertEqual(superSet1.entryValues.map { $0.repetitions }, [10, 12])
+        XCTAssertEqual(superSet1.entryValues.map { $0.weight }, [50000, 40000])
     }
     
     // MARK: - WorkoutSet Properties Tests
@@ -641,7 +639,8 @@ final class EntityExtensionTests: XCTestCase {
     func testDropSetWithEmptyArrays() {
         let dropSet = database.newDropSet(repetitions: [], weights: [])
         
-        XCTAssertEqual(dropSet.numberOfDrops, 0, "Empty drop set should have 0 drops")
+        // A drop set always keeps at least one (placeholder) entry since model v8.
+        XCTAssertEqual(dropSet.numberOfDrops, 1, "Empty drop set keeps one placeholder drop")
         XCTAssertFalse(dropSet.hasEntry, "Empty drop set should not have entry")
     }
     

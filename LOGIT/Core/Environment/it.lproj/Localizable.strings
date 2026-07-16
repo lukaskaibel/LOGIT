@@ -1041,3 +1041,10 @@
 "monthWorkoutCount" = "%d allenamento";
 "filters" = "Filtri";
 "fromTemplate" = "Da un modello";
+
+"measurementType" = "Misurazione";
+"measurementType.repsAndWeight" = "Rip. e peso";
+"measurementType.repsOnly" = "Solo rip.";
+"measurementType.duration" = "Durata";
+"measurementType.weightAndDuration" = "Peso e durata";
+"measurementTypeChangeInfo" = "Le serie esistenti mantengono i valori registrati. Solo le nuove serie usano la nuova misurazione.";

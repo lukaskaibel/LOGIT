@@ -63,8 +63,8 @@ struct TemplateSetCell: View {
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 10)
                         }
-                        .disabled((dropSet.repetitions?.count ?? 0) < 2)
-                        Text(String(dropSet.repetitions?.count ?? 0))
+                        .disabled(dropSet.entryValues.count < 2)
+                        Text(String(dropSet.entryValues.count))
                             .font(.body.weight(.medium).monospacedDigit())
                             .foregroundStyle(.primary)
                         Button {
@@ -85,28 +85,28 @@ struct TemplateSetCell: View {
 
     @ViewBuilder
     private var setContent: some View {
-        if let standardSet = templateSet as? TemplateStandardSet {
-            TemplateStandardSetCell(
-                standardSet: standardSet,
-                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-            )
-            .padding(.top, templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
-            .padding(.bottom, templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
-        } else if let dropSet = templateSet as? TemplateDropSet {
-            TemplateDropSetCell(
-                dropSet: dropSet,
-                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-            )
-            .padding(.top, templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
-            .padding(.bottom, templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
-        } else if let superSet = templateSet as? TemplateSuperSet {
-            TemplateSuperSetCell(
-                superSet: superSet,
-                focusedIntegerFieldIndex: $focusedIntegerFieldIndex
-            )
+        if let indexInTemplate {
+            VStack(spacing: 0) {
+                ForEach(
+                    Array(templateSet.entries.enumerated()), id: \.element.objectID
+                ) { entryIndex, entry in
+                    let entryExercise = templateSet.owningExercise(of: entry)
+                    SetEntryFieldsRow(
+                        entry: entry,
+                        primaryIndex: indexInTemplate,
+                        secondaryIndex: entryIndex,
+                        focusedIntegerFieldIndex: $focusedIntegerFieldIndex
+                    )
+                    .accentColor(entryExercise?.muscleGroup?.color)
+                }
+            }
             .padding(.top, templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
             .padding(.bottom, templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
         }
+    }
+
+    private var indexInTemplate: Int? {
+        templateSet.setGroup?.workout?.sets.firstIndex(of: templateSet)
     }
 
     @ViewBuilder

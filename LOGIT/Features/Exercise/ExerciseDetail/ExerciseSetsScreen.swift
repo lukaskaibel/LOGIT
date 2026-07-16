@@ -32,11 +32,11 @@ struct ExerciseSetsScreen: View {
                         currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient),
                         currentLabel: period.currentPeriodLabel,
                         currentValue: "\(currentCount)",
-                        currentRaw: currentCount,
+                        currentRaw: Double(currentCount),
                         trailingValueStyle: AnyShapeStyle(muscleGroupColor.gradient),
                         positiveColor: muscleGroupColor,
-                        formatAverage: { "\($0)" },
-                        displayAverage: { Double($0) },
+                        formatAverage: { "\(Int($0.rounded()))" },
+                        displayAverage: { $0.rounded() },
                         explanation: NSLocalizedString("averageComparisonInfo", comment: "")
                     )
                 }
@@ -90,10 +90,10 @@ struct ExerciseSetsScreen: View {
     private var buckets: [PeriodHistoryChart.Bucket] {
         PeriodHistoryChart.scrollableBuckets(
             for: period,
-            rawByPeriodStart: countByPeriodStart,
+            rawByPeriodStart: countByPeriodStart.mapValues(Double.init),
             firstDataDate: firstDataDate,
-            display: { Double($0) },
-            formatted: { "\($0)" }
+            display: { $0 },
+            formatted: { "\(Int($0.rounded()))" }
         )
     }
 

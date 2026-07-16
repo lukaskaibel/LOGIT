@@ -52,6 +52,11 @@ struct PeriodHistoryChart: View {
     /// the visible periods, excluding the current, still-growing one. Nil draws nothing. In the
     /// buckets' own value units, so it moves with the header as the chart scrolls.
     var averageLine: Double? = nil
+    /// The top of the y-axis, in display units — the tallest bar *currently in view* (with headroom
+    /// added here), passed in by the scrolling owner so the scale adapts to the visible window as you
+    /// scroll, the way Health rescales its charts. Nil (the static muscle tile) falls back to the
+    /// tallest bar across every bucket.
+    var yDomainMax: Double? = nil
     /// When bound, the chart scrolls horizontally: `buckets` span the full history, a window of
     /// `historyBucketCount` periods shows at a time, and this is its left edge (owned by the screen so
     /// its header can read the visible window). Nil keeps the chart static — the compact muscle tile.
@@ -62,7 +67,9 @@ struct PeriodHistoryChart: View {
     @State private var selectedDate: Date?
 
     var body: some View {
-        let maxValue = buckets.map(\.value).max() ?? 0
+        // The y-axis fits the tallest bar in view (passed in while scrolling) or, static, the tallest
+        // across every bucket.
+        let maxValue = yDomainMax ?? (buckets.map(\.value).max() ?? 0)
         let selectedBucket = selectedDate.flatMap { nearestBucket(to: $0) }
         scrollableIfNeeded(
             Chart {
@@ -122,6 +129,12 @@ struct PeriodHistoryChart: View {
             .chartYAxis {
                 AxisMarks(values: .automatic(desiredCount: 3))
             }
+            // Ease the y-scale and the dashed average to their new values as bars scroll in and out, so
+            // the axis rescales and the line glides instead of snapping. Applied to the chart's marks
+            // and scale here, *inside* the scroll wrapper `scrollableIfNeeded` adds — the horizontal
+            // scroll is a modifier outside this animation's scope, so it keeps tracking the finger.
+            .animation(.easeInOut(duration: 0.3), value: maxValue)
+            .animation(.easeInOut(duration: 0.3), value: averageLine)
         )
         .frame(height: height)
     }
@@ -245,15 +258,17 @@ extension PeriodHistoryChart {
     /// the current period. `rawByPeriodStart` is the data pre-grouped by period start (built in one
     /// pass by the screen), looked up per period so building N bars stays O(periods) rather than
     /// re-filtering the data per bar; keys must be `period.currentRange(containing:).lowerBound`, the
-    /// same canonical period start this uses. `display` maps a raw sum to the bar's height, `formatted`
-    /// to its tooltip, and the raw sum rides along for the moving visible-window average.
+    /// same canonical period start this uses. Values are `Double` so a per-workout average (a
+    /// fractional 17.5 sets) rides through with its precision intact, not just an integer sum.
+    /// `display` maps a raw value to the bar's height, `formatted` to its tooltip, and the raw value
+    /// rides along for the moving visible-window average.
     static func scrollableBuckets(
         for period: StatPeriod,
-        rawByPeriodStart: [Date: Int],
+        rawByPeriodStart: [Date: Double],
         firstDataDate: Date?,
         now: Date = .now,
-        display: (Int) -> Double,
-        formatted: (Int) -> String
+        display: (Double) -> Double,
+        formatted: (Double) -> String
     ) -> [Bucket] {
         let domain = period.scrollableXDomain(firstDataDate: firstDataDate, now: now)
         let currentStart = period.currentRange(containing: now).lowerBound
@@ -268,7 +283,7 @@ extension PeriodHistoryChart {
                 value: display(raw),
                 isCurrent: start == currentStart,
                 formattedValue: formatted(raw),
-                rawValue: Double(raw)
+                rawValue: raw
             ))
             guard let next = Calendar.current.date(byAdding: period.calendarComponent, value: 1, to: start) else { break }
             start = period.currentRange(containing: next).lowerBound
@@ -280,9 +295,9 @@ extension PeriodHistoryChart {
     /// The period-over-period trend for a stat header, or nil unless both periods have data — a
     /// freshly started week must not read as a "−100%" collapse (the same suppression rule as the
     /// stat tiles).
-    static func trendPercentChange(current: Int, previous: Int) -> Double? {
+    static func trendPercentChange(current: Double, previous: Double) -> Double? {
         guard current > 0, previous > 0 else { return nil }
-        return (Double(current) - Double(previous)) / Double(previous) * 100
+        return (current - previous) / previous * 100
     }
 }
 
@@ -315,14 +330,14 @@ struct PeriodStatChartView: View {
     /// Trailing (subject) side: "This Week" and the current period's value, fixed as the chart scrolls.
     let currentLabel: String
     let currentValue: String
-    let currentRaw: Int
+    let currentRaw: Double
     let trailingValueStyle: AnyShapeStyle
     let positiveColor: Color
     var positiveStyle: AnyShapeStyle? = nil
     /// Raw visible-window average → the header string (each screen rounds / formats in its own units).
-    let formatAverage: (Int) -> String
+    let formatAverage: (Double) -> String
     /// Raw visible-window average → the dashed line's height in display units.
-    let displayAverage: (Int) -> Double
+    let displayAverage: (Double) -> Double
     var explanation: String? = nil
 
     @State private var scrollPosition: Date
@@ -336,12 +351,12 @@ struct PeriodStatChartView: View {
         currentBarStyle: AnyShapeStyle,
         currentLabel: String,
         currentValue: String,
-        currentRaw: Int,
+        currentRaw: Double,
         trailingValueStyle: AnyShapeStyle,
         positiveColor: Color,
         positiveStyle: AnyShapeStyle? = nil,
-        formatAverage: @escaping (Int) -> String,
-        displayAverage: @escaping (Int) -> Double,
+        formatAverage: @escaping (Double) -> String,
+        displayAverage: @escaping (Double) -> Double,
         explanation: String? = nil
     ) {
         self.period = period
@@ -363,20 +378,20 @@ struct PeriodStatChartView: View {
     }
 
     var body: some View {
-        // The completed periods on screen — the current, still-growing one and untrained periods left
-        // out, matching the pill's "both sides need data" rule. O(buckets) per scroll frame; the
-        // buckets themselves are the parent's, unchanged by scrolling.
+        // One pass over the buckets covers everything the visible window drives: the completed-period
+        // average (the header + dashed line) and the tallest bar on screen (the y-axis top). The
+        // average excludes the current, still-growing period and untrained ones, matching the pill's
+        // "both sides need data" rule; the max includes every visible bar so the axis fits the current
+        // one too. A single pass replaces the old filter-then-reduce here plus the chart's own max scan
+        // — cheaper per scroll frame, which is the frame that has to stay smooth.
         let window = period.visibleWindowRange(from: scrollPosition)
-        let visible = buckets.filter { !$0.isCurrent && $0.rawValue > 0 && window.contains($0.date) }
-        let averageRaw: Int? = visible.isEmpty
-            ? nil
-            : Int((visible.map(\.rawValue).reduce(0, +) / Double(visible.count)).rounded())
-        let percentChange = PeriodHistoryChart.trendPercentChange(current: currentRaw, previous: averageRaw ?? 0)
+        let visible = Self.visibleStats(buckets: buckets, window: window)
+        let percentChange = PeriodHistoryChart.trendPercentChange(current: currentRaw, previous: visible.averageRaw ?? 0)
         return VStack(spacing: 16) {
             MetricComparisonView(
                 leading: .init(
                     label: NSLocalizedString("average", comment: ""),
-                    value: averageRaw.map(formatAverage) ?? "––",
+                    value: visible.averageRaw.map(formatAverage) ?? "––",
                     unit: unit,
                     caption: period.rangeCaption(window)
                 ),
@@ -399,7 +414,8 @@ struct PeriodStatChartView: View {
                 valueLabel: valueLabel,
                 currentBarStyle: currentBarStyle,
                 unit: unit,
-                averageLine: averageRaw.map(displayAverage),
+                averageLine: visible.averageRaw.map(displayAverage),
+                yDomainMax: visible.displayMax,
                 scrollPosition: $scrollPosition,
                 firstDataDate: firstDataDate
             )
@@ -410,6 +426,29 @@ struct PeriodStatChartView: View {
         .onChange(of: period) {
             scrollPosition = period.initialScrollPosition()
         }
+    }
+
+    /// The visible window's completed-period average and its tallest bar, gathered in one pass.
+    /// `averageRaw` excludes the current, still-growing period and untrained periods (nil when none
+    /// remain); `displayMax` is the tallest bar in view — the current period included — in display
+    /// units, the y-axis top before headroom.
+    private struct VisibleStats {
+        var averageRaw: Double?
+        var displayMax: Double
+    }
+
+    private static func visibleStats(buckets: [PeriodHistoryChart.Bucket], window: ClosedRange<Date>) -> VisibleStats {
+        var sum = 0.0
+        var count = 0
+        var maxDisplay = 0.0
+        for bucket in buckets where window.contains(bucket.date) {
+            if bucket.value > maxDisplay { maxDisplay = bucket.value }
+            if !bucket.isCurrent && bucket.rawValue > 0 {
+                sum += bucket.rawValue
+                count += 1
+            }
+        }
+        return VisibleStats(averageRaw: count > 0 ? sum / Double(count) : nil, displayMax: maxDisplay)
     }
 }
 

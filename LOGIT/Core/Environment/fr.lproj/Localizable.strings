@@ -1041,3 +1041,10 @@
 "monthWorkoutCount" = "%d séance";
 "filters" = "Filtres";
 "fromTemplate" = "Depuis un modèle";
+
+// Per-workout vs total basis (Summary stat tiles + detail toggle)
+"perWorkout" = "par séance";
+"perWorkoutBasis" = "Par séance";
+"basis" = "Valeurs";
+
+"buildingYourTrend" = "Tendance en cours";

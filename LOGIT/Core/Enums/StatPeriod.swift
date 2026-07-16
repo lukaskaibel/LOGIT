@@ -37,6 +37,16 @@ enum StatPeriod: String, CaseIterable, Identifiable {
         range(periodsAgo: 1, from: date)
     }
 
+    /// How far through the current period `now` sits — 0 at the period's first instant, 1 at its last
+    /// (clamped). Drives the "building your trend" ring on a fresh tile, so it fills as the week (or
+    /// month / year) goes on rather than sitting at a fixed mark.
+    func elapsedFraction(now: Date = .now) -> Double {
+        let range = currentRange(containing: now)
+        let total = range.upperBound.timeIntervalSince(range.lowerBound)
+        guard total > 0 else { return 0 }
+        return min(max(now.timeIntervalSince(range.lowerBound) / total, 0), 1)
+    }
+
     /// How many periods of history a period-scoped chart shows — the current period plus its recent
     /// past. One rule for every such chart in the app: 12 recent weeks, 12 recent months or 6 recent
     /// years, so switching screens never silently changes how far back "history" reaches.
@@ -123,6 +133,37 @@ enum StatPeriod: String, CaseIterable, Identifiable {
             let start = lower.formatted(.dateTime.year())
             let end = upper.formatted(.dateTime.year())
             return start == end ? start : "\(start) - \(end)"
+        }
+    }
+}
+
+// MARK: - Stat Basis
+
+/// How a period's workouts collapse into the single number a stat surface shows: the running
+/// **total** over the period, or the **per-workout average** that divides frequency out so a light
+/// week and a heavy week compare on session quality alone — the reason a one-workout week can still
+/// be read against a four-workout one. The Summary tiles are always per-workout; their detail screens
+/// let the reader flip back to totals.
+enum StatBasis: String, CaseIterable, Identifiable {
+    case perWorkout, total
+
+    var id: String { rawValue }
+
+    /// Segmented-control title — "Per Workout" / "Total".
+    var title: String {
+        switch self {
+        case .perWorkout: return NSLocalizedString("perWorkoutBasis", comment: "")
+        case .total: return NSLocalizedString("total", comment: "")
+        }
+    }
+
+    /// Collapses a period's summed raw value and its non-empty workout count into the one number this
+    /// basis shows. Per-workout is the mean per session — zero when the period had no workout, so an
+    /// empty period reads as no data rather than a misleading zero average; total is the sum untouched.
+    func aggregate(sum: Int, count: Int) -> Double {
+        switch self {
+        case .total: return Double(sum)
+        case .perWorkout: return count > 0 ? Double(sum) / Double(count) : 0
         }
     }
 }

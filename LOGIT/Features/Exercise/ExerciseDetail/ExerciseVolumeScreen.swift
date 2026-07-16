@@ -32,13 +32,13 @@ struct ExerciseVolumeScreen: View {
                         currentBarStyle: AnyShapeStyle(muscleGroupColor.gradient),
                         currentLabel: period.currentPeriodLabel,
                         currentValue: formatWeightForDisplay(currentRawVolume),
-                        currentRaw: currentRawVolume,
+                        currentRaw: Double(currentRawVolume),
                         trailingValueStyle: AnyShapeStyle(muscleGroupColor.gradient),
                         positiveColor: muscleGroupColor,
                         // Volumes run to thousands, so round the mean to a whole unit — the raw
                         // decimals only wrap the large header number onto a second line.
-                        formatAverage: { "\(Int(convertWeightForDisplayingDecimal($0).rounded()))" },
-                        displayAverage: { Double(Int(convertWeightForDisplayingDecimal($0).rounded())) },
+                        formatAverage: { "\(Int(convertWeightForDisplayingDecimal(Int($0.rounded())).rounded()))" },
+                        displayAverage: { Double(Int(convertWeightForDisplayingDecimal(Int($0.rounded())).rounded())) },
                         explanation: NSLocalizedString("averageComparisonInfo", comment: "")
                     )
                 }
@@ -92,10 +92,10 @@ struct ExerciseVolumeScreen: View {
     private var buckets: [PeriodHistoryChart.Bucket] {
         PeriodHistoryChart.scrollableBuckets(
             for: period,
-            rawByPeriodStart: rawByPeriodStart,
+            rawByPeriodStart: rawByPeriodStart.mapValues(Double.init),
             firstDataDate: firstDataDate,
-            display: { convertWeightForDisplayingDecimal($0) },
-            formatted: { formatWeightForDisplay($0) }
+            display: { convertWeightForDisplayingDecimal(Int($0.rounded())) },
+            formatted: { formatWeightForDisplay(Int($0.rounded())) }
         )
     }
 

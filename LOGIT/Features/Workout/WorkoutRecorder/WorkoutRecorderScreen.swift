@@ -88,10 +88,10 @@ struct WorkoutRecorderScreen: View {
     /// template start shows the panel (and the finish/minimize actions) before the first
     /// value lands — and folds away on the first entry.
     @State private var isHeaderExpanded = false
-    /// Comparison baseline for the header's trend pills, computed once on appear — previous runs
-    /// of this workout (or recent workouts), exactly the workout detail's basis. The current
-    /// workout's values are read live; only the historical baseline is frozen.
-    @State private var headerRunHistory: WorkoutRunHistory?
+    /// The workout title's font size, folded vs. unfolded — Dynamic-Type-scaled and interpolated
+    /// through `AnimatableTitleFont` so the title grows/shrinks smoothly instead of snapping.
+    @ScaledMetric(relativeTo: .body) private var collapsedTitleSize: CGFloat = 17
+    @ScaledMetric(relativeTo: .title2) private var expandedTitleSize: CGFloat = 22
     /// Natural (fully-revealed) height of the expanded stats panel, measured live so the drag
     /// can interpolate against it — the panel is always in the tree (clipped to the current
     /// reveal) so its height is known before the first drag.
@@ -448,9 +448,6 @@ struct WorkoutRecorderScreen: View {
                 // Start unfolded until the first value is logged: a fresh (or template) start
                 // leads with the session panel, a resumed mid-workout recorder stays compact.
                 isHeaderExpanded = !(workoutRecorder.workout?.hasEntries ?? false)
-                headerRunHistory = workoutRecorder.workout.map {
-                    WorkoutRunHistory.compute(for: $0, database: database)
-                }
 
                 if preventAutoLock {
                     UIApplication.shared.isIdleTimerDisabled = true
@@ -589,8 +586,9 @@ struct WorkoutRecorderScreen: View {
                 .focused($isFocusingTitleTextfield)
                 .lineLimit(1)
                 .foregroundColor(.label)
-                // Grows into a large-title once the panel is open.
-                .font((isHeaderExpanded ? Font.title2 : Font.body).weight(.bold))
+                // Grows into a large-title once the panel is open — the size interpolates
+                // (animatable), so on expand/collapse the title scales smoothly, not in a snap.
+                .modifier(AnimatableTitleFont(size: isHeaderExpanded ? expandedTitleSize : collapsedTitleSize))
             }
             Spacer()
             if let workout = workoutRecorder.workout {
@@ -649,19 +647,31 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
-    /// A Volume / Repetitions tile identical to the workout detail screen's stat grid: the shared
-    /// `WorkoutStatTile` (value, vs-previous trend pill, run-bar history) in the workout's
-    /// muscle-group gradient. Display-only here — not wrapped in the detail screen's open button.
+    /// A pared-down Volume / Repetitions tile: just the metric name over its value, the value kept
+    /// exactly as the workout detail screen renders it (`.large` `UnitView`, label-colored number,
+    /// gray unit). No "This Workout" subtitle, trend pill, or run-bar chart — those made the tile
+    /// too tall for the header.
     private func workoutStatTile(_ metric: WorkoutStatMetric, for workout: Workout) -> some View {
-        let sets = workout.sets
-        return WorkoutStatTile(
-            metric: metric,
-            workout: workout,
-            history: headerRunHistory ?? WorkoutRunHistory(basis: .recentWorkouts, runs: [workout]),
-            accent: sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing),
-            barStyle: sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top),
-            accentColor: muscleGroupService.getMuscleGroupOccurances(in: workout).first?.0.color ?? .accentColor
-        )
+        let raw = metric.rawValue(of: workout)
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(metric.title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.label)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            UnitView(
+                value: metric.formattedValue(fromRaw: raw),
+                unit: metric.unit,
+                configuration: .large,
+                unitColor: .secondaryLabel
+            )
+            .foregroundStyle(Color.label)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(CELL_PADDING)
+        .tileStyle()
     }
 
     @ViewBuilder
@@ -1083,6 +1093,22 @@ private struct FloatingChronoControlsOverlay: View {
     private var bottomOffset: CGFloat {
         let base = sheetGeometry.safeAreaBottomInset - 10
         return isAtSmallDetent ? base - 10 : base
+    }
+}
+
+/// Animates a bold title's point size: because `size` is the `animatableData`, SwiftUI
+/// interpolates it frame-by-frame inside a `withAnimation`, so the workout title scales
+/// smoothly between its folded and unfolded sizes instead of snapping.
+private struct AnimatableTitleFont: ViewModifier, Animatable {
+    var size: CGFloat
+
+    var animatableData: CGFloat {
+        get { size }
+        set { size = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        content.font(.system(size: size, weight: .bold))
     }
 }
 

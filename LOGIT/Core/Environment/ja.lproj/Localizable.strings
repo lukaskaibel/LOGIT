@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "セットアップを完了する";
+"finish" = "終了";
 "finishWorkout" = "ワークアウトを終了する";
 "finishWorkoutConfimation" = "トレーニングを終了しますか?";
 "five" = "五";

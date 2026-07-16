@@ -616,7 +616,7 @@ struct WorkoutRecorderScreen: View {
                 } label: {
                     Label(NSLocalizedString("minimize", comment: ""), systemImage: "arrow.down.right.and.arrow.up.left")
                 }
-                .buttonStyle(SecondaryButtonStyle())
+                .buttonStyle(TertiaryButtonStyle())
                 Button {
                     guard workout.hasEntries else {
                         finishWorkout(shouldSave: false)
@@ -624,9 +624,9 @@ struct WorkoutRecorderScreen: View {
                     }
                     isShowingFinishConfirmation = true
                 } label: {
-                    Label(NSLocalizedString("finishWorkout", comment: ""), systemImage: "flag.checkered")
+                    Label(NSLocalizedString("finish", comment: ""), systemImage: "flag.checkered")
                 }
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(SecondaryButtonStyle())
             }
         }
     }

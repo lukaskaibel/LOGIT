@@ -120,7 +120,7 @@ final class ScenarioScreenshots: XCTestCase {
         ]
         app.launch()
         sleep(4)
-        let finishButton = app.buttons["Finish Workout"]
+        let finishButton = app.buttons["Finish"]
         XCTAssertFalse(finishButton.exists, "Header should start collapsed mid-workout (Finish hidden)")
         // Tap the caption line ("… Sets") — part of the header's tap target.
         let caption = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] 'Sets'")).firstMatch
@@ -412,7 +412,7 @@ final class ScenarioScreenshots: XCTestCase {
         newWorkoutButton.tap()
         // Start sheet dismisses, recorder presents empty → header auto-expanded, so
         // the Finish button is on screen.
-        let finish = app.buttons["Finish Workout"]
+        let finish = app.buttons["Finish"]
         XCTAssertTrue(finish.waitForExistence(timeout: 10), "Recorder did not present from the start sheet")
         waitABit(2)
         attach(app, "recorder_12_new_workout_open")

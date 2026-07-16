@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "Terminer la configuration";
+"finish" = "Terminer";
 "finishWorkout" = "Terminer l'entraînement";
 "finishWorkoutConfimation" = "Voulez-vous terminer l’entraînement ?";
 "five" = "Cinq";

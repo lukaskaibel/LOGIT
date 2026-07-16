@@ -89,7 +89,7 @@ final class ScenarioScreenshots: XCTestCase {
         // inside the persistent exercise sheet, so this only works with the sheet up.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
         sleep(2)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.365)).tap()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.27)).tap()
         sleep(2)
         attach(app, "hdr_08_finish_confirmation_real")
     }
@@ -157,6 +157,40 @@ final class ScenarioScreenshots: XCTestCase {
         sleep(2)
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 10), "Tab bar should be back after minimizing")
         attach(app, "hdr_07_after_minimize")
+    }
+
+    /// A short list (one exercise) via the real start flow: the set list must run to the
+    /// bottom edge under the tray, so the card's Add Set row stays fully on-screen instead
+    /// of being clipped mid-screen (regression for the in-flow header's bottom inset).
+    func testShortWorkoutBottomEdge() {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments += [
+            "-SCENARIO", "many",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launch()
+        let startPill = app.staticTexts["Start Workout"].firstMatch
+        XCTAssertTrue(startPill.waitForExistence(timeout: 25), "Start-workout pill missing")
+        startPill.tap()
+        let newWorkout = app.staticTexts["New Workout"].firstMatch
+        XCTAssertTrue(newWorkout.waitForExistence(timeout: 6), "New Workout entry missing")
+        newWorkout.tap()
+        sleep(3)
+        // Add one exercise from the tray → a list far shorter than the viewport.
+        let exercise = app.staticTexts["Ab Wheel Rollout"].firstMatch
+        XCTAssertTrue(exercise.waitForExistence(timeout: 10), "Exercise tray missing")
+        exercise.tap()
+        sleep(2)
+        // Grow the list to ~6 sets (the reported case): the card's Add Set row must not
+        // be clipped and the card should run to the bottom edge under the tray.
+        let addSet = app.buttons["Add Set"].firstMatch
+        for _ in 0 ..< 5 where addSet.exists { addSet.tap() }
+        sleep(2)
+        attach(app, "short_bottom")
+        // The Add Set row (bottom of the only card) must be fully on-screen, not clipped
+        // off the bottom edge — the whole point of the fix.
+        XCTAssertTrue(addSet.isHittable, "Add Set row is clipped — the short list isn't running to the bottom edge")
     }
 
     // MARK: - Workout recorder (Transmission presentation)
@@ -345,7 +379,7 @@ final class ScenarioScreenshots: XCTestCase {
         // → finish confirmation sheet.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
         waitABit(2)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.365)).tap()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.27)).tap()
         let endWorkoutButton = app.buttons["End Workout"].firstMatch
         XCTAssertTrue(endWorkoutButton.waitForExistence(timeout: 5), "Finish confirmation sheet did not appear")
         attach(app, "recorder_14_finish_confirmation")

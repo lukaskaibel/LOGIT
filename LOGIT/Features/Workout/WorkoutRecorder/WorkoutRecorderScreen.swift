@@ -238,9 +238,6 @@ struct WorkoutRecorderScreen: View {
                                     handleListDragEnded(value)
                                 }
                         )
-                        .safeAreaInset(edge: .bottom) {
-                            Color.clear.frame(height: 100)
-                        }
                         // The tray only presents once the recorder's morph has landed and
                         // hides while the card is being dragged: a presented child sheet
                         // would swallow the recorder's own interactive dismissal (UIKit

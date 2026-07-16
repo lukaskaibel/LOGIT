@@ -55,6 +55,110 @@ final class ScenarioScreenshots: XCTestCase {
         )
     }
 
+    // MARK: - Expandable recorder header
+
+    // The recorder header folds/unfolds on tap (and handle drag): compact workout-cell
+    // row ↔ stats panel with progress, session stats, Minimize and Finish. These cover
+    // both visual states and the two panel actions. Coordinate-driven where the
+    // persistent exercise sheet is up (elements behind sheets are a11y-hidden);
+    // element-driven with -UITEST_NO_SHEET where assertions matter.
+
+    /// Visual: collapsed (mid-workout) header, then tap to expand — real persistent sheet up,
+    /// so navigation is coordinate-driven (elements behind sheets are a11y-hidden).
+    func testHeaderVisualCollapsedThenExpanded() {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments += [
+            "-UITEST_FIXTURES", "1",
+            "-UITEST_SHOW_RECORDER", "1",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launch()
+        sleep(4)
+        attach(app, "hdr_01_collapsed")
+        // Tap the caption line ("0:23:06 · 10 Sets") — safely inside the header's
+        // tap target, below the status bar and left of the donut.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
+        sleep(2)
+        attach(app, "hdr_02_expanded")
+        // Tap the caption again to collapse.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
+        sleep(2)
+        attach(app, "hdr_03_collapsed_again")
+        // Expand once more and tap Finish Workout — the confirmation sheet is hosted
+        // inside the persistent exercise sheet, so this only works with the sheet up.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
+        sleep(2)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.383)).tap()
+        sleep(2)
+        attach(app, "hdr_08_finish_confirmation_real")
+    }
+
+    /// Visual: brand-new empty workout — header must auto-present expanded.
+    func testHeaderVisualEmptyAutoExpanded() {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments += [
+            "-SCENARIO", "many",
+            "-UITEST_START_EMPTY_WORKOUT",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launch()
+        sleep(5)
+        attach(app, "hdr_04_empty_auto_expanded")
+    }
+
+    /// Functional: expand via header tap, Finish opens the confirmation sheet.
+    func testHeaderFlowExpandAndFinish() {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments += [
+            "-UITEST_FIXTURES", "1",
+            "-UITEST_SHOW_RECORDER", "1",
+            "-UITEST_NO_SHEET",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launch()
+        sleep(4)
+        let finishButton = app.buttons["Finish Workout"]
+        XCTAssertFalse(finishButton.exists, "Header should start collapsed mid-workout (Finish hidden)")
+        // Tap the caption line ("… Sets") — part of the header's tap target.
+        let caption = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] 'Sets'")).firstMatch
+        XCTAssertTrue(caption.waitForExistence(timeout: 5), "Header caption not found")
+        caption.tap()
+        XCTAssertTrue(finishButton.waitForExistence(timeout: 5), "Finish button should appear when header expands")
+        XCTAssertTrue(app.buttons["Minimize"].exists, "Minimize button should appear when header expands")
+        attach(app, "hdr_05_expanded_nosheet")
+        // Toggle back: tapping the header again must collapse the panel.
+        caption.tap()
+        sleep(2)
+        XCTAssertFalse(finishButton.exists, "Finish button should disappear when header collapses")
+        attach(app, "hdr_06_collapsed_after_toggle")
+    }
+
+    /// Functional: Minimize dismisses the recorder back to the tab view.
+    func testHeaderFlowMinimize() {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments += [
+            "-UITEST_FIXTURES", "1",
+            "-UITEST_SHOW_RECORDER", "1",
+            "-UITEST_NO_SHEET",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launch()
+        sleep(4)
+        let caption = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] 'Sets'")).firstMatch
+        XCTAssertTrue(caption.waitForExistence(timeout: 5), "Header caption not found")
+        caption.tap()
+        let minimize = app.buttons["Minimize"]
+        XCTAssertTrue(minimize.waitForExistence(timeout: 5), "Minimize button should appear when header expands")
+        minimize.tap()
+        sleep(2)
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 10), "Tab bar should be back after minimizing")
+        attach(app, "hdr_07_after_minimize")
+    }
+
     // MARK: - Walkthrough
 
     private func captureMainScreens(

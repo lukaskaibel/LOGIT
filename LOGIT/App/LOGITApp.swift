@@ -216,6 +216,17 @@ struct LOGIT: App {
                         showWorkoutRecorder()
                     }
                     #if DEBUG
+                    // UI-test hook: boot straight into a brand-new EMPTY workout so the header's
+                    // auto-expanded start state is reachable without driving the start-workout UI
+                    // (the accessory pill swallows synthetic taps on iOS 26).
+                    if ProcessInfo.processInfo.arguments.contains("-UITEST_START_EMPTY_WORKOUT"),
+                       workoutRecorder.workout == nil {
+                        try? await Task.sleep(nanoseconds: 600_000_000)
+                        workoutRecorder.startWorkout()
+                        showWorkoutRecorder()
+                    }
+                    #endif
+                    #if DEBUG
                     // Live Activity verification hook: deterministically start a rest timer so the
                     // running-chrono Dynamic Island (compact/minimal) can be reproduced from the CLI.
                     // Lives here (not in the recorder view) so it fires regardless of what is on screen.

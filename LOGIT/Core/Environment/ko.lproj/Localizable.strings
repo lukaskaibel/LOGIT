@@ -203,6 +203,7 @@
 "waist" = "허리";
 "measurements" = "측정";
 "min" = "분";
+"minimize" = "최소화";
 "missing" = "없어진";
 "measurementsPromotionDescription" = "체중, 체지방, 팔, 가슴, 허리 등 신체 부위 측정을 추적하여 진행 상황을 명확하게 확인하세요.";
 "month" = "월";

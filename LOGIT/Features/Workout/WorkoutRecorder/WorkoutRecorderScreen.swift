@@ -75,6 +75,19 @@ struct WorkoutRecorderScreen: View {
 
     @FocusState var isFocusingTitleTextfield: Bool
 
+    /// Whether the header is unfolded into its live stats panel (progress, session stats,
+    /// minimize/finish). Expanded while the workout has no logged entries — a brand-new or
+    /// template start shows the panel (and the finish/minimize actions) before the first
+    /// value lands — and folds away on the first entry.
+    @State private var isHeaderExpanded = false
+    /// Comparison baseline for the header's trend pills, computed once on appear — previous runs
+    /// of this workout (or recent workouts), exactly the workout detail's basis. The current
+    /// workout's values are read live; only the historical baseline is frozen.
+    @State private var headerRunHistory: WorkoutRunHistory?
+
+    /// One spring for every path that folds or unfolds the header (tap, drag, auto).
+    private var headerExpansionAnimation: Animation { .spring(response: 0.4, dampingFraction: 0.85) }
+
     // MARK: - Body
 
     var body: some View {
@@ -281,9 +294,11 @@ struct WorkoutRecorderScreen: View {
                     }
                 }
                 if !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_HEADER") {
+                    // No `.fullScreenDraggableCoverDragArea()` anymore: a header drag now
+                    // folds/unfolds the stats panel, and minimizing moved to the panel's
+                    // explicit button.
                     Header
                         .frame(maxHeight: .infinity, alignment: .top)
-                        .fullScreenDraggableCoverDragArea()
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -313,6 +328,12 @@ struct WorkoutRecorderScreen: View {
                 enteredRepetitionSetIDs = workoutRecorder.workout.map {
                     workoutRecorder.repetitionEnteredSetIDs(in: $0)
                 } ?? []
+                // Start unfolded until the first value is logged: a fresh (or template) start
+                // leads with the session panel, a resumed mid-workout recorder stays compact.
+                isHeaderExpanded = !(workoutRecorder.workout?.hasEntries ?? false)
+                headerRunHistory = workoutRecorder.workout.map {
+                    WorkoutRunHistory.compute(for: $0, database: database)
+                }
 
                 if preventAutoLock {
                     UIApplication.shared.isIdleTimerDisabled = true
@@ -329,6 +350,14 @@ struct WorkoutRecorderScreen: View {
             UIApplication.shared.isIdleTimerDisabled = false
             // Flush anything the debounced autosave hasn't written yet.
             database.save()
+        }
+        .onChange(of: workoutRecorder.workout?.hasEntries ?? false) { _, hasEntries in
+            // The header mirrors the workout's emptiness: it folds away on the first logged
+            // value and unfolds again if every entry is removed. Manual toggles in between
+            // stick — this only fires when emptiness actually flips.
+            withAnimation(headerExpansionAnimation) {
+                isHeaderExpanded = !hasEntries
+            }
         }
         .onChange(of: scenePhase) { _, newPhase in
             // Backgrounding must not race the debounced autosave — persist
@@ -353,61 +382,181 @@ struct WorkoutRecorderScreen: View {
 
     private var Header: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 5) {
+            VStack(spacing: 12) {
+                headerCompactRow
+                if isHeaderExpanded, let workout = workoutRecorder.workout {
+                    headerExpandedPanel(for: workout)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+                // The grab handle sits at the header's BOTTOM edge — the seam the stats
+                // panel unfolds from — and reads as "pull here": dragging it (or tapping
+                // anywhere in the header) toggles the panel. Minimizing the recorder is
+                // the panel's explicit button, no longer a header drag.
                 Rectangle()
                     .frame(width: 40, height: 5)
                     .clipShape(Capsule())
                     .opacity(exerciseSelectionPresentationDetent == .large ? 0 : 1)
-                HStack {
-                    if let workout = workoutRecorder.workout {
-                        WorkoutMuscleGroupChart(workout: workout)
-                            .transition(.move(edge: .leading))
-                            .animation(.interactiveSpring, value: workout.sets)
-                    }
-                    VStack(alignment: .leading, spacing: 2) {
-                        if let workoutStartTime = workoutRecorder.workout?.date {
-                            StopwatchView(startTime: workoutStartTime)
-                                .foregroundStyle(.secondary)
-                                .font(.footnote.weight(.bold).monospacedDigit())
-                        }
-                        TextField(
-                            "",
-                            text: workoutName,
-                            prompt: Text(Workout.getStandardName(for: Date())).foregroundStyle(Color.label)
-                        )
-                        .submitLabel(.done)
-                        .focused($isFocusingTitleTextfield)
-                        .lineLimit(1)
-                        .foregroundColor(.label)
-                        .font(.body.weight(.bold))
-                    }
-                    Spacer()
-                    Button {
-                        guard workoutRecorder.workout?.hasEntries ?? false else {
-                            finishWorkout(shouldSave: false)
-                            return
-                        }
-                        isShowingFinishConfirmation = true
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.body.weight(.bold))
-                            .foregroundColor(Color.accentColor)
-                            .padding(8)
-                            .background(Color.accentColor.secondaryTranslucentBackground)
-                            .clipShape(Circle())
-                    }
-                }
             }
             .fullScreenDraggableCoverTopInset()
             .padding(.horizontal)
-            .padding(.bottom)
+            .padding(.bottom, 10)
             .background {
+                // Bottom corners echo the physical device corners (top edges follow them
+                // under the safe area), so the header reads as one rounded slab with the screen.
+                let deviceRadius = UIScreen.current?.displayCornerRadius ?? 30
                 Rectangle()
                     .fill(.ultraThinMaterial)
-                    .clipShape(.rect(bottomLeadingRadius: 30, bottomTrailingRadius: 30))
+                    .clipShape(.rect(bottomLeadingRadius: deviceRadius, bottomTrailingRadius: deviceRadius, style: .continuous))
                     .edgesIgnoringSafeArea(.top)
             }
         }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(headerExpansionAnimation) {
+                isHeaderExpanded.toggle()
+            }
+        }
+        .gesture(
+            DragGesture(minimumDistance: 20)
+                .onEnded { value in
+                    withAnimation(headerExpansionAnimation) {
+                        if value.translation.height > 25 {
+                            isHeaderExpanded = true
+                        } else if value.translation.height < -25 {
+                            isHeaderExpanded = false
+                        }
+                    }
+                }
+        )
+    }
+
+    /// The always-visible header row, laid out like a `WorkoutCell`: elapsed time and set count
+    /// over the editable title, with the muscle-group donut on the trailing edge.
+    private var headerCompactRow: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 5) {
+                    if let workoutStartTime = workoutRecorder.workout?.date {
+                        StopwatchView(startTime: workoutStartTime)
+                    }
+                    Text("·")
+                    Text("\(workoutRecorder.workout?.numberOfSets ?? 0) \(NSLocalizedString("sets", comment: ""))")
+                }
+                .foregroundStyle(.secondary)
+                .font(.footnote.weight(.bold).monospacedDigit())
+                TextField(
+                    "",
+                    text: workoutName,
+                    prompt: Text(Workout.getStandardName(for: Date())).foregroundStyle(Color.label)
+                )
+                .submitLabel(.done)
+                .focused($isFocusingTitleTextfield)
+                .lineLimit(1)
+                .foregroundColor(.label)
+                .font(.body.weight(.bold))
+            }
+            Spacer()
+            if let workout = workoutRecorder.workout {
+                WorkoutMuscleGroupChart(workout: workout)
+                    .animation(.interactiveSpring, value: workout.sets)
+            }
+        }
+    }
+
+    /// The unfolded half of the header: the workout detail's live session stats — the progress
+    /// bar and the volume/sets/repetitions tiles with their vs-previous trend pills — above the
+    /// minimize and finish actions. Everything accent-colored wears the workout's muscle-group
+    /// gradient, exactly like the detail screen's stat grid.
+    private func headerExpandedPanel(for workout: Workout) -> some View {
+        let gradient = workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
+        return VStack(spacing: 8) {
+            VStack(spacing: 8) {
+                HStack {
+                    Text(NSLocalizedString("progress", comment: ""))
+                    Spacer()
+                    Text("\(Int(progress * 100))%")
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(gradient)
+                }
+                RoundedRectangle(cornerRadius: 5)
+                    .foregroundStyle(Color.placeholder)
+                    .frame(height: 20)
+                    .overlay {
+                        GeometryReader { geometry in
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(workout.sets.muscleGroupGradient(startPoint: .leading, endPoint: .trailing))
+                                .frame(width: geometry.size.width * CGFloat(progress))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+            }
+            .padding(CELL_PADDING)
+            .tileStyle()
+            HStack(spacing: 8) {
+                headerStatTile(for: .volume, of: workout, accent: gradient)
+                headerStatTile(for: .sets, of: workout, accent: gradient)
+                headerStatTile(for: .repetitions, of: workout, accent: gradient)
+            }
+            HStack(spacing: 8) {
+                Button {
+                    dismissWorkoutRecorder()
+                } label: {
+                    Label(NSLocalizedString("minimize", comment: ""), systemImage: "arrow.down.right.and.arrow.up.left")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Color.secondaryLabel)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.fill)
+                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                }
+                Button {
+                    guard workout.hasEntries else {
+                        finishWorkout(shouldSave: false)
+                        return
+                    }
+                    isShowingFinishConfirmation = true
+                } label: {
+                    Label(NSLocalizedString("finishWorkout", comment: ""), systemImage: "flag.checkered")
+                        .font(.body.weight(.bold))
+                        .foregroundStyle(gradient)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            workout.sets.muscleGroupGradient(startPoint: .bottomLeading, endPoint: .topTrailing)
+                                .opacity(0.15)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                }
+            }
+        }
+    }
+
+    /// One live stat tile of the expanded header: label over the gradient value, with the same
+    /// vs-previous trend pill as the workout detail once history offers a baseline.
+    private func headerStatTile(for metric: WorkoutStatMetric, of workout: Workout, accent: AnyShapeStyle) -> some View {
+        let raw = metric.rawValue(of: workout)
+        return VStack(alignment: .leading, spacing: 5) {
+            Text(metric.title)
+                .font(.footnote)
+                .foregroundStyle(Color.secondaryLabel)
+            if metric == .volume {
+                UnitView(value: metric.formattedValue(fromRaw: raw), unit: metric.unit)
+                    .foregroundStyle(accent)
+            } else {
+                Text(metric.formattedValue(fromRaw: raw))
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
+                    .foregroundStyle(accent)
+            }
+            if let percentChange = headerRunHistory?.percentChange(for: metric) {
+                TrendIndicatorView(percentChange: percentChange, positiveStyle: accent)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(CELL_PADDING)
+        .tileStyle()
     }
 
     @ViewBuilder

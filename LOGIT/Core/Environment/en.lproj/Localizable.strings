@@ -203,6 +203,7 @@
 "waist" = "Waist";
 "measurements" = "Measurements";
 "min" = "min";
+"minimize" = "Minimize";
 "missing" = "Missing";
 "measurementsPromotionDescription" = "Track bodyweight, body fat, and body part measurements like arms, chest, and waist to clearly see your progress.";
 "month" = "Month";

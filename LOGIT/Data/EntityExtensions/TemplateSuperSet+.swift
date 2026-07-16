@@ -12,9 +12,9 @@ public extension TemplateSuperSet {
         setGroup?.secondaryExercise
     }
 
-    // MARK: Overrides from TemplateSet
+    // MARK: Legacy-field fallbacks (see TemplateSet.hasEntry)
 
-    override var hasEntry: Bool {
+    internal override var legacyHasEntry: Bool {
         repetitionsFirstExercise + repetitionsSecondExercise + weightFirstExercise
             + weightSecondExercise > 0
     }

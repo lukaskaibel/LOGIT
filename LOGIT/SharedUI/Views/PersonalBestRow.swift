@@ -56,6 +56,7 @@ func personalRecordDisplay(_ base: Int, metric: ExercisePrimaryMetric) -> (value
     case .estimatedOneRepMax: return (formatEstimatedOneRepMax(base), WeightUnit.used.rawValue)
     case .weight: return (formatWeightForDisplay(base), WeightUnit.used.rawValue)
     case .repetitions: return (String(base), NSLocalizedString("reps", comment: ""))
+    case .duration: return (String(base), NSLocalizedString("sec", comment: ""))
     }
 }
 

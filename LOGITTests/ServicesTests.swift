@@ -497,7 +497,7 @@ final class WorkoutRecorderTests: XCTestCase {
         let lastSet = database.newStandardSet(setGroup: setGroup)
         let previousIDs = workoutRecorder.repetitionEnteredSetIDs(in: workout)
 
-        lastSet.repetitions = 8
+        lastSet.entries.first?.repetitions = 8
 
         let trigger = workoutRecorder.autoRestTriggerSet(
             in: workout,
@@ -779,8 +779,8 @@ final class WorkoutRecorderTests: XCTestCase {
             XCTFail("Expected super set to be converted to a standard set")
             return
         }
-        XCTAssertEqual(standardSet.repetitions, 10)
-        XCTAssertEqual(standardSet.weight, 50000)
+        XCTAssertEqual(standardSet.entryValues.map { $0.repetitions }, [10])
+        XCTAssertEqual(standardSet.entryValues.map { $0.weight }, [50000])
     }
 
     func testDiscardWorkoutDeletesWorkout() {

@@ -1042,6 +1042,14 @@
 "filters" = "Filtres";
 "fromTemplate" = "Depuis un modèle";
 
+"measurementType" = "Mesure";
+"measurementType.repsAndWeight" = "Rép. et poids";
+"measurementType.repsOnly" = "Rép. uniquement";
+"measurementType.duration" = "Durée";
+"measurementType.weightAndDuration" = "Poids et durée";
+"measurementTypeChangeInfo" = "Les séries existantes conservent leurs valeurs enregistrées. Seules les nouvelles séries utilisent la nouvelle mesure.";
+
+"metricInfoDuration" = "Votre durée enregistrée la plus longue pour cet exercice.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "par séance";
 "perWorkoutBasis" = "Par séance";

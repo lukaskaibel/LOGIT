@@ -1042,6 +1042,14 @@
 "filters" = "Filters";
 "fromTemplate" = "From a Template";
 
+"measurementType" = "Measurement";
+"measurementType.repsAndWeight" = "Reps & Weight";
+"measurementType.repsOnly" = "Reps Only";
+"measurementType.duration" = "Duration";
+"measurementType.weightAndDuration" = "Weight & Duration";
+"measurementTypeChangeInfo" = "Existing sets keep the values they were recorded with. Only new sets use the new measurement.";
+
+"metricInfoDuration" = "Your longest recorded duration for this exercise.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "per workout";
 "perWorkoutBasis" = "Per Workout";

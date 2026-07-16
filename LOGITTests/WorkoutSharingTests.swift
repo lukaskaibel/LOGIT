@@ -210,7 +210,7 @@ final class WorkoutDTOTests: XCTestCase {
         
         XCTAssertEqual(dto.name, "Empty")
         XCTAssertEqual(dto.setGroups.count, 0)
-        XCTAssertEqual(dto.formatVersion, 1)
+        XCTAssertEqual(dto.formatVersion, 2)
     }
     
     func testWorkoutDTOPreservesEndDate() {
@@ -484,7 +484,7 @@ final class TemplateDTOCodableTests: XCTestCase {
         let decoded = try JSONDecoder().decode(TemplateDTO.self, from: data)
         
         XCTAssertEqual(decoded.name, "Push Template")
-        XCTAssertEqual(decoded.formatVersion, 1)
+        XCTAssertEqual(decoded.formatVersion, 2)
         XCTAssertNotNil(decoded.appStoreURL)
         XCTAssertEqual(decoded.setGroups.count, 1)
         XCTAssertEqual(decoded.setGroups[0].sets.count, 2)
@@ -1074,18 +1074,15 @@ final class WorkoutSharingServiceTests: XCTestCase {
         let firstSet = importedSG.sets[0]
         XCTAssertTrue(firstSet is SuperSet, "Imported set should be a SuperSet")
         if let superSet = firstSet as? SuperSet {
-            XCTAssertEqual(Int(superSet.repetitionsFirstExercise), 10)
-            XCTAssertEqual(Int(superSet.repetitionsSecondExercise), 12)
-            XCTAssertEqual(Int(superSet.weightFirstExercise), 80000)
-            XCTAssertEqual(Int(superSet.weightSecondExercise), 60000)
+            XCTAssertEqual(superSet.entryValues.map { Int($0.repetitions) }, [10, 12])
+            XCTAssertEqual(superSet.entryValues.map { Int($0.weight) }, [80000, 60000])
         }
         
         // Verify second super set
         let secondSet = importedSG.sets[1]
         XCTAssertTrue(secondSet is SuperSet, "Second imported set should be a SuperSet")
         if let superSet = secondSet as? SuperSet {
-            XCTAssertEqual(Int(superSet.repetitionsFirstExercise), 8)
-            XCTAssertEqual(Int(superSet.repetitionsSecondExercise), 10)
+            XCTAssertEqual(superSet.entryValues.map { Int($0.repetitions) }, [8, 10])
         }
     }
     
@@ -1108,8 +1105,8 @@ final class WorkoutSharingServiceTests: XCTestCase {
         let importedSet = imported.setGroups[0].sets[0]
         XCTAssertTrue(importedSet is DropSet, "Imported set should be a DropSet")
         if let dropSet = importedSet as? DropSet {
-            XCTAssertEqual(dropSet.repetitions?.map { Int($0) }, [12, 10, 8, 6])
-            XCTAssertEqual(dropSet.weights?.map { Int($0) }, [40000, 35000, 30000, 25000])
+            XCTAssertEqual(dropSet.entryValues.map { Int($0.repetitions) }, [12, 10, 8, 6])
+            XCTAssertEqual(dropSet.entryValues.map { Int($0.weight) }, [40000, 35000, 30000, 25000])
         }
     }
     
@@ -1303,10 +1300,8 @@ final class WorkoutSharingServiceTests: XCTestCase {
         XCTAssertTrue(importedSet is TemplateSuperSet, "Imported set should be a TemplateSuperSet")
         XCTAssertNotNil(imported.setGroups[0].secondaryExercise)
         if let superSet = importedSet as? TemplateSuperSet {
-            XCTAssertEqual(Int(superSet.repetitionsFirstExercise), 8)
-            XCTAssertEqual(Int(superSet.repetitionsSecondExercise), 15)
-            XCTAssertEqual(Int(superSet.weightFirstExercise), 40000)
-            XCTAssertEqual(Int(superSet.weightSecondExercise), 10000)
+            XCTAssertEqual(superSet.entryValues.map { Int($0.repetitions) }, [8, 15])
+            XCTAssertEqual(superSet.entryValues.map { Int($0.weight) }, [40000, 10000])
         }
     }
     
@@ -1333,8 +1328,8 @@ final class WorkoutSharingServiceTests: XCTestCase {
         let importedSet = imported.setGroups[0].sets[0]
         XCTAssertTrue(importedSet is TemplateDropSet, "Imported set should be a TemplateDropSet")
         if let dropSet = importedSet as? TemplateDropSet {
-            XCTAssertEqual(dropSet.repetitions?.map { Int($0) }, [15, 12, 10, 8, 6])
-            XCTAssertEqual(dropSet.weights?.map { Int($0) }, [80000, 70000, 60000, 50000, 40000])
+            XCTAssertEqual(dropSet.entryValues.map { Int($0.repetitions) }, [15, 12, 10, 8, 6])
+            XCTAssertEqual(dropSet.entryValues.map { Int($0.weight) }, [80000, 70000, 60000, 50000, 40000])
         }
     }
     
@@ -1563,8 +1558,8 @@ final class WorkoutSharingServiceTests: XCTestCase {
         let set = imported.setGroups[0].sets[0]
         XCTAssertTrue(set is StandardSet)
         XCTAssertEqual((set as? StandardSet)?.restDurationSeconds, 90)
-        XCTAssertEqual((set as? StandardSet)?.repetitions, 10)
-        XCTAssertEqual((set as? StandardSet)?.weight, 60000)
+        XCTAssertEqual(set.entryValues.first?.repetitions, 10)
+        XCTAssertEqual(set.entryValues.first?.weight, 60000)
     }
     
     // MARK: - Custom Exercise Matching Tests
@@ -2101,8 +2096,7 @@ final class WorkoutSharingServiceTests: XCTestCase {
         
         let superSet = group.sets[0] as? SuperSet
         XCTAssertNotNil(superSet)
-        XCTAssertEqual(superSet?.repetitionsFirstExercise, 12)
-        XCTAssertEqual(superSet?.repetitionsSecondExercise, 10)
+        XCTAssertEqual(superSet?.entryValues.map { Int($0.repetitions) }, [12, 10])
     }
     
     func testImportCustomExerciseWithSuperSetOneFuzzyMatchOneNew() throws {
@@ -2186,20 +2180,13 @@ final class WorkoutSharingServiceTests: XCTestCase {
         
         // Verify individual set values
         let sets = imported.setGroups[0].sets
-        if let s1 = sets[0] as? StandardSet {
-            XCTAssertEqual(Int(s1.repetitions), 5)
-            XCTAssertEqual(Int(s1.weight), 140000)
-        } else {
-            XCTFail("Expected StandardSet")
-        }
-        if let s2 = sets[1] as? StandardSet {
-            XCTAssertEqual(Int(s2.repetitions), 5)
-            XCTAssertEqual(Int(s2.weight), 145000)
-        }
-        if let s3 = sets[2] as? StandardSet {
-            XCTAssertEqual(Int(s3.repetitions), 3)
-            XCTAssertEqual(Int(s3.weight), 150000)
-        }
+        XCTAssertTrue(sets[0] is StandardSet, "Expected StandardSet")
+        XCTAssertEqual(sets[0].entryValues.first.map { Int($0.repetitions) }, 5)
+        XCTAssertEqual(sets[0].entryValues.first.map { Int($0.weight) }, 140000)
+        XCTAssertEqual(sets[1].entryValues.first.map { Int($0.repetitions) }, 5)
+        XCTAssertEqual(sets[1].entryValues.first.map { Int($0.weight) }, 145000)
+        XCTAssertEqual(sets[2].entryValues.first.map { Int($0.repetitions) }, 3)
+        XCTAssertEqual(sets[2].entryValues.first.map { Int($0.weight) }, 150000)
     }
     
     func testFullRoundTripTemplatePreservesAllData() throws {
@@ -2225,12 +2212,10 @@ final class WorkoutSharingServiceTests: XCTestCase {
         XCTAssertEqual(imported.setGroups.count, 1)
         XCTAssertEqual(imported.setGroups[0].sets.count, 3)
         
-        if let s1 = imported.setGroups[0].sets[0] as? TemplateStandardSet {
-            XCTAssertEqual(Int(s1.repetitions), 8)
-            XCTAssertEqual(Int(s1.weight), 40000)
-        } else {
-            XCTFail("Expected TemplateStandardSet")
-        }
+        let importedFirstSet = imported.setGroups[0].sets[0]
+        XCTAssertTrue(importedFirstSet is TemplateStandardSet, "Expected TemplateStandardSet")
+        XCTAssertEqual(importedFirstSet.entryValues.first.map { Int($0.repetitions) }, 8)
+        XCTAssertEqual(importedFirstSet.entryValues.first.map { Int($0.weight) }, 40000)
     }
     
     func testFullRoundTripComplexWorkout() throws {
@@ -2295,9 +2280,9 @@ final class WorkoutSharingServiceTests: XCTestCase {
         // Group 3: Drop set
         XCTAssertEqual(imported.setGroups[2].sets.count, 1)
         let dropSet = imported.setGroups[2].sets[0] as! DropSet
-        XCTAssertEqual(dropSet.repetitions?.count, 5)
-        XCTAssertEqual(dropSet.repetitions?.map { Int($0) }, [12, 10, 8, 6, 4])
-        XCTAssertEqual(dropSet.weights?.map { Int($0) }, [25000, 22000, 18000, 15000, 12000])
+        XCTAssertEqual(dropSet.numberOfDrops, 5)
+        XCTAssertEqual(dropSet.entryValues.map { Int($0.repetitions) }, [12, 10, 8, 6, 4])
+        XCTAssertEqual(dropSet.entryValues.map { Int($0.weight) }, [25000, 22000, 18000, 15000, 12000])
     }
     
     // MARK: - Edge Cases
@@ -2320,8 +2305,8 @@ final class WorkoutSharingServiceTests: XCTestCase {
         let imported = try importService.importWorkout(from: exportURL)
         
         let set1 = imported.setGroups[0].sets[0] as! StandardSet
-        XCTAssertEqual(Int(set1.repetitions), 20)
-        XCTAssertEqual(Int(set1.weight), 0)
+        XCTAssertEqual(set1.entryValues.first.map { Int($0.repetitions) }, 20)
+        XCTAssertEqual(set1.entryValues.first.map { Int($0.weight) }, 0)
     }
     
     func testExportAndImportSingleDropWithOneElement() throws {
@@ -2341,8 +2326,7 @@ final class WorkoutSharingServiceTests: XCTestCase {
         let imported = try importService.importWorkout(from: exportURL)
         
         let dropSet = imported.setGroups[0].sets[0] as! DropSet
-        XCTAssertEqual(dropSet.repetitions?.count, 1)
-        XCTAssertEqual(dropSet.weights?.count, 1)
+        XCTAssertEqual(dropSet.numberOfDrops, 1)
     }
     
     func testExportAndImportManySetGroups() throws {

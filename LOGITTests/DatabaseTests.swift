@@ -62,8 +62,9 @@ final class DatabaseTests: XCTestCase {
         let standardSet = database.newStandardSet(repetitions: 10, weight: 50000, setGroup: setGroup)
         
         XCTAssertNotNil(standardSet.id)
-        XCTAssertEqual(standardSet.repetitions, 10)
-        XCTAssertEqual(standardSet.weight, 50000)
+        XCTAssertEqual(standardSet.entryValues.map { $0.repetitions }, [10])
+        XCTAssertEqual(standardSet.entryValues.map { $0.weight }, [50000])
+        XCTAssertEqual(standardSet.entries.first?.type, .repsAndWeight)
         XCTAssertTrue(setGroup.sets.contains(standardSet))
     }
 
@@ -72,9 +73,9 @@ final class DatabaseTests: XCTestCase {
         let dropSet = database.newDropSet(repetitions: [10, 8, 6], weights: [100000, 80000, 60000], setGroup: setGroup)
         
         XCTAssertNotNil(dropSet.id)
-        XCTAssertEqual(dropSet.repetitions?.count, 3, "Drop set should have 3 drops")
-        XCTAssertEqual(dropSet.weights?.count, 3)
-        XCTAssertEqual(dropSet.numberOfDrops, 3)
+        XCTAssertEqual(dropSet.numberOfDrops, 3, "Drop set should have 3 drops")
+        XCTAssertEqual(dropSet.entryValues.map { $0.repetitions }, [10, 8, 6])
+        XCTAssertEqual(dropSet.entryValues.map { $0.weight }, [100000, 80000, 60000])
     }
 
     func testNewSuperSetCreation() {
@@ -88,10 +89,8 @@ final class DatabaseTests: XCTestCase {
         )
         
         XCTAssertNotNil(superSet.id)
-        XCTAssertEqual(superSet.repetitionsFirstExercise, 10)
-        XCTAssertEqual(superSet.repetitionsSecondExercise, 12)
-        XCTAssertEqual(superSet.weightFirstExercise, 50000)
-        XCTAssertEqual(superSet.weightSecondExercise, 40000)
+        XCTAssertEqual(superSet.entryValues.map { $0.repetitions }, [10, 12])
+        XCTAssertEqual(superSet.entryValues.map { $0.weight }, [50000, 40000])
     }
 
     // MARK: - Database Operations Tests

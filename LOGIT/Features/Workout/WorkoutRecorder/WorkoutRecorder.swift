@@ -56,22 +56,20 @@ final class WorkoutRecorder: ObservableObject {
                     workout: workout
                 )
                 for templateSet in templateSetGroup.sets {
-                    if let templateStandardSet = templateSet as? TemplateStandardSet {
-                        let standardSet = database.newStandardSet(
-                            restDuration: Int(templateStandardSet.restDuration),
-                            setGroup: setGroup
-                        )
-                        workoutSetTemplateSetDictionary[standardSet] = templateStandardSet
-                    } else if let templateDropSet = templateSet as? TemplateDropSet {
-                        let dropSet = database.newDropSet(from: templateDropSet, setGroup: setGroup)
-                        workoutSetTemplateSetDictionary[dropSet] = templateDropSet
-                    } else if let templateSuperSet = templateSet as? TemplateSuperSet {
-                        let superSet = database.newSuperSet(
-                            from: templateSuperSet,
-                            setGroup: setGroup
-                        )
-                        workoutSetTemplateSetDictionary[superSet] = templateSuperSet
+                    let workoutSet: WorkoutSet
+                    if templateSet is TemplateDropSet {
+                        workoutSet = database.newDropSet(setGroup: setGroup)
+                    } else if templateSet is TemplateSuperSet {
+                        workoutSet = database.newSuperSet(setGroup: setGroup)
+                        setGroup.secondaryExercise = templateSetGroup.secondaryExercise
+                    } else {
+                        workoutSet = database.newStandardSet(setGroup: setGroup)
                     }
+                    workoutSet.restDuration = templateSet.restDuration
+                    // Mirror the template's planned structure — drop count and per-entry
+                    // measurement types (a template can override its exercise's default).
+                    workoutSet.matchStructure(toEntryValues: templateSet.entryValues)
+                    workoutSetTemplateSetDictionary[workoutSet] = templateSet
                 }
             }
         }

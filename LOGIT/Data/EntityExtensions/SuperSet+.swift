@@ -12,18 +12,18 @@ public extension SuperSet {
         setGroup?.secondaryExercise
     }
 
-    // MARK: Overrides from WorkoutSet
+    // MARK: Legacy-field fallbacks (see WorkoutSet.hasEntry & friends)
 
-    override var hasEntry: Bool {
+    internal override var legacyHasEntry: Bool {
         repetitionsFirstExercise > 0 || repetitionsSecondExercise > 0 || weightFirstExercise > 0
             || weightSecondExercise > 0
     }
 
-    override var hasRepetitionEntry: Bool {
+    internal override var legacyHasRepetitionEntry: Bool {
         repetitionsFirstExercise > 0 || repetitionsSecondExercise > 0
     }
 
-    override func clearEntries() {
+    internal override func legacyClearEntries() {
         repetitionsFirstExercise = 0
         repetitionsSecondExercise = 0
         weightFirstExercise = 0

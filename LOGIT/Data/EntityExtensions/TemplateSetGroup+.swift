@@ -50,6 +50,7 @@ extension TemplateSetGroup {
                 currentExercises[0] = newExercise
             }
             exercises = currentExercises
+            reattributeEntries()
         }
     }
 
@@ -68,6 +69,20 @@ extension TemplateSetGroup {
                 currentExercises.replaceValue(at: 1, with: exercise)
             }
             exercises = currentExercises
+            reattributeEntries()
+        }
+    }
+
+    /// Mirror of `WorkoutSetGroup.reattributeEntries()` — see there.
+    internal func reattributeEntries() {
+        for set in sets {
+            for entry in set.entries {
+                let owner = set.positionalExercise(forOrder: entry.order)
+                entry.exercise = owner
+                if !entry.hasValue, let type = owner?.measurementType {
+                    entry.type = type
+                }
+            }
         }
     }
 
@@ -84,6 +99,16 @@ extension TemplateSetGroup {
         } else {
             return .standard
         }
+    }
+
+    /// Mirror of `WorkoutSetGroup.measurementType`.
+    var measurementType: SetMeasurementType {
+        sets.first?.entryValues.first?.type ?? exercise?.measurementType ?? .repsAndWeight
+    }
+
+    /// Mirror of `WorkoutSetGroup.overrideMeasurementType(_:)` — values are never cleared.
+    func overrideMeasurementType(_ type: SetMeasurementType) {
+        sets.forEach { $0.overrideMeasurementType(type) }
     }
 
     func index(of set: TemplateSet) -> Int? {

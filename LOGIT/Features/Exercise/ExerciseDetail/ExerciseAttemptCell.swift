@@ -42,11 +42,14 @@ struct ExerciseAttemptCell: View {
             // Set entries
             VStack(spacing: CELL_SPACING) {
                 ForEach(Array(setGroup.sets.enumerated()), id: \.element.id) { index, workoutSet in
-                    if let dropSet = workoutSet as? DropSet {
+                    if workoutSet is DropSet {
                         // For dropsets, show each drop as a separate row
-                        DropSetEntryRows(setNumber: index + 1, dropSet: dropSet)
+                        DropSetEntryRows(setNumber: index + 1, values: workoutSet.entryValues)
                     } else {
-                        SetEntryRow(setNumber: index + 1, workoutSet: workoutSet, exercise: setGroup.exercise)
+                        SetEntryRow(
+                            setNumber: index + 1,
+                            value: displayedValue(of: workoutSet)
+                        )
                     }
                 }
             }
@@ -56,7 +59,18 @@ struct ExerciseAttemptCell: View {
     }
     
     // MARK: - Helper Methods
-    
+
+    /// The entry shown for a non-drop set: for compound sets the one belonging to the viewed
+    /// exercise, otherwise the set's single entry.
+    private func displayedValue(of workoutSet: WorkoutSet) -> SetEntryValues? {
+        let values = workoutSet.entryValues
+        if workoutSet is SuperSet {
+            return values.first { $0.exercise != nil && $0.exercise == setGroup.exercise }
+                ?? values.first
+        }
+        return values.first
+    }
+
     private func formattedDate(_ date: Date) -> String {
         let calendar = Calendar.current
         let now = Date()
@@ -76,9 +90,8 @@ struct ExerciseAttemptCell: View {
 
 private struct SetEntryRow: View {
     let setNumber: Int
-    let workoutSet: WorkoutSet
-    let exercise: Exercise?
-    
+    let value: SetEntryValues?
+
     var body: some View {
         HStack(spacing: 0) {
             // Set number indicator
@@ -86,14 +99,11 @@ private struct SetEntryRow: View {
                 .font(.system(.title3, design: .rounded, weight: .bold))
                 .foregroundStyle(Color.tertiaryLabel)
                 .frame(width: 30, alignment: .leading)
-            
+
             Spacer()
-            
-            // Reps and weight based on set type
-            if let standardSet = workoutSet as? StandardSet {
-                standardSetContent(standardSet)
-            } else if let superSet = workoutSet as? SuperSet {
-                superSetContent(superSet)
+
+            if let value {
+                EntryValueColumns(value: value)
             }
         }
         .padding(.vertical, CELL_PADDING)
@@ -105,106 +115,27 @@ private struct SetEntryRow: View {
         )
         .cornerRadius(15)
     }
-    
-    // MARK: - Standard Set Content
-    
-    @ViewBuilder
-    private func standardSetContent(_ standardSet: StandardSet) -> some View {
-        HStack(spacing: 0) {
-            UnitView(
-                value: "\(standardSet.repetitions)",
-                unit: NSLocalizedString("reps", comment: ""),
-                configuration: .normal,
-                unitColor: .secondaryLabel
-            )
-            .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
-            
-            UnitView(
-                value: formattedWeight(standardSet.weight),
-                unit: WeightUnit.used.rawValue,
-                configuration: .normal,
-                unitColor: .secondaryLabel
-            )
-            .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
-        }
-    }
-    
-    // MARK: - Super Set Content
-    
-    @ViewBuilder
-    private func superSetContent(_ superSet: SuperSet) -> some View {
-        // Show the data for the exercise we're viewing
-        let isFirstExercise = superSet.exercise == exercise
-        let repetitions = isFirstExercise ? superSet.repetitionsFirstExercise : superSet.repetitionsSecondExercise
-        let weight = isFirstExercise ? superSet.weightFirstExercise : superSet.weightSecondExercise
-        
-        HStack(spacing: 0) {
-            UnitView(
-                value: "\(repetitions)",
-                unit: NSLocalizedString("reps", comment: ""),
-                configuration: .normal,
-                unitColor: .secondaryLabel
-            )
-            .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
-            
-            UnitView(
-                value: formattedWeight(weight),
-                unit: WeightUnit.used.rawValue,
-                configuration: .normal,
-                unitColor: .secondaryLabel
-            )
-            .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
-        }
-    }
-    
-    private func formattedWeight(_ weight: Int64) -> String {
-        let displayWeight = convertWeightForDisplayingDecimal(weight)
-        if displayWeight.truncatingRemainder(dividingBy: 1) == 0 {
-            return String(format: "%.0f", displayWeight)
-        } else {
-            return String(format: "%.1f", displayWeight)
-        }
-    }
 }
 
 // MARK: - Drop Set Entry Rows
 
 private struct DropSetEntryRows: View {
     let setNumber: Int
-    let dropSet: DropSet
-    
+    let values: [SetEntryValues]
+
     var body: some View {
-        let reps = dropSet.repetitions ?? []
-        let weights = dropSet.weights ?? []
-        
         VStack(spacing: 0) {
-            ForEach(Array(zip(reps, weights).enumerated()), id: \.offset) { dropIndex, item in
+            ForEach(Array(values.enumerated()), id: \.offset) { dropIndex, value in
                 HStack(spacing: 0) {
                     // Set number indicator (only show on first drop)
                     Text(dropIndex == 0 ? "\(setNumber)" : "")
                         .font(.system(.title3, design: .rounded, weight: .bold))
                         .foregroundStyle(Color.tertiaryLabel)
                         .frame(width: 30, alignment: .leading)
-                    
+
                     Spacer()
-                    
-                    HStack(spacing: 0) {
-                        UnitView(
-                            value: "\(item.0)",
-                            unit: NSLocalizedString("reps", comment: ""),
-                            configuration: .normal,
-                            unitColor: .secondaryLabel
-                        )
-                        .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
-                        
-                        UnitView(
-                            value: formattedWeight(item.1),
-                            unit: WeightUnit.used.rawValue,
-                            configuration: .normal,
-                            unitColor: .secondaryLabel
-                        )
-                        .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
-                    }
+
+                    EntryValueColumns(value: value)
                 }
                 .padding(.vertical, CELL_PADDING)
                 .padding(.horizontal, CELL_PADDING)
@@ -217,7 +148,47 @@ private struct DropSetEntryRows: View {
         )
         .cornerRadius(15)
     }
-    
+}
+
+// MARK: - Entry Value Columns
+
+/// One entry's recorded values as unit columns, laid out by measurement type in the same
+/// field order the recorder uses: reps → weight, or weight → duration.
+private struct EntryValueColumns: View {
+    let value: SetEntryValues
+
+    var body: some View {
+        HStack(spacing: 0) {
+            if value.type.usesRepetitions {
+                UnitView(
+                    value: "\(value.repetitions)",
+                    unit: NSLocalizedString("reps", comment: ""),
+                    configuration: .normal,
+                    unitColor: .secondaryLabel
+                )
+                .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+            }
+            if value.type.usesWeight {
+                UnitView(
+                    value: formattedWeight(value.weight),
+                    unit: WeightUnit.used.rawValue,
+                    configuration: .normal,
+                    unitColor: .secondaryLabel
+                )
+                .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+            }
+            if value.type.usesDuration {
+                UnitView(
+                    value: "\(value.duration)",
+                    unit: NSLocalizedString("sec", comment: ""),
+                    configuration: .normal,
+                    unitColor: .secondaryLabel
+                )
+                .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+            }
+        }
+    }
+
     private func formattedWeight(_ weight: Int64) -> String {
         let displayWeight = convertWeightForDisplayingDecimal(weight)
         if displayWeight.truncatingRemainder(dividingBy: 1) == 0 {

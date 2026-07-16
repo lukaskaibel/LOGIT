@@ -181,6 +181,17 @@ public extension TemplateSet {
         }
     }
 
+    /// The set's effective measurement type — its first entry's stored type.
+    internal var measurementType: SetMeasurementType {
+        entryValues.first?.type ?? .repsAndWeight
+    }
+
+    /// Re-types this one set's entries — see `WorkoutSet.overrideMeasurementType(_:)`.
+    internal func overrideMeasurementType(_ type: SetMeasurementType) {
+        ensureEntries()
+        entries.forEach { $0.type = type }
+    }
+
     /// True when any entry recorded a value. Legacy-shaped sets fall back to the subclass'
     /// legacy fields.
     @objc var hasEntry: Bool {

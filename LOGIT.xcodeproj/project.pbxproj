@@ -86,6 +86,7 @@
 		801BBD802DF7338A00CDB1FB /* TileStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD4C2DF7338A00CDB1FB /* TileStyle.swift */; };
 		801BBD812DF7338A00CDB1FB /* ExerciseWeightScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCF22DF7338A00CDB1FB /* ExerciseWeightScreen.swift */; };
 		801BBD822DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCF02DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift */; };
+		80DU00042F70CC0100DU0004 /* ExerciseDurationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DU00032F70CC0100DU0003 /* ExerciseDurationScreen.swift */; };
 		801BBD832DF7338A00CDB1FB /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBC9F2DF7338A00CDB1FB /* Secrets.swift */; };
 		801BBD842DF7338A00CDB1FB /* LogitProLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD532DF7338A00CDB1FB /* LogitProLogo.swift */; };
 		801BBD852DF7338A00CDB1FB /* StopwatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD202DF7338A00CDB1FB /* StopwatchView.swift */; };
@@ -170,6 +171,7 @@
 		801BBDE42DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD3E2DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift */; };
 		801BBDE52DF7338A00CDB1FB /* WeightConverting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBF2DF7338A00CDB1FB /* WeightConverting.swift */; };
 		801BBDE62DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */; };
+		80DU00022F70CC0100DU0002 /* ExerciseDurationTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DU00012F70CC0100DU0001 /* ExerciseDurationTile.swift */; };
 		801BBDE72DF7338A00CDB1FB /* UIConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCAB2DF7338A00CDB1FB /* UIConstants.swift */; };
 		801BBDE82DF7338A00CDB1FB /* ExerciseHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD4F2DF7338A00CDB1FB /* ExerciseHeader.swift */; };
 		801BBDE92DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCB42DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift */; };
@@ -453,11 +455,13 @@
 		801BBCE52DF7338A00CDB1FB /* WorkoutSetGroupPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetGroupPredicateFactory.swift; sourceTree = "<group>"; };
 		801BBCE62DF7338A00CDB1FB /* WorkoutSetPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetPredicateFactory.swift; sourceTree = "<group>"; };
 		801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRepetitionsTile.swift; sourceTree = "<group>"; };
+		80DU00012F70CC0100DU0001 /* ExerciseDurationTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDurationTile.swift; sourceTree = "<group>"; };
 		801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseVolumeTile.swift; sourceTree = "<group>"; };
 		801BBCEC2DF7338A00CDB1FB /* ExerciseWeightTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseWeightTile.swift; sourceTree = "<group>"; };
 		801BBCEE2DF7338A00CDB1FB /* ExerciseDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailScreen.swift; sourceTree = "<group>"; };
 		801BBCEF2DF7338A00CDB1FB /* ExerciseHistoryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHistoryScreen.swift; sourceTree = "<group>"; };
 		801BBCF02DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRepetitionsScreen.swift; sourceTree = "<group>"; };
+		80DU00032F70CC0100DU0003 /* ExerciseDurationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDurationScreen.swift; sourceTree = "<group>"; };
 		801BBCF12DF7338A00CDB1FB /* ExerciseVolumeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseVolumeScreen.swift; sourceTree = "<group>"; };
 		801BBCF22DF7338A00CDB1FB /* ExerciseWeightScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseWeightScreen.swift; sourceTree = "<group>"; };
 		801BBCF42DF7338A00CDB1FB /* ExerciseCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseCell.swift; sourceTree = "<group>"; };
@@ -981,6 +985,7 @@
 			isa = PBXGroup;
 			children = (
 				801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */,
+				80DU00012F70CC0100DU0001 /* ExerciseDurationTile.swift */,
 				801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */,
 				E1E1E1000000000000000F10 /* ExerciseSetsTile.swift */,
 				E1E1E1000000000000000F08 /* ExerciseMetricTile.swift */,
@@ -999,6 +1004,7 @@
 				801BBCEE2DF7338A00CDB1FB /* ExerciseDetailScreen.swift */,
 				801BBCEF2DF7338A00CDB1FB /* ExerciseHistoryScreen.swift */,
 				801BBCF02DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift */,
+				80DU00032F70CC0100DU0003 /* ExerciseDurationScreen.swift */,
 				801BBCF12DF7338A00CDB1FB /* ExerciseVolumeScreen.swift */,
 				E1E1E1000000000000000F11 /* ExerciseSetsScreen.swift */,
 				801BBCF22DF7338A00CDB1FB /* ExerciseWeightScreen.swift */,
@@ -1635,6 +1641,7 @@
 				E1E1E1000000000000000B02 /* ExerciseE1RMScreen.swift in Sources */,
 				E1E1E1000000000000000B06 /* ExerciseSetVolumeScreen.swift in Sources */,
 				801BBD822DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift in Sources */,
+				80DU00042F70CC0100DU0004 /* ExerciseDurationScreen.swift in Sources */,
 				801BBD832DF7338A00CDB1FB /* Secrets.swift in Sources */,
 				801BBD842DF7338A00CDB1FB /* LogitProLogo.swift in Sources */,
 				801BBD852DF7338A00CDB1FB /* StopwatchView.swift in Sources */,
@@ -1759,6 +1766,7 @@
 				801BBDE42DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift in Sources */,
 				801BBDE52DF7338A00CDB1FB /* WeightConverting.swift in Sources */,
 				801BBDE62DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift in Sources */,
+				80DU00022F70CC0100DU0002 /* ExerciseDurationTile.swift in Sources */,
 				801BBDE72DF7338A00CDB1FB /* UIConstants.swift in Sources */,
 				801BBDE82DF7338A00CDB1FB /* ExerciseHeader.swift in Sources */,
 				801BBDE92DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift in Sources */,

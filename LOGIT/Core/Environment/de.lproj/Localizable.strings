@@ -1044,3 +1044,5 @@
 "measurementType.duration" = "Dauer";
 "measurementType.weightAndDuration" = "Gewicht & Dauer";
 "measurementTypeChangeInfo" = "Bestehende Sätze behalten ihre aufgezeichneten Werte. Nur neue Sätze verwenden die neue Messung.";
+
+"metricInfoDuration" = "Deine längste aufgezeichnete Dauer für diese Übung.";

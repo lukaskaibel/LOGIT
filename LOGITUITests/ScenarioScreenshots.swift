@@ -78,6 +78,12 @@ final class ScenarioScreenshots: XCTestCase {
         app.swipeUp()
         waitABit(1)
         attach(app, "recorder_measurement_types_bottom")
+
+        // The exercise name opens the detail sheet: a duration exercise must show its
+        // duration tile (fed by the seeded plank history) instead of weight/e1RM tiles.
+        app.staticTexts["Plank"].firstMatch.tap()
+        waitABit(3)
+        attach(app, "plank_detail_duration_tiles")
     }
 
     // MARK: - Workout recorder (Transmission presentation)

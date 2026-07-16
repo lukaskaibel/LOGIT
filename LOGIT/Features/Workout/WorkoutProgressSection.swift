@@ -91,6 +91,7 @@ struct WorkoutProgressReport {
                 case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: exercise)
                 case .weight: return workoutSet.maximum(.weight, for: exercise)
                 case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
+                case .duration: return workoutSet.maximum(.duration, for: exercise)
                 }
             }
 
@@ -177,6 +178,7 @@ private func personalRecordSetValue(_ workoutSet: WorkoutSet, exercise: Exercise
     case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: exercise)
     case .weight: return workoutSet.maximum(.weight, for: exercise)
     case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
+    case .duration: return workoutSet.maximum(.duration, for: exercise)
     }
 }
 
@@ -203,6 +205,7 @@ struct WorkoutPersonalBestsTile: View {
             case .weight: return 0
             case .estimatedOneRepMax: return 1
             case .repetitions: return 2
+            case .duration: return 3
             }
         }
         var best: [NSManagedObjectID: WorkoutProgressReport.PRRecord] = [:]
@@ -427,7 +430,7 @@ struct WorkoutPersonalRecordCard: View {
             let value: Double
             switch record.metric {
             case .estimatedOneRepMax, .weight: value = convertWeightForDisplayingDecimal(best)
-            case .repetitions: value = Double(best)
+            case .repetitions, .duration: value = Double(best)
             }
             return ExerciseTileSparkline.Point(date: day, value: value)
         }

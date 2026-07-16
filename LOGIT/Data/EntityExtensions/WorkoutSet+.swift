@@ -286,6 +286,19 @@ public extension WorkoutSet {
     var isSuperSet: Bool { (self as? SuperSet) != nil }
     var isDropSet: Bool { (self as? DropSet) != nil }
 
+    /// The set's effective measurement type — its first entry's stored type.
+    internal var measurementType: SetMeasurementType {
+        entryValues.first?.type ?? .repsAndWeight
+    }
+
+    /// Re-types this one set's entries — the single-set override on top of the exercise or
+    /// group default. Values are never cleared: fields the new type doesn't track stay stored
+    /// (and invisible), so switching back restores them.
+    internal func overrideMeasurementType(_ type: SetMeasurementType) {
+        ensureEntries()
+        entries.forEach { $0.type = type }
+    }
+
     // MARK: - Matching
 
     /// Copies the template's planned entries into this set (recorder prefill / duplication).

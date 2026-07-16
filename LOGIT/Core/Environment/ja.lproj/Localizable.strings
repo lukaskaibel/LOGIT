@@ -1048,3 +1048,5 @@
 "measurementType.duration" = "時間";
 "measurementType.weightAndDuration" = "重量と時間";
 "measurementTypeChangeInfo" = "既存のセットは記録された値を保持します。新しいセットのみ新しい測定方法を使用します。";
+
+"metricInfoDuration" = "このエクササイズで記録された最長時間です。";

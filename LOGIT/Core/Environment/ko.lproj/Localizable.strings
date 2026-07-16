@@ -1048,3 +1048,5 @@
 "measurementType.duration" = "시간";
 "measurementType.weightAndDuration" = "무게와 시간";
 "measurementTypeChangeInfo" = "기존 세트는 기록된 값을 유지합니다. 새 세트만 새 측정 방식을 사용합니다.";
+
+"metricInfoDuration" = "이 운동에서 기록된 가장 긴 시간입니다.";

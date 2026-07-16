@@ -692,6 +692,7 @@ private struct SetGroupMetricComparison {
         case .estimatedOneRepMax: return setGroup.sets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
         case .weight: return setGroup.sets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
         case .repetitions: return setGroup.sets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
+        case .duration: return setGroup.sets.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
         }
     }
 
@@ -730,6 +731,7 @@ private struct SetGroupMetricComparison {
             case .estimatedOneRepMax: return best.estimatedOneRepMax(for: exercise)
             case .weight: return best.maximum(.weight, for: exercise)
             case .repetitions: return best.maximum(.repetitions, for: exercise)
+            case .duration: return best.maximum(.duration, for: exercise)
             }
         }
         // Untrained for over a month → the window is empty. Fall back to the all-time best so there
@@ -740,6 +742,7 @@ private struct SetGroupMetricComparison {
             case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: exercise)
             case .weight: return workoutSet.maximum(.weight, for: exercise)
             case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
+            case .duration: return workoutSet.maximum(.duration, for: exercise)
             }
         }
         let allTimeBest = priorSets.map(value).max() ?? 0
@@ -778,6 +781,7 @@ private struct SetGroupMetricComparison {
         case .estimatedOneRepMax: return priorSets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
         case .weight: return priorSets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
         case .repetitions: return priorSets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
+        case .duration: return priorSets.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
         }
     }
 
@@ -925,7 +929,13 @@ private struct MetricBadgeView: View {
             peek.setEditing(editing)
         }
         .onChange(of: prSignature) { _, _ in
-            peek.update(prs: prSnapshot(), primary: primaryMetric, order: ExercisePrimaryMetric.allCases)
+            peek.update(
+                prs: prSnapshot(),
+                primary: primaryMetric,
+                order: ExercisePrimaryMetric.allowed(
+                    for: setGroup.exercise?.measurementType ?? .repsAndWeight
+                )
+            )
         }
         .onChange(of: displayedIsRecord) { _, newValue in
             // The chosen metric becoming a record celebrates here; peeked records fire their own
@@ -1044,6 +1054,8 @@ private struct MetricBadgeView: View {
             return UnitView(value: formatWeightForDisplay(value), unit: WeightUnit.used.rawValue, configuration: .extraSmall)
         case .repetitions:
             return UnitView(value: "\(value)", unit: NSLocalizedString("reps", comment: ""), configuration: .extraSmall)
+        case .duration:
+            return UnitView(value: "\(value)", unit: NSLocalizedString("sec", comment: ""), configuration: .extraSmall)
         }
     }
 
@@ -1102,6 +1114,8 @@ private struct MetricBadgeView: View {
             return "\(formatWeightForDisplay(value)) \(WeightUnit.used.rawValue)"
         case .repetitions:
             return "\(value) \(NSLocalizedString("reps", comment: ""))"
+        case .duration:
+            return "\(value) \(NSLocalizedString("sec", comment: ""))"
         }
     }
 
@@ -1409,6 +1423,7 @@ struct MetricInfoPanel: View {
         case .estimatedOneRepMax: return NSLocalizedString("e1RMInfo", comment: "")
         case .weight: return NSLocalizedString("metricInfoWeight", comment: "")
         case .repetitions: return NSLocalizedString("metricInfoReps", comment: "")
+        case .duration: return NSLocalizedString("metricInfoDuration", comment: "")
         }
     }
 
@@ -1426,7 +1441,7 @@ struct MetricInfoPanel: View {
         switch metric {
         case .estimatedOneRepMax: return formatEstimatedOneRepMax(value)
         case .weight: return formatWeightForDisplay(value)
-        case .repetitions: return String(value)
+        case .repetitions, .duration: return String(value)
         }
     }
 
@@ -1434,6 +1449,7 @@ struct MetricInfoPanel: View {
         switch metric {
         case .estimatedOneRepMax, .weight: return WeightUnit.used.rawValue
         case .repetitions: return NSLocalizedString("reps", comment: "")
+        case .duration: return NSLocalizedString("sec", comment: "")
         }
     }
 
@@ -1444,13 +1460,14 @@ struct MetricInfoPanel: View {
         case .estimatedOneRepMax: return set.estimatedOneRepMax(for: exercise)
         case .weight: return set.maximum(.weight, for: exercise)
         case .repetitions: return set.maximum(.repetitions, for: exercise)
+        case .duration: return set.maximum(.duration, for: exercise)
         }
     }
 
     private func metricDisplayValue(_ base: Int, _ metric: ExercisePrimaryMetric) -> Double {
         switch metric {
         case .estimatedOneRepMax, .weight: return convertWeightForDisplayingDecimal(base)
-        case .repetitions: return Double(base)
+        case .repetitions, .duration: return Double(base)
         }
     }
 

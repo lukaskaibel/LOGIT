@@ -108,10 +108,7 @@ extension TemplateSetGroup {
 
     /// Mirror of `WorkoutSetGroup.overrideMeasurementType(_:)` — values are never cleared.
     func overrideMeasurementType(_ type: SetMeasurementType) {
-        for set in sets {
-            set.ensureEntries()
-            set.entries.forEach { $0.type = type }
-        }
+        sets.forEach { $0.overrideMeasurementType(type) }
     }
 
     func index(of set: TemplateSet) -> Int? {

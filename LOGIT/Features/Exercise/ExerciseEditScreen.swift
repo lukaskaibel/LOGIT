@@ -100,13 +100,21 @@ struct ExerciseEditScreen: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
                         .padding(.horizontal)
+                    // Only metrics that fit the chosen measurement — a plank never offers e1RM.
+                    let allowedMetrics = ExercisePrimaryMetric.allowed(for: measurementType)
                     Picker(NSLocalizedString("progressMetric", comment: ""), selection: $primaryMetric) {
-                        ForEach(ExercisePrimaryMetric.allCases, id: \.self) { metric in
+                        ForEach(allowedMetrics, id: \.self) { metric in
                             Text(metric.title).tag(metric)
                         }
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
+                    .onChange(of: measurementType) { _, newType in
+                        let allowed = ExercisePrimaryMetric.allowed(for: newType)
+                        if !allowed.contains(primaryMetric) {
+                            primaryMetric = allowed.contains(.defaultMetric) ? .defaultMetric : allowed[0]
+                        }
+                    }
                 }
                 Spacer()
             }

@@ -1048,3 +1048,5 @@
 "measurementType.duration" = "Duração";
 "measurementType.weightAndDuration" = "Peso e duração";
 "measurementTypeChangeInfo" = "As séries existentes mantêm os valores registrados. Apenas as novas séries usam a nova medição.";
+
+"metricInfoDuration" = "Sua duração mais longa registrada para este exercício.";

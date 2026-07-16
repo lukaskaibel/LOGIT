@@ -1048,3 +1048,5 @@
 "measurementType.duration" = "Duration";
 "measurementType.weightAndDuration" = "Weight & Duration";
 "measurementTypeChangeInfo" = "Existing sets keep the values they were recorded with. Only new sets use the new measurement.";
+
+"metricInfoDuration" = "Your longest recorded duration for this exercise.";

@@ -127,6 +127,32 @@ struct TemplateSetCell: View {
             }
         }
 
+        // Per-set measurement override on top of the exercise/group default. Hidden for
+        // super sets: their two exercises each bring their own measurement type.
+        if !(templateSet is TemplateSuperSet) {
+            Section {
+                Menu {
+                    ForEach(SetMeasurementType.allCases) { type in
+                        Button {
+                            templateSet.overrideMeasurementType(type)
+                        } label: {
+                            HStack {
+                                Text(type.title)
+                                if templateSet.measurementType == type {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    Label(
+                        NSLocalizedString("measurementType", comment: ""),
+                        systemImage: "slider.horizontal.3"
+                    )
+                }
+            }
+        }
+
         Section {
             Button {
                 withAnimation(.interactiveSpring()) {

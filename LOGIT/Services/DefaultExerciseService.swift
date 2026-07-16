@@ -18,6 +18,9 @@ struct DefaultExercise: Codable {
     let id: String
     let nameKey: String
     let muscleGroup: String
+    /// `SetMeasurementType` raw value for exercises that aren't tracked as reps + weight
+    /// (planks, cardio, loaded carries). Absent = reps + weight.
+    let measurementType: String?
     let instructions: [String]?
     let localizedInstructions: [String: [String]]?
 
@@ -75,6 +78,8 @@ class DefaultExerciseService: ObservableObject {
     private func createOrUpdateDefaultExercises(_ exercises: [DefaultExercise], localeIdentifier: String) {
         for exerciseData in exercises {
             let instructions = exerciseData.instructions(for: localeIdentifier)
+            let libraryMeasurementType =
+                SetMeasurementType(rawValue: exerciseData.measurementType ?? "") ?? .repsAndWeight
 
             if let existingExercise = fetchExerciseByDefaultId(exerciseData.id) {
                 existingExercise.name = exerciseData.nameKey
@@ -82,6 +87,14 @@ class DefaultExerciseService: ObservableObject {
                     existingExercise.muscleGroup = muscleGroup
                 }
                 existingExercise.instructions = instructions
+                // Adopt the library's measurement type only while the user has neither chosen
+                // one (the editor always stores an explicit value) nor recorded anything with
+                // the exercise — an established logging habit is never changed underneath them.
+                if existingExercise.measurementTypeString == nil,
+                   existingExercise.setGroups.isEmpty,
+                   existingExercise.templateSetGroups.isEmpty {
+                    existingExercise.measurementType = libraryMeasurementType
+                }
             } else {
                 let exercise = Exercise(context: database.context)
                 exercise.id = generateUUID(from: exerciseData.id)
@@ -90,6 +103,7 @@ class DefaultExerciseService: ObservableObject {
                     exercise.muscleGroup = muscleGroup
                 }
                 exercise.instructions = instructions
+                exercise.measurementType = libraryMeasurementType
             }
         }
     }

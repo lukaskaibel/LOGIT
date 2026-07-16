@@ -147,14 +147,10 @@ public extension WorkoutSetGroup {
         sets.first?.entryValues.first?.type ?? exercise?.measurementType ?? .repsAndWeight
     }
 
-    /// Re-types every entry in the group — the per-set override on top of the exercise
-    /// default. Values are never cleared: fields the new type doesn't track stay stored (and
-    /// invisible), so switching back restores them — recorded data is never lost to a re-type.
+    /// Re-types every set in the group — the group-wide override on top of the exercise
+    /// default. Values are never cleared — recorded data is never lost to a re-type.
     internal func overrideMeasurementType(_ type: SetMeasurementType) {
-        for set in sets {
-            set.ensureEntries()
-            set.entries.forEach { $0.type = type }
-        }
+        sets.forEach { $0.overrideMeasurementType(type) }
     }
 
     subscript(index: Int) -> WorkoutSet { sets[index] }

@@ -600,10 +600,10 @@ struct WorkoutRecorderScreen: View {
     /// The unfolded half of the header: the workout detail's Volume and Repetitions stat tiles
     /// above the Minimize and Finish actions. The tiles appear only once the workout has a
     /// logged value — an empty (fresh / template) start shows just the two buttons, so the panel
-    /// stays small. Everything accent-colored wears the workout's muscle-group gradient.
+    /// stays small. The actions use the app's shared secondary/primary button styles, so they
+    /// match the Add Set button's capsule height and read as the standard action hierarchy.
     private func headerExpandedPanel(for workout: Workout) -> some View {
-        let gradient = workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
-        return VStack(spacing: 8) {
+        VStack(spacing: 8) {
             if workout.hasEntries {
                 HStack(alignment: .top, spacing: 8) {
                     workoutStatTile(.volume, for: workout)
@@ -615,13 +615,8 @@ struct WorkoutRecorderScreen: View {
                     dismissWorkoutRecorder()
                 } label: {
                     Label(NSLocalizedString("minimize", comment: ""), systemImage: "arrow.down.right.and.arrow.up.left")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(Color.secondaryLabel)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.fill)
-                        .clipShape(RoundedRectangle(cornerRadius: 15))
                 }
+                .buttonStyle(SecondaryButtonStyle())
                 Button {
                     guard workout.hasEntries else {
                         finishWorkout(shouldSave: false)
@@ -630,16 +625,8 @@ struct WorkoutRecorderScreen: View {
                     isShowingFinishConfirmation = true
                 } label: {
                     Label(NSLocalizedString("finishWorkout", comment: ""), systemImage: "flag.checkered")
-                        .font(.body.weight(.bold))
-                        .foregroundStyle(gradient)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            workout.sets.muscleGroupGradient(startPoint: .bottomLeading, endPoint: .topTrailing)
-                                .opacity(0.15)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 15))
                 }
+                .buttonStyle(PrimaryButtonStyle())
             }
         }
     }

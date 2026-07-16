@@ -1050,3 +1050,9 @@
 "measurementTypeChangeInfo" = "기존 세트는 기록된 값을 유지합니다. 새 세트만 새 측정 방식을 사용합니다.";
 
 "metricInfoDuration" = "이 운동에서 기록된 가장 긴 시간입니다.";
+// Per-workout vs total basis (Summary stat tiles + detail toggle)
+"perWorkout" = "운동당";
+"perWorkoutBasis" = "운동당";
+"basis" = "값";
+
+"buildingYourTrend" = "추세 만드는 중";

@@ -1046,3 +1046,9 @@
 "measurementTypeChangeInfo" = "Bestehende Sätze behalten ihre aufgezeichneten Werte. Nur neue Sätze verwenden die neue Messung.";
 
 "metricInfoDuration" = "Deine längste aufgezeichnete Dauer für diese Übung.";
+// Per-workout vs total basis (Summary stat tiles + detail toggle)
+"perWorkout" = "pro Workout";
+"perWorkoutBasis" = "Pro Workout";
+"basis" = "Werte";
+
+"buildingYourTrend" = "Dein Trend entsteht";

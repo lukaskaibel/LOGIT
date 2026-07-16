@@ -1050,3 +1050,9 @@
 "measurementTypeChangeInfo" = "既存のセットは記録された値を保持します。新しいセットのみ新しい測定方法を使用します。";
 
 "metricInfoDuration" = "このエクササイズで記録された最長時間です。";
+// Per-workout vs total basis (Summary stat tiles + detail toggle)
+"perWorkout" = "ワークアウトあたり";
+"perWorkoutBasis" = "ワークアウトあたり";
+"basis" = "値";
+
+"buildingYourTrend" = "トレンドを作成中";

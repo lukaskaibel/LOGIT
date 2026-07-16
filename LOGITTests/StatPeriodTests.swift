@@ -285,4 +285,41 @@ final class WeeklyStreakTests: XCTestCase {
             1
         )
     }
+
+    // MARK: - Compact tile averages
+
+    /// Digit characters only, so assertions ignore the locale's grouping / decimal separators
+    /// ("1,234.5", "1.234,5" and "1 234,5" all count five digits).
+    private func digitCount(_ string: String) -> Int {
+        string.filter(\.isNumber).count
+    }
+
+    func testTileAverageKeepsDecimalBelowThousand() {
+        // Under 1000 the compact tile still carries its one decimal — a rounded count would overstate
+        // a fractional average's precision.
+        let sets = WorkoutStatMetric.sets.formattedAverage(rawAverage: 18.5, compact: true)
+        XCTAssertEqual(digitCount(sets), 3, "18.5 should keep its fractional digit")
+        XCTAssertEqual(
+            sets,
+            WorkoutStatMetric.sets.formattedAverage(rawAverage: 18.5, compact: false),
+            "compact and full agree below 1000"
+        )
+    }
+
+    func testTileAverageDropsDecimalAtThousand() {
+        // 1000+: the compact tile drops the fractional part so it doesn't overflow…
+        let compact = WorkoutStatMetric.repetitions.formattedAverage(rawAverage: 1234.5, compact: true)
+        XCTAssertEqual(digitCount(compact), 4, "1234.5 should render as four whole digits when compact")
+
+        // …while the roomier detail header (non-compact) keeps the decimal.
+        let full = WorkoutStatMetric.repetitions.formattedAverage(rawAverage: 1234.5, compact: false)
+        XCTAssertEqual(digitCount(full), 5, "the detail header keeps the fractional digit")
+        XCTAssertNotEqual(compact, full)
+    }
+
+    func testTileAverageDropsDecimalExactlyAtThousand() {
+        // The threshold is inclusive: exactly 1000 already drops the decimal.
+        let atThreshold = WorkoutStatMetric.repetitions.formattedAverage(rawAverage: 1000.4, compact: true)
+        XCTAssertEqual(digitCount(atThreshold), 4, "1000 should render as four whole digits")
+    }
 }

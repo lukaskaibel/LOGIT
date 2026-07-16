@@ -1050,3 +1050,9 @@
 "measurementTypeChangeInfo" = "As séries existentes mantêm os valores registrados. Apenas as novas séries usam a nova medição.";
 
 "metricInfoDuration" = "Sua duração mais longa registrada para este exercício.";
+// Per-workout vs total basis (Summary stat tiles + detail toggle)
+"perWorkout" = "por treino";
+"perWorkoutBasis" = "Por treino";
+"basis" = "Valores";
+
+"buildingYourTrend" = "Criando sua tendência";

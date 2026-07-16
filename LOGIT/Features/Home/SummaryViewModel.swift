@@ -33,10 +33,18 @@ final class SummaryViewModel: ObservableObject {
 
     // MARK: - Stat Data
 
-    /// Everything a core-stat tile renders: the current period's value, the change versus the prior
-    /// period, and the last five periods as display-unit buckets (oldest → newest, last = current).
+    /// Everything a core-stat tile renders. The tile reads a *per-workout average* — a typical
+    /// session, frequency divided out — so a light week and a heavy week compare on session quality
+    /// rather than on how many times the user showed up (that lives in the weekly-goal hero above).
+    /// The current period's average, the change versus the prior period's average, and the last five
+    /// periods as display-unit buckets (oldest → newest, last = current).
     struct StatData {
-        let rawValue: Int
+        /// The current period's per-workout average in raw units (grams / minutes / counts); 0 when
+        /// the period had no workout.
+        let rawAverage: Double
+        /// Whether the current period had any workout to average — false renders the "––" no-data
+        /// tile instead of a misleading "0", since there is no session to average.
+        let hasData: Bool
         let percentChange: Double?
         let buckets: [Double]
     }
@@ -93,23 +101,35 @@ final class SummaryViewModel: ObservableObject {
     // MARK: - Core stats
 
     func statData(for metric: WorkoutStatMetric, period: StatPeriod, workouts: [Workout]) -> StatData {
-        var rawBuckets: [Int] = []
+        // Per bucket: the per-workout average (sum ÷ non-empty workout count), the divisor matching
+        // the "3 workouts" the weekly-goal hero counts so the tile reads as "per one of those". Empty
+        // workouts are excluded — they'd only drag an average down while inflating the count; a blank
+        // workout contributed nothing to the old sum either.
+        var averages: [Double] = []
+        var counts: [Int] = []
         for n in stride(from: Self.statBucketCount - 1, through: 0, by: -1) {
             let range = period.range(periodsAgo: n)
-            let sum = workouts
-                .filter { ($0.date).map { range.contains($0) } ?? false }
-                .reduce(0) { $0 + metric.rawValue(of: $1) }
-            rawBuckets.append(sum)
+            let periodWorkouts = workouts.filter { workout in
+                guard !workout.isEmpty, let date = workout.date else { return false }
+                return range.contains(date)
+            }
+            let sum = periodWorkouts.reduce(0) { $0 + metric.rawValue(of: $1) }
+            averages.append(StatBasis.perWorkout.aggregate(sum: sum, count: periodWorkouts.count))
+            counts.append(periodWorkouts.count)
         }
-        let current = rawBuckets.last ?? 0
-        let previous = rawBuckets.count >= 2 ? rawBuckets[rawBuckets.count - 2] : 0
-        let percentChange: Double? = previous > 0
-            ? (Double(current) - Double(previous)) / Double(previous) * 100
+        let currentAverage = averages.last ?? 0
+        let currentCount = counts.last ?? 0
+        let previousAverage = averages.count >= 2 ? averages[averages.count - 2] : 0
+        let previousCount = counts.count >= 2 ? counts[counts.count - 2] : 0
+        // Both periods need a session to compare — a fresh, still-empty week never reads as a collapse.
+        let percentChange: Double? = (currentCount > 0 && previousCount > 0 && previousAverage > 0)
+            ? (currentAverage - previousAverage) / previousAverage * 100
             : nil
         return StatData(
-            rawValue: current,
+            rawAverage: currentAverage,
+            hasData: currentCount > 0,
             percentChange: percentChange,
-            buckets: rawBuckets.map { metric.displayValue(fromRaw: $0) }
+            buckets: averages.map { metric.displayValue(fromRaw: Int($0.rounded())) }
         )
     }
 

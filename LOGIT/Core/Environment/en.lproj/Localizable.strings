@@ -1050,3 +1050,9 @@
 "measurementTypeChangeInfo" = "Existing sets keep the values they were recorded with. Only new sets use the new measurement.";
 
 "metricInfoDuration" = "Your longest recorded duration for this exercise.";
+// Per-workout vs total basis (Summary stat tiles + detail toggle)
+"perWorkout" = "per workout";
+"perWorkoutBasis" = "Per Workout";
+"basis" = "Values";
+
+"buildingYourTrend" = "Building your trend";

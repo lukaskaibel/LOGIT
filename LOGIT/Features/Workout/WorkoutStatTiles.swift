@@ -76,20 +76,23 @@ enum WorkoutStatMetric: Int, CaseIterable, Identifiable {
     /// two read as the same quantity. Volume rounds to whole display units like the estimated
     /// 1RM does — it's a calculated value, and fractional kilograms on a four-digit average are
     /// noise. Counts keep a decimal instead: a rounded "19" would claim a precision the average
-    /// doesn't have.
-    func formattedAverage(rawAverage: Double) -> String {
+    /// doesn't have. `compact` (the tiles, where width is tight) additionally drops a count's decimal
+    /// once it reaches 1000 — a fractional part is noise at that scale and would overflow the tile.
+    func formattedAverage(rawAverage: Double, compact: Bool = false) -> String {
         switch self {
         case .volume: return String(Int(convertWeightForDisplayingDecimal(Int(rawAverage.rounded())).rounded()))
         case .duration: return formattedWorkoutDuration(minutes: Int(rawAverage.rounded()))
-        case .sets, .repetitions: return Self.formatAverageNumber(rawAverage)
+        case .sets, .repetitions: return Self.formatAverageNumber(rawAverage, compact: compact)
         }
     }
 
-    /// "18.5"-style average formatting — at most one decimal, none when whole.
-    private static func formatAverageNumber(_ value: Double) -> String {
+    /// "18.5"-style average formatting — at most one decimal, none when whole. `compact` drops the
+    /// decimal entirely at 1000+, where it's noise and the extra glyphs overflow a tile ("1,234" not
+    /// "1,234.5").
+    private static func formatAverageNumber(_ value: Double, compact: Bool = false) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 1
+        formatter.maximumFractionDigits = (compact && value >= 1000) ? 0 : 1
         formatter.minimumFractionDigits = 0
         return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.1f", value)
     }

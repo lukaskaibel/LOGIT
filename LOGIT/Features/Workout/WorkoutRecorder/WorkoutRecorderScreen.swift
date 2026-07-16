@@ -515,9 +515,9 @@ struct WorkoutRecorderScreen: View {
                 // The grab handle sits at the header's BOTTOM edge — the seam the panel unfolds
                 // from — and reads as "pull here": drag the header (or tap the handle / caption)
                 // to fold and unfold. Minimizing the recorder is the panel's own button.
-                Rectangle()
-                    .frame(width: 40, height: 5)
-                    .clipShape(Capsule())
+                Capsule()
+                    .fill(Color.secondaryLabel.opacity(0.5))
+                    .frame(width: 36, height: 5)
                     .opacity(exerciseSelectionPresentationDetent == .large ? 0 : 1)
                     .padding(.top, 12)
                     .contentShape(Rectangle())
@@ -585,7 +585,8 @@ struct WorkoutRecorderScreen: View {
                 .focused($isFocusingTitleTextfield)
                 .lineLimit(1)
                 .foregroundColor(.label)
-                .font(.body.weight(.bold))
+                // Grows into a large-title once the panel is open.
+                .font((isHeaderExpanded ? Font.title2 : Font.body).weight(.bold))
             }
             Spacer()
             if let workout = workoutRecorder.workout {
@@ -597,40 +598,18 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
-    /// The unfolded half of the header: the workout detail's live session stats — the progress
-    /// bar and the volume/sets/repetitions tiles with their vs-previous trend pills — above the
-    /// minimize and finish actions. Everything accent-colored wears the workout's muscle-group
-    /// gradient, exactly like the detail screen's stat grid.
+    /// The unfolded half of the header: the workout detail's Volume and Repetitions stat tiles
+    /// above the Minimize and Finish actions. The tiles appear only once the workout has a
+    /// logged value — an empty (fresh / template) start shows just the two buttons, so the panel
+    /// stays small. Everything accent-colored wears the workout's muscle-group gradient.
     private func headerExpandedPanel(for workout: Workout) -> some View {
         let gradient = workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
         return VStack(spacing: 8) {
-            VStack(spacing: 8) {
-                HStack {
-                    Text(NSLocalizedString("progress", comment: ""))
-                    Spacer()
-                    Text("\(Int(progress * 100))%")
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
-                        .foregroundStyle(gradient)
+            if workout.hasEntries {
+                HStack(alignment: .top, spacing: 8) {
+                    workoutStatTile(.volume, for: workout)
+                    workoutStatTile(.repetitions, for: workout)
                 }
-                RoundedRectangle(cornerRadius: 5)
-                    .foregroundStyle(Color.placeholder)
-                    .frame(height: 20)
-                    .overlay {
-                        GeometryReader { geometry in
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(workout.sets.muscleGroupGradient(startPoint: .leading, endPoint: .trailing))
-                                .frame(width: geometry.size.width * CGFloat(progress))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-            }
-            .padding(CELL_PADDING)
-            .tileStyle()
-            HStack(spacing: 8) {
-                headerStatTile(for: .volume, of: workout, accent: gradient)
-                headerStatTile(for: .sets, of: workout, accent: gradient)
-                headerStatTile(for: .repetitions, of: workout, accent: gradient)
             }
             HStack(spacing: 8) {
                 Button {
@@ -666,31 +645,19 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
-    /// One live stat tile of the expanded header: label over the gradient value, with the same
-    /// vs-previous trend pill as the workout detail once history offers a baseline.
-    private func headerStatTile(for metric: WorkoutStatMetric, of workout: Workout, accent: AnyShapeStyle) -> some View {
-        let raw = metric.rawValue(of: workout)
-        return VStack(alignment: .leading, spacing: 5) {
-            Text(metric.title)
-                .font(.footnote)
-                .foregroundStyle(Color.secondaryLabel)
-            if metric == .volume {
-                UnitView(value: metric.formattedValue(fromRaw: raw), unit: metric.unit)
-                    .foregroundStyle(accent)
-            } else {
-                Text(metric.formattedValue(fromRaw: raw))
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .fontDesign(.rounded)
-                    .foregroundStyle(accent)
-            }
-            if let percentChange = headerRunHistory?.percentChange(for: metric) {
-                TrendIndicatorView(percentChange: percentChange, positiveStyle: accent)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(CELL_PADDING)
-        .tileStyle()
+    /// A Volume / Repetitions tile identical to the workout detail screen's stat grid: the shared
+    /// `WorkoutStatTile` (value, vs-previous trend pill, run-bar history) in the workout's
+    /// muscle-group gradient. Display-only here — not wrapped in the detail screen's open button.
+    private func workoutStatTile(_ metric: WorkoutStatMetric, for workout: Workout) -> some View {
+        let sets = workout.sets
+        return WorkoutStatTile(
+            metric: metric,
+            workout: workout,
+            history: headerRunHistory ?? WorkoutRunHistory(basis: .recentWorkouts, runs: [workout]),
+            accent: sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing),
+            barStyle: sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top),
+            accentColor: muscleGroupService.getMuscleGroupOccurances(in: workout).first?.0.color ?? .accentColor
+        )
     }
 
     @ViewBuilder

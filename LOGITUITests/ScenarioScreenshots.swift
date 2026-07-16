@@ -89,7 +89,7 @@ final class ScenarioScreenshots: XCTestCase {
         // inside the persistent exercise sheet, so this only works with the sheet up.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
         sleep(2)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.383)).tap()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.365)).tap()
         sleep(2)
         attach(app, "hdr_08_finish_confirmation_real")
     }
@@ -345,7 +345,7 @@ final class ScenarioScreenshots: XCTestCase {
         // → finish confirmation sheet.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
         waitABit(2)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.383)).tap()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.365)).tap()
         let endWorkoutButton = app.buttons["End Workout"].firstMatch
         XCTAssertTrue(endWorkoutButton.waitForExistence(timeout: 5), "Finish confirmation sheet did not appear")
         attach(app, "recorder_14_finish_confirmation")

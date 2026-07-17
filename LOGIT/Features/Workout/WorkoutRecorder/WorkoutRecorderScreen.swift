@@ -658,7 +658,10 @@ struct WorkoutRecorderScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(CELL_PADDING)
-        .modifier(StatTileBackgroundVariant())
+        // Liquid Glass rather than the usual opaque `tileStyle()`: the tiles float over the
+        // header's ambient muscle wash, so the clear glass picks up the workout's colours and
+        // its specular rim separates them from the backdrop without a solid fill.
+        .glassEffect(.clear, in: .rect(cornerRadius: 30))
     }
 
     @ViewBuilder
@@ -1080,39 +1083,6 @@ private struct FloatingChronoControlsOverlay: View {
     private var bottomOffset: CGFloat {
         let base = sheetGeometry.safeAreaBottomInset - 10
         return isAtSmallDetent ? base - 10 : base
-    }
-}
-
-/// TEMPORARY — background options for the header's Volume / Repetitions tiles, selected with
-/// `-TILE_BG=<variant>` so every option can be screenshotted from one build. Collapses to the
-/// chosen option once picked.
-private struct StatTileBackgroundVariant: ViewModifier {
-    private static let cornerRadius: CGFloat = 30
-
-    private var variant: String {
-        ProcessInfo.processInfo.arguments
-            .first { $0.hasPrefix("-TILE_BG=") }?
-            .replacingOccurrences(of: "-TILE_BG=", with: "") ?? "solid"
-    }
-
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        switch variant {
-        case "ultraThin":
-            content.background(.ultraThinMaterial, in: .rect(cornerRadius: Self.cornerRadius))
-        case "thin":
-            content.background(.thinMaterial, in: .rect(cornerRadius: Self.cornerRadius))
-        case "regular":
-            content.background(.regularMaterial, in: .rect(cornerRadius: Self.cornerRadius))
-        case "thick":
-            content.background(.thickMaterial, in: .rect(cornerRadius: Self.cornerRadius))
-        case "glass":
-            content.glassEffect(.regular, in: .rect(cornerRadius: Self.cornerRadius))
-        case "glassClear":
-            content.glassEffect(.clear, in: .rect(cornerRadius: Self.cornerRadius))
-        default:
-            content.tileStyle()
-        }
     }
 }
 

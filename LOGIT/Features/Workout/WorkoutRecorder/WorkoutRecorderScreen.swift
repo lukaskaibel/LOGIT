@@ -186,10 +186,6 @@ struct WorkoutRecorderScreen: View {
                             }
                         }
                         .scrollIndicators(.hidden)
-                        // Run the list to the physical bottom edge, under the exercise-selection
-                        // sheet floating over it — the in-flow VStack would otherwise stop it at
-                        // the home-indicator safe area, clipping the list short of the sheet.
-                        .ignoresSafeArea(.container, edges: .bottom)
                         // Rows dissolve to transparent along the viewport's top edge as they
                         // scroll out under the header — a soft fade instead of an abrupt clip
                         // (the in-flow header has no background to hide them behind).
@@ -367,6 +363,13 @@ struct WorkoutRecorderScreen: View {
                         } action: { newValue in
                             sheetGeometry.safeAreaBottomInset = newValue
                         }
+                        // Run the list to the physical bottom edge, under the tray sheet. The
+                        // tray's fixed detent (with background interaction) contributes a bottom
+                        // safe-area inset to the presenting content; ignoring it must wrap the
+                        // WHOLE scroll stack — applied further in, the outer wrappers (mask,
+                        // sheet anchor, overlay) still respect the inset and the rows get
+                        // clipped ~100pt above the screen edge, leaving a black band.
+                        .ignoresSafeArea(.container, edges: .bottom)
                     }
                     .onAppear {
                         updateProgress()
@@ -655,7 +658,7 @@ struct WorkoutRecorderScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(CELL_PADDING)
-        .tileStyle()
+        .modifier(StatTileBackgroundVariant())
     }
 
     @ViewBuilder
@@ -1077,6 +1080,39 @@ private struct FloatingChronoControlsOverlay: View {
     private var bottomOffset: CGFloat {
         let base = sheetGeometry.safeAreaBottomInset - 10
         return isAtSmallDetent ? base - 10 : base
+    }
+}
+
+/// TEMPORARY — background options for the header's Volume / Repetitions tiles, selected with
+/// `-TILE_BG=<variant>` so every option can be screenshotted from one build. Collapses to the
+/// chosen option once picked.
+private struct StatTileBackgroundVariant: ViewModifier {
+    private static let cornerRadius: CGFloat = 30
+
+    private var variant: String {
+        ProcessInfo.processInfo.arguments
+            .first { $0.hasPrefix("-TILE_BG=") }?
+            .replacingOccurrences(of: "-TILE_BG=", with: "") ?? "solid"
+    }
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        switch variant {
+        case "ultraThin":
+            content.background(.ultraThinMaterial, in: .rect(cornerRadius: Self.cornerRadius))
+        case "thin":
+            content.background(.thinMaterial, in: .rect(cornerRadius: Self.cornerRadius))
+        case "regular":
+            content.background(.regularMaterial, in: .rect(cornerRadius: Self.cornerRadius))
+        case "thick":
+            content.background(.thickMaterial, in: .rect(cornerRadius: Self.cornerRadius))
+        case "glass":
+            content.glassEffect(.regular, in: .rect(cornerRadius: Self.cornerRadius))
+        case "glassClear":
+            content.glassEffect(.clear, in: .rect(cornerRadius: Self.cornerRadius))
+        default:
+            content.tileStyle()
+        }
     }
 }
 

@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "セットアップを完了する";
+"finish" = "終了";
 "finishWorkout" = "ワークアウトを終了する";
 "finishWorkoutConfimation" = "トレーニングを終了しますか?";
 "five" = "五";
@@ -203,6 +204,7 @@
 "waist" = "ウエスト";
 "measurements" = "測定";
 "min" = "分";
+"minimize" = "最小化";
 "missing" = "ない";
 "measurementsPromotionDescription" = "体重、体脂肪、腕、胸、ウエストなどの体の部位の測定値を追跡し、進捗状況を明確に確認します。";
 "month" = "月";
@@ -1075,3 +1077,16 @@
 "basis" = "値";
 
 "buildingYourTrend" = "トレンドを作成中";
+
+// MARK: - Apple Health
+
+"appleHealth" = "Appleヘルスケア";
+"appleHealthAccessDeniedMessage" = "LOGITにはヘルスケアへワークアウトを保存する権限がありません。「設定」→「ヘルスケア」→「データアクセスとデバイス」→「LOGIT」でいつでも許可できます。";
+"appleHealthAccessDeniedTitle" = "ヘルスケアへのアクセスなし";
+"appleHealthAccessMissing" = "ヘルスケアへのアクセスがオフです。「設定」→「ヘルスケア」→「データアクセスとデバイス」→「LOGIT」で許可してください。";
+"appleHealthSyncDescription" = "完了したワークアウトは筋力トレーニングとして自動的にヘルスケアに保存されます。";
+"exportPastWorkouts" = "過去のワークアウトを書き出す";
+"exportPastWorkoutsDescription" = "ワークアウト履歴全体をヘルスケアに追加します。再書き出しでは既存の項目が更新され、重複しません。";
+"syncToAppleHealth" = "ヘルスケアと同期";
+"workoutsExportedToHealth" = "%d件のワークアウトを書き出しました。";
+"workoutsSkippedNoDuration" = "%d件をスキップしました（時間なし）。";

@@ -152,12 +152,14 @@ final class DatabaseTests: XCTestCase {
         // Delete one set
         database.delete(set1)
         
-        // Wait for context to process
+        // Wait for context to process. The fulfillment normally lands after ~0.1s;
+        // the generous cap only matters on loaded CI runners, where a 1s timeout
+        // flaked repeatedly (failed twice in a row on PR #93's runs).
         let expectation = self.expectation(description: "Context update")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             expectation.fulfill()
         }
-        waitForExpectations(timeout: 1.0)
+        waitForExpectations(timeout: 10.0)
         
         XCTAssertEqual(setGroup.sets.count, 2, "Should have 2 sets after deletion")
         XCTAssertFalse(setGroup.sets.contains(set1), "Deleted set should not be in array")

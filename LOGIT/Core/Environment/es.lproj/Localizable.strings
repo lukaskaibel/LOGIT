@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "Finalizar la configuración";
+"finish" = "Finalizar";
 "finishWorkout" = "Terminar el entrenamiento";
 "finishWorkoutConfimation" = "¿Quieres terminar el entrenamiento?";
 "five" = "Cinco";
@@ -203,6 +204,7 @@
 "waist" = "Cintura";
 "measurements" = "Medidas";
 "min" = "mín.";
+"minimize" = "Minimizar";
 "missing" = "Desaparecido";
 "measurementsPromotionDescription" = "Realice un seguimiento del peso corporal, la grasa corporal y las medidas de partes del cuerpo, como brazos, pecho y cintura, para ver claramente su progreso.";
 "month" = "Mes";
@@ -1075,3 +1077,16 @@
 "basis" = "Valores";
 
 "buildingYourTrend" = "Creando tu tendencia";
+
+// MARK: - Apple Health
+
+"appleHealth" = "Apple Salud";
+"appleHealthAccessDeniedMessage" = "LOGIT no tiene permiso para guardar entrenamientos en Apple Salud. Puedes permitirlo en cualquier momento en Ajustes → Salud → Acceso a datos y dispositivos → LOGIT.";
+"appleHealthAccessDeniedTitle" = "Sin acceso a Salud";
+"appleHealthAccessMissing" = "El acceso a Salud está desactivado. Permítelo en Ajustes → Salud → Acceso a datos y dispositivos → LOGIT.";
+"appleHealthSyncDescription" = "Los entrenamientos terminados se guardan automáticamente en Apple Salud como entrenamiento de fuerza.";
+"exportPastWorkouts" = "Exportar entrenamientos anteriores";
+"exportPastWorkoutsDescription" = "Añade todo tu historial de entrenamiento a Apple Salud. Volver a exportar actualiza las entradas en lugar de duplicarlas.";
+"syncToAppleHealth" = "Sincronizar con Apple Salud";
+"workoutsExportedToHealth" = "%d entrenamientos exportados.";
+"workoutsSkippedNoDuration" = "%d omitidos (sin duración).";

@@ -92,6 +92,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to the camera to scan workouts.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>LOGIT saves your finished workouts to Apple Health so they appear alongside your other activity.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

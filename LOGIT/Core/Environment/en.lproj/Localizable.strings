@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "Finish Setup";
+"finish" = "Finish";
 "finishWorkout" = "Finish Workout";
 "finishWorkoutConfimation" = "Do you want to finish the workout?";
 "five" = "Five";
@@ -203,6 +204,7 @@
 "waist" = "Waist";
 "measurements" = "Measurements";
 "min" = "min";
+"minimize" = "Minimize";
 "missing" = "Missing";
 "measurementsPromotionDescription" = "Track bodyweight, body fat, and body part measurements like arms, chest, and waist to clearly see your progress.";
 "month" = "Month";
@@ -976,7 +978,7 @@
 "suggestAFeatureSubtitle" = "Tell us what's still missing.";
 "rateLogit" = "Rate LOGIT";
 "summaryWelcomeTitle" = "Log your first workout";
-"summaryWelcomeSubtitle" = "Your Summary fills with your weekly goal, records and muscle balance as soon as you start training.";
+"summaryWelcomeSubtitle" = "Your Summary appears here after your first workout.";
 "browseTemplates" = "Browse templates";
 "whatYoullTrack" = "What you'll track";
 "volumeAndSets" = "Volume & Sets";
@@ -1075,3 +1077,16 @@
 "basis" = "Values";
 
 "buildingYourTrend" = "Building your trend";
+
+// MARK: - Apple Health
+
+"appleHealth" = "Apple Health";
+"appleHealthAccessDeniedMessage" = "LOGIT has no permission to save workouts to Apple Health. You can allow it anytime in Settings → Health → Data Access & Devices → LOGIT.";
+"appleHealthAccessDeniedTitle" = "No Health Access";
+"appleHealthAccessMissing" = "Health access is off. Allow it in Settings → Health → Data Access & Devices → LOGIT.";
+"appleHealthSyncDescription" = "Finished workouts are automatically saved to Apple Health as strength training.";
+"exportPastWorkouts" = "Export Past Workouts";
+"exportPastWorkoutsDescription" = "Adds your entire workout history to Apple Health. Re-exporting updates entries instead of duplicating them.";
+"syncToAppleHealth" = "Sync to Apple Health";
+"workoutsExportedToHealth" = "%d workouts exported.";
+"workoutsSkippedNoDuration" = "%d skipped (no duration).";

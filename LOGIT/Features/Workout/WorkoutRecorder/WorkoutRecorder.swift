@@ -31,13 +31,15 @@ final class WorkoutRecorder: ObservableObject {
     // MARK: - Private Variables
 
     private let database: Database
+    private let healthKitSync: HealthKitSyncManager?
     private var workoutSetTemplateSetDictionary = [WorkoutSet: TemplateSet]()
     private var cancellable: AnyCancellable?
 
     // MARK: - Init
 
-    init(database: Database) {
+    init(database: Database, healthKitSync: HealthKitSyncManager? = nil) {
         self.database = database
+        self.healthKitSync = healthKitSync
         workout = (database.fetch(Workout.self, predicate: NSPredicate(format: "isCurrentWorkout == true")) as? [Workout])?.first
     }
 
@@ -96,6 +98,7 @@ final class WorkoutRecorder: ObservableObject {
                 Self.logger.error("Failed to clean up workout after finish: self already uninitialized")
                 return
             }
+            let healthKitSync = self?.healthKitSync
 
             if workoutCopy.name?.isEmpty ?? true {
                 workoutCopy.name = Workout.getStandardName(for: workoutCopy.date!)
@@ -117,6 +120,8 @@ final class WorkoutRecorder: ObservableObject {
             database.context.perform {
                 if workoutCopy.isEmpty {
                     database.delete(workoutCopy, saveContext: true)
+                } else {
+                    healthKitSync?.syncWorkout(workoutCopy.healthKitPayload)
                 }
                 database.save()
             }

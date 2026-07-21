@@ -10,6 +10,8 @@ import SwiftUI
 
 struct SettingsScreen: View {
     @EnvironmentObject private var purchaseManager: PurchaseManager
+    @EnvironmentObject private var database: Database
+    @EnvironmentObject private var healthKitSyncManager: HealthKitSyncManager
     @Environment(\.requestReview) private var requestReview
 
     // MARK: - UserDefaults
@@ -18,12 +20,14 @@ struct SettingsScreen: View {
     @AppStorage("distanceUnit") var distanceUnit: DistanceUnit = .km
     @AppStorage("preventAutoLock") var preventAutoLock: Bool = true
     @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
+    @AppStorage(HealthKitSyncManager.syncEnabledKey) var appleHealthSyncEnabled: Bool = false
 
     // MARK: - State
 
     @State private var isShowingUpgradeToPro = false
     @State private var isShowingPrivacyPolicy = false
     @State private var isShowingTermsAndConditions = false
+    @State private var isShowingHealthAccessDeniedAlert = false
 
     // MARK: - Body
 
@@ -32,6 +36,9 @@ struct SettingsScreen: View {
             VStack(spacing: SECTION_SPACING) {
                 generalSection
                 workoutSection
+                if healthKitSyncManager.isHealthDataAvailable {
+                    appleHealthSection
+                }
                 feedbackSection
                 aboutSection
                 subscriptionSection
@@ -42,6 +49,14 @@ struct SettingsScreen: View {
         .navigationBarTitleDisplayMode(.large)
         .sheet(isPresented: $isShowingUpgradeToPro) {
             UpgradeToProScreen()
+        }
+        .alert(
+            NSLocalizedString("appleHealthAccessDeniedTitle", comment: ""),
+            isPresented: $isShowingHealthAccessDeniedAlert
+        ) {
+            Button(NSLocalizedString("ok", comment: ""), role: .cancel) {}
+        } message: {
+            Text(NSLocalizedString("appleHealthAccessDeniedMessage", comment: ""))
         }
         .sheet(isPresented: $isShowingPrivacyPolicy) {
             NavigationStack {
@@ -125,6 +140,128 @@ struct SettingsScreen: View {
                     .padding(CELL_PADDING)
                     .tileStyle()
             }
+        }
+    }
+
+    private var appleHealthSection: some View {
+        section(NSLocalizedString("appleHealth", comment: "")) {
+            VStack(spacing: CELL_SPACING) {
+                VStack(alignment: .leading) {
+                    Toggle(NSLocalizedString("syncToAppleHealth", comment: ""), isOn: appleHealthSyncBinding)
+                    Text(NSLocalizedString("appleHealthSyncDescription", comment: ""))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if appleHealthSyncEnabled && !healthKitSyncManager.isAuthorized {
+                        Text(NSLocalizedString("appleHealthAccessMissing", comment: ""))
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                }
+                .padding(CELL_PADDING)
+                .tileStyle()
+                if appleHealthSyncEnabled {
+                    exportPastWorkoutsTile
+                }
+            }
+        }
+    }
+
+    /// The sync opt-in only sticks once Health write access is actually granted; flipping it on
+    /// runs the system authorization sheet first and reports a denial instead of silently
+    /// enabling a toggle that could never sync anything.
+    private var appleHealthSyncBinding: Binding<Bool> {
+        Binding(
+            get: { appleHealthSyncEnabled },
+            set: { newValue in
+                guard newValue else {
+                    appleHealthSyncEnabled = false
+                    return
+                }
+                Task {
+                    if await healthKitSyncManager.requestAuthorization() {
+                        appleHealthSyncEnabled = true
+                    } else {
+                        appleHealthSyncEnabled = false
+                        isShowingHealthAccessDeniedAlert = true
+                    }
+                }
+            }
+        )
+    }
+
+    private var exportPastWorkoutsTile: some View {
+        Button {
+            exportPastWorkouts()
+        } label: {
+            VStack(alignment: .leading) {
+                HStack(spacing: 12) {
+                    Image(systemName: "arrow.up.heart.fill")
+                        .foregroundStyle(Color.accentColor)
+                        .frame(width: 24)
+                    Text(NSLocalizedString("exportPastWorkouts", comment: ""))
+                        .foregroundStyle(Color.label)
+                    Spacer()
+                    switch healthKitSyncManager.backfillState {
+                    case .idle:
+                        EmptyView()
+                    case let .running(completed, total):
+                        HStack(spacing: 8) {
+                            Text("\(completed)/\(total)")
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                            ProgressView()
+                        }
+                    case .finished:
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                    }
+                }
+                Text(backfillCaption)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(CELL_PADDING)
+            .tileStyle()
+        }
+        .disabled(isBackfillRunning)
+    }
+
+    private var isBackfillRunning: Bool {
+        if case .running = healthKitSyncManager.backfillState { return true }
+        return false
+    }
+
+    private var backfillCaption: String {
+        switch healthKitSyncManager.backfillState {
+        case .idle, .running:
+            return NSLocalizedString("exportPastWorkoutsDescription", comment: "")
+        case let .finished(exported, skipped):
+            var caption = String(
+                format: NSLocalizedString("workoutsExportedToHealth", comment: ""), exported
+            )
+            if skipped > 0 {
+                caption += " " + String(
+                    format: NSLocalizedString("workoutsSkippedNoDuration", comment: ""), skipped
+                )
+            }
+            return caption
+        }
+    }
+
+    private func exportPastWorkouts() {
+        // The in-progress workout is excluded — it reaches Health through the regular
+        // finish-workout sync once it is done. Filtered in memory: most stored workouts
+        // have a NULL isCurrentWorkout, which a `!= true` predicate would exclude too.
+        let workouts = ((database.fetch(
+            Workout.self,
+            sortingKey: "date",
+            ascending: true
+        ) as? [Workout]) ?? [])
+        .filter { !$0.isCurrentWorkout }
+        let payloads = workouts.compactMap(\.healthKitPayload)
+        let skipped = workouts.count - payloads.count
+        Task {
+            await healthKitSyncManager.exportAll(payloads, alreadySkipped: skipped)
         }
     }
 
@@ -246,5 +383,7 @@ struct ProfileView_Previews: PreviewProvider {
             SettingsScreen()
         }
         .environmentObject(PurchaseManager())
+        .environmentObject(HealthKitSyncManager())
+        .environmentObject(Database(isPreview: true))
     }
 }

@@ -234,8 +234,59 @@ final class WeightConvertingTests: XCTestCase {
         XCTAssertEqual(formatted, "50", "Int overload for format should work same as Int64")
     }
     
+    // MARK: - LBS Display Rounding (95 lbs → 94.999 bug)
+
+    func testLbsWholeNumberRoundTripDisplaysWholeNumber() {
+        userDefaultsHelper.setTestValue("lbs", forKey: "weightUnit")
+
+        // 95 lbs stores as round(95 × 453.592) = 43091 g; reading it back at 3 decimal
+        // places showed 94.999. It must display as exactly 95 again.
+        let stored = convertWeightForStoring(95.0)
+        XCTAssertEqual(stored, 43091)
+        XCTAssertEqual(convertWeightForDisplayingDecimal(stored), 95.0)
+        XCTAssertEqual(formatWeightForDisplay(stored), "95")
+    }
+
+    func testLbsRoundTripIsExactForQuarterPoundIncrements() {
+        userDefaultsHelper.setTestValue("lbs", forKey: "weightUnit")
+
+        // Every 0.25 lb increment up to 1000 lbs must survive store → display unchanged.
+        var value = 0.25
+        while value <= 1000 {
+            let stored = convertWeightForStoring(value)
+            XCTAssertEqual(
+                convertWeightForDisplayingDecimal(stored), value,
+                "Round trip changed \(value) lbs"
+            )
+            value += 0.25
+        }
+    }
+
+    func testLbsRoundTripIsExactForTwoDecimalValues() {
+        userDefaultsHelper.setTestValue("lbs", forKey: "weightUnit")
+
+        // Arbitrary 2-decimal entries (not just plate increments) round-trip exactly.
+        for hundredths in [1, 33, 1099, 10201, 22537, 40007, 99999] {
+            let value = Double(hundredths) / 100
+            let stored = convertWeightForStoring(value)
+            XCTAssertEqual(
+                convertWeightForDisplayingDecimal(stored), value,
+                "Round trip changed \(value) lbs"
+            )
+        }
+    }
+
+    func testKgRoundTripStaysExactAtThreeDecimals() {
+        userDefaultsHelper.setTestValue("kg", forKey: "weightUnit")
+
+        // Kilograms map to grams exactly, so 3-decimal entries must stay untouched.
+        let stored = convertWeightForStoring(50.125)
+        XCTAssertEqual(stored, 50125)
+        XCTAssertEqual(convertWeightForDisplayingDecimal(stored), 50.125)
+    }
+
     // MARK: - Precision Tests
-    
+
     func testRoundingToThreeDecimalPlaces() {
         userDefaultsHelper.setTestValue("kg", forKey: "weightUnit")
         

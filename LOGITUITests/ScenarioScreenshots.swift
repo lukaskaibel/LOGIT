@@ -55,6 +55,43 @@ final class ScenarioScreenshots: XCTestCase {
         )
     }
 
+    // MARK: - Summary settings button (accessibility regression)
+
+    /// The Summary screen's settings avatar must stay reachable by identifier so
+    /// VoiceOver / UI automation can open Settings. Regression guard: the row used
+    /// to live in a `ToolbarItem(placement: .largeTitle)`, whose custom content
+    /// iOS 26 never exposes to the accessibility tree (the navigation bar reported
+    /// zero children) — it's now rendered as in-flow content. Also asserts that
+    /// hiding the Summary navigation bar does not leak into pushed detail screens.
+    func testSummarySettingsButtonAccessible() {
+        let app = launchApp(scenario: "many")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        waitABit(2)
+
+        let settingsButton = app.buttons["settingsButton"]
+        XCTAssertTrue(
+            settingsButton.waitForExistence(timeout: 5),
+            "settingsButton not reachable in the accessibility tree on Summary"
+        )
+
+        settingsButton.tap()
+        // The Settings sheet: NavigationStack titled "Settings" with a Done button.
+        let done = app.buttons["Done"].firstMatch
+        XCTAssertTrue(done.waitForExistence(timeout: 5), "Settings sheet did not open from the settings button")
+        done.tap()
+        waitABit(1)
+
+        // Hiding the Summary nav bar must NOT leak into pushed detail screens — a
+        // stat tile should still push a screen whose navigation bar (back button) works.
+        let volume = app.buttons.matching(NSPredicate(format: "label BEGINSWITH[c] 'Volume'")).firstMatch
+        XCTAssertTrue(volume.waitForExistence(timeout: 5), "Volume tile missing")
+        volume.tap()
+        let backButton = app.navigationBars.buttons.firstMatch
+        XCTAssertTrue(backButton.waitForExistence(timeout: 5), "Detail screen has no navigation bar / back button (nav-bar hiding leaked)")
+    }
+
     // MARK: - Expandable recorder header
 
     // The recorder header folds/unfolds on tap (and handle drag): compact workout-cell

@@ -21,6 +21,7 @@ struct WorkoutEditorScreen: View {
     // MARK: - Environment
 
     @EnvironmentObject var database: Database
+    @EnvironmentObject var healthKitSyncManager: HealthKitSyncManager
     @Environment(\.dismiss) var dismiss
 
     // MARK: - State
@@ -280,6 +281,9 @@ struct WorkoutEditorScreen: View {
                             database.unflagAsTemporary(workout)
                         }
                         database.save()
+                        // Covers manual additions, imports, and edits alike — the export is an
+                        // idempotent upsert, so re-saving replaces the Health entry.
+                        healthKitSyncManager.syncWorkout(workout.healthKitPayload)
                         dismiss()
                     }
                     .fontWeight(.bold)

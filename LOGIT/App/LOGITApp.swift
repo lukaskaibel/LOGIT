@@ -34,6 +34,7 @@ struct LOGIT: App {
     @StateObject private var defaultExerciseService: DefaultExerciseService
     @StateObject private var defaultTemplateService: DefaultTemplateService
     @StateObject private var exerciseSuggestionService: ExerciseSuggestionService
+    @StateObject private var healthKitSyncManager: HealthKitSyncManager
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingWelcome = false
@@ -97,7 +98,9 @@ struct LOGIT: App {
         _database = StateObject(wrappedValue: database)
         _templateService = StateObject(wrappedValue: TemplateService(database: database))
         _measurementController = StateObject(wrappedValue: measurementController)
-        let workoutRecorder = WorkoutRecorder(database: database)
+        let healthKitSyncManager = HealthKitSyncManager()
+        _healthKitSyncManager = StateObject(wrappedValue: healthKitSyncManager)
+        let workoutRecorder = WorkoutRecorder(database: database, healthKitSync: healthKitSyncManager)
         _workoutRecorder = StateObject(wrappedValue: workoutRecorder)
         let chronograph = Chronograph()
         _chronograph = StateObject(wrappedValue: chronograph)
@@ -176,6 +179,7 @@ struct LOGIT: App {
                 .environmentObject(homeNavigationCoordinator)
                 .environmentObject(chronograph)
                 .environmentObject(exerciseSuggestionService)
+                .environmentObject(healthKitSyncManager)
                 .environment(\.goHome) { selectedTab = .home }
                 .environment(\.presentWorkoutRecorder, showWorkoutRecorder)
                 .sheet(isPresented: $isShowingWelcome) {
@@ -280,6 +284,7 @@ struct LOGIT: App {
                     .environmentObject(homeNavigationCoordinator)
                     .environmentObject(chronograph)
                     .environmentObject(exerciseSuggestionService)
+                    .environmentObject(healthKitSyncManager)
                     .interactiveDismissDisabled()
                     .onDisappear {
                         // Clean up if dismissed without saving
@@ -473,6 +478,7 @@ struct LOGIT: App {
             .environmentObject(homeNavigationCoordinator)
             .environmentObject(chronograph)
             .environmentObject(exerciseSuggestionService)
+            .environmentObject(healthKitSyncManager)
             .environment(\.managedObjectContext, database.context)
             .environment(\.goHome) { selectedTab = .home }
             .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }

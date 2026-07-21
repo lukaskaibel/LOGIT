@@ -1058,3 +1058,16 @@
 "basis" = "Valeurs";
 
 "buildingYourTrend" = "Tendance en cours";
+
+// MARK: - Apple Health
+
+"appleHealth" = "Apple Santé";
+"appleHealthAccessDeniedMessage" = "LOGIT n'est pas autorisé à enregistrer des entraînements dans Apple Santé. Tu peux l'autoriser à tout moment dans Réglages → Santé → Accès aux données et appareils → LOGIT.";
+"appleHealthAccessDeniedTitle" = "Pas d'accès à Santé";
+"appleHealthAccessMissing" = "L'accès à Santé est désactivé. Autorise-le dans Réglages → Santé → Accès aux données et appareils → LOGIT.";
+"appleHealthSyncDescription" = "Les entraînements terminés sont automatiquement enregistrés dans Apple Santé comme renforcement musculaire.";
+"exportPastWorkouts" = "Exporter les entraînements passés";
+"exportPastWorkoutsDescription" = "Ajoute tout ton historique d'entraînement à Apple Santé. Un nouvel export met à jour les entrées au lieu de les dupliquer.";
+"syncToAppleHealth" = "Synchroniser avec Apple Santé";
+"workoutsExportedToHealth" = "%d entraînements exportés.";
+"workoutsSkippedNoDuration" = "%d ignorés (aucune durée).";

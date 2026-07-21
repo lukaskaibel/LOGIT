@@ -74,15 +74,9 @@ struct TemplateListScreen: View {
                                         selectedTemplate = template
                                     }
                                 } label: {
-                                    VStack {
-                                        HStack {
-                                            TemplateCell(template: template)
-                                            NavigationChevron()
-                                                .foregroundStyle(.secondary)
-                                        }
-                                    }
-                                    .padding(CELL_PADDING)
-                                    .tileStyle()
+                                    TemplateCell(template: template)
+                                        .padding(CELL_PADDING)
+                                        .tileStyle()
                                 }
                                 .buttonStyle(TileButtonStyle())
                             }
@@ -106,15 +100,9 @@ struct TemplateListScreen: View {
                                             selectedTemplate = template
                                         }
                                     } label: {
-                                        VStack {
-                                            HStack {
-                                                TemplateCell(template: template)
-                                                NavigationChevron()
-                                                    .foregroundStyle(.secondary)
-                                            }
-                                        }
-                                        .padding(CELL_PADDING)
-                                        .tileStyle()
+                                        TemplateCell(template: template)
+                                            .padding(CELL_PADDING)
+                                            .tileStyle()
                                     }
                                     .buttonStyle(TileButtonStyle())
                                 }

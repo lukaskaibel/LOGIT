@@ -13,13 +13,8 @@ struct ExerciseDistanceTile: View {
     /// Leads the tile with the exercise name (the pinned Summary grid); see `ExerciseBestMetricTile`.
     var showsExerciseName: Bool = false
 
-    /// The exercise's distance scale (km for cardio, m for carries); values are stored in meters.
-    private var distanceStyle: SetMeasurementType.DistanceStyle {
-        exercise.measurementType.distanceStyle ?? .long
-    }
-
     var body: some View {
-        let style = distanceStyle
+        let style = exercise.distanceStyle
         ExerciseBestMetricTile(
             exercise: exercise,
             workoutSets: workoutSets,

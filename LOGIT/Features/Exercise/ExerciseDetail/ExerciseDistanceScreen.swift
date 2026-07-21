@@ -29,7 +29,7 @@ struct ExerciseDistanceScreen: View {
     init(exercise: Exercise, workoutSets: [WorkoutSet]) {
         self.exercise = exercise
         self.workoutSets = workoutSets
-        let style = exercise.measurementType.distanceStyle ?? .long
+        let style = exercise.distanceStyle
         self.distanceStyle = style
         let daily = Self.dailyMaxDistanceSets(in: workoutSets, for: exercise)
         self.firstDataDate = daily.first?.workout?.date

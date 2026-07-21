@@ -61,7 +61,7 @@ func personalRecordDisplay(
     case .repetitions: return (String(base), NSLocalizedString("reps", comment: ""))
     case .duration: return (String(base), NSLocalizedString("sec", comment: ""))
     case .distance:
-        let style = exercise?.measurementType.distanceStyle ?? .long
+        let style = exercise?.distanceStyle ?? .long
         return (formatDistanceForDisplay(Int64(base), style: style), distanceUnitTitle(for: style))
     }
 }

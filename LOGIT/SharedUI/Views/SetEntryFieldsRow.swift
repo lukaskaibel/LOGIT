@@ -16,6 +16,9 @@ protocol SetEntryFieldsEditable: NSManagedObject, ObservableObject {
     var duration: Int64 { get set }
     var distance: Int64 { get set }
     var type: SetMeasurementType { get }
+    /// The exercise the entry trains — decides the distance scale (km vs m) via the user's
+    /// per-exercise choice.
+    var exercise: Exercise? { get }
 }
 
 extension SetEntry: SetEntryFieldsEditable {}
@@ -46,28 +49,40 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
     var body: some View {
         HStack {
             Spacer()
-            switch entry.type {
-            case .repsAndWeight:
-                repetitionsField(tertiary: 0)
-                weightField(tertiary: 1)
-            case .repsOnly:
-                repetitionsField(tertiary: 0)
-            case .duration:
-                durationField(tertiary: 0)
-            case .weightAndDuration:
-                weightField(tertiary: 0)
-                durationField(tertiary: 1)
-            case .distance:
-                distanceField(tertiary: 0, style: .long)
-            case .distanceAndDuration:
-                distanceField(tertiary: 0, style: .long)
-                // No trend on the duration beside a distance: a longer time for the same run
-                // is worse, not better — only the distance carries the comparison.
-                durationField(tertiary: 1, showsTrend: false)
-            case .weightAndDistance:
-                weightField(tertiary: 0)
-                distanceField(tertiary: 1, style: .short)
+            // The distance scale (km vs m) is a property of the entry's *exercise*, so the
+            // fields must re-render when the exercise changes — flipping the unit in a
+            // Measurement menu mutates the exercise, never the entry itself.
+            if let exercise = entry.exercise {
+                ExerciseObservingFields(row: self, exercise: exercise)
+            } else {
+                fields
             }
+        }
+    }
+
+    @ViewBuilder
+    fileprivate var fields: some View {
+        switch entry.type {
+        case .repsAndWeight:
+            repetitionsField(tertiary: 0)
+            weightField(tertiary: 1)
+        case .repsOnly:
+            repetitionsField(tertiary: 0)
+        case .duration:
+            durationField(tertiary: 0)
+        case .weightAndDuration:
+            weightField(tertiary: 0)
+            durationField(tertiary: 1)
+        case .distance:
+            distanceField(tertiary: 0)
+        case .distanceAndDuration:
+            distanceField(tertiary: 0)
+            // No trend on the duration beside a distance: a longer time for the same run
+            // is worse, not better — only the distance carries the comparison.
+            durationField(tertiary: 1, showsTrend: false)
+        case .weightAndDistance:
+            weightField(tertiary: 0)
+            distanceField(tertiary: 1)
         }
     }
 
@@ -137,10 +152,12 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
         )
     }
 
-    /// The distance field in the scale the measurement type calls for: long distances as a
-    /// decimal in km/mi (cardio), short ones as whole m/yd (carries). Stored in meters either way.
+    /// The distance field in the entry's resolved scale — the exercise's own km/m choice when
+    /// the user made one, else the measurement type's default. Long distances enter as a
+    /// decimal in km/mi, short ones as whole m/yd. Stored in meters either way.
     @ViewBuilder
-    private func distanceField(tertiary: Int, style: SetMeasurementType.DistanceStyle) -> some View {
+    private func distanceField(tertiary: Int) -> some View {
+        let style = entry.type.distanceStyle(for: entry.exercise) ?? .short
         let delta = distanceDelta(
             currentMeters: entry.distance, previousMeters: reference?.distance, style: style
         )
@@ -172,7 +189,8 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
                     get: { convertShortDistanceForDisplaying(entry.distance) },
                     set: { entry.distance = convertShortDistanceForStoring($0) }
                 ),
-                maxDigits: 4,
+                // 5 digits, not 4: a 10 km run in the meter scale is a five-digit entry.
+                maxDigits: 5,
                 index: fieldIndex(tertiary),
                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                 unit: DistanceUnit.used.shortUnit,
@@ -183,6 +201,18 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
                 onTapPreviousValue: onTapPreviousValue
             )
         }
+    }
+}
+
+/// Re-renders an entry row's fields when its exercise changes. The row itself observes only
+/// the entry; the exercise carries the user's distance scale, and without this hop a unit
+/// switch would leave already-rendered rows in the stale unit until an unrelated re-render.
+private struct ExerciseObservingFields<Entry: SetEntryFieldsEditable>: View {
+    let row: SetEntryFieldsRow<Entry>
+    @ObservedObject var exercise: Exercise
+
+    var body: some View {
+        row.fields
     }
 }
 

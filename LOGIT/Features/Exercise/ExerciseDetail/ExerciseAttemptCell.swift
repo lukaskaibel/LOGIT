@@ -177,7 +177,7 @@ private struct EntryValueColumns: View {
                 )
                 .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
             }
-            if let distanceStyle = value.type.distanceStyle {
+            if let distanceStyle = value.type.distanceStyle(for: value.exercise) {
                 UnitView(
                     value: formatDistanceForDisplay(value.distance, style: distanceStyle),
                     unit: distanceUnitTitle(for: distanceStyle),

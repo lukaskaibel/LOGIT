@@ -435,9 +435,7 @@ struct WorkoutPersonalRecordCard: View {
             case .estimatedOneRepMax, .weight: value = convertWeightForDisplayingDecimal(best)
             case .repetitions, .duration: value = Double(best)
             case .distance:
-                value = distanceChartValue(
-                    best, style: record.exercise.measurementType.distanceStyle ?? .long
-                )
+                value = distanceChartValue(best, style: record.exercise.distanceStyle)
             }
             return ExerciseTileSparkline.Point(date: day, value: value)
         }

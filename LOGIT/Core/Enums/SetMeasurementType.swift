@@ -38,18 +38,20 @@ enum SetMeasurementType: String, CaseIterable, Codable, Identifiable {
         self == .distance || self == .distanceAndDuration || self == .weightAndDistance
     }
 
-    /// How the distance field is entered and displayed. One unit can't serve both distance
-    /// scales: cardio efforts are kilometer-scale (a 5 km treadmill run), gym-floor efforts are
-    /// meter-scale (a 40 m farmer's walk) — 0.04 km would be unusable. The cardio pair uses the
-    /// long unit (km/mi, decimal entry); the carry pair and the bare distance type use the short
-    /// one (m/yd, whole numbers) — bare distance serves shuttle runs and crawls, while km-scale
-    /// efforts always fit distance+duration, where the time field can simply stay empty.
-    enum DistanceStyle {
+    /// The scale a distance field is entered and displayed in. One scale can't serve every
+    /// exercise: cardio efforts are kilometer-scale (a 5 km treadmill run), gym-floor efforts
+    /// are meter-scale (a 40 m farmer's walk) — 0.04 km would be unusable. Values are always
+    /// STORED in meters; the style only decides the display/entry unit: `.long` is km/mi with
+    /// decimal entry, `.short` whole m/yd. Each measurement type carries a sensible default
+    /// (`distanceStyle` below) and the user can override it per exercise
+    /// (`Exercise.distanceStyle`) — resolve through `distanceStyle(for:)`, never the raw default.
+    enum DistanceStyle: String, CaseIterable {
         case long
         case short
     }
 
-    /// Nil for types without a distance field.
+    /// The type's *default* scale — nil for types without a distance field. Display and entry
+    /// sites must use `distanceStyle(for:)`, which lets the exercise's own choice win.
     var distanceStyle: DistanceStyle? {
         switch self {
         case .distanceAndDuration: return .long

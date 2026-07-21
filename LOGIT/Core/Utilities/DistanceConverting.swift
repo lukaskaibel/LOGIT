@@ -95,3 +95,14 @@ func distanceUnitTitle(for style: SetMeasurementType.DistanceStyle) -> String {
     case .short: return DistanceUnit.used.shortUnit
     }
 }
+
+/// The full menu label for choosing `style` in the user's unit system — "Kilometers (km)" /
+/// "Meters (m)", or "Miles (mi)" / "Yards (yd)".
+func distanceStyleTitle(for style: SetMeasurementType.DistanceStyle) -> String {
+    switch (DistanceUnit.used, style) {
+    case (.km, .long): return NSLocalizedString("unitKilometers", comment: "")
+    case (.km, .short): return NSLocalizedString("unitMeters", comment: "")
+    case (.mi, .long): return NSLocalizedString("unitMiles", comment: "")
+    case (.mi, .short): return NSLocalizedString("unitYards", comment: "")
+    }
+}

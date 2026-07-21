@@ -338,6 +338,10 @@
 "sec" = "秒";
 "meters.short" = "m";
 "yards.short" = "yd";
+"unitKilometers" = "キロメートル (km)";
+"unitMeters" = "メートル (m)";
+"unitMiles" = "マイル (mi)";
+"unitYards" = "ヤード (yd)";
 "selectDuration" = "期間を選択してください";
 "selectExercise" = "エクササイズを選択してください";
 "selectMuscleGroup" = "筋肉グループの選択";

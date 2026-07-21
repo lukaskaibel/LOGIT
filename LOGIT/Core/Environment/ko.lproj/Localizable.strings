@@ -338,6 +338,10 @@
 "sec" = "비서";
 "meters.short" = "m";
 "yards.short" = "yd";
+"unitKilometers" = "킬로미터 (km)";
+"unitMeters" = "미터 (m)";
+"unitMiles" = "마일 (mi)";
+"unitYards" = "야드 (yd)";
 "selectDuration" = "기간 선택";
 "selectExercise" = "운동 선택";
 "selectMuscleGroup" = "근육 그룹 선택";

@@ -338,6 +338,10 @@
 "sec" = "segundo";
 "meters.short" = "m";
 "yards.short" = "yd";
+"unitKilometers" = "Quilômetros (km)";
+"unitMeters" = "Metros (m)";
+"unitMiles" = "Milhas (mi)";
+"unitYards" = "Jardas (yd)";
 "selectDuration" = "Selecione Duração";
 "selectExercise" = "Selecione Exercício";
 "selectMuscleGroup" = "Selecione o grupo muscular";

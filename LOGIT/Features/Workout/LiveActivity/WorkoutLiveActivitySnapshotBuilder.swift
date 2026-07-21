@@ -238,10 +238,12 @@ enum WorkoutLiveActivitySnapshotBuilder {
     /// The unit label for an entry's performance slot: reps for rep-based entries, the
     /// distance unit for distance-tracking ones (distance is their primary field on this
     /// glanceable surface), seconds otherwise.
-    private static func performanceLocalizedUnit(for type: SetMeasurementType?) -> String {
-        guard let type else { return repsLocalizedUnit }
-        if type.usesRepetitions { return repsLocalizedUnit }
-        if let distanceStyle = type.distanceStyle { return distanceUnitTitle(for: distanceStyle) }
+    private static func performanceLocalizedUnit(for value: SetEntryValues?) -> String {
+        guard let value else { return repsLocalizedUnit }
+        if value.type.usesRepetitions { return repsLocalizedUnit }
+        if let distanceStyle = value.type.distanceStyle(for: value.exercise) {
+            return distanceUnitTitle(for: distanceStyle)
+        }
         return secondsLocalizedUnit
     }
 
@@ -297,7 +299,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
                     ? value.repetitions : (template?.repetitions ?? 0)
                 performanceSegments.append(String(shown))
                 performancePlaceholders.append(value.repetitions == 0)
-            } else if let distanceStyle = value.type.distanceStyle {
+            } else if let distanceStyle = value.type.distanceStyle(for: value.exercise) {
                 let shown = value.distance > 0 ? value.distance : (template?.distance ?? 0)
                 performanceSegments.append(formatDistanceForDisplay(shown, style: distanceStyle))
                 performancePlaceholders.append(value.distance == 0)
@@ -315,7 +317,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
         return ExerciseMetricDisplay(
             repetitionSegments: performanceSegments,
             repetitionSegmentPlaceholders: performancePlaceholders,
-            repetitionsUnit: performanceLocalizedUnit(for: values.first?.type),
+            repetitionsUnit: performanceLocalizedUnit(for: values.first),
             weightSegments: weightSegments,
             weightSegmentPlaceholders: weightPlaceholders,
             weightUnit: liveActivityWeightUnit
@@ -365,7 +367,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
         for value in values {
             if value.type.usesRepetitions, value.repetitions > 0 {
                 performanceSegments.append(String(value.repetitions))
-            } else if let distanceStyle = value.type.distanceStyle {
+            } else if let distanceStyle = value.type.distanceStyle(for: value.exercise) {
                 // Distance-tracking types show only the distance here — the display carries one
                 // unit for all segments, so a duration fallback would mislabel seconds as km.
                 if value.distance > 0 {
@@ -384,7 +386,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
         return ExerciseMetricDisplay(
             repetitionSegments: performanceSegments,
             repetitionSegmentPlaceholders: Array(repeating: false, count: performanceSegments.count),
-            repetitionsUnit: performanceLocalizedUnit(for: values.first?.type),
+            repetitionsUnit: performanceLocalizedUnit(for: values.first),
             weightSegments: weightSegments,
             weightSegmentPlaceholders: Array(repeating: false, count: weightSegments.count),
             weightUnit: liveActivityWeightUnit

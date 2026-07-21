@@ -472,6 +472,27 @@ struct WorkoutSetGroupCell: View {
                 } header: {
                     Text(NSLocalizedString("measurementType", comment: ""))
                 }
+                // The distance scale is the user's choice per exercise (km vs m, mi vs yd) —
+                // distances are stored in meters regardless, so switching only changes how
+                // they're shown and entered, everywhere this exercise appears.
+                if setGroup.measurementType.usesDistance, let exercise = setGroup.exercise {
+                    Section {
+                        ForEach(SetMeasurementType.DistanceStyle.allCases, id: \.self) { style in
+                            Button {
+                                exercise.distanceStyle = style
+                            } label: {
+                                HStack {
+                                    Text(distanceStyleTitle(for: style))
+                                    if setGroup.measurementType.distanceStyle(for: exercise) == style {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } header: {
+                        Text(NSLocalizedString("distanceUnit", comment: ""))
+                    }
+                }
             }
             if let onReorderSetGroups {
                 Section {
@@ -1072,7 +1093,7 @@ private struct MetricBadgeView: View {
     /// The distance scale for this exercise's displayed values — from its measurement type,
     /// defaulting to the cardio (km) scale.
     private var distanceStyle: SetMeasurementType.DistanceStyle {
-        setGroup.exercise?.measurementType.distanceStyle ?? .long
+        setGroup.exercise?.distanceStyle ?? .long
     }
 
     // MARK: - Trend rendering (math lives in SetGroupMetricComparison)
@@ -1481,7 +1502,7 @@ struct MetricInfoPanel: View {
 
     /// The distance scale for displayed values — same rule as the badge's.
     private var distanceStyle: SetMeasurementType.DistanceStyle {
-        setGroup.exercise?.measurementType.distanceStyle ?? .long
+        setGroup.exercise?.distanceStyle ?? .long
     }
 
     // MARK: - Progression chart

@@ -7,6 +7,7 @@
     <entity name="Exercise" representedClassName="Exercise" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="instructions" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[String]"/>
+        <attribute name="distanceStyleString" optional="YES" attributeType="String"/>
         <attribute name="measurementTypeString" optional="YES" attributeType="String"/>
         <attribute name="muscleGroupString" optional="YES" attributeType="String" customClassName="MuscleGroup"/>
         <attribute name="name" optional="YES" attributeType="String" elementID="name"/>

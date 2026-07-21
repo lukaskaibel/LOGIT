@@ -348,6 +348,42 @@ final class EntityExtensionTests: XCTestCase {
         XCTAssertTrue(set.hasEntry)
     }
 
+    func testDistanceStyleDefaultsFromMeasurementType() {
+        let cardio = database.newExercise(name: "Run", measurementType: .distanceAndDuration)
+        let carry = database.newExercise(name: "Carry", measurementType: .weightAndDistance)
+
+        XCTAssertEqual(cardio.distanceStyle, .long, "Cardio defaults to the km scale")
+        XCTAssertEqual(carry.distanceStyle, .short, "Carries default to the meter scale")
+        XCTAssertNil(cardio.distanceStyleOverride, "Defaults are not stored as a choice")
+    }
+
+    func testDistanceStyleUserOverrideWinsEverywhere() {
+        let cardio = database.newExercise(name: "Run", measurementType: .distanceAndDuration)
+        cardio.distanceStyle = .short
+
+        XCTAssertEqual(cardio.distanceStyle, .short, "The user's choice replaces the type default")
+        XCTAssertEqual(
+            SetMeasurementType.distanceAndDuration.distanceStyle(for: cardio), .short,
+            "Entry-level resolution honors the exercise's choice"
+        )
+        XCTAssertEqual(
+            SetMeasurementType.weightAndDistance.distanceStyle(for: cardio), .short,
+            "The choice also applies to per-set type overrides"
+        )
+    }
+
+    func testDistanceStyleResolutionWithoutOverrideFollowsEntryType() {
+        let exercise = database.newExercise(name: "Run", measurementType: .distanceAndDuration)
+
+        // A one-off weight+distance set on a cardio exercise enters meters, not km.
+        XCTAssertEqual(SetMeasurementType.weightAndDistance.distanceStyle(for: exercise), .short)
+        XCTAssertEqual(SetMeasurementType.distanceAndDuration.distanceStyle(for: exercise), .long)
+        XCTAssertNil(
+            SetMeasurementType.repsAndWeight.distanceStyle(for: exercise),
+            "Non-distance types have no distance scale"
+        )
+    }
+
     func testMatchStructureCarriesDistanceType() {
         let templateSet = database.newTemplateStandardSet()
         templateSet.overrideMeasurementType(.weightAndDistance)

@@ -117,6 +117,7 @@ extension Exercise {
             case .weight: return workoutSet.maximum(.weight, for: self)
             case .repetitions: return workoutSet.maximum(.repetitions, for: self)
             case .duration: return workoutSet.maximum(.duration, for: self)
+            case .distance: return workoutSet.maximum(.distance, for: self)
             }
         }
 
@@ -147,6 +148,7 @@ extension Exercise {
             case .weight: return workoutSet.maximum(.weight, for: self)
             case .repetitions: return workoutSet.maximum(.repetitions, for: self)
             case .duration: return workoutSet.maximum(.duration, for: self)
+            case .distance: return workoutSet.maximum(.distance, for: self)
             }
         }
     }
@@ -185,6 +187,7 @@ enum ExercisePrimaryMetric: String, CaseIterable {
     case weight
     case repetitions
     case duration
+    case distance
 
     /// Short, localized label for the picker and accessibility.
     var title: String {
@@ -193,6 +196,7 @@ enum ExercisePrimaryMetric: String, CaseIterable {
         case .weight: return NSLocalizedString("weight", comment: "")
         case .repetitions: return NSLocalizedString("repetitions", comment: "")
         case .duration: return NSLocalizedString("measurementType.duration", comment: "")
+        case .distance: return NSLocalizedString("measurementType.distance", comment: "")
         }
     }
 
@@ -204,6 +208,9 @@ enum ExercisePrimaryMetric: String, CaseIterable {
         case .repsOnly: return [.repetitions]
         case .duration: return [.duration]
         case .weightAndDuration: return [.weight, .duration]
+        case .distance: return [.distance]
+        case .distanceAndDuration: return [.distance, .duration]
+        case .weightAndDistance: return [.weight, .distance]
         }
     }
 

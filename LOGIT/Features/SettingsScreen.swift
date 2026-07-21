@@ -15,6 +15,7 @@ struct SettingsScreen: View {
     // MARK: - UserDefaults
 
     @AppStorage("weightUnit") var weightUnit: WeightUnit = .kg
+    @AppStorage("distanceUnit") var distanceUnit: DistanceUnit = .km
     @AppStorage("preventAutoLock") var preventAutoLock: Bool = true
     @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
 
@@ -84,16 +85,28 @@ struct SettingsScreen: View {
 
     private var generalSection: some View {
         section(NSLocalizedString("general", comment: "")) {
-            HStack {
-                Text(NSLocalizedString("unit", comment: ""))
-                Spacer()
-                Picker(NSLocalizedString("unit", comment: ""), selection: $weightUnit) {
-                    Text("kg").tag(WeightUnit.kg)
-                    Text("lbs").tag(WeightUnit.lbs)
+            VStack(spacing: CELL_SPACING) {
+                HStack {
+                    Text(NSLocalizedString("unit", comment: ""))
+                    Spacer()
+                    Picker(NSLocalizedString("unit", comment: ""), selection: $weightUnit) {
+                        Text("kg").tag(WeightUnit.kg)
+                        Text("lbs").tag(WeightUnit.lbs)
+                    }
                 }
+                .padding(CELL_PADDING)
+                .tileStyle()
+                HStack {
+                    Text(NSLocalizedString("distanceUnit", comment: ""))
+                    Spacer()
+                    Picker(NSLocalizedString("distanceUnit", comment: ""), selection: $distanceUnit) {
+                        Text("km").tag(DistanceUnit.km)
+                        Text("mi").tag(DistanceUnit.mi)
+                    }
+                }
+                .padding(CELL_PADDING)
+                .tileStyle()
             }
-            .padding(CELL_PADDING)
-            .tileStyle()
         }
     }
 

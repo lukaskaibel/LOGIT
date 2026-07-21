@@ -336,6 +336,8 @@
 "noSearchResultsFor" = "No results found for \"%@\"";
 "showMoreResults" = "Show %d more results";
 "sec" = "sec";
+"meters.short" = "m";
+"yards.short" = "yd";
 "selectDuration" = "Select Duration";
 "selectExercise" = "Select Exercise";
 "selectMuscleGroup" = "Select Muscle Group";
@@ -435,7 +437,8 @@
 
 // MARK: - U
 
-"unit" = "Unit";
+"unit" = "Weight Unit";
+"distanceUnit" = "Distance Unit";
 "unitDescription" = "Select the unit you want to use. Any previous entries will be converted on change.";
 "unpinned" = "Unpinned";
 "unused" = "Unused";
@@ -724,6 +727,14 @@
 "_default.exercise.ringDips" = "Ring Dips";
 "_default.exercise.ringPushups" = "Ring Push-ups";
 "_default.exercise.ringRows" = "Ring Rows";
+"_default.exercise.walking" = "Walking";
+"_default.exercise.inclineTreadmillWalk" = "Incline Treadmill Walk";
+"_default.exercise.rucking" = "Rucking";
+"_default.exercise.suitcaseCarry" = "Suitcase Carry";
+"_default.exercise.overheadCarry" = "Overhead Carry";
+"_default.exercise.yokeCarry" = "Yoke Carry";
+"_default.exercise.sandbagCarry" = "Sandbag Carry";
+"_default.exercise.shuttleRun" = "Shuttle Run";
 
 // MARK: - Default Template Names & Descriptions
 
@@ -1047,9 +1058,13 @@
 "measurementType.repsOnly" = "Reps Only";
 "measurementType.duration" = "Duration";
 "measurementType.weightAndDuration" = "Weight & Duration";
+"measurementType.distance" = "Distance";
+"measurementType.distanceAndDuration" = "Distance & Duration";
+"measurementType.weightAndDistance" = "Weight & Distance";
 "measurementTypeChangeInfo" = "Existing sets keep the values they were recorded with. Only new sets use the new measurement.";
 
 "metricInfoDuration" = "Your longest recorded duration for this exercise.";
+"metricInfoDistance" = "Your longest recorded distance for this exercise.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "per workout";
 "perWorkoutBasis" = "Per Workout";

@@ -336,6 +336,8 @@
 "noSearchResultsFor" = "\"%@\" に一致する結果はありませんでした";
 "showMoreResults" = "%d の結果をさらに表示";
 "sec" = "秒";
+"meters.short" = "m";
+"yards.short" = "yd";
 "selectDuration" = "期間を選択してください";
 "selectExercise" = "エクササイズを選択してください";
 "selectMuscleGroup" = "筋肉グループの選択";
@@ -435,7 +437,8 @@
 
 // MARK: - U
 
-"unit" = "ユニット";
+"unit" = "重量の単位";
+"distanceUnit" = "距離の単位";
 "unitDescription" = "使用する単位を選択します。以前のエントリは変更時に変換されます。";
 "unpinned" = "固定されていない";
 "unused" = "未使用";
@@ -724,6 +727,14 @@
 "_default.exercise.ringDips" = "リングディップス";
 "_default.exercise.ringPushups" = "リングプッシュアップ";
 "_default.exercise.ringRows" = "リングロウ";
+"_default.exercise.walking" = "ウォーキング";
+"_default.exercise.inclineTreadmillWalk" = "傾斜トレッドミルウォーク";
+"_default.exercise.rucking" = "ラッキング";
+"_default.exercise.suitcaseCarry" = "スーツケースキャリー";
+"_default.exercise.overheadCarry" = "オーバーヘッドキャリー";
+"_default.exercise.yokeCarry" = "ヨークキャリー";
+"_default.exercise.sandbagCarry" = "サンドバッグキャリー";
+"_default.exercise.shuttleRun" = "シャトルラン";
 
 // MARK: - Default Template Names & Descriptions
 
@@ -1047,9 +1058,13 @@
 "measurementType.repsOnly" = "回数のみ";
 "measurementType.duration" = "時間";
 "measurementType.weightAndDuration" = "重量と時間";
+"measurementType.distance" = "距離";
+"measurementType.distanceAndDuration" = "距離と時間";
+"measurementType.weightAndDistance" = "重量と距離";
 "measurementTypeChangeInfo" = "既存のセットは記録された値を保持します。新しいセットのみ新しい測定方法を使用します。";
 
 "metricInfoDuration" = "このエクササイズで記録された最長時間です。";
+"metricInfoDistance" = "このエクササイズで記録された最長距離です。";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "ワークアウトあたり";
 "perWorkoutBasis" = "ワークアウトあたり";

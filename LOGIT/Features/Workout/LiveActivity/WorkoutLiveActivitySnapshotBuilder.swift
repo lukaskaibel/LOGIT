@@ -235,6 +235,16 @@ enum WorkoutLiveActivitySnapshotBuilder {
         WeightUnit.used.rawValue
     }
 
+    /// The unit label for an entry's performance slot: reps for rep-based entries, the
+    /// distance unit for distance-tracking ones (distance is their primary field on this
+    /// glanceable surface), seconds otherwise.
+    private static func performanceLocalizedUnit(for type: SetMeasurementType?) -> String {
+        guard let type else { return repsLocalizedUnit }
+        if type.usesRepetitions { return repsLocalizedUnit }
+        if let distanceStyle = type.distanceStyle { return distanceUnitTitle(for: distanceStyle) }
+        return secondsLocalizedUnit
+    }
+
     /// The values shown on the "current set" side: for compound sets the first exercise's
     /// entry (the focused-side variant is built inline in `build`), otherwise all entries
     /// (a drop set shows one segment per drop).
@@ -287,6 +297,10 @@ enum WorkoutLiveActivitySnapshotBuilder {
                     ? value.repetitions : (template?.repetitions ?? 0)
                 performanceSegments.append(String(shown))
                 performancePlaceholders.append(value.repetitions == 0)
+            } else if let distanceStyle = value.type.distanceStyle {
+                let shown = value.distance > 0 ? value.distance : (template?.distance ?? 0)
+                performanceSegments.append(formatDistanceForDisplay(shown, style: distanceStyle))
+                performancePlaceholders.append(value.distance == 0)
             } else if value.type.usesDuration {
                 let shown = value.duration > 0 ? value.duration : (template?.duration ?? 0)
                 performanceSegments.append(String(shown))
@@ -298,11 +312,10 @@ enum WorkoutLiveActivitySnapshotBuilder {
                 weightPlaceholders.append(value.weight == 0)
             }
         }
-        let usesRepetitions = values.first?.type.usesRepetitions ?? true
         return ExerciseMetricDisplay(
             repetitionSegments: performanceSegments,
             repetitionSegmentPlaceholders: performancePlaceholders,
-            repetitionsUnit: usesRepetitions ? repsLocalizedUnit : secondsLocalizedUnit,
+            repetitionsUnit: performanceLocalizedUnit(for: values.first?.type),
             weightSegments: weightSegments,
             weightSegmentPlaceholders: weightPlaceholders,
             weightUnit: liveActivityWeightUnit
@@ -352,6 +365,12 @@ enum WorkoutLiveActivitySnapshotBuilder {
         for value in values {
             if value.type.usesRepetitions, value.repetitions > 0 {
                 performanceSegments.append(String(value.repetitions))
+            } else if let distanceStyle = value.type.distanceStyle {
+                // Distance-tracking types show only the distance here — the display carries one
+                // unit for all segments, so a duration fallback would mislabel seconds as km.
+                if value.distance > 0 {
+                    performanceSegments.append(formatDistanceForDisplay(value.distance, style: distanceStyle))
+                }
             } else if value.type.usesDuration, !value.type.usesRepetitions, value.duration > 0 {
                 performanceSegments.append(String(value.duration))
             }
@@ -362,11 +381,10 @@ enum WorkoutLiveActivitySnapshotBuilder {
         guard !performanceSegments.isEmpty || !weightSegments.isEmpty else {
             return .emptyForLiveActivity()
         }
-        let usesRepetitions = values.first?.type.usesRepetitions ?? true
         return ExerciseMetricDisplay(
             repetitionSegments: performanceSegments,
             repetitionSegmentPlaceholders: Array(repeating: false, count: performanceSegments.count),
-            repetitionsUnit: usesRepetitions ? repsLocalizedUnit : secondsLocalizedUnit,
+            repetitionsUnit: performanceLocalizedUnit(for: values.first?.type),
             weightSegments: weightSegments,
             weightSegmentPlaceholders: Array(repeating: false, count: weightSegments.count),
             weightUnit: liveActivityWeightUnit

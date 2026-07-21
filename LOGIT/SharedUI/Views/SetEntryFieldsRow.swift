@@ -14,6 +14,7 @@ protocol SetEntryFieldsEditable: NSManagedObject, ObservableObject {
     var repetitions: Int64 { get set }
     var weight: Int64 { get set }
     var duration: Int64 { get set }
+    var distance: Int64 { get set }
     var type: SetMeasurementType { get }
 }
 
@@ -21,8 +22,9 @@ extension SetEntry: SetEntryFieldsEditable {}
 extension TemplateSetEntry: SetEntryFieldsEditable {}
 
 /// One set entry's input fields, laid out by the entry's measurement type:
-/// reps+weight, reps only, duration (min:sec), or weight+duration. This is the single row
-/// every set cell — standard, drop, super, workout or template — renders per entry.
+/// reps+weight, reps only, duration, weight+duration, distance, distance+duration, or
+/// weight+distance. This is the single row every set cell — standard, drop, super, workout
+/// or template — renders per entry.
 ///
 /// The focus index is (set position, entry position, field position); field positions must
 /// stay consistent with `SetMeasurementType.inputFieldCount`, which the recorder's keyboard
@@ -55,6 +57,16 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
             case .weightAndDuration:
                 weightField(tertiary: 0)
                 durationField(tertiary: 1)
+            case .distance:
+                distanceField(tertiary: 0, style: .long)
+            case .distanceAndDuration:
+                distanceField(tertiary: 0, style: .long)
+                // No trend on the duration beside a distance: a longer time for the same run
+                // is worse, not better — only the distance carries the comparison.
+                durationField(tertiary: 1, showsTrend: false)
+            case .weightAndDistance:
+                weightField(tertiary: 0)
+                distanceField(tertiary: 1, style: .short)
             }
         }
     }
@@ -105,8 +117,10 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
         )
     }
 
-    private func durationField(tertiary: Int) -> some View {
-        let delta = durationDelta(current: entry.duration, previous: reference?.duration)
+    private func durationField(tertiary: Int, showsTrend: Bool = true) -> some View {
+        let delta = showsTrend
+            ? durationDelta(current: entry.duration, previous: reference?.duration)
+            : (comparison: nil, text: "")
         return IntegerField(
             placeholder: placeholder?.duration ?? 0,
             value: $entry.duration,
@@ -122,6 +136,54 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
             onTapPreviousValue: onTapPreviousValue
         )
     }
+
+    /// The distance field in the scale the measurement type calls for: long distances as a
+    /// decimal in km/mi (cardio), short ones as whole m/yd (carries). Stored in meters either way.
+    @ViewBuilder
+    private func distanceField(tertiary: Int, style: SetMeasurementType.DistanceStyle) -> some View {
+        let delta = distanceDelta(
+            currentMeters: entry.distance, previousMeters: reference?.distance, style: style
+        )
+        let previousText = (reference?.distance ?? 0) > 0
+            ? formatDistanceForDisplay(reference!.distance, style: style) : nil
+        switch style {
+        case .long:
+            DecimalField(
+                placeholder: placeholder.map { convertDistanceForDisplayingDecimal($0.distance) } ?? 0,
+                value: Binding(
+                    get: { convertDistanceForDisplayingDecimal(entry.distance) },
+                    set: { entry.distance = convertDistanceForStoring($0) }
+                ),
+                maxDigits: 4,
+                decimalPlaces: 2,
+                index: fieldIndex(tertiary),
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                unit: DistanceUnit.used.rawValue,
+                trend: delta.comparison,
+                trendText: delta.text,
+                trendColor: trendColor,
+                previousValueText: previousText,
+                onTapPreviousValue: onTapPreviousValue
+            )
+        case .short:
+            IntegerField(
+                placeholder: placeholder.map { convertShortDistanceForDisplaying($0.distance) } ?? 0,
+                value: Binding(
+                    get: { convertShortDistanceForDisplaying(entry.distance) },
+                    set: { entry.distance = convertShortDistanceForStoring($0) }
+                ),
+                maxDigits: 4,
+                index: fieldIndex(tertiary),
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                unit: DistanceUnit.used.shortUnit,
+                trend: delta.comparison,
+                trendText: delta.text,
+                trendColor: trendColor,
+                previousValueText: previousText,
+                onTapPreviousValue: onTapPreviousValue
+            )
+        }
+    }
 }
 
 // MARK: - Duration Helpers
@@ -131,4 +193,28 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
 func durationDelta(current: Int64, previous: Int64?) -> (comparison: SetValueComparison?, text: String) {
     guard let previous, previous > 0, current > 0, current != previous else { return (nil, "") }
     return (current > previous ? .improved : .declined, String(abs(current - previous)))
+}
+
+/// Compares an entered distance (meters) against the previous workout's value — farther is
+/// improved. Direction and text are computed in display units, like `weightDelta`, so they
+/// match what the user sees.
+func distanceDelta(
+    currentMeters: Int64, previousMeters: Int64?, style: SetMeasurementType.DistanceStyle
+) -> (comparison: SetValueComparison?, text: String) {
+    guard let previousMeters, previousMeters > 0, currentMeters > 0 else { return (nil, "") }
+    switch style {
+    case .long:
+        let current = convertDistanceForDisplayingDecimal(currentMeters)
+        let previous = convertDistanceForDisplayingDecimal(previousMeters)
+        guard current != previous else { return (nil, "") }
+        return (
+            current > previous ? .improved : .declined,
+            formatDistanceForDisplay(convertDistanceForStoring(abs(current - previous)))
+        )
+    case .short:
+        let current = convertShortDistanceForDisplaying(currentMeters)
+        let previous = convertShortDistanceForDisplaying(previousMeters)
+        guard current != previous else { return (nil, "") }
+        return (current > previous ? .improved : .declined, String(abs(current - previous)))
+    }
 }

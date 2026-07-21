@@ -116,6 +116,7 @@ struct LOGIT: App {
 
         UserDefaults.standard.register(defaults: [
             "weightUnit": WeightUnit.defaultFromLocale.rawValue,
+            "distanceUnit": DistanceUnit.defaultFromLocale.rawValue,
             "workoutPerWeekTarget": -1,
             "setupDone": false,
         ])

@@ -336,6 +336,8 @@
 "noSearchResultsFor" = "Nenhum resultado encontrado para \"%@\"";
 "showMoreResults" = "Mostrar mais resultados para %d";
 "sec" = "segundo";
+"meters.short" = "m";
+"yards.short" = "yd";
 "selectDuration" = "Selecione Duração";
 "selectExercise" = "Selecione Exercício";
 "selectMuscleGroup" = "Selecione o grupo muscular";
@@ -435,7 +437,8 @@
 
 // MARK: - U
 
-"unit" = "Unidade";
+"unit" = "Unidade de peso";
+"distanceUnit" = "Unidade de distância";
 "unitDescription" = "Selecione a unidade que deseja usar. Quaisquer entradas anteriores serão convertidas mediante alteração.";
 "unpinned" = "Desafixado";
 "unused" = "Não utilizado";
@@ -724,6 +727,14 @@
 "_default.exercise.ringDips" = "Mergulhos de anel";
 "_default.exercise.ringPushups" = "Flexões de anel";
 "_default.exercise.ringRows" = "Linhas de anel";
+"_default.exercise.walking" = "Caminhada";
+"_default.exercise.inclineTreadmillWalk" = "Caminhada inclinada na esteira";
+"_default.exercise.rucking" = "Rucking";
+"_default.exercise.suitcaseCarry" = "Carregamento de mala";
+"_default.exercise.overheadCarry" = "Carregamento acima da cabeça";
+"_default.exercise.yokeCarry" = "Carregamento de canga";
+"_default.exercise.sandbagCarry" = "Carregamento de saco de areia";
+"_default.exercise.shuttleRun" = "Corrida de vaivém";
 
 // MARK: - Default Template Names & Descriptions
 
@@ -1047,9 +1058,13 @@
 "measurementType.repsOnly" = "Só reps";
 "measurementType.duration" = "Duração";
 "measurementType.weightAndDuration" = "Peso e duração";
+"measurementType.distance" = "Distância";
+"measurementType.distanceAndDuration" = "Distância e duração";
+"measurementType.weightAndDistance" = "Peso e distância";
 "measurementTypeChangeInfo" = "As séries existentes mantêm os valores registrados. Apenas as novas séries usam a nova medição.";
 
 "metricInfoDuration" = "Sua duração mais longa registrada para este exercício.";
+"metricInfoDistance" = "Sua distância mais longa registrada para este exercício.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "por treino";
 "perWorkoutBasis" = "Por treino";

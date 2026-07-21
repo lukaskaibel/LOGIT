@@ -30,48 +30,41 @@ struct TemplateSetDTO: Codable {
     // DropSet fields
     let dropSetRepetitions: [Int]?
     let dropSetWeights: [Int]?
-    
+
+    /// Format-version-2 entries — see `WorkoutSetDTO.entries`.
+    let entries: [SetEntryDTO]?
+
     /// Initialize from a Core Data TemplateSet entity for sharing
     init(from templateSet: TemplateSet) {
-        if let standardSet = templateSet as? TemplateStandardSet {
-            self.type = .standard
-            self.restDuration = Int(standardSet.restDuration)
-            self.repetitions = Int(standardSet.repetitions)
-            self.weight = Int(standardSet.weight)
-            self.repetitionsFirstExercise = nil
-            self.repetitionsSecondExercise = nil
-            self.weightFirstExercise = nil
-            self.weightSecondExercise = nil
-            self.dropSetRepetitions = nil
-            self.dropSetWeights = nil
-        } else if let superSet = templateSet as? TemplateSuperSet {
+        let values = templateSet.entryValues
+        self.restDuration = templateSet.restDurationSeconds
+        self.entries = values.enumerated().map { index, value in
+            SetEntryDTO(from: value, exerciseIndex: templateSet is TemplateSuperSet ? index : 0)
+        }
+        if templateSet is TemplateSuperSet {
             self.type = .superSet
-            self.restDuration = Int(superSet.restDuration)
             self.repetitions = nil
             self.weight = nil
-            self.repetitionsFirstExercise = Int(superSet.repetitionsFirstExercise)
-            self.repetitionsSecondExercise = Int(superSet.repetitionsSecondExercise)
-            self.weightFirstExercise = Int(superSet.weightFirstExercise)
-            self.weightSecondExercise = Int(superSet.weightSecondExercise)
+            self.repetitionsFirstExercise = Int(values.value(at: 0)?.repetitions ?? 0)
+            self.repetitionsSecondExercise = Int(values.value(at: 1)?.repetitions ?? 0)
+            self.weightFirstExercise = Int(values.value(at: 0)?.weight ?? 0)
+            self.weightSecondExercise = Int(values.value(at: 1)?.weight ?? 0)
             self.dropSetRepetitions = nil
             self.dropSetWeights = nil
-        } else if let dropSet = templateSet as? TemplateDropSet {
+        } else if templateSet is TemplateDropSet {
             self.type = .dropSet
-            self.restDuration = Int(dropSet.restDuration)
             self.repetitions = nil
             self.weight = nil
             self.repetitionsFirstExercise = nil
             self.repetitionsSecondExercise = nil
             self.weightFirstExercise = nil
             self.weightSecondExercise = nil
-            self.dropSetRepetitions = dropSet.repetitions?.map { Int($0) }
-            self.dropSetWeights = dropSet.weights?.map { Int($0) }
+            self.dropSetRepetitions = values.map { Int($0.repetitions) }
+            self.dropSetWeights = values.map { Int($0.weight) }
         } else {
-            // Fallback to standard
             self.type = .standard
-            self.restDuration = Int(templateSet.restDuration)
-            self.repetitions = 0
-            self.weight = 0
+            self.repetitions = Int(values.first?.repetitions ?? 0)
+            self.weight = Int(values.first?.weight ?? 0)
             self.repetitionsFirstExercise = nil
             self.repetitionsSecondExercise = nil
             self.weightFirstExercise = nil
@@ -80,7 +73,7 @@ struct TemplateSetDTO: Codable {
             self.dropSetWeights = nil
         }
     }
-    
+
     /// Initialize for decoding (used by AI generation and import)
     /// Backward compatible: if only repetitions/weight provided, assumes standard set
     init(
@@ -93,7 +86,8 @@ struct TemplateSetDTO: Codable {
         weightFirstExercise: Int? = nil,
         weightSecondExercise: Int? = nil,
         dropSetRepetitions: [Int]? = nil,
-        dropSetWeights: [Int]? = nil
+        dropSetWeights: [Int]? = nil,
+        entries: [SetEntryDTO]? = nil
     ) {
         self.type = type
         self.restDuration = restDuration
@@ -105,5 +99,6 @@ struct TemplateSetDTO: Codable {
         self.weightSecondExercise = weightSecondExercise
         self.dropSetRepetitions = dropSetRepetitions
         self.dropSetWeights = dropSetWeights
+        self.entries = entries
     }
 }

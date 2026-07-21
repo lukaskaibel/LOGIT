@@ -8,17 +8,17 @@
 import Foundation
 
 public extension StandardSet {
-    // MARK: Overrides from WorkoutSet
+    // MARK: Legacy-field fallbacks (see WorkoutSet.hasEntry & friends)
 
-    override var hasEntry: Bool {
+    internal override var legacyHasEntry: Bool {
         repetitions > 0 || weight > 0
     }
 
-    override var hasRepetitionEntry: Bool {
+    internal override var legacyHasRepetitionEntry: Bool {
         repetitions > 0
     }
 
-    override func clearEntries() {
+    internal override func legacyClearEntries() {
         repetitions = 0
         weight = 0
     }

@@ -37,47 +37,33 @@ struct SetVolumeBarChart: View {
         for (index, workoutSet) in sets.enumerated() {
             let setIndex = index + 1
             let setNumberInGroup = (workoutSet.setGroup?.sets.firstIndex(of: workoutSet) ?? 0) + 1
-            if let superSet = workoutSet as? SuperSet {
-                let firstVolume = Int(superSet.repetitionsFirstExercise * superSet.weightFirstExercise)
-                let secondVolume = Int(superSet.repetitionsSecondExercise * superSet.weightSecondExercise)
-                if firstVolume > 0 {
-                    segments.append(
-                        Segment(
-                            id: "\(setIndex)-first",
-                            setIndex: setIndex,
-                            setNumberInGroup: setNumberInGroup,
-                            exerciseName: superSet.exercise?.displayName ?? "",
-                            color: superSet.exercise?.muscleGroup?.color ?? .accentColor,
-                            volume: firstVolume
-                        )
-                    )
+            // One segment per distinct exercise in the set, in entry order: a standard or drop
+            // set stays one bar, a super set (or a future circuit) splits into one colored
+            // segment per exercise.
+            var exerciseVolumes = [(exercise: Exercise?, volume: Int)]()
+            for value in workoutSet.entryValues {
+                let volume = Int(value.repetitions * value.weight)
+                guard volume > 0 else { continue }
+                if let existingIndex = exerciseVolumes.firstIndex(
+                    where: { $0.exercise == value.exercise }
+                ) {
+                    exerciseVolumes[existingIndex].volume += volume
+                } else {
+                    exerciseVolumes.append((value.exercise, volume))
                 }
-                if secondVolume > 0 {
-                    segments.append(
-                        Segment(
-                            id: "\(setIndex)-second",
-                            setIndex: setIndex,
-                            setNumberInGroup: setNumberInGroup,
-                            exerciseName: superSet.secondaryExercise?.displayName ?? "",
-                            color: superSet.secondaryExercise?.muscleGroup?.color ?? .accentColor,
-                            volume: secondVolume
-                        )
+            }
+            for (segmentIndex, exerciseVolume) in exerciseVolumes.enumerated() {
+                let exercise = exerciseVolume.exercise ?? workoutSet.exercise
+                segments.append(
+                    Segment(
+                        id: "\(setIndex)-\(segmentIndex)",
+                        setIndex: setIndex,
+                        setNumberInGroup: setNumberInGroup,
+                        exerciseName: exercise?.displayName ?? "",
+                        color: exercise?.muscleGroup?.color ?? .accentColor,
+                        volume: exerciseVolume.volume
                     )
-                }
-            } else {
-                let volume = getVolume(of: [workoutSet])
-                if volume > 0 {
-                    segments.append(
-                        Segment(
-                            id: "\(setIndex)",
-                            setIndex: setIndex,
-                            setNumberInGroup: setNumberInGroup,
-                            exerciseName: workoutSet.exercise?.displayName ?? "",
-                            color: workoutSet.exercise?.muscleGroup?.color ?? .accentColor,
-                            volume: volume
-                        )
-                    )
-                }
+                )
             }
         }
         self.segments = segments

@@ -75,32 +75,40 @@ final class WorkoutSharingService {
                 TemplateSetGroupDTO(
                     exercise: ExerciseDTO(from: workoutSetGroup.exercise),
                     sets: workoutSetGroup.sets.map { workoutSet in
-                        // Convert WorkoutSet to TemplateSetDTO (preserving reps and weight)
-                        if let superSet = workoutSet as? SuperSet {
+                        // Convert WorkoutSet to TemplateSetDTO (preserving the performed entries)
+                        let values = workoutSet.entryValues
+                        let entries = values.enumerated().map { index, value in
+                            SetEntryDTO(
+                                from: value,
+                                exerciseIndex: workoutSet is SuperSet ? index : 0
+                            )
+                        }
+                        if workoutSet is SuperSet {
                             return TemplateSetDTO(
                                 type: .superSet,
-                                restDuration: superSet.restDurationSeconds,
-                                repetitionsFirstExercise: Int(superSet.repetitionsFirstExercise),
-                                repetitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
-                                weightFirstExercise: Int(superSet.weightFirstExercise),
-                                weightSecondExercise: Int(superSet.weightSecondExercise)
+                                restDuration: workoutSet.restDurationSeconds,
+                                repetitionsFirstExercise: Int(values.value(at: 0)?.repetitions ?? 0),
+                                repetitionsSecondExercise: Int(values.value(at: 1)?.repetitions ?? 0),
+                                weightFirstExercise: Int(values.value(at: 0)?.weight ?? 0),
+                                weightSecondExercise: Int(values.value(at: 1)?.weight ?? 0),
+                                entries: entries
                             )
-                        } else if let dropSet = workoutSet as? DropSet {
+                        } else if workoutSet is DropSet {
                             return TemplateSetDTO(
                                 type: .dropSet,
-                                restDuration: dropSet.restDurationSeconds,
-                                dropSetRepetitions: dropSet.repetitions?.map { Int($0) },
-                                dropSetWeights: dropSet.weights?.map { Int($0) }
-                            )
-                        } else if let standardSet = workoutSet as? StandardSet {
-                            return TemplateSetDTO(
-                                repetitions: Int(standardSet.repetitions),
-                                weight: Int(standardSet.weight),
-                                type: .standard,
-                                restDuration: standardSet.restDurationSeconds
+                                restDuration: workoutSet.restDurationSeconds,
+                                dropSetRepetitions: values.map { Int($0.repetitions) },
+                                dropSetWeights: values.map { Int($0.weight) },
+                                entries: entries
                             )
                         } else {
-                            return TemplateSetDTO(repetitions: 0, weight: 0, type: .standard, restDuration: 0)
+                            return TemplateSetDTO(
+                                repetitions: Int(values.first?.repetitions ?? 0),
+                                weight: Int(values.first?.weight ?? 0),
+                                type: .standard,
+                                restDuration: workoutSet.restDurationSeconds,
+                                entries: entries
+                            )
                         }
                     },
                     secondaryExercise: workoutSetGroup.secondaryExercise.map { ExerciseDTO(from: $0) },
@@ -246,16 +254,17 @@ final class WorkoutSharingService {
             
             // Create sets
             for setDTO in setGroupDTO.sets {
+                let workoutSet: WorkoutSet
                 switch setDTO.type ?? .standard {
                 case .standard:
-                    database.newStandardSet(
+                    workoutSet = database.newStandardSet(
                         repetitions: setDTO.repetitions ?? 0,
                         weight: setDTO.weight ?? 0,
                         restDuration: setDTO.restDuration ?? 0,
                         setGroup: setGroup
                     )
                 case .superSet:
-                    database.newSuperSet(
+                    workoutSet = database.newSuperSet(
                         repetitionsFirstExercise: setDTO.repetitionsFirstExercise ?? 0,
                         repetitionsSecondExercise: setDTO.repetitionsSecondExercise ?? 0,
                         weightFirstExercise: setDTO.weightFirstExercise ?? 0,
@@ -264,17 +273,58 @@ final class WorkoutSharingService {
                         setGroup: setGroup
                     )
                 case .dropSet:
-                    database.newDropSet(
+                    workoutSet = database.newDropSet(
                         repetitions: setDTO.dropSetRepetitions ?? [0],
                         weights: setDTO.dropSetWeights ?? [0],
                         restDuration: setDTO.restDuration ?? 0,
                         setGroup: setGroup
                     )
                 }
+                applyEntries(setDTO.entries, to: workoutSet)
             }
         }
-        
+
         return workout
+    }
+
+    /// Replaces the legacy-derived entries with the file's version-2 entries (measurement
+    /// types, durations). No-op for version-1 files, which carry no entries.
+    private func applyEntries(_ entryDTOs: [SetEntryDTO]?, to workoutSet: WorkoutSet) {
+        guard let entryDTOs, !entryDTOs.isEmpty else { return }
+        workoutSet.removeAllEntries()
+        for (index, entryDTO) in entryDTOs.enumerated() {
+            workoutSet.insertEntry(
+                from: SetEntryValues(
+                    type: SetMeasurementType(rawValue: entryDTO.type ?? "") ?? .repsAndWeight,
+                    order: Int64(index),
+                    repetitions: Int64(entryDTO.repetitions ?? 0),
+                    weight: Int64(entryDTO.weight ?? 0),
+                    duration: Int64(entryDTO.duration ?? 0),
+                    exercise: workoutSet.positionalExercise(
+                        forOrder: Int64(entryDTO.exerciseIndex ?? index)
+                    )
+                )
+            )
+        }
+    }
+
+    private func applyEntries(_ entryDTOs: [SetEntryDTO]?, to templateSet: TemplateSet) {
+        guard let entryDTOs, !entryDTOs.isEmpty else { return }
+        templateSet.removeAllEntries()
+        for (index, entryDTO) in entryDTOs.enumerated() {
+            templateSet.insertEntry(
+                from: SetEntryValues(
+                    type: SetMeasurementType(rawValue: entryDTO.type ?? "") ?? .repsAndWeight,
+                    order: Int64(index),
+                    repetitions: Int64(entryDTO.repetitions ?? 0),
+                    weight: Int64(entryDTO.weight ?? 0),
+                    duration: Int64(entryDTO.duration ?? 0),
+                    exercise: templateSet.positionalExercise(
+                        forOrder: Int64(entryDTO.exerciseIndex ?? index)
+                    )
+                )
+            )
+        }
     }
     
     private func createTemplate(from dto: TemplateDTO) throws -> Template {
@@ -302,17 +352,18 @@ final class WorkoutSharingService {
             // Create sets
             for setDTO in setGroupDTO.sets {
                 let effectiveType = setDTO.type ?? .standard
-                
+
+                let templateSet: TemplateSet
                 switch effectiveType {
                 case .standard:
-                    database.newTemplateStandardSet(
+                    templateSet = database.newTemplateStandardSet(
                         repetitions: setDTO.repetitions ?? 0,
                         weight: setDTO.weight ?? 0,
                         restDuration: setDTO.restDuration ?? 0,
                         setGroup: setGroup
                     )
                 case .superSet:
-                    database.newTemplateSuperSet(
+                    templateSet = database.newTemplateSuperSet(
                         repetitionsFirstExercise: setDTO.repetitionsFirstExercise ?? 0,
                         repetitionsSecondExercise: setDTO.repetitionsSecondExercise ?? 0,
                         weightFirstExercise: setDTO.weightFirstExercise ?? 0,
@@ -321,16 +372,17 @@ final class WorkoutSharingService {
                         setGroup: setGroup
                     )
                 case .dropSet:
-                    database.newTemplateDropSet(
+                    templateSet = database.newTemplateDropSet(
                         repetitions: setDTO.dropSetRepetitions ?? [0],
                         weights: setDTO.dropSetWeights ?? [0],
                         restDuration: setDTO.restDuration ?? 0,
                         templateSetGroup: setGroup
                     )
                 }
+                applyEntries(setDTO.entries, to: templateSet)
             }
         }
-        
+
         return template
     }
     
@@ -340,7 +392,11 @@ final class WorkoutSharingService {
     private func findOrCreateExercise(from dto: ExerciseDTO) throws -> Exercise {
         guard let name = dto.name, !name.isEmpty else {
             // Create a new exercise with unknown name
-            let exercise = database.newExercise(name: NSLocalizedString("unknownExercise", comment: ""), muscleGroup: dto.type)
+            let exercise = database.newExercise(
+                name: NSLocalizedString("unknownExercise", comment: ""),
+                muscleGroup: dto.type,
+                measurementType: SetMeasurementType(rawValue: dto.measurementType ?? "") ?? .repsAndWeight
+            )
             database.flagAsTemporary(exercise)
             return exercise
         }
@@ -355,7 +411,11 @@ final class WorkoutSharingService {
             }
             // If not found, the user might not have this default exercise yet
             // This shouldn't happen normally, but create as custom fallback
-            let exercise = database.newExercise(name: name, muscleGroup: dto.type)
+            let exercise = database.newExercise(
+                name: name,
+                muscleGroup: dto.type,
+                measurementType: SetMeasurementType(rawValue: dto.measurementType ?? "") ?? .repsAndWeight
+            )
             database.flagAsTemporary(exercise)
             return exercise
         } else {
@@ -364,7 +424,11 @@ final class WorkoutSharingService {
                 return matchedExercise
             }
             // No close match found, create new exercise
-            let exercise = database.newExercise(name: name, muscleGroup: dto.type)
+            let exercise = database.newExercise(
+                name: name,
+                muscleGroup: dto.type,
+                measurementType: SetMeasurementType(rawValue: dto.measurementType ?? "") ?? .repsAndWeight
+            )
             database.flagAsTemporary(exercise)
             return exercise
         }

@@ -8,9 +8,9 @@
 import Foundation
 
 public extension TemplateStandardSet {
-    // MARK: Overrides from TemplateSet
+    // MARK: Legacy-field fallbacks (see TemplateSet.hasEntry)
 
-    override var hasEntry: Bool {
+    internal override var legacyHasEntry: Bool {
         repetitions > 0 || weight > 0
     }
 }

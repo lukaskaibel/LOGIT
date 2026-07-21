@@ -193,6 +193,37 @@ final class ScenarioScreenshots: XCTestCase {
         XCTAssertTrue(addSet.isHittable, "Add Set row is clipped — the short list isn't running to the bottom edge")
     }
 
+    /// The non-rep measurement types in the recorder: the stress scenario's current workout
+    /// ends with a duration-typed Plank group (min/sec fields) and a weight+duration
+    /// Farmers Carry group — scroll to the bottom and capture them.
+    func testRecorderMeasurementTypes() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET"]
+        )
+
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
+        waitABit(2)
+
+        let plankHeader = app.staticTexts["Plank"]
+        for _ in 0 ..< 12 where !plankHeader.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(plankHeader.waitForExistence(timeout: 5), "Plank group not reachable")
+        waitABit(1)
+        attach(app, "recorder_duration_and_carry_types")
+        app.swipeUp()
+        waitABit(1)
+        attach(app, "recorder_measurement_types_bottom")
+
+        // The exercise name opens the detail sheet: a duration exercise must show its
+        // duration tile (fed by the seeded plank history) instead of weight/e1RM tiles.
+        app.staticTexts["Plank"].firstMatch.tap()
+        waitABit(3)
+        attach(app, "plank_detail_duration_tiles")
+    }
+
     // MARK: - Workout recorder (Transmission presentation)
     //
     // Note on element queries: while the persistent exercise tray sheet is

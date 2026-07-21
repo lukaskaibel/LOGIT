@@ -10,12 +10,18 @@ import Foundation
 public extension Database {
     func addSet(to setGroup: WorkoutSetGroup) {
         let lastSet = setGroup.sets.last
-        if let _ = lastSet as? DropSet {
-            newDropSet(setGroup: setGroup)
-        } else if let _ = lastSet as? SuperSet {
-            newSuperSet(setGroup: setGroup)
+        let newSet: WorkoutSet
+        if lastSet is DropSet {
+            newSet = newDropSet(setGroup: setGroup)
+        } else if lastSet is SuperSet {
+            newSet = newSuperSet(setGroup: setGroup)
         } else {
-            newStandardSet(setGroup: setGroup)
+            newSet = newStandardSet(setGroup: setGroup)
+        }
+        // Continue the group's shape: same drop count and same measurement types as the set
+        // before, values left empty for the athlete to fill in.
+        if let lastSet {
+            newSet.matchStructure(toEntryValues: lastSet.entryValues)
         }
         setGroup.workout?.objectWillChange.send()
     }
@@ -42,122 +48,55 @@ public extension Database {
     }
 
     func duplicateLastSet(from setGroup: WorkoutSetGroup) {
-        let lastSet = setGroup.sets.last
-        if let standardSet = lastSet as? StandardSet {
-            newStandardSet(
-                repetitions: Int(standardSet.repetitions),
-                weight: Int(standardSet.weight),
-                setGroup: setGroup
-            )
-        } else if let dropSet = lastSet as? DropSet {
-            newDropSet(
-                repetitions: dropSet.repetitions?.map { Int($0) } ?? [0],
-                weights: dropSet.weights?.map { Int($0) } ?? [0],
-                setGroup: setGroup
-            )
-        } else if let superSet = lastSet as? SuperSet {
-            newSuperSet(
-                repetitionsFirstExercise: Int(superSet.repetitionsFirstExercise),
-                repetitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
-                weightFirstExercise: Int(superSet.weightFirstExercise),
-                weightSecondExercise: Int(superSet.weightSecondExercise),
-                setGroup: setGroup
-            )
-        }
+        guard let lastSet = setGroup.sets.last else { return }
+        let duplicatedSet = copy(of: lastSet)
+        insert(duplicatedSet, into: setGroup, at: setGroup.sets.count)
         setGroup.workout?.objectWillChange.send()
     }
-    
+
     func duplicateLastWeight(from setGroup: WorkoutSetGroup) {
-        guard let lastSet = setGroup.sets.last else { return }
-        if let standardSet = lastSet as? StandardSet {
-            newStandardSet(
-                repetitions: 0,
-                weight: Int(standardSet.weight),
-                setGroup: setGroup
-            )
-        } else if let dropSet = lastSet as? DropSet {
-            let previousWeights = dropSet.weights?.map { Int($0) } ?? [0]
-            newDropSet(
-                repetitions: previousWeights.map { _ in 0 },
-                weights: previousWeights,
-                setGroup: setGroup
-            )
-        } else if let superSet = lastSet as? SuperSet {
-            newSuperSet(
-                repetitionsFirstExercise: 0,
-                repetitionsSecondExercise: 0,
-                weightFirstExercise: Int(superSet.weightFirstExercise),
-                weightSecondExercise: Int(superSet.weightSecondExercise),
-                setGroup: setGroup
-            )
-        }
-        setGroup.workout?.objectWillChange.send()
+        duplicateLastSet(from: setGroup, keepingWeight: true, keepingRepetitions: false)
     }
-    
+
     func duplicateLastRepetitions(from setGroup: WorkoutSetGroup) {
+        duplicateLastSet(from: setGroup, keepingWeight: false, keepingRepetitions: true)
+    }
+
+    /// Appends a copy of the group's last set that keeps only one field per entry — the
+    /// "same weight again" / "same reps again" quick actions.
+    private func duplicateLastSet(
+        from setGroup: WorkoutSetGroup, keepingWeight: Bool, keepingRepetitions: Bool
+    ) {
         guard let lastSet = setGroup.sets.last else { return }
-        if let standardSet = lastSet as? StandardSet {
-            newStandardSet(
-                repetitions: Int(standardSet.repetitions),
-                weight: 0,
-                setGroup: setGroup
-            )
-        } else if let dropSet = lastSet as? DropSet {
-            let previousReps = dropSet.repetitions?.map { Int($0) } ?? [0]
-            newDropSet(
-                repetitions: previousReps,
-                weights: previousReps.map { _ in 0 },
-                setGroup: setGroup
-            )
-        } else if let superSet = lastSet as? SuperSet {
-            newSuperSet(
-                repetitionsFirstExercise: Int(superSet.repetitionsFirstExercise),
-                repetitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
-                weightFirstExercise: 0,
-                weightSecondExercise: 0,
-                setGroup: setGroup
-            )
+        let newSet = emptySet(matching: lastSet)
+        insert(newSet, into: setGroup, at: setGroup.sets.count)
+        newSet.matchStructure(toEntryValues: lastSet.entryValues)
+        for (entry, value) in zip(newSet.entries, lastSet.entryValues) {
+            if keepingWeight { entry.weight = value.weight }
+            if keepingRepetitions { entry.repetitions = value.repetitions }
         }
         setGroup.workout?.objectWillChange.send()
     }
 
     func addSet(to templateSetGroup: TemplateSetGroup) {
         let lastSet = templateSetGroup.sets.last
-        if let _ = lastSet as? TemplateDropSet {
-            newTemplateDropSet(templateSetGroup: templateSetGroup)
-        } else if let _ = lastSet as? TemplateSuperSet {
-            newTemplateSuperSet(setGroup: templateSetGroup)
+        let newSet: TemplateSet
+        if lastSet is TemplateDropSet {
+            newSet = newTemplateDropSet(templateSetGroup: templateSetGroup)
+        } else if lastSet is TemplateSuperSet {
+            newSet = newTemplateSuperSet(setGroup: templateSetGroup)
         } else {
-            newTemplateStandardSet(setGroup: templateSetGroup)
+            newSet = newTemplateStandardSet(setGroup: templateSetGroup)
+        }
+        if let lastSet {
+            newSet.matchStructure(toEntryValues: lastSet.entryValues)
         }
     }
 
     func duplicateLastSet(from setGroup: TemplateSetGroup) {
-        let lastSet = setGroup.sets.last
-        if let standardSet = lastSet as? TemplateStandardSet {
-            newTemplateStandardSet(
-                repetitions: Int(standardSet.repetitions),
-                weight: Int(standardSet.weight),
-                restDuration: Int(standardSet.restDuration),
-                setGroup: setGroup
-            )
-        } else if let dropSet = lastSet as? TemplateDropSet {
-            newTemplateDropSet(
-                repetitions: dropSet.repetitions?.map { Int($0) } ?? [0],
-                weights: dropSet.weights?.map { Int($0) } ?? [0],
-                restDuration: Int(dropSet.restDuration),
-                templateSetGroup: setGroup
-            )
-        } else if let superSet = lastSet as? TemplateSuperSet {
-            newTemplateSuperSet(
-                repetitionsFirstExercise: Int(superSet.repetitionsFirstExercise),
-                repetitionsSecondExercise: Int(superSet.repetitionsSecondExercise),
-                weightFirstExercise: Int(superSet.weightFirstExercise),
-                weightSecondExercise: Int(superSet.weightSecondExercise),
-                restDuration: Int(superSet.restDuration),
-                setGroup: setGroup
-            )
-        }
+        guard let lastSet = setGroup.sets.last else { return }
+        let duplicatedSet = copy(of: lastSet)
+        insert(duplicatedSet, into: setGroup, at: setGroup.sets.count)
     }
 
     func addSet(before templateSet: TemplateSet) {
@@ -190,6 +129,7 @@ public extension Database {
 
         let newSet = emptySet(matching: workoutSet)
         insert(newSet, into: setGroup, at: index + offset)
+        newSet.matchStructure(toEntryValues: workoutSet.entryValues)
         setGroup.workout?.objectWillChange.send()
     }
 
@@ -226,6 +166,7 @@ public extension Database {
 
         let newSet = emptySet(matching: templateSet)
         insert(newSet, into: setGroup, at: index + offset)
+        newSet.matchStructure(toEntryValues: templateSet.entryValues)
     }
 
     private func emptySet(matching templateSet: TemplateSet) -> TemplateSet {

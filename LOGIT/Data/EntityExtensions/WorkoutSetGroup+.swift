@@ -73,6 +73,7 @@ public extension WorkoutSetGroup {
                     }
                 }
             }
+            reattributeEntries()
         }
     }
 
@@ -104,6 +105,24 @@ public extension WorkoutSetGroup {
                     }
                 }
             }
+            reattributeEntries()
+        }
+    }
+
+    /// Repairs entry → exercise attribution (and empty entries' measurement type) after the
+    /// group's exercises change. Entries denormalize their exercise so compound sets stay
+    /// robust when a group's exercises are reordered or swapped — which makes the exercise
+    /// setters the one place responsible for keeping those links true. Recorded values keep
+    /// their stored type: what was performed never gets reinterpreted.
+    internal func reattributeEntries() {
+        for set in sets {
+            for entry in set.entries {
+                let owner = set.positionalExercise(forOrder: entry.order)
+                entry.exercise = owner
+                if !entry.hasValue, let type = owner?.measurementType {
+                    entry.type = type
+                }
+            }
         }
     }
 
@@ -120,6 +139,18 @@ public extension WorkoutSetGroup {
         } else {
             return .standard
         }
+    }
+
+    /// The group's effective measurement type: the first entry's stored type (a group's sets
+    /// share one), falling back to the exercise default.
+    internal var measurementType: SetMeasurementType {
+        sets.first?.entryValues.first?.type ?? exercise?.measurementType ?? .repsAndWeight
+    }
+
+    /// Re-types every set in the group — the group-wide override on top of the exercise
+    /// default. Values are never cleared — recorded data is never lost to a re-type.
+    internal func overrideMeasurementType(_ type: SetMeasurementType) {
+        sets.forEach { $0.overrideMeasurementType(type) }
     }
 
     subscript(index: Int) -> WorkoutSet { sets[index] }

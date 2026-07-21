@@ -169,6 +169,16 @@ enum TestScenario: String {
         let pullExercises = [deadlift, rows, latPulldowns, bicepsCurls]
         let baseWeights = [60000, 40000, 45000, 25000, 120000, 70000, 55000, 30000]
 
+        // Non-rep measurement types: a timed hold and a weighted carry — typed like their
+        // default-library counterparts so the recorder, detail tiles, and badge can be
+        // verified against duration data.
+        let plank = exercise("_default.exercise.plank", "Plank", .abdominals, database)
+        plank.measurementType = .duration
+        let farmersCarry = exercise(
+            "_default.exercise.farmersWalk", "Farmers Carry", .shoulders, database
+        )
+        farmersCarry.measurementType = .weightAndDuration
+
         let calendar = Calendar.current
         let sessionCount = 208 // 2 years, 2 sessions/week
         for session in 0 ..< sessionCount {
@@ -198,6 +208,21 @@ enum TestScenario: String {
                     )
                 }
             }
+            // Recent push sessions end with planks, so the duration metric has real
+            // history: a climbing current best, previous-set references, and detail-tile
+            // data — not just an empty teaser.
+            if isPush, session >= sessionCount - 12 {
+                let plankGroup = database.newWorkoutSetGroup(
+                    createFirstSetAutomatically: false,
+                    exercise: plank,
+                    workout: workout
+                )
+                for setIndex in 0 ..< 3 {
+                    let plankSet = database.newStandardSet(setGroup: plankGroup)
+                    plankSet.entries.first?.duration =
+                        Int64(45 + (session - (sessionCount - 12)) * 3 - setIndex * 5)
+                }
+            }
         }
 
         // The in-progress workout the recorder picks up: push day, first
@@ -219,6 +244,33 @@ enum TestScenario: String {
                     weight: isEntered ? weight : 0,
                     setGroup: group
                 )
+            }
+        }
+
+        // Non-rep measurement types at the end of the current workout (appended last so the
+        // coordinate-driven recorder UI tests, which interact with the top of the list, are
+        // unaffected): the timed hold and weighted carry seeded above.
+        let plankGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: plank,
+            workout: current
+        )
+        for setIndex in 0 ..< 3 {
+            let plankSet = database.newStandardSet(setGroup: plankGroup)
+            if setIndex < 2 {
+                plankSet.entries.first?.duration = Int64(75 - setIndex * 15)
+            }
+        }
+        let carryGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: farmersCarry,
+            workout: current
+        )
+        for setIndex in 0 ..< 2 {
+            let carrySet = database.newStandardSet(setGroup: carryGroup)
+            if setIndex == 0 {
+                carrySet.entries.first?.weight = 40000
+                carrySet.entries.first?.duration = 45
             }
         }
 

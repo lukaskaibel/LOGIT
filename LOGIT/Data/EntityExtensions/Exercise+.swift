@@ -44,6 +44,14 @@ extension Exercise {
         set { muscleGroupString = newValue?.rawValue }
     }
 
+    /// How this exercise is tracked by default; new sets record these fields, and individual
+    /// sets may override. The nil-backed default is reps and weight — the only measurement
+    /// that existed before model v8, hence correct for every pre-existing exercise.
+    var measurementType: SetMeasurementType {
+        get { SetMeasurementType(rawValue: measurementTypeString ?? "") ?? .repsAndWeight }
+        set { measurementTypeString = newValue.rawValue }
+    }
+
     var setGroups: [WorkoutSetGroup] {
         resolvedOrder(of: setGroups_, by: setGroupOrder)
     }
@@ -108,6 +116,7 @@ extension Exercise {
             case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: self)
             case .weight: return workoutSet.maximum(.weight, for: self)
             case .repetitions: return workoutSet.maximum(.repetitions, for: self)
+            case .duration: return workoutSet.maximum(.duration, for: self)
             }
         }
 
@@ -137,6 +146,7 @@ extension Exercise {
             case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: self)
             case .weight: return workoutSet.maximum(.weight, for: self)
             case .repetitions: return workoutSet.maximum(.repetitions, for: self)
+            case .duration: return workoutSet.maximum(.duration, for: self)
             }
         }
     }
@@ -174,6 +184,7 @@ enum ExercisePrimaryMetric: String, CaseIterable {
     case estimatedOneRepMax
     case weight
     case repetitions
+    case duration
 
     /// Short, localized label for the picker and accessibility.
     var title: String {
@@ -181,6 +192,18 @@ enum ExercisePrimaryMetric: String, CaseIterable {
         case .estimatedOneRepMax: return NSLocalizedString("e1RM", comment: "")
         case .weight: return NSLocalizedString("weight", comment: "")
         case .repetitions: return NSLocalizedString("repetitions", comment: "")
+        case .duration: return NSLocalizedString("measurementType.duration", comment: "")
+        }
+    }
+
+    /// The metrics that make sense for how an exercise is measured — pickers and the badge's
+    /// cycling order offer only these, so a plank never advertises an e1RM.
+    static func allowed(for measurementType: SetMeasurementType) -> [ExercisePrimaryMetric] {
+        switch measurementType {
+        case .repsAndWeight: return [.estimatedOneRepMax, .weight, .repetitions]
+        case .repsOnly: return [.repetitions]
+        case .duration: return [.duration]
+        case .weightAndDuration: return [.weight, .duration]
         }
     }
 
@@ -215,11 +238,16 @@ extension Exercise {
     /// single `string(forKey:)` lookup, cheap enough for the badge to read while rendering.
     var primaryMetric: ExercisePrimaryMetric {
         get {
-            guard let key = primaryMetricDefaultsKey,
-                  let raw = UserDefaults.standard.string(forKey: key),
-                  let metric = ExercisePrimaryMetric(rawValue: raw)
-            else { return .defaultMetric }
-            return metric
+            // A stored choice only counts while it fits how the exercise is measured — after a
+            // measurement-type change, an incompatible leftover falls back to a fitting metric.
+            let allowed = ExercisePrimaryMetric.allowed(for: measurementType)
+            if let key = primaryMetricDefaultsKey,
+               let raw = UserDefaults.standard.string(forKey: key),
+               let metric = ExercisePrimaryMetric(rawValue: raw),
+               allowed.contains(metric) {
+                return metric
+            }
+            return allowed.contains(.defaultMetric) ? .defaultMetric : allowed[0]
         }
         set {
             guard let key = primaryMetricDefaultsKey else { return }

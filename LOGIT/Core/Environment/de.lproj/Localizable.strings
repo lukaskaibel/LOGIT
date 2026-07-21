@@ -1040,6 +1040,14 @@
 "filters" = "Filter";
 "fromTemplate" = "Aus Vorlage";
 
+"measurementType" = "Messung";
+"measurementType.repsAndWeight" = "Wdh. & Gewicht";
+"measurementType.repsOnly" = "Nur Wdh.";
+"measurementType.duration" = "Dauer";
+"measurementType.weightAndDuration" = "Gewicht & Dauer";
+"measurementTypeChangeInfo" = "Bestehende Sätze behalten ihre aufgezeichneten Werte. Nur neue Sätze verwenden die neue Messung.";
+
+"metricInfoDuration" = "Deine längste aufgezeichnete Dauer für diese Übung.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "pro Workout";
 "perWorkoutBasis" = "Pro Workout";

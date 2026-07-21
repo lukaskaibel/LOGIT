@@ -26,6 +26,7 @@ struct ExerciseDetailScreen: View {
     @State private var isShowingWeightScreen = false
     @State private var isShowingE1RMScreen = false
     @State private var isShowingRepetitionsScreen = false
+    @State private var isShowingDurationScreen = false
     @State private var isShowingVolumeScreen = false
     @State private var isShowingSetVolumeScreen = false
     @State private var isShowingSetsScreen = false
@@ -219,6 +220,9 @@ struct ExerciseDetailScreen: View {
             .navigationDestination(isPresented: $isShowingRepetitionsScreen) {
                 ExerciseRepetitionsScreen(exercise: exercise, workoutSets: workoutSets)
             }
+            .navigationDestination(isPresented: $isShowingDurationScreen) {
+                ExerciseDurationScreen(exercise: exercise, workoutSets: workoutSets)
+            }
             .navigationDestination(isPresented: $isShowingVolumeScreen) {
                 ExerciseVolumeScreen(exercise: exercise, workoutSets: workoutSets)
             }
@@ -236,6 +240,7 @@ struct ExerciseDetailScreen: View {
                         case .estimatedOneRepMax: isShowingE1RMScreen = true
                         case .weight: isShowingWeightScreen = true
                         case .repetitions: isShowingRepetitionsScreen = true
+                        case .duration: isShowingDurationScreen = true
                         }
                     }
                 }
@@ -259,6 +264,10 @@ struct ExerciseDetailScreen: View {
     /// but never any weight — drops to just the two weight-independent tiles, reps and sets. The
     /// four weight-derived tiles (weight, e1RM, and both volume tiles) would only ever show "––" or
     /// zero for such an exercise, so showing them is noise.
+    ///
+    /// Duration exercises adapt the same way: a duration-only exercise (plank, dead hang, …) keeps
+    /// just duration and sets, and a weight-and-duration exercise (weighted carry, …) keeps weight,
+    /// duration, and sets — the reps-derived tiles (reps, e1RM, both volumes) would only show zeros.
     @ViewBuilder
     private func metricTiles(workoutSets: [WorkoutSet]) -> some View {
         let spacing: CGFloat = 10
@@ -273,17 +282,45 @@ struct ExerciseDetailScreen: View {
             let hasWeightEntry = loggedSets.contains { $0.maximum(.weight, for: exercise) > 0 }
             let hasRepetitionEntry = loggedSets.contains { $0.maximum(.repetitions, for: exercise) > 0 }
             let isRepsOnly = hasRepetitionEntry && !hasWeightEntry
+            // Duration counts as tracked once the exercise is set up for it OR has recorded any —
+            // so a freshly switched exercise adapts before its first duration set, and recorded
+            // history keeps its tiles after a switch away. Same rule for weight.
+            let tracksDuration = exercise.measurementType.usesDuration || loggedSets.contains { $0.maximum(.duration, for: exercise) > 0 }
+            let tracksWeight = exercise.measurementType.usesWeight || hasWeightEntry
+            let tracksReps = exercise.measurementType.usesRepetitions || hasRepetitionEntry
+            let isWeightAndDuration = tracksDuration && tracksWeight
+            let isDurationOnly = tracksDuration && !tracksWeight && !tracksReps
             VStack(spacing: spacing) {
                 if dynamicTypeSize.isAccessibilitySize {
                     // One column: accessibility text sizes can't fit half-width tiles.
-                    if !isRepsOnly {
+                    if isDurationOnly {
+                        durationTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    } else if isWeightAndDuration {
                         weightTile(workoutSets: workoutSets)
-                        e1RMTile(workoutSets: workoutSets)
+                        durationTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    } else {
+                        if !isRepsOnly {
+                            weightTile(workoutSets: workoutSets)
+                            e1RMTile(workoutSets: workoutSets)
+                        }
+                        repetitionsTile(workoutSets: workoutSets)
+                        if !isRepsOnly {
+                            setVolumeTile(workoutSets: workoutSets)
+                            volumeTile(workoutSets: workoutSets)
+                        }
+                        setsTile(workoutSets: workoutSets)
                     }
-                    repetitionsTile(workoutSets: workoutSets)
-                    if !isRepsOnly {
-                        setVolumeTile(workoutSets: workoutSets)
-                        volumeTile(workoutSets: workoutSets)
+                } else if isDurationOnly {
+                    HStack(alignment: .top, spacing: spacing) {
+                        durationTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    }
+                } else if isWeightAndDuration {
+                    HStack(alignment: .top, spacing: spacing) {
+                        weightTile(workoutSets: workoutSets)
+                        durationTile(workoutSets: workoutSets)
                     }
                     setsTile(workoutSets: workoutSets)
                 } else if isRepsOnly {
@@ -338,6 +375,15 @@ struct ExerciseDetailScreen: View {
         .buttonStyle(TileButtonStyle())
     }
 
+    private func durationTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingDurationScreen = true
+        } label: {
+            ExerciseDurationTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
     private func setVolumeTile(workoutSets: [WorkoutSet]) -> some View {
         Button {
             isShowingSetVolumeScreen = true
@@ -377,32 +423,6 @@ struct ExerciseDetailScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Computed Properties
-
-    private func max(_ attribute: WorkoutSet.Attribute, in workoutSet: WorkoutSet) -> Int {
-        if let standardSet = workoutSet as? StandardSet {
-            return Int(attribute == .repetitions ? standardSet.repetitions : standardSet.weight)
-        }
-        if let dropSet = workoutSet as? DropSet {
-            return Int(
-                (attribute == .repetitions ? dropSet.repetitions : dropSet.weights)?.max() ?? 0
-            )
-        }
-        if let superSet = workoutSet as? SuperSet {
-            if superSet.setGroup?.exercise == exercise {
-                return Int(
-                    attribute == .repetitions
-                        ? superSet.repetitionsFirstExercise : superSet.weightFirstExercise
-                )
-            } else {
-                return Int(
-                    attribute == .repetitions
-                        ? superSet.repetitionsSecondExercise : superSet.weightSecondExercise
-                )
-            }
-        }
-        return 0
-    }
 }
 
 private struct PreviewWrapperView: View {

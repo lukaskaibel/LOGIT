@@ -1044,6 +1044,14 @@
 "filters" = "필터";
 "fromTemplate" = "템플릿에서";
 
+"measurementType" = "측정 방식";
+"measurementType.repsAndWeight" = "횟수와 무게";
+"measurementType.repsOnly" = "횟수만";
+"measurementType.duration" = "시간";
+"measurementType.weightAndDuration" = "무게와 시간";
+"measurementTypeChangeInfo" = "기존 세트는 기록된 값을 유지합니다. 새 세트만 새 측정 방식을 사용합니다.";
+
+"metricInfoDuration" = "이 운동에서 기록된 가장 긴 시간입니다.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "운동당";
 "perWorkoutBasis" = "운동당";

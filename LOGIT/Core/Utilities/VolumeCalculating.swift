@@ -7,19 +7,15 @@
 
 import Foundation
 
+/// Volume is weight × repetitions, summed per entry. Entries that don't record both — duration
+/// holds, bodyweight reps — contribute 0 by construction: volume stays an honest kg number and
+/// never invents conversions. All reads go through `entryValues`, so legacy-shaped sets that
+/// the backfill hasn't reached yet compute identically.
+
 public func getVolume(of workoutSets: [WorkoutSet]) -> Int {
     workoutSets
         .map { workoutSet in
-            if let standardSet = workoutSet as? StandardSet {
-                return Int(standardSet.repetitions * standardSet.weight)
-            }
-            if let dropSet = workoutSet as? DropSet, let repetitions = dropSet.repetitions, let weights = dropSet.weights {
-                return Int(zip(repetitions, weights).map(*).reduce(0, +))
-            }
-            if let superSet = workoutSet as? SuperSet {
-                return Int(superSet.repetitionsFirstExercise * superSet.weightFirstExercise) + Int(superSet.repetitionsSecondExercise * superSet.weightSecondExercise)
-            }
-            return 0
+            workoutSet.entryValues.reduce(0) { $0 + Int($1.repetitions * $1.weight) }
         }
         .reduce(0, +)
 }
@@ -27,24 +23,9 @@ public func getVolume(of workoutSets: [WorkoutSet]) -> Int {
 public func getVolume(of workoutSets: [WorkoutSet], for exercise: Exercise) -> Int {
     workoutSets
         .map { workoutSet in
-            if let standardSet = workoutSet as? StandardSet, standardSet.exercise == exercise {
-                return Int(standardSet.repetitions * standardSet.weight)
-            }
-            if let dropSet = workoutSet as? DropSet, dropSet.exercise == exercise,
-               let repetitions = dropSet.repetitions, let weights = dropSet.weights {
-                return Int(zip(repetitions, weights).map(*).reduce(0, +))
-            }
-            if let superSet = workoutSet as? SuperSet {
-                var volume = 0
-                if exercise == superSet.setGroup?.exercise {
-                    volume += Int(superSet.repetitionsFirstExercise * superSet.weightFirstExercise)
-                }
-                if exercise == superSet.setGroup?.secondaryExercise {
-                    volume += Int(superSet.repetitionsSecondExercise * superSet.weightSecondExercise)
-                }
-                return volume
-            }
-            return 0
+            workoutSet.entryValues
+                .filter { $0.exercise == exercise }
+                .reduce(0) { $0 + Int($1.repetitions * $1.weight) }
         }
         .reduce(0, +)
 }
@@ -52,23 +33,9 @@ public func getVolume(of workoutSets: [WorkoutSet], for exercise: Exercise) -> I
 public func getVolume(of workoutSets: [WorkoutSet], for muscleGroup: MuscleGroup) -> Int {
     workoutSets
         .map { workoutSet in
-            if let standardSet = workoutSet as? StandardSet, standardSet.exercise?.muscleGroup == muscleGroup {
-                return Int(standardSet.repetitions * standardSet.weight)
-            }
-            if let dropSet = workoutSet as? DropSet, dropSet.exercise?.muscleGroup == muscleGroup, let repetitions = dropSet.repetitions, let weights = dropSet.weights {
-                return Int(zip(repetitions, weights).map(*).reduce(0, +))
-            }
-            if let superSet = workoutSet as? SuperSet {
-                var volume = 0
-                if superSet.exercise?.muscleGroup == muscleGroup {
-                    volume += Int(superSet.repetitionsFirstExercise * superSet.weightFirstExercise)
-                }
-                if superSet.secondaryExercise?.muscleGroup == muscleGroup {
-                    volume += Int(superSet.repetitionsSecondExercise * superSet.weightSecondExercise)
-                }
-                return volume
-            }
-            return 0
+            workoutSet.entryValues
+                .filter { $0.exercise?.muscleGroup == muscleGroup }
+                .reduce(0) { $0 + Int($1.repetitions * $1.weight) }
         }
         .reduce(0, +)
 }

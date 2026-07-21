@@ -1056,3 +1056,16 @@
 "basis" = "値";
 
 "buildingYourTrend" = "トレンドを作成中";
+
+// MARK: - Apple Health
+
+"appleHealth" = "Appleヘルスケア";
+"appleHealthAccessDeniedMessage" = "LOGITにはヘルスケアへワークアウトを保存する権限がありません。「設定」→「ヘルスケア」→「データアクセスとデバイス」→「LOGIT」でいつでも許可できます。";
+"appleHealthAccessDeniedTitle" = "ヘルスケアへのアクセスなし";
+"appleHealthAccessMissing" = "ヘルスケアへのアクセスがオフです。「設定」→「ヘルスケア」→「データアクセスとデバイス」→「LOGIT」で許可してください。";
+"appleHealthSyncDescription" = "完了したワークアウトは筋力トレーニングとして自動的にヘルスケアに保存されます。";
+"exportPastWorkouts" = "過去のワークアウトを書き出す";
+"exportPastWorkoutsDescription" = "ワークアウト履歴全体をヘルスケアに追加します。再書き出しでは既存の項目が更新され、重複しません。";
+"syncToAppleHealth" = "ヘルスケアと同期";
+"workoutsExportedToHealth" = "%d件のワークアウトを書き出しました。";
+"workoutsSkippedNoDuration" = "%d件をスキップしました（時間なし）。";

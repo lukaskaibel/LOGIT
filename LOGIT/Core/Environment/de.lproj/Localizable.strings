@@ -1052,3 +1052,16 @@
 "basis" = "Werte";
 
 "buildingYourTrend" = "Dein Trend entsteht";
+
+// MARK: - Apple Health
+
+"appleHealth" = "Apple Health";
+"appleHealthAccessDeniedMessage" = "LOGIT hat keine Berechtigung, Workouts in Apple Health zu speichern. Du kannst sie jederzeit unter Einstellungen → Health → Datenzugriff & Geräte → LOGIT erlauben.";
+"appleHealthAccessDeniedTitle" = "Kein Health-Zugriff";
+"appleHealthAccessMissing" = "Der Health-Zugriff ist deaktiviert. Erlaube ihn unter Einstellungen → Health → Datenzugriff & Geräte → LOGIT.";
+"appleHealthSyncDescription" = "Abgeschlossene Workouts werden automatisch als Krafttraining in Apple Health gespeichert.";
+"exportPastWorkouts" = "Bisherige Workouts exportieren";
+"exportPastWorkoutsDescription" = "Fügt deinen gesamten Trainingsverlauf zu Apple Health hinzu. Ein erneuter Export aktualisiert Einträge, statt sie zu duplizieren.";
+"syncToAppleHealth" = "Mit Apple Health synchronisieren";
+"workoutsExportedToHealth" = "%d Workouts exportiert.";
+"workoutsSkippedNoDuration" = "%d übersprungen (keine Dauer).";

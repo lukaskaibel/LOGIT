@@ -1056,3 +1056,16 @@
 "basis" = "Valores";
 
 "buildingYourTrend" = "Criando sua tendência";
+
+// MARK: - Apple Health
+
+"appleHealth" = "Apple Saúde";
+"appleHealthAccessDeniedMessage" = "O LOGIT não tem permissão para salvar treinos no Apple Saúde. Você pode permitir a qualquer momento em Ajustes → Saúde → Acesso a Dados e Dispositivos → LOGIT.";
+"appleHealthAccessDeniedTitle" = "Sem acesso ao Saúde";
+"appleHealthAccessMissing" = "O acesso ao app Saúde está desativado. Permita em Ajustes → Saúde → Acesso a Dados e Dispositivos → LOGIT.";
+"appleHealthSyncDescription" = "Treinos concluídos são salvos automaticamente no Apple Saúde como treino de força.";
+"exportPastWorkouts" = "Exportar treinos anteriores";
+"exportPastWorkoutsDescription" = "Adiciona todo o seu histórico de treinos ao Apple Saúde. Exportar novamente atualiza as entradas em vez de duplicá-las.";
+"syncToAppleHealth" = "Sincronizar com o Apple Saúde";
+"workoutsExportedToHealth" = "%d treinos exportados.";
+"workoutsSkippedNoDuration" = "%d ignorados (sem duração).";

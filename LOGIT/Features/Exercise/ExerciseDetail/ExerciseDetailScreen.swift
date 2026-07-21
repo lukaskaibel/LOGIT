@@ -341,13 +341,13 @@ struct ExerciseDetailScreen: View {
                         distanceTile(workoutSets: workoutSets)
                         durationTile(workoutSets: workoutSets)
                     }
-                    setsTile(workoutSets: workoutSets)
+                    trailingSetsRow(workoutSets: workoutSets, spacing: spacing)
                 } else if isWeightAndDistance {
                     HStack(alignment: .top, spacing: spacing) {
                         weightTile(workoutSets: workoutSets)
                         distanceTile(workoutSets: workoutSets)
                     }
-                    setsTile(workoutSets: workoutSets)
+                    trailingSetsRow(workoutSets: workoutSets, spacing: spacing)
                 } else if isDistanceOnly {
                     HStack(alignment: .top, spacing: spacing) {
                         distanceTile(workoutSets: workoutSets)
@@ -363,7 +363,7 @@ struct ExerciseDetailScreen: View {
                         weightTile(workoutSets: workoutSets)
                         durationTile(workoutSets: workoutSets)
                     }
-                    setsTile(workoutSets: workoutSets)
+                    trailingSetsRow(workoutSets: workoutSets, spacing: spacing)
                 } else if isRepsOnly {
                     HStack(alignment: .top, spacing: spacing) {
                         repetitionsTile(workoutSets: workoutSets)
@@ -432,6 +432,16 @@ struct ExerciseDetailScreen: View {
             ExerciseDistanceTile(exercise: exercise, workoutSets: workoutSets)
         }
         .buttonStyle(TileButtonStyle())
+    }
+
+    /// The sets tile as the odd third tile of a 3-tile layout (weight+duration, distance+duration,
+    /// weight+distance): kept to a leading half with an empty trailing slot, so it lines up with the
+    /// half-width pair above it instead of stretching to full width.
+    private func trailingSetsRow(workoutSets: [WorkoutSet], spacing: CGFloat) -> some View {
+        HStack(alignment: .top, spacing: spacing) {
+            setsTile(workoutSets: workoutSets)
+            Color.clear.frame(maxWidth: .infinity)
+        }
     }
 
     private func setVolumeTile(workoutSets: [WorkoutSet]) -> some View {

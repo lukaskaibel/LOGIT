@@ -41,6 +41,7 @@ public extension TemplateSet {
                     repetitions: $0.repetitions,
                     weight: $0.weight,
                     duration: $0.duration,
+                    distance: $0.distance,
                     exercise: owningExercise(of: $0)
                 )
             }
@@ -130,6 +131,7 @@ public extension TemplateSet {
         entry.repetitions = values.repetitions
         entry.weight = values.weight
         entry.duration = values.duration
+        entry.distance = values.distance
         entry.exercise = values.exercise
         entry.templateSet = self
         return entry
@@ -175,6 +177,7 @@ public extension TemplateSet {
                     repetitions: 0,
                     weight: 0,
                     duration: 0,
+                    distance: 0,
                     exercise: positionalExercise(forOrder: value.order) ?? value.exercise
                 )
             )

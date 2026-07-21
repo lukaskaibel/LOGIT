@@ -472,6 +472,27 @@ struct WorkoutSetGroupCell: View {
                 } header: {
                     Text(NSLocalizedString("measurementType", comment: ""))
                 }
+                // The distance scale is the user's choice per exercise (km vs m, mi vs yd) —
+                // distances are stored in meters regardless, so switching only changes how
+                // they're shown and entered, everywhere this exercise appears.
+                if setGroup.measurementType.usesDistance, let exercise = setGroup.exercise {
+                    Section {
+                        ForEach(SetMeasurementType.DistanceStyle.allCases, id: \.self) { style in
+                            Button {
+                                exercise.distanceStyle = style
+                            } label: {
+                                HStack {
+                                    Text(distanceStyleTitle(for: style))
+                                    if setGroup.measurementType.distanceStyle(for: exercise) == style {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } header: {
+                        Text(NSLocalizedString("distanceUnit", comment: ""))
+                    }
+                }
             }
             if let onReorderSetGroups {
                 Section {
@@ -693,6 +714,7 @@ private struct SetGroupMetricComparison {
         case .weight: return setGroup.sets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
         case .repetitions: return setGroup.sets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
         case .duration: return setGroup.sets.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
+        case .distance: return setGroup.sets.map { $0.maximum(.distance, for: exercise) }.max() ?? 0
         }
     }
 
@@ -732,6 +754,7 @@ private struct SetGroupMetricComparison {
             case .weight: return best.maximum(.weight, for: exercise)
             case .repetitions: return best.maximum(.repetitions, for: exercise)
             case .duration: return best.maximum(.duration, for: exercise)
+            case .distance: return best.maximum(.distance, for: exercise)
             }
         }
         // Untrained for over a month → the window is empty. Fall back to the all-time best so there
@@ -743,6 +766,7 @@ private struct SetGroupMetricComparison {
             case .weight: return workoutSet.maximum(.weight, for: exercise)
             case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
             case .duration: return workoutSet.maximum(.duration, for: exercise)
+            case .distance: return workoutSet.maximum(.distance, for: exercise)
             }
         }
         let allTimeBest = priorSets.map(value).max() ?? 0
@@ -782,6 +806,7 @@ private struct SetGroupMetricComparison {
         case .weight: return priorSets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
         case .repetitions: return priorSets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
         case .duration: return priorSets.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
+        case .distance: return priorSets.map { $0.maximum(.distance, for: exercise) }.max() ?? 0
         }
     }
 
@@ -1056,7 +1081,19 @@ private struct MetricBadgeView: View {
             return UnitView(value: "\(value)", unit: NSLocalizedString("reps", comment: ""), configuration: .extraSmall)
         case .duration:
             return UnitView(value: "\(value)", unit: NSLocalizedString("sec", comment: ""), configuration: .extraSmall)
+        case .distance:
+            return UnitView(
+                value: formatDistanceForDisplay(Int64(value), style: distanceStyle),
+                unit: distanceUnitTitle(for: distanceStyle),
+                configuration: .extraSmall
+            )
         }
+    }
+
+    /// The distance scale for this exercise's displayed values — from its measurement type,
+    /// defaulting to the cardio (km) scale.
+    private var distanceStyle: SetMeasurementType.DistanceStyle {
+        setGroup.exercise?.distanceStyle ?? .long
     }
 
     // MARK: - Trend rendering (math lives in SetGroupMetricComparison)
@@ -1116,6 +1153,8 @@ private struct MetricBadgeView: View {
             return "\(value) \(NSLocalizedString("reps", comment: ""))"
         case .duration:
             return "\(value) \(NSLocalizedString("sec", comment: ""))"
+        case .distance:
+            return "\(formatDistanceForDisplay(Int64(value), style: distanceStyle)) \(distanceUnitTitle(for: distanceStyle))"
         }
     }
 
@@ -1292,7 +1331,12 @@ struct MetricInfoPanel: View {
     var onOpenDetail: ((ExercisePrimaryMetric) -> Void)?
     @State private var selectedMetric: ExercisePrimaryMetric
 
-    private let metrics = ExercisePrimaryMetric.allCases
+    /// Only the metrics that fit how the exercise is measured — five total metrics exist now,
+    /// and a segmented control full of inapplicable ones (an e1RM segment on a plank) helps no
+    /// one. Matches the badge's cycling order and the exercise editor's picker.
+    private var metrics: [ExercisePrimaryMetric] {
+        ExercisePrimaryMetric.allowed(for: setGroup.exercise?.measurementType ?? .repsAndWeight)
+    }
 
     /// Same math as the badge — see the type's doc.
     private var comparison: SetGroupMetricComparison { SetGroupMetricComparison(setGroup: setGroup) }
@@ -1424,6 +1468,7 @@ struct MetricInfoPanel: View {
         case .weight: return NSLocalizedString("metricInfoWeight", comment: "")
         case .repetitions: return NSLocalizedString("metricInfoReps", comment: "")
         case .duration: return NSLocalizedString("metricInfoDuration", comment: "")
+        case .distance: return NSLocalizedString("metricInfoDistance", comment: "")
         }
     }
 
@@ -1442,6 +1487,7 @@ struct MetricInfoPanel: View {
         case .estimatedOneRepMax: return formatEstimatedOneRepMax(value)
         case .weight: return formatWeightForDisplay(value)
         case .repetitions, .duration: return String(value)
+        case .distance: return formatDistanceForDisplay(Int64(value), style: distanceStyle)
         }
     }
 
@@ -1450,7 +1496,13 @@ struct MetricInfoPanel: View {
         case .estimatedOneRepMax, .weight: return WeightUnit.used.rawValue
         case .repetitions: return NSLocalizedString("reps", comment: "")
         case .duration: return NSLocalizedString("sec", comment: "")
+        case .distance: return distanceUnitTitle(for: distanceStyle)
         }
+    }
+
+    /// The distance scale for displayed values — same rule as the badge's.
+    private var distanceStyle: SetMeasurementType.DistanceStyle {
+        setGroup.exercise?.distanceStyle ?? .long
     }
 
     // MARK: - Progression chart
@@ -1461,6 +1513,7 @@ struct MetricInfoPanel: View {
         case .weight: return set.maximum(.weight, for: exercise)
         case .repetitions: return set.maximum(.repetitions, for: exercise)
         case .duration: return set.maximum(.duration, for: exercise)
+        case .distance: return set.maximum(.distance, for: exercise)
         }
     }
 
@@ -1468,6 +1521,11 @@ struct MetricInfoPanel: View {
         switch metric {
         case .estimatedOneRepMax, .weight: return convertWeightForDisplayingDecimal(base)
         case .repetitions, .duration: return Double(base)
+        case .distance:
+            switch distanceStyle {
+            case .long: return convertDistanceForDisplayingDecimal(Int64(base))
+            case .short: return Double(convertShortDistanceForDisplaying(Int64(base)))
+            }
         }
     }
 

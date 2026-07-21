@@ -338,6 +338,12 @@
 "noSearchResultsFor" = "Aucun résultat trouvé pour \"%@\"";
 "showMoreResults" = "Afficher %d plus de résultats";
 "sec" = "seconde";
+"meters.short" = "m";
+"yards.short" = "yd";
+"unitKilometers" = "Kilomètres (km)";
+"unitMeters" = "Mètres (m)";
+"unitMiles" = "Miles (mi)";
+"unitYards" = "Yards (yd)";
 "selectDuration" = "Sélectionnez la durée";
 "selectExercise" = "Sélectionnez l'exercice";
 "selectMuscleGroup" = "Sélectionnez un groupe musculaire";
@@ -437,7 +443,8 @@
 
 // MARK: - U
 
-"unit" = "Unité";
+"unit" = "Unité de poids";
+"distanceUnit" = "Unité de distance";
 "unitDescription" = "Sélectionnez l'unité que vous souhaitez utiliser. Toutes les entrées précédentes seront converties en cas de modification.";
 "unpinned" = "Désépinglé";
 "unused" = "Inutilisé";
@@ -726,6 +733,14 @@
 "_default.exercise.ringDips" = "Trempettes en anneau";
 "_default.exercise.ringPushups" = "Pompes à anneaux";
 "_default.exercise.ringRows" = "Rangées d'anneaux";
+"_default.exercise.walking" = "Marche";
+"_default.exercise.inclineTreadmillWalk" = "Marche inclinée sur tapis";
+"_default.exercise.rucking" = "Rucking";
+"_default.exercise.suitcaseCarry" = "Portée de valise";
+"_default.exercise.overheadCarry" = "Portée au-dessus de la tête";
+"_default.exercise.yokeCarry" = "Portée de joug";
+"_default.exercise.sandbagCarry" = "Portée de sac de sable";
+"_default.exercise.shuttleRun" = "Course navette";
 
 // MARK: - Default Template Names & Descriptions
 
@@ -1049,9 +1064,13 @@
 "measurementType.repsOnly" = "Rép. uniquement";
 "measurementType.duration" = "Durée";
 "measurementType.weightAndDuration" = "Poids et durée";
+"measurementType.distance" = "Distance";
+"measurementType.distanceAndDuration" = "Distance et durée";
+"measurementType.weightAndDistance" = "Poids et distance";
 "measurementTypeChangeInfo" = "Les séries existantes conservent leurs valeurs enregistrées. Seules les nouvelles séries utilisent la nouvelle mesure.";
 
 "metricInfoDuration" = "Votre durée enregistrée la plus longue pour cet exercice.";
+"metricInfoDistance" = "Votre distance enregistrée la plus longue pour cet exercice.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "par séance";
 "perWorkoutBasis" = "Par séance";

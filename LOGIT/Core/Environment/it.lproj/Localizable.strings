@@ -338,6 +338,12 @@
 "noSearchResultsFor" = "Nessun risultato trovato per \"%@\"";
 "showMoreResults" = "Mostra %d più risultati";
 "sec" = "sez";
+"meters.short" = "m";
+"yards.short" = "yd";
+"unitKilometers" = "Chilometri (km)";
+"unitMeters" = "Metri (m)";
+"unitMiles" = "Miglia (mi)";
+"unitYards" = "Iarde (yd)";
 "selectDuration" = "Seleziona Durata";
 "selectExercise" = "Seleziona Esercizio";
 "selectMuscleGroup" = "Seleziona gruppo muscolare";
@@ -437,7 +443,8 @@
 
 // MARK: - U
 
-"unit" = "Unità";
+"unit" = "Unità di peso";
+"distanceUnit" = "Unità di distanza";
 "unitDescription" = "Seleziona l'unità che desideri utilizzare. Eventuali voci precedenti verranno convertite in caso di modifica.";
 "unpinned" = "Sbloccato";
 "unused" = "Inutilizzato";
@@ -726,6 +733,14 @@
 "_default.exercise.ringDips" = "Immersioni nell'anello";
 "_default.exercise.ringPushups" = "Push-up ad anello";
 "_default.exercise.ringRows" = "Righe ad anello";
+"_default.exercise.walking" = "Camminata";
+"_default.exercise.inclineTreadmillWalk" = "Camminata in salita sul tapis roulant";
+"_default.exercise.rucking" = "Rucking";
+"_default.exercise.suitcaseCarry" = "Trasporto a valigia";
+"_default.exercise.overheadCarry" = "Trasporto sopra la testa";
+"_default.exercise.yokeCarry" = "Trasporto del giogo";
+"_default.exercise.sandbagCarry" = "Trasporto del sacco di sabbia";
+"_default.exercise.shuttleRun" = "Navetta";
 
 // MARK: - Default Template Names & Descriptions
 
@@ -1049,9 +1064,13 @@
 "measurementType.repsOnly" = "Solo rip.";
 "measurementType.duration" = "Durata";
 "measurementType.weightAndDuration" = "Peso e durata";
+"measurementType.distance" = "Distanza";
+"measurementType.distanceAndDuration" = "Distanza e durata";
+"measurementType.weightAndDistance" = "Peso e distanza";
 "measurementTypeChangeInfo" = "Le serie esistenti mantengono i valori registrati. Solo le nuove serie usano la nuova misurazione.";
 
 "metricInfoDuration" = "La durata più lunga registrata per questo esercizio.";
+"metricInfoDistance" = "La distanza più lunga registrata per questo esercizio.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "per allenamento";
 "perWorkoutBasis" = "Per allenamento";

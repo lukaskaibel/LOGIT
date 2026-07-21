@@ -86,6 +86,8 @@
 		801BBD892DF7338A00CDB1FB /* Exercise+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCD12DF7338A00CDB1FB /* Exercise+.swift */; };
 		801BBD8C2DF7338A00CDB1FB /* ExerciseVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */; };
 		801BBD8D2DF7338A00CDB1FB /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCA32DF7338A00CDB1FB /* WeightUnit.swift */; };
+		80DI00022F84DD0100DI0002 /* DistanceUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DI00012F84DD0100DI0001 /* DistanceUnit.swift */; };
+		80DI00042F84DD0100DI0004 /* DistanceConverting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DI00032F84DD0100DI0003 /* DistanceConverting.swift */; };
 		801BBD902DF7338A00CDB1FB /* CanEditModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD3B2DF7338A00CDB1FB /* CanEditModifier.swift */; };
 		801BBD912DF7338A00CDB1FB /* GenerationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD2D2DF7338A00CDB1FB /* GenerationScreen.swift */; };
 		801BBD922DF7338A00CDB1FB /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD302DF7338A00CDB1FB /* SettingsScreen.swift */; };
@@ -161,6 +163,8 @@
 		801BBDE42DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD3E2DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift */; };
 		801BBDE52DF7338A00CDB1FB /* WeightConverting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBF2DF7338A00CDB1FB /* WeightConverting.swift */; };
 		801BBDE62DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */; };
+		80DI00062F84DD0100DI0006 /* ExerciseDistanceTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DI00052F84DD0100DI0005 /* ExerciseDistanceTile.swift */; };
+		80DI00082F84DD0100DI0008 /* ExerciseDistanceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DI00072F84DD0100DI0007 /* ExerciseDistanceScreen.swift */; };
 		801BBDE72DF7338A00CDB1FB /* UIConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCAB2DF7338A00CDB1FB /* UIConstants.swift */; };
 		801BBDE82DF7338A00CDB1FB /* ExerciseHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD4F2DF7338A00CDB1FB /* ExerciseHeader.swift */; };
 		801BBDE92DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCB42DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift */; };
@@ -399,6 +403,8 @@
 		801BBCA12DF7338A00CDB1FB /* MeasurementEntryType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementEntryType.swift; sourceTree = "<group>"; };
 		801BBCA22DF7338A00CDB1FB /* MuscleGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroup.swift; sourceTree = "<group>"; };
 		801BBCA32DF7338A00CDB1FB /* WeightUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightUnit.swift; sourceTree = "<group>"; };
+		80DI00012F84DD0100DI0001 /* DistanceUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceUnit.swift; sourceTree = "<group>"; };
+		80DI00032F84DD0100DI0003 /* DistanceConverting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceConverting.swift; sourceTree = "<group>"; };
 		801BBCA72DF7338A00CDB1FB /* EnvironmentValues+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EnvironmentValues+.swift"; sourceTree = "<group>"; };
 		801BBCA82DF7338A00CDB1FB /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		801BBCA92DF7338A00CDB1FB /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -453,6 +459,8 @@
 		801BBCE52DF7338A00CDB1FB /* WorkoutSetGroupPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetGroupPredicateFactory.swift; sourceTree = "<group>"; };
 		801BBCE62DF7338A00CDB1FB /* WorkoutSetPredicateFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetPredicateFactory.swift; sourceTree = "<group>"; };
 		801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRepetitionsTile.swift; sourceTree = "<group>"; };
+		80DI00052F84DD0100DI0005 /* ExerciseDistanceTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDistanceTile.swift; sourceTree = "<group>"; };
+		80DI00072F84DD0100DI0007 /* ExerciseDistanceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDistanceScreen.swift; sourceTree = "<group>"; };
 		801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseVolumeTile.swift; sourceTree = "<group>"; };
 		801BBCEC2DF7338A00CDB1FB /* ExerciseWeightTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseWeightTile.swift; sourceTree = "<group>"; };
 		801BBCEE2DF7338A00CDB1FB /* ExerciseDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailScreen.swift; sourceTree = "<group>"; };
@@ -549,6 +557,7 @@
 		80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDurationEditorSheet.swift; sourceTree = "<group>"; };
 		80AA00072F5CAA0100AA0007 /* LOGIT 7.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 7.0.xcdatamodel"; sourceTree = "<group>"; };
 		80AA00082F70CC0100AA0008 /* LOGIT 8.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 8.0.xcdatamodel"; sourceTree = "<group>"; };
+		80AA00092F84DD0100AA0009 /* LOGIT 9.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 9.0.xcdatamodel"; sourceTree = "<group>"; };
 		80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingTimerButton.swift; sourceTree = "<group>"; };
 		80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingStopwatchStopButton.swift; sourceTree = "<group>"; };
 		80AA10022F5CAA0200AA1002 /* DeterministicUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicUUID.swift; sourceTree = "<group>"; };
@@ -839,6 +848,7 @@
 				8571CBB4B50589F1F8F36F44 /* StatPeriod.swift */,
 				80SE00022F70CC0100SE0002 /* SetMeasurementType.swift */,
 				801BBCA32DF7338A00CDB1FB /* WeightUnit.swift */,
+				80DI00012F84DD0100DI0001 /* DistanceUnit.swift */,
 				C82BC4F48812B4D49D4E38E2 /* ChartRange.swift */,
 			);
 			path = Enums;
@@ -883,6 +893,7 @@
 				801BBCBE2DF7338A00CDB1FB /* VolumeCalculating.swift */,
 				6923C33A92504E5287236332 /* OneRepMaxCalculating.swift */,
 				801BBCBF2DF7338A00CDB1FB /* WeightConverting.swift */,
+				80DI00032F84DD0100DI0003 /* DistanceConverting.swift */,
 				8E740E99321E2590B08B80A0 /* HealthKitSyncManager.swift */,
 			);
 			path = Utilities;
@@ -980,6 +991,7 @@
 			children = (
 				801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */,
 				80DU00012F70CC0100DU0001 /* ExerciseDurationTile.swift */,
+				80DI00052F84DD0100DI0005 /* ExerciseDistanceTile.swift */,
 				801BBCEB2DF7338A00CDB1FB /* ExerciseVolumeTile.swift */,
 				E1E1E1000000000000000F10 /* ExerciseSetsTile.swift */,
 				E1E1E1000000000000000F08 /* ExerciseMetricTile.swift */,
@@ -999,6 +1011,7 @@
 				801BBCEF2DF7338A00CDB1FB /* ExerciseHistoryScreen.swift */,
 				801BBCF02DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift */,
 				80DU00032F70CC0100DU0003 /* ExerciseDurationScreen.swift */,
+				80DI00072F84DD0100DI0007 /* ExerciseDistanceScreen.swift */,
 				801BBCF12DF7338A00CDB1FB /* ExerciseVolumeScreen.swift */,
 				E1E1E1000000000000000F11 /* ExerciseSetsScreen.swift */,
 				801BBCF22DF7338A00CDB1FB /* ExerciseWeightScreen.swift */,
@@ -1645,6 +1658,7 @@
 				E1E1E1000000000000000B06 /* ExerciseSetVolumeScreen.swift in Sources */,
 				801BBD822DF7338A00CDB1FB /* ExerciseRepetitionsScreen.swift in Sources */,
 				80DU00042F70CC0100DU0004 /* ExerciseDurationScreen.swift in Sources */,
+				80DI00082F84DD0100DI0008 /* ExerciseDistanceScreen.swift in Sources */,
 				801BBD832DF7338A00CDB1FB /* Secrets.swift in Sources */,
 				801BBD842DF7338A00CDB1FB /* LogitProLogo.swift in Sources */,
 				801BBD852DF7338A00CDB1FB /* StopwatchView.swift in Sources */,
@@ -1656,6 +1670,7 @@
 				E1E1E1000000000000000B10 /* ExerciseSetsTile.swift in Sources */,
 				E1E1E1000000000000000B08 /* ExerciseMetricTile.swift in Sources */,
 				801BBD8D2DF7338A00CDB1FB /* WeightUnit.swift in Sources */,
+				80DI00022F84DD0100DI0002 /* DistanceUnit.swift in Sources */,
 				801BBD902DF7338A00CDB1FB /* CanEditModifier.swift in Sources */,
 				801BBD912DF7338A00CDB1FB /* GenerationScreen.swift in Sources */,
 				801BBD922DF7338A00CDB1FB /* SettingsScreen.swift in Sources */,
@@ -1768,8 +1783,10 @@
 				8C2580F9D7A5C52A72312A9A /* StatPeriod.swift in Sources */,
 				801BBDE42DF7338A00CDB1FB /* NoDataPlaceholderModifier.swift in Sources */,
 				801BBDE52DF7338A00CDB1FB /* WeightConverting.swift in Sources */,
+				80DI00042F84DD0100DI0004 /* DistanceConverting.swift in Sources */,
 				801BBDE62DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift in Sources */,
 				80DU00022F70CC0100DU0002 /* ExerciseDurationTile.swift in Sources */,
+				80DI00062F84DD0100DI0006 /* ExerciseDistanceTile.swift in Sources */,
 				801BBDE72DF7338A00CDB1FB /* UIConstants.swift in Sources */,
 				801BBDE82DF7338A00CDB1FB /* ExerciseHeader.swift in Sources */,
 				801BBDE92DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift in Sources */,
@@ -2347,6 +2364,7 @@
 		801BBCC92DF7338A00CDB1FB /* LOGIT.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				80AA00092F84DD0100AA0009 /* LOGIT 9.0.xcdatamodel */,
 				80AA00082F70CC0100AA0008 /* LOGIT 8.0.xcdatamodel */,
 				80AA00072F5CAA0100AA0007 /* LOGIT 7.0.xcdatamodel */,
 				80AA00052F3A000100AA0001 /* LOGIT 6.0.xcdatamodel */,
@@ -2356,7 +2374,7 @@
 				801BBD602DF7338A00CDB1FB /* LOGIT 3.0.xcdatamodel */,
 				801BBD612DF7338A00CDB1FB /* WorkoutDiary.xcdatamodel */,
 			);
-			currentVersion = 80AA00082F70CC0100AA0008 /* LOGIT 8.0.xcdatamodel */;
+			currentVersion = 80AA00092F84DD0100AA0009 /* LOGIT 9.0.xcdatamodel */;
 			path = LOGIT.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

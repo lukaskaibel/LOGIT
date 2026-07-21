@@ -338,6 +338,12 @@
 "noSearchResultsFor" = "No se han encontrado resultados para \"%@\"";
 "showMoreResults" = "Mostrar %d más resultados";
 "sec" = "segundo";
+"meters.short" = "m";
+"yards.short" = "yd";
+"unitKilometers" = "Kilómetros (km)";
+"unitMeters" = "Metros (m)";
+"unitMiles" = "Millas (mi)";
+"unitYards" = "Yardas (yd)";
 "selectDuration" = "Seleccionar duración";
 "selectExercise" = "Seleccionar ejercicio";
 "selectMuscleGroup" = "Seleccionar grupo de músculos";
@@ -437,7 +443,8 @@
 
 // MARK: - U
 
-"unit" = "Unidad";
+"unit" = "Unidad de peso";
+"distanceUnit" = "Unidad de distancia";
 "unitDescription" = "Seleccione la unidad que desea utilizar. Cualquier entrada anterior se convertirá en caso de cambio.";
 "unpinned" = "Desanclar";
 "unused" = "No usado";
@@ -726,6 +733,14 @@
 "_default.exercise.ringDips" = "Inmersiones de anillo";
 "_default.exercise.ringPushups" = "Flexiones de anillo";
 "_default.exercise.ringRows" = "Filas de anillos";
+"_default.exercise.walking" = "Caminata";
+"_default.exercise.inclineTreadmillWalk" = "Caminata inclinada en cinta";
+"_default.exercise.rucking" = "Rucking";
+"_default.exercise.suitcaseCarry" = "Acarreo de maleta";
+"_default.exercise.overheadCarry" = "Acarreo por encima de la cabeza";
+"_default.exercise.yokeCarry" = "Acarreo de yugo";
+"_default.exercise.sandbagCarry" = "Acarreo de saco de arena";
+"_default.exercise.shuttleRun" = "Carrera de ida y vuelta";
 
 // MARK: - Default Template Names & Descriptions
 
@@ -1049,9 +1064,13 @@
 "measurementType.repsOnly" = "Solo reps";
 "measurementType.duration" = "Duración";
 "measurementType.weightAndDuration" = "Peso y duración";
+"measurementType.distance" = "Distancia";
+"measurementType.distanceAndDuration" = "Distancia y duración";
+"measurementType.weightAndDistance" = "Peso y distancia";
 "measurementTypeChangeInfo" = "Las series existentes conservan sus valores registrados. Solo las series nuevas usan la nueva medición.";
 
 "metricInfoDuration" = "Tu duración más larga registrada para este ejercicio.";
+"metricInfoDistance" = "Tu distancia más larga registrada para este ejercicio.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "por entrenamiento";
 "perWorkoutBasis" = "Por entrenamiento";

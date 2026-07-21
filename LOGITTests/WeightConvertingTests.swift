@@ -299,3 +299,105 @@ final class WeightConvertingTests: XCTestCase {
         XCTAssertEqual(displayed2, 50.001, accuracy: 0.0001)
     }
 }
+
+// MARK: - Distance Conversion Tests
+
+final class DistanceConvertingTests: XCTestCase {
+
+    private var userDefaultsHelper: UserDefaultsTestHelper!
+
+    override func setUp() {
+        super.setUp()
+        userDefaultsHelper = UserDefaultsTestHelper()
+    }
+
+    override func tearDown() {
+        userDefaultsHelper.restoreAll()
+        super.tearDown()
+    }
+
+    // MARK: - Long Distances (km/mi)
+
+    func testConvertDistanceForStoringKm() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertDistanceForStoring(5.5), 5500, "5.5 km should store as 5500 meters")
+    }
+
+    func testConvertDistanceForStoringMi() {
+        userDefaultsHelper.setTestValue("mi", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertDistanceForStoring(1.0), 1609, "1 mi should store as 1609 meters")
+    }
+
+    func testConvertDistanceForDisplayingDecimalKm() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertDistanceForDisplayingDecimal(5500), 5.5, accuracy: 0.001)
+    }
+
+    func testConvertDistanceForDisplayingDecimalMi() {
+        userDefaultsHelper.setTestValue("mi", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertDistanceForDisplayingDecimal(1609), 1.0, accuracy: 0.01)
+    }
+
+    func testFormatDistanceDropsTrailingZeros() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5000)), "5")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5500)), "5.5")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5550)), "5.55")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(0)), "0")
+    }
+
+    // MARK: - Short Distances (m/yd)
+
+    func testShortDistanceMetersPassThrough() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertShortDistanceForStoring(40), 40, "Meters store as meters")
+        XCTAssertEqual(convertShortDistanceForDisplaying(40), 40)
+    }
+
+    func testShortDistanceYardsConversion() {
+        userDefaultsHelper.setTestValue("mi", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertShortDistanceForStoring(50), 46, "50 yd should store as 46 meters")
+        XCTAssertEqual(convertShortDistanceForDisplaying(46), 50, "46 meters should display as 50 yd")
+    }
+
+    // MARK: - Style Dispatch
+
+    func testFormatDistanceForDisplayByStyle() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5500), style: .long), "5.5")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(40), style: .short), "40")
+        XCTAssertEqual(distanceUnitTitle(for: .long), "km")
+        XCTAssertEqual(distanceUnitTitle(for: .short), "m")
+    }
+
+    // MARK: - Measurement Type Field Consistency
+
+    func testInputFieldCountMatchesTrackedFields() {
+        for type in SetMeasurementType.allCases {
+            let tracked = [
+                type.usesRepetitions, type.usesWeight, type.usesDuration, type.usesDistance,
+            ].filter { $0 }.count
+            XCTAssertEqual(
+                type.inputFieldCount, tracked,
+                "\(type.rawValue) must show one input field per tracked value"
+            )
+        }
+    }
+
+    func testDistanceStyleExistsExactlyForDistanceTypes() {
+        for type in SetMeasurementType.allCases {
+            XCTAssertEqual(
+                type.distanceStyle != nil, type.usesDistance,
+                "\(type.rawValue) distance style must accompany a distance field"
+            )
+        }
+    }
+}

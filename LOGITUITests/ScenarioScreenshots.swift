@@ -261,6 +261,142 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "plank_detail_duration_tiles")
     }
 
+    /// The distance measurement types in the recorder: the stress scenario's current
+    /// workout ends with a distance+duration Running group (km + sec fields) and a
+    /// weight+distance Sled Push group (kg + m fields). Scroll to them, capture, then
+    /// open the running detail: a distance exercise must show its distance tile (fed by
+    /// the seeded treadmill history) instead of weight/e1RM tiles.
+    func testRecorderDistanceTypes() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET"]
+        )
+
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
+        waitABit(2)
+
+        let sledHeader = app.staticTexts["Sled Push"]
+        for _ in 0 ..< 14 where !sledHeader.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(sledHeader.waitForExistence(timeout: 5), "Sled Push group not reachable")
+        waitABit(1)
+        attach(app, "recorder_distance_types")
+
+        app.staticTexts["Running"].firstMatch.tap()
+        waitABit(3)
+        attach(app, "running_detail_distance_tiles")
+    }
+
+    /// The per-exercise distance unit choice, end to end: long-press a Sled Push set →
+    /// Measurement submenu → the Distance Unit section appears → switch to kilometers → the
+    /// row re-renders its 20 m as 0.02 km. Values are stored in meters, so this is purely a
+    /// display flip.
+    func testDistanceUnitChoiceMenu() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET"]
+        )
+
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
+        waitABit(2)
+
+        // Scroll to the bottom group with a settle after each swipe — hammering isHittable
+        // between rapid swipes races the accessibility snapshot under simulator load.
+        let sledHeader = app.staticTexts["Sled Push"]
+        var sledReachable = sledHeader.exists && sledHeader.isHittable
+        for _ in 0 ..< 14 where !sledReachable {
+            app.swipeUp()
+            sledReachable = sledHeader.waitForExistence(timeout: 1) && sledHeader.isHittable
+        }
+        XCTAssertTrue(sledReachable, "Sled Push group not reachable")
+        waitABit(1)
+
+        // Long-press the sled's first set row to open its context menu. The row's exact
+        // offset below the header varies slightly, so try a few plausible spots.
+        let measurementItem = app.buttons["Measurement"].firstMatch
+        for dy in [4.5, 3.5, 5.5] where !measurementItem.exists {
+            sledHeader.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: dy))
+                .press(forDuration: 0.9)
+            _ = measurementItem.waitForExistence(timeout: 3)
+        }
+        XCTAssertTrue(measurementItem.exists, "Set context menu did not open on the sled set")
+        measurementItem.tap()
+
+        let kilometersOption = app.buttons["Kilometers (km)"].firstMatch
+        XCTAssertTrue(
+            kilometersOption.waitForExistence(timeout: 4),
+            "Distance Unit options missing from the Measurement menu"
+        )
+        attach(app, "measurement_menu_distance_unit")
+
+        // The submenu holds all seven types plus the unit section, so the unit options can sit
+        // below its fold — scroll the open menu until the option is genuinely tappable.
+        var tappedKilometers = false
+        for _ in 0 ..< 4 where !tappedKilometers {
+            if kilometersOption.exists, kilometersOption.isHittable {
+                kilometersOption.tap()
+                tappedKilometers = true
+            } else {
+                app.swipeUp()
+                waitABit(1)
+            }
+        }
+        XCTAssertTrue(tappedKilometers, "Kilometers option never became tappable in the menu")
+        waitABit(1)
+        // The distance value lives in the entry's text field (20 m = 0.02 km).
+        let kmField = app.textFields.matching(NSPredicate(format: "value == '0.02'")).firstMatch
+        XCTAssertTrue(
+            kmField.waitForExistence(timeout: 4),
+            "Sled distance did not re-render as kilometers after the unit switch"
+        )
+        attach(app, "sled_row_in_kilometers")
+    }
+
+    /// The exercise detail's distance adaptation, reached through the Exercises tab (the
+    /// recorder's name-tap detail sheet is suppressed under -UITEST_NO_SHEET, so this is the
+    /// reliable element-driven route): Running must show the distance + duration tiles fed by
+    /// the seeded treadmill history, and the distance tile must open its chart screen.
+    func testDistanceExerciseDetailFromList() {
+        let app = launchApp(scenario: "stress")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 3)
+        waitABit(1)
+
+        // The Search tab is a hub; go through its Exercises list. Prefer the list's search
+        // field when one is exposed; otherwise swipe down the alphabetical list to R.
+        let exercisesRow = app.staticTexts["Exercises"].firstMatch
+        XCTAssertTrue(exercisesRow.waitForExistence(timeout: 5), "Exercises row missing on the Search tab")
+        exercisesRow.tap()
+        waitABit(2)
+
+        let runningRow = app.staticTexts["Running"].firstMatch
+        let listSearchField = app.textFields.firstMatch
+        if listSearchField.waitForExistence(timeout: 2) {
+            listSearchField.tap()
+            app.typeText("Running")
+            waitABit(2)
+        } else {
+            for _ in 0 ..< 30 where !runningRow.isHittable {
+                app.swipeUp()
+            }
+        }
+        XCTAssertTrue(runningRow.waitForExistence(timeout: 5), "Running not reachable in the exercise list")
+        runningRow.tap()
+        waitABit(3)
+        attach(app, "running_detail_from_list")
+
+        let distanceTile = app.staticTexts["Distance"].firstMatch
+        XCTAssertTrue(distanceTile.waitForExistence(timeout: 5), "Distance tile missing on a distance exercise")
+        distanceTile.tap()
+        waitABit(2)
+        attach(app, "running_distance_chart_screen")
+    }
+
     // MARK: - Workout recorder (Transmission presentation)
     //
     // Note on element queries: while the persistent exercise tray sheet is

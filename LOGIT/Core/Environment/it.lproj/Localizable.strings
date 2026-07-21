@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "Termina l'installazione";
+"finish" = "Termina";
 "finishWorkout" = "Termina l'allenamento";
 "finishWorkoutConfimation" = "Vuoi finire l'allenamento?";
 "five" = "Cinque";
@@ -203,6 +204,7 @@
 "waist" = "Vita";
 "measurements" = "Misure";
 "min" = "min";
+"minimize" = "Riduci";
 "missing" = "Mancante";
 "measurementsPromotionDescription" = "Tieni traccia del peso corporeo, del grasso corporeo e delle misurazioni delle parti del corpo come braccia, petto e vita per vedere chiaramente i tuoi progressi.";
 "month" = "Mese";

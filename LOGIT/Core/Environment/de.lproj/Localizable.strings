@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "Set-Up beenden";
+"finish" = "Beenden";
 "finishWorkout" = "Workout beenden";
 "finishWorkoutConfimation" = "Möchtest du das Workout beenden?";
 "five" = "Fünf";
@@ -199,6 +200,7 @@
 "measurements" = "Messungen";
 "measurementsPromotionDescription" = "Verfolge Körpergewicht, Körperfett und Körpermaße wie Arme, Brust und Taille, um deinen Fortschritt zu sehen.";
 "min" = "min";
+"minimize" = "Minimieren";
 "missing" = "Fehlen";
 "month" = "Monat";
 "monthly" = "Monatlich";

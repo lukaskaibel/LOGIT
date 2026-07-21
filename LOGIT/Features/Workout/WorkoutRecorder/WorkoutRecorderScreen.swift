@@ -6,6 +6,7 @@
 //
 
 import Charts
+import ColorfulX
 import Combine
 import CoreData
 import SwiftUI
@@ -82,11 +83,49 @@ struct WorkoutRecorderScreen: View {
 
     @FocusState var isFocusingTitleTextfield: Bool
 
+    /// Whether the header is unfolded into its live stats panel (progress, session stats,
+    /// minimize/finish). Expanded while the workout has no logged entries — a brand-new or
+    /// template start shows the panel (and the finish/minimize actions) before the first
+    /// value lands — and folds away on the first entry.
+    @State private var isHeaderExpanded = false
+    /// The workout title's font size, folded vs. unfolded — Dynamic-Type-scaled and interpolated
+    /// through `AnimatableTitleFont` so the title grows/shrinks smoothly instead of snapping.
+    @ScaledMetric(relativeTo: .body) private var collapsedTitleSize: CGFloat = 17
+    @ScaledMetric(relativeTo: .title2) private var expandedTitleSize: CGFloat = 22
+    /// Natural (fully-revealed) height of the expanded stats panel, measured live so the drag
+    /// can interpolate against it — the panel is always in the tree (clipped to the current
+    /// reveal) so its height is known before the first drag.
+    @State private var headerPanelHeight: CGFloat = 0
+    /// Non-nil while a finger is dragging the header: the live vertical translation, added to the
+    /// resting reveal so the panel tracks the finger 1:1 (a real drag, not a threshold swipe).
+    @State private var headerDragTranslation: CGFloat?
+
+    /// One spring for every path that folds or unfolds the header (tap, drag settle, auto).
+    private var headerExpansionAnimation: Animation { .spring(response: 0.4, dampingFraction: 0.85) }
+
+    /// How much of the panel is currently shown: its resting height (0 collapsed, full expanded)
+    /// plus the live drag, clamped to the panel's natural height.
+    private var headerPanelRevealHeight: CGFloat {
+        let base = isHeaderExpanded ? headerPanelHeight : 0
+        guard let translation = headerDragTranslation else { return base }
+        return min(max(base + translation, 0), headerPanelHeight)
+    }
+
+    private func toggleHeaderExpansion() {
+        withAnimation(headerExpansionAnimation) { isHeaderExpanded.toggle() }
+    }
+
     // MARK: - Body
 
     var body: some View {
         NavigationStack {
-            ZStack {
+            VStack(spacing: 0) {
+                // The header lives IN FLOW above the list (not overlaid): rows scroll
+                // out under it through a soft fade, so it needs no background slab, and
+                // its height changes push the list like a large navigation title.
+                if !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_HEADER") {
+                    Header
+                }
                 if let workout = workoutRecorder.workout {
                     ScrollViewReader { proxy in
                         ScrollView {
@@ -118,7 +157,9 @@ struct WorkoutRecorderScreen: View {
                                     }
                                 )
                                 .padding(.horizontal)
-                                .padding(.top, 90)
+                                // Clear the fade band along the viewport's top edge so rows
+                                // resting at the top aren't half-dissolved.
+                                .padding(.top, 24)
                                 .padding(.bottom, exerciseSelectionPresentationDetent == .medium ? (UIScreen.current?.bounds.height ?? 0) * 0.5 : BOTTOM_SHEET_SMALL)
                                 .emptyPlaceholder(workout.setGroups) {
                                     Text(NSLocalizedString("addExercisesFromBelow", comment: ""))
@@ -145,12 +186,37 @@ struct WorkoutRecorderScreen: View {
                             }
                         }
                         .scrollIndicators(.hidden)
-                        // Track whether the list is scrolled to the very top; only then
-                        // does a downward drag on the list dismiss the recorder.
-                        .onScrollGeometryChange(for: Bool.self) { geometry in
-                            geometry.contentOffset.y <= -geometry.contentInsets.top + 2
-                        } action: { _, atTop in
-                            scrollIsAtTop = atTop
+                        // Rows dissolve to transparent along the viewport's top edge as they
+                        // scroll out under the header — a soft fade instead of an abrupt clip
+                        // (the in-flow header has no background to hide them behind).
+                        .mask(
+                            VStack(spacing: 0) {
+                                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                                    .frame(height: 28)
+                                Color.black
+                            }
+                        )
+                        // One geometry observer, two jobs: `scrollIsAtTop` gates the list's
+                        // drag-to-dismiss, and the header behaves like a large navigation
+                        // title — unfolds when the list rests at the very top, folds as soon
+                        // as the user scrolls down into the content. A drag on the header
+                        // itself can still unfold it anywhere (see the Header's gesture).
+                        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+                            geometry.contentOffset.y + geometry.contentInsets.top
+                        } action: { oldOffset, newOffset in
+                            scrollIsAtTop = newOffset <= 2
+                            // Never fight an active header drag; its own settle wins.
+                            guard headerDragTranslation == nil else { return }
+                            if newOffset <= 2 {
+                                if !isHeaderExpanded {
+                                    withAnimation(headerExpansionAnimation) { isHeaderExpanded = true }
+                                }
+                            } else if newOffset > oldOffset + 0.5, isHeaderExpanded {
+                                // Any genuine downward scroll folds the panel (the 0.5pt
+                                // guard only filters float noise — slow scrolls move less
+                                // than a few points per frame).
+                                withAnimation(headerExpansionAnimation) { isHeaderExpanded = false }
+                            }
                         }
                         // Freeze the list while a dismiss-drag is in flight so it can't
                         // rubber-band against the screen the driver is translating.
@@ -168,9 +234,6 @@ struct WorkoutRecorderScreen: View {
                                     handleListDragEnded(value)
                                 }
                         )
-                        .safeAreaInset(edge: .bottom) {
-                            Color.clear.frame(height: 100)
-                        }
                         // The tray only presents once the recorder's morph has landed and
                         // hides while the card is being dragged: a presented child sheet
                         // would swallow the recorder's own interactive dismissal (UIKit
@@ -300,6 +363,13 @@ struct WorkoutRecorderScreen: View {
                         } action: { newValue in
                             sheetGeometry.safeAreaBottomInset = newValue
                         }
+                        // Run the list to the physical bottom edge, under the tray sheet. The
+                        // tray's fixed detent (with background interaction) contributes a bottom
+                        // safe-area inset to the presenting content; ignoring it must wrap the
+                        // WHOLE scroll stack — applied further in, the outer wrappers (mask,
+                        // sheet anchor, overlay) still respect the inset and the rows get
+                        // clipped ~100pt above the screen edge, leaving a black band.
+                        .ignoresSafeArea(.container, edges: .bottom)
                     }
                     .onAppear {
                         updateProgress()
@@ -316,33 +386,28 @@ struct WorkoutRecorderScreen: View {
                         checkForNewSetEntries()
                     }
                 }
-                if !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_HEADER") {
-                    Header
-                        .frame(maxHeight: .infinity, alignment: .top)
-                        // The header is the recorder's drag handle, exactly like the
-                        // old draggable cover. The gesture lives inside the presented
-                        // content because the tray sheet's background-interaction
-                        // passthrough never delivers touches to the root-level pan
-                        // recognizer Transmission installs.
-                        .simultaneousGesture(
-                            DragGesture(coordinateSpace: .global)
-                                .onChanged { value in
-                                    recorderDragDriver.dragChanged(translation: value.translation)
-                                }
-                                .onEnded { value in
-                                    recorderDragDriver.dragEnded(
-                                        translation: value.translation,
-                                        velocity: value.velocity
-                                    )
-                                }
-                        )
-                }
             }
+            // Ambient muscle-group wash at the top of the screen — the same ColorfulX
+            // treatment as the workout detail; it replaces the header's material slab.
+            .background(
+                VStack {
+                    ColorfulView(
+                        color: workoutRecorder.workout?.muscleGroups.map { $0.color } ?? [],
+                        speed: .constant(0)
+                    )
+                    .mask(
+                        LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
+                    )
+                    .frame(height: 300)
+                    Spacer()
+                }
+                .ignoresSafeArea(.all)
+            )
             // Pure black base: the recorder is presented modally, so the default
             // NavigationStack/ScrollView `systemBackground` is its elevated grey.
             .background(Color.black.ignoresSafeArea())
-            // Dragging the card resigns any active text field, exactly like the old
-            // draggable cover did before handing the view to the drag.
+            // Dragging the card (from the set list at the top) resigns any active text field,
+            // exactly like the old draggable cover did before handing the view to the drag.
             .onChange(of: workoutRecorderIsDragging) {
                 if workoutRecorderIsDragging {
                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
@@ -380,6 +445,9 @@ struct WorkoutRecorderScreen: View {
                 enteredRepetitionSetIDs = workoutRecorder.workout.map {
                     workoutRecorder.repetitionEnteredSetIDs(in: $0)
                 } ?? []
+                // Start unfolded until the first value is logged: a fresh (or template) start
+                // leads with the session panel, a resumed mid-workout recorder stays compact.
+                isHeaderExpanded = !(workoutRecorder.workout?.hasEntries ?? false)
 
                 if preventAutoLock {
                     UIApplication.shared.isIdleTimerDisabled = true
@@ -420,61 +488,180 @@ struct WorkoutRecorderScreen: View {
 
     private var Header: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 5) {
-                Rectangle()
-                    .frame(width: 40, height: 5)
-                    .clipShape(Capsule())
-                    .opacity(exerciseSelectionPresentationDetent == .large ? 0 : 1)
-                HStack {
-                    if let workout = workoutRecorder.workout {
-                        WorkoutMuscleGroupChart(workout: workout)
-                            .transition(.move(edge: .leading))
-                            .animation(.interactiveSpring, value: workout.sets)
-                    }
-                    VStack(alignment: .leading, spacing: 2) {
-                        if let workoutStartTime = workoutRecorder.workout?.date {
-                            StopwatchView(startTime: workoutStartTime)
-                                .foregroundStyle(.secondary)
-                                .font(.footnote.weight(.bold).monospacedDigit())
-                        }
-                        TextField(
-                            "",
-                            text: workoutName,
-                            prompt: Text(Workout.getStandardName(for: Date())).foregroundStyle(Color.label)
+            VStack(spacing: 0) {
+                headerCompactRow
+                // Present only while open or being dragged, so the panel's Finish / Minimize
+                // actions leave the accessibility tree (and XCUITest) the moment it folds —
+                // .accessibilityHidden on an always-present panel does not reliably hide the
+                // buttons. It measures itself the first time it appears and the height is cached
+                // in State, so every later drag already knows how far to open; it's clipped to
+                // the live reveal so the drag tracks the finger, and the frame animates on settle.
+                if let workout = workoutRecorder.workout, isHeaderExpanded || headerDragTranslation != nil {
+                    headerExpandedPanel(for: workout)
+                        .padding(.top, 12)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(
+                            GeometryReader { geometry in
+                                Color.clear
+                                    .onChange(of: geometry.size.height, initial: true) { _, height in
+                                        if height > 0 { headerPanelHeight = height }
+                                    }
+                            }
                         )
-                        .submitLabel(.done)
-                        .focused($isFocusingTitleTextfield)
-                        .lineLimit(1)
-                        .foregroundColor(.label)
-                        .font(.body.weight(.bold))
-                    }
-                    Spacer()
-                    Button {
-                        guard workoutRecorder.workout?.hasEntries ?? false else {
-                            finishWorkout(shouldSave: false)
-                            return
-                        }
-                        isShowingFinishConfirmation = true
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.body.weight(.bold))
-                            .foregroundColor(Color.accentColor)
-                            .padding(8)
-                            .background(Color.accentColor.secondaryTranslucentBackground)
-                            .clipShape(Circle())
-                    }
-                    .accessibilityIdentifier("recorderCloseButton")
+                        .frame(height: headerPanelRevealHeight, alignment: .top)
+                        .clipped()
+                        .opacity(headerPanelHeight > 0 ? min(headerPanelRevealHeight / headerPanelHeight, 1) : 1)
+                        .allowsHitTesting(isHeaderExpanded && headerDragTranslation == nil)
                 }
+                // The grab handle sits at the header's BOTTOM edge — the seam the panel unfolds
+                // from — and reads as "pull here": drag the header (or tap the handle / caption)
+                // to fold and unfold. Minimizing the recorder is the panel's own button.
+                Capsule()
+                    .fill(Color.secondaryLabel.opacity(0.5))
+                    .frame(width: 36, height: 5)
+                    .opacity(exerciseSelectionPresentationDetent == .large ? 0 : 1)
+                    .padding(.top, 12)
+                    .contentShape(Rectangle())
+                    .onTapGesture { toggleHeaderExpansion() }
             }
             .padding(.horizontal)
-            .padding(.bottom)
-            .background {
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .clipShape(.rect(bottomLeadingRadius: 30, bottomTrailingRadius: 30))
-                    .edgesIgnoringSafeArea(.top)
+            .padding(.bottom, 10)
+        }
+        // No background slab anymore: the header sits in flow above the list (which
+        // fades out before reaching it) over the ambient muscle-group wash. The shape
+        // keeps the whole header area draggable despite the transparent gaps.
+        .contentShape(Rectangle())
+        // A finger on the header drags the panel open/closed 1:1 (simultaneous, so the title
+        // field and the caption's own tap still work); release snaps to whichever side the
+        // current reveal and the fling velocity favour.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    headerDragTranslation = value.translation.height
+                }
+                .onEnded { value in
+                    let base = isHeaderExpanded ? headerPanelHeight : 0
+                    let revealed = min(max(base + value.translation.height, 0), headerPanelHeight)
+                    let fraction = headerPanelHeight > 0 ? revealed / headerPanelHeight : 0
+                    let expand: Bool
+                    if value.velocity.height > 400 {
+                        expand = true
+                    } else if value.velocity.height < -400 {
+                        expand = false
+                    } else {
+                        expand = fraction >= 0.5
+                    }
+                    withAnimation(headerExpansionAnimation) {
+                        isHeaderExpanded = expand
+                        headerDragTranslation = nil
+                    }
+                }
+        )
+    }
+
+    /// The always-visible header row, laid out like a `WorkoutCell`: elapsed time and set count
+    /// over the editable title, with the muscle-group donut on the trailing edge.
+    private var headerCompactRow: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 5) {
+                    if let workoutStartTime = workoutRecorder.workout?.date {
+                        StopwatchView(startTime: workoutStartTime)
+                    }
+                    Text("·")
+                    Text("\(workoutRecorder.workout?.numberOfSets ?? 0) \(NSLocalizedString("sets", comment: ""))")
+                }
+                .foregroundStyle(.secondary)
+                .font(.footnote.weight(.bold).monospacedDigit())
+                // The caption is a tap target for folding/unfolding; the title below it keeps
+                // its own tap to focus the text field for renaming.
+                .contentShape(Rectangle())
+                .onTapGesture { toggleHeaderExpansion() }
+                TextField(
+                    "",
+                    text: workoutName,
+                    prompt: Text(Workout.getStandardName(for: Date())).foregroundStyle(Color.label)
+                )
+                .submitLabel(.done)
+                .focused($isFocusingTitleTextfield)
+                .lineLimit(1)
+                .foregroundColor(.label)
+                // Grows into a large-title once the panel is open — the size interpolates
+                // (animatable), so on expand/collapse the title scales smoothly, not in a snap.
+                .modifier(AnimatableTitleFont(size: isHeaderExpanded ? expandedTitleSize : collapsedTitleSize))
+            }
+            Spacer()
+            if let workout = workoutRecorder.workout {
+                WorkoutMuscleGroupChart(workout: workout)
+                    .animation(.interactiveSpring, value: workout.sets)
+                    .contentShape(Rectangle())
+                    .onTapGesture { toggleHeaderExpansion() }
             }
         }
+    }
+
+    /// The unfolded half of the header: the workout detail's Volume and Repetitions stat tiles
+    /// above the Minimize and Finish actions. The tiles appear only once the workout has a
+    /// logged value — an empty (fresh / template) start shows just the two buttons, so the panel
+    /// stays small. The actions use the app's shared secondary/primary button styles, so they
+    /// match the Add Set button's capsule height and read as the standard action hierarchy.
+    private func headerExpandedPanel(for workout: Workout) -> some View {
+        VStack(spacing: 8) {
+            if workout.hasEntries {
+                HStack(alignment: .top, spacing: 8) {
+                    workoutStatTile(.volume, for: workout)
+                    workoutStatTile(.repetitions, for: workout)
+                }
+            }
+            HStack(spacing: 8) {
+                Button {
+                    dismissWorkoutRecorder()
+                } label: {
+                    Label(NSLocalizedString("minimize", comment: ""), systemImage: "arrow.down.right.and.arrow.up.left")
+                }
+                .buttonStyle(TertiaryButtonStyle())
+                Button {
+                    guard workout.hasEntries else {
+                        finishWorkout(shouldSave: false)
+                        return
+                    }
+                    isShowingFinishConfirmation = true
+                } label: {
+                    Label(NSLocalizedString("finish", comment: ""), systemImage: "flag.checkered")
+                }
+                .buttonStyle(SecondaryButtonStyle())
+            }
+        }
+    }
+
+    /// A pared-down Volume / Repetitions tile: just the metric name over its value, the value kept
+    /// exactly as the workout detail screen renders it (`.large` `UnitView`, label-colored number,
+    /// gray unit). No "This Workout" subtitle, trend pill, or run-bar chart — those made the tile
+    /// too tall for the header.
+    private func workoutStatTile(_ metric: WorkoutStatMetric, for workout: Workout) -> some View {
+        let raw = metric.rawValue(of: workout)
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(metric.title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.label)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            UnitView(
+                value: metric.formattedValue(fromRaw: raw),
+                unit: metric.unit,
+                configuration: .large,
+                unitColor: .secondaryLabel
+            )
+            .foregroundStyle(Color.label)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(CELL_PADDING)
+        // Liquid Glass rather than the usual opaque `tileStyle()`: the tiles float over the
+        // header's ambient muscle wash, so the clear glass picks up the workout's colours and
+        // its specular rim separates them from the backdrop without a solid fill.
+        .glassEffect(.clear, in: .rect(cornerRadius: 30))
     }
 
     @ViewBuilder
@@ -878,6 +1065,22 @@ private struct FloatingChronoControlsOverlay: View {
     private var bottomOffset: CGFloat {
         let base = sheetGeometry.safeAreaBottomInset - 10
         return isAtSmallDetent ? base - 10 : base
+    }
+}
+
+/// Animates a bold title's point size: because `size` is the `animatableData`, SwiftUI
+/// interpolates it frame-by-frame inside a `withAnimation`, so the workout title scales
+/// smoothly between its folded and unfolded sizes instead of snapping.
+private struct AnimatableTitleFont: ViewModifier, Animatable {
+    var size: CGFloat
+
+    var animatableData: CGFloat {
+        get { size }
+        set { size = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        content.font(.system(size: size, weight: .bold))
     }
 }
 

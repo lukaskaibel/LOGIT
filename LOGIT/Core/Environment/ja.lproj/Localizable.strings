@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "セットアップを完了する";
+"finish" = "終了";
 "finishWorkout" = "ワークアウトを終了する";
 "finishWorkoutConfimation" = "トレーニングを終了しますか?";
 "five" = "五";
@@ -203,6 +204,7 @@
 "waist" = "ウエスト";
 "measurements" = "測定";
 "min" = "分";
+"minimize" = "最小化";
 "missing" = "ない";
 "measurementsPromotionDescription" = "体重、体脂肪、腕、胸、ウエストなどの体の部位の測定値を追跡し、進捗状況を明確に確認します。";
 "month" = "月";

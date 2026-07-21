@@ -51,21 +51,25 @@ public func convertWeightForStoring(_ value: Double) -> Int64 {
 
 /// Converts a weight value from storage units (grams) to display units (kg or lbs)
 /// - Parameter value: Weight in grams (from database)
-/// - Returns: Weight in kg or lbs (for display to user) with up to 3 decimal places
+/// - Returns: Weight in kg (up to 3 decimal places) or lbs (up to 2 decimal places)
 public func convertWeightForDisplayingDecimal(_ value: Int64) -> Double {
     let unit = WeightUnit(rawValue: UserDefaults.standard.string(forKey: "weightUnit")!)!
-    let result: Double
     switch unit {
-    case .kg: result = Double(value) / KG_TO_GRAMS
-    case .lbs: result = Double(value) / LBS_TO_GRAMS
+    case .kg:
+        // Grams represent kilograms to exactly 3 decimal places.
+        return round(Double(value) / KG_TO_GRAMS * 1000) / 1000
+    case .lbs:
+        // 1 g ≈ 0.0022 lbs, so a third decimal place is below the storage resolution:
+        // 95 lbs stores as 43091 g, which reads back as 94.99947 and would show as
+        // 94.999 at 3 decimals. At 2 decimals every entered value round-trips exactly
+        // (max storage error 0.5 g ≈ 0.0011 lbs < 0.005).
+        return round(Double(value) / LBS_TO_GRAMS * 100) / 100
     }
-    // Round to 3 decimal places
-    return round(result * 1000) / 1000
 }
 
 /// Converts a weight value from storage units (grams) to display units (kg or lbs)
 /// - Parameter value: Weight in grams (from database)
-/// - Returns: Weight in kg or lbs (for display to user) with up to 3 decimal places
+/// - Returns: Weight in kg (up to 3 decimal places) or lbs (up to 2 decimal places)
 public func convertWeightForDisplayingDecimal(_ value: Int) -> Double {
     return convertWeightForDisplayingDecimal(Int64(value))
 }

@@ -92,7 +92,9 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
                 set: { entry.weight = convertWeightForStoring($0) }
             ),
             maxDigits: 4,
-            decimalPlaces: 3,
+            // Match the input precision to what integer-gram storage can round-trip:
+            // 3 decimals in kg (exact), 2 in lbs (a third decimal is below 1 g resolution).
+            decimalPlaces: WeightUnit.used == .kg ? 3 : 2,
             index: fieldIndex(tertiary),
             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
             unit: WeightUnit.used.rawValue,

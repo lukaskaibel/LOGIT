@@ -212,6 +212,26 @@ struct WorkoutSetCell: View {
                             }
                         }
                     }
+                    // Distance scale — an exercise-wide display choice (values stay meters),
+                    // offered here too so a re-typed set can fix its unit in the same menu.
+                    if workoutSet.measurementType.usesDistance, let exercise = workoutSet.exercise {
+                        Section {
+                            ForEach(SetMeasurementType.DistanceStyle.allCases, id: \.self) { style in
+                                Button {
+                                    exercise.distanceStyle = style
+                                } label: {
+                                    HStack {
+                                        Text(distanceStyleTitle(for: style))
+                                        if workoutSet.measurementType.distanceStyle(for: exercise) == style {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } header: {
+                            Text(NSLocalizedString("distanceUnit", comment: ""))
+                        }
+                    }
                 } label: {
                     Label(
                         NSLocalizedString("measurementType", comment: ""),

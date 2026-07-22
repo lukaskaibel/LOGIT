@@ -18,6 +18,7 @@ struct ExerciseEditScreen: View {
     @State private var exerciseName: String
     @State private var muscleGroup: MuscleGroup
     @State private var measurementType: SetMeasurementType
+    @State private var distanceStyle: SetMeasurementType.DistanceStyle
     @State private var primaryMetric: ExercisePrimaryMetric
     @State private var showingExerciseExistsAlert: Bool = false
     @State private var showingExerciseNameEmptyAlert: Bool = false
@@ -43,6 +44,11 @@ struct ExerciseEditScreen: View {
         _exerciseName = State(initialValue: initialExerciseName ?? exerciseToEdit?.displayName ?? "")
         _muscleGroup = State(initialValue: exerciseToEdit?.muscleGroup ?? initialMuscleGroup)
         _measurementType = State(initialValue: exerciseToEdit?.measurementType ?? .repsAndWeight)
+        _distanceStyle = State(
+            initialValue: exerciseToEdit?.distanceStyle
+                ?? (exerciseToEdit?.measurementType ?? .repsAndWeight).distanceStyle
+                ?? .long
+        )
         _primaryMetric = State(initialValue: exerciseToEdit?.primaryMetric ?? .defaultMetric)
     }
 
@@ -92,6 +98,31 @@ struct ExerciseEditScreen: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal)
+                    }
+                }
+
+                // Distance scale (km vs m, mi vs yd) — a display choice; distances are always
+                // stored in meters, so switching never touches recorded values.
+                if measurementType.usesDistance {
+                    VStack(alignment: .leading) {
+                        Text(NSLocalizedString("distanceUnit", comment: ""))
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal)
+                        Picker(NSLocalizedString("distanceUnit", comment: ""), selection: $distanceStyle) {
+                            ForEach(SetMeasurementType.DistanceStyle.allCases, id: \.self) { style in
+                                Text(distanceStyleTitle(for: style)).tag(style)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal)
+                        .onChange(of: measurementType) { _, newType in
+                            // A newly chosen measurement resets the scale to its natural
+                            // default — the user can still flip it right here.
+                            if let defaultStyle = newType.distanceStyle {
+                                distanceStyle = defaultStyle
+                            }
+                        }
                     }
                 }
 
@@ -202,6 +233,9 @@ struct ExerciseEditScreen: View {
                 muscleGroup: muscleGroup,
                 measurementType: measurementType
             )
+        }
+        if measurementType.usesDistance {
+            exercise.distanceStyle = distanceStyle
         }
         database.save()
         exercise.primaryMetric = primaryMetric

@@ -214,7 +214,7 @@ final class SetEntryMigrationTests: XCTestCase {
 
     // MARK: - Migration
 
-    func testLegacyStoreOpensUnderV8ViaLightweightMigration() throws {
+    func testLegacyStoreOpensUnderCurrentModelViaLightweightMigration() throws {
         let container = try openMigratedStore()
         let context = container.viewContext
 

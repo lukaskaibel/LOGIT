@@ -61,10 +61,14 @@ enum TestScenario: String {
 
         // Skip onboarding, keep units deterministic across sim locales.
         overrides["setupDone"] = true
-        // An explicit `-weightUnit lbs` launch argument (already in the volatile
-        // argument domain) wins, so unit-dependent UI can be verified in both units.
+        // An explicit `-weightUnit lbs` / `-distanceUnit mi` launch argument (already in
+        // the volatile argument domain) wins, so unit-dependent UI can be verified in
+        // both unit systems.
         if overrides["weightUnit"] == nil {
             overrides["weightUnit"] = WeightUnit.kg.rawValue
+        }
+        if overrides["distanceUnit"] == nil {
+            overrides["distanceUnit"] = DistanceUnit.km.rawValue
         }
         // `empty` shows the no-goal state, the other scenarios a realistic goal.
         overrides["workoutPerWeekTarget"] = self == .empty ? -1 : self == .stress ? 2 : 4
@@ -173,15 +177,20 @@ enum TestScenario: String {
         let pullExercises = [deadlift, rows, latPulldowns, bicepsCurls]
         let baseWeights = [60000, 40000, 45000, 25000, 120000, 70000, 55000, 30000]
 
-        // Non-rep measurement types: a timed hold and a weighted carry — typed like their
-        // default-library counterparts so the recorder, detail tiles, and badge can be
-        // verified against duration data.
+        // Non-rep measurement types: a timed hold, a weighted carry, a cardio distance
+        // exercise, and a weighted distance carry — typed like their default-library
+        // counterparts so the recorder, detail tiles, and badge can be verified against
+        // duration and distance data.
         let plank = exercise("_default.exercise.plank", "Plank", .abdominals, database)
         plank.measurementType = .duration
         let farmersCarry = exercise(
             "_default.exercise.farmersWalk", "Farmers Carry", .shoulders, database
         )
         farmersCarry.measurementType = .weightAndDuration
+        let treadmillRun = exercise("_default.exercise.running", "Treadmill Run", .cardio, database)
+        treadmillRun.measurementType = .distanceAndDuration
+        let sledPush = exercise("_default.exercise.sledPush", "Sled Push", .legs, database)
+        sledPush.measurementType = .weightAndDistance
 
         let calendar = Calendar.current
         let sessionCount = 208 // 2 years, 2 sessions/week
@@ -226,6 +235,21 @@ enum TestScenario: String {
                     plankSet.entries.first?.duration =
                         Int64(45 + (session - (sessionCount - 12)) * 3 - setIndex * 5)
                 }
+            }
+            // Recent pull sessions end with a treadmill run, giving the distance metric
+            // the same real history the plank gives duration: a climbing current best,
+            // previous-set references, and distance detail-tile data.
+            if !isPush, session >= sessionCount - 12 {
+                let runGroup = database.newWorkoutSetGroup(
+                    createFirstSetAutomatically: false,
+                    exercise: treadmillRun,
+                    workout: workout
+                )
+                let runSet = database.newStandardSet(setGroup: runGroup)
+                runSet.entries.first?.distance =
+                    Int64(3000 + (session - (sessionCount - 12)) * 100)
+                runSet.entries.first?.duration =
+                    Int64(1100 + (session - (sessionCount - 12)) * 20)
             }
         }
 
@@ -275,6 +299,34 @@ enum TestScenario: String {
             if setIndex == 0 {
                 carrySet.entries.first?.weight = 40000
                 carrySet.entries.first?.duration = 45
+            }
+        }
+
+        // Distance measurement types, also appended last: the treadmill run (distance in
+        // km + duration) with one entered and one open set, and the sled push (weight +
+        // distance in meters) with its first set entered.
+        let runGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: treadmillRun,
+            workout: current
+        )
+        for setIndex in 0 ..< 2 {
+            let runSet = database.newStandardSet(setGroup: runGroup)
+            if setIndex == 0 {
+                runSet.entries.first?.distance = 4200
+                runSet.entries.first?.duration = 1320
+            }
+        }
+        let sledGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: sledPush,
+            workout: current
+        )
+        for setIndex in 0 ..< 2 {
+            let sledSet = database.newStandardSet(setGroup: sledGroup)
+            if setIndex == 0 {
+                sledSet.entries.first?.weight = 60000
+                sledSet.entries.first?.distance = 20
             }
         }
 

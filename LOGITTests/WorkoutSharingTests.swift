@@ -304,6 +304,30 @@ final class WorkoutDTOTests: XCTestCase {
         }
     }
     
+    func testWorkoutDTORoundTripDistanceEntries() throws {
+        let workout = database.newWorkout(name: "Cardio RT", date: Date())
+        let exercise = builder.createExercise(name: "Treadmill", muscleGroup: .legs)
+        let sg = database.newWorkoutSetGroup(exercise: exercise, workout: workout)
+        let set = sg.sets[0]
+        set.overrideMeasurementType(.distanceAndDuration)
+        set.entries.first?.distance = 5500
+        set.entries.first?.duration = 1500
+
+        let dto = WorkoutDTO(from: workout)
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(dto)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(WorkoutDTO.self, from: data)
+
+        let entry = try XCTUnwrap(decoded.setGroups[0].sets[0].entries?.first)
+        XCTAssertEqual(entry.type, SetMeasurementType.distanceAndDuration.rawValue)
+        XCTAssertEqual(entry.distance, 5500, "Distance (meters) must survive the share round-trip")
+        XCTAssertEqual(entry.duration, 1500)
+    }
+
     func testWorkoutDTORoundTripSuperSets() throws {
         let workout = database.newWorkout(name: "Superset RT", date: Date())
         let exA = builder.createExercise(name: "Press", muscleGroup: .chest)

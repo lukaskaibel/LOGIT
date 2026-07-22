@@ -1041,3 +1041,72 @@ final class DefaultTemplateServiceTests: XCTestCase {
         XCTAssertNil(custom.displayDescription)
     }
 }
+
+// MARK: - HealthKitSyncManagerTests
+
+final class HealthKitSyncManagerTests: XCTestCase {
+
+    private var database: Database!
+
+    override func setUp() {
+        super.setUp()
+        database = Database(isPreview: true)
+    }
+
+    override func tearDown() {
+        database = nil
+        super.tearDown()
+    }
+
+    func testIsExportableRequiresBothDates() {
+        XCTAssertFalse(HealthKitSyncManager.isExportable(start: nil, end: nil))
+        XCTAssertFalse(HealthKitSyncManager.isExportable(start: .now, end: nil))
+        XCTAssertFalse(HealthKitSyncManager.isExportable(start: nil, end: .now))
+    }
+
+    func testIsExportableRequiresPositiveDuration() {
+        let now = Date()
+        XCTAssertFalse(HealthKitSyncManager.isExportable(start: now, end: now, now: now))
+        XCTAssertFalse(
+            HealthKitSyncManager.isExportable(start: now, end: now.addingTimeInterval(-60), now: now)
+        )
+        XCTAssertTrue(
+            HealthKitSyncManager.isExportable(
+                start: now.addingTimeInterval(-3600), end: now.addingTimeInterval(-60), now: now
+            )
+        )
+    }
+
+    func testIsExportableRejectsFutureEndDates() {
+        // The date editor allows picking an end date in the future; HealthKit rejects such samples.
+        let now = Date()
+        XCTAssertFalse(
+            HealthKitSyncManager.isExportable(
+                start: now.addingTimeInterval(-3600), end: now.addingTimeInterval(600), now: now
+            )
+        )
+    }
+
+    func testHealthKitPayloadCapturesWorkoutFields() {
+        let workout = database.newWorkout()
+        workout.id = UUID()
+        workout.name = "Push Day"
+        workout.date = Date(timeIntervalSinceNow: -7200)
+        workout.endDate = Date(timeIntervalSinceNow: -3600)
+
+        let payload = workout.healthKitPayload
+        XCTAssertEqual(payload?.id, workout.id)
+        XCTAssertEqual(payload?.name, "Push Day")
+        XCTAssertEqual(payload?.start, workout.date)
+        XCTAssertEqual(payload?.end, workout.endDate)
+    }
+
+    func testHealthKitPayloadIsNilWithoutLoggedDuration() {
+        let workout = database.newWorkout()
+        workout.id = UUID()
+        workout.date = Date(timeIntervalSinceNow: -3600)
+        workout.endDate = nil
+
+        XCTAssertNil(workout.healthKitPayload)
+    }
+}

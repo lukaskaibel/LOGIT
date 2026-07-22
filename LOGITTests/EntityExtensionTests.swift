@@ -277,11 +277,122 @@ final class EntityExtensionTests: XCTestCase {
     func testMaximumForWrongExercise() {
         let exercise1 = builder.createExercise(name: "Bench")
         let exercise2 = builder.createExercise(name: "Squat")
-        
+
         let set = builder.createStandardSet(repetitions: 10, weight: 50000, exercise: exercise1)
-        
+
         let maxReps = set.maximum(.repetitions, for: exercise2)
         XCTAssertEqual(maxReps, 0, "Should return 0 for wrong exercise")
+    }
+
+    // MARK: - Distance Entry Tests
+
+    func testDistanceCountsAsEntryAndPerformance() {
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.overrideMeasurementType(.distanceAndDuration)
+        set.entries.first?.distance = 5000
+
+        XCTAssertTrue(set.hasEntry, "A recorded distance is a value")
+        XCTAssertTrue(
+            set.hasRepetitionEntry,
+            "Distance alone marks a distance entry as performed (rest timer / Live Activity signal)"
+        )
+    }
+
+    func testDurationAloneMarksDistanceAndDurationEntryPerformed() {
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.overrideMeasurementType(.distanceAndDuration)
+        set.entries.first?.duration = 90
+
+        XCTAssertTrue(set.hasRepetitionEntry, "Either field of distance+duration counts as performed")
+    }
+
+    func testWeightAloneDoesNotMarkWeightAndDistanceEntryPerformed() {
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.overrideMeasurementType(.weightAndDistance)
+        set.entries.first?.weight = 60000
+
+        XCTAssertTrue(set.hasEntry, "Weight is still a value")
+        XCTAssertFalse(set.hasRepetitionEntry, "Weight alone is not a performance value")
+    }
+
+    func testClearEntriesZeroesDistance() {
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.overrideMeasurementType(.distanceAndDuration)
+        set.entries.first?.distance = 5000
+        set.clearEntries()
+
+        XCTAssertEqual(set.entries.first?.distance, 0, "Distance should be cleared")
+        XCTAssertFalse(set.hasEntry)
+    }
+
+    func testMaximumDistance() {
+        let exercise = builder.createExercise(name: "Running")
+        let set = builder.createStandardSet(repetitions: 0, weight: 0, exercise: exercise)
+        set.overrideMeasurementType(.distanceAndDuration)
+        set.entries.first?.distance = 5000
+
+        XCTAssertEqual(set.maximum(.distance, for: exercise), 5000)
+    }
+
+    func testRetypeKeepsStoredDistance() {
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.overrideMeasurementType(.distanceAndDuration)
+        set.entries.first?.distance = 5000
+
+        // Re-typing never clears values: the distance is invisible under reps-only and
+        // intact when switching back.
+        set.overrideMeasurementType(.repsOnly)
+        XCTAssertFalse(set.hasEntry, "Reps-only tracks no distance, so the set reads empty")
+        set.overrideMeasurementType(.distanceAndDuration)
+        XCTAssertEqual(set.entries.first?.distance, 5000)
+        XCTAssertTrue(set.hasEntry)
+    }
+
+    func testDistanceStyleDefaultsFromMeasurementType() {
+        let cardio = database.newExercise(name: "Run", measurementType: .distanceAndDuration)
+        let carry = database.newExercise(name: "Carry", measurementType: .weightAndDistance)
+
+        XCTAssertEqual(cardio.distanceStyle, .long, "Cardio defaults to the km scale")
+        XCTAssertEqual(carry.distanceStyle, .short, "Carries default to the meter scale")
+        XCTAssertNil(cardio.distanceStyleOverride, "Defaults are not stored as a choice")
+    }
+
+    func testDistanceStyleUserOverrideWinsEverywhere() {
+        let cardio = database.newExercise(name: "Run", measurementType: .distanceAndDuration)
+        cardio.distanceStyle = .short
+
+        XCTAssertEqual(cardio.distanceStyle, .short, "The user's choice replaces the type default")
+        XCTAssertEqual(
+            SetMeasurementType.distanceAndDuration.distanceStyle(for: cardio), .short,
+            "Entry-level resolution honors the exercise's choice"
+        )
+        XCTAssertEqual(
+            SetMeasurementType.weightAndDistance.distanceStyle(for: cardio), .short,
+            "The choice also applies to per-set type overrides"
+        )
+    }
+
+    func testDistanceStyleResolutionWithoutOverrideFollowsEntryType() {
+        let exercise = database.newExercise(name: "Run", measurementType: .distanceAndDuration)
+
+        // A one-off weight+distance set on a cardio exercise enters meters, not km.
+        XCTAssertEqual(SetMeasurementType.weightAndDistance.distanceStyle(for: exercise), .short)
+        XCTAssertEqual(SetMeasurementType.distanceAndDuration.distanceStyle(for: exercise), .long)
+        XCTAssertNil(
+            SetMeasurementType.repsAndWeight.distanceStyle(for: exercise),
+            "Non-distance types have no distance scale"
+        )
+    }
+
+    func testMatchStructureCarriesDistanceType() {
+        let templateSet = database.newTemplateStandardSet()
+        templateSet.overrideMeasurementType(.weightAndDistance)
+
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.matchStructure(toEntryValues: templateSet.entryValues)
+
+        XCTAssertEqual(set.entries.first?.type, .weightAndDistance)
+        XCTAssertEqual(set.entries.first?.distance, 0, "Structure matching starts values empty")
     }
 
     // MARK: - WorkoutSet Max Entry Tests

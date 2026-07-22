@@ -34,6 +34,7 @@ struct LOGIT: App {
     @StateObject private var defaultExerciseService: DefaultExerciseService
     @StateObject private var defaultTemplateService: DefaultTemplateService
     @StateObject private var exerciseSuggestionService: ExerciseSuggestionService
+    @StateObject private var healthKitSyncManager: HealthKitSyncManager
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingWelcome = false
@@ -97,7 +98,9 @@ struct LOGIT: App {
         _database = StateObject(wrappedValue: database)
         _templateService = StateObject(wrappedValue: TemplateService(database: database))
         _measurementController = StateObject(wrappedValue: measurementController)
-        let workoutRecorder = WorkoutRecorder(database: database)
+        let healthKitSyncManager = HealthKitSyncManager()
+        _healthKitSyncManager = StateObject(wrappedValue: healthKitSyncManager)
+        let workoutRecorder = WorkoutRecorder(database: database, healthKitSync: healthKitSyncManager)
         _workoutRecorder = StateObject(wrappedValue: workoutRecorder)
         let chronograph = Chronograph()
         _chronograph = StateObject(wrappedValue: chronograph)
@@ -116,6 +119,7 @@ struct LOGIT: App {
 
         UserDefaults.standard.register(defaults: [
             "weightUnit": WeightUnit.defaultFromLocale.rawValue,
+            "distanceUnit": DistanceUnit.defaultFromLocale.rawValue,
             "workoutPerWeekTarget": -1,
             "setupDone": false,
         ])
@@ -176,6 +180,7 @@ struct LOGIT: App {
                 .environmentObject(homeNavigationCoordinator)
                 .environmentObject(chronograph)
                 .environmentObject(exerciseSuggestionService)
+                .environmentObject(healthKitSyncManager)
                 .environment(\.goHome) { selectedTab = .home }
                 .environment(\.presentWorkoutRecorder, showWorkoutRecorder)
                 .sheet(isPresented: $isShowingWelcome) {
@@ -215,6 +220,17 @@ struct LOGIT: App {
                         try? await Task.sleep(nanoseconds: 600_000_000)
                         showWorkoutRecorder()
                     }
+                    #if DEBUG
+                    // UI-test hook: boot straight into a brand-new EMPTY workout so the header's
+                    // auto-expanded start state is reachable without driving the start-workout UI
+                    // (the accessory pill swallows synthetic taps on iOS 26).
+                    if ProcessInfo.processInfo.arguments.contains("-UITEST_START_EMPTY_WORKOUT"),
+                       workoutRecorder.workout == nil {
+                        try? await Task.sleep(nanoseconds: 600_000_000)
+                        workoutRecorder.startWorkout()
+                        showWorkoutRecorder()
+                    }
+                    #endif
                     #if DEBUG
                     // Live Activity verification hook: deterministically start a rest timer so the
                     // running-chrono Dynamic Island (compact/minimal) can be reproduced from the CLI.
@@ -269,6 +285,7 @@ struct LOGIT: App {
                     .environmentObject(homeNavigationCoordinator)
                     .environmentObject(chronograph)
                     .environmentObject(exerciseSuggestionService)
+                    .environmentObject(healthKitSyncManager)
                     .interactiveDismissDisabled()
                     .onDisappear {
                         // Clean up if dismissed without saving
@@ -462,6 +479,7 @@ struct LOGIT: App {
             .environmentObject(homeNavigationCoordinator)
             .environmentObject(chronograph)
             .environmentObject(exerciseSuggestionService)
+            .environmentObject(healthKitSyncManager)
             .environment(\.managedObjectContext, database.context)
             .environment(\.goHome) { selectedTab = .home }
             .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }

@@ -206,10 +206,9 @@ final class WeightConvertingTests: XCTestCase {
     func testFormatWeightForDisplayMultipleDecimals() {
         userDefaultsHelper.setTestValue("kg", forKey: "weightUnit")
 
-        // 50125 grams = 50.125 kg → display rounds to 2 decimals (plate math never
-        // needs more, and gram-rounding noise must not surface).
+        // 50125 grams = 50.125 kg — kg keeps 3 fraction digits (grams are exact in kg).
         let formatted = formatWeightForDisplay(Int64(50125))
-        XCTAssertEqual(formatted, "50.13", "display weights round to two decimals")
+        XCTAssertEqual(formatted, "50.125", "kg display keeps gram-exact decimals")
     }
 
     /// Regression: entering 162.5 lbs stores round(162.5 × 453.592) = 73709 g; at 3 display
@@ -248,8 +247,59 @@ final class WeightConvertingTests: XCTestCase {
         XCTAssertEqual(formatted, "50", "Int overload for format should work same as Int64")
     }
     
+    // MARK: - LBS Display Rounding (95 lbs → 94.999 bug)
+
+    func testLbsWholeNumberRoundTripDisplaysWholeNumber() {
+        userDefaultsHelper.setTestValue("lbs", forKey: "weightUnit")
+
+        // 95 lbs stores as round(95 × 453.592) = 43091 g; reading it back at 3 decimal
+        // places showed 94.999. It must display as exactly 95 again.
+        let stored = convertWeightForStoring(95.0)
+        XCTAssertEqual(stored, 43091)
+        XCTAssertEqual(convertWeightForDisplayingDecimal(stored), 95.0)
+        XCTAssertEqual(formatWeightForDisplay(stored), "95")
+    }
+
+    func testLbsRoundTripIsExactForQuarterPoundIncrements() {
+        userDefaultsHelper.setTestValue("lbs", forKey: "weightUnit")
+
+        // Every 0.25 lb increment up to 1000 lbs must survive store → display unchanged.
+        var value = 0.25
+        while value <= 1000 {
+            let stored = convertWeightForStoring(value)
+            XCTAssertEqual(
+                convertWeightForDisplayingDecimal(stored), value,
+                "Round trip changed \(value) lbs"
+            )
+            value += 0.25
+        }
+    }
+
+    func testLbsRoundTripIsExactForTwoDecimalValues() {
+        userDefaultsHelper.setTestValue("lbs", forKey: "weightUnit")
+
+        // Arbitrary 2-decimal entries (not just plate increments) round-trip exactly.
+        for hundredths in [1, 33, 1099, 10201, 22537, 40007, 99999] {
+            let value = Double(hundredths) / 100
+            let stored = convertWeightForStoring(value)
+            XCTAssertEqual(
+                convertWeightForDisplayingDecimal(stored), value,
+                "Round trip changed \(value) lbs"
+            )
+        }
+    }
+
+    func testKgRoundTripStaysExactAtThreeDecimals() {
+        userDefaultsHelper.setTestValue("kg", forKey: "weightUnit")
+
+        // Kilograms map to grams exactly, so 3-decimal entries must stay untouched.
+        let stored = convertWeightForStoring(50.125)
+        XCTAssertEqual(stored, 50125)
+        XCTAssertEqual(convertWeightForDisplayingDecimal(stored), 50.125)
+    }
+
     // MARK: - Precision Tests
-    
+
     func testRoundingToThreeDecimalPlaces() {
         userDefaultsHelper.setTestValue("kg", forKey: "weightUnit")
 
@@ -260,5 +310,107 @@ final class WeightConvertingTests: XCTestCase {
 
         let displayed2 = convertWeightForDisplayingDecimal(Int64(50001))
         XCTAssertEqual(displayed2, 50.001, accuracy: 0.0001)
+    }
+}
+
+// MARK: - Distance Conversion Tests
+
+final class DistanceConvertingTests: XCTestCase {
+
+    private var userDefaultsHelper: UserDefaultsTestHelper!
+
+    override func setUp() {
+        super.setUp()
+        userDefaultsHelper = UserDefaultsTestHelper()
+    }
+
+    override func tearDown() {
+        userDefaultsHelper.restoreAll()
+        super.tearDown()
+    }
+
+    // MARK: - Long Distances (km/mi)
+
+    func testConvertDistanceForStoringKm() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertDistanceForStoring(5.5), 5500, "5.5 km should store as 5500 meters")
+    }
+
+    func testConvertDistanceForStoringMi() {
+        userDefaultsHelper.setTestValue("mi", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertDistanceForStoring(1.0), 1609, "1 mi should store as 1609 meters")
+    }
+
+    func testConvertDistanceForDisplayingDecimalKm() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertDistanceForDisplayingDecimal(5500), 5.5, accuracy: 0.001)
+    }
+
+    func testConvertDistanceForDisplayingDecimalMi() {
+        userDefaultsHelper.setTestValue("mi", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertDistanceForDisplayingDecimal(1609), 1.0, accuracy: 0.01)
+    }
+
+    func testFormatDistanceDropsTrailingZeros() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5000)), "5")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5500)), "5.5")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5550)), "5.55")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(0)), "0")
+    }
+
+    // MARK: - Short Distances (m/yd)
+
+    func testShortDistanceMetersPassThrough() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertShortDistanceForStoring(40), 40, "Meters store as meters")
+        XCTAssertEqual(convertShortDistanceForDisplaying(40), 40)
+    }
+
+    func testShortDistanceYardsConversion() {
+        userDefaultsHelper.setTestValue("mi", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertShortDistanceForStoring(50), 46, "50 yd should store as 46 meters")
+        XCTAssertEqual(convertShortDistanceForDisplaying(46), 50, "46 meters should display as 50 yd")
+    }
+
+    // MARK: - Style Dispatch
+
+    func testFormatDistanceForDisplayByStyle() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5500), style: .long), "5.5")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(40), style: .short), "40")
+        XCTAssertEqual(distanceUnitTitle(for: .long), "km")
+        XCTAssertEqual(distanceUnitTitle(for: .short), "m")
+    }
+
+    // MARK: - Measurement Type Field Consistency
+
+    func testInputFieldCountMatchesTrackedFields() {
+        for type in SetMeasurementType.allCases {
+            let tracked = [
+                type.usesRepetitions, type.usesWeight, type.usesDuration, type.usesDistance,
+            ].filter { $0 }.count
+            XCTAssertEqual(
+                type.inputFieldCount, tracked,
+                "\(type.rawValue) must show one input field per tracked value"
+            )
+        }
+    }
+
+    func testDistanceStyleExistsExactlyForDistanceTypes() {
+        for type in SetMeasurementType.allCases {
+            XCTAssertEqual(
+                type.distanceStyle != nil, type.usesDistance,
+                "\(type.rawValue) distance style must accompany a distance field"
+            )
+        }
     }
 }

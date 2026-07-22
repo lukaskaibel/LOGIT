@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "Termina l'installazione";
+"finish" = "Termina";
 "finishWorkout" = "Termina l'allenamento";
 "finishWorkoutConfimation" = "Vuoi finire l'allenamento?";
 "five" = "Cinque";
@@ -203,6 +204,7 @@
 "waist" = "Vita";
 "measurements" = "Misure";
 "min" = "min";
+"minimize" = "Riduci";
 "missing" = "Mancante";
 "measurementsPromotionDescription" = "Tieni traccia del peso corporeo, del grasso corporeo e delle misurazioni delle parti del corpo come braccia, petto e vita per vedere chiaramente i tuoi progressi.";
 "month" = "Mese";
@@ -336,6 +338,12 @@
 "noSearchResultsFor" = "Nessun risultato trovato per \"%@\"";
 "showMoreResults" = "Mostra %d più risultati";
 "sec" = "sez";
+"meters.short" = "m";
+"yards.short" = "yd";
+"unitKilometers" = "Chilometri (km)";
+"unitMeters" = "Metri (m)";
+"unitMiles" = "Miglia (mi)";
+"unitYards" = "Iarde (yd)";
 "selectDuration" = "Seleziona Durata";
 "selectExercise" = "Seleziona Esercizio";
 "selectMuscleGroup" = "Seleziona gruppo muscolare";
@@ -435,7 +443,8 @@
 
 // MARK: - U
 
-"unit" = "Unità";
+"unit" = "Unità di peso";
+"distanceUnit" = "Unità di distanza";
 "unitDescription" = "Seleziona l'unità che desideri utilizzare. Eventuali voci precedenti verranno convertite in caso di modifica.";
 "unpinned" = "Sbloccato";
 "unused" = "Inutilizzato";
@@ -724,6 +733,14 @@
 "_default.exercise.ringDips" = "Immersioni nell'anello";
 "_default.exercise.ringPushups" = "Push-up ad anello";
 "_default.exercise.ringRows" = "Righe ad anello";
+"_default.exercise.walking" = "Camminata";
+"_default.exercise.inclineTreadmillWalk" = "Camminata in salita sul tapis roulant";
+"_default.exercise.rucking" = "Rucking";
+"_default.exercise.suitcaseCarry" = "Trasporto a valigia";
+"_default.exercise.overheadCarry" = "Trasporto sopra la testa";
+"_default.exercise.yokeCarry" = "Trasporto del giogo";
+"_default.exercise.sandbagCarry" = "Trasporto del sacco di sabbia";
+"_default.exercise.shuttleRun" = "Navetta";
 
 // MARK: - Default Template Names & Descriptions
 
@@ -1047,12 +1064,29 @@
 "measurementType.repsOnly" = "Solo rip.";
 "measurementType.duration" = "Durata";
 "measurementType.weightAndDuration" = "Peso e durata";
+"measurementType.distance" = "Distanza";
+"measurementType.distanceAndDuration" = "Distanza e durata";
+"measurementType.weightAndDistance" = "Peso e distanza";
 "measurementTypeChangeInfo" = "Le serie esistenti mantengono i valori registrati. Solo le nuove serie usano la nuova misurazione.";
 
 "metricInfoDuration" = "La durata più lunga registrata per questo esercizio.";
+"metricInfoDistance" = "La distanza più lunga registrata per questo esercizio.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "per allenamento";
 "perWorkoutBasis" = "Per allenamento";
 "basis" = "Valori";
 
 "buildingYourTrend" = "Creazione del trend";
+
+// MARK: - Apple Health
+
+"appleHealth" = "Apple Salute";
+"appleHealthAccessDeniedMessage" = "LOGIT non ha il permesso di salvare gli allenamenti in Apple Salute. Puoi consentirlo in qualsiasi momento in Impostazioni → Salute → Accesso ai dati e dispositivi → LOGIT.";
+"appleHealthAccessDeniedTitle" = "Nessun accesso a Salute";
+"appleHealthAccessMissing" = "L'accesso a Salute è disattivato. Consentilo in Impostazioni → Salute → Accesso ai dati e dispositivi → LOGIT.";
+"appleHealthSyncDescription" = "Gli allenamenti completati vengono salvati automaticamente in Apple Salute come allenamento di forza.";
+"exportPastWorkouts" = "Esporta allenamenti passati";
+"exportPastWorkoutsDescription" = "Aggiunge l'intera cronologia degli allenamenti ad Apple Salute. Una nuova esportazione aggiorna le voci senza duplicarle.";
+"syncToAppleHealth" = "Sincronizza con Apple Salute";
+"workoutsExportedToHealth" = "%d allenamenti esportati.";
+"workoutsSkippedNoDuration" = "%d saltati (nessuna durata).";

@@ -340,6 +340,26 @@ struct TemplateSetGroupCell: View {
                 } header: {
                     Text(NSLocalizedString("measurementType", comment: ""))
                 }
+                // The distance scale is the user's choice per exercise (km vs m, mi vs yd) —
+                // distances are stored in meters regardless, so switching only changes how
+                // they're shown and entered, everywhere this exercise appears.
+                if setGroup.measurementType.usesDistance, let exercise = setGroup.exercise {
+                    Section {
+                        ForEach(SetMeasurementType.DistanceStyle.allCases, id: \.self) { style in
+                            Button {
+                                exercise.distanceStyle = style
+                            } label: {
+                                Label(
+                                    distanceStyleTitle(for: style),
+                                    systemImage: setGroup.measurementType.distanceStyle(for: exercise) == style
+                                        ? "checkmark" : ""
+                                )
+                            }
+                        }
+                    } header: {
+                        Text(NSLocalizedString("distanceUnit", comment: ""))
+                    }
+                }
             }
         } label: {
             Image(systemName: "ellipsis")

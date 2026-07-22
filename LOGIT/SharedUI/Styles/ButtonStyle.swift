@@ -49,6 +49,28 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
+/// The neutral sibling of `SecondaryButtonStyle`: the same rounded-bold label and capsule, but a
+/// gray `systemFill` background with muted text — for the quietest action in a row (e.g. Minimize
+/// beside a tinted Finish).
+struct TertiaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(.body, design: .rounded, weight: .bold))
+            .foregroundColor(.secondaryLabel)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(Color.fill)
+            .clipShape(Capsule())
+            .scaleEffect(configuration.isPressed ? MIN_BUTTON_SCALE : 1.0)
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if isPressed {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                }
+            }
+            .animation(.easeOut(duration: SCALE_ANIMATION_TIME), value: configuration.isPressed)
+    }
+}
+
 struct SelectionButtonStyle: ButtonStyle {
     let isSelected: Bool
 

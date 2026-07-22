@@ -350,7 +350,7 @@ struct ProgressHighlightsTile: View {
 
     private func hero(_ record: WorkoutProgressReport.PRRecord) -> some View {
         let color = record.exercise.muscleGroup?.color ?? .accentColor
-        let display = personalRecordDisplay(record.value, metric: record.metric)
+        let display = personalRecordDisplay(record.value, metric: record.metric, exercise: record.exercise)
         let gain: Double? = record.previousBest > 0
             ? (Double(record.value) - Double(record.previousBest)) / Double(record.previousBest) * 100
             : nil

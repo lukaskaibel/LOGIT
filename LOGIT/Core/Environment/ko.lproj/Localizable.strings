@@ -122,6 +122,7 @@
 // MARK: - F
 
 "finishSetup" = "설정 완료";
+"finish" = "종료";
 "finishWorkout" = "운동 끝내기";
 "finishWorkoutConfimation" = "운동을 끝내시겠어요?";
 "five" = "다섯";
@@ -203,6 +204,7 @@
 "waist" = "허리";
 "measurements" = "측정";
 "min" = "분";
+"minimize" = "최소화";
 "missing" = "없어진";
 "measurementsPromotionDescription" = "체중, 체지방, 팔, 가슴, 허리 등 신체 부위 측정을 추적하여 진행 상황을 명확하게 확인하세요.";
 "month" = "월";
@@ -336,6 +338,12 @@
 "noSearchResultsFor" = "\"%@\"에 대한 검색결과가 없습니다.";
 "showMoreResults" = "%d 더 많은 결과 표시";
 "sec" = "비서";
+"meters.short" = "m";
+"yards.short" = "yd";
+"unitKilometers" = "킬로미터 (km)";
+"unitMeters" = "미터 (m)";
+"unitMiles" = "마일 (mi)";
+"unitYards" = "야드 (yd)";
 "selectDuration" = "기간 선택";
 "selectExercise" = "운동 선택";
 "selectMuscleGroup" = "근육 그룹 선택";
@@ -435,7 +443,8 @@
 
 // MARK: - U
 
-"unit" = "단위";
+"unit" = "무게 단위";
+"distanceUnit" = "거리 단위";
 "unitDescription" = "사용할 단위를 선택하세요. 이전 항목은 변경 시 변환됩니다.";
 "unpinned" = "고정 해제됨";
 "unused" = "미사용";
@@ -724,6 +733,14 @@
 "_default.exercise.ringDips" = "링 딥";
 "_default.exercise.ringPushups" = "링 푸쉬업";
 "_default.exercise.ringRows" = "링 로우";
+"_default.exercise.walking" = "걷기";
+"_default.exercise.inclineTreadmillWalk" = "경사 트레드밀 걷기";
+"_default.exercise.rucking" = "러킹";
+"_default.exercise.suitcaseCarry" = "수트케이스 캐리";
+"_default.exercise.overheadCarry" = "오버헤드 캐리";
+"_default.exercise.yokeCarry" = "요크 캐리";
+"_default.exercise.sandbagCarry" = "샌드백 캐리";
+"_default.exercise.shuttleRun" = "셔틀런";
 
 // MARK: - Default Template Names & Descriptions
 
@@ -1047,12 +1064,29 @@
 "measurementType.repsOnly" = "횟수만";
 "measurementType.duration" = "시간";
 "measurementType.weightAndDuration" = "무게와 시간";
+"measurementType.distance" = "거리";
+"measurementType.distanceAndDuration" = "거리와 시간";
+"measurementType.weightAndDistance" = "무게와 거리";
 "measurementTypeChangeInfo" = "기존 세트는 기록된 값을 유지합니다. 새 세트만 새 측정 방식을 사용합니다.";
 
 "metricInfoDuration" = "이 운동에서 기록된 가장 긴 시간입니다.";
+"metricInfoDistance" = "이 운동에서 기록된 가장 긴 거리입니다.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "운동당";
 "perWorkoutBasis" = "운동당";
 "basis" = "값";
 
 "buildingYourTrend" = "추세 만드는 중";
+
+// MARK: - Apple Health
+
+"appleHealth" = "Apple 건강";
+"appleHealthAccessDeniedMessage" = "LOGIT에 운동을 건강 앱에 저장할 권한이 없습니다. 설정 → 건강 → 데이터 접근 및 기기 → LOGIT에서 언제든지 허용할 수 있습니다.";
+"appleHealthAccessDeniedTitle" = "건강 앱 접근 권한 없음";
+"appleHealthAccessMissing" = "건강 앱 접근이 꺼져 있습니다. 설정 → 건강 → 데이터 접근 및 기기 → LOGIT에서 허용하세요.";
+"appleHealthSyncDescription" = "완료된 운동은 근력 운동으로 건강 앱에 자동 저장됩니다.";
+"exportPastWorkouts" = "지난 운동 내보내기";
+"exportPastWorkoutsDescription" = "전체 운동 기록을 건강 앱에 추가합니다. 다시 내보내면 항목이 중복되지 않고 업데이트됩니다.";
+"syncToAppleHealth" = "Apple 건강과 동기화";
+"workoutsExportedToHealth" = "운동 %d개를 내보냈습니다.";
+"workoutsSkippedNoDuration" = "%d개 건너뜀(운동 시간 없음).";

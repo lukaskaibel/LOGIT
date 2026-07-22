@@ -140,6 +140,26 @@ struct TemplateSetCell: View {
                             }
                         }
                     }
+                    // Distance scale — an exercise-wide display choice (values stay meters),
+                    // offered here too so a re-typed set can fix its unit in the same menu.
+                    if templateSet.measurementType.usesDistance, let exercise = templateSet.exercise {
+                        Section {
+                            ForEach(SetMeasurementType.DistanceStyle.allCases, id: \.self) { style in
+                                Button {
+                                    exercise.distanceStyle = style
+                                } label: {
+                                    HStack {
+                                        Text(distanceStyleTitle(for: style))
+                                        if templateSet.measurementType.distanceStyle(for: exercise) == style {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } header: {
+                            Text(NSLocalizedString("distanceUnit", comment: ""))
+                        }
+                    }
                 } label: {
                     Label(
                         NSLocalizedString("measurementType", comment: ""),

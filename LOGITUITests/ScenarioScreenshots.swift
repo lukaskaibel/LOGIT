@@ -426,4 +426,119 @@ final class ScenarioScreenshots: XCTestCase {
     private func waitABit(_ seconds: UInt32 = 1) {
         sleep(seconds)
     }
+
+    // MARK: - Regression tests (reported-bugs session 2026-07-21)
+
+    /// The template editor's rest-duration editor used to flash away after a few seconds
+    /// and never reopen: the persistent exercise tray had `presentationBackgroundInteraction
+    /// (.enabled)`, and a background-interactive sheet can't stably host a stacked sheet —
+    /// UIKit dismissed the tray, SwiftUI re-presented it, and the rest sheet died in the
+    /// fight, leaving its `.sheet(item:)` binding stuck. The tray now disables pass-through
+    /// while a nested sheet is up. This asserts the sheet survives ~5s and reopens.
+    func testTemplateRestEditorStaysPresentedAndReopens() {
+        let app = launchApp(scenario: "many")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30))
+        waitABit(1)
+        tapTab(app, at: 2) // Templates
+
+        let templateRow = app.staticTexts["Push Day"].firstMatch
+        XCTAssertTrue(templateRow.waitForExistence(timeout: 5), "No template row")
+        templateRow.tap()
+        waitABit(1)
+
+        // Nav-bar ellipsis menu → Edit.
+        app.navigationBars.firstMatch.buttons.allElementsBoundByIndex.last?.tap()
+        waitABit(1)
+        let editButton = app.buttons["Edit"].firstMatch
+        XCTAssertTrue(editButton.waitForExistence(timeout: 3), "No Edit menu item")
+        editButton.tap()
+        waitABit(2)
+
+        // Tap the "2:00" rest capsule between set 1 and set 2 (coordinate-based;
+        // background elements aren't in the a11y tree while the tray is up).
+        // The sheet-presence sentinel is its "Rest Between Sets" caption — unique to the
+        // sheet, unlike the preset labels, which collide with the editor's rest capsules.
+        let restCapsule = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.287))
+        let sheetCaption = app.staticTexts["Rest Between Sets"].firstMatch
+        restCapsule.tap()
+        waitABit(1)
+        XCTAssertTrue(sheetCaption.waitForExistence(timeout: 3), "Rest editor did not present")
+        waitABit(4)
+        XCTAssertTrue(sheetCaption.exists, "Rest editor dismissed itself within ~5s")
+        attach(app, "template_rest_editor_stable")
+
+        // Picking a preset applies it and auto-dismisses…
+        app.buttons["1:00"].firstMatch.tap()
+        waitABit(2)
+        attach(app, "template_rest_editor_after_preset")
+        XCTAssertFalse(sheetCaption.exists, "Rest editor should dismiss after picking a preset")
+
+        // …and it must reopen — the stuck-binding regression.
+        restCapsule.tap()
+        waitABit(2)
+        XCTAssertTrue(sheetCaption.waitForExistence(timeout: 3), "Rest editor did not reopen")
+        attach(app, "template_rest_editor_reopened")
+    }
+
+    /// Keyboard focus is keyed by set UUID (IntegerField.Index.setID), not flat position.
+    /// With position keys, inserting a set into an earlier group while later cells hadn't
+    /// re-rendered made two fields claim the same index — tapping one focused the other
+    /// and typing landed sets earlier (the reported "typing in the squat section" bug).
+    /// -UITEST_MINIMAL disables the recorder's throttled re-render heal, freezing exactly
+    /// the stale state the production race produces.
+    func testRecorderFocusStaysOnTappedFieldAfterInsertingEarlierSet() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET", "-UITEST_MINIMAL", "-UITEST_NO_SCROLLTO"]
+        )
+
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
+        waitABit(2)
+
+        let addSetButtons = app.buttons.matching(NSPredicate(format: "label == 'Add Set'"))
+        let addSet1 = addSetButtons.element(boundBy: 0)
+        XCTAssertTrue(addSet1.waitForExistence(timeout: 5))
+
+        // Long-press a set row in group 1 → context menu → "Add Set After" (the one
+        // insertion path that doesn't fire workout.objectWillChange).
+        let firstField = app.textFields.allElementsBoundByIndex.first {
+            $0.frame.minY > 100 && $0.frame.maxY < addSet1.frame.minY
+        }
+        guard let groupOneField = firstField else {
+            XCTFail("No group 1 field found")
+            return
+        }
+        groupOneField.coordinate(withNormalizedOffset: CGVector(dx: -2.5, dy: 0.5))
+            .press(forDuration: 1.2)
+        let addAfter = app.buttons["Add Set After"].firstMatch
+        XCTAssertTrue(addAfter.waitForExistence(timeout: 3), "Context menu Add Set After not found")
+        addAfter.tap()
+        waitABit(2)
+
+        // Tap the first field of group 2 and type — the digit must land there.
+        let addSet1Frame = addSet1.frame
+        let fields = app.textFields.allElementsBoundByIndex
+        guard let target = fields.first(where: { $0.frame.minY > addSet1Frame.maxY + 10 && $0.isHittable }) else {
+            XCTFail("No target field below group 1 found")
+            return
+        }
+        let targetFrame = target.frame
+        let valueBefore = target.value as? String ?? ""
+
+        target.tap()
+        waitABit(1)
+        app.typeText("9")
+        waitABit(1)
+
+        let valueAfter = target.value as? String ?? ""
+        if !valueAfter.contains("9") || valueAfter == valueBefore {
+            let changed = app.textFields.allElementsBoundByIndex.first {
+                ($0.value as? String)?.contains("9") == true && $0.frame != targetFrame
+            }
+            XCTFail("Focus jump: tapped field at y=\(targetFrame.minY) value='\(valueAfter)'; digit landed at y=\(changed?.frame.minY ?? -1)")
+        }
+    }
 }

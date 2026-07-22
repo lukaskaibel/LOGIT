@@ -20,6 +20,11 @@ struct MeasurementDetailScreen: View {
     @State private var newEntryDate: Date = .now
     @State private var newEntryValue: Double = 0
 
+    /// Standalone field identity for the add-measurement sheet — there's no set behind this
+    /// field, so it gets one fixed UUID (stable across renders, or the field would lose its
+    /// state to `.id(index)` re-identification).
+    private static let newEntryFieldIndex = IntegerField.Index(setID: UUID())
+
     private var entries: [MeasurementEntry] {
         measurementController.getMeasurementEntries(ofType: measurementType)
     }
@@ -286,7 +291,7 @@ struct MeasurementDetailScreen: View {
                         value: $newEntryValue,
                         maxDigits: 4,
                         decimalPlaces: 1,
-                        index: .init(primary: 0),
+                        index: Self.newEntryFieldIndex,
                         focusedIntegerFieldIndex: .constant(nil),
                         unit: measurementType.unit
                     )

@@ -85,7 +85,7 @@ struct TemplateSetCell: View {
 
     @ViewBuilder
     private var setContent: some View {
-        if let indexInTemplate {
+        if let setID = templateSet.id {
             VStack(spacing: 0) {
                 ForEach(
                     Array(templateSet.entries.enumerated()), id: \.element.objectID
@@ -93,7 +93,7 @@ struct TemplateSetCell: View {
                     let entryExercise = templateSet.owningExercise(of: entry)
                     SetEntryFieldsRow(
                         entry: entry,
-                        primaryIndex: indexInTemplate,
+                        setID: setID,
                         secondaryIndex: entryIndex,
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex
                     )
@@ -103,10 +103,6 @@ struct TemplateSetCell: View {
             .padding(.top, templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
             .padding(.bottom, templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
         }
-    }
-
-    private var indexInTemplate: Int? {
-        templateSet.setGroup?.workout?.sets.firstIndex(of: templateSet)
     }
 
     @ViewBuilder

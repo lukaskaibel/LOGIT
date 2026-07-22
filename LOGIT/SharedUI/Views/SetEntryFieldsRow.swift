@@ -24,12 +24,12 @@ extension TemplateSetEntry: SetEntryFieldsEditable {}
 /// reps+weight, reps only, duration (min:sec), or weight+duration. This is the single row
 /// every set cell — standard, drop, super, workout or template — renders per entry.
 ///
-/// The focus index is (set position, entry position, field position); field positions must
+/// The focus index is (set id, entry position, field position); field positions must
 /// stay consistent with `SetMeasurementType.inputFieldCount`, which the recorder's keyboard
 /// next/previous navigation clamps against.
 struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
     @ObservedObject var entry: Entry
-    let primaryIndex: Int
+    let setID: UUID
     let secondaryIndex: Int
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
     /// Like-for-like entry from the reference set (same position in the previous workout).
@@ -62,7 +62,7 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
     // MARK: - Fields
 
     private func fieldIndex(_ tertiary: Int) -> IntegerField.Index {
-        IntegerField.Index(primary: primaryIndex, secondary: secondaryIndex, tertiary: tertiary)
+        IntegerField.Index(setID: setID, secondary: secondaryIndex, tertiary: tertiary)
     }
 
     private func repetitionsField(tertiary: Int) -> some View {
@@ -92,7 +92,7 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
                 set: { entry.weight = convertWeightForStoring($0) }
             ),
             maxDigits: 4,
-            decimalPlaces: 3,
+            decimalPlaces: 2,
             index: fieldIndex(tertiary),
             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
             unit: WeightUnit.used.rawValue,

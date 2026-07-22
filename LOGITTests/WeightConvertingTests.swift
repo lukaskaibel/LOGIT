@@ -205,10 +205,24 @@ final class WeightConvertingTests: XCTestCase {
     
     func testFormatWeightForDisplayMultipleDecimals() {
         userDefaultsHelper.setTestValue("kg", forKey: "weightUnit")
-        
-        // 50125 grams = 50.125 kg
+
+        // 50125 grams = 50.125 kg → display rounds to 2 decimals (plate math never
+        // needs more, and gram-rounding noise must not surface).
         let formatted = formatWeightForDisplay(Int64(50125))
-        XCTAssertEqual(formatted, "50.125", "50.125 kg should format with three decimals")
+        XCTAssertEqual(formatted, "50.13", "display weights round to two decimals")
+    }
+
+    /// Regression: entering 162.5 lbs stores round(162.5 × 453.592) = 73709 g; at 3 display
+    /// decimals that came back as "162.501" (the reported rounding artifact). Two-decimal
+    /// display must round the storage noise away.
+    func testFormatWeightForDisplayLbsRoundTripHasNoGramNoise() {
+        userDefaultsHelper.setTestValue("lbs", forKey: "weightUnit")
+
+        let stored = convertWeightForStoring(162.5)
+        XCTAssertEqual(formatWeightForDisplay(stored), "162.5", "entered lbs values must round-trip cleanly")
+
+        let storedQuarter = convertWeightForStoring(190.25)
+        XCTAssertEqual(formatWeightForDisplay(storedQuarter), "190.25", "quarter-pound plates must round-trip cleanly")
     }
     
     // MARK: - Integer Overload Tests
@@ -238,12 +252,12 @@ final class WeightConvertingTests: XCTestCase {
     
     func testRoundingToThreeDecimalPlaces() {
         userDefaultsHelper.setTestValue("kg", forKey: "weightUnit")
-        
-        // 50123 grams = 50.123 kg (exactly 3 decimal places)
+
+        // The decimal CONVERSION keeps 3 places so data consumers (measurements, charts)
+        // don't lose stored precision; only display FORMATTING rounds to 2.
         let displayed = convertWeightForDisplayingDecimal(Int64(50123))
         XCTAssertEqual(displayed, 50.123, accuracy: 0.0001)
-        
-        // Check that we don't get more than 3 decimal places
+
         let displayed2 = convertWeightForDisplayingDecimal(Int64(50001))
         XCTAssertEqual(displayed2, 50.001, accuracy: 0.0001)
     }

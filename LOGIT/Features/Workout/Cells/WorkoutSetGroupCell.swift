@@ -35,10 +35,6 @@ struct WorkoutSetGroupCell: View {
     /// group must still refresh this cell's header number. Nil when the cell is used standalone
     /// (previews), where the position is derived from the workout instead.
     var indexInWorkout: Int? = nil
-    /// Flat index of this group's first set within the whole workout. Not rendered, but part of
-    /// `==`: the set cells derive their keyboard-focus indices from flat set positions, so a
-    /// structural change in an earlier group has to re-render this cell's children too.
-    var firstSetIndexInWorkout: Int = 0
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
     var onReorderSetGroups: (() -> Void)? = nil
     var onTapPreviousSet: ((Exercise) -> Void)? = nil
@@ -555,7 +551,6 @@ extension WorkoutSetGroupCell: Equatable {
             && lhs.showPendingRestInTertiary == rhs.showPendingRestInTertiary
             && lhs.isFieldFocused == rhs.isFieldFocused
             && lhs.indexInWorkout == rhs.indexInWorkout
-            && lhs.firstSetIndexInWorkout == rhs.firstSetIndexInWorkout
     }
 }
 

@@ -51,7 +51,13 @@ public func convertWeightForStoring(_ value: Double) -> Int64 {
 
 /// Converts a weight value from storage units (grams) to display units (kg or lbs)
 /// - Parameter value: Weight in grams (from database)
-/// - Returns: Weight in kg or lbs (for display to user) with up to 3 decimal places
+/// - Returns: Weight in kg or lbs with up to 3 decimal places
+///
+/// Keeps 3 decimals so data consumers (body measurements, charts) don't lose stored
+/// precision. Anything user-facing must NOT print this value raw: storage rounds to whole
+/// grams, so an lbs value round-trips with up to ~0.0011 lbs of noise — at 3 printed
+/// decimals an entered "162.5" came back as "162.501". Format through
+/// `formatWeightForDisplay` (or a ≤2-fraction-digit formatter), which rounds the noise away.
 public func convertWeightForDisplayingDecimal(_ value: Int64) -> Double {
     let unit = WeightUnit(rawValue: UserDefaults.standard.string(forKey: "weightUnit")!)!
     let result: Double
@@ -65,7 +71,7 @@ public func convertWeightForDisplayingDecimal(_ value: Int64) -> Double {
 
 /// Converts a weight value from storage units (grams) to display units (kg or lbs)
 /// - Parameter value: Weight in grams (from database)
-/// - Returns: Weight in kg or lbs (for display to user) with up to 3 decimal places
+/// - Returns: Weight in kg or lbs with up to 3 decimal places
 public func convertWeightForDisplayingDecimal(_ value: Int) -> Double {
     return convertWeightForDisplayingDecimal(Int64(value))
 }
@@ -73,6 +79,10 @@ public func convertWeightForDisplayingDecimal(_ value: Int) -> Double {
 /// Formats a weight value from storage units (grams) to a display string
 /// - Parameter value: Weight in grams (from database)
 /// - Returns: Formatted string with weight in kg or lbs, showing decimals only when needed
+///
+/// Caps at 2 fraction digits: real plate math never needs more, and gram-rounding noise
+/// (< 0.005 in either unit) must not surface — at 3 digits an entered 162.5 lbs printed
+/// as "162.501" (the reported rounding artifact).
 public func formatWeightForDisplay(_ value: Int64) -> String {
     let weight = convertWeightForDisplayingDecimal(value)
     if weight == 0 {
@@ -83,7 +93,8 @@ public func formatWeightForDisplay(_ value: Int64) -> String {
     let formatter = NumberFormatter()
     formatter.numberStyle = .decimal
     formatter.minimumFractionDigits = 0
-    formatter.maximumFractionDigits = 3
+    formatter.maximumFractionDigits = 2
+    formatter.roundingMode = .halfUp
     formatter.decimalSeparator = "."
     formatter.groupingSeparator = ""
     

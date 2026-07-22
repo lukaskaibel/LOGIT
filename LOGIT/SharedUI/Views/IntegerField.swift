@@ -106,7 +106,7 @@ struct IntegerField: View {
         .padding(.vertical, 5)
         .padding(.horizontal, 8)
         .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.000001))
-        .setValueIndicatorOverlay(
+        .setValueIndicator(
             trend: trend,
             trendText: trendText,
             positiveColor: trendColor,
@@ -131,21 +131,16 @@ struct IntegerField: View {
         Int(valueString) == 0 || valueString.isEmpty
     }
 
+    /// Identity of one input field: the set it belongs to, the entry within the set, and the
+    /// field within the entry. The set is keyed by its stable entity UUID — NOT by its flat
+    /// position in the workout, which shifts whenever sets are added, removed, or reordered.
+    /// Position keys let two views that rendered at different times disagree about which set
+    /// an index means, and the field whose (stale) index matched the tapped field's would
+    /// steal the keyboard — typing landed in a different set than the one tapped.
     struct Index: Equatable, Hashable {
-        let primary: Int
+        let setID: UUID
         var secondary: Int = 0
         var tertiary: Int = 0
-
-        static func == (lhs: Index, rhs: Index) -> Bool {
-            lhs.primary == rhs.primary && lhs.secondary == rhs.secondary
-                && lhs.tertiary == rhs.tertiary
-        }
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(primary)
-            hasher.combine(secondary)
-            hasher.combine(tertiary)
-        }
     }
 }
 
@@ -216,12 +211,16 @@ struct PreviousSetValueLabel: View {
 }
 
 extension View {
-    /// Places one indicator immediately to the left of (and bottom-aligned with) the number
+    /// Places one indicator immediately to the left of (and baseline-aligned with) the number
     /// it is attached to: the previous workout's value while the field is still empty, or
-    /// the trend delta once a value is entered. Anchoring to the host's leading edge keeps
-    /// the gap to the number constant regardless of the value's width; the label overflows
-    /// into the empty leading space without affecting layout. Fades between states.
-    func setValueIndicatorOverlay(
+    /// the trend delta once a value is entered. Fades between states.
+    ///
+    /// The indicator participates in layout (it used to be an overlay overflowing into the
+    /// field frame's empty leading space, which let a long previous value draw over the
+    /// neighboring field's number — the reported overlap bug). Its slot is reserved whenever
+    /// a reference exists, whichever of the two labels is showing, so the row's layout stays
+    /// put while typing swaps the previous value for the trend delta.
+    func setValueIndicator(
         trend: SetValueComparison?,
         trendText: String,
         positiveColor: Color,
@@ -232,24 +231,24 @@ extension View {
     ) -> some View {
         let showTrend = isVisible && trend != nil
         let showPrevious = !showTrend && showPreviousValue && previousValueText != nil
-        // Aligned to the number's text baseline, sitting a few points to its left. The host
-        // is the styled field tile, whose 8pt horizontal padding is offset in the leading
-        // guide so the gap to the number stays constant regardless of the value's width.
-        return overlay(alignment: Alignment(horizontal: .leading, vertical: .lastTextBaseline)) {
-            ZStack(alignment: Alignment(horizontal: .trailing, vertical: .lastTextBaseline)) {
-                SetValueDeltaLabel(
-                    comparison: trend ?? .improved,
-                    text: trendText,
-                    positiveColor: positiveColor
-                )
-                .opacity(showTrend ? 1 : 0)
-                PreviousSetValueLabel(text: previousValueText ?? "", onTap: onTapPreviousValue)
-                    .opacity(showPrevious ? 1 : 0)
-                    .allowsHitTesting(showPrevious)
+        let reservesSlot = isVisible && (trend != nil || previousValueText != nil)
+        return HStack(alignment: .lastTextBaseline, spacing: 0) {
+            if reservesSlot {
+                ZStack(alignment: Alignment(horizontal: .trailing, vertical: .lastTextBaseline)) {
+                    SetValueDeltaLabel(
+                        comparison: trend ?? .improved,
+                        text: trendText,
+                        positiveColor: positiveColor
+                    )
+                    .opacity(showTrend ? 1 : 0)
+                    PreviousSetValueLabel(text: previousValueText ?? "", onTap: onTapPreviousValue)
+                        .opacity(showPrevious ? 1 : 0)
+                        .allowsHitTesting(showPrevious)
+                }
+                .animation(.easeInOut(duration: 0.2), value: showTrend)
+                .animation(.easeInOut(duration: 0.2), value: showPrevious)
             }
-            .alignmentGuide(.leading) { $0.width - 2 }
-            .animation(.easeInOut(duration: 0.2), value: showTrend)
-            .animation(.easeInOut(duration: 0.2), value: showPrevious)
+            self
         }
     }
 }
@@ -260,8 +259,8 @@ struct IntegerField_Previews: PreviewProvider {
             placeholder: 0,
             value: .constant(12),
             maxDigits: 4,
-            index: .init(primary: 0),
-            focusedIntegerFieldIndex: .constant(.init(primary: 0))
+            index: .init(setID: UUID()),
+            focusedIntegerFieldIndex: .constant(nil)
         )
         .padding(CELL_PADDING)
         .secondaryTileStyle()

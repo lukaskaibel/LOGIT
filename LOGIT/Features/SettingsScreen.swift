@@ -10,7 +10,6 @@ import SwiftUI
 
 struct SettingsScreen: View {
     @EnvironmentObject private var purchaseManager: PurchaseManager
-    @Environment(\.requestReview) private var requestReview
 
     // MARK: - UserDefaults
 
@@ -140,8 +139,11 @@ struct SettingsScreen: View {
                 Link(destination: URL(string: "mailto:\(FEEDBACK_EMAIL)?subject=LOGIT%20Support")!) {
                     settingsRow(NSLocalizedString("support", comment: ""), icon: "questionmark.circle.fill", trailingSystemImage: "envelope.fill")
                 }
-                Button { requestReview() } label: {
-                    settingsRow(NSLocalizedString("rateLogit", comment: ""), icon: "star.fill", trailingChevron: true)
+                // Deliberately NOT `requestReview()`: that's a rate-limited request the
+                // system usually ignores, which made this button appear broken. The
+                // write-review deep link always lands on the App Store review page.
+                Link(destination: URL(string: APP_STORE_WRITE_REVIEW_URL)!) {
+                    settingsRow(NSLocalizedString("rateLogit", comment: ""), icon: "star.fill", trailingSystemImage: "arrow.up.forward.square")
                 }
             }
         }

@@ -77,20 +77,25 @@ public func convertWeightForDisplayingDecimal(_ value: Int) -> Double {
 /// Formats a weight value from storage units (grams) to a display string
 /// - Parameter value: Weight in grams (from database)
 /// - Returns: Formatted string with weight in kg or lbs, showing decimals only when needed
+///
+/// Fraction digits match what integer-gram storage can round-trip (3 in kg, 2 in lbs) so
+/// gram-rounding noise never surfaces — at 3 lbs digits an entered 162.5 lbs printed as
+/// "162.501" (the reported rounding artifact).
 public func formatWeightForDisplay(_ value: Int64) -> String {
     let weight = convertWeightForDisplayingDecimal(value)
     if weight == 0 {
         return "0"
     }
-    
+
     // Remove unnecessary trailing zeros
     let formatter = NumberFormatter()
     formatter.numberStyle = .decimal
     formatter.minimumFractionDigits = 0
-    formatter.maximumFractionDigits = 3
+    formatter.maximumFractionDigits = WeightUnit.used == .kg ? 3 : 2
+    formatter.roundingMode = .halfUp
     formatter.decimalSeparator = "."
     formatter.groupingSeparator = ""
-    
+
     return formatter.string(from: NSNumber(value: weight)) ?? "0"
 }
 

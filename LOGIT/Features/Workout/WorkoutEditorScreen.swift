@@ -35,6 +35,9 @@ struct WorkoutEditorScreen: View {
     @State private var selectedRestDurationSet: WorkoutSet?
     @State private var isShowingReorderSheet = false
     @State private var exerciseForDetailSheet: Exercise?
+    /// Whether the persistent exercise tray lets touches through to the editor behind it.
+    /// Driven by `hasNestedTraySheet` with an asymmetric delay — see that property's docs.
+    @State private var trayAllowsBackgroundInteraction = true
 
     // MARK: - Parameters
 
@@ -133,71 +136,72 @@ struct WorkoutEditorScreen: View {
                     .padding(.top)
                 }
                 .sheet(isPresented: .constant(true)) {
-                    NavigationView {
-                        VStack(spacing: 0) {
-                            ExerciseSelectionScreen(
-                                selectedExercise: nil,
-                                setExercise: { exercise in
-                                    database.newWorkoutSetGroup(
-                                        createFirstSetAutomatically: true,
-                                        exercise: exercise,
-                                        workout: workout
-                                    )
-                                },
-                                forSecondary: false,
-                                currentWorkoutExercises: workout.exercises,
-                                supersetPrimaryExercise: nil,
-                                presentationDetentSelection: $exerciseSelectionPresentationDetent
-                            )
-                            .toolbar(.hidden, for: .navigationBar)
-                            .sheet(item: $selectedRestDurationSet) { workoutSet in
-                                RestDurationEditorSheet(workoutSet: workoutSet)
-                                    .presentationDetents([.fraction(0.65)])
-                                    .padding()
-                                    .frame(maxHeight: .infinity, alignment: .top)
+                    // Structured like the recorder's tray (sheet chain directly off the
+                    // NavigationStack root) — see TemplateEditorScreen for why: the old
+                    // NavigationView + wrapper made nested sheets fight the tray.
+                    NavigationStack {
+                        ExerciseSelectionScreen(
+                            selectedExercise: nil,
+                            setExercise: { exercise in
+                                database.newWorkoutSetGroup(
+                                    createFirstSetAutomatically: true,
+                                    exercise: exercise,
+                                    workout: workout
+                                )
+                            },
+                            forSecondary: false,
+                            currentWorkoutExercises: workout.exercises,
+                            supersetPrimaryExercise: nil,
+                            presentationDetentSelection: $exerciseSelectionPresentationDetent
+                        )
+                        .toolbar(.hidden, for: .navigationBar)
+                        .sheet(item: $selectedRestDurationSet) { workoutSet in
+                            RestDurationEditorSheet(workoutSet: workoutSet)
+                                .presentationDetents([.fraction(0.65)])
+                                .padding()
+                                .frame(maxHeight: .infinity, alignment: .top)
+                        }
+                        .sheet(item: $exerciseForDetailSheet) { exercise in
+                            NavigationStack {
+                                ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, scrollToRecentAttempts: true)
                             }
-                            .sheet(item: $exerciseForDetailSheet) { exercise in
-                                NavigationStack {
-                                    ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, scrollToRecentAttempts: true)
-                                }
-                                .presentationDragIndicator(.visible)
-                            }
-                            .sheet(isPresented: $isShowingReorderSheet) {
-                                NavigationStack {
-                                    List {
-                                        ForEach(workout.setGroups) { setGroup in
-                                            HStack {
-                                                VStack(alignment: .leading) {
-                                                    Text(setGroup.exercise?.displayName ?? "")
-                                                    if (setGroup.sets.first as? SuperSet) != nil,
-                                                       let secondaryExercise = setGroup.secondaryExercise {
-                                                        HStack {
-                                                            Image(systemName: "arrow.turn.down.right")
-                                                            Text(secondaryExercise.displayName)
-                                                        }
+                            .presentationDragIndicator(.visible)
+                        }
+                        .sheet(isPresented: $isShowingReorderSheet) {
+                            NavigationStack {
+                                List {
+                                    ForEach(workout.setGroups) { setGroup in
+                                        HStack {
+                                            VStack(alignment: .leading) {
+                                                Text(setGroup.exercise?.displayName ?? "")
+                                                if (setGroup.sets.first as? SuperSet) != nil,
+                                                   let secondaryExercise = setGroup.secondaryExercise {
+                                                    HStack {
+                                                        Image(systemName: "arrow.turn.down.right")
+                                                        Text(secondaryExercise.displayName)
                                                     }
                                                 }
                                             }
                                         }
-                                        .onDelete {
-                                            workout.setGroups.remove(atOffsets: $0)
-                                            workout.setGroups.forEach { $0.objectWillChange.send() }
-                                        }
-                                        .onMove { source, destination in
-                                            workout.setGroups.move(fromOffsets: source, toOffset: destination)
-                                            workout.setGroups.forEach { $0.objectWillChange.send() }
-                                        }
                                     }
-                                    .environment(\.editMode, .constant(.active))
-                                    .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
-                                    .navigationBarTitleDisplayMode(.inline)
-                                    .toolbar {
-                                        ToolbarItem(placement: .topBarTrailing) {
-                                            Button {
-                                                isShowingReorderSheet = false
-                                            } label: {
-                                                Text(NSLocalizedString("done", comment: ""))
-                                            }
+                                    .onDelete {
+                                        workout.setGroups.remove(atOffsets: $0)
+                                        workout.setGroups.forEach { $0.objectWillChange.send() }
+                                    }
+                                    .onMove { source, destination in
+                                        workout.setGroups.move(fromOffsets: source, toOffset: destination)
+                                        workout.setGroups.forEach { $0.objectWillChange.send() }
+                                    }
+                                }
+                                .environment(\.editMode, .constant(.active))
+                                .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
+                                .navigationBarTitleDisplayMode(.inline)
+                                .toolbar {
+                                    ToolbarItem(placement: .topBarTrailing) {
+                                        Button {
+                                            isShowingReorderSheet = false
+                                        } label: {
+                                            Text(NSLocalizedString("done", comment: ""))
                                         }
                                     }
                                 }
@@ -205,13 +209,35 @@ struct WorkoutEditorScreen: View {
                         }
                     }
                     .presentationDetents([.height(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
-                    .presentationBackgroundInteraction(.enabled)
+                    // Pass-through only while nothing is stacked on the tray: a
+                    // background-interactive sheet can't stably host a nested sheet — UIKit
+                    // dismisses the tray, SwiftUI re-presents it, and the nested sheet
+                    // flashes away in the fight (see TemplateEditorScreen).
+                    .presentationBackgroundInteraction(
+                        trayAllowsBackgroundInteraction ? .enabled : .disabled
+                    )
                     .interactiveDismissDisabled()
                     .sheet(isPresented: $isEditingStartEndDate) {
                         WorkoutStartEndDateEditorSheet(
                             workout: workout,
                             isPresented: $isEditingStartEndDate
                         )
+                    }
+                }
+                // Asymmetric switch for the tray's pass-through: off the moment a nested
+                // sheet presents, back on only after the nested sheet's dismissal transition
+                // has settled — reconfiguring the tray's presentation mid-dismissal makes
+                // UIKit cancel that dismissal and the nested sheet springs back
+                // (see TemplateEditorScreen).
+                .onChange(of: hasNestedTraySheet) { _, hasNested in
+                    if hasNested {
+                        trayAllowsBackgroundInteraction = false
+                    } else {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                            if !hasNestedTraySheet {
+                                trayAllowsBackgroundInteraction = true
+                            }
+                        }
                     }
                 }
             }
@@ -334,6 +360,14 @@ struct WorkoutEditorScreen: View {
     }
 
     // MARK: - Computed Properties
+
+    /// True while any sheet is stacked on the persistent exercise tray.
+    private var hasNestedTraySheet: Bool {
+        selectedRestDurationSet != nil
+            || exerciseForDetailSheet != nil
+            || isShowingReorderSheet
+            || isEditingStartEndDate
+    }
 
     private var workoutName: Binding<String> {
         Binding(get: { workout.name ?? "" }, set: { workout.name = $0 })

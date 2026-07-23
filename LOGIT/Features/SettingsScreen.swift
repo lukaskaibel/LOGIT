@@ -19,6 +19,7 @@ struct SettingsScreen: View {
     @AppStorage("distanceUnit") var distanceUnit: DistanceUnit = .km
     @AppStorage("preventAutoLock") var preventAutoLock: Bool = true
     @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
+    @AppStorage(CalorieEstimator.enabledKey) var calorieEstimatesEnabled: Bool = true
     @AppStorage(HealthKitSyncManager.syncEnabledKey) var appleHealthSyncEnabled: Bool = false
 
     // MARK: - State
@@ -138,6 +139,14 @@ struct SettingsScreen: View {
                 Toggle(NSLocalizedString("timerIsMuted", comment: ""), isOn: $timerIsMuted)
                     .padding(CELL_PADDING)
                     .tileStyle()
+                VStack(alignment: .leading) {
+                    Toggle(NSLocalizedString("calorieEstimates", comment: ""), isOn: $calorieEstimatesEnabled)
+                    Text(NSLocalizedString("calorieEstimatesDescription", comment: ""))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(CELL_PADDING)
+                .tileStyle()
             }
         }
     }

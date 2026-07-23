@@ -122,6 +122,7 @@ struct LOGIT: App {
             "distanceUnit": DistanceUnit.defaultFromLocale.rawValue,
             "workoutPerWeekTarget": -1,
             "setupDone": false,
+            CalorieEstimator.enabledKey: true,
         ])
         // Fixes issue with wrong Accent Color in Alerts
         UIView.appearance().tintColor = UIColor(named: "AccentColor")

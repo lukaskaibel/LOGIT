@@ -1090,3 +1090,20 @@
 "syncToAppleHealth" = "Sincronizar com o Apple Saúde";
 "workoutsExportedToHealth" = "%d treinos exportados.";
 "workoutsSkippedNoDuration" = "%d ignorados (sem duração).";
+
+// MARK: - Calorie Estimates
+
+"calorieEstimateExplanation" = "O LOGIT estima calorias ativas a partir da densidade do treino e do seu peso corporal — sempre da mesma forma, para que comparar seus treinos continue fazendo sentido. O gasto individual varia; trate o número absoluto como aproximado.";
+"calorieEstimateHealthNote" = "Sincronizado com o Apple Saúde como calorias ativas. Você pode desativar a estimativa em Ajustes.";
+"calorieEstimates" = "Estimativa de calorias";
+"calorieEstimatesDescription" = "Estima calorias ativas a partir das suas séries e do seu peso corporal. Aparece nos detalhes do treino e é incluída na sincronização com o Apple Saúde.";
+"estCalories" = "Calorias est.";
+"estimatedCalories" = "Calorias estimadas";
+"fromYourLoggedSets" = "Das suas séries registradas";
+"loggedDateFormat" = "Registrado em %@";
+"logBodyWeightToEstimate" = "Registre o peso para estimar calorias";
+"publishedStrengthRange" = "Faixa publicada para treino de força";
+"restShareLabel" = "descanso e preparação";
+"sessionIntensity" = "Intensidade da sessão";
+"workingShareLabel" = "trabalho";
+"workingTime" = "Tempo de trabalho";

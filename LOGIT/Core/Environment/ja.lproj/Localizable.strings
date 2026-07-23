@@ -1090,3 +1090,20 @@
 "syncToAppleHealth" = "ヘルスケアと同期";
 "workoutsExportedToHealth" = "%d件のワークアウトを書き出しました。";
 "workoutsSkippedNoDuration" = "%d件をスキップしました（時間なし）。";
+
+// MARK: - Calorie Estimates
+
+"calorieEstimateExplanation" = "LOGITはトレーニング密度と体重からアクティブカロリーを推定します。毎回同じ方法で計算するため、ワークアウト同士の比較に意味があります。消費量には個人差があるため、絶対値は目安としてください。";
+"calorieEstimateHealthNote" = "アクティブカロリーとしてヘルスケアに同期されます。推定は設定でオフにできます。";
+"calorieEstimates" = "カロリー推定";
+"calorieEstimatesDescription" = "記録したセットと体重からアクティブカロリーを推定します。ワークアウト詳細に表示され、ヘルスケア同期に含まれます。";
+"estCalories" = "推定カロリー";
+"estimatedCalories" = "推定カロリー";
+"fromYourLoggedSets" = "記録したセットから";
+"loggedDateFormat" = "%@に記録";
+"logBodyWeightToEstimate" = "体重を記録するとカロリーを推定できます";
+"publishedStrengthRange" = "筋力トレーニングの公表範囲";
+"restShareLabel" = "休憩・準備";
+"sessionIntensity" = "セッション強度";
+"workingShareLabel" = "運動";
+"workingTime" = "運動時間";

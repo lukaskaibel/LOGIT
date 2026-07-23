@@ -1110,3 +1110,129 @@ final class HealthKitSyncManagerTests: XCTestCase {
         XCTAssertNil(workout.healthKitPayload)
     }
 }
+
+// MARK: - CalorieEstimatorTests
+
+final class CalorieEstimatorTests: XCTestCase {
+
+    /// The plan's worked example: 58 min, 18 sets, 172 reps, 76 kg → working share ~0.17,
+    /// ~3.5 METs, ~185 kcal.
+    func testTypicalSessionLandsOnCompendiumAverage() {
+        let estimate = CalorieEstimator.estimate(
+            workingSeconds: 172 * 3.5,
+            performedSetCount: 18,
+            wallClockSeconds: 58 * 60,
+            bodyWeightKilograms: 76
+        )
+        XCTAssertEqual(estimate?.activeKilocalories, 185)
+        XCTAssertEqual(estimate!.sessionMET, 3.49, accuracy: 0.01)
+    }
+
+    func testDenserSessionBurnsMorePerMinute() {
+        // Same work squeezed into half the time: higher MET, and the per-minute rate rises
+        // even though the shorter duration lowers the absolute total.
+        let relaxed = CalorieEstimator.estimate(
+            workingSeconds: 600, performedSetCount: 18,
+            wallClockSeconds: 3600, bodyWeightKilograms: 80
+        )!
+        let dense = CalorieEstimator.estimate(
+            workingSeconds: 600, performedSetCount: 18,
+            wallClockSeconds: 1800, bodyWeightKilograms: 80
+        )!
+        XCTAssertGreaterThan(dense.sessionMET, relaxed.sessionMET)
+        let relaxedRate = Double(relaxed.activeKilocalories) / 60
+        let denseRate = Double(dense.activeKilocalories) / 30
+        XCTAssertGreaterThan(denseRate, relaxedRate)
+    }
+
+    func testForgottenRecorderCannotInflateTheBill() {
+        // 12 sets logged, recorder left running for 4 hours: billable time caps at
+        // working + 12×4min + 10min, so tripling the wall clock changes nothing.
+        let honest = CalorieEstimator.estimate(
+            workingSeconds: 500, performedSetCount: 12,
+            wallClockSeconds: 4 * 3600, bodyWeightKilograms: 80
+        )!
+        let cappedSeconds = 500.0 + 12 * 240 + 600
+        XCTAssertEqual(honest.billableSeconds, Int(cappedSeconds))
+        let evenLonger = CalorieEstimator.estimate(
+            workingSeconds: 500, performedSetCount: 12,
+            wallClockSeconds: 12 * 3600, bodyWeightKilograms: 80
+        )!
+        XCTAssertEqual(honest.activeKilocalories, evenLonger.activeKilocalories)
+    }
+
+    func testMETStaysInPublishedRange() {
+        // Degenerate sparse data (2 sets in 3 hours) floors at 3.0; degenerate dense data
+        // (all work, no rest) ceils at 6.0.
+        let sparse = CalorieEstimator.estimate(
+            workingSeconds: 70, performedSetCount: 2,
+            wallClockSeconds: 3 * 3600, bodyWeightKilograms: 80
+        )!
+        XCTAssertEqual(sparse.sessionMET, 3.0)
+        let dense = CalorieEstimator.estimate(
+            workingSeconds: 1200, performedSetCount: 30,
+            wallClockSeconds: 1200, bodyWeightKilograms: 80
+        )!
+        XCTAssertEqual(dense.sessionMET, 6.0)
+    }
+
+    func testNoEstimateWithoutHonestInputs() {
+        XCTAssertNil(CalorieEstimator.estimate(
+            workingSeconds: 0, performedSetCount: 0,
+            wallClockSeconds: 3600, bodyWeightKilograms: 80
+        ), "Nothing performed → no estimate")
+        XCTAssertNil(CalorieEstimator.estimate(
+            workingSeconds: 600, performedSetCount: 10,
+            wallClockSeconds: 3600, bodyWeightKilograms: 0
+        ), "No body weight → no estimate, never a default")
+        XCTAssertNil(CalorieEstimator.estimate(
+            workingSeconds: 600, performedSetCount: 10,
+            wallClockSeconds: 0, bodyWeightKilograms: 80
+        ), "No duration → no estimate")
+    }
+
+    func testWorkingSecondsPerMeasurementType() {
+        // Duration wins when logged; reps convert at 3.5 s; distance-only converts at
+        // 1 m/s capped at 3 min; unperformed entries contribute nothing.
+        let values: [SetEntryValues] = [
+            SetEntryValues(type: .repsAndWeight, order: 0, repetitions: 10, weight: 80_000, duration: 0),
+            SetEntryValues(type: .duration, order: 1, repetitions: 0, weight: 0, duration: 60),
+            SetEntryValues(type: .weightAndDistance, order: 2, repetitions: 0, weight: 20_000, duration: 0, distance: 40),
+            SetEntryValues(type: .weightAndDistance, order: 3, repetitions: 0, weight: 20_000, duration: 0, distance: 4000),
+            SetEntryValues(type: .repsAndWeight, order: 4, repetitions: 0, weight: 80_000, duration: 0),
+        ]
+        let seconds = CalorieEstimator.workingSeconds(for: values)
+        // 10×3.5 + 60 + 40 + capped 180 + 0
+        XCTAssertEqual(seconds, 35 + 60 + 40 + 180, accuracy: 0.001)
+    }
+
+    func testRoundsToFiveKilocalories() {
+        let estimate = CalorieEstimator.estimate(
+            workingSeconds: 600, performedSetCount: 15,
+            wallClockSeconds: 3600, bodyWeightKilograms: 77
+        )!
+        XCTAssertEqual(estimate.activeKilocalories % 5, 0)
+    }
+
+    func testBodyWeightNearestToWorkoutDate() {
+        let database = Database(isPreview: false, inMemory: true)
+        let context = database.context
+
+        func addEntry(kilograms: Double, daysAgo: Int) {
+            let entry = MeasurementEntry(context: context)
+            entry.type = .bodyweight
+            entry.value_ = Int64(kilograms * 1000)
+            entry.date = Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now)
+        }
+        addEntry(kilograms: 82, daysAgo: 300)
+        addEntry(kilograms: 78, daysAgo: 30)
+        addEntry(kilograms: 76, daysAgo: 1)
+
+        let oldWorkoutDate = Calendar.current.date(byAdding: .day, value: -290, to: .now)!
+        XCTAssertEqual(
+            CalorieEstimator.bodyWeight(nearestTo: oldWorkoutDate, in: context)?.kilograms, 82,
+            "Backfilled history must use the weight the user had then"
+        )
+        XCTAssertEqual(CalorieEstimator.bodyWeight(nearestTo: .now, in: context)?.kilograms, 76)
+    }
+}

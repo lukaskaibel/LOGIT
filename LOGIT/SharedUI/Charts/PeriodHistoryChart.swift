@@ -10,9 +10,11 @@ import SwiftUI
 
 /// The shared recent-periods bar chart behind every period-scoped stat detail — the Summary stat
 /// screens, the exercise Sets / Volume screens, and the muscle-group detail's sets tile. One bar per
-/// period (`StatPeriod.historyBucketCount` of them, current highlighted), at most ~4 axis labels
-/// counted back from the current bucket so "now" is always labeled. The newest label is anchored
-/// trailing so it renders fully instead of truncating at the plot edge ("Jul 4", not "J…").
+/// period (`StatPeriod.historyBucketCount` of them, current highlighted), with axis marks counted
+/// back from the current period at `StatPeriod.scrollAxisStride` so "now" is always labeled. The
+/// newest label is anchored trailing so it renders fully instead of truncating at the plot edge
+/// ("Jul 4", not "J…"), and on the week axis the mark right before it stays label-less so the two
+/// can't overlap.
 ///
 /// Tap or press-and-hold any bar to inspect it: a rule mark and a value card name the exact value and
 /// period, the touched bar lights up and the rest dim — the same gesture the scrollable capability
@@ -107,8 +109,7 @@ struct PeriodHistoryChart: View {
             .chartXSelection(value: $selectedDate)
             .chartXAxis {
                 if showsXAxisLabels {
-                    let axisStride = period.scrollAxisStride
-                    AxisMarks(values: .stride(by: axisStride.component, count: axisStride.count)) { value in
+                    AxisMarks(values: period.scrollAxisValues(firstDataDate: firstDataDate)) { value in
                         if let date = value.as(Date.self) {
                             let isCurrent = period.currentRange().contains(date)
                             AxisGridLine()
@@ -116,11 +117,17 @@ struct PeriodHistoryChart: View {
                             // Styling lives on the Text inside the label closure — hierarchical styles
                             // on the AxisMark resolve against the chart's accent on iOS 26 (labels
                             // turned lime). The current period hugs the right edge on first load, so
-                            // hang its label trailing off the mark to keep the edge from clipping it.
-                            AxisValueLabel(anchor: isCurrent ? .topTrailing : nil) {
-                                Text(period.axisLabel(for: date))
-                                    .font(.caption.weight(isCurrent ? .bold : .semibold))
-                                    .foregroundStyle(isCurrent ? Color.label : Color.secondaryLabel)
+                            // hang its label trailing off the mark to keep the edge from clipping it —
+                            // and the mark it hangs toward gives up its own label to make the room.
+                            // Except on the year axis: its single-period stride leaves no label-less
+                            // neighbor to hang into ("2025" must stay), and the year-wide gap to the
+                            // plot edge fits the centered label anyway.
+                            if !period.axisLabelYieldsToCurrent(date) {
+                                AxisValueLabel(anchor: isCurrent && period != .year ? .topTrailing : nil) {
+                                    Text(period.axisLabel(for: date))
+                                        .font(.caption.weight(isCurrent ? .bold : .semibold))
+                                        .foregroundStyle(isCurrent ? Color.label : Color.secondaryLabel)
+                                }
                             }
                         }
                     }

@@ -115,7 +115,7 @@ struct WorkoutSetCell: View {
 
     @ViewBuilder
     private var setContent: some View {
-        if let indexInWorkout {
+        if let setID = workoutSet.id {
             let referenceValues = referenceSet?.entryValues ?? []
             let placeholderValues =
                 workoutRecorder.templateSet(for: workoutSet)?.entryValues ?? []
@@ -126,7 +126,7 @@ struct WorkoutSetCell: View {
                     let entryExercise = workoutSet.owningExercise(of: entry)
                     SetEntryFieldsRow(
                         entry: entry,
-                        primaryIndex: indexInWorkout,
+                        setID: setID,
                         secondaryIndex: entryIndex,
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         reference: reference(for: entry, at: entryIndex, in: referenceValues),
@@ -139,10 +139,6 @@ struct WorkoutSetCell: View {
             }
             .padding(.vertical, CELL_SPACING / 2)
         }
-    }
-
-    private var indexInWorkout: Int? {
-        workoutSet.workout?.sets.firstIndex(of: workoutSet)
     }
 
     /// The like-for-like reference entry from the previous workout's matching set: compound
@@ -338,7 +334,7 @@ private func formatDisplayWeightDelta(_ value: Double) -> String {
     let formatter = NumberFormatter()
     formatter.numberStyle = .decimal
     formatter.minimumFractionDigits = 0
-    formatter.maximumFractionDigits = 3
+    formatter.maximumFractionDigits = 2
     formatter.decimalSeparator = "."
     formatter.groupingSeparator = ""
     return formatter.string(from: NSNumber(value: value)) ?? "0"

@@ -45,7 +45,6 @@ struct WorkoutSetGroupList: View, Equatable {
                         showDetailAsSheet: showDetailAsSheet,
                         isFieldFocused: focusedIntegerFieldIndex != nil,
                         indexInWorkout: entry.index,
-                        firstSetIndexInWorkout: entry.firstSetIndex,
                         onTapRestDuration: onTapRestDuration,
                         onReorderSetGroups: onReorderSetGroups,
                         onTapPreviousSet: onTapPreviousSet,
@@ -63,17 +62,13 @@ struct WorkoutSetGroupList: View, Equatable {
         .animation(.interactiveSpring(), value: workout.setGroups.count)
     }
 
-    /// Each set group with its position and the flat index of its first set. Computed here and
-    /// passed into the cells because the cells' `Equatable` skipping needs structural changes to
-    /// be visible in their inputs: the header number and the set cells' focus indices depend on
-    /// what comes *before* a group, so deleting/reordering/resizing an earlier group must
-    /// re-render the ones after it even though their own set group didn't change.
-    private var indexedSetGroups: [(index: Int, firstSetIndex: Int, setGroup: WorkoutSetGroup)] {
-        var firstSetIndex = 0
-        return workout.setGroups.enumerated().map { index, setGroup in
-            defer { firstSetIndex += setGroup.sets.count }
-            return (index: index, firstSetIndex: firstSetIndex, setGroup: setGroup)
-        }
+    /// Each set group with its position. Passed into the cells because the cells' `Equatable`
+    /// skipping needs structural changes to be visible in their inputs: the header number
+    /// depends on what comes *before* a group, so deleting/reordering an earlier group must
+    /// re-render the ones after it even though their own set group didn't change. (Keyboard
+    /// focus is identity-keyed — see `IntegerField.Index` — so it doesn't depend on position.)
+    private var indexedSetGroups: [(index: Int, setGroup: WorkoutSetGroup)] {
+        Array(workout.setGroups.enumerated().map { (index: $0, setGroup: $1) })
     }
 
     @ViewBuilder

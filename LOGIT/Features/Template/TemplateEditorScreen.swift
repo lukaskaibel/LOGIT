@@ -382,11 +382,11 @@ struct TemplateEditorScreen: View {
     }
 
     /// The template set whose rep/weight field currently holds focus, derived from the keyboard
-    /// field index — mirrors the recorder's `selectedWorkoutSet`. `IntegerField.Index.primary` is
-    /// the set's position in the flat `template.sets` list.
+    /// field index — mirrors the recorder's `selectedWorkoutSet`. The index carries the set's
+    /// stable entity UUID.
     private var selectedTemplateSet: TemplateSet? {
         guard let focusedIndex = focusedIntegerFieldIndex else { return nil }
-        return template.sets.value(at: focusedIndex.primary)
+        return template.sets.first { $0.id == focusedIndex.setID }
     }
 
     @ViewBuilder

@@ -61,8 +61,15 @@ enum TestScenario: String {
 
         // Skip onboarding, keep units deterministic across sim locales.
         overrides["setupDone"] = true
-        overrides["weightUnit"] = WeightUnit.kg.rawValue
-        overrides["distanceUnit"] = DistanceUnit.km.rawValue
+        // An explicit `-weightUnit lbs` / `-distanceUnit mi` launch argument (already in
+        // the volatile argument domain) wins, so unit-dependent UI can be verified in
+        // both unit systems.
+        if overrides["weightUnit"] == nil {
+            overrides["weightUnit"] = WeightUnit.kg.rawValue
+        }
+        if overrides["distanceUnit"] == nil {
+            overrides["distanceUnit"] = DistanceUnit.km.rawValue
+        }
         // `empty` shows the no-goal state, the other scenarios a realistic goal.
         overrides["workoutPerWeekTarget"] = self == .empty ? -1 : self == .stress ? 2 : 4
         // Per-user layout state stored as Data (object URIs / JSON) must not

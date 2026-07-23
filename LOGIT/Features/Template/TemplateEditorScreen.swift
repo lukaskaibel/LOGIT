@@ -48,6 +48,12 @@ struct TemplateEditorScreen: View {
     /// Whether the persistent exercise tray lets touches through to the editor behind it.
     /// Driven by `hasNestedTraySheet` with an asymmetric delay — see that property's docs.
     @State private var trayAllowsBackgroundInteraction = true
+    /// Create Exercise, delegated up from the tray's ExerciseSelectionScreen — owned
+    /// here because a nested sheet only survives the tray's dismiss/re-present cycle
+    /// when its owning state lives outside the recycled tray content.
+    @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
+    /// "Show Details" from the tray's context menus — host-owned for the same reason.
+    @State private var exerciseDetailFromTray: Exercise?
 
     // MARK: - Parameters
 
@@ -147,7 +153,7 @@ struct TemplateEditorScreen: View {
                     // the NavigationStack's root child. With the old `NavigationView { VStack {…} }`
                     // wrapping, presenting a nested sheet (the rest editor) made UIKit and
                     // SwiftUI's presentation reconciliation fight over the tray — the tray was
-                    // dismissed and re-presented in a loop, the rest editor flashed away with
+                    // dismissed and re-presented in a loop, the nested sheet flashed away with
                     // it, and its stuck `item` binding then blocked every reopen.
                     NavigationStack {
                         ExerciseSelectionScreen(
@@ -166,7 +172,9 @@ struct TemplateEditorScreen: View {
                             forSecondary: false,
                             currentWorkoutExercises: [],
                             supersetPrimaryExercise: nil,
-                            presentationDetentSelection: $exerciseSelectionPresentationDetent
+                            presentationDetentSelection: $exerciseSelectionPresentationDetent,
+                            onRequestAddExercise: { createExerciseRequest = $0 },
+                            onRequestExerciseDetail: { exerciseDetailFromTray = $0 }
                         )
                         .toolbar(.hidden, for: .navigationBar)
                         .sheet(item: $selectedRestDurationSet) { templateSet in
@@ -174,6 +182,30 @@ struct TemplateEditorScreen: View {
                                 .presentationDetents([.fraction(0.65)])
                                 .padding()
                                 .frame(maxHeight: .infinity, alignment: .top)
+                        }
+                        .sheet(item: $createExerciseRequest) { request in
+                            ExerciseEditScreen(
+                                onEditFinished: { exercise in
+                                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                                    database.newTemplateSetGroup(
+                                        createFirstSetAutomatically: true,
+                                        exercise: exercise,
+                                        template: template
+                                    )
+                                    withAnimation {
+                                        scrollable.scrollTo(1, anchor: .bottom)
+                                    }
+                                    exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
+                                },
+                                initialExerciseName: request.name,
+                                initialMuscleGroup: request.muscleGroup ?? .chest
+                            )
+                        }
+                        .sheet(item: $exerciseDetailFromTray) { exercise in
+                            NavigationStack {
+                                ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
+                            }
+                            .presentationDragIndicator(.visible)
                         }
                         .sheet(isPresented: $isShowingReorderSheet) {
                             NavigationStack {
@@ -333,9 +365,13 @@ struct TemplateEditorScreen: View {
 
     // MARK: - Computed Properties
 
-    /// True while any sheet is stacked on the persistent exercise tray.
+    /// True while any sheet is stacked on the persistent exercise tray — rest editor,
+    /// reorder, or one of the tray-delegated presentations (create exercise, detail).
     private var hasNestedTraySheet: Bool {
-        selectedRestDurationSet != nil || isShowingReorderSheet
+        selectedRestDurationSet != nil
+            || isShowingReorderSheet
+            || createExerciseRequest != nil
+            || exerciseDetailFromTray != nil
     }
 
     private var templateName: Binding<String> {

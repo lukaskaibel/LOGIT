@@ -38,6 +38,11 @@ struct WorkoutEditorScreen: View {
     /// Whether the persistent exercise tray lets touches through to the editor behind it.
     /// Driven by `hasNestedTraySheet` with an asymmetric delay — see that property's docs.
     @State private var trayAllowsBackgroundInteraction = true
+    /// Create Exercise, delegated up from the tray's ExerciseSelectionScreen — owned
+    /// here because a nested sheet only survives the tray's dismiss/re-present cycle
+    /// when its owning state lives outside the recycled tray content
+    /// (see TemplateEditorScreen).
+    @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
 
     // MARK: - Parameters
 
@@ -152,7 +157,9 @@ struct WorkoutEditorScreen: View {
                             forSecondary: false,
                             currentWorkoutExercises: workout.exercises,
                             supersetPrimaryExercise: nil,
-                            presentationDetentSelection: $exerciseSelectionPresentationDetent
+                            presentationDetentSelection: $exerciseSelectionPresentationDetent,
+                            onRequestAddExercise: { createExerciseRequest = $0 },
+                            onRequestExerciseDetail: { exerciseForDetailSheet = $0 }
                         )
                         .toolbar(.hidden, for: .navigationBar)
                         .sheet(item: $selectedRestDurationSet) { workoutSet in
@@ -166,6 +173,20 @@ struct WorkoutEditorScreen: View {
                                 ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true, scrollToRecentAttempts: true)
                             }
                             .presentationDragIndicator(.visible)
+                        }
+                        .sheet(item: $createExerciseRequest) { request in
+                            ExerciseEditScreen(
+                                onEditFinished: { exercise in
+                                    database.newWorkoutSetGroup(
+                                        createFirstSetAutomatically: true,
+                                        exercise: exercise,
+                                        workout: workout
+                                    )
+                                    exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
+                                },
+                                initialExerciseName: request.name,
+                                initialMuscleGroup: request.muscleGroup ?? .chest
+                            )
                         }
                         .sheet(isPresented: $isShowingReorderSheet) {
                             NavigationStack {
@@ -361,12 +382,14 @@ struct WorkoutEditorScreen: View {
 
     // MARK: - Computed Properties
 
-    /// True while any sheet is stacked on the persistent exercise tray.
+    /// True while any sheet is stacked on the persistent exercise tray — rest editor,
+    /// exercise detail, reorder, date editor, or the tray-delegated create exercise.
     private var hasNestedTraySheet: Bool {
         selectedRestDurationSet != nil
             || exerciseForDetailSheet != nil
             || isShowingReorderSheet
             || isEditingStartEndDate
+            || createExerciseRequest != nil
     }
 
     private var workoutName: Binding<String> {

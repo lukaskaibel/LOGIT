@@ -45,6 +45,15 @@ struct TemplateEditorScreen: View {
     @State private var isRenamingTemplate = false
     @State private var focusedIntegerFieldIndex: IntegerField.Index?
     @FocusState private var isFocusingRenameTemplateField: Bool
+    /// Whether the persistent exercise tray lets touches through to the editor behind it.
+    /// Driven by `hasNestedTraySheet` with an asymmetric delay — see that property's docs.
+    @State private var trayAllowsBackgroundInteraction = true
+    /// Create Exercise, delegated up from the tray's ExerciseSelectionScreen — owned
+    /// here because a nested sheet only survives the tray's dismiss/re-present cycle
+    /// when its owning state lives outside the recycled tray content.
+    @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
+    /// "Show Details" from the tray's context menus — host-owned for the same reason.
+    @State private var exerciseDetailFromTray: Exercise?
 
     // MARK: - Parameters
 
@@ -140,11 +149,43 @@ struct TemplateEditorScreen: View {
                 }
                 .scrollIndicators(.hidden)
                 .sheet(isPresented: .constant(true)) {
-                    NavigationView {
-                        VStack(spacing: 0) {
-                            ExerciseSelectionScreen(
-                                selectedExercise: nil,
-                                setExercise: { exercise in
+                    // Mirrors the recorder's tray exactly: the sheet chain hangs DIRECTLY off
+                    // the NavigationStack's root child. With the old `NavigationView { VStack {…} }`
+                    // wrapping, presenting a nested sheet (the rest editor) made UIKit and
+                    // SwiftUI's presentation reconciliation fight over the tray — the tray was
+                    // dismissed and re-presented in a loop, the nested sheet flashed away with
+                    // it, and its stuck `item` binding then blocked every reopen.
+                    NavigationStack {
+                        ExerciseSelectionScreen(
+                            selectedExercise: nil,
+                            setExercise: { exercise in
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                                database.newTemplateSetGroup(
+                                    createFirstSetAutomatically: true,
+                                    exercise: exercise,
+                                    template: template
+                                )
+                                withAnimation {
+                                    scrollable.scrollTo(1, anchor: .bottom)
+                                }
+                            },
+                            forSecondary: false,
+                            currentWorkoutExercises: [],
+                            supersetPrimaryExercise: nil,
+                            presentationDetentSelection: $exerciseSelectionPresentationDetent,
+                            onRequestAddExercise: { createExerciseRequest = $0 },
+                            onRequestExerciseDetail: { exerciseDetailFromTray = $0 }
+                        )
+                        .toolbar(.hidden, for: .navigationBar)
+                        .sheet(item: $selectedRestDurationSet) { templateSet in
+                            RestDurationEditorSheet(templateSet: templateSet)
+                                .presentationDetents([.fraction(0.65)])
+                                .padding()
+                                .frame(maxHeight: .infinity, alignment: .top)
+                        }
+                        .sheet(item: $createExerciseRequest) { request in
+                            ExerciseEditScreen(
+                                onEditFinished: { exercise in
                                     UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                                     database.newTemplateSetGroup(
                                         createFirstSetAutomatically: true,
@@ -154,48 +195,46 @@ struct TemplateEditorScreen: View {
                                     withAnimation {
                                         scrollable.scrollTo(1, anchor: .bottom)
                                     }
+                                    exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
                                 },
-                                forSecondary: false,
-                                currentWorkoutExercises: [],
-                                supersetPrimaryExercise: nil,
-                                presentationDetentSelection: $exerciseSelectionPresentationDetent
+                                initialExerciseName: request.name,
+                                initialMuscleGroup: request.muscleGroup ?? .chest
                             )
-                            .toolbar(.hidden, for: .navigationBar)
-                            .sheet(item: $selectedRestDurationSet) { templateSet in
-                                RestDurationEditorSheet(templateSet: templateSet)
-                                    .presentationDetents([.fraction(0.65)])
-                                    .padding()
-                                    .frame(maxHeight: .infinity, alignment: .top)
+                        }
+                        .sheet(item: $exerciseDetailFromTray) { exercise in
+                            NavigationStack {
+                                ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
                             }
-                            .sheet(isPresented: $isShowingReorderSheet) {
-                                NavigationStack {
-                                    List {
-                                        ForEach(template.setGroups) { setGroup in
-                                            HStack {
-                                                VStack(alignment: .leading) {
-                                                    Text(setGroup.exercise?.displayName ?? "")
-                                                    if setGroup.setType == .superSet,
-                                                       let secondaryExercise = setGroup.secondaryExercise {
-                                                        HStack {
-                                                            Image(systemName: "arrow.turn.down.right")
-                                                            Text(secondaryExercise.displayName)
-                                                        }
+                            .presentationDragIndicator(.visible)
+                        }
+                        .sheet(isPresented: $isShowingReorderSheet) {
+                            NavigationStack {
+                                List {
+                                    ForEach(template.setGroups) { setGroup in
+                                        HStack {
+                                            VStack(alignment: .leading) {
+                                                Text(setGroup.exercise?.displayName ?? "")
+                                                if setGroup.setType == .superSet,
+                                                   let secondaryExercise = setGroup.secondaryExercise {
+                                                    HStack {
+                                                        Image(systemName: "arrow.turn.down.right")
+                                                        Text(secondaryExercise.displayName)
                                                     }
                                                 }
                                             }
                                         }
-                                        .onMove(perform: moveSetGroups)
                                     }
-                                    .environment(\.editMode, .constant(.active))
-                                    .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
-                                    .navigationBarTitleDisplayMode(.inline)
-                                    .toolbar {
-                                        ToolbarItem(placement: .topBarTrailing) {
-                                            Button {
-                                                isShowingReorderSheet = false
-                                            } label: {
-                                                Text(NSLocalizedString("done", comment: ""))
-                                            }
+                                    .onMove(perform: moveSetGroups)
+                                }
+                                .environment(\.editMode, .constant(.active))
+                                .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
+                                .navigationBarTitleDisplayMode(.inline)
+                                .toolbar {
+                                    ToolbarItem(placement: .topBarTrailing) {
+                                        Button {
+                                            isShowingReorderSheet = false
+                                        } label: {
+                                            Text(NSLocalizedString("done", comment: ""))
                                         }
                                     }
                                 }
@@ -203,8 +242,30 @@ struct TemplateEditorScreen: View {
                         }
                     }
                     .presentationDetents([.height(BOTTOM_SHEET_SMALL), .medium, .large], selection: $exerciseSelectionPresentationDetent)
-                    .presentationBackgroundInteraction(.enabled)
+                    // Pass-through only while nothing is stacked on the tray: a
+                    // background-interactive sheet can't stably host a nested sheet — UIKit
+                    // dismisses the tray, SwiftUI re-presents it, and the nested sheet
+                    // flashes away in the fight (the reported "rest menu flashes and never
+                    // reopens" bug).
+                    .presentationBackgroundInteraction(
+                        trayAllowsBackgroundInteraction ? .enabled : .disabled
+                    )
                     .interactiveDismissDisabled()
+                }
+                // Asymmetric switch for the tray's pass-through: it turns off the moment a
+                // nested sheet presents, but back on only after the nested sheet's dismissal
+                // transition has settled — reconfiguring the tray's presentation mid-dismissal
+                // makes UIKit cancel that dismissal and the nested sheet springs back.
+                .onChange(of: hasNestedTraySheet) { _, hasNested in
+                    if hasNested {
+                        trayAllowsBackgroundInteraction = false
+                    } else {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                            if !hasNestedTraySheet {
+                                trayAllowsBackgroundInteraction = true
+                            }
+                        }
+                    }
                 }
             }
             .interactiveDismissDisabled()
@@ -303,6 +364,15 @@ struct TemplateEditorScreen: View {
     }
 
     // MARK: - Computed Properties
+
+    /// True while any sheet is stacked on the persistent exercise tray — rest editor,
+    /// reorder, or one of the tray-delegated presentations (create exercise, detail).
+    private var hasNestedTraySheet: Bool {
+        selectedRestDurationSet != nil
+            || isShowingReorderSheet
+            || createExerciseRequest != nil
+            || exerciseDetailFromTray != nil
+    }
 
     private var templateName: Binding<String> {
         // Resolve `_default.` keys so bundled templates show their localized name here. Once

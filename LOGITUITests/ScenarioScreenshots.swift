@@ -652,6 +652,140 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "recorder_17_opened_from_pill")
     }
 
+    // MARK: - Template editor tray: nested Create Exercise sheet
+
+    /// A sheet presented from INSIDE the editors' background-interactive exercise tray
+    /// must survive: while the tray passes touches through, UIKit and SwiftUI fight over
+    /// a stacked sheet (the tray is dismissed and re-presented, tearing the nested sheet
+    /// down within seconds). The rest/reorder sheets are guarded in the editors
+    /// themselves; this covers ExerciseSelectionScreen's own Create Exercise sheet,
+    /// whose state the editors can't see directly.
+    func testTemplateEditorCreateExerciseSheetStaysUp() {
+        let app = launchApp(scenario: "many")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 2)
+        waitABit(1)
+
+        // "+" toolbar menu → New Template → the editor opens with its persistent tray.
+        let plusButton = app.navigationBars.buttons["Add"].firstMatch
+        XCTAssertTrue(plusButton.waitForExistence(timeout: 5), "Templates + button missing")
+        plusButton.tap()
+        let newTemplateItem = app.buttons["New Template"].firstMatch
+        XCTAssertTrue(newTemplateItem.waitForExistence(timeout: 5), "New Template menu item missing")
+        newTemplateItem.tap()
+
+        let traySearchField = app.textFields.matching(
+            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+        ).firstMatch
+        XCTAssertTrue(traySearchField.waitForExistence(timeout: 10), "Template editor tray missing")
+        waitABit(2)
+
+        // The + next to the search field — ExerciseSelectionScreen's own Create
+        // Exercise sheet. (No typing: focusing the tray search field is flaky with a
+        // connected hardware keyboard, and the + presents the same sheet either way.)
+        let addExercise = app.buttons["Add"].firstMatch
+        XCTAssertTrue(addExercise.waitForExistence(timeout: 5), "Tray + (create exercise) button missing")
+        addExercise.tap()
+
+        let newExerciseTitle = app.staticTexts["New Exercise"].firstMatch
+        XCTAssertTrue(newExerciseTitle.waitForExistence(timeout: 5), "Create Exercise sheet never presented")
+        attach(app, "tray_create_01_presented")
+
+        // The sheet must stay up — on the unguarded build the tray fight tears it
+        // down within a few seconds.
+        var vanishedAfter: Int?
+        for second in 1 ... 6 {
+            waitABit(1)
+            if !newExerciseTitle.exists {
+                vanishedAfter = second
+                break
+            }
+        }
+        attach(app, "tray_create_02_after_wait")
+        XCTAssertNil(
+            vanishedAfter,
+            "Create Exercise sheet vanished after ~\(vanishedAfter ?? 0)s — tray dismiss/re-present fight"
+        )
+        guard vanishedAfter == nil else { return }
+
+        // Cancel must dismiss it cleanly, the tray must come back, and the sheet must
+        // be reopenable (an abnormal teardown leaves the sheet binding stuck non-nil,
+        // blocking every later attempt). Scope the query to the create sheet's own
+        // navigation bar — a bare buttons["Cancel"].firstMatch can resolve to the
+        // editor's (occluded) Cancel and the tap then lands on the scrim.
+        let sheetCancel = app.navigationBars["New Exercise"].buttons["Cancel"].firstMatch
+        XCTAssertTrue(sheetCancel.waitForExistence(timeout: 3), "Create sheet's Cancel button not found")
+        sheetCancel.tap()
+        waitABit(2)
+        XCTAssertFalse(newExerciseTitle.exists, "Create Exercise sheet stuck after Cancel")
+        XCTAssertTrue(traySearchField.waitForExistence(timeout: 5), "Tray gone after closing the create sheet")
+        addExercise.tap()
+        XCTAssertTrue(
+            newExerciseTitle.waitForExistence(timeout: 5),
+            "Create Exercise sheet could not be reopened — stuck sheet binding"
+        )
+        attach(app, "tray_create_03_reopened")
+    }
+
+    /// Same guarantee for the workout editor's tray (History → + → editor): its
+    /// Create Exercise sheet is host-owned for the same reason as the template
+    /// editor's — see `testTemplateEditorCreateExerciseSheetStaysUp`.
+    func testWorkoutEditorCreateExerciseSheetStaysUp() {
+        let app = launchApp(scenario: "many")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 1)
+        waitABit(1)
+
+        let plusButton = app.navigationBars.buttons["Add"].firstMatch
+        XCTAssertTrue(plusButton.waitForExistence(timeout: 5), "History + button missing")
+        plusButton.tap()
+
+        let traySearchField = app.textFields.matching(
+            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+        ).firstMatch
+        XCTAssertTrue(traySearchField.waitForExistence(timeout: 10), "Workout editor tray missing")
+        waitABit(2)
+
+        let addExercise = app.buttons["Add"].firstMatch
+        XCTAssertTrue(addExercise.waitForExistence(timeout: 5), "Tray + (create exercise) button missing")
+        addExercise.tap()
+
+        let newExerciseTitle = app.staticTexts["New Exercise"].firstMatch
+        XCTAssertTrue(newExerciseTitle.waitForExistence(timeout: 5), "Create Exercise sheet never presented")
+
+        var vanishedAfter: Int?
+        for second in 1 ... 6 {
+            waitABit(1)
+            if !newExerciseTitle.exists {
+                vanishedAfter = second
+                break
+            }
+        }
+        attach(app, "workout_tray_create_after_wait")
+        XCTAssertNil(
+            vanishedAfter,
+            "Create Exercise sheet vanished after ~\(vanishedAfter ?? 0)s — tray dismiss/re-present fight"
+        )
+        guard vanishedAfter == nil else { return }
+
+        let sheetCancel = app.navigationBars["New Exercise"].buttons["Cancel"].firstMatch
+        XCTAssertTrue(sheetCancel.waitForExistence(timeout: 3), "Create sheet's Cancel button not found")
+        sheetCancel.tap()
+        waitABit(2)
+        XCTAssertFalse(newExerciseTitle.exists, "Create Exercise sheet stuck after Cancel")
+        XCTAssertTrue(traySearchField.waitForExistence(timeout: 5), "Tray gone after closing the create sheet")
+        addExercise.tap()
+        XCTAssertTrue(
+            newExerciseTitle.waitForExistence(timeout: 5),
+            "Create Exercise sheet could not be reopened — stuck sheet binding"
+        )
+        attach(app, "workout_tray_create_reopened")
+    }
+
     // MARK: - Walkthrough
 
     private func captureMainScreens(

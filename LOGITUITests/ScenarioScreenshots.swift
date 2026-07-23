@@ -708,21 +708,37 @@ final class ScenarioScreenshots: XCTestCase {
         return app
     }
 
+    /// Tab titles as they appear in English (the tests launch with -AppleLanguages (en)).
+    private static let tabLabels = ["Summary", "History", "Templates", "Search"]
+
     private func tapTab(_ app: XCUIApplication, at index: Int) {
+        let label = Self.tabLabels[index]
         let tabBar = app.tabBars.firstMatch
         guard tabBar.waitForExistence(timeout: 5) else { return }
-        var buttons = tabBar.buttons.allElementsBoundByIndex
-        if index >= buttons.count {
-            // Tab bar is minimized after a scroll — swipe down to restore it.
+
+        // Look up by label, never by index: on iOS 26 the bar collapses both
+        // after a scroll (tabBarMinimizeBehavior) and while the Search tab is
+        // active (the regular tabs fold into a single leading button next to
+        // the search pill), and in those states positional indices lie.
+        var button = tabBar.buttons[label]
+        if !button.exists {
+            // Scroll-minimized bar: swiping down restores it.
             app.swipeDown()
             sleep(1)
-            buttons = tabBar.buttons.allElementsBoundByIndex
+            button = tabBar.buttons[label]
         }
-        guard index < buttons.count else {
-            XCTFail("Tab index \(index) not reachable (\(buttons.count) tab buttons visible)")
+        if !button.exists, tabBar.buttons.count > 0 {
+            // Search-active bar: tapping the collapsed leading button leaves
+            // search and re-expands the full tab row.
+            tabBar.buttons.firstMatch.tap()
+            sleep(1)
+            button = tabBar.buttons[label]
+        }
+        guard button.waitForExistence(timeout: 2) else {
+            XCTFail("Tab '\(label)' not reachable in the tab bar")
             return
         }
-        buttons[index].tap()
+        button.tap()
     }
 
     private func attach(_ app: XCUIApplication, _ name: String) {

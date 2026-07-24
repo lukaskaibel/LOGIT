@@ -62,15 +62,21 @@ struct WorkoutCalorieRow: View {
         }
     }
 
-    /// The shared single-line frame: flame, label, then the trailing content.
+    /// The shared single-line frame: flame, label, then the trailing content. The flame wears
+    /// the workout's muscle-group gradient — the same identity treatment as the stat tiles'
+    /// run bars and the detail header's donut.
     private func row(dimmed: Bool = false, @ViewBuilder trailing: () -> some View) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "flame.fill")
                 .font(.footnote)
-                .foregroundStyle(dimmed ? Color.secondaryLabel : Color.accentColor)
+                .foregroundStyle(
+                    dimmed
+                        ? AnyShapeStyle(Color.secondaryLabel)
+                        : workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
+                )
             Text(NSLocalizedString(dimmed ? "logBodyWeightToEstimate" : "estCalories", comment: ""))
                 .font(.subheadline)
-                .foregroundStyle(Color.secondaryLabel)
+                .foregroundStyle(dimmed ? Color.secondaryLabel : Color.label)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             Spacer(minLength: 8)
@@ -168,7 +174,7 @@ struct CalorieEstimateSheet: View {
             GeometryReader { proxy in
                 HStack(spacing: 3) {
                     Capsule()
-                        .fill(Color.accentColor)
+                        .fill(workout.sets.muscleGroupGradient(startPoint: .leading, endPoint: .trailing))
                         .frame(width: max(8, proxy.size.width * workingShare))
                     Capsule()
                         .fill(Color.fill)

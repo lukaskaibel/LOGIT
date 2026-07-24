@@ -27,6 +27,9 @@ final class HealthKitSyncManager: ObservableObject {
         let name: String?
         let start: Date
         let end: Date
+        /// The workout's estimated active energy (see `CalorieEstimator`), or `nil` when
+        /// estimates are disabled or impossible — the Health entry then has no energy sample.
+        var activeKilocalories: Int? = nil
     }
 
     enum BackfillState: Equatable {
@@ -68,12 +71,21 @@ final class HealthKitSyncManager: ObservableObject {
         healthStore.authorizationStatus(for: .workoutType()) == .sharingAuthorized
     }
 
-    /// Presents the system Health access sheet (only the first time; later calls are no-ops)
-    /// and reports whether write access ended up granted.
+    /// Whether energy samples may be written. Requested together with workout access; users
+    /// who granted workouts before calorie estimates existed simply sync without energy until
+    /// they re-run the authorization (any toggle-on in settings does).
+    var isAuthorizedForActiveEnergy: Bool {
+        healthStore.authorizationStatus(for: HKQuantityType(.activeEnergyBurned)) == .sharingAuthorized
+    }
+
+    /// Presents the system Health access sheet (only for so-far-undetermined types; later
+    /// calls are no-ops) and reports whether workout write access ended up granted.
     func requestAuthorization() async -> Bool {
         guard isHealthDataAvailable else { return false }
         do {
-            try await healthStore.requestAuthorization(toShare: [.workoutType()], read: [])
+            try await healthStore.requestAuthorization(
+                toShare: [.workoutType(), HKQuantityType(.activeEnergyBurned)], read: []
+            )
         } catch {
             Self.logger.error(
                 "Requesting Health authorization failed: \(String(describing: error), privacy: .public)"
@@ -162,11 +174,12 @@ final class HealthKitSyncManager: ObservableObject {
         configuration.activityType = .traditionalStrengthTraining
         configuration.locationType = .indoor
 
+        // Any strictly increasing value works; milliseconds keep two saves of the same
+        // workout in quick succession (finish, then an immediate edit) distinguishable.
+        let syncVersion = Int(Date.now.timeIntervalSince1970 * 1000)
         var metadata: [String: Any] = [
             HKMetadataKeySyncIdentifier: payload.id.uuidString,
-            // Any strictly increasing value works; milliseconds keep two saves of the same
-            // workout in quick succession (finish, then an immediate edit) distinguishable.
-            HKMetadataKeySyncVersion: Int(Date.now.timeIntervalSince1970 * 1000),
+            HKMetadataKeySyncVersion: syncVersion,
         ]
         if let name = payload.name, !name.isEmpty {
             metadata[HKMetadataKeyWorkoutBrandName] = name
@@ -175,6 +188,22 @@ final class HealthKitSyncManager: ObservableObject {
         let builder = HKWorkoutBuilder(healthStore: healthStore, configuration: configuration, device: .local())
         do {
             try await builder.beginCollection(at: payload.start)
+            // The estimated active energy rides along as a sample with its own sync
+            // identifier, so a re-export replaces the old sample instead of double-counting
+            // toward the Move ring.
+            if let kilocalories = payload.activeKilocalories, isAuthorizedForActiveEnergy {
+                let energySample = HKQuantitySample(
+                    type: HKQuantityType(.activeEnergyBurned),
+                    quantity: HKQuantity(unit: .kilocalorie(), doubleValue: Double(kilocalories)),
+                    start: payload.start,
+                    end: payload.end,
+                    metadata: [
+                        HKMetadataKeySyncIdentifier: Self.energySyncIdentifier(for: payload.id),
+                        HKMetadataKeySyncVersion: syncVersion,
+                    ]
+                )
+                try await builder.addSamples([energySample])
+            }
             try await builder.addMetadata(metadata)
             try await builder.endCollection(at: payload.end)
             _ = try await builder.finishWorkout()
@@ -182,15 +211,40 @@ final class HealthKitSyncManager: ObservableObject {
             builder.discardWorkout()
             throw error
         }
+
+        // A re-export without energy (estimates turned off, or the body weight entry was
+        // deleted) must also retire the previously exported sample — the replaced workout
+        // doesn't take its associated samples with it.
+        if payload.activeKilocalories == nil {
+            try? await deleteObjects(
+                of: HKQuantityType(.activeEnergyBurned),
+                syncIdentifier: Self.energySyncIdentifier(for: payload.id)
+            )
+        }
     }
 
     private func deleteExportedWorkout(id: UUID) async throws {
+        // The energy sample first, and tolerantly — most workouts have one workout object
+        // but not necessarily an energy sample, and a missing sample must not keep the
+        // workout itself from being deleted.
+        try? await deleteObjects(
+            of: HKQuantityType(.activeEnergyBurned),
+            syncIdentifier: Self.energySyncIdentifier(for: id)
+        )
+        try await deleteObjects(of: .workoutType(), syncIdentifier: id.uuidString)
+    }
+
+    private static func energySyncIdentifier(for id: UUID) -> String {
+        id.uuidString + "-energy"
+    }
+
+    private func deleteObjects(of type: HKObjectType, syncIdentifier: String) async throws {
         let predicate = HKQuery.predicateForObjects(
             withMetadataKey: HKMetadataKeySyncIdentifier,
-            allowedValues: [id.uuidString]
+            allowedValues: [syncIdentifier]
         )
         _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Int, Error>) in
-            healthStore.deleteObjects(of: .workoutType(), predicate: predicate) { _, deletedCount, error in
+            healthStore.deleteObjects(of: type, predicate: predicate) { _, deletedCount, error in
                 if let error {
                     continuation.resume(throwing: error)
                 } else {
@@ -210,6 +264,15 @@ extension Workout {
         guard let id, let date, let endDate,
               HealthKitSyncManager.isExportable(start: date, end: endDate)
         else { return nil }
-        return HealthKitSyncManager.WorkoutPayload(id: id, name: name, start: date, end: endDate)
+        let estimatesEnabled = UserDefaults.standard.bool(forKey: CalorieEstimator.enabledKey)
+        return HealthKitSyncManager.WorkoutPayload(
+            id: id,
+            name: name,
+            start: date,
+            end: endDate,
+            activeKilocalories: estimatesEnabled
+                ? CalorieEstimator.estimate(for: self)?.activeKilocalories
+                : nil
+        )
     }
 }

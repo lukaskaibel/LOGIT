@@ -914,7 +914,8 @@
 "volumeVsLastTime" = "Volume vs. Last Time";
 "thisWorkout" = "This Workout";
 "firstTimeForThisWorkout" = "First time doing this workout — future sessions will be compared against it.";
-"workoutPRInfo" = "A personal record means a set in this workout beat your best weight, reps, or estimated 1RM from all workouts before it — even if you've surpassed it since.";
+"workoutPRInfo" = "A personal record means a set in this workout beat your best weight, reps, or estimated 1RM from all workouts before it — even if you've surpassed it since. When several metrics improve at once, they count as one record: the most tangible leads the card and the rest are listed with it.";
+"alsoARecord" = "Also a record · %@";
 "workoutTrendInfo" = "Each exercise's trend compares this workout's best value of its progress metric with your best from the four weeks before it — the same comparison the exercise badges below show.";
 "workoutVolumeCompareInfo" = "Total volume (weight × reps of every set) compared with the last time you did this workout.";
 "improvedCount" = "%d improved";

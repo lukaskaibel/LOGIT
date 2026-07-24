@@ -35,6 +35,53 @@ struct WorkoutProgressReport {
         var id: String { "\(exercise.objectID.uriRepresentation())-\(metric.rawValue)" }
     }
 
+    /// Every record one exercise set, grouped — the unit all record surfaces count and render.
+    ///
+    /// One improvement usually trips several metric records at once: a heavier top set beats the
+    /// weight record AND its Epley estimate beats the e1RM record, yet the lifter did one thing.
+    /// Counting per metric made "3 PRs" out of a single bench improvement, so every count (cell,
+    /// recap, tile, headlines) counts these groups instead — "exercises you got stronger on" — with
+    /// the lead record fronting the card or row and the rest folded in as siblings.
+    struct ExerciseRecords: Identifiable {
+        let exercise: Exercise
+        /// This exercise's records in `leadPriority` order. Never empty; the first is the lead.
+        let records: [PRRecord]
+        var lead: PRRecord { records[0] }
+        var siblings: [PRRecord] { Array(records.dropFirst()) }
+        var id: NSManagedObjectID { exercise.objectID }
+
+        /// "Most tangible wins": the observed lift leads over the derived estimate, which leads
+        /// over the rep count. e1RM is never buried by this — whenever weight didn't also fire
+        /// (more reps at the same weight), it is the lead and owns the whole card.
+        static func leadPriority(_ metric: ExercisePrimaryMetric) -> Int {
+            switch metric {
+            case .weight: return 0
+            case .estimatedOneRepMax: return 1
+            case .repetitions: return 2
+            case .duration: return 3
+            case .distance: return 4
+            }
+        }
+
+        /// Groups a flat record list by exercise, keeping the exercises' first-appearance order in
+        /// `records` (workout order for a report, newest-first for the Summary aggregation) and
+        /// sorting each group most tangible first.
+        static func grouped(_ records: [PRRecord]) -> [ExerciseRecords] {
+            var order = [NSManagedObjectID]()
+            var byExercise = [NSManagedObjectID: [PRRecord]]()
+            for record in records {
+                let id = record.exercise.objectID
+                if byExercise[id] == nil { order.append(id) }
+                byExercise[id, default: []].append(record)
+            }
+            return order.compactMap { id in
+                guard var group = byExercise[id], let exercise = group.first?.exercise else { return nil }
+                group.sort { leadPriority($0.metric) < leadPriority($1.metric) }
+                return ExerciseRecords(exercise: exercise, records: group)
+            }
+        }
+    }
+
     struct ExerciseTrend: Identifiable {
         let exercise: Exercise
         /// The exercise's chosen progress metric — except when it has no usable value in this
@@ -61,20 +108,20 @@ struct WorkoutProgressReport {
         var id: NSManagedObjectID { exercise.objectID }
     }
 
-    let prRecords: [PRRecord]
+    let exerciseRecords: [ExerciseRecords]
     let trends: [ExerciseTrend]
 
     var comparableTrendCount: Int { trends.filter { $0.percentChange != nil }.count }
     var improvedTrendCount: Int { trends.filter { $0.isImprovement }.count }
 
-    static let empty = WorkoutProgressReport(prRecords: [], trends: [])
+    static let empty = WorkoutProgressReport(exerciseRecords: [], trends: [])
 
     // MARK: Computation
 
     static func compute(for workout: Workout, database: Database) -> WorkoutProgressReport {
         guard let workoutDate = workout.date, workout.hasEntries else { return .empty }
 
-        var prRecords = [PRRecord]()
+        var exerciseRecords = [ExerciseRecords]()
         var trends = [ExerciseTrend]()
 
         for exercise in uniqueExercises(in: workout) {
@@ -100,6 +147,7 @@ struct WorkoutProgressReport {
                 workout.sets.map { value($0, metric) }.max() ?? 0
             }
 
+            var records = [PRRecord]()
             for metric in ExercisePrimaryMetric.allCases {
                 let current = sessionBest(metric)
                 let priorBest = priorSets.map { value($0, metric) }.max() ?? 0
@@ -112,7 +160,7 @@ struct WorkoutProgressReport {
                         .filter { value($0, metric) == priorBest }
                         .compactMap { $0.workout?.date }
                         .min()
-                    prRecords.append(
+                    records.append(
                         PRRecord(
                             exercise: exercise,
                             metric: metric,
@@ -124,6 +172,7 @@ struct WorkoutProgressReport {
                     )
                 }
             }
+            exerciseRecords.append(contentsOf: ExerciseRecords.grouped(records))
 
             var trendMetric = exercise.primaryMetric
             if sessionBest(trendMetric) == 0 {
@@ -150,7 +199,7 @@ struct WorkoutProgressReport {
             }
         }
 
-        return WorkoutProgressReport(prRecords: prRecords, trends: trends)
+        return WorkoutProgressReport(exerciseRecords: exerciseRecords, trends: trends)
     }
 
     private static func uniqueExercises(in workout: Workout) -> [Exercise] {
@@ -186,48 +235,21 @@ private func personalRecordSetValue(_ workoutSet: WorkoutSet, exercise: Exercise
 
 // MARK: - Records tile
 
-/// The compact personal records tile on the workout detail: the first few of this workout's records,
-/// each value in its exercise's muscle-group gradient, with a count of any extras. The whole tile is
-/// a button into `WorkoutPersonalRecordsScreen` — the chevron stands in for the navigation
-/// affordance, and the records' explanation and the value each one beat live on that screen, so the
-/// tile next to the volume tile stays a quick glance rather than a wall of numbers.
+/// The compact personal records tile on the workout detail: the first few exercises that set a
+/// record, one row each with the lead value in its muscle-group gradient, and a count of any further
+/// exercises. The whole tile is a button into `WorkoutPersonalRecordsScreen` — the chevron stands in
+/// for the navigation affordance, and the records' explanation and the value each one beat live on
+/// that screen, so the tile next to the volume tile stays a quick glance rather than a wall of
+/// numbers.
 struct WorkoutPersonalBestsTile: View {
     let workout: Workout
     let report: WorkoutProgressReport
-    /// How many records the tile lists before deferring the rest to "+n more".
+    /// How many exercises the tile lists before deferring the rest to "+n more".
     var maxShown: Int = 3
 
-    /// One record per exercise for the compact tile, so three records of the same exercise (its
-    /// weight, estimated 1RM, and reps all at once) don't crowd the others out — the most tangible
-    /// metric wins (weight, then estimated 1RM, then reps). Every record still lives on the records
-    /// screen; "+n more" counts them all.
-    private var tileRecords: [WorkoutProgressReport.PRRecord] {
-        func priority(_ metric: ExercisePrimaryMetric) -> Int {
-            switch metric {
-            case .weight: return 0
-            case .estimatedOneRepMax: return 1
-            case .repetitions: return 2
-            case .duration: return 3
-            case .distance: return 4
-            }
-        }
-        var best: [NSManagedObjectID: WorkoutProgressReport.PRRecord] = [:]
-        var order: [NSManagedObjectID] = []
-        for record in report.prRecords {
-            let id = record.exercise.objectID
-            if let existing = best[id] {
-                if priority(record.metric) < priority(existing.metric) { best[id] = record }
-            } else {
-                best[id] = record
-                order.append(id)
-            }
-        }
-        return order.compactMap { best[$0] }
-    }
-
     var body: some View {
-        let shown = Array(tileRecords.prefix(maxShown))
-        let remaining = report.prRecords.count - shown.count
+        let shown = Array(report.exerciseRecords.prefix(maxShown))
+        let remaining = report.exerciseRecords.count - shown.count
         VStack(alignment: .leading, spacing: 0) {
             TileHeader(NSLocalizedString("personalRecords", comment: "")) {
                 if remaining > 0 {
@@ -238,8 +260,8 @@ struct WorkoutPersonalBestsTile: View {
             }
             .padding([.top, .horizontal], CELL_PADDING)
             VStack(spacing: 8) {
-                ForEach(shown) { record in
-                    PersonalBestRow(record: record)
+                ForEach(shown) { records in
+                    PersonalBestRow(records: records)
                 }
             }
             .padding(.top, 8)
@@ -253,9 +275,10 @@ struct WorkoutPersonalBestsTile: View {
 
 // MARK: - Records screen
 
-/// The full personal records screen behind the workout detail's records tile: every record set in
-/// this workout, each with the value it beat and a line chart of the exercise's entire history for
-/// that metric cresting at the new best. The tile shows only the first few and the count; this is
+/// The full personal records screen behind the workout detail's records tile: every exercise that
+/// set a record in this workout as one card, its lead record with the value it beat over a line
+/// chart of the exercise's entire history for that metric cresting at the new best, and any sibling
+/// metric records folded into the card. The tile shows only the first few and the count; this is
 /// where they all live, with the basis spelled out at the bottom.
 ///
 /// Pro-gated (blur + crown, like the other metric detail screens): the records *tile* on the workout
@@ -270,8 +293,8 @@ struct WorkoutPersonalRecordsScreen: View {
             VStack(spacing: SECTION_SPACING) {
                 header
                 VStack(spacing: 10) {
-                    ForEach(report.prRecords) { record in
-                        WorkoutPersonalRecordCard(record: record)
+                    ForEach(report.exerciseRecords) { records in
+                        WorkoutPersonalRecordCard(records: records)
                     }
                 }
                 footnote
@@ -305,7 +328,7 @@ struct WorkoutPersonalRecordsScreen: View {
                     .font(.system(size: 28))
                     .foregroundStyle(workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing))
             }
-            Text(personalRecordsHeadline(count: report.prRecords.count))
+            Text(personalRecordsHeadline(count: report.exerciseRecords.count))
                 .font(.title2.weight(.bold))
                 .foregroundStyle(Color.label)
             if let date = workout.date {
@@ -330,29 +353,43 @@ struct WorkoutPersonalRecordsScreen: View {
     }
 }
 
-/// One record on `WorkoutPersonalRecordsScreen`: a trophy badge leading the exercise and metric, then
-/// a comparison scoreboard of the previous best (dated) against the new record (dated, muscle-tinted)
-/// with the gain as a percent pill between them, over a clean line chart of the exercise's entire
-/// history for this metric that bleeds to the card's edges. The top-right corner is intentionally left
-/// free now that the gain reads from the scoreboard rather than a pill up there.
+/// One exercise's records on `WorkoutPersonalRecordsScreen`: a trophy badge leading the exercise and
+/// its lead metric, a comparison scoreboard of the lead record — the previous best (dated) against
+/// the new record (dated, muscle-tinted) with the gain as a percent pill between them — any sibling
+/// metric records as quiet lines beneath, over a clean line chart of the exercise's entire history
+/// for the lead metric that bleeds to the card's edges. The whole card is a button into the
+/// exercise's detail screen — a record's natural follow-up is "where am I on this lift now", and the
+/// per-metric deep dives live there — with the chevron in the once-free top-right corner as the
+/// affordance.
 struct WorkoutPersonalRecordCard: View {
-    let record: WorkoutProgressReport.PRRecord
+    let records: WorkoutProgressReport.ExerciseRecords
+
+    /// The lead record — the card's subject; siblings only get their quiet lines.
+    private var record: WorkoutProgressReport.PRRecord { records.lead }
 
     var body: some View {
-        let color = record.exercise.muscleGroup?.color ?? .accentColor
-        // Spacing 0 so the chart can sit flush against the card's bottom and side edges: the header
-        // and scoreboard carry their own `CELL_PADDING` inset, the chart carries none and bleeds out
-        // to the `tileStyle` rounded border (which clips its bottom corners).
-        VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 14) {
-                header(color: color)
-                comparison(color: color)
+        let color = records.exercise.muscleGroup?.color ?? .accentColor
+        NavigationLink {
+            ExerciseDetailScreen(exercise: records.exercise)
+        } label: {
+            // Spacing 0 so the chart can sit flush against the card's bottom and side edges: the
+            // header and scoreboard carry their own `CELL_PADDING` inset, the chart carries none and
+            // bleeds out to the `tileStyle` rounded border (which clips its bottom corners).
+            VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 14) {
+                    header(color: color)
+                    comparison(color: color)
+                    if !records.siblings.isEmpty {
+                        siblingRecords(color: color)
+                    }
+                }
+                .padding(CELL_PADDING)
+                ExerciseTileSparkline(points: sparklinePoints, color: color, window: .allTime, height: 108)
             }
-            .padding(CELL_PADDING)
-            ExerciseTileSparkline(points: sparklinePoints, color: color, window: .allTime, height: 108)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .tileStyle()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .tileStyle()
+        .buttonStyle(.plain)
     }
 
     private func header(color: Color) -> some View {
@@ -366,7 +403,7 @@ struct WorkoutPersonalRecordCard: View {
                     .foregroundStyle(color.gradient)
             }
             VStack(alignment: .leading, spacing: 1) {
-                Text(record.exercise.displayName)
+                Text(records.exercise.displayName)
                     .font(.body.weight(.semibold))
                     .foregroundStyle(Color.label)
                     .lineLimit(1)
@@ -375,7 +412,32 @@ struct WorkoutPersonalRecordCard: View {
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
-            // Top-right corner intentionally free — the gain now reads from the scoreboard below.
+            NavigationChevron()
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    /// The quiet sibling lines: metrics that also set a record alongside the lead, in the compact
+    /// rows' visual vocabulary (mini trophy, muscle-tinted value) so they read as further trophies
+    /// without competing with the scoreboard — the Epley shadow of a weight record shouldn't shout
+    /// as loudly as the lift itself.
+    private func siblingRecords(color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Divider()
+            ForEach(records.siblings) { sibling in
+                let display = personalRecordDisplay(sibling.value, metric: sibling.metric, exercise: sibling.exercise)
+                HStack(spacing: 8) {
+                    Image(systemName: "trophy.fill")
+                        .font(.caption2)
+                        .foregroundStyle(color.gradient)
+                    Text(String(format: NSLocalizedString("alsoARecord", comment: ""), sibling.metric.title))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 8)
+                    UnitView(value: display.value, unit: display.unit, configuration: .small)
+                        .foregroundStyle(color.gradient)
+                }
+            }
         }
     }
 

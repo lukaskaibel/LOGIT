@@ -9,15 +9,16 @@ import SwiftUI
 
 // MARK: - Shared record row
 
-/// One record on its own secondary tile — the muscle-tinted trophy badge, the exercise + metric, and
-/// the new best in its muscle-group gradient. Shared by the workout-detail records tile and the
-/// Summary records tile so the rows render identically; lives in SharedUI so both surfaces use the
-/// one component.
+/// One exercise's records on its own secondary tile — the muscle-tinted trophy badge, the exercise
+/// with every record-setting metric listed beneath ("Weight · e1RM"), and the lead record's new best
+/// in the muscle-group gradient. Shared by the workout-detail records tile and the Summary records
+/// tile so the rows render identically; lives in SharedUI so both surfaces use the one component.
 struct PersonalBestRow: View {
-    let record: WorkoutProgressReport.PRRecord
+    let records: WorkoutProgressReport.ExerciseRecords
 
     var body: some View {
-        let color = record.exercise.muscleGroup?.color ?? .accentColor
+        let record = records.lead
+        let color = records.exercise.muscleGroup?.color ?? .accentColor
         return HStack(spacing: 12) {
             ZStack {
                 Circle()
@@ -28,11 +29,11 @@ struct PersonalBestRow: View {
                     .foregroundStyle(color.gradient)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(record.exercise.displayName)
+                Text(records.exercise.displayName)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.label)
                     .lineLimit(1)
-                Text(record.metric.title)
+                Text(records.records.map(\.metric.title).joined(separator: " · "))
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(.secondary)
             }

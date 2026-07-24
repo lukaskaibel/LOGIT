@@ -914,7 +914,8 @@
 "volumeVsLastTime" = "Volumen vs. la última vez";
 "thisWorkout" = "Este entrenamiento";
 "firstTimeForThisWorkout" = "Primera vez con este entrenamiento: las próximas sesiones se compararán con esta.";
-"workoutPRInfo" = "Un récord personal significa que una serie de este entrenamiento superó tu mejor peso, repeticiones o 1RM estimado de todos los entrenamientos anteriores, aunque lo hayas superado después.";
+"workoutPRInfo" = "Un récord personal significa que una serie de este entrenamiento superó tu mejor peso, repeticiones o 1RM estimado de todos los entrenamientos anteriores, aunque lo hayas superado después. Si varias métricas mejoran a la vez, cuentan como un solo récord: la más tangible encabeza la tarjeta y las demás se listan con ella.";
+"alsoARecord" = "También récord · %@";
 "workoutTrendInfo" = "La tendencia de cada ejercicio compara el mejor valor de este entrenamiento en su métrica de progreso con tu mejor marca de las cuatro semanas anteriores — la misma comparación que muestran las insignias de los ejercicios.";
 "workoutVolumeCompareInfo" = "Volumen total (peso × repeticiones de cada serie) comparado con la última vez que hiciste este entrenamiento.";
 "improvedCount" = "%d mejorados";

@@ -269,7 +269,7 @@ struct WorkoutDetailScreen: View {
     /// to bring back the side-by-side layout.
     @ViewBuilder
     private var progressAndVolumeRow: some View {
-        if !(progressReport?.prRecords.isEmpty ?? true) {
+        if !(progressReport?.exerciseRecords.isEmpty ?? true) {
             personalBestsTile
         }
     }

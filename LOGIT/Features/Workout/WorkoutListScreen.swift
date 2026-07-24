@@ -94,7 +94,7 @@ struct WorkoutListScreen: View {
                     guard filter.prsOnly else { personalRecordWorkoutIDs = nil; return }
                     var ids = Set<NSManagedObjectID>()
                     for workout in searched
-                    where WorkoutProgressReport.compute(for: workout, database: database).prRecords.count > 0 {
+                    where !WorkoutProgressReport.compute(for: workout, database: database).exerciseRecords.isEmpty {
                         ids.insert(workout.objectID)
                     }
                     personalRecordWorkoutIDs = ids
@@ -291,7 +291,7 @@ private struct WorkoutHistorySectionHeader: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .task(id: workouts.map { $0.objectID }) {
             personalRecordCount = workouts.reduce(0) { partial, workout in
-                partial + WorkoutProgressReport.compute(for: workout, database: database).prRecords.count
+                partial + WorkoutProgressReport.compute(for: workout, database: database).exerciseRecords.count
             }
         }
     }

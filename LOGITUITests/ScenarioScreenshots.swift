@@ -92,6 +92,48 @@ final class ScenarioScreenshots: XCTestCase {
         XCTAssertTrue(backButton.waitForExistence(timeout: 5), "Detail screen has no navigation bar / back button (nav-bar hiding leaked)")
     }
 
+    // MARK: - Personal records (per-exercise cards)
+
+    /// The records surfaces after the per-exercise regrouping (one card/row/count per exercise,
+    /// the most tangible metric leading, sibling records folded into the card): captures the
+    /// workout detail's records tile and the records screen, then asserts a record card pushes
+    /// the exercise detail screen — the card's whole surface is a NavigationLink now.
+    func testWorkoutRecordsScreens() {
+        let app = launchApp(scenario: "many")
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        waitABit(2)
+
+        // History → the newest workout whose cell advertises records ("· n PR").
+        tapTab(app, at: 1)
+        waitABit()
+        let prCell = app.buttons.matching(NSPredicate(format: "label CONTAINS ' PR'")).firstMatch
+        XCTAssertTrue(prCell.waitForExistence(timeout: 5), "No workout cell advertising PRs in the many scenario")
+        prCell.tap()
+        waitABit()
+
+        // The records tile sits below the stat grid — bring it on screen.
+        let recordsTile = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Personal Records'")).firstMatch
+        for _ in 0 ..< 3 where !(recordsTile.exists && recordsTile.isHittable) {
+            app.swipeUp()
+            waitABit()
+        }
+        attach(app, "records_01_workout_detail_tile")
+        XCTAssertTrue(recordsTile.waitForExistence(timeout: 5), "Records tile missing on the workout detail")
+        recordsTile.tap()
+        waitABit()
+        attach(app, "records_02_records_screen")
+
+        // A record card is a button into the exercise detail screen.
+        let card = app.buttons.matching(NSPredicate(format: "label CONTAINS 'New Record'")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 5), "No record card on the records screen")
+        card.tap()
+        let cardBackButton = app.navigationBars.buttons.firstMatch
+        XCTAssertTrue(cardBackButton.waitForExistence(timeout: 5), "Record card did not push the exercise detail screen")
+        waitABit(1)
+        attach(app, "records_03_exercise_detail_from_card")
+    }
+
     // MARK: - Expandable recorder header
 
     // The recorder header folds/unfolds on tap (and handle drag): compact workout-cell
@@ -708,21 +750,33 @@ final class ScenarioScreenshots: XCTestCase {
         return app
     }
 
+    /// Selects a tab by its English label (the launch args force `en`). NEVER go by index: while
+    /// the iOS 26 Search tab is active, the bar collapses into [collapsed-tabs button, search
+    /// pill], so index lookups lie — `buttons[0]` is the collapsed group and tapping it merely
+    /// returns to the previously selected tab, which is how `_02_summary_scrolled` used to land
+    /// on Templates in every scenario.
     private func tapTab(_ app: XCUIApplication, at index: Int) {
+        let labels = ["Summary", "History", "Templates", "Search"]
+        let label = labels[index]
         let tabBar = app.tabBars.firstMatch
         guard tabBar.waitForExistence(timeout: 5) else { return }
-        var buttons = tabBar.buttons.allElementsBoundByIndex
-        if index >= buttons.count {
-            // Tab bar is minimized after a scroll — swipe down to restore it.
+        if !tabBar.buttons[label].exists {
+            // Scroll-minimized bar — a swipe down restores the full bar.
             app.swipeDown()
             sleep(1)
-            buttons = tabBar.buttons.allElementsBoundByIndex
         }
-        guard index < buttons.count else {
-            XCTFail("Tab index \(index) not reachable (\(buttons.count) tab buttons visible)")
+        if !tabBar.buttons[label].exists {
+            // Search-active collapsed bar: tapping the leading collapsed-tabs button re-expands
+            // the bar (it returns to the previously selected tab), then the label resolves.
+            tabBar.buttons.firstMatch.tap()
+            sleep(1)
+        }
+        let button = tabBar.buttons[label]
+        guard button.waitForExistence(timeout: 3) else {
+            XCTFail("Tab \(label) not reachable (tab bar still collapsed?)")
             return
         }
-        buttons[index].tap()
+        button.tap()
     }
 
     private func attach(_ app: XCUIApplication, _ name: String) {

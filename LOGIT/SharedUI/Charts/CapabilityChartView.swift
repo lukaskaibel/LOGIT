@@ -200,19 +200,7 @@ struct CapabilityChartView: View {
             .chartXSelection(value: $selectedDate)
             .chartXVisibleDomain(length: chartRange.visibleDomainSeconds(firstDataDate: firstDataDate))
             .chartXAxis {
-                let axisStride = chartRange.axisStride(firstDataDate: firstDataDate)
-                AxisMarks(
-                    position: .bottom,
-                    values: .stride(by: axisStride.component, count: axisStride.count)
-                ) { value in
-                    if let date = value.as(Date.self) {
-                        AxisGridLine()
-                            .foregroundStyle(Color.gray.opacity(0.5))
-                        AxisValueLabel(chartRange.axisLabel(for: date, firstDataDate: firstDataDate))
-                            .foregroundStyle(chartRange.isCurrentAxisMark(date, firstDataDate: firstDataDate) ? Color.primary : .secondary)
-                            .font(.caption.weight(.bold))
-                    }
-                }
+                chartRange.xAxisMarks(firstDataDate: firstDataDate)
             }
             .chartYAxis {
                 AxisMarks(values: [0, yScaleMax / 2, yScaleMax])
@@ -285,5 +273,43 @@ struct CapabilityChartView: View {
         guard let current = bestAnchor?.value, current > 0,
               let visible = visibleBest, visible > 0 else { return nil }
         return (Double(current) - Double(visible)) / Double(visible) * 100
+    }
+}
+
+extension ChartRange {
+    /// The one x-axis every `ChartRange` chart shares — this capability chart, the measurement
+    /// detail and the workout stat screens — so cadence, styling and edge handling can't drift
+    /// apart. Styling lives on the `Text` inside the label closure (hierarchical styles on the
+    /// AxisMark resolve against the chart's accent on iOS 26). The weekly day-month labels are the
+    /// wide ones that need edge handling: the domain's last mark sits close enough to the right
+    /// edge that its centered label truncates ("7/…" for "7/19"), so it hangs trailing instead —
+    /// and the mark it hangs toward gives up its own label (keeping the grid line) so the two
+    /// can't collide, same as the period-history chart. The narrow month letters and the year
+    /// numbers (whose last mark sits months from the edge) stay centered, every label kept.
+    func xAxisMarks(firstDataDate: Date?) -> some AxisContent {
+        let stride = axisStride(firstDataDate: firstDataDate)
+        return AxisMarks(
+            position: .bottom,
+            values: .stride(by: stride.component, count: stride.count)
+        ) { value in
+            if let date = value.as(Date.self) {
+                AxisGridLine()
+                    .foregroundStyle(Color.gray.opacity(0.5))
+                let weekly = stride.component == .weekOfYear
+                let hugsTrailingEdge = weekly && value.index == value.count - 1
+                let yieldsToEdgeLabel = weekly && value.index == value.count - 2
+                if !yieldsToEdgeLabel {
+                    AxisValueLabel(anchor: hugsTrailingEdge ? .topTrailing : nil) {
+                        Text(axisLabel(for: date, firstDataDate: firstDataDate))
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(
+                                isCurrentAxisMark(date, firstDataDate: firstDataDate)
+                                    ? Color.primary
+                                    : Color.secondary
+                            )
+                    }
+                }
+            }
+        }
     }
 }

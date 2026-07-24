@@ -217,6 +217,39 @@ extension StatPeriod {
         }
     }
 
+    /// The explicit x-axis mark dates for the scrollable chart: period starts counted back from the
+    /// current period in `scrollAxisStride` steps, across the whole scrollable domain. The stride is
+    /// anchored at "now" rather than at the domain's start (whose parity shifts with where the data
+    /// happens to begin) so the current period always carries a mark — the label the chart bolds.
+    func scrollAxisValues(firstDataDate: Date?, now: Date = .now) -> [Date] {
+        let domainStart = scrollableXDomain(firstDataDate: firstDataDate, now: now).lowerBound
+        let stride = scrollAxisStride
+        var marks: [Date] = []
+        var mark = currentRange(containing: now).lowerBound
+        while mark >= domainStart {
+            marks.append(mark)
+            guard let previous = Calendar.current.date(
+                byAdding: stride.component, value: -stride.count, to: mark
+            ) else { break }
+            mark = currentRange(containing: previous).lowerBound
+        }
+        return marks.reversed()
+    }
+
+    /// Whether the mark at `date` yields its label to the current period's: true only for the mark
+    /// one stride before the current period on the week axis. The current label hangs trailing off
+    /// its mark (so the plot edge can't clip it), and the week axis is the one granularity whose
+    /// day-month labels are wide enough relative to the two-week stride that the two would collide —
+    /// month letters and year numbers keep clear of it on their own.
+    func axisLabelYieldsToCurrent(_ date: Date, now: Date = .now) -> Bool {
+        guard self == .week else { return false }
+        let stride = scrollAxisStride
+        guard let next = Calendar.current.date(
+            byAdding: stride.component, value: stride.count, to: date
+        ) else { return false }
+        return currentRange(containing: now).contains(next)
+    }
+
     /// The visible window as a date range — `[scrollPosition, scrollPosition + one window]` — for the
     /// header's moving "average" caption and the visible-window average it labels.
     func visibleWindowRange(from scrollPosition: Date, now: Date = .now) -> ClosedRange<Date> {

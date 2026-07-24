@@ -210,19 +210,7 @@ struct MeasurementDetailScreen: View {
             .chartXSelection(value: $selectedDate)
             .chartXVisibleDomain(length: visibleDomainSeconds)
             .chartXAxis {
-                let axisStride = chartRange.axisStride(firstDataDate: firstDataDate)
-                AxisMarks(
-                    position: .bottom,
-                    values: .stride(by: axisStride.component, count: axisStride.count)
-                ) { value in
-                    if let date = value.as(Date.self) {
-                        AxisGridLine()
-                            .foregroundStyle(Color.gray.opacity(0.5))
-                        AxisValueLabel(chartRange.axisLabel(for: date, firstDataDate: firstDataDate))
-                            .foregroundStyle(chartRange.isCurrentAxisMark(date, firstDataDate: firstDataDate) ? Color.primary : .secondary)
-                            .font(.caption.weight(.bold))
-                    }
-                }
+                chartRange.xAxisMarks(firstDataDate: firstDataDate)
             }
             .chartYAxis {
                 AxisMarks(values: [0.0, yMax / 2.0, yMax])

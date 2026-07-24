@@ -910,7 +910,8 @@
 "volumeVsLastTime" = "Volumen vs. letztes Mal";
 "thisWorkout" = "Dieses Workout";
 "firstTimeForThisWorkout" = "Erstes Mal bei diesem Workout — künftige Einheiten werden damit verglichen.";
-"workoutPRInfo" = "Ein persönlicher Rekord bedeutet: Ein Satz in diesem Workout hat dein bestes Gewicht, deine meisten Wiederholungen oder dein bestes geschätztes 1RM aus allen früheren Workouts übertroffen — auch wenn du ihn inzwischen überboten hast.";
+"workoutPRInfo" = "Ein persönlicher Rekord bedeutet: Ein Satz in diesem Workout hat dein bestes Gewicht, deine meisten Wiederholungen oder dein bestes geschätztes 1RM aus allen früheren Workouts übertroffen — auch wenn du ihn inzwischen überboten hast. Verbessern sich mehrere Metriken auf einmal, zählen sie als ein Rekord: Die greifbarste führt die Karte an, die übrigen stehen mit dabei.";
+"alsoARecord" = "Ebenfalls Rekord · %@";
 "workoutTrendInfo" = "Der Trend jeder Übung vergleicht den Bestwert dieses Workouts in ihrer Fortschrittsmetrik mit deinem Bestwert aus den vier Wochen davor — derselbe Vergleich wie auf den Übungs-Abzeichen unten.";
 "workoutVolumeCompareInfo" = "Gesamtvolumen (Gewicht × Wiederholungen aller Sätze) im Vergleich zum letzten Mal, als du dieses Workout gemacht hast.";
 "improvedCount" = "%d verbessert";

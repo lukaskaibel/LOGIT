@@ -35,7 +35,7 @@ struct HomeScreen: View {
     @State private var isShowingMeasurementsTip = true
     @State private var isShowingExercisesTip = true
     @State private var isShowingStartWorkoutSheet = false
-    @State private var summaryRecords: [WorkoutProgressReport.PRRecord] = []
+    @State private var summaryRecords: [WorkoutProgressReport.ExerciseRecords] = []
     // Default to the tab a marketing screenshot asked for (`-UITEST_DEEPLINK
     // progress`) so the Progress capture opens without a visible tab flip;
     // real launches always start on This Week.

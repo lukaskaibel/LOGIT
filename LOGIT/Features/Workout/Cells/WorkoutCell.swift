@@ -38,7 +38,7 @@ struct WorkoutCell: View {
         .background(backgroundGradient)
         .clipShape(RoundedRectangle(cornerRadius: 30))
         .onAppear {
-            personalRecordCount = WorkoutProgressReport.compute(for: workout, database: database).prRecords.count
+            personalRecordCount = WorkoutProgressReport.compute(for: workout, database: database).exerciseRecords.count
         }
     }
     

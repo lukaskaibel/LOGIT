@@ -51,7 +51,7 @@ struct SummaryProgressTab: View {
 
     @EnvironmentObject private var database: Database
     @State private var overall: OverallProgress = .empty
-    @State private var highlights: [WorkoutProgressReport.PRRecord] = []
+    @State private var highlights: [WorkoutProgressReport.ExerciseRecords] = []
 
     var body: some View {
         VStack(spacing: 8) {
@@ -321,8 +321,8 @@ struct OverallProgressTile: View {
 /// the shared `PersonalBestRow`. Hidden entirely when there are no recent records — like the Summary
 /// records tile, an empty highlights tile would be worse than none.
 struct ProgressHighlightsTile: View {
-    /// Recent, deduped records (one per exercise+metric, newest first) from `SummaryRecords.records`.
-    let records: [WorkoutProgressReport.PRRecord]
+    /// Recent records (one entry per exercise, newest first) from `SummaryRecords.records`.
+    let records: [WorkoutProgressReport.ExerciseRecords]
     var maxRows: Int = 3
 
     var body: some View {
@@ -336,7 +336,7 @@ struct ProgressHighlightsTile: View {
                 let rest = Array(records.dropFirst().prefix(max(0, maxRows - 1)))
                 if !rest.isEmpty {
                     VStack(spacing: 8) {
-                        ForEach(rest) { PersonalBestRow(record: $0) }
+                        ForEach(rest) { PersonalBestRow(records: $0) }
                     }
                     .padding(.horizontal, CELL_PADDING / 2)
                     .padding(.top, 10)
@@ -348,8 +348,9 @@ struct ProgressHighlightsTile: View {
         }
     }
 
-    private func hero(_ record: WorkoutProgressReport.PRRecord) -> some View {
-        let color = record.exercise.muscleGroup?.color ?? .accentColor
+    private func hero(_ exerciseRecords: WorkoutProgressReport.ExerciseRecords) -> some View {
+        let record = exerciseRecords.lead
+        let color = exerciseRecords.exercise.muscleGroup?.color ?? .accentColor
         let display = personalRecordDisplay(record.value, metric: record.metric, exercise: record.exercise)
         let gain: Double? = record.previousBest > 0
             ? (Double(record.value) - Double(record.previousBest)) / Double(record.previousBest) * 100
@@ -362,11 +363,11 @@ struct ProgressHighlightsTile: View {
                     .foregroundStyle(color.gradient)
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text(record.exercise.displayName)
+                Text(exerciseRecords.exercise.displayName)
                     .font(.headline)
                     .foregroundStyle(Color.label)
                     .lineLimit(1)
-                Text("\(NSLocalizedString("newRecord", comment: "")) · \(record.metric.title)")
+                Text("\(NSLocalizedString("newRecord", comment: "")) · \(exerciseRecords.records.map(\.metric.title).joined(separator: " · "))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)

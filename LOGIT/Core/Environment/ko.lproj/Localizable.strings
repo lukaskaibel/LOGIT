@@ -69,6 +69,7 @@
 "creatingTemplateFailed" = "템플릿 생성 실패";
 "creatingTemplateFailedText" = "선택한 이미지에 운동이 포함되어 있는지 확인하세요.";
 "currentBest" = "현재 최고";
+"groupIndexOfTotal" = "%1$d / %2$d";
 "previousBest" = "이전 최고";
 "lastBest" = "최근 최고";
 "lastBestInfo" = "이 운동을 4주 이상 기록하지 않았을 때 표시됩니다. 가장 최근 세션에서의 최고 기록입니다.";

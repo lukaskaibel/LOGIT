@@ -69,6 +69,7 @@
 "creatingTemplateFailed" = "Error al crear la plantilla";
 "creatingTemplateFailedText" = "Asegúrese de que la imagen seleccionada contenga un entrenamiento.";
 "currentBest" = "Mejor marca actual";
+"groupIndexOfTotal" = "%1$d de %2$d";
 "previousBest" = "Mejor marca anterior";
 "lastBest" = "Última mejor marca";
 "lastBestInfo" = "Se muestra cuando no entrenas este ejercicio desde hace más de 4 semanas: tu mejor marca de la sesión más reciente.";

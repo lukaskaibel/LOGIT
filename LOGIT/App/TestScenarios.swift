@@ -274,6 +274,41 @@ enum TestScenario: String {
             }
         }
 
+        // A superset at the very end (same coordinate-stability reason): the horizontal
+        // per-exercise pager, its bulge sockets, per-exercise badges and the thread's
+        // fork/merge rails need a superset in the recorder to be verifiable. Two pull
+        // exercises so the names are unique within this push workout, both with seeded
+        // history so each page's badge has a real current best.
+        let supersetGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: rows,
+            workout: current
+        )
+        supersetGroup.secondaryExercise = bicepsCurls
+        // Weights sit just above the seeded histories' current bests so the two pages'
+        // badges show live gains (rows lands a record) rather than huge declines.
+        for setIndex in 0 ..< 3 {
+            let entered = setIndex < 2
+            database.newSuperSet(
+                repetitionsFirstExercise: entered ? 12 - setIndex : 0,
+                repetitionsSecondExercise: entered ? 12 - setIndex : 0,
+                weightFirstExercise: entered ? 140_000 : 0,
+                weightSecondExercise: entered ? 95000 : 0,
+                setGroup: supersetGroup
+            )
+        }
+
+        // One standard group after the superset so the thread's merge rail (drawn only when
+        // another group follows) is part of the verifiable picture.
+        let closingGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: latPulldowns,
+            workout: current
+        )
+        for _ in 0 ..< 2 {
+            database.newStandardSet(setGroup: closingGroup)
+        }
+
         database.save()
         NSLog("TestScenario: seeded stress scenario (%d workouts)", sessionCount + 1)
     }

@@ -69,6 +69,7 @@
 "creatingTemplateFailed" = "テンプレートの作成に失敗しました";
 "creatingTemplateFailedText" = "選択した画像にワークアウトが含まれていることを確認してください。";
 "currentBest" = "現在のベスト";
+"groupIndexOfTotal" = "%1$d / %2$d";
 "previousBest" = "以前のベスト";
 "lastBest" = "前回のベスト";
 "lastBestInfo" = "このエクササイズを4週間以上記録していないときに表示されます。直近のセッションでのベスト値です。";

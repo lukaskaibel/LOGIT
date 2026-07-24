@@ -39,11 +39,17 @@ struct WorkoutSetGroupCell: View {
     /// `==`: the set cells derive their keyboard-focus indices from flat set positions, so a
     /// structural change in an earlier group has to re-render this cell's children too.
     var firstSetIndexInWorkout: Int = 0
+    /// Total number of set groups in the workout, for the "2 of 5" bulge label. Passed by the
+    /// list (and part of `==`) because adding or removing *another* group changes this cell's
+    /// total even when its own index stays put. Nil derives it from the workout (previews).
+    var groupCount: Int? = nil
     var onTapRestDuration: ((WorkoutSet) -> Void)? = nil
     var onReorderSetGroups: (() -> Void)? = nil
     var onTapPreviousSet: ((Exercise) -> Void)? = nil
     var onTapExerciseName: ((Exercise) -> Void)? = nil
-    var onTapMetricBadge: ((WorkoutSetGroup, CGRect) -> Void)? = nil
+    /// The tapped badge's set group, its subject exercise (each superset page has its own badge),
+    /// and the badge frame to anchor the info popover at.
+    var onTapMetricBadge: ((WorkoutSetGroup, Exercise?, CGRect) -> Void)? = nil
 
     // MARK: - State
 
@@ -59,6 +65,19 @@ struct WorkoutSetGroupCell: View {
     /// width budget can be derived as (column − badge reservation) and handed to `ExerciseHeader`.
     @State private var nameSlotWidth: CGFloat = 0
     @FocusState private var isNoteFieldFocused: Bool
+    /// Which exercise's page the superset pager is snapped to (objectID; nil = first page).
+    /// Also driven programmatically: when keyboard "next" focuses a field on the partner
+    /// exercise's page, the pager follows (see `autopageIfNeeded`).
+    @State private var pagedExerciseID: NSManagedObjectID?
+
+    // MARK: - Superset pager metrics
+
+    /// Horizontal inset of a snapped page — the neighbor page peeks by this minus the spacing.
+    static let pageInset: CGFloat = 24
+    static let pageSpacing: CGFloat = 12
+    /// Height of the band above (and below) the pages where the thread's horizontal rail and
+    /// its drops into the bulges are drawn.
+    static let railZoneHeight: CGFloat = 16
 
     // MARK: - Body
 
@@ -130,16 +149,76 @@ struct WorkoutSetGroupCell: View {
             }
         }
         .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
-        .padding(.bottom, canEdit || isReordering ? CELL_PADDING : CELL_PADDING / 2)
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(.shadow(.inner(color: .white.opacity(0.04), radius: 3)))
-                .foregroundStyle(Color.secondaryBackground)
-        )
-        .cornerRadius(30)
     }
 
+    /// A superset with both exercises chosen renders as containerless side-by-side pages; while
+    /// reordering (compact header row) or before the second exercise is picked it falls back to
+    /// the classic single card, whose header still offers the "select exercise" entry point.
+    @ViewBuilder
     private func content(previousSetGroup: WorkoutSetGroup?) -> some View {
+        if isPagedSuperset {
+            supersetPager(previousSetGroup: previousSetGroup)
+        } else {
+            standardCard(previousSetGroup: previousSetGroup)
+        }
+    }
+
+    private var isPagedSuperset: Bool {
+        setGroup.setType == .superSet
+            && setGroup.exercise != nil
+            && setGroup.secondaryExercise != nil
+            && !isReordering
+    }
+
+    // MARK: - Index bulge
+
+    private var resolvedIndexInWorkout: Int? {
+        indexInWorkout ?? setGroup.workout?.setGroups.firstIndex(of: setGroup)
+    }
+
+    private var resolvedGroupCount: Int {
+        groupCount ?? setGroup.workout?.setGroups.count ?? 0
+    }
+
+    /// "2 of 5" — the group's place in the workout, shown in the bulge socket on top of the card
+    /// (each superset page repeats it) instead of the old header number.
+    private var bulgeLabel: String? {
+        guard let index = resolvedIndexInWorkout, resolvedGroupCount > 0 else { return nil }
+        return String.localizedStringWithFormat(
+            NSLocalizedString("groupIndexOfTotal", comment: ""), index + 1, resolvedGroupCount
+        )
+    }
+
+    /// Whether the thread's merge rail is drawn under the superset pages — only when another
+    /// group follows, so the converged line has somewhere to continue to (the list draws the
+    /// trunk segment between cells).
+    private var showsMergeRail: Bool {
+        guard let index = resolvedIndexInWorkout else { return false }
+        return index < resolvedGroupCount - 1
+    }
+
+    /// Whether the fork rail is drawn above the superset pages — only when a group precedes,
+    /// so the rail has a trunk feeding it. On a first-group superset a floating rail with
+    /// nothing above just looks broken.
+    private var showsForkRail: Bool {
+        (resolvedIndexInWorkout ?? 0) > 0
+    }
+
+    // MARK: - Standard card
+
+    private func standardCard(previousSetGroup: WorkoutSetGroup?) -> some View {
+        standardCardBody(previousSetGroup: previousSetGroup)
+            .padding(.bottom, canEdit || isReordering ? CELL_PADDING : CELL_PADDING / 2)
+            .background(
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(.shadow(.inner(color: .white.opacity(0.04), radius: 3)))
+                    .foregroundStyle(Color.secondaryBackground)
+            )
+            .cornerRadius(30)
+            .bulgeSocket(label: bulgeLabel)
+    }
+
+    private func standardCardBody(previousSetGroup: WorkoutSetGroup?) -> some View {
         VStack(spacing: CELL_PADDING) {
             header
                 .padding([.top, .horizontal], CELL_PADDING)
@@ -262,6 +341,7 @@ struct WorkoutSetGroupCell: View {
             if !isReordering, let workout = setGroup.workout {
                 MetricBadgeView(
                     setGroup: setGroup,
+                    subjectExercise: setGroup.exercise,
                     workout: workout,
                     isEditing: isFieldFocused,
                     onTapBadge: onTapMetricBadge
@@ -275,6 +355,96 @@ struct WorkoutSetGroupCell: View {
                 }
             }
         }
+    }
+
+    // MARK: - Superset pager
+
+    /// The containerless superset: one full-size card per exercise, paged horizontally, each
+    /// with its own bulge socket, metric badge and add-set controls. The thread's horizontal
+    /// rail rides in the band above the pages (and below them when another group follows) and
+    /// scrolls WITH the pages, so the fixed trunk the list draws between cells always meets it
+    /// at a right angle, whatever the scroll position.
+    private func supersetPager(previousSetGroup: WorkoutSetGroup?) -> some View {
+        let exercises = [setGroup.exercise, setGroup.secondaryExercise].compactMap { $0 }
+        return ScrollView(.horizontal) {
+            HStack(alignment: .top, spacing: Self.pageSpacing) {
+                ForEach(exercises, id: \.objectID) { exercise in
+                    SupersetExercisePage(
+                        setGroup: setGroup,
+                        exercise: exercise,
+                        isPrimaryPage: exercise == setGroup.exercise,
+                        bulgeLabel: bulgeLabel,
+                        focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                        previousSetGroup: previousSetGroup,
+                        supplementaryText: supplementaryText,
+                        showDetailAsSheet: showDetailAsSheet,
+                        showPendingRestInTertiary: showPendingRestInTertiary,
+                        isFieldFocused: isFieldFocused,
+                        isEditingNote: $isEditingNote,
+                        onTapRestDuration: onTapRestDuration,
+                        onTapPreviousSet: onTapPreviousSet,
+                        onTapExerciseName: onTapExerciseName,
+                        onTapMetricBadge: onTapMetricBadge,
+                        groupMenu: AnyView(menu)
+                    )
+                    .containerRelativeFrame(.horizontal) { length, _ in
+                        max(length - Self.pageInset * 2, 100)
+                    }
+                }
+            }
+            .scrollTargetLayout()
+            .padding(.top, showsForkRail ? Self.railZoneHeight : 0)
+            .padding(.bottom, showsMergeRail ? Self.railZoneHeight : 0)
+            .overlay(alignment: .top) {
+                if showsForkRail {
+                    SupersetRailShape(pageCount: exercises.count, pageSpacing: Self.pageSpacing)
+                        .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                        .foregroundStyle(Color.threadLine)
+                        .frame(height: Self.railZoneHeight)
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if showsMergeRail {
+                    SupersetRailShape(
+                        pageCount: exercises.count,
+                        pageSpacing: Self.pageSpacing,
+                        flipped: true
+                    )
+                    .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                    .foregroundStyle(Color.threadLine)
+                    .frame(height: Self.railZoneHeight)
+                }
+            }
+        }
+        // No content margins: the snapped first page sits flush with the leading edge (and
+        // the last page, clamped at the scroll bound, flush with the trailing edge) exactly
+        // like every non-superset cell. The pages being narrower than the column, their
+        // centers sit inside the fixed trunk's x — so the trunk always meets the rail's
+        // straight middle, and the elbows curve outward to the offset sockets. No scroll
+        // position can leave the trunk hanging past the rail's end.
+        .scrollTargetBehavior(.viewAligned)
+        .scrollClipDisabled()
+        .scrollIndicators(.hidden)
+        .scrollPosition(id: $pagedExerciseID)
+        .onChange(of: focusedIntegerFieldIndex) { _, newValue in
+            autopageIfNeeded(for: newValue, exercises: exercises)
+        }
+    }
+
+    /// Keyboard next/previous walks a set's entries, which alternate exercises in a superset —
+    /// when focus lands on a field whose entry belongs to the other exercise, the pager follows
+    /// so the focused field is never on an off-screen page.
+    private func autopageIfNeeded(for index: IntegerField.Index?, exercises: [Exercise]) {
+        guard let index else { return }
+        let localSetIndex = index.primary - firstSetIndexInWorkout
+        guard setGroup.sets.indices.contains(localSetIndex) else { return }
+        let workoutSet = setGroup.sets[localSetIndex]
+        guard workoutSet.entries.indices.contains(index.secondary),
+              let owner = workoutSet.owningExercise(of: workoutSet.entries[index.secondary])
+        else { return }
+        let currentID = pagedExerciseID ?? exercises.first?.objectID
+        guard owner.objectID != currentID else { return }
+        withAnimation(.snappy) { pagedExerciseID = owner.objectID }
     }
 
     // MARK: - Supporting Views
@@ -302,13 +472,6 @@ struct WorkoutSetGroupCell: View {
     private var header: some View {
         VStack(spacing: 8) {
             HStack(spacing: 10) {
-                if let indexInWorkout = indexInWorkout ?? setGroup.workout?.setGroups.firstIndex(of: setGroup) {
-                    Text("\(indexInWorkout + 1)")
-                        .font(.title)
-                        .fontWeight(.medium)
-                        .fontDesign(.rounded)
-                        .foregroundStyle(.secondary)
-                }
                 VStack(alignment: .leading, spacing: 0) {
                     ExerciseHeader(
                         exercise: setGroup.exercise,
@@ -556,6 +719,429 @@ extension WorkoutSetGroupCell: Equatable {
             && lhs.isFieldFocused == rhs.isFieldFocused
             && lhs.indexInWorkout == rhs.indexInWorkout
             && lhs.firstSetIndexInWorkout == rhs.firstSetIndexInWorkout
+            && lhs.groupCount == rhs.groupCount
+            // Superset cells DO re-render on focus moves (unlike everything else, which only
+            // cares whether the keyboard is up): their pager auto-pages to the exercise that
+            // owns the newly-focused field, and a skipped body would leave that `onChange`
+            // holding a stale focus value. Bounded cost — a workout has at most a few supersets.
+            && (lhs.setGroup.setType != .superSet
+                || lhs.focusedIntegerFieldIndex == rhs.focusedIntegerFieldIndex)
+    }
+}
+
+// MARK: - Index bulge
+
+/// The socket on top of every set-group card: a low rounded bump growing out of the card's top
+/// edge (concave fillets where it meets the card) that carries the group's "2 of 5" position
+/// and receives the thread the list draws between cells. The bump is deliberately lower than
+/// the label — the label's bottom half dips inside the card — and its fill continues a few
+/// points below the edge so the card's inner top highlight can't draw a seam under it. Layered
+/// with `bulgeSocket(label:)`, which draws it OVER the card.
+struct SetGroupIndexBulge: View {
+    let label: String
+
+    /// Height of the bump above the card's top edge — just enough headroom over the label's
+    /// peeking top, so the bump stays a low hill.
+    static let protrusion: CGFloat = 8
+    /// How far the bump's fill continues below the card edge.
+    static let underlap: CGFloat = 8
+    /// Horizontal run of each S-curved shoulder.
+    static let shoulderRun: CGFloat = 12
+    /// How tightly the shoulder S hugs its endpoints: 0.5 is a plain slope, towards 1 the
+    /// curve stays flat at both ends and turns in the middle. 0.75 is the chosen gentle S.
+    static let shoulderTension: CGFloat = 0.75
+    /// Horizontal padding between the label and the shoulders.
+    static let labelPadding: CGFloat = 8
+
+    var body: some View {
+        Text(label)
+            .font(.system(.caption2, design: .rounded, weight: .bold))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, Self.labelPadding)
+            // Push the label down so it straddles the card edge — most of it sits inside
+            // the card, only its top peeks into the bump.
+            .offset(y: 3)
+            .frame(height: Self.protrusion + Self.underlap)
+            .background {
+                SetGroupBulgeShape(
+                    shoulderRun: Self.shoulderRun,
+                    shoulderTension: Self.shoulderTension,
+                    underlap: Self.underlap
+                )
+                .fill(Color.secondaryBackground)
+                // The shoulders flare beyond the label's bounds on both sides.
+                .padding(.horizontal, -Self.shoulderRun)
+            }
+    }
+}
+
+extension View {
+    /// Mounts the index bulge on top of a set-group card: drawn over the card (so the label's
+    /// lower half and the underlap sit on the card's fill), extending above it by the bump's
+    /// protrusion, which is reserved as layout space.
+    @ViewBuilder
+    func bulgeSocket(label: String?) -> some View {
+        if let label {
+            overlay(alignment: .top) {
+                SetGroupIndexBulge(label: label)
+                    .alignmentGuide(.top) { $0[.top] + SetGroupIndexBulge.protrusion }
+            }
+            .padding(.top, SetGroupIndexBulge.protrusion)
+        } else {
+            self
+        }
+    }
+}
+
+/// The bulge's outline: a smooth hill. Each side is one S-curve with horizontal tangents at
+/// both ends, so the concave blend into the card's edge and the convex top shoulder are both
+/// generously rounded — no straight walls, no sharp corners anywhere. Below the card edge the
+/// fill continues `underlap` points as a plain rectangle, hiding the card's inner top
+/// highlight under the bump. The rect includes the shoulders and the underlap.
+struct SetGroupBulgeShape: Shape {
+    var shoulderRun: CGFloat = 18
+    /// 0.5 = shallowest slope; towards 1 the S hugs its endpoints and turns harder mid-curve.
+    var shoulderTension: CGFloat = 0.55
+    var underlap: CGFloat = 8
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let edge = rect.maxY - underlap
+        let top = rect.minY
+        path.move(to: CGPoint(x: rect.minX, y: edge))
+        // Left shoulder: card edge up to the flat top in one S.
+        path.addCurve(
+            to: CGPoint(x: rect.minX + shoulderRun, y: top),
+            control1: CGPoint(x: rect.minX + shoulderRun * shoulderTension, y: edge),
+            control2: CGPoint(x: rect.minX + shoulderRun * (1 - shoulderTension), y: top)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX - shoulderRun, y: top))
+        // Right shoulder, mirrored.
+        path.addCurve(
+            to: CGPoint(x: rect.maxX, y: edge),
+            control1: CGPoint(x: rect.maxX - shoulderRun * (1 - shoulderTension), y: top),
+            control2: CGPoint(x: rect.maxX - shoulderRun * shoulderTension, y: edge)
+        )
+        // Continue below the card edge so the bump covers the card's inner top highlight.
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+// MARK: - Superset thread rail
+
+/// The thread's horizontal rail across a superset's pages, drawn in the band above (or, flipped,
+/// below) them and scrolling with them: rounded elbows turn down into the first and last page's
+/// center, straight drops serve any pages in between. Page centers are derived from the band's
+/// own width, so the shape needs no measured geometry.
+struct SupersetRailShape: Shape {
+    let pageCount: Int
+    let pageSpacing: CGFloat
+    var flipped: Bool = false
+    var cornerRadius: CGFloat = 10
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        guard pageCount > 0 else { return path }
+        let pageWidth = (rect.width - CGFloat(pageCount - 1) * pageSpacing) / CGFloat(pageCount)
+        let centers = (0 ..< pageCount).map { pageWidth / 2 + CGFloat($0) * (pageWidth + pageSpacing) }
+        let railY: CGFloat = 1.5
+        // Verticals overshoot the band by a couple of points into the neighboring fill (bulge
+        // below, card above once flipped) so no join can open an antialiasing hairline.
+        let overshoot = rect.height + 2
+        guard let first = centers.first, let last = centers.last, pageCount > 1 else {
+            path.move(to: CGPoint(x: centers[0], y: 0))
+            path.addLine(to: CGPoint(x: centers[0], y: overshoot))
+            return flipped ? path.flippedVertically(height: rect.height) : path
+        }
+        path.move(to: CGPoint(x: first, y: overshoot))
+        path.addLine(to: CGPoint(x: first, y: railY + cornerRadius))
+        path.addArc(
+            center: CGPoint(x: first + cornerRadius, y: railY + cornerRadius),
+            radius: cornerRadius,
+            startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false
+        )
+        path.addLine(to: CGPoint(x: last - cornerRadius, y: railY))
+        path.addArc(
+            center: CGPoint(x: last - cornerRadius, y: railY + cornerRadius),
+            radius: cornerRadius,
+            startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false
+        )
+        path.addLine(to: CGPoint(x: last, y: overshoot))
+        for center in centers.dropFirst().dropLast() {
+            path.move(to: CGPoint(x: center, y: railY))
+            path.addLine(to: CGPoint(x: center, y: overshoot))
+        }
+        return flipped ? path.flippedVertically(height: rect.height) : path
+    }
+}
+
+private extension Path {
+    func flippedVertically(height: CGFloat) -> Path {
+        applying(CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -height))
+    }
+}
+
+// MARK: - Superset exercise page
+
+/// One exercise's card inside the superset pager: its own bulge socket, header, metric badge,
+/// set column (only this exercise's entry per set) and add-set controls. The group-level menu is
+/// built by the cell (it owns the exercise-selection and note state) and passed in.
+private struct SupersetExercisePage: View {
+    @Environment(\.canEdit) var canEdit: Bool
+    @EnvironmentObject var database: Database
+
+    @ObservedObject var setGroup: WorkoutSetGroup
+    let exercise: Exercise
+    let isPrimaryPage: Bool
+    let bulgeLabel: String?
+    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    let previousSetGroup: WorkoutSetGroup?
+    let supplementaryText: String?
+    let showDetailAsSheet: Bool
+    let showPendingRestInTertiary: Bool
+    let isFieldFocused: Bool
+    @Binding var isEditingNote: Bool
+    let onTapRestDuration: ((WorkoutSet) -> Void)?
+    let onTapPreviousSet: ((Exercise) -> Void)?
+    let onTapExerciseName: ((Exercise) -> Void)?
+    let onTapMetricBadge: ((WorkoutSetGroup, Exercise?, CGRect) -> Void)?
+    let groupMenu: AnyView
+
+    @State private var metricBadgeWidth: CGFloat = 0
+    @State private var nameSlotWidth: CGFloat = 0
+    @FocusState private var isNoteFieldFocused: Bool
+
+    var body: some View {
+        card
+            .bulgeSocket(label: bulgeLabel)
+            .accentColor(exercise.muscleGroup?.color ?? .accentColor)
+    }
+
+    private var card: some View {
+        VStack(spacing: CELL_PADDING) {
+            header
+                .padding([.top, .horizontal], CELL_PADDING)
+            VStack(spacing: CELL_SPACING) {
+                ForEach(setGroup.sets, id: \.objectID) { workoutSet in
+                    VStack(spacing: CELL_SPACING) {
+                        WorkoutSetCell(
+                            workoutSet: workoutSet,
+                            focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                            referenceSet: referenceSet(for: workoutSet),
+                            visibleExercise: exercise,
+                            onEditRestDuration: onTapRestDuration.map { callback in
+                                { callback(workoutSet) }
+                            },
+                            onTapPreviousSet: onTapPreviousSet
+                        )
+                        .contentShape(Rectangle())
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(.shadow(.inner(color: .black.opacity(0.4), radius: 5)))
+                                .foregroundStyle(Color.tertiaryBackground)
+                        )
+                        .cornerRadius(15)
+                        .onDeleteView(disabled: !canEdit) {
+                            withAnimation(.interactiveSpring()) {
+                                database.delete(workoutSet)
+                            }
+                        }
+                        if setGroup.sets.last != workoutSet {
+                            if canEdit {
+                                RestTimerBetweenSetsView(
+                                    workoutSet: workoutSet,
+                                    showPendingRestInTertiary: showPendingRestInTertiary,
+                                    onTapRestDuration: onTapRestDuration.map { callback in
+                                        { callback(workoutSet) }
+                                    }
+                                )
+                            } else if workoutSet.restDurationSeconds > 0 {
+                                RestDurationLabel(seconds: workoutSet.restDurationSeconds)
+                                    .padding(.vertical, 2)
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, CELL_PADDING / 2)
+            .animation(.interactiveSpring(), value: setGroup.sets)
+            if canEdit {
+                controls
+                    .padding(.horizontal, CELL_PADDING)
+            }
+        }
+        .padding(.bottom, canEdit ? CELL_PADDING : CELL_PADDING / 2)
+        .background(
+            RoundedRectangle(cornerRadius: 30)
+                .fill(.shadow(.inner(color: .white.opacity(0.04), radius: 3)))
+                .foregroundStyle(Color.secondaryBackground)
+        )
+        .cornerRadius(30)
+        .overlay(alignment: .topTrailing) {
+            badgeOverlay
+        }
+    }
+
+    private var header: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 0) {
+                    ExerciseHeader(
+                        exercise: exercise,
+                        secondaryExercise: nil,
+                        noExerciseAction: {},
+                        noSecondaryExerciseAction: nil,
+                        isSuperSet: false,
+                        navigationToDetailEnabled: true,
+                        showDetailAsSheet: showDetailAsSheet,
+                        onTapExerciseName: onTapExerciseName,
+                        nameMaxWidth: exerciseNameWidth
+                    )
+                    HStack {
+                        Text(exercise.muscleGroup?.description ?? "")
+                            .foregroundColor(exercise.muscleGroup?.color ?? .accentColor)
+                        Spacer()
+                        if isPrimaryPage, let supplementaryText {
+                            Text(supplementaryText)
+                                .foregroundStyle(.secondary)
+                                .fontWeight(.medium)
+                        }
+                    }
+                    .font(.system(.footnote, design: .rounded, weight: .bold))
+                }
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.size.width
+                } action: { _, newWidth in
+                    nameSlotWidth = newWidth
+                }
+                Spacer()
+            }
+            // The note is a group-level field, rendered on every page (bound to the same text)
+            // so the pages keep identical heights and the thread's merge rail meets them evenly.
+            if isEditingNote || !(setGroup.note?.isEmpty ?? true) {
+                TextField(
+                    "Note",
+                    text: Binding(get: { setGroup.note ?? "" }, set: { setGroup.note = $0 }),
+                    prompt: Text(NSLocalizedString("addNote...", comment: "")),
+                    axis: .vertical
+                )
+                .focused($isNoteFieldFocused)
+                .onSubmit(of: .text) {
+                    setGroup.note = (setGroup.note ?? "") + "\n"
+                    isNoteFieldFocused = true
+                }
+                .lineLimit(1 ... 5)
+                .fixedSize(horizontal: false, vertical: true)
+                .font(.footnote)
+                .foregroundStyle(.tertiary)
+            }
+        }
+        .onChange(of: isNoteFieldFocused) {
+            if !isNoteFieldFocused {
+                isEditingNote = false
+            }
+        }
+    }
+
+    private var controls: some View {
+        HStack(spacing: 8) {
+            Button {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                withAnimation(.interactiveSpring()) {
+                    database.duplicateLastSet(from: setGroup)
+                }
+            } label: {
+                Image(systemName: "plus.square.on.square")
+                    .foregroundStyle((exercise.muscleGroup?.color ?? .accentColor).gradient)
+                    .font(.system(.body, design: .rounded, weight: .bold))
+                    .padding(15)
+                    .background(Color.accentColor.secondaryTranslucentBackground)
+                    .clipShape(Capsule())
+            }
+            .contextMenu {
+                Button {
+                    withAnimation(.interactiveSpring()) {
+                        database.duplicateLastWeight(from: setGroup)
+                    }
+                } label: {
+                    Label(NSLocalizedString("copyWeight", comment: ""), systemImage: "scalemass")
+                }
+                Button {
+                    withAnimation(.interactiveSpring()) {
+                        database.duplicateLastRepetitions(from: setGroup)
+                    }
+                } label: {
+                    Label(NSLocalizedString("copyRepetitions", comment: ""), systemImage: "repeat.circle")
+                }
+                Button {
+                    withAnimation(.interactiveSpring()) {
+                        database.duplicateLastSet(from: setGroup)
+                    }
+                } label: {
+                    Label(NSLocalizedString("copySet", comment: ""), systemImage: "plus.square.on.square")
+                }
+            }
+            Button {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                withAnimation(.interactiveSpring()) {
+                    database.addSet(to: setGroup)
+                }
+            } label: {
+                Label(
+                    NSLocalizedString("addSet", comment: ""),
+                    systemImage: "plus.circle.fill"
+                )
+                .foregroundStyle((exercise.muscleGroup?.color ?? .accentColor).gradient)
+                .font(.system(.body, design: .rounded, weight: .bold))
+                .padding(.vertical, 15)
+                .frame(maxWidth: .infinity)
+                .background(Color.accentColor.secondaryTranslucentBackground)
+                .clipShape(Capsule())
+            }
+            groupMenu
+        }
+    }
+
+    @ViewBuilder
+    private var badgeOverlay: some View {
+        if let workout = setGroup.workout {
+            MetricBadgeView(
+                setGroup: setGroup,
+                subjectExercise: exercise,
+                workout: workout,
+                isEditing: isFieldFocused,
+                onTapBadge: onTapMetricBadge
+            )
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.size.width
+            } action: { _, newWidth in
+                metricBadgeWidth = newWidth
+            }
+        }
+    }
+
+    private var exerciseNameTrailingInset: CGFloat {
+        guard setGroup.workout != nil else { return 0 }
+        return max(0, metricBadgeWidth - CELL_PADDING + 8)
+    }
+
+    private var exerciseNameWidth: CGFloat? {
+        let inset = exerciseNameTrailingInset
+        guard inset > 0, nameSlotWidth > 0 else { return nil }
+        return max(40, nameSlotWidth - inset)
+    }
+
+    /// Same position-matched reference as the cell's; the set cell then matches the entry within
+    /// it by exercise (see `WorkoutSetCell.reference(for:at:in:)`).
+    private func referenceSet(for workoutSet: WorkoutSet) -> WorkoutSet? {
+        guard
+            let index = setGroup.sets.firstIndex(of: workoutSet),
+            let previousSetGroup
+        else { return nil }
+        return previousSetGroup.sets.value(at: index)
     }
 }
 
@@ -684,10 +1270,15 @@ private final class ExerciseHistoryBestsCache: @unchecked Sendable {
 /// so the badge's pill and the panel's spelled-out values can never tell different stories.
 private struct SetGroupMetricComparison {
     let setGroup: WorkoutSetGroup
+    /// The exercise this comparison scores. Each superset page passes its own; nil falls back to
+    /// the group's primary exercise (the only one there is everywhere else).
+    var subjectExercise: Exercise? = nil
+
+    private var exercise: Exercise? { subjectExercise ?? setGroup.exercise }
 
     /// This set group's best for `metric` — what the *session* achieved.
     func sessionBest(_ metric: ExercisePrimaryMetric) -> Int {
-        guard let exercise = setGroup.exercise else { return 0 }
+        guard let exercise else { return 0 }
         switch metric {
         case .estimatedOneRepMax: return setGroup.sets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
         case .weight: return setGroup.sets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
@@ -706,7 +1297,7 @@ private struct SetGroupMetricComparison {
     /// comparison keeps telling that day's story even after later sessions surpass it. While
     /// recording, the window stays anchored at now — the two coincide there anyway.
     func currentBest(_ metric: ExercisePrimaryMetric) -> Int? {
-        guard let exercise = setGroup.exercise else { return nil }
+        guard let exercise else { return nil }
         let anchor = setGroup.workout?.isCurrentWorkout == true ? nil : setGroup.workout?.date
         return ExerciseHistoryBestsCache.shared.value(
             .currentBest,
@@ -720,7 +1311,7 @@ private struct SetGroupMetricComparison {
     }
 
     private func currentBestImpl(_ metric: ExercisePrimaryMetric) -> Int? {
-        guard let exercise = setGroup.exercise else { return nil }
+        guard let exercise else { return nil }
         let anchor = setGroup.workout?.isCurrentWorkout == true ? nil : setGroup.workout?.date
         var priorSets = exercise.sets.filter { $0.workout != setGroup.workout }
         if let anchor {
@@ -762,7 +1353,7 @@ private struct SetGroupMetricComparison {
     /// record has to clear (all-time, intentionally NOT the current-best window). Excludes the
     /// current workout.
     func previousAllTimeBest(_ metric: ExercisePrimaryMetric) -> Int {
-        guard let exercise = setGroup.exercise else { return 0 }
+        guard let exercise else { return 0 }
         return ExerciseHistoryBestsCache.shared.value(
             .allTimeBest,
             exercise: exercise,
@@ -775,7 +1366,7 @@ private struct SetGroupMetricComparison {
     }
 
     private func previousAllTimeBestImpl(_ metric: ExercisePrimaryMetric) -> Int {
-        guard let exercise = setGroup.exercise else { return 0 }
+        guard let exercise else { return 0 }
         let priorSets = exercise.sets.filter { $0.workout != setGroup.workout }
         switch metric {
         case .estimatedOneRepMax: return priorSets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
@@ -811,6 +1402,9 @@ private struct SetGroupMetricComparison {
 /// they dismiss each other (UIKit only presents one thing per view controller at a time).
 private struct MetricBadgeView: View {
     @ObservedObject var setGroup: WorkoutSetGroup
+    /// The exercise this badge scores — each superset page shows its own badge; nil falls back
+    /// to the group's primary exercise.
+    let subjectExercise: Exercise?
     /// Observed so the badge re-renders on every recorder change. Editing a set mutates the set —
     /// and, via the recorder's autosave, the workout — but NOT this set group, so without observing
     /// the workout the badge would never re-evaluate while the user types, and live values plus PR
@@ -825,7 +1419,7 @@ private struct MetricBadgeView: View {
     /// presents the panel from the sheet's own context. Nil elsewhere, where the popover is fine.
     /// A plain parameter (not an environment value) so the recorder's per-render closure can't
     /// register every badge as environment-dependent on it.
-    let onTapBadge: ((WorkoutSetGroup, CGRect) -> Void)?
+    let onTapBadge: ((WorkoutSetGroup, Exercise?, CGRect) -> Void)?
     @StateObject private var peek = MetricPeekController()
 
     @State private var primaryMetric: ExercisePrimaryMetric = .estimatedOneRepMax
@@ -841,29 +1435,37 @@ private struct MetricBadgeView: View {
     /// The metric on screen — a peeked record while one plays, otherwise the chosen metric.
     private var displayedMetric: ExercisePrimaryMetric { peek.activeMetric ?? primaryMetric }
 
+    private var exercise: Exercise? { subjectExercise ?? setGroup.exercise }
+
     /// Session-vs-current-best math, shared with `MetricInfoPanel` so badge and panel always agree.
-    private var comparison: SetGroupMetricComparison { SetGroupMetricComparison(setGroup: setGroup) }
+    private var comparison: SetGroupMetricComparison {
+        SetGroupMetricComparison(setGroup: setGroup, subjectExercise: subjectExercise)
+    }
 
     private var displayedIsRecord: Bool { comparison.isPersonalRecord(displayedMetric) }
 
     init(
         setGroup: WorkoutSetGroup,
+        subjectExercise: Exercise? = nil,
         workout: Workout,
         isEditing: Bool,
-        onTapBadge: ((WorkoutSetGroup, CGRect) -> Void)? = nil
+        onTapBadge: ((WorkoutSetGroup, Exercise?, CGRect) -> Void)? = nil
     ) {
         _setGroup = ObservedObject(wrappedValue: setGroup)
+        self.subjectExercise = subjectExercise
         _workout = ObservedObject(wrappedValue: workout)
         self.isEditing = isEditing
         self.onTapBadge = onTapBadge
         // Resolve the committed metric up front so the very first render already evaluates the right
         // metric: the idle/empty decision below shouldn't wait on `onAppear`, and it spares a
         // first-frame roll up from the `.estimatedOneRepMax` default.
-        _primaryMetric = State(initialValue: setGroup.exercise?.primaryMetric ?? .defaultMetric)
+        _primaryMetric = State(
+            initialValue: (subjectExercise ?? setGroup.exercise)?.primaryMetric ?? .defaultMetric
+        )
     }
 
     var body: some View {
-        let accent = setGroup.exercise?.muscleGroup?.color ?? .accentColor
+        let accent = exercise?.muscleGroup?.color ?? .accentColor
         let displayed = displayedMetric
         let sessionBest = comparison.sessionBest(displayed)
         // Before this session's first entry there's nothing to trend, so rather than a dead "0 %"
@@ -889,20 +1491,20 @@ private struct MetricBadgeView: View {
                         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                         if let onTapBadge {
                             if badgeFrame != .zero {
-                                onTapBadge(setGroup, badgeFrame)
+                                onTapBadge(setGroup, exercise, badgeFrame)
                             }
                         } else {
                             isShowingInfo = true
                         }
                     }
                     .popover(isPresented: $isShowingInfo) {
-                        MetricInfoPanel(setGroup: setGroup, onOpenDetail: { metric in
+                        MetricInfoPanel(setGroup: setGroup, exercise: exercise, onOpenDetail: { metric in
                             detailMetric = metric
                             isShowingInfo = false
                             // Present after the popover's dismissal settles — competing presentations
                             // from the same host cancel each other.
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                                detailExercise = setGroup.exercise
+                                detailExercise = exercise
                             }
                         })
                         .padding()
@@ -919,7 +1521,7 @@ private struct MetricBadgeView: View {
                     .accessibilityLabel(Text(accessibilityDescription))
                     .accessibilityHint(Text(NSLocalizedString("tapForMetricInfo", comment: "")))
                     .onAppear {
-                        primaryMetric = setGroup.exercise?.primaryMetric ?? .defaultMetric
+                        primaryMetric = exercise?.primaryMetric ?? .defaultMetric
                         peek.seed(prSnapshot())
                         peek.setEditing(isEditing)
                     }
@@ -933,7 +1535,7 @@ private struct MetricBadgeView: View {
                 prs: prSnapshot(),
                 primary: primaryMetric,
                 order: ExercisePrimaryMetric.allowed(
-                    for: setGroup.exercise?.measurementType ?? .repsAndWeight
+                    for: exercise?.measurementType ?? .repsAndWeight
                 )
             )
         }
@@ -949,7 +1551,7 @@ private struct MetricBadgeView: View {
             // changes it itself — the info panel's picker (presented separately in the recorder)
             // and the exercise editor write it. Re-sync to it, cancelling any running peek so the
             // user's explicit choice is what lands on screen.
-            let current = setGroup.exercise?.primaryMetric ?? .defaultMetric
+            let current = exercise?.primaryMetric ?? .defaultMetric
             guard current != primaryMetric else { return }
             peek.cancelForManualCycle()
             withAnimation(MetricPeekController.rollAnimation) {
@@ -1290,21 +1892,35 @@ struct MetricInfoPanel: View {
     /// Called when the value/chart row is tapped — the host opens the exercise detail at this
     /// metric's chart screen. The row isn't tappable when nil.
     var onOpenDetail: ((ExercisePrimaryMetric) -> Void)?
+    /// The exercise the panel scores and charts — the tapped badge's subject (each superset page
+    /// carries its own badge). Nil falls back to the group's primary exercise.
+    let subjectExercise: Exercise?
     @State private var selectedMetric: ExercisePrimaryMetric
 
     private let metrics = ExercisePrimaryMetric.allCases
 
-    /// Same math as the badge — see the type's doc.
-    private var comparison: SetGroupMetricComparison { SetGroupMetricComparison(setGroup: setGroup) }
+    private var exercise: Exercise? { subjectExercise ?? setGroup.exercise }
 
-    init(setGroup: WorkoutSetGroup, onOpenDetail: ((ExercisePrimaryMetric) -> Void)? = nil) {
+    /// Same math as the badge — see the type's doc.
+    private var comparison: SetGroupMetricComparison {
+        SetGroupMetricComparison(setGroup: setGroup, subjectExercise: subjectExercise)
+    }
+
+    init(
+        setGroup: WorkoutSetGroup,
+        exercise: Exercise? = nil,
+        onOpenDetail: ((ExercisePrimaryMetric) -> Void)? = nil
+    ) {
         _setGroup = ObservedObject(wrappedValue: setGroup)
+        self.subjectExercise = exercise
         self.onOpenDetail = onOpenDetail
-        _selectedMetric = State(initialValue: setGroup.exercise?.primaryMetric ?? .defaultMetric)
+        _selectedMetric = State(
+            initialValue: (exercise ?? setGroup.exercise)?.primaryMetric ?? .defaultMetric
+        )
     }
 
     var body: some View {
-        let color = setGroup.exercise?.muscleGroup?.color ?? .accentColor
+        let color = exercise?.muscleGroup?.color ?? .accentColor
         // Nothing has ever been logged for this metric — a brand-new exercise, or e1RM on one only
         // ever trained above 12 reps. The scoreboard would read "––" vs "––" over a blank chart, so
         // show the shared empty state instead (see `emptyState`). `metricPoints` spans the whole
@@ -1415,7 +2031,7 @@ struct MetricInfoPanel: View {
         guard metric != selectedMetric else { return }
         UISelectionFeedbackGenerator().selectionChanged()
         selectedMetric = metric
-        setGroup.exercise?.primaryMetric = metric
+        exercise?.primaryMetric = metric
     }
 
     private func explanation(for metric: ExercisePrimaryMetric) -> String {
@@ -1476,7 +2092,7 @@ struct MetricInfoPanel: View {
     /// where the comparison's does (the domain would clip them anyway, but a Catmull-Rom segment
     /// into a clipped point still bends the visible line).
     private func metricPoints(for metric: ExercisePrimaryMetric) -> [TileSparklinePoint] {
-        guard let exercise = setGroup.exercise else { return [] }
+        guard let exercise else { return [] }
         let grouped = Dictionary(grouping: exercise.sets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }

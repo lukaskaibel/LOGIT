@@ -19,6 +19,10 @@ struct WorkoutSetCell: View {
     @ObservedObject var workoutSet: WorkoutSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
     let referenceSet: WorkoutSet?
+    /// When set, only the entries owned by this exercise render — the superset pager shows one
+    /// exercise's card per page. The entries keep their original positions in the set's entry
+    /// array so the keyboard-focus indices stay identical to the stacked layout.
+    let visibleExercise: Exercise?
     let onEditRestDuration: (() -> Void)?
     let onTapPreviousSet: ((Exercise) -> Void)?
 
@@ -30,12 +34,14 @@ struct WorkoutSetCell: View {
         workoutSet: WorkoutSet,
         focusedIntegerFieldIndex: Binding<IntegerField.Index?>,
         referenceSet: WorkoutSet? = nil,
+        visibleExercise: Exercise? = nil,
         onEditRestDuration: (() -> Void)? = nil,
         onTapPreviousSet: ((Exercise) -> Void)? = nil
     ) {
         self.workoutSet = workoutSet
         _focusedIntegerFieldIndex = focusedIntegerFieldIndex
         self.referenceSet = referenceSet
+        self.visibleExercise = visibleExercise
         self.onEditRestDuration = onEditRestDuration
         self.onTapPreviousSet = onTapPreviousSet
     }
@@ -121,7 +127,7 @@ struct WorkoutSetCell: View {
                 workoutRecorder.templateSet(for: workoutSet)?.entryValues ?? []
             VStack(spacing: 0) {
                 ForEach(
-                    Array(workoutSet.entries.enumerated()), id: \.element.objectID
+                    visibleIndexedEntries, id: \.element.objectID
                 ) { entryIndex, entry in
                     let entryExercise = workoutSet.owningExercise(of: entry)
                     SetEntryFieldsRow(
@@ -143,6 +149,15 @@ struct WorkoutSetCell: View {
 
     private var indexInWorkout: Int? {
         workoutSet.workout?.sets.firstIndex(of: workoutSet)
+    }
+
+    /// The set's entries with their original array positions, restricted to `visibleExercise`
+    /// when one is set (superset pages). Keeping the original offsets keeps the focus indices —
+    /// (set, entry, field) — identical however the entries are laid out.
+    private var visibleIndexedEntries: [(offset: Int, element: SetEntry)] {
+        let all = Array(workoutSet.entries.enumerated())
+        guard let visibleExercise else { return all }
+        return all.filter { workoutSet.owningExercise(of: $0.element) == visibleExercise }
     }
 
     /// The like-for-like reference entry from the previous workout's matching set: compound

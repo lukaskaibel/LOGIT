@@ -86,6 +86,67 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "plank_detail_duration_tiles")
     }
 
+    /// Read-only superset pager on a finished workout: the fixture Arm Day starts with a
+    /// Biceps Curls + Triceps Extensions superset. Uses the marketing pipeline's
+    /// `workoutDetail` deep link, which pushes the detail directly — tapping the History
+    /// cell flakily landed on the floating start-workout button instead.
+    func testWorkoutDetailSuperset() {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments += [
+            "-UITEST_FIXTURES",
+            "-UITEST_DEEPLINK", "workoutDetail",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launch()
+
+        // The superset is Arm Day's first group — visible without scrolling.
+        let curlsHeader = app.staticTexts["Biceps Curls"].firstMatch
+        XCTAssertTrue(
+            curlsHeader.waitForExistence(timeout: 20),
+            "Superset group not reachable in workout detail"
+        )
+        waitABit(2)
+        attach(app, "workout_detail_superset")
+    }
+
+    /// The containerless superset pager at the end of the stress current workout: page 1
+    /// (Incline Bench Press) with its bulge socket and the thread's fork/merge rails, then a
+    /// horizontal swipe to the partner page (Barbell Rows) with its own metric badge.
+    func testRecorderSupersetPager() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET"]
+        )
+
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
+        waitABit(2)
+
+        let rowsHeader = app.staticTexts["Barbell Rows"].firstMatch
+        for _ in 0 ..< 14 where !rowsHeader.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(rowsHeader.waitForExistence(timeout: 5), "Superset group not reachable")
+        waitABit(1)
+        attach(app, "recorder_superset_page1")
+
+        // Swipe the pager itself (a horizontal drag across the card) to the partner page.
+        let base = rowsHeader.coordinate(withNormalizedOffset: .zero)
+        base.withOffset(CGVector(dx: 240, dy: 90)).press(
+            forDuration: 0.05,
+            thenDragTo: base.withOffset(CGVector(dx: -80, dy: 90)),
+            withVelocity: 800,
+            thenHoldForDuration: 0.3
+        )
+        waitABit(1)
+        XCTAssertTrue(
+            app.staticTexts["Biceps Curls"].firstMatch.waitForExistence(timeout: 5),
+            "Partner page not shown after horizontal swipe"
+        )
+        attach(app, "recorder_superset_page2")
+    }
+
     // MARK: - Workout recorder (Transmission presentation)
     //
     // Note on element queries: while the persistent exercise tray sheet is

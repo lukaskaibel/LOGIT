@@ -62,6 +62,8 @@ struct WorkoutRecorderScreen: View {
     /// screen it should jump to; nil for the regular name/previous-set entry points.
     @State private var exerciseDetailAutoMetric: ExercisePrimaryMetric?
     @State private var metricInfoSetGroup: WorkoutSetGroup?
+    /// The tapped badge's subject exercise — each superset page has its own badge.
+    @State private var metricInfoExercise: Exercise?
     @State private var metricInfoSourceRect: CGRect?
     @State private var scrollToRecentAttempts = false
     /// Plain `@State` holding a reference type on purpose: the screen must keep the instance
@@ -112,8 +114,9 @@ struct WorkoutRecorderScreen: View {
                                     // popover presented from it would dismiss that sheet. The popover
                                     // is instead presented from the sheet's own view controller
                                     // (below), anchored back to the badge, so the sheet survives.
-                                    onTapMetricBadge: { setGroup, frame in
+                                    onTapMetricBadge: { setGroup, exercise, frame in
                                         metricInfoSetGroup = setGroup
+                                        metricInfoExercise = exercise
                                         metricInfoSourceRect = frame
                                     }
                                 )
@@ -247,17 +250,20 @@ struct WorkoutRecorderScreen: View {
                                     .background(
                                         MetricInfoPopoverPresenter(
                                             setGroup: metricInfoSetGroup,
+                                            exercise: metricInfoExercise,
                                             anchorRect: metricInfoSourceRect,
                                             purchaseManager: purchaseManager,
                                             networkMonitor: networkMonitor,
                                             onDismiss: {
                                                 metricInfoSetGroup = nil
+                                                metricInfoExercise = nil
                                                 metricInfoSourceRect = nil
                                             },
                                             onOpenDetail: { exercise, metric in
                                                 // Close the popover first; presenting the detail
                                                 // sheet mid-dismissal would cancel one of the two.
                                                 metricInfoSetGroup = nil
+                                                metricInfoExercise = nil
                                                 metricInfoSourceRect = nil
                                                 scrollToRecentAttempts = false
                                                 exerciseDetailAutoMetric = metric
@@ -936,6 +942,9 @@ struct WorkoutRecorderView_Previews: PreviewProvider {
 /// positions next to the rect in window space.
 private struct MetricInfoPopoverPresenter: UIViewRepresentable {
     let setGroup: WorkoutSetGroup?
+    /// The tapped badge's subject exercise (a superset page's own); nil falls back to the
+    /// group's primary exercise inside the panel.
+    let exercise: Exercise?
     let anchorRect: CGRect?
     /// Injected into the panel's hosting controller — environment objects don't cross the UIKit
     /// bridge, and the panel's Pro gate (and the upgrade screen it presents) needs them.
@@ -960,6 +969,7 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
         if let setGroup, let anchorRect {
             context.coordinator.presentIfNeeded(
                 for: setGroup,
+                exercise: exercise,
                 anchoredAt: anchorRect,
                 embeddedIn: uiView,
                 purchaseManager: purchaseManager,
@@ -979,6 +989,7 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
 
         func presentIfNeeded(
             for setGroup: WorkoutSetGroup,
+            exercise: Exercise?,
             anchoredAt globalRect: CGRect,
             embeddedIn embeddedView: UIView,
             purchaseManager: PurchaseManager,
@@ -999,8 +1010,8 @@ private struct MetricInfoPopoverPresenter: UIViewRepresentable {
                 while let presented = presenter.presentedViewController { presenter = presented }
 
                 let host = UIHostingController(
-                    rootView: MetricInfoPanel(setGroup: setGroup, onOpenDetail: { [weak self] metric in
-                        guard let exercise = setGroup.exercise else { return }
+                    rootView: MetricInfoPanel(setGroup: setGroup, exercise: exercise, onOpenDetail: { [weak self] metric in
+                        guard let exercise = exercise ?? setGroup.exercise else { return }
                         self?.onOpenDetail(exercise, metric)
                     })
                     .padding()

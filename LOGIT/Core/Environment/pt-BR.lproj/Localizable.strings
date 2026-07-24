@@ -69,6 +69,7 @@
 "creatingTemplateFailed" = "Falha na criação do modelo";
 "creatingTemplateFailedText" = "Certifique-se de que a imagem selecionada contenha um treino.";
 "currentBest" = "Melhor atual";
+"groupIndexOfTotal" = "%1$d de %2$d";
 "previousBest" = "Melhor anterior";
 "lastBest" = "Última melhor";
 "lastBestInfo" = "Exibido quando você não treina este exercício há mais de 4 semanas: seu melhor resultado da sessão mais recente.";

@@ -12,6 +12,7 @@ struct SettingsScreen: View {
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var database: Database
     @EnvironmentObject private var healthKitSyncManager: HealthKitSyncManager
+    @EnvironmentObject private var bodyWeightSyncManager: BodyWeightSyncManager
 
     // MARK: - UserDefaults
 
@@ -21,6 +22,7 @@ struct SettingsScreen: View {
     @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
     @AppStorage(CalorieEstimator.enabledKey) var calorieEstimatesEnabled: Bool = true
     @AppStorage(HealthKitSyncManager.syncEnabledKey) var appleHealthSyncEnabled: Bool = false
+    @AppStorage(BodyWeightSyncManager.syncEnabledKey) var bodyWeightSyncEnabled: Bool = false
 
     // MARK: - State
 
@@ -170,8 +172,85 @@ struct SettingsScreen: View {
                 if appleHealthSyncEnabled {
                     exportPastWorkoutsTile
                 }
+                bodyWeightSyncTile
             }
         }
+    }
+
+    /// Body weight is the one two-way sync: it needs read access as well, so it gets its own
+    /// opt-in rather than riding along with the write-only workout sync.
+    private var bodyWeightSyncTile: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Toggle(NSLocalizedString("syncBodyWeight", comment: ""), isOn: bodyWeightSyncBinding)
+            Text(NSLocalizedString("syncBodyWeightDescription", comment: ""))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if bodyWeightSyncEnabled {
+                if !bodyWeightSyncManager.isAuthorizedToWrite {
+                    Text(NSLocalizedString("appleHealthAccessMissing", comment: ""))
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+                Divider()
+                Button {
+                    Task { await bodyWeightSyncManager.syncAll() }
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 24)
+                        Text(NSLocalizedString("syncNow", comment: ""))
+                            .foregroundStyle(Color.label)
+                        Spacer()
+                        switch bodyWeightSyncManager.syncState {
+                        case .idle:
+                            EmptyView()
+                        case .running:
+                            ProgressView()
+                        case .finished:
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                        }
+                    }
+                }
+                .disabled(bodyWeightSyncManager.syncState == .running)
+                if case let .finished(imported, exported) = bodyWeightSyncManager.syncState {
+                    Text(
+                        String(
+                            format: NSLocalizedString("bodyWeightSyncResult", comment: ""),
+                            imported, exported
+                        )
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(CELL_PADDING)
+        .tileStyle()
+    }
+
+    /// Enabling asks for read **and** write access to body weight, then reconciles both sides
+    /// once so the user immediately sees the merged history.
+    private var bodyWeightSyncBinding: Binding<Bool> {
+        Binding(
+            get: { bodyWeightSyncEnabled },
+            set: { newValue in
+                guard newValue else {
+                    bodyWeightSyncEnabled = false
+                    return
+                }
+                Task {
+                    if await bodyWeightSyncManager.requestAuthorization() {
+                        bodyWeightSyncEnabled = true
+                        await bodyWeightSyncManager.syncAll()
+                    } else {
+                        bodyWeightSyncEnabled = false
+                        isShowingHealthAccessDeniedAlert = true
+                    }
+                }
+            }
+        )
     }
 
     /// The sync opt-in only sticks once Health write access is actually granted; flipping it on
@@ -395,6 +474,6 @@ struct ProfileView_Previews: PreviewProvider {
         }
         .environmentObject(PurchaseManager())
         .environmentObject(HealthKitSyncManager())
-        .environmentObject(Database(isPreview: true))
+        .previewEnvironmentObjects()
     }
 }

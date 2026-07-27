@@ -1107,3 +1107,10 @@
 "sessionIntensity" = "セッション強度";
 "workingShareLabel" = "運動";
 "workingTime" = "運動時間";
+
+// MARK: - Body Weight Sync
+
+"syncBodyWeight" = "体重を同期";
+"syncBodyWeightDescription" = "体重は双方向で同期されます。LOGITで記録した体重はヘルスケアに保存され、他で記録した体重はLOGITに表示されます。";
+"syncNow" = "今すぐ同期";
+"bodyWeightSyncResult" = "%d件を読み込み、%d件を書き出しました。";

@@ -1236,3 +1236,92 @@ final class CalorieEstimatorTests: XCTestCase {
         XCTAssertEqual(CalorieEstimator.bodyWeight(nearestTo: .now, in: context)?.kilograms, 76)
     }
 }
+
+// MARK: - BodyWeightSyncTests
+
+final class BodyWeightSyncTests: XCTestCase {
+
+    private typealias Existing = BodyWeightSyncManager.ExistingEntry
+
+    private func date(_ daysAgo: Int, hour: Int = 8) -> Date {
+        let day = Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now)!
+        return Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: day)!
+    }
+
+    func testImportsNewSample() {
+        XCTAssertTrue(
+            BodyWeightSyncManager.shouldImport(
+                uuid: "A", grams: 76_000, date: date(1), existing: []
+            )
+        )
+    }
+
+    func testSkipsAlreadyImportedSample() {
+        // The same Health sample arriving twice (a re-run, or an entry that reached this
+        // device through CloudKit before the anchored query saw it).
+        let existing = [Existing(grams: 76_000, date: date(1), healthKitUUID: "A")]
+        XCTAssertFalse(
+            BodyWeightSyncManager.shouldImport(
+                uuid: "A", grams: 76_000, date: date(1), existing: existing
+            )
+        )
+    }
+
+    func testSkipsSameDaySameWeightFromAnotherSource() {
+        // Logged in LOGIT, then the same value comes back around through Health's own
+        // iCloud sync as a foreign-sourced sample: it is the same measurement.
+        let existing = [Existing(grams: 76_000, date: date(1, hour: 7), healthKitUUID: nil)]
+        XCTAssertFalse(
+            BodyWeightSyncManager.shouldImport(
+                uuid: "B", grams: 76_020, date: date(1, hour: 21), existing: existing
+            ),
+            "Same day, within tolerance — must not double-log"
+        )
+    }
+
+    func testImportsDifferentWeightOnSameDay() {
+        // Morning and evening weigh-ins are genuinely two measurements.
+        let existing = [Existing(grams: 76_000, date: date(1, hour: 7), healthKitUUID: nil)]
+        XCTAssertTrue(
+            BodyWeightSyncManager.shouldImport(
+                uuid: "B", grams: 77_400, date: date(1, hour: 21), existing: existing
+            )
+        )
+    }
+
+    func testImportsSameWeightOnDifferentDay() {
+        let existing = [Existing(grams: 76_000, date: date(2), healthKitUUID: nil)]
+        XCTAssertTrue(
+            BodyWeightSyncManager.shouldImport(
+                uuid: "B", grams: 76_000, date: date(1), existing: existing
+            )
+        )
+    }
+
+    func testIgnoresEmptySamples() {
+        XCTAssertFalse(
+            BodyWeightSyncManager.shouldImport(uuid: "A", grams: 0, date: date(1), existing: [])
+        )
+    }
+
+    func testImportedEntriesAreNeverExported() {
+        // The echo-loop guard: an entry that came from Health carries its origin UUID and
+        // must not be written back as a new sample.
+        let database = Database(isPreview: false, inMemory: true)
+        let imported = MeasurementEntry(context: database.context)
+        imported.id = UUID()
+        imported.type = .bodyweight
+        imported.value_ = 76_000
+        imported.date = .now
+        imported.healthKitUUID = UUID().uuidString
+
+        let native = MeasurementEntry(context: database.context)
+        native.id = UUID()
+        native.type = .bodyweight
+        native.value_ = 75_000
+        native.date = .now
+
+        let exportable = [imported, native].filter { $0.healthKitUUID == nil }
+        XCTAssertEqual(exportable, [native])
+    }
+}

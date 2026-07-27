@@ -18,6 +18,8 @@ struct LOGIT: App {
 
     @AppStorage("setupDone") var setupDone: Bool = false
 
+    @Environment(\.scenePhase) private var scenePhase
+
     // MARK: - State
 
     @StateObject private var database: Database
@@ -35,6 +37,7 @@ struct LOGIT: App {
     @StateObject private var defaultTemplateService: DefaultTemplateService
     @StateObject private var exerciseSuggestionService: ExerciseSuggestionService
     @StateObject private var healthKitSyncManager: HealthKitSyncManager
+    @StateObject private var bodyWeightSyncManager: BodyWeightSyncManager
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingWelcome = false
@@ -81,7 +84,11 @@ struct LOGIT: App {
             database = Database()
         }
 
-        let measurementController = MeasurementEntryController(database: database)
+        let bodyWeightSyncManager = BodyWeightSyncManager(database: database)
+        _bodyWeightSyncManager = StateObject(wrappedValue: bodyWeightSyncManager)
+        let measurementController = MeasurementEntryController(
+            database: database, bodyWeightSync: bodyWeightSyncManager
+        )
         TestScenario.active?.seedMeasurements(using: measurementController)
 
         let defaultExerciseService = DefaultExerciseService(database: database)
@@ -182,15 +189,26 @@ struct LOGIT: App {
                 .environmentObject(chronograph)
                 .environmentObject(exerciseSuggestionService)
                 .environmentObject(healthKitSyncManager)
+                .environmentObject(bodyWeightSyncManager)
                 .environment(\.goHome) { selectedTab = .home }
                 .environment(\.presentWorkoutRecorder, showWorkoutRecorder)
                 .sheet(isPresented: $isShowingWelcome) {
                     FirstStartScreen()
                         .interactiveDismissDisabled()
                 }
+                .onChange(of: scenePhase) { _, phase in
+                    // Weight logged elsewhere (Health app, a smart scale) arrives when the
+                    // user comes back to LOGIT. The anchored query only fetches what changed,
+                    // so this stays cheap on every foreground.
+                    guard phase == .active, shouldImportBodyWeight else { return }
+                    Task { await bodyWeightSyncManager.importFromHealth() }
+                }
                 .task {
                     if !setupDone {
                         isShowingWelcome = true
+                    }
+                    if shouldImportBodyWeight {
+                        await bodyWeightSyncManager.importFromHealth()
                     }
                     // Scenario launches already imported default content in init.
                     if TestScenario.active == nil {
@@ -287,6 +305,7 @@ struct LOGIT: App {
                     .environmentObject(chronograph)
                     .environmentObject(exerciseSuggestionService)
                     .environmentObject(healthKitSyncManager)
+                    .environmentObject(bodyWeightSyncManager)
                     .interactiveDismissDisabled()
                     .onDisappear {
                         // Clean up if dismissed without saving
@@ -343,6 +362,17 @@ struct LOGIT: App {
     }
 
     // MARK: - Methods / Computed Properties
+
+    /// Scenario launches use a throwaway store and must stay deterministic, so the Health
+    /// import is off for them — except when a UI test explicitly asks to exercise it.
+    private var shouldImportBodyWeight: Bool {
+        if TestScenario.active == nil { return true }
+        #if DEBUG
+        return ProcessInfo.processInfo.arguments.contains("-UITEST_BODYWEIGHT_SYNC")
+        #else
+        return false
+        #endif
+    }
 
     func testLanguage() {
         UserDefaults.standard.set(["eng"], forKey: "AppleLanguages")
@@ -481,6 +511,7 @@ struct LOGIT: App {
             .environmentObject(chronograph)
             .environmentObject(exerciseSuggestionService)
             .environmentObject(healthKitSyncManager)
+            .environmentObject(bodyWeightSyncManager)
             .environment(\.managedObjectContext, database.context)
             .environment(\.goHome) { selectedTab = .home }
             .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }

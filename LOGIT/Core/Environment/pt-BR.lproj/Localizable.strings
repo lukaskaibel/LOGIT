@@ -1107,3 +1107,10 @@
 "sessionIntensity" = "Intensidade da sessão";
 "workingShareLabel" = "trabalho";
 "workingTime" = "Tempo de trabalho";
+
+// MARK: - Body Weight Sync
+
+"syncBodyWeight" = "Sincronizar peso corporal";
+"syncBodyWeightDescription" = "O peso corporal é sincronizado nos dois sentidos: o peso registrado no LOGIT é salvo no Apple Saúde, e o registrado em outro lugar aparece no LOGIT.";
+"syncNow" = "Sincronizar agora";
+"bodyWeightSyncResult" = "%d importados, %d exportados.";

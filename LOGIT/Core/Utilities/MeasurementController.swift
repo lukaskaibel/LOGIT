@@ -13,11 +13,15 @@ class MeasurementEntryController: ObservableObject {
     // MARK: - Constants
 
     private let database: Database
+    /// Mirrors body-weight entries to Apple Health (see `BodyWeightSyncManager`). Optional so
+    /// previews and tests can construct a controller without a Health store.
+    private let bodyWeightSync: BodyWeightSyncManager?
 
     // MARK: - Init
 
-    init(database: Database) {
+    init(database: Database, bodyWeightSync: BodyWeightSyncManager? = nil) {
         self.database = database
+        self.bodyWeightSync = bodyWeightSync
         if database.isPreview {
             setupPreviewMeasurementEntries()
         }
@@ -40,6 +44,7 @@ class MeasurementEntryController: ObservableObject {
         measurement.value = value
         measurement.date = date
         save()
+        bodyWeightSync?.syncEntry(measurement)
         objectWillChange.send()
     }
 
@@ -50,11 +55,20 @@ class MeasurementEntryController: ObservableObject {
         measurement.decimalValue = decimalValue
         measurement.date = date
         save()
+        bodyWeightSync?.syncEntry(measurement)
         objectWillChange.send()
     }
 
     func deleteMeasurementEntry(_ measurement: MeasurementEntry) {
+        // Read the identifiers before the delete: afterwards the object is a fault with
+        // nothing left to tell Health which sample to remove.
+        let isBodyWeight = measurement.type == .bodyweight
+        let id = measurement.id
+        let healthKitUUID = measurement.healthKitUUID
         database.delete(measurement, saveContext: true)
+        if isBodyWeight {
+            bodyWeightSync?.removeEntry(id: id, healthKitUUID: healthKitUUID)
+        }
         objectWillChange.send()
     }
 

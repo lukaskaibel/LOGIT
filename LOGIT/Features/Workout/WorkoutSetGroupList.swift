@@ -28,10 +28,6 @@ struct WorkoutSetGroupList: View, Equatable {
     /// tapped badge's subject — each superset page carries its own badge.
     var onTapMetricBadge: ((WorkoutSetGroup, Exercise?, CGRect) -> Void)? = nil
 
-    /// Trunk length between consecutive set groups — deliberately tighter than
-    /// `SECTION_SPACING`; the bulge's protrusion adds its own visual air on top.
-    static let groupConnectorHeight: CGFloat = 12
-
     // MARK: - State
 
     @State var isReordering = false
@@ -60,16 +56,11 @@ struct WorkoutSetGroupList: View, Equatable {
                     )
                     setGroupConnector(for: entry.setGroup)
                 }
-                // One compositing group per row so the drop shadow applies to the row's
-                // union silhouette. Shadowing the raw subtree shadows every primitive
-                // individually, and the cards' black shadows blacked out the thread
-                // wherever a line met a card, a bulge or a superset rail — reading as
-                // gaps in the line.
-                .compositingGroup()
-                .shadow(color: .black.opacity(reduceShadow ? 0.5 : 1.0), radius: 5)
-                // Earlier rows render above later ones so the connector's tip enters the
-                // next cell's bulge OVER that row's shadow instead of being eaten by it.
-                .zIndex(Double(indexedGroups.count - entry.index))
+                .setGroupRowStyle(
+                    index: entry.index,
+                    count: indexedGroups.count,
+                    reduceShadow: reduceShadow
+                )
                 .transition(.scale)
                 .id(entry.setGroup)
             }
@@ -97,25 +88,11 @@ struct WorkoutSetGroupList: View, Equatable {
                 restCapsule(for: lastSet)
             }
         } else {
-            // The trunk overshoots 2pt into the cell above (behind the superset rail or card
-            // edge) and into the bulge below, sealing the joins against antialiasing hairlines.
-            // Layout height stays untouched — only the drawing overflows. Opaque thread color:
-            // the overshoots cross other thread strokes, and translucent ones would compound
-            // into brighter patches there.
             if hasRest, let lastSet {
                 restCapsule(for: lastSet)
-                    .padding(.vertical, Self.groupConnectorHeight / 2)
-                    .background(
-                        Rectangle()
-                            .foregroundStyle(Color.threadLine)
-                            .frame(width: 3)
-                            .padding(.vertical, -2)
-                    )
+                    .onSetGroupTrunk()
             } else {
-                Rectangle()
-                    .foregroundStyle(Color.threadLine)
-                    .frame(width: 3, height: Self.groupConnectorHeight + 4)
-                    .frame(height: Self.groupConnectorHeight)
+                SetGroupTrunk()
             }
         }
     }

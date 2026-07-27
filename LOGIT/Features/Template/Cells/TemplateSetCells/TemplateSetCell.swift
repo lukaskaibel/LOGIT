@@ -17,6 +17,10 @@ struct TemplateSetCell: View {
 
     @ObservedObject var templateSet: TemplateSet
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    /// When set, only the entries owned by this exercise render — the superset pager shows one
+    /// exercise's card per page. The entries keep their original positions in the set's entry
+    /// array so the keyboard-focus indices stay identical to the stacked layout.
+    var visibleExercise: Exercise? = nil
     let onEditRestDuration: (() -> Void)?
 
     // MARK: - Body
@@ -88,7 +92,7 @@ struct TemplateSetCell: View {
         if let setID = templateSet.id {
             VStack(spacing: 0) {
                 ForEach(
-                    Array(templateSet.entries.enumerated()), id: \.element.objectID
+                    visibleIndexedEntries, id: \.element.objectID
                 ) { entryIndex, entry in
                     let entryExercise = templateSet.owningExercise(of: entry)
                     SetEntryFieldsRow(
@@ -213,6 +217,15 @@ struct TemplateSetCell: View {
     }
 
     // MARK: - Supporting Methods
+
+    /// The set's entries with their original array positions, restricted to `visibleExercise`
+    /// when one is set (superset pages). Keeping the original offsets keeps the focus indices —
+    /// (set id, entry, field) — identical however the entries are laid out.
+    private var visibleIndexedEntries: [(offset: Int, element: TemplateSetEntry)] {
+        let all = Array(templateSet.entries.enumerated())
+        guard let visibleExercise else { return all }
+        return all.filter { templateSet.owningExercise(of: $0.element) == visibleExercise }
+    }
 
     private var indexInSetGroup: Int? {
         templateSet.setGroup?.sets.firstIndex(of: templateSet)

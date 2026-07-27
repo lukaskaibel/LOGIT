@@ -1022,13 +1022,30 @@
 
 
 /* Progress tab — overall progress trend */
-"overallProgress" = "전체 진행 상황";
+"strengthProgress" = "근력 진행 상황";
 "trendingUp" = "상승세";
 "trendingSteady" = "유지";
 "trendingDown" = "하락세";
 "byMuscleGroup" = "근육군별";
-"overallProgressBasis" = "추정 1RM · 최근 8주 vs 이전 8주";
-"overallProgressEmpty" = "운동을 계속 기록하면 전체 추세를 볼 수 있습니다.";
+"strengthProgressBasis" = "추정 1RM · 최근 8주 vs 이전 8주";
+"strengthProgressEmpty" = "운동을 계속 기록하면 근력 추세를 볼 수 있습니다.";
+
+// Progress highlights (carousel cards)
+"firstTimePast" = "처음으로 %@ 돌파";
+"trendMoreVolume" = "볼륨 증가";
+"trendMoreSets" = "세트 증가";
+"trendMoreWorkouts" = "운동 횟수 증가";
+"trendMuscleSets" = "%@ 세트 증가";
+"trendExerciseVolume" = "%@ 볼륨 상승";
+"allWorkouts" = "모든 운동";
+"trendWindowCaption" = "최근 4주 vs 이전 4주";
+"last4Weeks" = "최근 4주";
+"fourWeeksBefore" = "이전 4주";
+"yearSoFar" = "%@년 현재까지";
+"yearCrossingHeadline" = "%@년이 벌써 %@년을 넘어섰어요";
+"monthsToSpare" = "%d개월 남기고";
+"monthToSpare" = "1개월 남기고";
+"highlightsInfo" = "마일스톤과 기록은 최근 4주를 다룹니다. 추세는 최근 4주와 이전 4주를 비교합니다.";
 "streak" = "연속 기록";
 
 // Timeframe unification: shared chart ranges + per-period muscle history

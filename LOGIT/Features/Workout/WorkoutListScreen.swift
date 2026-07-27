@@ -322,19 +322,6 @@ private struct WorkoutHistorySectionHeader: View {
 
         return parts.joined(separator: " · ")
     }
-
-    /// Compact volume for the recap line: "22k" past a thousand (one decimal below ten thousand),
-    /// the plain number under it. Keeps the header short where the full grouped figure would crowd
-    /// the line — the exact totals live on the volume screens.
-    private func abbreviatedVolume(_ value: Int) -> String {
-        guard value >= 1000 else { return "\(value)" }
-        let thousands = Double(value) / 1000
-        if thousands >= 10 {
-            return "\(Int(thousands.rounded()))k"
-        }
-        let formatted = String(format: "%.1f", thousands)
-        return (formatted.hasSuffix(".0") ? String(formatted.dropLast(2)) : formatted) + "k"
-    }
 }
 
 // MARK: - Calendar header

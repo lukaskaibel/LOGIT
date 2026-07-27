@@ -1493,7 +1493,7 @@ private struct MetricBadgeView: View {
         case .repetitions:
             return UnitView(value: "\(value)", unit: NSLocalizedString("reps", comment: ""), configuration: .extraSmall)
         case .duration:
-            return UnitView(value: "\(value)", unit: NSLocalizedString("sec", comment: ""), configuration: .extraSmall)
+            return UnitView(value: formatDurationForDisplay(value), unit: "", configuration: .extraSmall)
         case .distance:
             return UnitView(
                 value: formatDistanceForDisplay(Int64(value), style: distanceStyle),
@@ -1565,7 +1565,9 @@ private struct MetricBadgeView: View {
         case .repetitions:
             return "\(value) \(NSLocalizedString("reps", comment: ""))"
         case .duration:
-            return "\(value) \(NSLocalizedString("sec", comment: ""))"
+            // Spoken in words ("1 minute, 30 seconds") — the digital reading would be read out as
+            // a pair of bare numbers.
+            return accessibleDurationForDisplay(value)
         case .distance:
             return "\(formatDistanceForDisplay(Int64(value), style: distanceStyle)) \(distanceUnitTitle(for: distanceStyle))"
         }
@@ -1913,7 +1915,8 @@ struct MetricInfoPanel: View {
         switch metric {
         case .estimatedOneRepMax: return formatEstimatedOneRepMax(value)
         case .weight: return formatWeightForDisplay(value)
-        case .repetitions, .duration: return String(value)
+        case .repetitions: return String(value)
+        case .duration: return formatDurationForDisplay(value)
         case .distance: return formatDistanceForDisplay(Int64(value), style: distanceStyle)
         }
     }
@@ -1922,7 +1925,7 @@ struct MetricInfoPanel: View {
         switch metric {
         case .estimatedOneRepMax, .weight: return WeightUnit.used.rawValue
         case .repetitions: return NSLocalizedString("reps", comment: "")
-        case .duration: return NSLocalizedString("sec", comment: "")
+        case .duration: return ""
         case .distance: return distanceUnitTitle(for: distanceStyle)
         }
     }

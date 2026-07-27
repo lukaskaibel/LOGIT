@@ -1022,13 +1022,30 @@
 
 
 /* Progress tab — overall progress trend */
-"overallProgress" = "Progresso generale";
+"strengthProgress" = "Progresso di forza";
 "trendingUp" = "In crescita";
 "trendingSteady" = "Stabile";
 "trendingDown" = "In calo";
 "byMuscleGroup" = "Per gruppo muscolare";
-"overallProgressBasis" = "1RM stimato · ultime 8 settimane vs le 8 precedenti";
-"overallProgressEmpty" = "Continua a registrare allenamenti per vedere il tuo andamento generale.";
+"strengthProgressBasis" = "1RM stimato · ultime 8 settimane vs le 8 precedenti";
+"strengthProgressEmpty" = "Continua a registrare allenamenti per vedere il tuo andamento di forza.";
+
+// Progress highlights (carousel cards)
+"firstTimePast" = "Prima volta oltre %@";
+"trendMoreVolume" = "Più volume";
+"trendMoreSets" = "Più serie";
+"trendMoreWorkouts" = "Più allenamenti";
+"trendMuscleSets" = "Più serie per %@";
+"trendExerciseVolume" = "Volume di %@ in crescita";
+"allWorkouts" = "Tutti gli allenamenti";
+"trendWindowCaption" = "Ultime 4 settimane vs le 4 precedenti";
+"last4Weeks" = "Ultime 4 settimane";
+"fourWeeksBefore" = "4 settimane prima";
+"yearSoFar" = "%@ finora";
+"yearCrossingHeadline" = "%@ ha già superato %@";
+"monthsToSpare" = "con %d mesi di anticipo";
+"monthToSpare" = "con 1 mese di anticipo";
+"highlightsInfo" = "Traguardi e record coprono le ultime 4 settimane. Le tendenze confrontano le ultime 4 settimane con le 4 precedenti.";
 "streak" = "Serie";
 
 // Timeframe unification: shared chart ranges + per-period muscle history

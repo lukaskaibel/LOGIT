@@ -368,3 +368,123 @@ final class VolumeCalculatingTests: XCTestCase {
         XCTAssertEqual(volume, 1000 * 1000000, "Should handle large volume calculations")
     }
 }
+
+// MARK: - Milestone ladder
+
+/// The milestone detection behind the Highlights carousel: an all-time best crossing a fixed ladder
+/// step. Pure functions — no Core Data — so these run against the ladder itself. Weight ladders
+/// follow the display unit, so tests pin `weightUnit` explicitly and restore it.
+final class MilestoneLadderTests: XCTestCase {
+    private var originalWeightUnit: String?
+
+    override func setUp() {
+        super.setUp()
+        originalWeightUnit = UserDefaults.standard.string(forKey: "weightUnit")
+        UserDefaults.standard.set(WeightUnit.kg.rawValue, forKey: "weightUnit")
+    }
+
+    override func tearDown() {
+        if let originalWeightUnit {
+            UserDefaults.standard.set(originalWeightUnit, forKey: "weightUnit")
+        } else {
+            UserDefaults.standard.removeObject(forKey: "weightUnit")
+        }
+        super.tearDown()
+    }
+
+    func testWeightCrossingReturnsHighestStep() {
+        // 95 kg → 122.5 kg crosses 100 AND 120 — the highest crossed step wins.
+        let step = MilestoneLadder.highestStep(crossedFrom: 95_000, to: 122_500, metric: .weight)
+        XCTAssertEqual(step, 120_000)
+    }
+
+    func testNoCrossingBetweenSteps() {
+        // 92.5 kg → 97.5 kg improves without reaching the next step (100 kg).
+        XCTAssertNil(MilestoneLadder.highestStep(crossedFrom: 92_500, to: 97_500, metric: .weight))
+    }
+
+    func testExactStepCounts() {
+        // Landing exactly ON a step counts (previousBest < step ≤ value).
+        XCTAssertEqual(
+            MilestoneLadder.highestStep(crossedFrom: 97_500, to: 100_000, metric: .weight),
+            100_000
+        )
+    }
+
+    func testPreviousBestAtStepCannotRefire() {
+        // The all-time best already sits on the step — the same step can't fire again.
+        XCTAssertNil(MilestoneLadder.highestStep(crossedFrom: 100_000, to: 105_000, metric: .weight))
+    }
+
+    func testLbsLadderUsesPlateMath() {
+        UserDefaults.standard.set(WeightUnit.lbs.rawValue, forKey: "weightUnit")
+        // 220 lb → 230 lb crosses the 225 lb plate step (in grams).
+        let expected = Int(convertWeightForStoring(225.0))
+        let from = Int(convertWeightForStoring(220.0))
+        let to = Int(convertWeightForStoring(230.0))
+        XCTAssertEqual(MilestoneLadder.highestStep(crossedFrom: from, to: to, metric: .weight), expected)
+    }
+
+    func testRepetitionsLadder() {
+        XCTAssertEqual(MilestoneLadder.highestStep(crossedFrom: 8, to: 12, metric: .repetitions), 10)
+        XCTAssertNil(MilestoneLadder.highestStep(crossedFrom: 10, to: 12, metric: .repetitions))
+    }
+
+    func testDistanceLadderIncludesHalfMarathon() {
+        XCTAssertEqual(
+            MilestoneLadder.highestStep(crossedFrom: 15_000, to: 21_100, metric: .distance),
+            21_098
+        )
+    }
+}
+
+// MARK: - Duration formatting
+
+/// Recorded durations are stored as whole seconds but displayed as a digital reading, so a held
+/// plank and a treadmill run read the way a clock does rather than as a bare seconds count.
+final class DurationFormattingTests: XCTestCase {
+    func testSubMinuteKeepsLeadingZeroMinute() {
+        XCTAssertEqual(formatDurationForDisplay(45), "0:45")
+        XCTAssertEqual(formatDurationForDisplay(5), "0:05")
+    }
+
+    func testWholeMinute() {
+        XCTAssertEqual(formatDurationForDisplay(60), "1:00")
+        XCTAssertEqual(formatDurationForDisplay(90), "1:30")
+    }
+
+    func testManyMinutesPadsSecondsNotMinutes() {
+        // The reported case: a 1280-second run read as "1280 SEC".
+        XCTAssertEqual(formatDurationForDisplay(1280), "21:20")
+        XCTAssertEqual(formatDurationForDisplay(1320), "22:00")
+    }
+
+    func testHoursSplitOffAndPadMinutes() {
+        XCTAssertEqual(formatDurationForDisplay(3600), "1:00:00")
+        XCTAssertEqual(formatDurationForDisplay(3700), "1:01:40")
+        XCTAssertEqual(formatDurationForDisplay(7325), "2:02:05")
+    }
+
+    func testZeroAndNegativeAreSafe() {
+        XCTAssertEqual(formatDurationForDisplay(0), "0:00")
+        // Values can't be negative in the store, but the formatter must not produce "-1:-1".
+        XCTAssertEqual(formatDurationForDisplay(-30), "0:00")
+    }
+
+    /// The rest-duration picker delegates to the shared formatter — its output must not drift.
+    func testRestTimeStringMatchesSharedFormatter() {
+        for seconds in [30, 60, 90, 120, 180] {
+            XCTAssertEqual(restTimeString(seconds: seconds), formatDurationForDisplay(seconds))
+        }
+    }
+
+    /// VoiceOver gets words, not a pair of bare numbers.
+    func testAccessibleDurationSpellsUnitsAndHidesZeroes() {
+        let ninety = accessibleDurationForDisplay(90)
+        XCTAssertTrue(ninety.contains("1"), "Expected a minute component in \(ninety)")
+        XCTAssertTrue(ninety.contains("30"), "Expected a second component in \(ninety)")
+        // A sub-minute hold shouldn't announce "0 minutes".
+        let fortyFive = accessibleDurationForDisplay(45)
+        XCTAssertFalse(fortyFive.hasPrefix("0"), "Zero-valued units should be hidden: \(fortyFive)")
+    }
+}

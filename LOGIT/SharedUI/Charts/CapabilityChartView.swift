@@ -59,6 +59,10 @@ struct CapabilityChartView: View {
     /// Formats a raw metric (the header baseline and the anchor) into the screen's units — the same
     /// formatter the `Point.formatted` strings were built with.
     let formatValue: (Int) -> String
+    /// Formats a y-axis value, which is in **display** units — unlike `formatValue`, which takes a
+    /// raw one. Nil renders the plain number, right for kg / reps / volume. The duration screen
+    /// passes its digital reading so the axis can't disagree with the header above it.
+    var formatAxisValue: ((Int) -> String)? = nil
 
     @State private var chartRange: ChartRange = .threeMonths
     @State private var chartScrollPosition: Date = .now
@@ -203,7 +207,19 @@ struct CapabilityChartView: View {
                 chartRange.xAxisMarks(firstDataDate: firstDataDate)
             }
             .chartYAxis {
-                AxisMarks(values: [0, yScaleMax / 2, yScaleMax])
+                if let formatAxisValue {
+                    AxisMarks(values: [0, yScaleMax / 2, yScaleMax]) { value in
+                        AxisGridLine()
+                        AxisTick()
+                        AxisValueLabel {
+                            if let raw = value.as(Int.self) {
+                                Text(formatAxisValue(raw))
+                            }
+                        }
+                    }
+                } else {
+                    AxisMarks(values: [0, yScaleMax / 2, yScaleMax])
+                }
             }
             .emptyPlaceholder(points) {
                 Text(NSLocalizedString("noData", comment: ""))

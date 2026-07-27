@@ -42,6 +42,10 @@ struct MetricComparisonView: View {
     /// Style of the trailing value. Defaults to the neutral label color; pass a muscle-group
     /// `color.gradient` to tint the subject (the popover's live "you, now" side).
     var trailingValueStyle: AnyShapeStyle = AnyShapeStyle(Color.label)
+    /// Size of both values. `.large` — the full-width headers this was built for — by default; the
+    /// Highlights carousel cards pass `.normal`, where two spelled-out values plus the pill have to
+    /// share a card barely wider than a phone's half screen.
+    var valueConfiguration: UnitViewConfiguration = .large
     /// Percent of trailing over leading. Nil omits the pill — nothing to compare.
     let percentChange: Double?
     var positiveColor: Color = .accentColor
@@ -72,7 +76,7 @@ struct MetricComparisonView: View {
                 .font(.footnote)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
-            UnitView(value: side.value, unit: side.unit, configuration: .large)
+            UnitView(value: side.value, unit: side.unit, configuration: valueConfiguration)
                 // One continuous gradient across value + unit, not one restarting in each.
                 .continuousForegroundStyle(valueStyle)
             if let caption = side.caption {

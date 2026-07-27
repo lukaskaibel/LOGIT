@@ -18,10 +18,10 @@ struct ExerciseDurationTile: View {
             exercise: exercise,
             workoutSets: workoutSets,
             title: ExercisePrimaryMetric.duration.shortTitle,
-            unit: NSLocalizedString("sec", comment: ""),
+            unit: "",
             showsExerciseName: showsExerciseName,
             metricValue: { $0.maximum(.duration, for: exercise) },
-            formattedValue: { String($0) },
+            formattedValue: { formatDurationForDisplay($0) },
             chartValue: { Double($0) }
         )
     }

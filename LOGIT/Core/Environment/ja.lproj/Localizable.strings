@@ -1022,13 +1022,30 @@
 
 
 /* Progress tab — overall progress trend */
-"overallProgress" = "全体の進捗";
+"strengthProgress" = "筋力の進捗";
 "trendingUp" = "上昇傾向";
 "trendingSteady" = "横ばい";
 "trendingDown" = "下降傾向";
 "byMuscleGroup" = "筋群別";
-"overallProgressBasis" = "推定1RM · 直近8週間 vs その前の8週間";
-"overallProgressEmpty" = "ワークアウトを記録すると全体の傾向が表示されます。";
+"strengthProgressBasis" = "推定1RM · 直近8週間 vs その前の8週間";
+"strengthProgressEmpty" = "ワークアウトを記録すると筋力の傾向が表示されます。";
+
+// Progress highlights (carousel cards)
+"firstTimePast" = "初めて%@を突破";
+"trendMoreVolume" = "ボリューム増加";
+"trendMoreSets" = "セット数増加";
+"trendMoreWorkouts" = "ワークアウト増加";
+"trendMuscleSets" = "%@のセット数が増加";
+"trendExerciseVolume" = "%@のボリューム上昇";
+"allWorkouts" = "すべてのワークアウト";
+"trendWindowCaption" = "直近4週間 vs その前の4週間";
+"last4Weeks" = "直近4週間";
+"fourWeeksBefore" = "その前の4週間";
+"yearSoFar" = "%@年 これまで";
+"yearCrossingHeadline" = "%@年が%@年をすでに上回りました";
+"monthsToSpare" = "%dか月を残して";
+"monthToSpare" = "1か月を残して";
+"highlightsInfo" = "マイルストーンと記録は直近4週間が対象です。トレンドは直近4週間とその前の4週間を比較します。";
 "streak" = "連続記録";
 
 // Timeframe unification: shared chart ranges + per-period muscle history

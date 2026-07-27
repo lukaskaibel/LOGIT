@@ -43,34 +43,53 @@ struct SummaryTabPicker: View {
 
 // MARK: - Progress tab
 
-/// The `Progress` tab body: recent highlights on top, the overall strength-trend tile below. Computes
-/// both off the already-fetched `[Workout]` in a `.task` (no new Core Data fetches), the way the
-/// Summary's records tile does.
+/// The `Progress` tab body: the strength-trend tile leads as the tab's headline, the Highlights
+/// carousel below — recent bests, milestones, and trends as swipeable cards (see
+/// `ProgressHighlights`). Computes both off the already-fetched `[Workout]` in a `.task` (no new
+/// Core Data fetches), the way the Summary's records tile does.
 struct SummaryProgressTab: View {
     let workouts: [Workout]
 
     @EnvironmentObject private var database: Database
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
     @State private var overall: OverallProgress = .empty
-    @State private var highlights: [WorkoutProgressReport.ExerciseRecords] = []
+    @State private var highlights: [ProgressHighlight] = []
 
     var body: some View {
         VStack(spacing: 8) {
-            if !highlights.isEmpty {
-                ProgressHighlightsTile(records: highlights)
-            }
             OverallProgressTile(progress: overall)
+            if !highlights.isEmpty {
+                highlightsSection
+                    .padding(.top, 8)
+            }
         }
         .task(id: workouts.count) {
             overall = OverallProgress.compute(workouts: workouts)
-            highlights = SummaryRecords.records(in: recentWorkouts, database: database)
+            highlights = ProgressHighlights.compute(workouts: workouts, database: database)
         }
     }
 
-    /// Workouts of the last 4 weeks — the same rolling window "current best" uses everywhere, so the
-    /// highlights feed stays "recent" rather than all-time and matches the app's standard window.
-    private var recentWorkouts: [Workout] {
-        let cutoff = Exercise.currentBestWindowStart
-        return workouts.filter { !$0.isEmpty && ($0.date ?? .distantPast) >= cutoff }
+    /// Section header + carousel. The carousel shows the top few by priority; "Show All" appears
+    /// only once there is genuinely more than it shows.
+    private var highlightsSection: some View {
+        VStack(spacing: SECTION_HEADER_SPACING) {
+            HStack {
+                Text(NSLocalizedString("highlights", comment: ""))
+                    .sectionHeaderStyle2()
+                Spacer()
+                if highlights.count > ProgressHighlights.carouselLimit {
+                    Button {
+                        homeNavigationCoordinator.path.append(.progressHighlights)
+                    } label: {
+                        Text(NSLocalizedString("showAll", comment: ""))
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+            ProgressHighlightsCarousel(
+                items: Array(highlights.prefix(ProgressHighlights.carouselLimit))
+            )
+        }
     }
 }
 
@@ -210,7 +229,7 @@ struct OverallProgressTile: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TileHeader(NSLocalizedString("overallProgress", comment: ""), showsChevron: false)
+            TileHeader(NSLocalizedString("strengthProgress", comment: ""), showsChevron: false)
                 .padding([.top, .horizontal], CELL_PADDING)
 
             if let overall = progress.overallPercentChange {
@@ -252,7 +271,7 @@ struct OverallProgressTile: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.label)
                     .monospacedDigit()
-                Text(NSLocalizedString("overallProgressBasis", comment: ""))
+                Text(NSLocalizedString("strengthProgressBasis", comment: ""))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -299,7 +318,7 @@ struct OverallProgressTile: View {
             Image(systemName: "chart.line.uptrend.xyaxis")
                 .font(.title3)
                 .foregroundStyle(.secondary)
-            Text(NSLocalizedString("overallProgressEmpty", comment: ""))
+            Text(NSLocalizedString("strengthProgressEmpty", comment: ""))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -314,76 +333,5 @@ struct OverallProgressTile: View {
     }
 }
 
-// MARK: - Highlights tile
-
-/// The Progress tab's highlights: the most recent personal record as a prominent hero (exercise,
-/// metric, the new value and the gain over the old best), then up to a couple more recent records as
-/// the shared `PersonalBestRow`. Hidden entirely when there are no recent records — like the Summary
-/// records tile, an empty highlights tile would be worse than none.
-struct ProgressHighlightsTile: View {
-    /// Recent records (one entry per exercise, newest first) from `SummaryRecords.records`.
-    let records: [WorkoutProgressReport.ExerciseRecords]
-    var maxRows: Int = 3
-
-    var body: some View {
-        if let top = records.first {
-            VStack(alignment: .leading, spacing: 0) {
-                TileHeader(NSLocalizedString("highlights", comment: ""), showsChevron: false)
-                    .padding([.top, .horizontal], CELL_PADDING)
-                hero(top)
-                    .padding(.horizontal, CELL_PADDING)
-                    .padding(.top, 12)
-                let rest = Array(records.dropFirst().prefix(max(0, maxRows - 1)))
-                if !rest.isEmpty {
-                    VStack(spacing: 8) {
-                        ForEach(rest) { PersonalBestRow(records: $0) }
-                    }
-                    .padding(.horizontal, CELL_PADDING / 2)
-                    .padding(.top, 10)
-                }
-            }
-            .padding(.bottom, CELL_PADDING / 2)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .tileStyle()
-        }
-    }
-
-    private func hero(_ exerciseRecords: WorkoutProgressReport.ExerciseRecords) -> some View {
-        let record = exerciseRecords.lead
-        let color = exerciseRecords.exercise.muscleGroup?.color ?? .accentColor
-        let display = personalRecordDisplay(record.value, metric: record.metric, exercise: record.exercise)
-        let gain: Double? = record.previousBest > 0
-            ? (Double(record.value) - Double(record.previousBest)) / Double(record.previousBest) * 100
-            : nil
-        return HStack(spacing: 13) {
-            ZStack {
-                Circle().fill(color.opacity(0.15)).frame(width: 46, height: 46)
-                Image(systemName: "trophy.fill")
-                    .font(.title3)
-                    .foregroundStyle(color.gradient)
-            }
-            VStack(alignment: .leading, spacing: 3) {
-                Text(exerciseRecords.exercise.displayName)
-                    .font(.headline)
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                Text("\(NSLocalizedString("newRecord", comment: "")) · \(exerciseRecords.records.map(\.metric.title).joined(separator: " · "))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-            Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 4) {
-                UnitView(value: display.value, unit: display.unit)
-                    .foregroundStyle(color.gradient)
-                if let gain {
-                    TrendIndicatorView(
-                        percentChange: gain,
-                        positiveColor: color,
-                        positiveStyle: AnyShapeStyle(color.gradient)
-                    )
-                }
-            }
-        }
-    }
-}
+// The old ProgressHighlightsTile (hero record + PersonalBestRow list) is superseded by the
+// Highlights carousel in ProgressHighlightCards.swift.

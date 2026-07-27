@@ -36,7 +36,9 @@ struct ExerciseDurationScreen: View {
                 date: set.workout?.date ?? .now,
                 value: Double(raw),
                 raw: raw,
-                formatted: String(raw)
+                // The selection tooltip renders this string beside the (now empty) unit, so it
+                // has to carry the same digital reading as the header.
+                formatted: formatDurationForDisplay(raw)
             )
         }
         let pr = daily.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
@@ -53,9 +55,12 @@ struct ExerciseDurationScreen: View {
                     bestAnchor: bestAnchor,
                     yScaleMax: yScaleMax,
                     color: exerciseMuscleGroupColor,
-                    unit: NSLocalizedString("sec", comment: ""),
+                    unit: "",
                     valueLabel: NSLocalizedString("measurementType.duration", comment: ""),
-                    formatValue: { String($0) }
+                    formatValue: { formatDurationForDisplay($0) },
+                    // Durations are stored and plotted in the same unit (seconds), so the axis
+                    // takes the same reading as the header.
+                    formatAxisValue: { formatDurationForDisplay($0) }
                 )
             }
             .padding(.top)

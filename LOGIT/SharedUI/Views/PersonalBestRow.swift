@@ -60,7 +60,9 @@ func personalRecordDisplay(
     case .estimatedOneRepMax: return (formatEstimatedOneRepMax(base), WeightUnit.used.rawValue)
     case .weight: return (formatWeightForDisplay(base), WeightUnit.used.rawValue)
     case .repetitions: return (String(base), NSLocalizedString("reps", comment: ""))
-    case .duration: return (String(base), NSLocalizedString("sec", comment: ""))
+    // The digital reading carries its own separators, so it takes no unit (see
+    // `formatDurationForDisplay`).
+    case .duration: return (formatDurationForDisplay(base), "")
     case .distance:
         let style = exercise?.distanceStyle ?? .long
         return (formatDistanceForDisplay(Int64(base), style: style), distanceUnitTitle(for: style))

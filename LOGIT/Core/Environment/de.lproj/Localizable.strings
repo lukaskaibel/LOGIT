@@ -69,6 +69,7 @@
 "creatingTemplateFailed" = "Generieren Fehlgeschlagen";
 "creatingTemplateFailedText" = "Stelle sicher, dass das Bild ein Workout enthält.";
 "currentBest" = "Aktueller Bestwert";
+"groupIndexOfTotal" = "%1$d von %2$d";
 "previousBest" = "Vorheriger Bestwert";
 "lastBest" = "Letzter Bestwert";
 "lastBestInfo" = "Wird angezeigt, wenn du diese Übung seit über 4 Wochen nicht trainiert hast – dein Bestwert aus der letzten Trainingseinheit.";

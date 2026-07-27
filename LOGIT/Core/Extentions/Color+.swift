@@ -19,6 +19,12 @@ extension Color {
     static var secondaryBackground: Color { Color(UIColor.secondarySystemBackground) }
     static var tertiaryBackground: Color { Color(UIColor.tertiarySystemBackground) }
 
+    /// The workout thread (trunk between set groups, superset rails). Deliberately an OPAQUE
+    /// gray rather than the hierarchical `.secondary`: the thread's segments overlap by a
+    /// couple of points to seal their joins, and translucent strokes would compound into
+    /// brighter patches wherever they cross.
+    static var threadLine: Color { Color(UIColor.systemGray) }
+
     static var fill: Color { Color(UIColor.systemFill) }
     static var secondaryFill: Color { Color(UIColor.secondarySystemFill) }
     static var tertiaryFill: Color { Color(UIColor.tertiarySystemFill) }

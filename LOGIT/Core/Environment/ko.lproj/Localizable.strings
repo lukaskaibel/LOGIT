@@ -1109,3 +1109,10 @@
 "sessionIntensity" = "세션 강도";
 "workingShareLabel" = "운동";
 "workingTime" = "운동 시간";
+
+// MARK: - Body Weight Sync
+
+"syncBodyWeight" = "체중 동기화";
+"syncBodyWeightDescription" = "체중은 양방향으로 동기화됩니다. LOGIT에 기록한 체중은 건강 앱에 저장되고, 다른 곳에서 기록한 체중은 LOGIT에 표시됩니다.";
+"syncNow" = "지금 동기화";
+"bodyWeightSyncResult" = "%d개 가져옴, %d개 내보냄.";

@@ -403,6 +403,8 @@ struct HomeScreen: View {
             homeNavigationCoordinator.path = [.muscleGroupsOverview]
         case "measurement":
             homeNavigationCoordinator.path = [.measurementDetail(.bodyFatPercentage)]
+        case "bodyWeight":
+            homeNavigationCoordinator.path = [.measurementDetail(.bodyweight)]
         case "exerciseDetail":
             if let exercise = screenshotFixtureExercise(named: "previewBenchPress") {
                 homeNavigationCoordinator.path = [.exercise(exercise)]

@@ -20,6 +20,7 @@ struct PreviewEnvironmentObjects: ViewModifier {
     @StateObject private var chronograph: Chronograph
     @StateObject private var exerciseSuggestionService: ExerciseSuggestionService
     @StateObject private var healthKitSyncManager = HealthKitSyncManager()
+    @StateObject private var bodyWeightSyncManager: BodyWeightSyncManager
 
     init() {
         let db = Database(isPreview: true)
@@ -33,6 +34,7 @@ struct PreviewEnvironmentObjects: ViewModifier {
         _homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
         _chronograph = StateObject(wrappedValue: Chronograph())
         _exerciseSuggestionService = StateObject(wrappedValue: ExerciseSuggestionService(database: db))
+        _bodyWeightSyncManager = StateObject(wrappedValue: BodyWeightSyncManager(database: db))
     }
 
     func body(content: Content) -> some View {
@@ -50,6 +52,7 @@ struct PreviewEnvironmentObjects: ViewModifier {
             .environmentObject(chronograph)
             .environmentObject(exerciseSuggestionService)
             .environmentObject(healthKitSyncManager)
+            .environmentObject(bodyWeightSyncManager)
             .task {
                 Task {
                     do {

@@ -10,14 +10,16 @@ import SwiftUI
 // MARK: - Aggregation
 
 /// Aggregates the personal records set across a period's workouts. Reuses `WorkoutProgressReport`'s
-/// verified "is this a record as of that date" detection per workout, then unions the results — one
-/// row per exercise+metric, keeping the highest value — instead of re-deriving prior-best math.
+/// verified "is this a record as of that date" detection per workout, then unions the results — the
+/// highest value per exercise+metric, grouped into one entry per exercise (newest record first, the
+/// same per-exercise unit every other record surface counts) — instead of re-deriving prior-best
+/// math.
 enum SummaryRecords {
-    static func records(in workouts: [Workout], database: Database) -> [WorkoutProgressReport.PRRecord] {
+    static func records(in workouts: [Workout], database: Database) -> [WorkoutProgressReport.ExerciseRecords] {
         var best: [String: WorkoutProgressReport.PRRecord] = [:]
         for workout in workouts {
             let report = WorkoutProgressReport.compute(for: workout, database: database)
-            for record in report.prRecords {
+            for record in report.exerciseRecords.flatMap(\.records) {
                 if let existing = best[record.id] {
                     if record.value > existing.value { best[record.id] = record }
                 } else {
@@ -25,7 +27,8 @@ enum SummaryRecords {
                 }
             }
         }
-        return best.values.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
+        let newestFirst = best.values.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
+        return WorkoutProgressReport.ExerciseRecords.grouped(newestFirst)
     }
 
     static func periodCaption(_ period: StatPeriod) -> String {
@@ -44,8 +47,9 @@ enum SummaryRecords {
 /// WEEK/MONTH/YEAR". Free: the PR celebration is the teaser that sells Pro (the full per-record
 /// history charts live behind the wall on the detail screen).
 struct SummaryRecordsTile: View {
-    /// The period's deduped records, supplied by the host so it can hide the tile entirely when empty.
-    let records: [WorkoutProgressReport.PRRecord]
+    /// The period's records, one entry per exercise, supplied by the host so it can hide the tile
+    /// entirely when empty.
+    let records: [WorkoutProgressReport.ExerciseRecords]
     let period: StatPeriod
     var maxShown: Int = 3
 
@@ -54,8 +58,8 @@ struct SummaryRecordsTile: View {
             header
                 .padding([.top, .horizontal], CELL_PADDING)
             VStack(spacing: 8) {
-                ForEach(Array(records.prefix(maxShown))) { record in
-                    PersonalBestRow(record: record)
+                ForEach(Array(records.prefix(maxShown))) { exerciseRecords in
+                    PersonalBestRow(records: exerciseRecords)
                 }
             }
             .padding(.top, 10)
@@ -116,15 +120,15 @@ struct SummaryRecordsScreen: View {
     let period: StatPeriod
 
     @EnvironmentObject private var database: Database
-    @State private var records: [WorkoutProgressReport.PRRecord] = []
+    @State private var records: [WorkoutProgressReport.ExerciseRecords] = []
 
     var body: some View {
         ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 header
                 VStack(spacing: 10) {
-                    ForEach(records) { record in
-                        WorkoutPersonalRecordCard(record: record)
+                    ForEach(records) { exerciseRecords in
+                        WorkoutPersonalRecordCard(records: exerciseRecords)
                     }
                 }
                 .emptyPlaceholder(records) {

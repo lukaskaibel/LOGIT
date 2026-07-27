@@ -92,6 +92,48 @@ final class ScenarioScreenshots: XCTestCase {
         XCTAssertTrue(backButton.waitForExistence(timeout: 5), "Detail screen has no navigation bar / back button (nav-bar hiding leaked)")
     }
 
+    // MARK: - Personal records (per-exercise cards)
+
+    /// The records surfaces after the per-exercise regrouping (one card/row/count per exercise,
+    /// the most tangible metric leading, sibling records folded into the card): captures the
+    /// workout detail's records tile and the records screen, then asserts a record card pushes
+    /// the exercise detail screen — the card's whole surface is a NavigationLink now.
+    func testWorkoutRecordsScreens() {
+        let app = launchApp(scenario: "many")
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        waitABit(2)
+
+        // History → the newest workout whose cell advertises records ("· n PR").
+        tapTab(app, at: 1)
+        waitABit()
+        let prCell = app.buttons.matching(NSPredicate(format: "label CONTAINS ' PR'")).firstMatch
+        XCTAssertTrue(prCell.waitForExistence(timeout: 5), "No workout cell advertising PRs in the many scenario")
+        prCell.tap()
+        waitABit()
+
+        // The records tile sits below the stat grid — bring it on screen.
+        let recordsTile = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Personal Records'")).firstMatch
+        for _ in 0 ..< 3 where !(recordsTile.exists && recordsTile.isHittable) {
+            app.swipeUp()
+            waitABit()
+        }
+        attach(app, "records_01_workout_detail_tile")
+        XCTAssertTrue(recordsTile.waitForExistence(timeout: 5), "Records tile missing on the workout detail")
+        recordsTile.tap()
+        waitABit()
+        attach(app, "records_02_records_screen")
+
+        // A record card is a button into the exercise detail screen.
+        let card = app.buttons.matching(NSPredicate(format: "label CONTAINS 'New Record'")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 5), "No record card on the records screen")
+        card.tap()
+        let cardBackButton = app.navigationBars.buttons.firstMatch
+        XCTAssertTrue(cardBackButton.waitForExistence(timeout: 5), "Record card did not push the exercise detail screen")
+        waitABit(1)
+        attach(app, "records_03_exercise_detail_from_card")
+    }
+
     // MARK: - Expandable recorder header
 
     // The recorder header folds/unfolds on tap (and handle drag): compact workout-cell

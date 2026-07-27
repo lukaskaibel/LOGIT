@@ -139,7 +139,7 @@ struct HomeScreen: View {
                                         viewModel: summaryViewModel,
                                         workouts: workouts,
                                         onOpenDetail: { metric in
-                                            homeNavigationCoordinator.path.append(.summaryStat(metric))
+                                            homeNavigationCoordinator.path.append(.summaryStat(metric, nil))
                                         }
                                     )
                                     Button {
@@ -253,12 +253,14 @@ struct HomeScreen: View {
                         MuscleTargetSplitScreen()
                     case let .muscleGroupDetail(group, initialPeriod):
                         MuscleGroupDetailScreen(muscleGroup: group, initialPeriod: initialPeriod)
-                    case let .summaryStat(metric):
+                    case let .summaryStat(metric, period):
                         SummaryStatScreen(
                             metric: metric,
                             workouts: workouts,
-                            initialPeriod: summaryViewModel.selectedPeriod
+                            initialPeriod: period ?? summaryViewModel.selectedPeriod
                         )
+                    case .progressHighlights:
+                        ProgressHighlightsScreen(workouts: workouts)
                     case let .summaryRecords(period):
                         SummaryRecordsScreen(
                             workouts: summaryViewModel.filtered(workouts, to: period),

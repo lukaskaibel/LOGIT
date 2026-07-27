@@ -61,3 +61,16 @@ public func getVolume(of groupedSets: [[WorkoutSet]]) -> [(Date, Int)] {
             .map { convertWeightForDisplaying($0) }
     ))
 }
+
+/// Compact volume for recap lines and highlight cards: "22k" past a thousand (one decimal below ten
+/// thousand), the plain number under it. Takes a *display-unit* value; keeps tight spots short where
+/// the full grouped figure would crowd the line — exact totals live on the volume screens.
+public func abbreviatedVolume(_ value: Int) -> String {
+    guard value >= 1000 else { return "\(value)" }
+    let thousands = Double(value) / 1000
+    if thousands >= 10 {
+        return "\(Int(thousands.rounded()))k"
+    }
+    let formatted = String(format: "%.1f", thousands)
+    return (formatted.hasSuffix(".0") ? String(formatted.dropLast(2)) : formatted) + "k"
+}

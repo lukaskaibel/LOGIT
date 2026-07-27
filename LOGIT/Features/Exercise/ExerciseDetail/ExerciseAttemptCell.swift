@@ -188,8 +188,8 @@ private struct EntryValueColumns: View {
             }
             if value.type.usesDuration {
                 UnitView(
-                    value: "\(value.duration)",
-                    unit: NSLocalizedString("sec", comment: ""),
+                    value: formatDurationForDisplay(Int(value.duration)),
+                    unit: "",
                     configuration: .normal,
                     unitColor: .secondaryLabel
                 )

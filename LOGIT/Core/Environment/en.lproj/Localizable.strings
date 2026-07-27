@@ -1022,13 +1022,30 @@
 
 
 /* Progress tab — overall progress trend */
-"overallProgress" = "Overall Progress";
+"strengthProgress" = "Strength Progress";
 "trendingUp" = "Trending up";
 "trendingSteady" = "Holding steady";
 "trendingDown" = "Trending down";
 "byMuscleGroup" = "By muscle group";
-"overallProgressBasis" = "Estimated 1RM · last 8 weeks vs the 8 before";
-"overallProgressEmpty" = "Keep logging workouts to see your overall trend.";
+"strengthProgressBasis" = "Estimated 1RM · last 8 weeks vs the 8 before";
+"strengthProgressEmpty" = "Keep logging workouts to see your strength trend.";
+
+// Progress highlights (carousel cards)
+"firstTimePast" = "First time past %@";
+"trendMoreVolume" = "More volume";
+"trendMoreSets" = "More sets";
+"trendMoreWorkouts" = "More workouts";
+"trendMuscleSets" = "More %@ sets";
+"trendExerciseVolume" = "%@ volume is up";
+"allWorkouts" = "All workouts";
+"trendWindowCaption" = "Last 4 weeks vs the 4 before";
+"last4Weeks" = "Last 4 weeks";
+"fourWeeksBefore" = "4 weeks before";
+"yearSoFar" = "%@ so far";
+"yearCrossingHeadline" = "%@ already beat %@";
+"monthsToSpare" = "with %d months to spare";
+"monthToSpare" = "with 1 month to spare";
+"highlightsInfo" = "Milestones and records cover the last 4 weeks. Trends compare the last 4 weeks with the 4 before.";
 "streak" = "Streak";
 
 // Timeframe unification: shared chart ranges + per-period muscle history

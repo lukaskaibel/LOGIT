@@ -227,24 +227,21 @@ enum WorkoutLiveActivitySnapshotBuilder {
         NSLocalizedString("reps", comment: "")
     }
 
-    private static var secondsLocalizedUnit: String {
-        NSLocalizedString("sec", comment: "")
-    }
-
     private static var liveActivityWeightUnit: String {
         WeightUnit.used.rawValue
     }
 
     /// The unit label for an entry's performance slot: reps for rep-based entries, the
     /// distance unit for distance-tracking ones (distance is their primary field on this
-    /// glanceable surface), seconds otherwise.
+    /// glanceable surface), and none for durations — those are written "1:30", which carries
+    /// its own separator.
     private static func performanceLocalizedUnit(for value: SetEntryValues?) -> String {
         guard let value else { return repsLocalizedUnit }
         if value.type.usesRepetitions { return repsLocalizedUnit }
         if let distanceStyle = value.type.distanceStyle(for: value.exercise) {
             return distanceUnitTitle(for: distanceStyle)
         }
-        return secondsLocalizedUnit
+        return ""
     }
 
     /// The values shown on the "current set" side: for compound sets the first exercise's
@@ -305,7 +302,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
                 performancePlaceholders.append(value.distance == 0)
             } else if value.type.usesDuration {
                 let shown = value.duration > 0 ? value.duration : (template?.duration ?? 0)
-                performanceSegments.append(String(shown))
+                performanceSegments.append(formatDurationForDisplay(Int(shown)))
                 performancePlaceholders.append(value.duration == 0)
             }
             if value.type.usesWeight {
@@ -374,7 +371,7 @@ enum WorkoutLiveActivitySnapshotBuilder {
                     performanceSegments.append(formatDistanceForDisplay(value.distance, style: distanceStyle))
                 }
             } else if value.type.usesDuration, !value.type.usesRepetitions, value.duration > 0 {
-                performanceSegments.append(String(value.duration))
+                performanceSegments.append(formatDurationForDisplay(Int(value.duration)))
             }
             if value.type.usesWeight, value.weight > 0 {
                 weightSegments.append(formatWeightForDisplay(value.weight))

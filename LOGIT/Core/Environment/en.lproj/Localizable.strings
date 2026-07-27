@@ -103,7 +103,6 @@
 // MARK: - E
 
 "edit" = "Edit";
-"edit" = "Edit";
 "editDateTime" = "Edit Date / Time";
 "editNote" = "Edit Note";
 "editTemplate" = "Edit Template";
@@ -191,17 +190,13 @@
 
 "measurementBodyweight" = "Bodyweight";
 "measurementCaloriesBurned" = "Calories Burned";
-"chest" = "Chest";
-"measurementLengthHhmeasurementLengthBicepsLeft" = "Biceps Left";
 "calfLeft" = "Calf Left";
 "forearmLeft" = "Forearm Left";
 "thighLeft" = "Thigh Left";
 "neck" = "Neck";
-"bicepsRight" = "Biceps Right";
 "calfRight" = "Calf Right";
 "forearmRight" = "Forearm Right";
 "thighRight" = "Thigh Right";
-"shoulders" = "Shoulders";
 "waist" = "Waist";
 "measurements" = "Measurements";
 "min" = "min";
@@ -956,7 +951,6 @@
 "muscleBalanceLightYear" = "%@ light this year";
 "muscleBalanceOnTarget" = "%d of 8 groups on target";
 "muscleBalanceBarA11y" = "%1$@: %2$d%% of sets, target %3$d%%";
-"muscleBalanceOnTrack" = "Mostly on track";
 "muscleBalanceRoomToBalance" = "Room to balance";
 "balanceVsTarget" = "Balance vs target";
 "adjustTargetSplit" = "Adjust target split";
@@ -1036,14 +1030,6 @@
 "overallProgressBasis" = "Estimated 1RM · last 8 weeks vs the 8 before";
 "overallProgressEmpty" = "Keep logging workouts to see your overall trend.";
 "streak" = "Streak";
-
-/* Muscle Balance — donut overview, sections & history chart */
-"muscleBalanceMore" = "+%d more";
-"muscleBalanceOverTime" = "Balance over time";
-"muscleDetailEmptySubtitle" = "You haven't trained this muscle in the selected period.";
-"muscleBalanceBelowTarget" = "Below target";
-"muscleBalanceAboveTarget" = "Above target";
-"muscleBalanceOnTargetSection" = "On target";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
 "range" = "Range";

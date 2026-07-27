@@ -103,7 +103,6 @@
 // MARK: - E
 
 "edit" = "Modificare";
-"edit" = "Modificare";
 "editDateTime" = "Modifica data/ora";
 "editNote" = "Modifica nota";
 "editTemplate" = "Modifica modello";
@@ -191,17 +190,13 @@
 
 "measurementBodyweight" = "Peso corporeo";
 "measurementCaloriesBurned" = "Calorie bruciate";
-"chest" = "Petto";
-"measurementLengthHhmeasurementLengthBicepsLeft" = "Bicipite sinistro";
 "calfLeft" = "Vitello a sinistra";
 "forearmLeft" = "Avambraccio sinistro";
 "thighLeft" = "Coscia sinistra";
 "neck" = "Collo";
-"bicepsRight" = "Bicipite destro";
 "calfRight" = "Vitello Giusto";
 "forearmRight" = "Avambraccio destro";
 "thighRight" = "Coscia destra";
-"shoulders" = "Spalle";
 "waist" = "Vita";
 "measurements" = "Misure";
 "min" = "min";
@@ -956,7 +951,6 @@
 "muscleBalanceLightYear" = "%@ scarso quest'anno";
 "muscleBalanceOnTarget" = "%d di 8 gruppi a target";
 "muscleBalanceBarA11y" = "%1$@: %2$d%% delle serie, target %3$d%%";
-"muscleBalanceOnTrack" = "Per lo più in linea";
 "muscleBalanceRoomToBalance" = "Spazio per bilanciare";
 "balanceVsTarget" = "Equilibrio vs target";
 "adjustTargetSplit" = "Regola la ripartizione target";
@@ -1036,14 +1030,6 @@
 "overallProgressBasis" = "1RM stimato · ultime 8 settimane vs le 8 precedenti";
 "overallProgressEmpty" = "Continua a registrare allenamenti per vedere il tuo andamento generale.";
 "streak" = "Serie";
-
-/* Muscle Balance — donut overview, sections & history chart */
-"muscleBalanceMore" = "+%d altri";
-"muscleBalanceOverTime" = "Equilibrio nel tempo";
-"muscleDetailEmptySubtitle" = "Non hai allenato questo muscolo nel periodo selezionato.";
-"muscleBalanceBelowTarget" = "Sotto il target";
-"muscleBalanceAboveTarget" = "Sopra il target";
-"muscleBalanceOnTargetSection" = "A target";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
 "range" = "Intervallo";

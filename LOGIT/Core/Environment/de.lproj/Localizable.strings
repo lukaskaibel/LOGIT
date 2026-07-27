@@ -38,8 +38,8 @@
 "back" = "Rücken";
 "best" = "Max";
 "biceps" = "Bizeps";
-"bicepsLeft" = "Linker Bizeps";
-"bicepsRight" = "Rechter Bizeps";
+"bicepsLeft" = "Bizeps Links";
+"bicepsRight" = "Bizeps Rechts";
 "bodyFatPercentage" = "Körperfett";
 "bodyParts" = "Körperteile";
 "bodyweight" = "Körpergewicht";
@@ -102,7 +102,6 @@
 
 // MARK: - E
 
-"edit" = "Bearbeiten";
 "edit" = "Bearbeiten";
 "editDateTime" = "Datum / Zeit bearbeiten";
 "editNote" = "Notiz bearbeiten";
@@ -186,17 +185,13 @@
 
 "measurementBodyweight" = "Körpergewicht";
 "measurementCaloriesBurned" = "Verbrannte Kalorien";
-"chest" = "Brust";
-"measurementLengthHhmeasurementLengthBicepsLeft" = "Linker Bizeps";
 "calfLeft" = "Wade Links";
 "forearmLeft" = "Unterarm Links";
 "thighLeft" = "Oberschenkel Links";
 "neck" = "Hals";
-"bicepsRight" = "Bizeps Rechts";
 "calfRight" = "Wade Rechts";
 "forearmRight" = "Unterarm Rechts";
 "thighRight" = "Oberschenkel Rechts";
-"shoulders" = "Schultern";
 "waist" = "Taille";
 "measurements" = "Messungen";
 "measurementsPromotionDescription" = "Verfolge Körpergewicht, Körperfett und Körpermaße wie Arme, Brust und Taille, um deinen Fortschritt zu sehen.";
@@ -952,7 +947,6 @@
 "muscleBalanceLightYear" = "%@ dieses Jahr zu wenig";
 "muscleBalanceOnTarget" = "%d von 8 Gruppen im Ziel";
 "muscleBalanceBarA11y" = "%1$@: %2$d%% der Sätze, Ziel %3$d%%";
-"muscleBalanceOnTrack" = "Größtenteils im Plan";
 "muscleBalanceRoomToBalance" = "Noch Luft zum Ausgleich";
 "balanceVsTarget" = "Balance vs. Ziel";
 "adjustTargetSplit" = "Zielverteilung anpassen";
@@ -1032,14 +1026,6 @@
 "overallProgressBasis" = "Geschätztes 1RM · letzte 8 Wochen vs. die 8 davor";
 "overallProgressEmpty" = "Logge weiter Workouts, um deinen Gesamttrend zu sehen.";
 "streak" = "Streak";
-
-/* Muscle Balance — donut overview, sections & history chart */
-"muscleBalanceMore" = "+%d weitere";
-"muscleBalanceOverTime" = "Balance im Zeitverlauf";
-"muscleDetailEmptySubtitle" = "Du hast diese Muskelgruppe im gewählten Zeitraum nicht trainiert.";
-"muscleBalanceBelowTarget" = "Unter dem Ziel";
-"muscleBalanceAboveTarget" = "Über dem Ziel";
-"muscleBalanceOnTargetSection" = "Im Ziel";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
 "range" = "Bereich";

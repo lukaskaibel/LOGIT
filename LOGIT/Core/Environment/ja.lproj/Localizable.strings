@@ -103,7 +103,6 @@
 // MARK: - E
 
 "edit" = "編集";
-"edit" = "編集";
 "editDateTime" = "日付/時刻の編集";
 "editNote" = "メモの編集";
 "editTemplate" = "テンプレートの編集";
@@ -191,17 +190,13 @@
 
 "measurementBodyweight" = "体重";
 "measurementCaloriesBurned" = "消費カロリー";
-"chest" = "胸";
-"measurementLengthHhmeasurementLengthBicepsLeft" = "左上腕二頭筋";
 "calfLeft" = "ふくらはぎ左";
 "forearmLeft" = "前腕左";
 "thighLeft" = "左腿";
 "neck" = "ネック";
-"bicepsRight" = "右上腕二頭筋";
 "calfRight" = "右ふくらはぎ";
 "forearmRight" = "右前腕";
 "thighRight" = "右もも";
-"shoulders" = "肩";
 "waist" = "ウエスト";
 "measurements" = "測定";
 "min" = "分";
@@ -956,7 +951,6 @@
 "muscleBalanceLightYear" = "今年は%@が少なめ";
 "muscleBalanceOnTarget" = "8グループ中%dが目標内";
 "muscleBalanceBarA11y" = "%1$@：セットの%2$d%%、目標%3$d%%";
-"muscleBalanceOnTrack" = "概ね順調";
 "muscleBalanceRoomToBalance" = "調整の余地あり";
 "balanceVsTarget" = "目標との比較";
 "adjustTargetSplit" = "目標配分を調整";
@@ -1036,14 +1030,6 @@
 "overallProgressBasis" = "推定1RM · 直近8週間 vs その前の8週間";
 "overallProgressEmpty" = "ワークアウトを記録すると全体の傾向が表示されます。";
 "streak" = "連続記録";
-
-/* Muscle Balance — donut overview, sections & history chart */
-"muscleBalanceMore" = "他%d件";
-"muscleBalanceOverTime" = "時間ごとのバランス";
-"muscleDetailEmptySubtitle" = "選択した期間にこの部位はトレーニングしていません。";
-"muscleBalanceBelowTarget" = "目標未満";
-"muscleBalanceAboveTarget" = "目標超過";
-"muscleBalanceOnTargetSection" = "目標どおり";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
 "range" = "範囲";

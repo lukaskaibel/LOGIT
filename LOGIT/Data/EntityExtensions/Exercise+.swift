@@ -249,6 +249,23 @@ enum ExercisePrimaryMetric: String, CaseIterable {
         }
     }
 
+    /// One-line explanation for the exercise editor's metric picker — "e1RM" alone doesn't
+    /// introduce itself.
+    var caption: String {
+        switch self {
+        case .estimatedOneRepMax:
+            return NSLocalizedString("progressMetricE1RMDescription", comment: "")
+        case .weight:
+            return NSLocalizedString("progressMetricWeightDescription", comment: "")
+        case .repetitions:
+            return NSLocalizedString("progressMetricRepetitionsDescription", comment: "")
+        case .duration:
+            return NSLocalizedString("progressMetricDurationDescription", comment: "")
+        case .distance:
+            return NSLocalizedString("progressMetricDistanceDescription", comment: "")
+        }
+    }
+
     /// The metric shown when the user hasn't chosen one for an exercise: e1RM for Pro users (the
     /// flagship metric), repetitions for free users — the one metric whose info panel is fully
     /// visible without Pro, so a default badge tap always lands on usable content. Upgrading flips

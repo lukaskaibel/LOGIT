@@ -119,6 +119,7 @@ struct ExerciseListScreen: View {
                     Button(action: { showingAddExercise.toggle() }) {
                         Image(systemName: "plus")
                     }
+                    .accessibilityIdentifier("addExerciseButton")
                 }
             }
             .sheet(isPresented: $showingAddExercise) {

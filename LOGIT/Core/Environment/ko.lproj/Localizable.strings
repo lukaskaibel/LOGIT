@@ -1116,3 +1116,15 @@
 "syncBodyWeightDescription" = "체중은 양방향으로 동기화됩니다. LOGIT에 기록한 체중은 건강 앱에 저장되고, 다른 곳에서 기록한 체중은 LOGIT에 표시됩니다.";
 "syncNow" = "지금 동기화";
 "bodyWeightSyncResult" = "%d개 가져옴, %d개 내보냄.";
+
+// Exercise editor — measurement builder
+"trackPerSet" = "세트마다 무엇을 기록하나요?";
+"trackingEmptyHint" = "기록할 값을 하나 이상 선택하세요.";
+"trackingWeightAloneHint" = "무게에 횟수, 시간 또는 거리를 추가하세요.";
+"setPreviewCaption" = "세트는 이렇게 표시됩니다";
+"progressMetricCaption" = "운동 중 배지에 표시됩니다.";
+"progressMetricE1RMDescription" = "무게와 횟수로 추정한 1RM";
+"progressMetricWeightDescription" = "한 세트에서 든 최대 무게";
+"progressMetricRepetitionsDescription" = "한 세트 최다 횟수";
+"progressMetricDurationDescription" = "한 세트 최장 시간";
+"progressMetricDistanceDescription" = "한 세트 최장 거리";

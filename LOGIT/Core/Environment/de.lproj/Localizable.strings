@@ -1112,3 +1112,15 @@
 "syncBodyWeightDescription" = "Das Körpergewicht wird in beide Richtungen synchronisiert: In LOGIT erfasstes Gewicht landet in Apple Health, anderswo erfasstes Gewicht erscheint in LOGIT.";
 "syncNow" = "Jetzt synchronisieren";
 "bodyWeightSyncResult" = "%d importiert, %d exportiert.";
+
+// Exercise editor — measurement builder
+"trackPerSet" = "Was trackst du pro Satz?";
+"trackingEmptyHint" = "Wähle mindestens einen Wert aus.";
+"trackingWeightAloneHint" = "Ergänze das Gewicht um Wiederholungen, Dauer oder Distanz.";
+"setPreviewCaption" = "So wird ein Satz aussehen";
+"progressMetricCaption" = "Wird beim Training auf dem Übungs-Badge angezeigt.";
+"progressMetricE1RMDescription" = "Geschätztes One-Rep-Max aus Gewicht und Wiederholungen";
+"progressMetricWeightDescription" = "Schwerstes Gewicht in einem Satz";
+"progressMetricRepetitionsDescription" = "Meiste Wiederholungen in einem Satz";
+"progressMetricDurationDescription" = "Längste Dauer in einem Satz";
+"progressMetricDistanceDescription" = "Weiteste Distanz in einem Satz";

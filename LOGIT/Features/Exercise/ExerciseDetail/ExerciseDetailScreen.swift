@@ -169,6 +169,7 @@ struct ExerciseDetailScreen: View {
                         } label: {
                             Image(systemName: "ellipsis.circle")
                         }
+                        .accessibilityIdentifier("exerciseDetailMenu")
                         .confirmationDialog(
                             Text(NSLocalizedString("deleteExerciseConfirmation", comment: "")),
                             isPresented: $showDeletionAlert,

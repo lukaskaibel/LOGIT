@@ -1116,3 +1116,15 @@
 "syncBodyWeightDescription" = "Body weight is kept in sync both ways: weight you log in LOGIT is saved to Apple Health, and weight logged elsewhere appears in LOGIT.";
 "syncNow" = "Sync Now";
 "bodyWeightSyncResult" = "%d imported, %d exported.";
+
+// Exercise editor — measurement builder
+"trackPerSet" = "What do you track per set?";
+"trackingEmptyHint" = "Pick at least one value to track.";
+"trackingWeightAloneHint" = "Add reps, a duration, or a distance to go with the weight.";
+"setPreviewCaption" = "One set will look like this";
+"progressMetricCaption" = "Shown on the exercise badge while you train.";
+"progressMetricE1RMDescription" = "Estimated one-rep max, from weight and reps";
+"progressMetricWeightDescription" = "Heaviest weight lifted in a set";
+"progressMetricRepetitionsDescription" = "Most reps in a single set";
+"progressMetricDurationDescription" = "Longest duration in a single set";
+"progressMetricDistanceDescription" = "Farthest distance in a single set";

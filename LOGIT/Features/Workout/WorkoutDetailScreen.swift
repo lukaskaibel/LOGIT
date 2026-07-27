@@ -25,6 +25,8 @@ struct WorkoutDetailScreen: View {
 
     // MARK: - State
 
+    @AppStorage(CalorieEstimator.enabledKey) private var calorieEstimatesEnabled = true
+
     @State private var isShowingDeleteWorkoutAlert: Bool = false
     @State private var sheetType: SheetType? = nil
     @State private var newTemplateFromWorkout: Template?
@@ -32,6 +34,8 @@ struct WorkoutDetailScreen: View {
     @State private var selectedStatMetric: WorkoutStatMetric?
     @State private var headerTextHeight: CGFloat = 64
     @State private var progressReport: WorkoutProgressReport?
+    @State private var calorieEstimate: CalorieEstimator.Estimate?
+    @State private var calorieBodyWeightMissing = false
     @State private var isShowingPersonalRecords: Bool = false
     @State private var workoutShareFileURL: URL?
     @State private var templateShareFileURL: URL?
@@ -58,6 +62,13 @@ struct WorkoutDetailScreen: View {
                     WorkoutStatTileGrid(workout: workout) { metric in
                         selectedStatMetric = metric
                     }
+                    if calorieEstimatesEnabled {
+                        WorkoutCalorieRow(
+                            workout: workout,
+                            estimate: calorieEstimate,
+                            isMissingBodyWeight: calorieBodyWeightMissing
+                        )
+                    }
                     progressAndVolumeRow
                 }
 
@@ -83,11 +94,13 @@ struct WorkoutDetailScreen: View {
         }
         .onAppear {
             progressReport = WorkoutProgressReport.compute(for: workout, database: database)
+            refreshCalorieEstimate()
         }
         .onReceive(
             workout.objectWillChange.debounce(for: .seconds(0.5), scheduler: RunLoop.main)
         ) { _ in
             progressReport = WorkoutProgressReport.compute(for: workout, database: database)
+            refreshCalorieEstimate()
         }
         .background(
             VStack {
@@ -205,6 +218,20 @@ struct WorkoutDetailScreen: View {
         }
         .navigationDestination(isPresented: $isShowingPersonalRecords) {
             WorkoutPersonalRecordsScreen(workout: workout, report: progressReport ?? .empty)
+        }
+    }
+
+    /// Recomputes the calorie estimate (and whether only a body weight is missing — the
+    /// teaser state). Cheap: one measurement fetch plus a pass over the sets' entries.
+    private func refreshCalorieEstimate() {
+        calorieEstimate = CalorieEstimator.estimate(for: workout)
+        if calorieEstimate == nil,
+           let start = workout.date, let end = workout.endDate, end > start,
+           !workout.sets.isEmpty,
+           let context = workout.managedObjectContext {
+            calorieBodyWeightMissing = CalorieEstimator.bodyWeight(nearestTo: start, in: context) == nil
+        } else {
+            calorieBodyWeightMissing = false
         }
     }
 

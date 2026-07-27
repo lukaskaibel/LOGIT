@@ -1090,3 +1090,20 @@
 "syncToAppleHealth" = "Apple 건강과 동기화";
 "workoutsExportedToHealth" = "운동 %d개를 내보냈습니다.";
 "workoutsSkippedNoDuration" = "%d개 건너뜀(운동 시간 없음).";
+
+// MARK: - Calorie Estimates
+
+"calorieEstimateExplanation" = "LOGIT은 운동 밀도와 체중으로 활동 칼로리를 추정합니다. 항상 같은 방식으로 계산하므로 운동 간 비교가 의미 있게 유지됩니다. 소모량은 개인차가 있으니 절대값은 참고용으로 보세요.";
+"calorieEstimateHealthNote" = "활동 칼로리로 건강 앱에 동기화됩니다. 추정은 설정에서 끌 수 있습니다.";
+"calorieEstimates" = "칼로리 추정";
+"calorieEstimatesDescription" = "기록한 세트와 체중으로 활동 칼로리를 추정합니다. 운동 상세에 표시되고 건강 앱 동기화에 포함됩니다.";
+"estCalories" = "추정 칼로리";
+"estimatedCalories" = "추정 칼로리";
+"fromYourLoggedSets" = "기록한 세트 기준";
+"loggedDateFormat" = "%@ 기록";
+"logBodyWeightToEstimate" = "체중을 기록하면 칼로리를 추정할 수 있어요";
+"publishedStrengthRange" = "근력 운동의 공인 범위";
+"restShareLabel" = "휴식·준비";
+"sessionIntensity" = "세션 강도";
+"workingShareLabel" = "운동";
+"workingTime" = "운동 시간";

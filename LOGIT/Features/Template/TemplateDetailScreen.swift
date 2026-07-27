@@ -270,26 +270,26 @@ struct TemplateDetailScreen: View {
 
     private var exercisesList: some View {
         VStack(spacing: 0) {
-            ForEach(template.setGroups) { templateSetGroup in
+            ForEach(
+                Array(template.setGroups.enumerated()),
+                id: \.element.objectID
+            ) { index, templateSetGroup in
                 VStack(spacing: 0) {
                     TemplateSetGroupCell(
                         setGroup: templateSetGroup,
                         focusedIntegerFieldIndex: .constant(nil),
                         sheetType: .constant(nil),
                         isReordering: .constant(false),
-                        supplementaryText: nil
+                        supplementaryText: nil,
+                        indexInTemplate: index,
+                        groupCount: template.setGroups.count
                     )
-                    .tileStyle()
                     .canEdit(false)
-                    .shadow(color: .black, radius: 5)
-                    .zIndex(1)
-                    if template.setGroups.last != templateSetGroup {
-                        Rectangle()
-                            .foregroundStyle(.secondary)
-                            .frame(width: 3, height: SECTION_SPACING)
-                            .zIndex(0)
+                    if index < template.setGroups.count - 1 {
+                        SetGroupTrunk()
                     }
                 }
+                .setGroupRowStyle(index: index, count: template.setGroups.count)
             }
         }
     }

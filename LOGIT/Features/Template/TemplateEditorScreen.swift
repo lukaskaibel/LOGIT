@@ -117,7 +117,10 @@ struct TemplateEditorScreen: View {
                         }
                         
                         VStack(spacing: 0) {
-                            ForEach(template.setGroups) { setGroup in
+                            ForEach(
+                                Array(template.setGroups.enumerated()),
+                                id: \.element.objectID
+                            ) { index, setGroup in
                                 VStack(spacing: 0) {
                                     TemplateSetGroupCell(
                                         setGroup: setGroup,
@@ -126,16 +129,20 @@ struct TemplateEditorScreen: View {
                                         isReordering: .constant(false),
                                         supplementaryText: nil,
                                         showDetailAsSheet: true,
+                                        indexInTemplate: index,
+                                        groupCount: template.setGroups.count,
                                         onTapRestDuration: { selectedRestDurationSet = $0 }
                                     )
-                                    .shadow(color: .black.opacity(0.5), radius: 5)
-                                    .zIndex(1)
                                     interSetGroupConnector(
                                         after: setGroup,
                                         showsTrailingLine: template.setGroups.last != setGroup
                                     )
-                                    .zIndex(0)
                                 }
+                                .setGroupRowStyle(
+                                    index: index,
+                                    count: template.setGroups.count,
+                                    reduceShadow: true
+                                )
                                 .transition(.scale)
                                 .id(setGroup)
                             }
@@ -397,9 +404,7 @@ struct TemplateEditorScreen: View {
         switch TemplateInterSetGroupRestDisplayState.afterSetGroup(setGroup) {
         case .hidden:
             if showsTrailingLine {
-                Rectangle()
-                    .foregroundStyle(.secondary)
-                    .frame(width: 3, height: SECTION_SPACING)
+                SetGroupTrunk()
             }
 
         case let .staticRest(seconds):
@@ -428,22 +433,23 @@ struct TemplateEditorScreen: View {
         }
     }
 
+    /// The rest capsule between two groups, riding the thread: the trunk runs behind it so the
+    /// line stays continuous (see `onSetGroupTrunk`). A rest after the LAST group has no
+    /// trailing line — the thread ends with the template.
     private func templateInterSetGroupRestIndicator<Content: View>(
         showsTrailingLine: Bool,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(spacing: 4) {
-            Rectangle()
-                .foregroundStyle(.secondary)
-                .frame(width: 3, height: 6)
-            content()
+        Group {
             if showsTrailingLine {
-                Rectangle()
-                    .foregroundStyle(.secondary)
-                    .frame(width: 3, height: 6)
+                content().onSetGroupTrunk()
+            } else {
+                VStack(spacing: 0) {
+                    SetGroupTrunk(height: SetGroupThread.trunkHeight / 2)
+                    content()
+                }
             }
         }
-        .frame(minHeight: SECTION_SPACING + 10)
     }
 
     private func templateInterSetGroupRestCapsule<Content: View>(

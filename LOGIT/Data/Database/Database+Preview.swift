@@ -150,8 +150,23 @@ extension Database {
         addTemplateSet(exercise: benchpress, template: pushTemplate, reps: 8, weight: 70000, extraSets: 3)
         addTemplateSet(exercise: inclinedBenchpress, template: pushTemplate, reps: 10, weight: 55000)
         addTemplateSet(exercise: overheadPress, template: pushTemplate, reps: 8, weight: 45000)
-        addTemplateSet(exercise: tricepsExtensions, template: pushTemplate, reps: 12, weight: 25000)
-        addTemplateSet(exercise: lateralRaises, template: pushTemplate, reps: 15, weight: 12000)
+        // A superset finisher — templates render these as the containerless per-exercise pager
+        // (see `TemplateSetGroupCell`), so the fixtures have to contain one.
+        let pushFinisher = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: tricepsExtensions,
+            template: pushTemplate
+        )
+        pushFinisher.secondaryExercise = lateralRaises
+        for _ in 0 ..< 3 {
+            database.newTemplateSuperSet(
+                repetitionsFirstExercise: 12,
+                repetitionsSecondExercise: 15,
+                weightFirstExercise: 25000,
+                weightSecondExercise: 12000,
+                setGroup: pushFinisher
+            )
+        }
 
         let pullTemplate = database.newTemplate(name: NSLocalizedString("previewPullDay", comment: ""))
         addTemplateSet(exercise: deadlift, template: pullTemplate, reps: 5, weight: 120000, extraSets: 3)

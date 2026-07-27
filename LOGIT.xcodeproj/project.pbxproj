@@ -163,6 +163,7 @@
 		801BBDE62DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCEA2DF7338A00CDB1FB /* ExerciseRepetitionsTile.swift */; };
 		801BBDE72DF7338A00CDB1FB /* UIConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCAB2DF7338A00CDB1FB /* UIConstants.swift */; };
 		801BBDE82DF7338A00CDB1FB /* ExerciseHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD4F2DF7338A00CDB1FB /* ExerciseHeader.swift */; };
+		80TH00022F80AA0100TH0002 /* SetGroupThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80TH00012F80AA0100TH0001 /* SetGroupThread.swift */; };
 		801BBDE92DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCB42DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift */; };
 		801BBDEA2DF7338A00CDB1FB /* EnvironmentValues+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCA72DF7338A00CDB1FB /* EnvironmentValues+.swift */; };
 		801BBDEB2DF7338A00CDB1FB /* WorkoutDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD272DF7338A00CDB1FB /* WorkoutDetailScreen.swift */; };
@@ -524,6 +525,7 @@
 		801BBD4C2DF7338A00CDB1FB /* TileStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileStyle.swift; sourceTree = "<group>"; };
 		801BBD4E2DF7338A00CDB1FB /* CurrentWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentWorkoutView.swift; sourceTree = "<group>"; };
 		801BBD4F2DF7338A00CDB1FB /* ExerciseHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHeader.swift; sourceTree = "<group>"; };
+		80TH00012F80AA0100TH0001 /* SetGroupThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetGroupThread.swift; sourceTree = "<group>"; };
 		801BBD502DF7338A00CDB1FB /* FlashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashView.swift; sourceTree = "<group>"; };
 		801BBD512DF7338A00CDB1FB /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		801BBD522DF7338A00CDB1FB /* IntegerField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegerField.swift; sourceTree = "<group>"; };
@@ -1269,6 +1271,7 @@
 				8054E6B52F1DB513003F150D /* ComparisonBar.swift */,
 				801BBD4E2DF7338A00CDB1FB /* CurrentWorkoutView.swift */,
 				801BBD4F2DF7338A00CDB1FB /* ExerciseHeader.swift */,
+				80TH00012F80AA0100TH0001 /* SetGroupThread.swift */,
 				801BBD502DF7338A00CDB1FB /* FlashView.swift */,
 				801BBD512DF7338A00CDB1FB /* InfoView.swift */,
 				E1E1E1000000000000000F07 /* AboutSection.swift */,
@@ -1795,6 +1798,7 @@
 				80DI00062F84DD0100DI0006 /* ExerciseDistanceTile.swift in Sources */,
 				801BBDE72DF7338A00CDB1FB /* UIConstants.swift in Sources */,
 				801BBDE82DF7338A00CDB1FB /* ExerciseHeader.swift in Sources */,
+				80TH00022F80AA0100TH0002 /* SetGroupThread.swift in Sources */,
 				801BBDE92DF7338A00CDB1FB /* UIScreen+ScreenCorners.swift in Sources */,
 				801BBDEA2DF7338A00CDB1FB /* EnvironmentValues+.swift in Sources */,
 				801BBDEB2DF7338A00CDB1FB /* WorkoutDetailScreen.swift in Sources */,

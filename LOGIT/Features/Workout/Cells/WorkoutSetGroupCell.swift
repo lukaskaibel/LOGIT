@@ -66,15 +66,6 @@ struct WorkoutSetGroupCell: View {
     /// exercise's page, the pager follows (see `autopageIfNeeded`).
     @State private var pagedExerciseID: NSManagedObjectID?
 
-    // MARK: - Superset pager metrics
-
-    /// Horizontal inset of a snapped page — the neighbor page peeks by this minus the spacing.
-    static let pageInset: CGFloat = 24
-    static let pageSpacing: CGFloat = 12
-    /// Height of the band above (and below) the pages where the thread's horizontal rail and
-    /// its drops into the bulges are drawn.
-    static let railZoneHeight: CGFloat = 16
-
     // MARK: - Body
 
     var body: some View {
@@ -179,10 +170,7 @@ struct WorkoutSetGroupCell: View {
     /// "2 of 5" — the group's place in the workout, shown in the bulge socket on top of the card
     /// (each superset page repeats it) instead of the old header number.
     private var bulgeLabel: String? {
-        guard let index = resolvedIndexInWorkout, resolvedGroupCount > 0 else { return nil }
-        return String.localizedStringWithFormat(
-            NSLocalizedString("groupIndexOfTotal", comment: ""), index + 1, resolvedGroupCount
-        )
+        SetGroupThread.indexLabel(index: resolvedIndexInWorkout, count: resolvedGroupCount)
     }
 
     /// Whether the thread's merge rail is drawn under the superset pages — only when another
@@ -363,7 +351,7 @@ struct WorkoutSetGroupCell: View {
     private func supersetPager(previousSetGroup: WorkoutSetGroup?) -> some View {
         let exercises = [setGroup.exercise, setGroup.secondaryExercise].compactMap { $0 }
         return ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: Self.pageSpacing) {
+            HStack(alignment: .top, spacing: SetGroupThread.pageSpacing) {
                 ForEach(exercises, id: \.objectID) { exercise in
                     SupersetExercisePage(
                         setGroup: setGroup,
@@ -384,33 +372,16 @@ struct WorkoutSetGroupCell: View {
                         groupMenu: AnyView(menu)
                     )
                     .containerRelativeFrame(.horizontal) { length, _ in
-                        max(length - Self.pageInset * 2, 100)
+                        max(length - SetGroupThread.pageInset * 2, 100)
                     }
                 }
             }
             .scrollTargetLayout()
-            .padding(.top, showsForkRail ? Self.railZoneHeight : 0)
-            .padding(.bottom, showsMergeRail ? Self.railZoneHeight : 0)
-            .overlay(alignment: .top) {
-                if showsForkRail {
-                    SupersetRailShape(pageCount: exercises.count, pageSpacing: Self.pageSpacing)
-                        .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                        .foregroundStyle(Color.threadLine)
-                        .frame(height: Self.railZoneHeight)
-                }
-            }
-            .overlay(alignment: .bottom) {
-                if showsMergeRail {
-                    SupersetRailShape(
-                        pageCount: exercises.count,
-                        pageSpacing: Self.pageSpacing,
-                        flipped: true
-                    )
-                    .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                    .foregroundStyle(Color.threadLine)
-                    .frame(height: Self.railZoneHeight)
-                }
-            }
+            .supersetThreadRails(
+                pageCount: exercises.count,
+                showsFork: showsForkRail,
+                showsMerge: showsMergeRail
+            )
         }
         // No content margins: the snapped first page sits flush with the leading edge (and
         // the last page, clamped at the scroll bound, flush with the trailing edge) exactly
@@ -742,161 +713,6 @@ extension WorkoutSetGroupCell: Equatable {
             // holding a stale focus value. Bounded cost — a workout has at most a few supersets.
             && (lhs.setGroup.setType != .superSet
                 || lhs.focusedIntegerFieldIndex == rhs.focusedIntegerFieldIndex)
-    }
-}
-
-// MARK: - Index bulge
-
-/// The socket on top of every set-group card: a low rounded bump growing out of the card's top
-/// edge (concave fillets where it meets the card) that carries the group's "2 of 5" position
-/// and receives the thread the list draws between cells. The bump is deliberately lower than
-/// the label — the label's bottom half dips inside the card — and its fill continues a few
-/// points below the edge so the card's inner top highlight can't draw a seam under it. Layered
-/// with `bulgeSocket(label:)`, which draws it OVER the card.
-struct SetGroupIndexBulge: View {
-    let label: String
-
-    /// Height of the bump above the card's top edge — just enough headroom over the label's
-    /// peeking top, so the bump stays a low hill.
-    static let protrusion: CGFloat = 8
-    /// How far the bump's fill continues below the card edge.
-    static let underlap: CGFloat = 8
-    /// Horizontal run of each S-curved shoulder.
-    static let shoulderRun: CGFloat = 12
-    /// How tightly the shoulder S hugs its endpoints: 0.5 is a plain slope, towards 1 the
-    /// curve stays flat at both ends and turns in the middle. 0.75 is the chosen gentle S.
-    static let shoulderTension: CGFloat = 0.75
-    /// Horizontal padding between the label and the shoulders.
-    static let labelPadding: CGFloat = 8
-
-    var body: some View {
-        Text(label)
-            .font(.system(.caption2, design: .rounded, weight: .bold))
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, Self.labelPadding)
-            // Push the label down so it straddles the card edge — most of it sits inside
-            // the card, only its top peeks into the bump.
-            .offset(y: 3)
-            .frame(height: Self.protrusion + Self.underlap)
-            .background {
-                SetGroupBulgeShape(
-                    shoulderRun: Self.shoulderRun,
-                    shoulderTension: Self.shoulderTension,
-                    underlap: Self.underlap
-                )
-                .fill(Color.secondaryBackground)
-                // The shoulders flare beyond the label's bounds on both sides.
-                .padding(.horizontal, -Self.shoulderRun)
-            }
-    }
-}
-
-extension View {
-    /// Mounts the index bulge on top of a set-group card: drawn over the card (so the label's
-    /// lower half and the underlap sit on the card's fill), extending above it by the bump's
-    /// protrusion, which is reserved as layout space.
-    @ViewBuilder
-    func bulgeSocket(label: String?) -> some View {
-        if let label {
-            overlay(alignment: .top) {
-                SetGroupIndexBulge(label: label)
-                    .alignmentGuide(.top) { $0[.top] + SetGroupIndexBulge.protrusion }
-            }
-            .padding(.top, SetGroupIndexBulge.protrusion)
-        } else {
-            self
-        }
-    }
-}
-
-/// The bulge's outline: a smooth hill. Each side is one S-curve with horizontal tangents at
-/// both ends, so the concave blend into the card's edge and the convex top shoulder are both
-/// generously rounded — no straight walls, no sharp corners anywhere. Below the card edge the
-/// fill continues `underlap` points as a plain rectangle, hiding the card's inner top
-/// highlight under the bump. The rect includes the shoulders and the underlap.
-struct SetGroupBulgeShape: Shape {
-    var shoulderRun: CGFloat = 18
-    /// 0.5 = shallowest slope; towards 1 the S hugs its endpoints and turns harder mid-curve.
-    var shoulderTension: CGFloat = 0.55
-    var underlap: CGFloat = 8
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let edge = rect.maxY - underlap
-        let top = rect.minY
-        path.move(to: CGPoint(x: rect.minX, y: edge))
-        // Left shoulder: card edge up to the flat top in one S.
-        path.addCurve(
-            to: CGPoint(x: rect.minX + shoulderRun, y: top),
-            control1: CGPoint(x: rect.minX + shoulderRun * shoulderTension, y: edge),
-            control2: CGPoint(x: rect.minX + shoulderRun * (1 - shoulderTension), y: top)
-        )
-        path.addLine(to: CGPoint(x: rect.maxX - shoulderRun, y: top))
-        // Right shoulder, mirrored.
-        path.addCurve(
-            to: CGPoint(x: rect.maxX, y: edge),
-            control1: CGPoint(x: rect.maxX - shoulderRun * (1 - shoulderTension), y: top),
-            control2: CGPoint(x: rect.maxX - shoulderRun * shoulderTension, y: edge)
-        )
-        // Continue below the card edge so the bump covers the card's inner top highlight.
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.closeSubpath()
-        return path
-    }
-}
-
-// MARK: - Superset thread rail
-
-/// The thread's horizontal rail across a superset's pages, drawn in the band above (or, flipped,
-/// below) them and scrolling with them: rounded elbows turn down into the first and last page's
-/// center, straight drops serve any pages in between. Page centers are derived from the band's
-/// own width, so the shape needs no measured geometry.
-struct SupersetRailShape: Shape {
-    let pageCount: Int
-    let pageSpacing: CGFloat
-    var flipped: Bool = false
-    var cornerRadius: CGFloat = 10
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        guard pageCount > 0 else { return path }
-        let pageWidth = (rect.width - CGFloat(pageCount - 1) * pageSpacing) / CGFloat(pageCount)
-        let centers = (0 ..< pageCount).map { pageWidth / 2 + CGFloat($0) * (pageWidth + pageSpacing) }
-        let railY: CGFloat = 1.5
-        // Verticals overshoot the band by a couple of points into the neighboring fill (bulge
-        // below, card above once flipped) so no join can open an antialiasing hairline.
-        let overshoot = rect.height + 2
-        guard let first = centers.first, let last = centers.last, pageCount > 1 else {
-            path.move(to: CGPoint(x: centers[0], y: 0))
-            path.addLine(to: CGPoint(x: centers[0], y: overshoot))
-            return flipped ? path.flippedVertically(height: rect.height) : path
-        }
-        path.move(to: CGPoint(x: first, y: overshoot))
-        path.addLine(to: CGPoint(x: first, y: railY + cornerRadius))
-        path.addArc(
-            center: CGPoint(x: first + cornerRadius, y: railY + cornerRadius),
-            radius: cornerRadius,
-            startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false
-        )
-        path.addLine(to: CGPoint(x: last - cornerRadius, y: railY))
-        path.addArc(
-            center: CGPoint(x: last - cornerRadius, y: railY + cornerRadius),
-            radius: cornerRadius,
-            startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false
-        )
-        path.addLine(to: CGPoint(x: last, y: overshoot))
-        for center in centers.dropFirst().dropLast() {
-            path.move(to: CGPoint(x: center, y: railY))
-            path.addLine(to: CGPoint(x: center, y: overshoot))
-        }
-        return flipped ? path.flippedVertically(height: rect.height) : path
-    }
-}
-
-private extension Path {
-    func flippedVertically(height: CGFloat) -> Path {
-        applying(CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -height))
     }
 }
 

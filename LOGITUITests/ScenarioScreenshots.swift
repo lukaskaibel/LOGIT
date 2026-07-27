@@ -327,6 +327,81 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "workout_detail_superset")
     }
 
+    /// Template parity (see AGENT.md, "Templates mirror workouts"): the template detail and
+    /// editor must render set groups exactly like the workout side — index bulges, the thread
+    /// between groups, and a superset as the containerless per-exercise pager. The preview Push
+    /// Day template ends with a Triceps Extensions + Lateral Raises superset.
+    func testTemplateEditorSuperset() {
+        let app = launchApp(scenario: "many")
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+
+        tapTab(app, at: 2)
+        waitABit(2)
+        attach(app, "template_01_list")
+
+        // The list holds both the shipped default templates (subtitled with a description) and
+        // the preview ones (subtitled with their exercise names) — and both sets contain a
+        // "Push Day". Match the preview one by an exercise only it lists.
+        let previewPush = app.buttons
+            .matching(NSPredicate(format: "label CONTAINS 'Triceps Extensions'")).firstMatch
+        for _ in 0 ..< 12 where !(previewPush.exists && previewPush.isHittable) {
+            app.swipeUp()
+            waitABit()
+        }
+        XCTAssertTrue(previewPush.waitForExistence(timeout: 5), "Preview Push Day template missing")
+        previewPush.tap()
+        waitABit(2)
+
+        // Detail: scroll to the superset finisher at the end of the exercise list.
+        let tricepsHeader = app.staticTexts["Triceps Extensions"].firstMatch
+        for _ in 0 ..< 12 where !(tricepsHeader.exists && tricepsHeader.isHittable) {
+            app.swipeUp()
+            waitABit()
+        }
+        XCTAssertTrue(
+            tricepsHeader.waitForExistence(timeout: 5),
+            "Superset group not reachable in template detail"
+        )
+        attach(app, "template_02_detail_superset")
+
+        // Swipe the pager to the partner page — same gesture as the recorder's.
+        let base = tricepsHeader.coordinate(withNormalizedOffset: .zero)
+        base.withOffset(CGVector(dx: 240, dy: 90)).press(
+            forDuration: 0.05,
+            thenDragTo: base.withOffset(CGVector(dx: -80, dy: 90)),
+            withVelocity: 800,
+            thenHoldForDuration: 0.3
+        )
+        waitABit(1)
+        XCTAssertTrue(
+            app.staticTexts["Lateral Raises"].firstMatch.waitForExistence(timeout: 5),
+            "Partner page not shown after horizontal swipe in template detail"
+        )
+        attach(app, "template_03_detail_superset_page2")
+
+        // Editor: the same layout with the edit controls, opened from the detail's ⋯ menu.
+        let menuButton = app.navigationBars.buttons.element(boundBy: 1)
+        XCTAssertTrue(menuButton.waitForExistence(timeout: 5), "Template detail toolbar menu missing")
+        menuButton.tap()
+        waitABit(1)
+        let editButton = app.buttons["Edit"].firstMatch
+        XCTAssertTrue(editButton.waitForExistence(timeout: 5), "Edit not offered in the template menu")
+        editButton.tap()
+        waitABit(3)
+
+        let editorTriceps = app.staticTexts["Triceps Extensions"].firstMatch
+        for _ in 0 ..< 12 where !(editorTriceps.exists && editorTriceps.isHittable) {
+            app.swipeUp()
+            waitABit()
+        }
+        XCTAssertTrue(
+            editorTriceps.waitForExistence(timeout: 5),
+            "Superset group not reachable in the template editor"
+        )
+        attach(app, "template_04_editor_superset")
+    }
+
     /// The containerless superset pager at the end of the stress current workout: page 1
     /// (Incline Bench Press) with its bulge socket and the thread's fork/merge rails, then a
     /// horizontal swipe to the partner page (Barbell Rows) with its own metric badge.

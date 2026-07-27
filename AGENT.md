@@ -221,6 +221,38 @@ that are committed to the repo.
   navigation inside `LOGITUITests/LOGITScreenshots.swift` rather than
   skipping the test.
 
+### Templates mirror workouts (keep them in lock-step)
+
+A template is the blueprint of a workout, so the two must look and behave like
+one product. **Any change to how a workout's set groups or sets are presented
+must be applied to the template side in the same change** - never leave the
+template editor/detail looking like the previous generation of the workout UI.
+
+The paired surfaces are:
+
+| Workout | Template |
+| --- | --- |
+| `WorkoutSetGroupCell` | `TemplateSetGroupCell` |
+| `WorkoutSetCell` | `TemplateSetCell` |
+| `WorkoutSetGroupList` (recorder + `WorkoutDetailScreen`) | `TemplateEditorScreen` + `TemplateDetailScreen` lists |
+
+Shared visual vocabulary lives in `LOGIT/SharedUI/Views/SetGroupThread.swift`
+(the thread's trunk, index bulge, superset rails, row shadow/z-order) and in
+`Color.threadLine`. Put anything both sides draw there rather than duplicating
+it, so a tweak lands on both at once.
+
+**Only mirror what actually exists on both sides.** Some concepts are
+workout-only because a template has no session to compare against or run:
+per-exercise metric/improvement badges, previous-set reference values,
+personal-record peeks, the live rest timer/chronograph, and the session note.
+Templates likewise own things workouts don't (planned rest display states). When
+a workout change touches a workout-only concept, note that in the PR instead of
+inventing a template equivalent.
+
+When you do change a paired surface, verify the template screens too - the
+scenario matrix already captures Templates (`*_04_templates`), and
+`ScenarioScreenshots.testTemplateEditorSuperset` covers the superset layout.
+
 ## Known quirks
 
 - **Leading-dot bundle ID.** The registered App IDs in Apple's Developer

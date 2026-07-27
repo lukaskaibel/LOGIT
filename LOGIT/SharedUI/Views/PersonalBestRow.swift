@@ -51,12 +51,18 @@ struct PersonalBestRow: View {
 
 /// A record's base value as a display string and its unit, in the metric's units. The tile and the
 /// card both render it through `UnitView`, which uppercases the unit, so the casing can't drift.
-func personalRecordDisplay(_ base: Int, metric: ExercisePrimaryMetric) -> (value: String, unit: String) {
+/// `exercise` decides the distance scale (km vs m) for distance records; other metrics ignore it.
+func personalRecordDisplay(
+    _ base: Int, metric: ExercisePrimaryMetric, exercise: Exercise? = nil
+) -> (value: String, unit: String) {
     switch metric {
     case .estimatedOneRepMax: return (formatEstimatedOneRepMax(base), WeightUnit.used.rawValue)
     case .weight: return (formatWeightForDisplay(base), WeightUnit.used.rawValue)
     case .repetitions: return (String(base), NSLocalizedString("reps", comment: ""))
     case .duration: return (String(base), NSLocalizedString("sec", comment: ""))
+    case .distance:
+        let style = exercise?.distanceStyle ?? .long
+        return (formatDistanceForDisplay(Int64(base), style: style), distanceUnitTitle(for: style))
     }
 }
 
@@ -65,6 +71,6 @@ private func personalRecordValueView(
     for record: WorkoutProgressReport.PRRecord,
     configuration: UnitViewConfiguration = .normal
 ) -> some View {
-    let display = personalRecordDisplay(record.value, metric: record.metric)
+    let display = personalRecordDisplay(record.value, metric: record.metric, exercise: record.exercise)
     return UnitView(value: display.value, unit: display.unit, configuration: configuration)
 }

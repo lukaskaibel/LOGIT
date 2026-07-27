@@ -35,10 +35,6 @@ struct WorkoutSetGroupCell: View {
     /// group must still refresh this cell's header number. Nil when the cell is used standalone
     /// (previews), where the position is derived from the workout instead.
     var indexInWorkout: Int? = nil
-    /// Flat index of this group's first set within the whole workout. Not rendered, but part of
-    /// `==`: the set cells derive their keyboard-focus indices from flat set positions, so a
-    /// structural change in an earlier group has to re-render this cell's children too.
-    var firstSetIndexInWorkout: Int = 0
     /// Total number of set groups in the workout, for the "2 of 5" bulge label. Passed by the
     /// list (and part of `==`) because adding or removing *another* group changes this cell's
     /// total even when its own index stays put. Nil derives it from the workout (previews).
@@ -433,13 +429,13 @@ struct WorkoutSetGroupCell: View {
 
     /// Keyboard next/previous walks a set's entries, which alternate exercises in a superset —
     /// when focus lands on a field whose entry belongs to the other exercise, the pager follows
-    /// so the focused field is never on an off-screen page.
+    /// so the focused field is never on an off-screen page. Focus indices are identity-keyed
+    /// (`Index.setID`), so the set is looked up by id; a focused set outside this group simply
+    /// doesn't resolve.
     private func autopageIfNeeded(for index: IntegerField.Index?, exercises: [Exercise]) {
-        guard let index else { return }
-        let localSetIndex = index.primary - firstSetIndexInWorkout
-        guard setGroup.sets.indices.contains(localSetIndex) else { return }
-        let workoutSet = setGroup.sets[localSetIndex]
-        guard workoutSet.entries.indices.contains(index.secondary),
+        guard let index,
+              let workoutSet = setGroup.sets.first(where: { $0.id == index.setID }),
+              workoutSet.entries.indices.contains(index.secondary),
               let owner = workoutSet.owningExercise(of: workoutSet.entries[index.secondary])
         else { return }
         let currentID = pagedExerciseID ?? exercises.first?.objectID
@@ -635,6 +631,27 @@ struct WorkoutSetGroupCell: View {
                 } header: {
                     Text(NSLocalizedString("measurementType", comment: ""))
                 }
+                // The distance scale is the user's choice per exercise (km vs m, mi vs yd) —
+                // distances are stored in meters regardless, so switching only changes how
+                // they're shown and entered, everywhere this exercise appears.
+                if setGroup.measurementType.usesDistance, let exercise = setGroup.exercise {
+                    Section {
+                        ForEach(SetMeasurementType.DistanceStyle.allCases, id: \.self) { style in
+                            Button {
+                                exercise.distanceStyle = style
+                            } label: {
+                                HStack {
+                                    Text(distanceStyleTitle(for: style))
+                                    if setGroup.measurementType.distanceStyle(for: exercise) == style {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } header: {
+                        Text(NSLocalizedString("distanceUnit", comment: ""))
+                    }
+                }
             }
             if let onReorderSetGroups {
                 Section {
@@ -718,7 +735,6 @@ extension WorkoutSetGroupCell: Equatable {
             && lhs.showPendingRestInTertiary == rhs.showPendingRestInTertiary
             && lhs.isFieldFocused == rhs.isFieldFocused
             && lhs.indexInWorkout == rhs.indexInWorkout
-            && lhs.firstSetIndexInWorkout == rhs.firstSetIndexInWorkout
             && lhs.groupCount == rhs.groupCount
             // Superset cells DO re-render on focus moves (unlike everything else, which only
             // cares whether the keyboard is up): their pager auto-pages to the exercise that
@@ -1284,6 +1300,7 @@ private struct SetGroupMetricComparison {
         case .weight: return setGroup.sets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
         case .repetitions: return setGroup.sets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
         case .duration: return setGroup.sets.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
+        case .distance: return setGroup.sets.map { $0.maximum(.distance, for: exercise) }.max() ?? 0
         }
     }
 
@@ -1323,6 +1340,7 @@ private struct SetGroupMetricComparison {
             case .weight: return best.maximum(.weight, for: exercise)
             case .repetitions: return best.maximum(.repetitions, for: exercise)
             case .duration: return best.maximum(.duration, for: exercise)
+            case .distance: return best.maximum(.distance, for: exercise)
             }
         }
         // Untrained for over a month → the window is empty. Fall back to the all-time best so there
@@ -1334,6 +1352,7 @@ private struct SetGroupMetricComparison {
             case .weight: return workoutSet.maximum(.weight, for: exercise)
             case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
             case .duration: return workoutSet.maximum(.duration, for: exercise)
+            case .distance: return workoutSet.maximum(.distance, for: exercise)
             }
         }
         let allTimeBest = priorSets.map(value).max() ?? 0
@@ -1373,6 +1392,7 @@ private struct SetGroupMetricComparison {
         case .weight: return priorSets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
         case .repetitions: return priorSets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
         case .duration: return priorSets.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
+        case .distance: return priorSets.map { $0.maximum(.distance, for: exercise) }.max() ?? 0
         }
     }
 
@@ -1658,7 +1678,19 @@ private struct MetricBadgeView: View {
             return UnitView(value: "\(value)", unit: NSLocalizedString("reps", comment: ""), configuration: .extraSmall)
         case .duration:
             return UnitView(value: "\(value)", unit: NSLocalizedString("sec", comment: ""), configuration: .extraSmall)
+        case .distance:
+            return UnitView(
+                value: formatDistanceForDisplay(Int64(value), style: distanceStyle),
+                unit: distanceUnitTitle(for: distanceStyle),
+                configuration: .extraSmall
+            )
         }
+    }
+
+    /// The distance scale for this exercise's displayed values — from its measurement type,
+    /// defaulting to the cardio (km) scale.
+    private var distanceStyle: SetMeasurementType.DistanceStyle {
+        setGroup.exercise?.distanceStyle ?? .long
     }
 
     // MARK: - Trend rendering (math lives in SetGroupMetricComparison)
@@ -1718,6 +1750,8 @@ private struct MetricBadgeView: View {
             return "\(value) \(NSLocalizedString("reps", comment: ""))"
         case .duration:
             return "\(value) \(NSLocalizedString("sec", comment: ""))"
+        case .distance:
+            return "\(formatDistanceForDisplay(Int64(value), style: distanceStyle)) \(distanceUnitTitle(for: distanceStyle))"
         }
     }
 
@@ -1897,7 +1931,12 @@ struct MetricInfoPanel: View {
     let subjectExercise: Exercise?
     @State private var selectedMetric: ExercisePrimaryMetric
 
-    private let metrics = ExercisePrimaryMetric.allCases
+    /// Only the metrics that fit how the exercise is measured — five total metrics exist now,
+    /// and a segmented control full of inapplicable ones (an e1RM segment on a plank) helps no
+    /// one. Matches the badge's cycling order and the exercise editor's picker.
+    private var metrics: [ExercisePrimaryMetric] {
+        ExercisePrimaryMetric.allowed(for: setGroup.exercise?.measurementType ?? .repsAndWeight)
+    }
 
     private var exercise: Exercise? { subjectExercise ?? setGroup.exercise }
 
@@ -2040,6 +2079,7 @@ struct MetricInfoPanel: View {
         case .weight: return NSLocalizedString("metricInfoWeight", comment: "")
         case .repetitions: return NSLocalizedString("metricInfoReps", comment: "")
         case .duration: return NSLocalizedString("metricInfoDuration", comment: "")
+        case .distance: return NSLocalizedString("metricInfoDistance", comment: "")
         }
     }
 
@@ -2058,6 +2098,7 @@ struct MetricInfoPanel: View {
         case .estimatedOneRepMax: return formatEstimatedOneRepMax(value)
         case .weight: return formatWeightForDisplay(value)
         case .repetitions, .duration: return String(value)
+        case .distance: return formatDistanceForDisplay(Int64(value), style: distanceStyle)
         }
     }
 
@@ -2066,7 +2107,13 @@ struct MetricInfoPanel: View {
         case .estimatedOneRepMax, .weight: return WeightUnit.used.rawValue
         case .repetitions: return NSLocalizedString("reps", comment: "")
         case .duration: return NSLocalizedString("sec", comment: "")
+        case .distance: return distanceUnitTitle(for: distanceStyle)
         }
+    }
+
+    /// The distance scale for displayed values — same rule as the badge's.
+    private var distanceStyle: SetMeasurementType.DistanceStyle {
+        setGroup.exercise?.distanceStyle ?? .long
     }
 
     // MARK: - Progression chart
@@ -2077,6 +2124,7 @@ struct MetricInfoPanel: View {
         case .weight: return set.maximum(.weight, for: exercise)
         case .repetitions: return set.maximum(.repetitions, for: exercise)
         case .duration: return set.maximum(.duration, for: exercise)
+        case .distance: return set.maximum(.distance, for: exercise)
         }
     }
 
@@ -2084,6 +2132,11 @@ struct MetricInfoPanel: View {
         switch metric {
         case .estimatedOneRepMax, .weight: return convertWeightForDisplayingDecimal(base)
         case .repetitions, .duration: return Double(base)
+        case .distance:
+            switch distanceStyle {
+            case .long: return convertDistanceForDisplayingDecimal(Int64(base))
+            case .short: return Double(convertShortDistanceForDisplaying(Int64(base)))
+            }
         }
     }
 

@@ -21,6 +21,7 @@ struct WorkoutDetailScreen: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject private var database: Database
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
+    @EnvironmentObject private var healthKitSyncManager: HealthKitSyncManager
 
     // MARK: - State
 
@@ -157,6 +158,9 @@ struct WorkoutDetailScreen: View {
                     titleVisibility: .visible
                 ) {
                     Button(NSLocalizedString("deleteWorkout", comment: ""), role: .destructive) {
+                        if let workoutID = workout.id {
+                            healthKitSyncManager.removeWorkout(id: workoutID)
+                        }
                         database.delete(workout, saveContext: true)
                         dismiss()
                     }

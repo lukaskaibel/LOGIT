@@ -20,6 +20,11 @@ struct MeasurementDetailScreen: View {
     @State private var newEntryDate: Date = .now
     @State private var newEntryValue: Double = 0
 
+    /// Standalone field identity for the add-measurement sheet — there's no set behind this
+    /// field, so it gets one fixed UUID (stable across renders, or the field would lose its
+    /// state to `.id(index)` re-identification).
+    private static let newEntryFieldIndex = IntegerField.Index(setID: UUID())
+
     private var entries: [MeasurementEntry] {
         measurementController.getMeasurementEntries(ofType: measurementType)
     }
@@ -205,19 +210,7 @@ struct MeasurementDetailScreen: View {
             .chartXSelection(value: $selectedDate)
             .chartXVisibleDomain(length: visibleDomainSeconds)
             .chartXAxis {
-                let axisStride = chartRange.axisStride(firstDataDate: firstDataDate)
-                AxisMarks(
-                    position: .bottom,
-                    values: .stride(by: axisStride.component, count: axisStride.count)
-                ) { value in
-                    if let date = value.as(Date.self) {
-                        AxisGridLine()
-                            .foregroundStyle(Color.gray.opacity(0.5))
-                        AxisValueLabel(chartRange.axisLabel(for: date, firstDataDate: firstDataDate))
-                            .foregroundStyle(chartRange.isCurrentAxisMark(date, firstDataDate: firstDataDate) ? Color.primary : .secondary)
-                            .font(.caption.weight(.bold))
-                    }
-                }
+                chartRange.xAxisMarks(firstDataDate: firstDataDate)
             }
             .chartYAxis {
                 AxisMarks(values: [0.0, yMax / 2.0, yMax])
@@ -286,7 +279,7 @@ struct MeasurementDetailScreen: View {
                         value: $newEntryValue,
                         maxDigits: 4,
                         decimalPlaces: 1,
-                        index: .init(primary: 0),
+                        index: Self.newEntryFieldIndex,
                         focusedIntegerFieldIndex: .constant(nil),
                         unit: measurementType.unit
                     )

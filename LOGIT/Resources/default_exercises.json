@@ -1,5 +1,5 @@
 {
- "version": 6,
+ "version": 7,
  "exercises": [
   {
    "id": "default_001",
@@ -5254,7 +5254,7 @@
      "Rinfrescati con una corsa più lenta o una camminata dopo."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "distanceAndDuration"
   },
   {
    "id": "default_077",
@@ -5326,7 +5326,7 @@
      "Mantieni una cadenza costante per tutta la sessione."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "distanceAndDuration"
   },
   {
    "id": "default_078",
@@ -5398,7 +5398,7 @@
      "Mantieni il movimento fluido e mantieni un ritmo costante."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "distanceAndDuration"
   },
   {
    "id": "default_079",
@@ -5542,7 +5542,7 @@
      "Mantieni un ritmo costante durante l'allenamento."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "distanceAndDuration"
   },
   {
    "id": "default_081",
@@ -5686,7 +5686,7 @@
      "Rinfrescati con giri più lenti alla fine della sessione."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "distanceAndDuration"
   },
   {
    "id": "default_083",
@@ -11343,7 +11343,7 @@
      "Rinfrescati con una corsetta leggera o una camminata successiva."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "distanceAndDuration"
   },
   {
    "id": "default_166",
@@ -11479,7 +11479,7 @@
      "Mantenere un ritmo costante o uno schema di intervalli."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "distanceAndDuration"
   },
   {
    "id": "default_168",
@@ -11551,7 +11551,7 @@
      "Mantieni il movimento fluido e mantieni un ritmo costante."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "distanceAndDuration"
   },
   {
    "id": "default_169",
@@ -11623,7 +11623,7 @@
      "Mantieni un ritmo potente per tutto il tempo."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "distanceAndDuration"
   },
   {
    "id": "default_170",
@@ -11695,7 +11695,7 @@
      "Abbassa i pesi con controllo."
     ]
    },
-   "measurementType": "weightAndDuration"
+   "measurementType": "weightAndDistance"
   },
   {
    "id": "default_171",
@@ -13250,7 +13250,7 @@
      "Spingi per la distanza desiderata, poi riposa e ripeti."
     ]
    },
-   "measurementType": "weightAndDuration"
+   "measurementType": "weightAndDistance"
   },
   {
    "id": "default_193",
@@ -13322,7 +13322,7 @@
      "Reimpostare e ripetere per i set desiderati."
     ]
    },
-   "measurementType": "weightAndDuration"
+   "measurementType": "weightAndDistance"
   },
   {
    "id": "default_194",
@@ -13818,6 +13818,454 @@
      "Porta il petto agli anelli mentre stringi la schiena.",
      "Abbassati lentamente con controllo.",
      "Mantieni il corpo dritto durante tutto il movimento."
+    ]
+   }
+  },
+  {
+   "id": "default_201",
+   "nameKey": "_default.exercise.walking",
+   "muscleGroup": "cardio",
+   "measurementType": "distanceAndDuration",
+   "instructions": [
+    "Stand tall and walk at a comfortable, steady pace.",
+    "Swing your arms naturally and keep your core lightly engaged.",
+    "Roll through each step from heel to toe.",
+    "Walk for the desired distance or time."
+   ],
+   "localizedInstructions": {
+    "de": [
+     "Stehen Sie aufrecht und gehen Sie in einem angenehmen, gleichmäßigen Tempo.",
+     "Schwingen Sie die Arme natürlich und halten Sie den Rumpf leicht angespannt.",
+     "Rollen Sie jeden Schritt von der Ferse bis zu den Zehen ab.",
+     "Gehen Sie die gewünschte Distanz oder Zeit."
+    ],
+    "es": [
+     "Párate erguido y camina a un ritmo cómodo y constante.",
+     "Balancea los brazos con naturalidad y mantén el core ligeramente activado.",
+     "Apoya cada paso del talón a la punta del pie.",
+     "Camina la distancia o el tiempo deseado."
+    ],
+    "fr": [
+     "Tenez-vous droit et marchez à un rythme confortable et régulier.",
+     "Balancez vos bras naturellement et gardez le tronc légèrement engagé.",
+     "Déroulez chaque pas du talon aux orteils.",
+     "Marchez pendant la distance ou le temps souhaité."
+    ],
+    "it": [
+     "Stai in piedi eretto e cammina a un ritmo comodo e costante.",
+     "Fai oscillare le braccia in modo naturale e mantieni il core leggermente attivo.",
+     "Appoggia ogni passo dal tallone alla punta.",
+     "Cammina per la distanza o il tempo desiderato."
+    ],
+    "ja": [
+     "背筋を伸ばして立ち、快適で一定のペースで歩きます。",
+     "腕を自然に振り、体幹を軽く引き締めます。",
+     "かかとからつま先へと体重を移しながら歩きます。",
+     "希望の距離または時間だけ歩きます。"
+    ],
+    "ko": [
+     "똑바로 서서 편안하고 일정한 속도로 걷습니다.",
+     "팔을 자연스럽게 흔들고 코어를 가볍게 유지합니다.",
+     "발뒤꿈치에서 발끝으로 굴리듯 걷습니다.",
+     "원하는 거리 또는 시간만큼 걷습니다."
+    ],
+    "pt-BR": [
+     "Fique ereto e caminhe em um ritmo confortável e constante.",
+     "Balance os braços naturalmente e mantenha o núcleo levemente ativado.",
+     "Role cada passo do calcanhar aos dedos.",
+     "Caminhe pela distância ou tempo desejado."
+    ]
+   }
+  },
+  {
+   "id": "default_202",
+   "nameKey": "_default.exercise.inclineTreadmillWalk",
+   "muscleGroup": "cardio",
+   "measurementType": "distanceAndDuration",
+   "instructions": [
+    "Set the treadmill to the desired incline and a brisk walking speed.",
+    "Stand tall and avoid leaning on the handrails.",
+    "Take controlled steps, driving through your heels.",
+    "Walk for the desired distance or time."
+   ],
+   "localizedInstructions": {
+    "de": [
+     "Stellen Sie das Laufband auf die gewünschte Steigung und ein zügiges Gehtempo ein.",
+     "Stehen Sie aufrecht und stützen Sie sich nicht auf den Handläufen ab.",
+     "Machen Sie kontrollierte Schritte und drücken Sie über die Fersen ab.",
+     "Gehen Sie die gewünschte Distanz oder Zeit."
+    ],
+    "es": [
+     "Ajusta la cinta a la inclinación deseada y a una velocidad de caminata rápida.",
+     "Mantente erguido y evita apoyarte en los pasamanos.",
+     "Da pasos controlados, empujando con los talones.",
+     "Camina la distancia o el tiempo deseado."
+    ],
+    "fr": [
+     "Réglez le tapis sur l'inclinaison souhaitée et une vitesse de marche soutenue.",
+     "Tenez-vous droit et évitez de vous appuyer sur les rampes.",
+     "Faites des pas contrôlés en poussant sur les talons.",
+     "Marchez pendant la distance ou le temps souhaité."
+    ],
+    "it": [
+     "Imposta il tapis roulant sull'inclinazione desiderata e una velocità di camminata sostenuta.",
+     "Stai eretto ed evita di appoggiarti ai corrimano.",
+     "Fai passi controllati spingendo sui talloni.",
+     "Cammina per la distanza o il tempo desiderato."
+    ],
+    "ja": [
+     "トレッドミルを希望の傾斜と速歩のスピードに設定します。",
+     "背筋を伸ばし、手すりに寄りかからないようにします。",
+     "かかとで踏み込みながら、コントロールされた歩幅で歩きます。",
+     "希望の距離または時間だけ歩きます。"
+    ],
+    "ko": [
+     "트레드밀을 원하는 경사와 빠른 걷기 속도로 설정합니다.",
+     "똑바로 서서 손잡이에 기대지 않습니다.",
+     "발뒤꿈치로 밀어내며 통제된 걸음을 내딛습니다.",
+     "원하는 거리 또는 시간만큼 걷습니다."
+    ],
+    "pt-BR": [
+     "Ajuste a esteira na inclinação desejada e em uma velocidade de caminhada rápida.",
+     "Fique ereto e evite se apoiar nos corrimãos.",
+     "Dê passos controlados, empurrando com os calcanhares.",
+     "Caminhe pela distância ou tempo desejado."
+    ]
+   }
+  },
+  {
+   "id": "default_203",
+   "nameKey": "_default.exercise.rucking",
+   "muscleGroup": "cardio",
+   "measurementType": "weightAndDistance",
+   "instructions": [
+    "Load a backpack or rucksack with the desired weight.",
+    "Wear it high and tight against your upper back.",
+    "Walk at a brisk pace with an upright posture.",
+    "Cover the desired distance at a steady pace."
+   ],
+   "localizedInstructions": {
+    "de": [
+     "Beladen Sie einen Rucksack mit dem gewünschten Gewicht.",
+     "Tragen Sie ihn hoch und eng am oberen Rücken.",
+     "Gehen Sie zügig mit aufrechter Haltung.",
+     "Legen Sie die gewünschte Distanz in gleichmäßigem Tempo zurück."
+    ],
+    "es": [
+     "Carga una mochila con el peso deseado.",
+     "Llévala alta y ajustada contra la parte superior de la espalda.",
+     "Camina a paso ligero con una postura erguida.",
+     "Cubre la distancia deseada a un ritmo constante."
+    ],
+    "fr": [
+     "Chargez un sac à dos avec le poids souhaité.",
+     "Portez-le haut et serré contre le haut du dos.",
+     "Marchez d'un pas soutenu avec une posture droite.",
+     "Parcourez la distance souhaitée à un rythme régulier."
+    ],
+    "it": [
+     "Carica uno zaino con il peso desiderato.",
+     "Indossalo alto e aderente alla parte alta della schiena.",
+     "Cammina a passo sostenuto con una postura eretta.",
+     "Copri la distanza desiderata a un ritmo costante."
+    ],
+    "ja": [
+     "バックパックに希望の重量を積みます。",
+     "背中の上部に高く密着させて背負います。",
+     "姿勢を正して速いペースで歩きます。",
+     "一定のペースで希望の距離を歩きます。"
+    ],
+    "ko": [
+     "배낭에 원하는 무게를 넣습니다.",
+     "등 위쪽에 높고 밀착되게 멥니다.",
+     "곧은 자세로 빠르게 걷습니다.",
+     "일정한 속도로 원하는 거리를 이동합니다."
+    ],
+    "pt-BR": [
+     "Carregue uma mochila com o peso desejado.",
+     "Use-a alta e justa contra a parte superior das costas.",
+     "Caminhe em ritmo acelerado com postura ereta.",
+     "Percorra a distância desejada em ritmo constante."
+    ]
+   }
+  },
+  {
+   "id": "default_204",
+   "nameKey": "_default.exercise.suitcaseCarry",
+   "muscleGroup": "abdominals",
+   "measurementType": "weightAndDistance",
+   "instructions": [
+    "Pick up a heavy dumbbell or kettlebell in one hand.",
+    "Stand tall without leaning toward the weight.",
+    "Brace your core to keep your torso level.",
+    "Walk the desired distance, then switch sides."
+   ],
+   "localizedInstructions": {
+    "de": [
+     "Nehmen Sie eine schwere Kurzhantel oder Kettlebell in eine Hand.",
+     "Stehen Sie aufrecht, ohne sich zum Gewicht zu neigen.",
+     "Spannen Sie den Rumpf an, um den Oberkörper gerade zu halten.",
+     "Gehen Sie die gewünschte Distanz und wechseln Sie dann die Seite."
+    ],
+    "es": [
+     "Levanta una mancuerna o pesa rusa pesada con una mano.",
+     "Mantente erguido sin inclinarte hacia el peso.",
+     "Aprieta el core para mantener el torso nivelado.",
+     "Camina la distancia deseada y luego cambia de lado."
+    ],
+    "fr": [
+     "Prenez un haltère lourd ou une kettlebell dans une main.",
+     "Tenez-vous droit sans pencher vers le poids.",
+     "Gainez votre tronc pour garder le buste droit.",
+     "Marchez la distance souhaitée, puis changez de côté."
+    ],
+    "it": [
+     "Prendi un manubrio pesante o un kettlebell con una mano.",
+     "Stai eretto senza inclinarti verso il peso.",
+     "Contrai il core per mantenere il busto in asse.",
+     "Cammina per la distanza desiderata, poi cambia lato."
+    ],
+    "ja": [
+     "片手に重いダンベルまたはケトルベルを持ちます。",
+     "重りの方に傾かず、まっすぐ立ちます。",
+     "体幹を締めて上体を水平に保ちます。",
+     "希望の距離を歩いたら、反対側に持ち替えます。"
+    ],
+    "ko": [
+     "한 손에 무거운 덤벨이나 케틀벨을 듭니다.",
+     "무게 쪽으로 기울지 않고 똑바로 섭니다.",
+     "코어에 힘을 주어 상체를 수평으로 유지합니다.",
+     "원하는 거리를 걸은 후 반대쪽으로 바꿉니다."
+    ],
+    "pt-BR": [
+     "Pegue um halter pesado ou kettlebell em uma mão.",
+     "Fique ereto sem inclinar para o lado do peso.",
+     "Contraia o núcleo para manter o tronco nivelado.",
+     "Caminhe a distância desejada e depois troque de lado."
+    ]
+   }
+  },
+  {
+   "id": "default_205",
+   "nameKey": "_default.exercise.overheadCarry",
+   "muscleGroup": "shoulders",
+   "measurementType": "weightAndDistance",
+   "instructions": [
+    "Press a dumbbell, kettlebell, or barbell overhead.",
+    "Lock out your arms and keep your ribs down.",
+    "Brace your core and walk with short, controlled steps.",
+    "Carry for the desired distance, then lower with control."
+   ],
+   "localizedInstructions": {
+    "de": [
+     "Drücken Sie eine Kurzhantel, Kettlebell oder Langhantel über den Kopf.",
+     "Strecken Sie die Arme durch und halten Sie die Rippen unten.",
+     "Spannen Sie den Rumpf an und gehen Sie mit kurzen, kontrollierten Schritten.",
+     "Tragen Sie die gewünschte Distanz und senken Sie das Gewicht kontrolliert ab."
+    ],
+    "es": [
+     "Presiona una mancuerna, pesa rusa o barra por encima de la cabeza.",
+     "Bloquea los brazos y mantén las costillas abajo.",
+     "Aprieta el core y camina con pasos cortos y controlados.",
+     "Acarrea la distancia deseada y baja el peso con control."
+    ],
+    "fr": [
+     "Poussez un haltère, une kettlebell ou une barre au-dessus de la tête.",
+     "Verrouillez vos bras et gardez les côtes basses.",
+     "Gainez votre tronc et marchez à petits pas contrôlés.",
+     "Portez sur la distance souhaitée, puis redescendez avec contrôle."
+    ],
+    "it": [
+     "Spingi un manubrio, un kettlebell o un bilanciere sopra la testa.",
+     "Blocca le braccia e tieni le costole basse.",
+     "Contrai il core e cammina con passi corti e controllati.",
+     "Trasporta per la distanza desiderata, poi abbassa con controllo."
+    ],
+    "ja": [
+     "ダンベル、ケトルベル、またはバーベルを頭上に押し上げます。",
+     "腕をロックし、肋骨を下げたままにします。",
+     "体幹を締め、短くコントロールされた歩幅で歩きます。",
+     "希望の距離を運び、コントロールしながら下ろします。"
+    ],
+    "ko": [
+     "덤벨, 케틀벨 또는 바벨을 머리 위로 밀어 올립니다.",
+     "팔을 완전히 펴고 갈비뼈를 아래로 유지합니다.",
+     "코어에 힘을 주고 짧고 통제된 걸음으로 걷습니다.",
+     "원하는 거리를 이동한 후 천천히 내립니다."
+    ],
+    "pt-BR": [
+     "Empurre um halter, kettlebell ou barra acima da cabeça.",
+     "Trave os braços e mantenha as costelas para baixo.",
+     "Contraia o núcleo e caminhe com passos curtos e controlados.",
+     "Carregue pela distância desejada e abaixe com controle."
+    ]
+   }
+  },
+  {
+   "id": "default_206",
+   "nameKey": "_default.exercise.yokeCarry",
+   "muscleGroup": "back",
+   "measurementType": "weightAndDistance",
+   "instructions": [
+    "Set the yoke to shoulder height and load it.",
+    "Step under it and brace your upper back against the crossbar.",
+    "Stand up tall with a tight core.",
+    "Take short, quick steps for the desired distance."
+   ],
+   "localizedInstructions": {
+    "de": [
+     "Stellen Sie das Joch auf Schulterhöhe ein und beladen Sie es.",
+     "Treten Sie darunter und pressen Sie den oberen Rücken gegen die Querstange.",
+     "Richten Sie sich mit angespanntem Rumpf auf.",
+     "Machen Sie kurze, schnelle Schritte über die gewünschte Distanz."
+    ],
+    "es": [
+     "Ajusta el yugo a la altura de los hombros y cárgalo.",
+     "Colócate debajo y apoya la parte superior de la espalda contra la barra.",
+     "Ponte de pie con el core apretado.",
+     "Da pasos cortos y rápidos por la distancia deseada."
+    ],
+    "fr": [
+     "Réglez le joug à hauteur d'épaules et chargez-le.",
+     "Placez-vous dessous et calez le haut du dos contre la barre.",
+     "Redressez-vous avec le tronc gainé.",
+     "Faites des pas courts et rapides sur la distance souhaitée."
+    ],
+    "it": [
+     "Regola il giogo all'altezza delle spalle e caricalo.",
+     "Mettiti sotto e appoggia la parte alta della schiena contro la barra.",
+     "Alzati in piedi con il core contratto.",
+     "Fai passi corti e rapidi per la distanza desiderata."
+    ],
+    "ja": [
+     "ヨークを肩の高さに設定し、重量を積みます。",
+     "下に入り、背中上部をクロスバーに押し当てます。",
+     "体幹を締めてまっすぐ立ち上がります。",
+     "短く素早い歩幅で希望の距離を進みます。"
+    ],
+    "ko": [
+     "요크를 어깨 높이로 설정하고 무게를 싣습니다.",
+     "아래로 들어가 등 위쪽을 크로스바에 밀착시킵니다.",
+     "코어에 힘을 주고 똑바로 일어섭니다.",
+     "짧고 빠른 걸음으로 원하는 거리를 이동합니다."
+    ],
+    "pt-BR": [
+     "Ajuste o yoke na altura dos ombros e carregue-o.",
+     "Posicione-se embaixo e apoie a parte superior das costas na barra.",
+     "Levante-se ereto com o núcleo contraído.",
+     "Dê passos curtos e rápidos pela distância desejada."
+    ]
+   }
+  },
+  {
+   "id": "default_207",
+   "nameKey": "_default.exercise.sandbagCarry",
+   "muscleGroup": "back",
+   "measurementType": "weightAndDistance",
+   "instructions": [
+    "Deadlift the sandbag and hug it to your chest.",
+    "Stand tall with your hips under your shoulders.",
+    "Grip tightly and keep your core braced.",
+    "Carry for the desired distance and set it down with control."
+   ],
+   "localizedInstructions": {
+    "de": [
+     "Heben Sie den Sandsack an und drücken Sie ihn an die Brust.",
+     "Stehen Sie aufrecht mit den Hüften unter den Schultern.",
+     "Greifen Sie fest zu und halten Sie den Rumpf angespannt.",
+     "Tragen Sie ihn die gewünschte Distanz und setzen Sie ihn kontrolliert ab."
+    ],
+    "es": [
+     "Levanta el saco de arena y abrázalo contra el pecho.",
+     "Mantente erguido con las caderas bajo los hombros.",
+     "Agarra con fuerza y mantén el core apretado.",
+     "Acarrea la distancia deseada y bájalo con control."
+    ],
+    "fr": [
+     "Soulevez le sac de sable et serrez-le contre votre poitrine.",
+     "Tenez-vous droit, les hanches sous les épaules.",
+     "Serrez fort et gardez le tronc gainé.",
+     "Portez sur la distance souhaitée et posez-le avec contrôle."
+    ],
+    "it": [
+     "Solleva il sacco di sabbia e stringilo al petto.",
+     "Stai eretto con i fianchi sotto le spalle.",
+     "Afferra saldamente e mantieni il core contratto.",
+     "Trasporta per la distanza desiderata e appoggialo con controllo."
+    ],
+    "ja": [
+     "サンドバッグを持ち上げ、胸に抱えます。",
+     "腰を肩の真下に置き、まっすぐ立ちます。",
+     "しっかりと握り、体幹を締めたままにします。",
+     "希望の距離を運び、コントロールしながら下ろします。"
+    ],
+    "ko": [
+     "샌드백을 들어 올려 가슴에 안습니다.",
+     "엉덩이를 어깨 아래에 두고 똑바로 섭니다.",
+     "단단히 잡고 코어에 힘을 유지합니다.",
+     "원하는 거리를 이동한 후 천천히 내려놓습니다."
+    ],
+    "pt-BR": [
+     "Levante o saco de areia e abrace-o contra o peito.",
+     "Fique ereto com os quadris sob os ombros.",
+     "Segure firme e mantenha o núcleo contraído.",
+     "Carregue pela distância desejada e abaixe com controle."
+    ]
+   }
+  },
+  {
+   "id": "default_208",
+   "nameKey": "_default.exercise.shuttleRun",
+   "muscleGroup": "cardio",
+   "measurementType": "distance",
+   "instructions": [
+    "Set two markers 10–20 meters apart.",
+    "Sprint from one marker to the other.",
+    "Touch the line, turn quickly, and sprint back.",
+    "Repeat for the desired total distance."
+   ],
+   "localizedInstructions": {
+    "de": [
+     "Stellen Sie zwei Markierungen im Abstand von 10–20 Metern auf.",
+     "Sprinten Sie von einer Markierung zur anderen.",
+     "Berühren Sie die Linie, drehen Sie schnell um und sprinten Sie zurück.",
+     "Wiederholen Sie dies für die gewünschte Gesamtdistanz."
+    ],
+    "es": [
+     "Coloca dos marcas separadas de 10 a 20 metros.",
+     "Esprinta de una marca a la otra.",
+     "Toca la línea, gira rápido y esprinta de vuelta.",
+     "Repite hasta la distancia total deseada."
+    ],
+    "fr": [
+     "Placez deux repères espacés de 10 à 20 mètres.",
+     "Sprintez d'un repère à l'autre.",
+     "Touchez la ligne, tournez vite et sprintez au retour.",
+     "Répétez jusqu'à la distance totale souhaitée."
+    ],
+    "it": [
+     "Posiziona due riferimenti a 10–20 metri di distanza.",
+     "Scatta da un riferimento all'altro.",
+     "Tocca la linea, girati rapidamente e scatta indietro.",
+     "Ripeti fino alla distanza totale desiderata."
+    ],
+    "ja": [
+     "10〜20メートル離して2つのマーカーを設置します。",
+     "一方のマーカーからもう一方へ全力疾走します。",
+     "ラインにタッチし、素早く方向転換して走り戻ります。",
+     "希望の合計距離になるまで繰り返します。"
+    ],
+    "ko": [
+     "10~20미터 간격으로 두 개의 마커를 설치합니다.",
+     "한 마커에서 다른 마커까지 전력 질주합니다.",
+     "라인을 터치하고 빠르게 돌아 다시 질주합니다.",
+     "원하는 총거리에 도달할 때까지 반복합니다."
+    ],
+    "pt-BR": [
+     "Coloque dois marcadores separados por 10 a 20 metros.",
+     "Corra em velocidade máxima de um marcador ao outro.",
+     "Toque a linha, gire rapidamente e corra de volta.",
+     "Repita até a distância total desejada."
     ]
    }
   }

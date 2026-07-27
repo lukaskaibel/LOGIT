@@ -153,7 +153,7 @@ private struct DropSetEntryRows: View {
 // MARK: - Entry Value Columns
 
 /// One entry's recorded values as unit columns, laid out by measurement type in the same
-/// field order the recorder uses: reps → weight, or weight → duration.
+/// field order the recorder uses: reps → weight, weight → distance, or distance → duration.
 private struct EntryValueColumns: View {
     let value: SetEntryValues
 
@@ -172,6 +172,15 @@ private struct EntryValueColumns: View {
                 UnitView(
                     value: formattedWeight(value.weight),
                     unit: WeightUnit.used.rawValue,
+                    configuration: .normal,
+                    unitColor: .secondaryLabel
+                )
+                .frame(minWidth: SET_GROUP_FIRST_COLUMN_WIDTH, alignment: .trailing)
+            }
+            if let distanceStyle = value.type.distanceStyle(for: value.exercise) {
+                UnitView(
+                    value: formatDistanceForDisplay(value.distance, style: distanceStyle),
+                    unit: distanceUnitTitle(for: distanceStyle),
                     configuration: .normal,
                     unitColor: .secondaryLabel
                 )

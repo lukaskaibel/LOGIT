@@ -58,6 +58,13 @@ struct HomeScreen: View {
                         if #unavailable(iOS 26.0) {
                             header
                                 .padding([.top, .horizontal])
+                        } else {
+                            // Top inset reproduces the standing space the former
+                            // `.largeTitle` navigation-bar title occupied, so the row
+                            // lands where it did before moving in-flow.
+                            summaryHeader
+                                .padding(.horizontal)
+                                .padding(.top, 46)
                         }
                         VStack(spacing: SECTION_SPACING) {
                             if #unavailable(iOS 26.0) {
@@ -270,23 +277,8 @@ struct HomeScreen: View {
                     case .workoutList: WorkoutListScreen()
                     }
                 }
-                .toolbar {
-                    ToolbarItem(placement: .largeTitle) {
-                        HStack {
-                            Text(NSLocalizedString("summary", comment: ""))
-                                .font(.largeTitle.bold())
-                            Spacer()
-                            Button {
-                                isShowingSettings = true
-                            } label: {
-                                Image(systemName: "person.circle")
-                            }
-                            .font(.title)
-                            .foregroundStyle(.tint)
-                        }
-                    }
-                }
-                .navigationTitle("Summary")
+                .navigationTitle(NSLocalizedString("summary", comment: ""))
+                .toolbar(.hidden, for: .navigationBar)
                 .task {
                     // Screenshot-only, deterministic scroll for the Progress
                     // capture: once the tab has laid out and seeded its pins, jump
@@ -321,6 +313,30 @@ struct HomeScreen: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// The Summary large-title row (title + settings avatar). Rendered as in-flow
+    /// scroll content rather than a `ToolbarItem(placement: .largeTitle)`: custom
+    /// large-title toolbar content is not exposed to the accessibility tree on
+    /// iOS 26 (the navigation bar reports zero children), so VoiceOver / UI
+    /// automation could never reach the settings button. In-flow content keeps the
+    /// identical look while staying fully accessible.
+    private var summaryHeader: some View {
+        HStack {
+            Text(NSLocalizedString("summary", comment: ""))
+                .font(.largeTitle.bold())
+            Spacer()
+            Button {
+                isShowingSettings = true
+            } label: {
+                Image(systemName: "person.circle")
+                    .imageScale(.large)
+            }
+            .font(.title)
+            .foregroundStyle(.tint)
+            .accessibilityLabel(NSLocalizedString("settings", comment: ""))
+            .accessibilityIdentifier("settingsButton")
+        }
     }
 
     @State private var isShowingWorkoutGoalSheet = false

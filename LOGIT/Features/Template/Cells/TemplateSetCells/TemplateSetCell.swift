@@ -85,7 +85,7 @@ struct TemplateSetCell: View {
 
     @ViewBuilder
     private var setContent: some View {
-        if let indexInTemplate {
+        if let setID = templateSet.id {
             VStack(spacing: 0) {
                 ForEach(
                     Array(templateSet.entries.enumerated()), id: \.element.objectID
@@ -93,7 +93,7 @@ struct TemplateSetCell: View {
                     let entryExercise = templateSet.owningExercise(of: entry)
                     SetEntryFieldsRow(
                         entry: entry,
-                        primaryIndex: indexInTemplate,
+                        setID: setID,
                         secondaryIndex: entryIndex,
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex
                     )
@@ -103,10 +103,6 @@ struct TemplateSetCell: View {
             .padding(.top, templateSetIsFirst(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
             .padding(.bottom, templateSetIsLast(templateSet: templateSet) ? 0 : CELL_SPACING / 2)
         }
-    }
-
-    private var indexInTemplate: Int? {
-        templateSet.setGroup?.workout?.sets.firstIndex(of: templateSet)
     }
 
     @ViewBuilder
@@ -142,6 +138,26 @@ struct TemplateSetCell: View {
                                     Image(systemName: "checkmark")
                                 }
                             }
+                        }
+                    }
+                    // Distance scale — an exercise-wide display choice (values stay meters),
+                    // offered here too so a re-typed set can fix its unit in the same menu.
+                    if templateSet.measurementType.usesDistance, let exercise = templateSet.exercise {
+                        Section {
+                            ForEach(SetMeasurementType.DistanceStyle.allCases, id: \.self) { style in
+                                Button {
+                                    exercise.distanceStyle = style
+                                } label: {
+                                    HStack {
+                                        Text(distanceStyleTitle(for: style))
+                                        if templateSet.measurementType.distanceStyle(for: exercise) == style {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } header: {
+                            Text(NSLocalizedString("distanceUnit", comment: ""))
                         }
                     }
                 } label: {

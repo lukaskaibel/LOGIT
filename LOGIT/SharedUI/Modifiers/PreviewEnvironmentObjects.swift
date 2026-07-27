@@ -19,6 +19,7 @@ struct PreviewEnvironmentObjects: ViewModifier {
     @StateObject private var homeNavigationCoordinator: HomeNavigationCoordinator
     @StateObject private var chronograph: Chronograph
     @StateObject private var exerciseSuggestionService: ExerciseSuggestionService
+    @StateObject private var healthKitSyncManager = HealthKitSyncManager()
 
     init() {
         let db = Database(isPreview: true)
@@ -48,6 +49,7 @@ struct PreviewEnvironmentObjects: ViewModifier {
             .environmentObject(homeNavigationCoordinator)
             .environmentObject(chronograph)
             .environmentObject(exerciseSuggestionService)
+            .environmentObject(healthKitSyncManager)
             .task {
                 Task {
                     do {

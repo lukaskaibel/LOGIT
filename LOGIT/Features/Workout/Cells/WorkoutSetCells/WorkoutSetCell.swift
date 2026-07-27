@@ -121,7 +121,7 @@ struct WorkoutSetCell: View {
 
     @ViewBuilder
     private var setContent: some View {
-        if let indexInWorkout {
+        if let setID = workoutSet.id {
             let referenceValues = referenceSet?.entryValues ?? []
             let placeholderValues =
                 workoutRecorder.templateSet(for: workoutSet)?.entryValues ?? []
@@ -132,7 +132,7 @@ struct WorkoutSetCell: View {
                     let entryExercise = workoutSet.owningExercise(of: entry)
                     SetEntryFieldsRow(
                         entry: entry,
-                        primaryIndex: indexInWorkout,
+                        setID: setID,
                         secondaryIndex: entryIndex,
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         reference: reference(for: entry, at: entryIndex, in: referenceValues),
@@ -147,13 +147,9 @@ struct WorkoutSetCell: View {
         }
     }
 
-    private var indexInWorkout: Int? {
-        workoutSet.workout?.sets.firstIndex(of: workoutSet)
-    }
-
     /// The set's entries with their original array positions, restricted to `visibleExercise`
     /// when one is set (superset pages). Keeping the original offsets keeps the focus indices —
-    /// (set, entry, field) — identical however the entries are laid out.
+    /// (set id, entry, field) — identical however the entries are laid out.
     private var visibleIndexedEntries: [(offset: Int, element: SetEntry)] {
         let all = Array(workoutSet.entries.enumerated())
         guard let visibleExercise else { return all }
@@ -229,6 +225,26 @@ struct WorkoutSetCell: View {
                                     Image(systemName: "checkmark")
                                 }
                             }
+                        }
+                    }
+                    // Distance scale — an exercise-wide display choice (values stay meters),
+                    // offered here too so a re-typed set can fix its unit in the same menu.
+                    if workoutSet.measurementType.usesDistance, let exercise = workoutSet.exercise {
+                        Section {
+                            ForEach(SetMeasurementType.DistanceStyle.allCases, id: \.self) { style in
+                                Button {
+                                    exercise.distanceStyle = style
+                                } label: {
+                                    HStack {
+                                        Text(distanceStyleTitle(for: style))
+                                        if workoutSet.measurementType.distanceStyle(for: exercise) == style {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } header: {
+                            Text(NSLocalizedString("distanceUnit", comment: ""))
                         }
                     }
                 } label: {
@@ -333,7 +349,7 @@ private func formatDisplayWeightDelta(_ value: Double) -> String {
     let formatter = NumberFormatter()
     formatter.numberStyle = .decimal
     formatter.minimumFractionDigits = 0
-    formatter.maximumFractionDigits = 3
+    formatter.maximumFractionDigits = 2
     formatter.decimalSeparator = "."
     formatter.groupingSeparator = ""
     return formatter.string(from: NSNumber(value: value)) ?? "0"

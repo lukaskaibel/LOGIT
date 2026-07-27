@@ -27,6 +27,7 @@ struct ExerciseDetailScreen: View {
     @State private var isShowingE1RMScreen = false
     @State private var isShowingRepetitionsScreen = false
     @State private var isShowingDurationScreen = false
+    @State private var isShowingDistanceScreen = false
     @State private var isShowingVolumeScreen = false
     @State private var isShowingSetVolumeScreen = false
     @State private var isShowingSetsScreen = false
@@ -223,6 +224,9 @@ struct ExerciseDetailScreen: View {
             .navigationDestination(isPresented: $isShowingDurationScreen) {
                 ExerciseDurationScreen(exercise: exercise, workoutSets: workoutSets)
             }
+            .navigationDestination(isPresented: $isShowingDistanceScreen) {
+                ExerciseDistanceScreen(exercise: exercise, workoutSets: workoutSets)
+            }
             .navigationDestination(isPresented: $isShowingVolumeScreen) {
                 ExerciseVolumeScreen(exercise: exercise, workoutSets: workoutSets)
             }
@@ -241,6 +245,7 @@ struct ExerciseDetailScreen: View {
                         case .weight: isShowingWeightScreen = true
                         case .repetitions: isShowingRepetitionsScreen = true
                         case .duration: isShowingDurationScreen = true
+                        case .distance: isShowingDistanceScreen = true
                         }
                     }
                 }
@@ -268,6 +273,10 @@ struct ExerciseDetailScreen: View {
     /// Duration exercises adapt the same way: a duration-only exercise (plank, dead hang, …) keeps
     /// just duration and sets, and a weight-and-duration exercise (weighted carry, …) keeps weight,
     /// duration, and sets — the reps-derived tiles (reps, e1RM, both volumes) would only show zeros.
+    ///
+    /// Distance exercises follow the same shapes: distance-and-duration (treadmill, rower, …)
+    /// keeps distance, duration, and sets; weight-and-distance (loaded carries) keeps weight,
+    /// distance, and sets; a distance-only exercise keeps distance and sets.
     @ViewBuilder
     private func metricTiles(workoutSets: [WorkoutSet]) -> some View {
         let spacing: CGFloat = 10
@@ -286,14 +295,29 @@ struct ExerciseDetailScreen: View {
             // so a freshly switched exercise adapts before its first duration set, and recorded
             // history keeps its tiles after a switch away. Same rule for weight.
             let tracksDuration = exercise.measurementType.usesDuration || loggedSets.contains { $0.maximum(.duration, for: exercise) > 0 }
+            let tracksDistance = exercise.measurementType.usesDistance || loggedSets.contains { $0.maximum(.distance, for: exercise) > 0 }
             let tracksWeight = exercise.measurementType.usesWeight || hasWeightEntry
             let tracksReps = exercise.measurementType.usesRepetitions || hasRepetitionEntry
+            let isDistanceAndDuration = tracksDistance && tracksDuration
+            let isWeightAndDistance = tracksDistance && tracksWeight
+            let isDistanceOnly = tracksDistance && !tracksWeight && !tracksDuration && !tracksReps
             let isWeightAndDuration = tracksDuration && tracksWeight
             let isDurationOnly = tracksDuration && !tracksWeight && !tracksReps
             VStack(spacing: spacing) {
                 if dynamicTypeSize.isAccessibilitySize {
                     // One column: accessibility text sizes can't fit half-width tiles.
-                    if isDurationOnly {
+                    if isDistanceAndDuration {
+                        distanceTile(workoutSets: workoutSets)
+                        durationTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    } else if isWeightAndDistance {
+                        weightTile(workoutSets: workoutSets)
+                        distanceTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    } else if isDistanceOnly {
+                        distanceTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    } else if isDurationOnly {
                         durationTile(workoutSets: workoutSets)
                         setsTile(workoutSets: workoutSets)
                     } else if isWeightAndDuration {
@@ -312,6 +336,23 @@ struct ExerciseDetailScreen: View {
                         }
                         setsTile(workoutSets: workoutSets)
                     }
+                } else if isDistanceAndDuration {
+                    HStack(alignment: .top, spacing: spacing) {
+                        distanceTile(workoutSets: workoutSets)
+                        durationTile(workoutSets: workoutSets)
+                    }
+                    trailingSetsRow(workoutSets: workoutSets, spacing: spacing)
+                } else if isWeightAndDistance {
+                    HStack(alignment: .top, spacing: spacing) {
+                        weightTile(workoutSets: workoutSets)
+                        distanceTile(workoutSets: workoutSets)
+                    }
+                    trailingSetsRow(workoutSets: workoutSets, spacing: spacing)
+                } else if isDistanceOnly {
+                    HStack(alignment: .top, spacing: spacing) {
+                        distanceTile(workoutSets: workoutSets)
+                        setsTile(workoutSets: workoutSets)
+                    }
                 } else if isDurationOnly {
                     HStack(alignment: .top, spacing: spacing) {
                         durationTile(workoutSets: workoutSets)
@@ -322,7 +363,7 @@ struct ExerciseDetailScreen: View {
                         weightTile(workoutSets: workoutSets)
                         durationTile(workoutSets: workoutSets)
                     }
-                    setsTile(workoutSets: workoutSets)
+                    trailingSetsRow(workoutSets: workoutSets, spacing: spacing)
                 } else if isRepsOnly {
                     HStack(alignment: .top, spacing: spacing) {
                         repetitionsTile(workoutSets: workoutSets)
@@ -382,6 +423,25 @@ struct ExerciseDetailScreen: View {
             ExerciseDurationTile(exercise: exercise, workoutSets: workoutSets)
         }
         .buttonStyle(TileButtonStyle())
+    }
+
+    private func distanceTile(workoutSets: [WorkoutSet]) -> some View {
+        Button {
+            isShowingDistanceScreen = true
+        } label: {
+            ExerciseDistanceTile(exercise: exercise, workoutSets: workoutSets)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    /// The sets tile as the odd third tile of a 3-tile layout (weight+duration, distance+duration,
+    /// weight+distance): kept to a leading half with an empty trailing slot, so it lines up with the
+    /// half-width pair above it instead of stretching to full width.
+    private func trailingSetsRow(workoutSets: [WorkoutSet], spacing: CGFloat) -> some View {
+        HStack(alignment: .top, spacing: spacing) {
+            setsTile(workoutSets: workoutSets)
+            Color.clear.frame(maxWidth: .infinity)
+        }
     }
 
     private func setVolumeTile(workoutSets: [WorkoutSet]) -> some View {

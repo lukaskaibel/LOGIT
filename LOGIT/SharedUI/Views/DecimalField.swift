@@ -120,7 +120,7 @@ struct DecimalField: View {
         .padding(.vertical, 5)
         .padding(.horizontal, 8)
         .secondaryTileStyle(backgroundColor: isFocused ? Color.white : Color.black.opacity(0.000001))
-        .setValueIndicatorOverlay(
+        .setValueIndicator(
             trend: trend,
             trendText: trendText,
             positiveColor: trendColor,
@@ -182,7 +182,7 @@ struct DecimalField: View {
             }
         }
         
-        // Limit decimal places to 3
+        // Limit decimal places to `decimalPlaces`
         if let dotIndex = filtered.firstIndex(of: ".") {
             let afterDot = filtered.index(after: dotIndex)
             let decimalPart = filtered[afterDot...]
@@ -239,9 +239,9 @@ struct DecimalField_Previews: PreviewProvider {
             placeholder: 0,
             value: .constant(12.5),
             maxDigits: 4,
-            decimalPlaces: 3,
-            index: .init(primary: 0),
-            focusedIntegerFieldIndex: .constant(.init(primary: 0))
+            decimalPlaces: 2,
+            index: .init(setID: UUID()),
+            focusedIntegerFieldIndex: .constant(nil)
         )
         .padding(CELL_PADDING)
         .secondaryTileStyle()

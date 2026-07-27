@@ -49,6 +49,29 @@ class DefaultExerciseService: ObservableObject {
     private let lastLoadedVersionKey = "lastLoadedDefaultExercisesVersion"
     private let lastLoadedLocaleKey = "lastLoadedDefaultExercisesLocale"
 
+    /// Measurement types that *older library versions* shipped for these exercises. Loading a
+    /// library update stores an explicit type, which makes the nil-check below blind to later
+    /// library re-types — so an unused exercise still carrying one of these provably (or as good
+    /// as: the user never recorded with it) got its type from the library, and a newer library
+    /// may re-type it. Library v7 moved the cardio machines from duration to distance+duration
+    /// and the carries from weight+duration to weight+distance.
+    private static let supersededLibraryTypes: [String: [SetMeasurementType]] = [
+        // v6 duration -> v7 distanceAndDuration
+        "default_076": [.duration],  // running
+        "default_077": [.duration],  // cycling
+        "default_078": [.duration],  // rowing
+        "default_080": [.duration],  // elliptical
+        "default_082": [.duration],  // swimming
+        "default_165": [.duration],  // sprints
+        "default_167": [.duration],  // assault bike
+        "default_168": [.duration],  // rowing machine
+        "default_169": [.duration],  // ski erg
+        // v6 weightAndDuration -> v7 weightAndDistance
+        "default_170": [.weightAndDuration],  // farmers walk
+        "default_192": [.weightAndDuration],  // sled push
+        "default_193": [.weightAndDuration],  // sled pull
+    ]
+
     init(database: Database, defaults: UserDefaults = .standard) {
         self.database = database
         self.defaults = defaults
@@ -87,10 +110,18 @@ class DefaultExerciseService: ObservableObject {
                     existingExercise.muscleGroup = muscleGroup
                 }
                 existingExercise.instructions = instructions
-                // Adopt the library's measurement type only while the user has neither chosen
-                // one (the editor always stores an explicit value) nor recorded anything with
-                // the exercise — an established logging habit is never changed underneath them.
-                if existingExercise.measurementTypeString == nil,
+                // Adopt the library's measurement type only while the user has never recorded
+                // anything with the exercise — an established logging habit is never changed
+                // underneath them — and the stored type is either absent or one an older
+                // library version shipped itself (a differing value means the user chose it in
+                // the editor, which always stores explicitly).
+                let storedType = SetMeasurementType(
+                    rawValue: existingExercise.measurementTypeString ?? ""
+                )
+                let libraryShippedStored = storedType.map {
+                    Self.supersededLibraryTypes[exerciseData.id]?.contains($0) ?? false
+                } ?? false
+                if existingExercise.measurementTypeString == nil || libraryShippedStored,
                    existingExercise.setGroups.isEmpty,
                    existingExercise.templateSetGroups.isEmpty {
                     existingExercise.measurementType = libraryMeasurementType

@@ -123,6 +123,9 @@ struct SetEntryDTO: Codable {
     let repetitions: Int?
     let weight: Int?
     let duration: Int?
+    /// Meters. Additive on top of format version 2 — receivers without distance support
+    /// decode leniently and ignore it.
+    let distance: Int?
     /// Index into the set group's exercises (0 = primary); meaningful for compound sets.
     let exerciseIndex: Int?
 
@@ -131,6 +134,7 @@ struct SetEntryDTO: Codable {
         self.repetitions = Int(values.repetitions)
         self.weight = Int(values.weight)
         self.duration = Int(values.duration)
+        self.distance = Int(values.distance)
         self.exerciseIndex = exerciseIndex
     }
 }

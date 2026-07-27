@@ -20,6 +20,14 @@ struct ExerciseSelectionScreen: View {
         }
     }
 
+    /// A Create Exercise presentation delegated to the host: the prefilled name
+    /// (current search text) and the muscle-group filter at the moment of the request.
+    struct AddExerciseRequest: Identifiable {
+        let id = UUID()
+        let name: String
+        let muscleGroup: MuscleGroup?
+    }
+
     // MARK: - Environment
 
     @EnvironmentObject private var exerciseSuggestionService: ExerciseSuggestionService
@@ -41,6 +49,15 @@ struct ExerciseSelectionScreen: View {
     let currentWorkoutExercises: [Exercise]
     let supersetPrimaryExercise: Exercise?
     @Binding var presentationDetentSelection: PresentationDetent
+    /// When set, Create Exercise is delegated to the host instead of being presented
+    /// from this screen's own hierarchy. Hosts that show this screen inside a
+    /// persistent background-interactive tray MUST delegate: stacking a sheet onto the
+    /// tray makes UIKit dismiss and re-present the tray, and a nested sheet whose
+    /// owning state lives inside the recycled tray content is torn down with it —
+    /// only host-owned state survives the cycle (see TemplateEditorScreen).
+    var onRequestAddExercise: ((AddExerciseRequest) -> Void)? = nil
+    /// Same delegation for the context menus' "Show Details" sheet.
+    var onRequestExerciseDetail: ((Exercise) -> Void)? = nil
 
     // MARK: - Body
 
@@ -140,6 +157,32 @@ struct ExerciseSelectionScreen: View {
         }
     }
 
+    // MARK: - Presentation
+
+    /// Create Exercise: delegated to the host when it asked for it (tray hosts —
+    /// see `onRequestAddExercise`), otherwise presented from this screen.
+    private func showAddExercise() {
+        if let onRequestAddExercise {
+            onRequestAddExercise(
+                AddExerciseRequest(
+                    name: searchedText.trimmingCharacters(in: .whitespacesAndNewlines).capitalized,
+                    muscleGroup: selectedMuscleGroup
+                )
+            )
+        } else {
+            sheetType = .addExercise
+        }
+    }
+
+    /// "Show Details": same host delegation as `showAddExercise`.
+    private func showExerciseDetail(_ exercise: Exercise) {
+        if let onRequestExerciseDetail {
+            onRequestExerciseDetail(exercise)
+        } else {
+            selectedExerciseForDetail = exercise
+        }
+    }
+
     // MARK: - Subviews
 
     @ViewBuilder
@@ -170,7 +213,7 @@ struct ExerciseSelectionScreen: View {
             .clipShape(.capsule)
             if !isSmallDetent {
                 Button {
-                    sheetType = .addExercise
+                    showAddExercise()
                 } label: {
                     Image(systemName: "plus")
                         .font(.title2)
@@ -197,7 +240,7 @@ struct ExerciseSelectionScreen: View {
                             description: NSLocalizedString("noExercisesTipDescription", comment: ""),
                             buttonAction: .init(
                                 title: NSLocalizedString("createExercise", comment: ""),
-                                action: { sheetType = .addExercise }
+                                action: { showAddExercise() }
                             ),
                             isShown: $isShowingNoExercisesTip
                         )
@@ -263,7 +306,7 @@ struct ExerciseSelectionScreen: View {
                     .buttonStyle(TileButtonStyle())
                     .contextMenu {
                         Button {
-                            selectedExerciseForDetail = exercise
+                            showExerciseDetail(exercise)
                         } label: {
                             Label(NSLocalizedString("showDetails", comment: ""), systemImage: "info.circle")
                         }
@@ -300,7 +343,7 @@ struct ExerciseSelectionScreen: View {
                 .buttonStyle(TileButtonStyle())
                 .contextMenu {
                     Button {
-                        selectedExerciseForDetail = exercise
+                        showExerciseDetail(exercise)
                     } label: {
                         Label(NSLocalizedString("showDetails", comment: ""), systemImage: "info.circle")
                     }
@@ -342,7 +385,7 @@ struct ExerciseSelectionScreen: View {
                         .buttonStyle(TileButtonStyle())
                         .contextMenu {
                             Button {
-                                selectedExerciseForDetail = exercise
+                                showExerciseDetail(exercise)
                             } label: {
                                 Label(NSLocalizedString("showDetails", comment: ""), systemImage: "info.circle")
                             }

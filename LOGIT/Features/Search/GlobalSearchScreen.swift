@@ -331,13 +331,9 @@ struct GlobalSearchScreen: View {
                     Button {
                         selectedTemplate = template
                     } label: {
-                        HStack {
-                            TemplateCell(template: template)
-                            NavigationChevron()
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(CELL_PADDING)
-                        .tileStyle()
+                        TemplateCell(template: template)
+                            .padding(CELL_PADDING)
+                            .tileStyle()
                     }
                     .buttonStyle(TileButtonStyle())
                 }

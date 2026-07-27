@@ -52,6 +52,21 @@ extension Exercise {
         set { measurementTypeString = newValue.rawValue }
     }
 
+    /// The user's explicit distance scale for this exercise, or nil while they've never chosen
+    /// one — then the measurement type's default applies (see `distanceStyle`).
+    var distanceStyleOverride: SetMeasurementType.DistanceStyle? {
+        get { SetMeasurementType.DistanceStyle(rawValue: distanceStyleString ?? "") }
+        set { distanceStyleString = newValue?.rawValue }
+    }
+
+    /// The distance scale this exercise displays and enters distances in — the user's choice
+    /// when they made one, else the measurement type's default (cardio → km, carries → m).
+    /// Distances are always stored in meters; this only picks the display/entry unit.
+    var distanceStyle: SetMeasurementType.DistanceStyle {
+        get { distanceStyleOverride ?? measurementType.distanceStyle ?? .long }
+        set { distanceStyleOverride = newValue }
+    }
+
     var setGroups: [WorkoutSetGroup] {
         resolvedOrder(of: setGroups_, by: setGroupOrder)
     }
@@ -72,6 +87,18 @@ extension Exercise {
         return result
     }
 
+}
+
+extension SetMeasurementType {
+    /// The distance scale for an entry of this type trained with `exercise` — the ONE
+    /// resolution every distance display and entry site goes through: the exercise's explicit
+    /// choice wins; otherwise the entry type's own default decides (so a one-off
+    /// weight+distance set on a cardio exercise still enters meters). Nil for types without a
+    /// distance field.
+    func distanceStyle(for exercise: Exercise?) -> DistanceStyle? {
+        guard usesDistance else { return nil }
+        return exercise?.distanceStyleOverride ?? distanceStyle
+    }
 }
 
 // MARK: - Current Best
@@ -117,6 +144,7 @@ extension Exercise {
             case .weight: return workoutSet.maximum(.weight, for: self)
             case .repetitions: return workoutSet.maximum(.repetitions, for: self)
             case .duration: return workoutSet.maximum(.duration, for: self)
+            case .distance: return workoutSet.maximum(.distance, for: self)
             }
         }
 
@@ -147,6 +175,7 @@ extension Exercise {
             case .weight: return workoutSet.maximum(.weight, for: self)
             case .repetitions: return workoutSet.maximum(.repetitions, for: self)
             case .duration: return workoutSet.maximum(.duration, for: self)
+            case .distance: return workoutSet.maximum(.distance, for: self)
             }
         }
     }
@@ -185,6 +214,7 @@ enum ExercisePrimaryMetric: String, CaseIterable {
     case weight
     case repetitions
     case duration
+    case distance
 
     /// Short, localized label for the picker and accessibility.
     var title: String {
@@ -193,6 +223,7 @@ enum ExercisePrimaryMetric: String, CaseIterable {
         case .weight: return NSLocalizedString("weight", comment: "")
         case .repetitions: return NSLocalizedString("repetitions", comment: "")
         case .duration: return NSLocalizedString("measurementType.duration", comment: "")
+        case .distance: return NSLocalizedString("measurementType.distance", comment: "")
         }
     }
 
@@ -204,6 +235,9 @@ enum ExercisePrimaryMetric: String, CaseIterable {
         case .repsOnly: return [.repetitions]
         case .duration: return [.duration]
         case .weightAndDuration: return [.weight, .duration]
+        case .distance: return [.distance]
+        case .distanceAndDuration: return [.distance, .duration]
+        case .weightAndDistance: return [.weight, .distance]
         }
     }
 

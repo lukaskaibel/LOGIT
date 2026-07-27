@@ -26,14 +26,17 @@ extension SetEntry {
         (type.usesRepetitions && repetitions > 0)
             || (type.usesWeight && weight > 0)
             || (type.usesDuration && duration > 0)
+            || (type.usesDistance && distance > 0)
     }
 
     /// True when the entry's primary performance field is filled — repetitions for rep-based
-    /// types, the duration for time-based ones. This is the "set was performed" signal the
-    /// recorder's rest timer and the Live Activity react to.
+    /// types, the duration or distance for time/distance-based ones (either counts, so logging
+    /// only the distance of a run still marks the set performed). This is the "set was
+    /// performed" signal the recorder's rest timer and the Live Activity react to.
     var hasPerformanceValue: Bool {
         if type.usesRepetitions { return repetitions > 0 }
-        if type.usesDuration { return duration > 0 }
+        if type.usesDuration && duration > 0 { return true }
+        if type.usesDistance && distance > 0 { return true }
         return false
     }
 
@@ -41,5 +44,6 @@ extension SetEntry {
         repetitions = 0
         weight = 0
         duration = 0
+        distance = 0
     }
 }

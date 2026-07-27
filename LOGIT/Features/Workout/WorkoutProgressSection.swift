@@ -92,6 +92,7 @@ struct WorkoutProgressReport {
                 case .weight: return workoutSet.maximum(.weight, for: exercise)
                 case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
                 case .duration: return workoutSet.maximum(.duration, for: exercise)
+                case .distance: return workoutSet.maximum(.distance, for: exercise)
                 }
             }
 
@@ -179,6 +180,7 @@ private func personalRecordSetValue(_ workoutSet: WorkoutSet, exercise: Exercise
     case .weight: return workoutSet.maximum(.weight, for: exercise)
     case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
     case .duration: return workoutSet.maximum(.duration, for: exercise)
+    case .distance: return workoutSet.maximum(.distance, for: exercise)
     }
 }
 
@@ -206,6 +208,7 @@ struct WorkoutPersonalBestsTile: View {
             case .estimatedOneRepMax: return 1
             case .repetitions: return 2
             case .duration: return 3
+            case .distance: return 4
             }
         }
         var best: [NSManagedObjectID: WorkoutProgressReport.PRRecord] = [:]
@@ -380,8 +383,8 @@ struct WorkoutPersonalRecordCard: View {
     /// the right, and the percent gain of one over the other in the pill between them — the shared
     /// `MetricComparisonView` the chart-detail headers wear, so this PR jump reads the same way.
     private func comparison(color: Color) -> some View {
-        let previous = personalRecordDisplay(record.previousBest, metric: record.metric)
-        let current = personalRecordDisplay(record.value, metric: record.metric)
+        let previous = personalRecordDisplay(record.previousBest, metric: record.metric, exercise: record.exercise)
+        let current = personalRecordDisplay(record.value, metric: record.metric, exercise: record.exercise)
         let percentChange = record.previousBest > 0
             ? (Double(record.value) - Double(record.previousBest)) / Double(record.previousBest) * 100
             : nil
@@ -431,6 +434,8 @@ struct WorkoutPersonalRecordCard: View {
             switch record.metric {
             case .estimatedOneRepMax, .weight: value = convertWeightForDisplayingDecimal(best)
             case .repetitions, .duration: value = Double(best)
+            case .distance:
+                value = distanceChartValue(best, style: record.exercise.distanceStyle)
             }
             return ExerciseTileSparkline.Point(date: day, value: value)
         }

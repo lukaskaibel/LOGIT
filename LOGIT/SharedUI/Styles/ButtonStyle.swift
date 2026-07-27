@@ -91,17 +91,21 @@ struct SelectionButtonStyle: ButtonStyle {
 struct CapsuleButtonStyle: ButtonStyle {
     let color: Color?
     let isSelected: Bool
+    /// Trims the horizontal padding for capsules that must wrap into rows rather than scroll —
+    /// all eight muscle groups only settle into two rows on a phone at the tighter inset.
+    let compact: Bool
 
-    init(color: Color? = nil, isSelected: Bool = true) {
+    init(color: Color? = nil, isSelected: Bool = true, compact: Bool = false) {
         self.color = color
         self.isSelected = isSelected
+        self.compact = compact
     }
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(.headline, design: .rounded, weight: .semibold))
-            .padding(.vertical, 8)
-            .padding(.horizontal, 15)
+            .font(.system(compact ? .subheadline : .headline, design: .rounded, weight: .semibold))
+            .padding(.vertical, compact ? 7 : 8)
+            .padding(.horizontal, compact ? 13 : 15)
             .foregroundStyle(
                 (isSelected ? Color.background : (color ?? .label)).gradient
             )

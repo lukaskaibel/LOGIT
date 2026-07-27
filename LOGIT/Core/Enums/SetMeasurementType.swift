@@ -78,3 +78,36 @@ enum SetMeasurementType: String, CaseIterable, Codable, Identifiable {
         NSLocalizedString("measurementType.\(rawValue)", comment: "")
     }
 }
+
+/// One value a set entry can record. The exercise editor lets the user compose a measurement
+/// type by toggling these instead of decoding combined names like "Weight & Distance".
+enum SetTrackedField: CaseIterable {
+    case repetitions, weight, duration, distance
+}
+
+extension SetMeasurementType {
+    /// The fields this type records, derived from the `uses*` flags so the two views of the
+    /// same fact can't drift apart.
+    var trackedFields: Set<SetTrackedField> {
+        var fields = Set<SetTrackedField>()
+        if usesRepetitions { fields.insert(.repetitions) }
+        if usesWeight { fields.insert(.weight) }
+        if usesDuration { fields.insert(.duration) }
+        if usesDistance { fields.insert(.distance) }
+        return fields
+    }
+
+    /// The type recording exactly `trackedFields`, or nil while a selection is incomplete —
+    /// weight on its own or nothing at all names no type.
+    init?(trackedFields: Set<SetTrackedField>) {
+        guard let match = Self.allCases.first(where: { $0.trackedFields == trackedFields })
+        else { return nil }
+        self = match
+    }
+
+    /// Whether `trackedFields` could still grow into a valid type — the exercise editor keeps
+    /// a field tappable only while adding it leaves at least one type reachable.
+    static func isSubsetOfAnyType(_ trackedFields: Set<SetTrackedField>) -> Bool {
+        allCases.contains { trackedFields.isSubset(of: $0.trackedFields) }
+    }
+}

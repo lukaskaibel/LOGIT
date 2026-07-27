@@ -1102,3 +1102,15 @@
 "syncBodyWeightDescription" = "体重は双方向で同期されます。LOGITで記録した体重はヘルスケアに保存され、他で記録した体重はLOGITに表示されます。";
 "syncNow" = "今すぐ同期";
 "bodyWeightSyncResult" = "%d件を読み込み、%d件を書き出しました。";
+
+// Exercise editor — measurement builder
+"trackPerSet" = "セットごとに何を記録しますか?";
+"trackingEmptyHint" = "記録する値を1つ以上選んでください。";
+"trackingWeightAloneHint" = "重量に加えてレップ数・時間・距離のいずれかを選んでください。";
+"setPreviewCaption" = "セットはこのように表示されます";
+"progressMetricCaption" = "トレーニング中にエクササイズのバッジに表示されます。";
+"progressMetricE1RMDescription" = "重量とレップ数から推定した1RM";
+"progressMetricWeightDescription" = "1セットで挙げた最大重量";
+"progressMetricRepetitionsDescription" = "1セットの最多レップ数";
+"progressMetricDurationDescription" = "1セットの最長時間";
+"progressMetricDistanceDescription" = "1セットの最長距離";

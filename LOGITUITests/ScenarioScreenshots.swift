@@ -1003,6 +1003,183 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "\(prefix)_02_summary_scrolled")
     }
 
+    // MARK: - Exercise editor (measurement builder)
+
+    /// The redesigned exercise editor: measurement type is composed from four tracked-field
+    /// chips with a live set preview, instead of the old seven-option dropdown. Drives the
+    /// full chip state machine — the two-field cap disabling chips, the only two reachable
+    /// incomplete selections (nothing, weight alone) disabling Save with a hint — then saves
+    /// a weight+distance exercise and confirms it landed in the list.
+    func testExerciseBuilderCreateFlow() {
+        let app = launchApp(scenario: "many")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        waitABit(1)
+        tapTab(app, at: 3)
+        waitABit(1)
+
+        let exercisesRow = app.staticTexts["Exercises"].firstMatch
+        XCTAssertTrue(exercisesRow.waitForExistence(timeout: 5), "Exercises row missing on the Search tab")
+        exercisesRow.tap()
+        waitABit(1)
+
+        app.buttons["addExerciseButton"].firstMatch.tap()
+
+        let repsChip = app.buttons["trackedFieldChip_repetitions"]
+        let weightChip = app.buttons["trackedFieldChip_weight"]
+        let durationChip = app.buttons["trackedFieldChip_duration"]
+        let distanceChip = app.buttons["trackedFieldChip_distance"]
+        XCTAssertTrue(repsChip.waitForExistence(timeout: 5), "Builder chips missing on the editor")
+
+        // The name field autofocuses; name the exercise and dismiss the keyboard via return
+        // so the lower chips and preview stay hittable.
+        app.typeText("UITest Carry\n")
+        waitABit(1)
+        attach(app, "exercise_builder_new_default")
+
+        // Default Reps & Weight: the two-field cap disables the other chips.
+        XCTAssertFalse(durationChip.isEnabled, "Duration chip enabled despite two fields selected")
+        XCTAssertFalse(distanceChip.isEnabled, "Distance chip enabled despite two fields selected")
+        XCTAssertTrue(
+            app.descendants(matching: .any)["setPreviewTile"].exists,
+            "Set preview missing for a valid selection"
+        )
+
+        let saveButton = app.buttons["Save"].firstMatch
+
+        // Reps alone is a valid type; duration cannot join reps.
+        weightChip.tap()
+        waitABit(1)
+        XCTAssertFalse(durationChip.isEnabled, "Duration chip must not pair with reps")
+        XCTAssertTrue(saveButton.isEnabled, "Reps-only must be saveable")
+
+        // Empty selection: Save disabled, hint shown.
+        repsChip.tap()
+        waitABit(1)
+        XCTAssertFalse(saveButton.isEnabled, "Save enabled with nothing selected")
+        attach(app, "exercise_builder_empty_hint")
+
+        // Weight alone is incomplete: still no Save, partner hint shown.
+        weightChip.tap()
+        waitABit(1)
+        XCTAssertFalse(saveButton.isEnabled, "Save enabled with weight alone")
+
+        // Weight + distance: valid again — preview with the distance unit switch appears.
+        distanceChip.tap()
+        waitABit(1)
+        XCTAssertTrue(saveButton.isEnabled, "Save disabled for weight + distance")
+        // The segmented control swallows its SwiftUI identifier, so assert via its segments.
+        XCTAssertTrue(
+            app.buttons["km"].waitForExistence(timeout: 3) && app.buttons["m"].exists,
+            "Distance unit switch missing for a distance type"
+        )
+        attach(app, "exercise_builder_weight_distance")
+
+        saveButton.tap()
+        waitABit(2)
+
+        // The alphabetical list is lazy and huge — reach the U-named row through search;
+        // repeated snapshot-and-swipe loops time out the accessibility queries here.
+        let searchField = app.searchFields.firstMatch
+        if !searchField.waitForExistence(timeout: 3) {
+            app.buttons["Search"].firstMatch.tap()
+            XCTAssertTrue(searchField.waitForExistence(timeout: 5), "Exercise list search never opened")
+        }
+        searchField.tap()
+        app.typeText("UITest Carry")
+        waitABit(2)
+        XCTAssertTrue(
+            app.staticTexts["UITest Carry"].firstMatch.waitForExistence(timeout: 5),
+            "Saved exercise not in the list"
+        )
+        attach(app, "exercise_builder_saved_in_list")
+    }
+
+    /// Editing an existing exercise: the builder must arrive prefilled from the exercise's
+    /// measurement type, and changing the type must surface the history-safety footnote.
+    /// Default exercises can't be edited, so the flow first creates a duration-only exercise,
+    /// then reopens it through detail → menu → Edit.
+    func testExerciseBuilderEditExistingFlow() {
+        let app = launchApp(scenario: "many")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        waitABit(1)
+        tapTab(app, at: 3)
+        waitABit(1)
+
+        let exercisesRow = app.staticTexts["Exercises"].firstMatch
+        XCTAssertTrue(exercisesRow.waitForExistence(timeout: 5), "Exercises row missing on the Search tab")
+        exercisesRow.tap()
+        waitABit(1)
+
+        app.buttons["addExerciseButton"].firstMatch.tap()
+
+        let repsChip = app.buttons["trackedFieldChip_repetitions"]
+        let weightChip = app.buttons["trackedFieldChip_weight"]
+        let durationChip = app.buttons["trackedFieldChip_duration"]
+        XCTAssertTrue(repsChip.waitForExistence(timeout: 5), "Builder chips missing on the editor")
+
+        // Compose a duration-only exercise: drop reps and weight, add duration.
+        app.typeText("UITest Plank\n")
+        waitABit(1)
+        repsChip.tap()
+        weightChip.tap()
+        durationChip.tap()
+        waitABit(1)
+        app.buttons["Save"].firstMatch.tap()
+        waitABit(2)
+
+        // Reach the new exercise through search — repeatedly snapshotting the full
+        // alphabetical list while swiping times out the accessibility queries.
+        let searchField = app.searchFields.firstMatch
+        if !searchField.waitForExistence(timeout: 3) {
+            app.buttons["Search"].firstMatch.tap()
+            XCTAssertTrue(searchField.waitForExistence(timeout: 5), "Exercise list search never opened")
+        }
+        searchField.tap()
+        app.typeText("UITest Plank")
+        waitABit(2)
+
+        let savedRow = app.staticTexts["UITest Plank"].firstMatch
+        XCTAssertTrue(savedRow.waitForExistence(timeout: 5), "Created exercise not found via search")
+        savedRow.tap()
+        waitABit(3) // charts on the detail screen need a moment before heavy queries
+
+        let detailMenu = app.buttons["exerciseDetailMenu"].firstMatch
+        XCTAssertTrue(detailMenu.waitForExistence(timeout: 10), "Detail screen never opened")
+        detailMenu.tap()
+        let editItem = app.buttons["Edit"].firstMatch
+        XCTAssertTrue(editItem.waitForExistence(timeout: 3), "Edit item missing from the detail menu")
+        editItem.tap()
+        waitABit(1)
+
+        // The builder arrives prefilled: duration on, reps unpairable, weight addable.
+        XCTAssertTrue(durationChip.waitForExistence(timeout: 5), "Builder chips missing when editing")
+        XCTAssertTrue(durationChip.isSelected, "Duration chip not prefilled from the exercise")
+        XCTAssertFalse(repsChip.isEnabled, "Reps chip must not pair with duration")
+        XCTAssertTrue(weightChip.isEnabled, "Weight chip must be addable to duration")
+        attach(app, "exercise_builder_edit_prefilled")
+
+        // Changing the type shows the history-safety footnote.
+        weightChip.tap()
+        waitABit(1)
+        XCTAssertTrue(
+            app.staticTexts["Existing sets keep the values they were recorded with. Only new sets use the new measurement."]
+                .waitForExistence(timeout: 3),
+            "Type-change footnote missing after changing the measurement"
+        )
+        attach(app, "exercise_builder_edit_type_changed")
+
+        app.buttons["Save"].firstMatch.tap()
+        waitABit(2)
+        XCTAssertTrue(
+            app.staticTexts["UITest Plank"].firstMatch.waitForExistence(timeout: 5),
+            "Detail screen not visible after saving the edit"
+        )
+    }
+
     // MARK: - Helpers
 
     private func launchApp(scenario: String, extraArguments: [String] = []) -> XCUIApplication {

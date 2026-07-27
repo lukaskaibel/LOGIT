@@ -1102,3 +1102,15 @@
 "syncBodyWeightDescription" = "O peso corporal é sincronizado nos dois sentidos: o peso registrado no LOGIT é salvo no Apple Saúde, e o registrado em outro lugar aparece no LOGIT.";
 "syncNow" = "Sincronizar agora";
 "bodyWeightSyncResult" = "%d importados, %d exportados.";
+
+// Exercise editor — measurement builder
+"trackPerSet" = "O que você registra por série?";
+"trackingEmptyHint" = "Escolha pelo menos um valor para registrar.";
+"trackingWeightAloneHint" = "Adicione repetições, duração ou distância ao peso.";
+"setPreviewCaption" = "Uma série ficará assim";
+"progressMetricCaption" = "Exibido no selo do exercício durante o treino.";
+"progressMetricE1RMDescription" = "1RM estimado, a partir do peso e das repetições";
+"progressMetricWeightDescription" = "Maior peso levantado em uma série";
+"progressMetricRepetitionsDescription" = "Mais repetições em uma única série";
+"progressMetricDurationDescription" = "Maior duração em uma única série";
+"progressMetricDistanceDescription" = "Maior distância em uma única série";

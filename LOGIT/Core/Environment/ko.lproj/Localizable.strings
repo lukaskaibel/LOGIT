@@ -103,7 +103,6 @@
 // MARK: - E
 
 "edit" = "편집";
-"edit" = "편집";
 "editDateTime" = "날짜/시간 편집";
 "editNote" = "메모 편집";
 "editTemplate" = "템플릿 편집";
@@ -191,17 +190,13 @@
 
 "measurementBodyweight" = "체중";
 "measurementCaloriesBurned" = "칼로리 소모량";
-"chest" = "가슴";
-"measurementLengthHhmeasurementLengthBicepsLeft" = "왼쪽 팔뚝";
 "calfLeft" = "종아리 왼쪽";
 "forearmLeft" = "팔뚝 왼쪽";
 "thighLeft" = "허벅지 왼쪽";
 "neck" = "목";
-"bicepsRight" = "이두근 오른쪽";
 "calfRight" = "종아리 오른쪽";
 "forearmRight" = "팔뚝 오른쪽";
 "thighRight" = "허벅지 오른쪽";
-"shoulders" = "어깨";
 "waist" = "허리";
 "measurements" = "측정";
 "min" = "분";
@@ -956,7 +951,6 @@
 "muscleBalanceLightYear" = "올해 %@ 부족";
 "muscleBalanceOnTarget" = "8개 그룹 중 %d개 목표 달성";
 "muscleBalanceBarA11y" = "%1$@: 세트의 %2$d%%, 목표 %3$d%%";
-"muscleBalanceOnTrack" = "대체로 양호";
 "muscleBalanceRoomToBalance" = "균형 개선 여지";
 "balanceVsTarget" = "목표 대비 균형";
 "adjustTargetSplit" = "목표 배분 조정";
@@ -1036,14 +1030,6 @@
 "overallProgressBasis" = "추정 1RM · 최근 8주 vs 이전 8주";
 "overallProgressEmpty" = "운동을 계속 기록하면 전체 추세를 볼 수 있습니다.";
 "streak" = "연속 기록";
-
-/* Muscle Balance — donut overview, sections & history chart */
-"muscleBalanceMore" = "외 %d개";
-"muscleBalanceOverTime" = "기간별 균형";
-"muscleDetailEmptySubtitle" = "선택한 기간에 이 부위를 운동하지 않았습니다.";
-"muscleBalanceBelowTarget" = "목표 미만";
-"muscleBalanceAboveTarget" = "목표 초과";
-"muscleBalanceOnTargetSection" = "목표 달성";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
 "range" = "범위";

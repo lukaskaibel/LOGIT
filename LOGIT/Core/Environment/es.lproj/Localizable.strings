@@ -1022,13 +1022,10 @@
 
 
 /* Progress tab — overall progress trend */
-"strengthProgress" = "Progreso de fuerza";
 "trendingUp" = "Tendencia al alza";
 "trendingSteady" = "Estable";
 "trendingDown" = "Tendencia a la baja";
 "byMuscleGroup" = "Por grupo muscular";
-"strengthProgressBasis" = "1RM estimado · últimas 8 semanas vs. las 8 anteriores";
-"strengthProgressEmpty" = "Sigue registrando entrenamientos para ver tu tendencia de fuerza.";
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "Primera vez por encima de %@";
@@ -1131,3 +1128,18 @@
 "progressMetricRepetitionsDescription" = "Más repeticiones en una sola serie";
 "progressMetricDurationDescription" = "Mayor duración en una sola serie";
 "progressMetricDistanceDescription" = "Mayor distancia en una sola serie";
+
+// Strength (Progress tab tile + detail)
+"strength" = "Fuerza";
+"strengthBasis" = "1RM estimado · últimas 8 semanas";
+"strengthEmpty" = "Sigue registrando entrenamientos para ver tu tendencia de fuerza.";
+"strengthWindowCaption" = "vs. las %d semanas anteriores";
+"nWeeks" = "%d semanas";
+"nSets" = "%d series";
+"allExercises" = "Todos los ejercicios";
+"strengthTapGroup" = "Toca un grupo para enfocarlo";
+"strengthBiggestMovers" = "Mayores cambios";
+"strengthMoversCaption" = "Longitud = su cambio · series = su peso";
+"strengthShowAllExercises" = "Ver los %d ejercicios";
+"showLess" = "Ver menos";
+"strengthInfo" = "El mejor 1RM estimado de cada ejercicio en las últimas %d semanas frente a las %d anteriores, promediado y ponderado por el número de series. Las series de cardio y peso corporal no tienen 1RM y no cuentan.";

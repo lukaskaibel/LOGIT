@@ -488,3 +488,135 @@ final class DurationFormattingTests: XCTestCase {
         XCTAssertFalse(fortyFive.hasPrefix("0"), "Zero-valued units should be hidden: \(fortyFive)")
     }
 }
+
+// MARK: - Strength progress
+
+/// The Strength figure is a *set-weighted* mean of each exercise's e1RM change, and the detail
+/// screen pulls that mean back apart — so the weighting, the scoping and the ordering are the parts
+/// worth pinning down.
+final class StrengthProgressTests: XCTestCase {
+
+    private var database: Database!
+    private var builder: TestDataBuilder!
+
+    override func setUp() {
+        super.setUp()
+        database = Database(isPreview: true)
+        builder = TestDataBuilder(database: database)
+    }
+
+    override func tearDown() {
+        database = nil
+        builder = nil
+        super.tearDown()
+    }
+
+    private func change(
+        _ name: String,
+        _ group: MuscleGroup,
+        percent: Double,
+        sets: Int
+    ) -> StrengthProgress.ExerciseChange {
+        StrengthProgress.ExerciseChange(
+            exercise: builder.createExercise(name: name, muscleGroup: group),
+            muscleGroup: group,
+            percentChange: percent,
+            setCount: sets
+        )
+    }
+
+    func testOverallIsWeightedBySetCount() {
+        // 10 % over 30 sets and 0 % over 10 sets → 7.5 %, not the unweighted 5 %.
+        let progress = StrengthProgress(
+            changes: [
+                change("Bench Press", .chest, percent: 10, sets: 30),
+                change("Curls", .biceps, percent: 0, sets: 10),
+            ],
+            window: .eightWeeks
+        )
+        XCTAssertEqual(try XCTUnwrap(progress.overallPercentChange), 7.5, accuracy: 0.001)
+    }
+
+    func testScopingToAGroupIgnoresOtherGroups() {
+        let progress = StrengthProgress(
+            changes: [
+                change("Bench Press", .chest, percent: 10, sets: 10),
+                change("Incline Bench", .chest, percent: 20, sets: 10),
+                change("Curls", .biceps, percent: -40, sets: 100),
+            ],
+            window: .eightWeeks
+        )
+        XCTAssertEqual(try XCTUnwrap(progress.percentChange(in: .chest)), 15, accuracy: 0.001)
+        XCTAssertEqual(try XCTUnwrap(progress.percentChange(in: .biceps)), -40, accuracy: 0.001)
+        XCTAssertNil(progress.percentChange(in: .legs), "A group with no data has no figure")
+    }
+
+    /// A zero set count must not erase an exercise from the mean (weights floor at 1).
+    func testZeroSetCountStillCounts() {
+        let progress = StrengthProgress(
+            changes: [change("Bench Press", .chest, percent: 8, sets: 0)],
+            window: .eightWeeks
+        )
+        XCTAssertEqual(try XCTUnwrap(progress.overallPercentChange), 8, accuracy: 0.001)
+    }
+
+    func testGroupsAreSortedByGainAndCarryTheirExerciseCount() {
+        let progress = StrengthProgress(
+            changes: [
+                change("Curls", .biceps, percent: 3, sets: 10),
+                change("Bench Press", .chest, percent: 9, sets: 10),
+                change("Incline Bench", .chest, percent: 9, sets: 10),
+            ],
+            window: .eightWeeks
+        )
+        XCTAssertEqual(progress.groups.map(\.muscleGroup), [.chest, .biceps])
+        XCTAssertEqual(progress.groups.first?.exerciseCount, 2)
+    }
+
+    /// Sorted by magnitude, so a big decline ranks above a small gain rather than sinking to the
+    /// bottom of the list where the cap would hide it.
+    func testExerciseChangesRankDeclinesByMagnitude() {
+        let progress = StrengthProgress(
+            changes: [
+                change("Small Gain", .chest, percent: 2, sets: 10),
+                change("Big Decline", .back, percent: -18, sets: 10),
+                change("Mid Gain", .legs, percent: 7, sets: 10),
+            ],
+            window: .eightWeeks
+        )
+        XCTAssertEqual(
+            progress.exerciseChanges().map { $0.exercise.name },
+            ["Big Decline", "Mid Gain", "Small Gain"]
+        )
+    }
+
+    func testEmptyProgressHasNoFigure() {
+        XCTAssertFalse(StrengthProgress.empty.hasData)
+        XCTAssertNil(StrengthProgress.empty.overallPercentChange)
+        XCTAssertTrue(StrengthProgress.empty.groups.isEmpty)
+    }
+
+    func testComputeIgnoresExercisesWithoutBothWindows() {
+        // No sets at all → nothing to compare, so nothing qualifies.
+        let progress = StrengthProgress.compute(workouts: [], window: .fourWeeks)
+        XCTAssertFalse(progress.hasData)
+        XCTAssertEqual(progress.window, .fourWeeks)
+    }
+
+    func testWindowTitlesAreDistinct() {
+        let titles = Set(StrengthWindow.allCases.map(\.title))
+        XCTAssertEqual(titles.count, StrengthWindow.allCases.count)
+        XCTAssertEqual(StrengthWindow.default, .eightWeeks)
+    }
+
+    /// The trend deadband: small wobble reads as steady and keeps the neutral arrow, so the tile
+    /// can't flicker between "up" and "down" on noise.
+    func testTrendDirectionDeadband() {
+        XCTAssertEqual(strengthTrendSymbol(0.4), "arrow.right")
+        XCTAssertEqual(strengthTrendSymbol(-0.4), "arrow.right")
+        XCTAssertEqual(strengthTrendSymbol(5), "arrow.up")
+        XCTAssertEqual(strengthTrendSymbol(-5), "arrow.down")
+        XCTAssertFalse(strengthTrendIsUp(0.9))
+        XCTAssertTrue(strengthTrendIsUp(1.0))
+    }
+}

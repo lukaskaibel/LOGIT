@@ -34,6 +34,7 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
          muscleGroupDetail(MuscleGroup, StatPeriod),
          muscleTargetSplit,
          progressHighlights,
+         strength,
          // The optional period pins the stat screen to a window (highlight cards open the chart
          // they compare over); nil keeps the Summary's currently selected period.
          summaryStat(WorkoutStatMetric, StatPeriod?),

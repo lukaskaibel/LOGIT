@@ -1022,13 +1022,10 @@
 
 
 /* Progress tab — overall progress trend */
-"strengthProgress" = "근력 진행 상황";
 "trendingUp" = "상승세";
 "trendingSteady" = "유지";
 "trendingDown" = "하락세";
 "byMuscleGroup" = "근육군별";
-"strengthProgressBasis" = "추정 1RM · 최근 8주 vs 이전 8주";
-"strengthProgressEmpty" = "운동을 계속 기록하면 근력 추세를 볼 수 있습니다.";
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "처음으로 %@ 돌파";
@@ -1131,3 +1128,18 @@
 "progressMetricRepetitionsDescription" = "한 세트 최다 횟수";
 "progressMetricDurationDescription" = "한 세트 최장 시간";
 "progressMetricDistanceDescription" = "한 세트 최장 거리";
+
+// Strength (Progress tab tile + detail)
+"strength" = "근력";
+"strengthBasis" = "추정 1RM · 최근 8주";
+"strengthEmpty" = "운동을 계속 기록하면 근력 추세를 볼 수 있습니다.";
+"strengthWindowCaption" = "이전 %d주 대비";
+"nWeeks" = "%d주";
+"nSets" = "%d세트";
+"allExercises" = "모든 운동";
+"strengthTapGroup" = "그룹을 탭해 집중해서 보기";
+"strengthBiggestMovers" = "변화가 큰 운동";
+"strengthMoversCaption" = "막대 길이 = 변화 · 세트 수 = 가중치";
+"strengthShowAllExercises" = "%d개 운동 모두 보기";
+"showLess" = "간단히 보기";
+"strengthInfo" = "각 운동의 최근 %d주 최고 추정 1RM을 이전 %d주와 비교해 세트 수로 가중 평균한 값입니다. 유산소와 맨몸 세트는 1RM이 없어 포함되지 않습니다.";

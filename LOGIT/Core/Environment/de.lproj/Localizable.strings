@@ -1018,13 +1018,10 @@
 
 
 /* Progress tab — overall progress trend */
-"strengthProgress" = "Kraftfortschritt";
 "trendingUp" = "Aufwärtstrend";
 "trendingSteady" = "Stabil";
 "trendingDown" = "Abwärtstrend";
 "byMuscleGroup" = "Nach Muskelgruppe";
-"strengthProgressBasis" = "Geschätztes 1RM · letzte 8 Wochen vs. die 8 davor";
-"strengthProgressEmpty" = "Logge weiter Workouts, um deinen Krafttrend zu sehen.";
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "Erstmals über %@";
@@ -1127,3 +1124,18 @@
 "progressMetricRepetitionsDescription" = "Meiste Wiederholungen in einem Satz";
 "progressMetricDurationDescription" = "Längste Dauer in einem Satz";
 "progressMetricDistanceDescription" = "Weiteste Distanz in einem Satz";
+
+// Strength (Progress tab tile + detail)
+"strength" = "Kraft";
+"strengthBasis" = "Geschätztes 1RM · letzte 8 Wochen";
+"strengthEmpty" = "Logge weiter Workouts, um deinen Krafttrend zu sehen.";
+"strengthWindowCaption" = "vs. die %d Wochen davor";
+"nWeeks" = "%d Wochen";
+"nSets" = "%d Sätze";
+"allExercises" = "Alle Übungen";
+"strengthTapGroup" = "Tippe eine Gruppe an";
+"strengthBiggestMovers" = "Größte Veränderungen";
+"strengthMoversCaption" = "Balkenlänge = Veränderung · Sätze = Gewichtung";
+"strengthShowAllExercises" = "Alle %d Übungen anzeigen";
+"showLess" = "Weniger anzeigen";
+"strengthInfo" = "Das beste geschätzte 1RM jeder Übung der letzten %d Wochen im Vergleich zu den %d davor, gemittelt und nach Anzahl der Sätze gewichtet. Cardio- und Körpergewichtssätze haben kein 1RM und zählen nicht.";

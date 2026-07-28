@@ -1022,13 +1022,10 @@
 
 
 /* Progress tab — overall progress trend */
-"strengthProgress" = "筋力の進捗";
 "trendingUp" = "上昇傾向";
 "trendingSteady" = "横ばい";
 "trendingDown" = "下降傾向";
 "byMuscleGroup" = "筋群別";
-"strengthProgressBasis" = "推定1RM · 直近8週間 vs その前の8週間";
-"strengthProgressEmpty" = "ワークアウトを記録すると筋力の傾向が表示されます。";
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "初めて%@を突破";
@@ -1131,3 +1128,18 @@
 "progressMetricRepetitionsDescription" = "1セットの最多レップ数";
 "progressMetricDurationDescription" = "1セットの最長時間";
 "progressMetricDistanceDescription" = "1セットの最長距離";
+
+// Strength (Progress tab tile + detail)
+"strength" = "筋力";
+"strengthBasis" = "推定1RM · 直近8週間";
+"strengthEmpty" = "ワークアウトを記録すると筋力の傾向が表示されます。";
+"strengthWindowCaption" = "その前の%d週間との比較";
+"nWeeks" = "%d週間";
+"nSets" = "%dセット";
+"allExercises" = "すべてのエクササイズ";
+"strengthTapGroup" = "グループをタップして絞り込み";
+"strengthBiggestMovers" = "変化が大きい種目";
+"strengthMoversCaption" = "バーの長さ = 変化 · セット数 = 重み";
+"strengthShowAllExercises" = "%d種目すべて表示";
+"showLess" = "表示を減らす";
+"strengthInfo" = "各エクササイズの直近%d週間の推定1RM最高値を、その前の%d週間と比較し、セット数で重み付けして平均した値です。カーディオと自重のセットは1RMがないため含まれません。";

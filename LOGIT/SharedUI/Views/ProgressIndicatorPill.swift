@@ -25,15 +25,17 @@ import SwiftUI
 struct ProgressIndicatorPill<Label: View>: View {
     /// Padding and spacing presets. `.regular` is the trend / gain / "n improved" pill; `.prominent`
     /// is the in-workout metric badge (a touch wider for its two-line content); `.compact` is quieter
-    /// metadata like the lapsed-tile pill — smaller and tighter, a size below a score.
+    /// metadata like the lapsed-tile pill — smaller and tighter, a size below a score; `.hero` is the
+    /// Strength tile, the one place where the pill *is* the headline rather than an annotation on one.
     enum Size {
-        case regular, prominent, compact
+        case regular, prominent, compact, hero
 
         var horizontalPadding: CGFloat {
             switch self {
             case .regular: return 10
             case .prominent: return 12
             case .compact: return 8
+            case .hero: return 18
             }
         }
 
@@ -41,6 +43,7 @@ struct ProgressIndicatorPill<Label: View>: View {
             switch self {
             case .regular, .prominent: return 6
             case .compact: return 5
+            case .hero: return 9
             }
         }
 
@@ -48,6 +51,7 @@ struct ProgressIndicatorPill<Label: View>: View {
             switch self {
             case .regular, .prominent: return 4
             case .compact: return 3
+            case .hero: return 9
             }
         }
     }
@@ -59,6 +63,10 @@ struct ProgressIndicatorPill<Label: View>: View {
     /// Tints the symbol, the label's default foreground and the capsule fill (at 0.15 opacity).
     let style: AnyShapeStyle
     let size: Size
+    /// Font for the leading symbol. Nil keeps the badge default (`.caption2` bold) that every pill in
+    /// the app wears; the Strength hero passes a large one so the trend arrow can lead the tile
+    /// instead of annotating it.
+    let symbolFont: Font?
     let label: Label
     /// Whether the symbol+label share one gradient sweep (the `style:` initializer) rather than each
     /// resolving it on its own — see `continuousForegroundStyle`. Off for the flat-`color:` badges
@@ -69,11 +77,13 @@ struct ProgressIndicatorPill<Label: View>: View {
         symbol: String?,
         style: AnyShapeStyle,
         size: Size = .regular,
+        symbolFont: Font? = nil,
         @ViewBuilder label: () -> Label
     ) {
         self.symbol = symbol
         self.style = style
         self.size = size
+        self.symbolFont = symbolFont
         self.label = label()
         self.fillsContinuously = true
     }
@@ -83,11 +93,13 @@ struct ProgressIndicatorPill<Label: View>: View {
         symbol: String?,
         color: Color,
         size: Size = .regular,
+        symbolFont: Font? = nil,
         @ViewBuilder label: () -> Label
     ) {
         self.symbol = symbol
         self.style = AnyShapeStyle(color)
         self.size = size
+        self.symbolFont = symbolFont
         self.label = label()
         self.fillsContinuously = false
     }
@@ -112,7 +124,7 @@ struct ProgressIndicatorPill<Label: View>: View {
         let content = HStack(spacing: size.spacing) {
             if let symbol {
                 Image(systemName: symbol)
-                    .font(.caption2.weight(.bold))
+                    .font(symbolFont ?? .caption2.weight(.bold))
             }
             label
         }

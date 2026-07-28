@@ -43,7 +43,7 @@ struct WorkoutSetGroupCell: View {
     var onReorderSetGroups: (() -> Void)? = nil
     var onTapPreviousSet: ((Exercise) -> Void)? = nil
     var onTapExerciseName: ((Exercise) -> Void)? = nil
-    /// The tapped badge's set group, its subject exercise (each superset page has its own badge),
+    /// The tapped badge's set group, its subject exercise (each superset lane has its own badge),
     /// and the badge frame to anchor the info popover at.
     var onTapMetricBadge: ((WorkoutSetGroup, Exercise?, CGRect) -> Void)? = nil
 
@@ -61,10 +61,16 @@ struct WorkoutSetGroupCell: View {
     /// width budget can be derived as (column − badge reservation) and handed to `ExerciseHeader`.
     @State private var nameSlotWidth: CGFloat = 0
     @FocusState private var isNoteFieldFocused: Bool
-    /// Which exercise's page the superset pager is snapped to (objectID; nil = first page).
-    /// Also driven programmatically: when keyboard "next" focuses a field on the partner
-    /// exercise's page, the pager follows (see `autopageIfNeeded`).
+    /// Where the superset pager has been *told* to scroll (objectID; nil = first lane) — the
+    /// write channel for keyboard auto-paging, when "next" focuses a field on the partner
+    /// exercise's lane (see `autopageIfNeeded`).
     @State private var pagedExerciseID: NSManagedObjectID?
+    /// Which lane is actually on screen. `scrollPosition(id:)` can't answer that here: lanes
+    /// are narrower than the card, so the lane snapped to the trailing edge never has its
+    /// leading edge at the viewport's, and the position binding keeps naming the neighbour
+    /// peeking there instead. Target *visibility* past a threshold names the lane that fills
+    /// the card — which is what both the dots and auto-paging mean by "current".
+    @State private var visibleExerciseID: NSManagedObjectID?
 
     // MARK: - Body
 
@@ -138,13 +144,14 @@ struct WorkoutSetGroupCell: View {
         .accentColor(setGroup.exercise?.muscleGroup?.color ?? .accentColor)
     }
 
-    /// A superset with both exercises chosen renders as containerless side-by-side pages; while
-    /// reordering (compact header row) or before the second exercise is picked it falls back to
-    /// the classic single card, whose header still offers the "select exercise" entry point.
+    /// A superset with both exercises chosen renders as one card whose exercises page inside it;
+    /// while reordering (compact header row) or before the second exercise is picked it falls
+    /// back to the classic single card, whose header still offers the "select exercise" entry
+    /// point.
     @ViewBuilder
     private func content(previousSetGroup: WorkoutSetGroup?) -> some View {
         if isPagedSuperset {
-            supersetPager(previousSetGroup: previousSetGroup)
+            supersetCard(previousSetGroup: previousSetGroup)
         } else {
             standardCard(previousSetGroup: previousSetGroup)
         }
@@ -167,25 +174,10 @@ struct WorkoutSetGroupCell: View {
         groupCount ?? setGroup.workout?.setGroups.count ?? 0
     }
 
-    /// "2 of 5" — the group's place in the workout, shown in the bulge socket on top of the card
-    /// (each superset page repeats it) instead of the old header number.
+    /// "2 of 5" — the group's place in the workout, shown once in the bulge socket on top of the
+    /// card (a superset is one card, so one socket) instead of the old header number.
     private var bulgeLabel: String? {
         SetGroupThread.indexLabel(index: resolvedIndexInWorkout, count: resolvedGroupCount)
-    }
-
-    /// Whether the thread's merge rail is drawn under the superset pages — only when another
-    /// group follows, so the converged line has somewhere to continue to (the list draws the
-    /// trunk segment between cells).
-    private var showsMergeRail: Bool {
-        guard let index = resolvedIndexInWorkout else { return false }
-        return index < resolvedGroupCount - 1
-    }
-
-    /// Whether the fork rail is drawn above the superset pages — only when a group precedes,
-    /// so the rail has a trunk feeding it. On a first-group superset a floating rail with
-    /// nothing above just looks broken.
-    private var showsForkRail: Bool {
-        (resolvedIndexInWorkout ?? 0) > 0
     }
 
     // MARK: - Standard card
@@ -260,63 +252,8 @@ struct WorkoutSetGroupCell: View {
                     .padding(.horizontal, CELL_PADDING / 2)
                     .animation(.interactiveSpring(), value: setGroup.sets)
                     if canEdit {
-                        HStack(spacing: 8) {
-                            Button {
-                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                                withAnimation(.interactiveSpring()) {
-                                    database.duplicateLastSet(from: setGroup)
-                                }
-                            } label: {
-                                Image(systemName: "plus.square.on.square")
-                                    .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
-                                    .font(.system(.body, design: .rounded, weight: .bold))
-                                    .padding(15)
-                                    .background(Color.accentColor.secondaryTranslucentBackground)
-                                    .clipShape(Capsule())
-                            }
-                            .contextMenu {
-                                Button {
-                                    withAnimation(.interactiveSpring()) {
-                                        database.duplicateLastWeight(from: setGroup)
-                                    }
-                                } label: {
-                                    Label(NSLocalizedString("copyWeight", comment: ""), systemImage: "scalemass")
-                                }
-                                Button {
-                                    withAnimation(.interactiveSpring()) {
-                                        database.duplicateLastRepetitions(from: setGroup)
-                                    }
-                                } label: {
-                                    Label(NSLocalizedString("copyRepetitions", comment: ""), systemImage: "repeat.circle")
-                                }
-                                Button {
-                                    withAnimation(.interactiveSpring()) {
-                                        database.duplicateLastSet(from: setGroup)
-                                    }
-                                } label: {
-                                    Label(NSLocalizedString("copySet", comment: ""), systemImage: "plus.square.on.square")
-                                }
-                            }
-                            Button {
-                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                                withAnimation(.interactiveSpring()) {
-                                    database.addSet(to: setGroup)
-                                }
-                            } label: {
-                                Label(
-                                    NSLocalizedString("addSet", comment: ""),
-                                    systemImage: "plus.circle.fill"
-                                )
-                                .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
-                                .font(.system(.body, design: .rounded, weight: .bold))
-                                .padding(.vertical, 15)
-                                .frame(maxWidth: .infinity)
-                                .background(Color.accentColor.secondaryTranslucentBackground)
-                                .clipShape(Capsule())
-                            }
-                            menu
-                        }
-                        .padding(.horizontal, CELL_PADDING)
+                        controls(for: setGroup.exercise)
+                            .padding(.horizontal, CELL_PADDING)
                     }
                 }
             }
@@ -341,66 +278,104 @@ struct WorkoutSetGroupCell: View {
         }
     }
 
-    // MARK: - Superset pager
+    // MARK: - Superset card
 
-    /// The containerless superset: one full-size card per exercise, paged horizontally, each
-    /// with its own bulge socket, metric badge and add-set controls. The thread's horizontal
-    /// rail rides in the band above the pages (and below them when another group follows) and
-    /// scrolls WITH the pages, so the fixed trunk the list draws between cells always meets it
-    /// at a right angle, whatever the scroll position.
-    private func supersetPager(previousSetGroup: WorkoutSetGroup?) -> some View {
+    /// The superset: ONE card for the group — one index bulge, one note, one action bar — with
+    /// the exercises paged horizontally *inside* it. Only what belongs to a single exercise
+    /// rides in the pager (its header, its metric badge, its entry of every set); everything
+    /// the group owns is drawn once beneath the lanes.
+    ///
+    /// That is the whole point of the single card: every control in the bar acts on the set
+    /// GROUP — `addSet(to:)` appends one set carrying both exercises' entries, the menu edits
+    /// the group's type, note and exercise slots — so a per-exercise copy of it did the same
+    /// thing twice. No fork/merge rails either: with one card the list's trunk plugs into the
+    /// one socket exactly like it does for every other group.
+    private func supersetCard(previousSetGroup: WorkoutSetGroup?) -> some View {
         let exercises = [setGroup.exercise, setGroup.secondaryExercise].compactMap { $0 }
-        return ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: SetGroupThread.pageSpacing) {
+        return VStack(spacing: CELL_PADDING) {
+            supersetLanes(exercises: exercises, previousSetGroup: previousSetGroup)
+            SupersetLaneIndicator(
+                colors: exercises.map { $0.muscleGroup?.color ?? .accentColor },
+                selectedIndex: laneIndex(in: exercises)
+            )
+            if showsNoteField {
+                noteField
+                    .padding(.horizontal, CELL_PADDING)
+            }
+            if canEdit {
+                controls(for: setGroup.exercise)
+                    .padding(.horizontal, CELL_PADDING)
+            }
+        }
+        .padding(.bottom, canEdit ? CELL_PADDING : CELL_PADDING / 2)
+        .background(
+            RoundedRectangle(cornerRadius: 30)
+                .fill(.shadow(.inner(color: .white.opacity(0.04), radius: 3)))
+                .foregroundStyle(Color.secondaryBackground)
+        )
+        .cornerRadius(30)
+        .bulgeSocket(label: bulgeLabel)
+    }
+
+    /// The lanes themselves. No content margins: the snapped first lane sits flush with the
+    /// card's leading edge (and the last, clamped at the scroll bound, flush with the trailing
+    /// edge), so a lane's header lines up with a standard card's exactly. Scroll clipping stays
+    /// ON — the peeking neighbour is meant to be cut off by the card.
+    private func supersetLanes(
+        exercises: [Exercise],
+        previousSetGroup: WorkoutSetGroup?
+    ) -> some View {
+        ScrollView(.horizontal) {
+            HStack(alignment: .top, spacing: SetGroupThread.laneSpacing) {
                 ForEach(exercises, id: \.objectID) { exercise in
-                    SupersetExercisePage(
+                    SupersetExerciseLane(
                         setGroup: setGroup,
                         exercise: exercise,
-                        isPrimaryPage: exercise == setGroup.exercise,
-                        bulgeLabel: bulgeLabel,
+                        isPrimaryLane: exercise == setGroup.exercise,
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         previousSetGroup: previousSetGroup,
                         supplementaryText: supplementaryText,
                         showDetailAsSheet: showDetailAsSheet,
                         showPendingRestInTertiary: showPendingRestInTertiary,
                         isFieldFocused: isFieldFocused,
-                        isEditingNote: $isEditingNote,
                         onTapRestDuration: onTapRestDuration,
                         onTapPreviousSet: onTapPreviousSet,
                         onTapExerciseName: onTapExerciseName,
-                        onTapMetricBadge: onTapMetricBadge,
-                        groupMenu: AnyView(menu)
+                        onTapMetricBadge: onTapMetricBadge
                     )
                     .containerRelativeFrame(.horizontal) { length, _ in
-                        max(length - SetGroupThread.pageInset * 2, 100)
+                        SetGroupThread.laneWidth(in: length)
                     }
                 }
             }
             .scrollTargetLayout()
-            .supersetThreadRails(
-                pageCount: exercises.count,
-                showsFork: showsForkRail,
-                showsMerge: showsMergeRail
-            )
         }
-        // No content margins: the snapped first page sits flush with the leading edge (and
-        // the last page, clamped at the scroll bound, flush with the trailing edge) exactly
-        // like every non-superset cell. The pages being narrower than the column, their
-        // centers sit inside the fixed trunk's x — so the trunk always meets the rail's
-        // straight middle, and the elbows curve outward to the offset sockets. No scroll
-        // position can leave the trunk hanging past the rail's end.
         .scrollTargetBehavior(.viewAligned)
-        .scrollClipDisabled()
         .scrollIndicators(.hidden)
         .scrollPosition(id: $pagedExerciseID)
+        // A lane only counts as "on screen" once most of it is: the peeking neighbour is always
+        // partly visible, and at the default threshold both lanes would qualify at rest.
+        .onScrollTargetVisibilityChange(idType: NSManagedObjectID.self, threshold: 0.6) { visible in
+            guard let onScreen = visible.first else { return }
+            visibleExerciseID = onScreen
+        }
         .onChange(of: focusedIntegerFieldIndex) { _, newValue in
             autopageIfNeeded(for: newValue, exercises: exercises)
         }
     }
 
+    /// Which lane fills the card, for the dot indicator — nothing reported yet is the first.
+    private func laneIndex(in exercises: [Exercise]) -> Int {
+        guard
+            let currentID = visibleExerciseID ?? pagedExerciseID,
+            let index = exercises.firstIndex(where: { $0.objectID == currentID })
+        else { return 0 }
+        return index
+    }
+
     /// Keyboard next/previous walks a set's entries, which alternate exercises in a superset —
     /// when focus lands on a field whose entry belongs to the other exercise, the pager follows
-    /// so the focused field is never on an off-screen page. Focus indices are identity-keyed
+    /// so the focused field is never on an off-screen lane. Focus indices are identity-keyed
     /// (`Index.setID`), so the set is looked up by id; a focused set outside this group simply
     /// doesn't resolve.
     private func autopageIfNeeded(for index: IntegerField.Index?, exercises: [Exercise]) {
@@ -409,7 +384,7 @@ struct WorkoutSetGroupCell: View {
               workoutSet.entries.indices.contains(index.secondary),
               let owner = workoutSet.owningExercise(of: workoutSet.entries[index.secondary])
         else { return }
-        let currentID = pagedExerciseID ?? exercises.first?.objectID
+        let currentID = visibleExerciseID ?? pagedExerciseID ?? exercises.first?.objectID
         guard owner.objectID != currentID else { return }
         withAnimation(.snappy) { pagedExerciseID = owner.objectID }
     }
@@ -486,17 +461,8 @@ struct WorkoutSetGroupCell: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            if isEditingNote || !(setGroup.note?.isEmpty ?? true) {
-                TextField("Note", text: Binding(get: { setGroup.note ?? "" }, set: { setGroup.note = $0 }), prompt: Text(NSLocalizedString("addNote...", comment: "")), axis: .vertical)
-                    .focused($isNoteFieldFocused)
-                    .onSubmit(of: .text) {
-                        setGroup.note = (setGroup.note ?? "") + "\n"
-                        isNoteFieldFocused = true
-                    }
-                    .lineLimit(1...5)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .font(.footnote)
-                    .foregroundStyle(.tertiary)
+            if showsNoteField {
+                noteField
             }
         }
         .onChange(of: isNoteFieldFocused) {
@@ -506,7 +472,95 @@ struct WorkoutSetGroupCell: View {
         }
     }
 
+    private var showsNoteField: Bool {
+        isEditingNote || !(setGroup.note?.isEmpty ?? true)
+    }
+
+    /// The group's note. Inside the standard card it sits under the exercise header; a superset
+    /// draws it once below the lanes instead — it belongs to the group, not to either exercise,
+    /// and repeating it on both lanes was only ever a way to keep their heights equal.
+    private var noteField: some View {
+        TextField(
+            "Note",
+            text: Binding(get: { setGroup.note ?? "" }, set: { setGroup.note = $0 }),
+            prompt: Text(NSLocalizedString("addNote...", comment: "")),
+            axis: .vertical
+        )
+        .focused($isNoteFieldFocused)
+        .onSubmit(of: .text) {
+            setGroup.note = (setGroup.note ?? "") + "\n"
+            isNoteFieldFocused = true
+        }
+        .lineLimit(1 ... 5)
+        .fixedSize(horizontal: false, vertical: true)
+        .font(.footnote)
+        .foregroundStyle(.tertiary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     // MARK: - Supporting Views
+
+    /// Duplicate-last-set, add-set and the group menu — the set group's controls, drawn once per
+    /// card. All three act on the group: a superset's two lanes share this one bar rather than
+    /// each carrying a copy that would do the very same thing.
+    private func controls(for exercise: Exercise?) -> some View {
+        HStack(spacing: 8) {
+            Button {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                withAnimation(.interactiveSpring()) {
+                    database.duplicateLastSet(from: setGroup)
+                }
+            } label: {
+                Image(systemName: "plus.square.on.square")
+                    .foregroundStyle((exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                    .font(.system(.body, design: .rounded, weight: .bold))
+                    .padding(15)
+                    .background(Color.accentColor.secondaryTranslucentBackground)
+                    .clipShape(Capsule())
+            }
+            .contextMenu {
+                Button {
+                    withAnimation(.interactiveSpring()) {
+                        database.duplicateLastWeight(from: setGroup)
+                    }
+                } label: {
+                    Label(NSLocalizedString("copyWeight", comment: ""), systemImage: "scalemass")
+                }
+                Button {
+                    withAnimation(.interactiveSpring()) {
+                        database.duplicateLastRepetitions(from: setGroup)
+                    }
+                } label: {
+                    Label(NSLocalizedString("copyRepetitions", comment: ""), systemImage: "repeat.circle")
+                }
+                Button {
+                    withAnimation(.interactiveSpring()) {
+                        database.duplicateLastSet(from: setGroup)
+                    }
+                } label: {
+                    Label(NSLocalizedString("copySet", comment: ""), systemImage: "plus.square.on.square")
+                }
+            }
+            Button {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                withAnimation(.interactiveSpring()) {
+                    database.addSet(to: setGroup)
+                }
+            } label: {
+                Label(
+                    NSLocalizedString("addSet", comment: ""),
+                    systemImage: "plus.circle.fill"
+                )
+                .foregroundStyle((exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                .font(.system(.body, design: .rounded, weight: .bold))
+                .padding(.vertical, 15)
+                .frame(maxWidth: .infinity)
+                .background(Color.accentColor.secondaryTranslucentBackground)
+                .clipShape(Capsule())
+            }
+            menu
+        }
+    }
 
     private var menu: some View {
         Menu {
@@ -716,43 +770,38 @@ extension WorkoutSetGroupCell: Equatable {
     }
 }
 
-// MARK: - Superset exercise page
+// MARK: - Superset exercise lane
 
-/// One exercise's card inside the superset pager: its own bulge socket, header, metric badge,
-/// set column (only this exercise's entry per set) and add-set controls. The group-level menu is
-/// built by the cell (it owns the exercise-selection and note state) and passed in.
-private struct SupersetExercisePage: View {
+/// One exercise's lane inside the superset card: its header, its metric badge and its entry of
+/// every set — nothing else. Deliberately containerless: the card, the index bulge, the note and
+/// the action bar all belong to the GROUP and are drawn once by the cell around the pager.
+private struct SupersetExerciseLane: View {
     @Environment(\.canEdit) var canEdit: Bool
     @EnvironmentObject var database: Database
 
     @ObservedObject var setGroup: WorkoutSetGroup
     let exercise: Exercise
-    let isPrimaryPage: Bool
-    let bulgeLabel: String?
+    let isPrimaryLane: Bool
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
     let previousSetGroup: WorkoutSetGroup?
     let supplementaryText: String?
     let showDetailAsSheet: Bool
     let showPendingRestInTertiary: Bool
     let isFieldFocused: Bool
-    @Binding var isEditingNote: Bool
     let onTapRestDuration: ((WorkoutSet) -> Void)?
     let onTapPreviousSet: ((Exercise) -> Void)?
     let onTapExerciseName: ((Exercise) -> Void)?
     let onTapMetricBadge: ((WorkoutSetGroup, Exercise?, CGRect) -> Void)?
-    let groupMenu: AnyView
 
     @State private var metricBadgeWidth: CGFloat = 0
     @State private var nameSlotWidth: CGFloat = 0
-    @FocusState private var isNoteFieldFocused: Bool
 
     var body: some View {
-        card
-            .bulgeSocket(label: bulgeLabel)
+        lane
             .accentColor(exercise.muscleGroup?.color ?? .accentColor)
     }
 
-    private var card: some View {
+    private var lane: some View {
         VStack(spacing: CELL_PADDING) {
             header
                 .padding([.top, .horizontal], CELL_PADDING)
@@ -800,18 +849,7 @@ private struct SupersetExercisePage: View {
             }
             .padding(.horizontal, CELL_PADDING / 2)
             .animation(.interactiveSpring(), value: setGroup.sets)
-            if canEdit {
-                controls
-                    .padding(.horizontal, CELL_PADDING)
-            }
         }
-        .padding(.bottom, canEdit ? CELL_PADDING : CELL_PADDING / 2)
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(.shadow(.inner(color: .white.opacity(0.04), radius: 3)))
-                .foregroundStyle(Color.secondaryBackground)
-        )
-        .cornerRadius(30)
         .overlay(alignment: .topTrailing) {
             badgeOverlay
         }
@@ -836,7 +874,7 @@ private struct SupersetExercisePage: View {
                         Text(exercise.muscleGroup?.description ?? "")
                             .foregroundColor(exercise.muscleGroup?.color ?? .accentColor)
                         Spacer()
-                        if isPrimaryPage, let supplementaryText {
+                        if isPrimaryLane, let supplementaryText {
                             Text(supplementaryText)
                                 .foregroundStyle(.secondary)
                                 .fontWeight(.medium)
@@ -851,89 +889,6 @@ private struct SupersetExercisePage: View {
                 }
                 Spacer()
             }
-            // The note is a group-level field, rendered on every page (bound to the same text)
-            // so the pages keep identical heights and the thread's merge rail meets them evenly.
-            if isEditingNote || !(setGroup.note?.isEmpty ?? true) {
-                TextField(
-                    "Note",
-                    text: Binding(get: { setGroup.note ?? "" }, set: { setGroup.note = $0 }),
-                    prompt: Text(NSLocalizedString("addNote...", comment: "")),
-                    axis: .vertical
-                )
-                .focused($isNoteFieldFocused)
-                .onSubmit(of: .text) {
-                    setGroup.note = (setGroup.note ?? "") + "\n"
-                    isNoteFieldFocused = true
-                }
-                .lineLimit(1 ... 5)
-                .fixedSize(horizontal: false, vertical: true)
-                .font(.footnote)
-                .foregroundStyle(.tertiary)
-            }
-        }
-        .onChange(of: isNoteFieldFocused) {
-            if !isNoteFieldFocused {
-                isEditingNote = false
-            }
-        }
-    }
-
-    private var controls: some View {
-        HStack(spacing: 8) {
-            Button {
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                withAnimation(.interactiveSpring()) {
-                    database.duplicateLastSet(from: setGroup)
-                }
-            } label: {
-                Image(systemName: "plus.square.on.square")
-                    .foregroundStyle((exercise.muscleGroup?.color ?? .accentColor).gradient)
-                    .font(.system(.body, design: .rounded, weight: .bold))
-                    .padding(15)
-                    .background(Color.accentColor.secondaryTranslucentBackground)
-                    .clipShape(Capsule())
-            }
-            .contextMenu {
-                Button {
-                    withAnimation(.interactiveSpring()) {
-                        database.duplicateLastWeight(from: setGroup)
-                    }
-                } label: {
-                    Label(NSLocalizedString("copyWeight", comment: ""), systemImage: "scalemass")
-                }
-                Button {
-                    withAnimation(.interactiveSpring()) {
-                        database.duplicateLastRepetitions(from: setGroup)
-                    }
-                } label: {
-                    Label(NSLocalizedString("copyRepetitions", comment: ""), systemImage: "repeat.circle")
-                }
-                Button {
-                    withAnimation(.interactiveSpring()) {
-                        database.duplicateLastSet(from: setGroup)
-                    }
-                } label: {
-                    Label(NSLocalizedString("copySet", comment: ""), systemImage: "plus.square.on.square")
-                }
-            }
-            Button {
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                withAnimation(.interactiveSpring()) {
-                    database.addSet(to: setGroup)
-                }
-            } label: {
-                Label(
-                    NSLocalizedString("addSet", comment: ""),
-                    systemImage: "plus.circle.fill"
-                )
-                .foregroundStyle((exercise.muscleGroup?.color ?? .accentColor).gradient)
-                .font(.system(.body, design: .rounded, weight: .bold))
-                .padding(.vertical, 15)
-                .frame(maxWidth: .infinity)
-                .background(Color.accentColor.secondaryTranslucentBackground)
-                .clipShape(Capsule())
-            }
-            groupMenu
         }
     }
 
@@ -1102,7 +1057,7 @@ private final class ExerciseHistoryBestsCache: @unchecked Sendable {
 /// so the badge's pill and the panel's spelled-out values can never tell different stories.
 private struct SetGroupMetricComparison {
     let setGroup: WorkoutSetGroup
-    /// The exercise this comparison scores. Each superset page passes its own; nil falls back to
+    /// The exercise this comparison scores. Each superset lane passes its own; nil falls back to
     /// the group's primary exercise (the only one there is everywhere else).
     var subjectExercise: Exercise? = nil
 
@@ -1238,7 +1193,7 @@ private struct SetGroupMetricComparison {
 /// they dismiss each other (UIKit only presents one thing per view controller at a time).
 private struct MetricBadgeView: View {
     @ObservedObject var setGroup: WorkoutSetGroup
-    /// The exercise this badge scores — each superset page shows its own badge; nil falls back
+    /// The exercise this badge scores — each superset lane shows its own badge; nil falls back
     /// to the group's primary exercise.
     let subjectExercise: Exercise?
     /// Observed so the badge re-renders on every recorder change. Editing a set mutates the set —

@@ -3,8 +3,8 @@
 //  LOGIT
 //
 //  The "thread": the connecting line that runs down a workout's (or template's) set-group
-//  list, plus the bulge sockets it plugs into and the rails it forks into across a superset's
-//  horizontally paged exercises.
+//  list, plus the bulge sockets it plugs into. A superset is one card like any other group —
+//  its exercises page horizontally *inside* that card — so the thread never forks.
 //
 //  Shared by the workout recorder/detail and the template editor/detail so both stay one
 //  visual system — see AGENT.md, "Templates mirror workouts". Anything defined here is the
@@ -25,15 +25,17 @@ enum SetGroupThread {
     /// How far a segment draws past its own bounds into the neighbouring fill. Joins are
     /// sealed by overlap, never by exact edge-kissing — antialiasing opens hairlines there.
     static let jointOverlap: CGFloat = 2
-    /// Height of the band above (and below) a superset's pages where the fork/merge rails
-    /// and their drops into the bulges are drawn.
-    static let railZoneHeight: CGFloat = 16
-    /// Horizontal inset of a snapped superset page: pages are this much narrower than the
-    /// column on each side, so the first page still sits flush with the list's leading edge
-    /// while the neighbour peeks. Keeps every page center inside the fixed trunk's x, so the
-    /// trunk always meets the rail's straight middle.
-    static let pageInset: CGFloat = 24
-    static let pageSpacing: CGFloat = 12
+    /// Horizontal inset of a snapped superset lane, per side: lanes are this much narrower
+    /// than the card they page inside, so the neighbouring lane peeks and the group always
+    /// shows there is more to swipe to. The first lane still sits flush with the card's
+    /// leading edge, the last (clamped at the scroll bound) flush with the trailing one.
+    static let laneInset: CGFloat = 24
+    static let laneSpacing: CGFloat = 12
+
+    /// Width of one superset lane inside a card of `containerWidth`.
+    static func laneWidth(in containerWidth: CGFloat) -> CGFloat {
+        max(containerWidth - laneInset * 2, 100)
+    }
 
     /// "2 of 5" — a group's place in its workout/template, shown in the bulge socket.
     static func indexLabel(index: Int?, count: Int) -> String? {
@@ -175,90 +177,35 @@ struct SetGroupBulgeShape: Shape {
     }
 }
 
-// MARK: - Superset rails
+// MARK: - Superset lane indicator
 
-extension View {
-    /// Wraps a superset's paged content in the thread's fork (above) and merge (below) rails,
-    /// reserving their bands as padding. Applied to the scroll CONTENT, so the rails move with
-    /// the pages while the list's trunk stays fixed — that's what keeps the T-junction square
-    /// at every scroll position. A rail is omitted when nothing feeds it: no group before the
-    /// superset means no fork, none after means no merge.
-    func supersetThreadRails(pageCount: Int, showsFork: Bool, showsMerge: Bool) -> some View {
-        padding(.top, showsFork ? SetGroupThread.railZoneHeight : 0)
-            .padding(.bottom, showsMerge ? SetGroupThread.railZoneHeight : 0)
-            .overlay(alignment: .top) {
-                if showsFork {
-                    supersetRail(pageCount: pageCount, flipped: false)
-                }
+/// Which lane of a superset card is on screen: one dot per exercise, the current one filled in
+/// its own muscle colour. It sits between the lanes and the card's action bar — and that bar
+/// belongs to the GROUP, so once you've swiped, these dots and the lane's own header are what
+/// say which exercise the fields above are for.
+struct SupersetLaneIndicator: View {
+    /// One colour per lane, in lane order.
+    let colors: [Color]
+    let selectedIndex: Int
+
+    static let dotSize: CGFloat = 6
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(colors.enumerated()), id: \.offset) { index, color in
+                Circle()
+                    .foregroundStyle(
+                        index == selectedIndex
+                            ? AnyShapeStyle(color.gradient)
+                            : AnyShapeStyle(Color.tertiaryLabel)
+                    )
+                    .frame(width: Self.dotSize, height: Self.dotSize)
             }
-            .overlay(alignment: .bottom) {
-                if showsMerge {
-                    supersetRail(pageCount: pageCount, flipped: true)
-                }
-            }
-    }
-
-    private func supersetRail(pageCount: Int, flipped: Bool) -> some View {
-        SupersetRailShape(
-            pageCount: pageCount,
-            pageSpacing: SetGroupThread.pageSpacing,
-            flipped: flipped
-        )
-        .stroke(style: StrokeStyle(lineWidth: SetGroupThread.lineWidth, lineCap: .round))
-        .foregroundStyle(Color.threadLine)
-        .frame(height: SetGroupThread.railZoneHeight)
-    }
-}
-
-/// The thread's horizontal rail across a superset's pages, drawn in the band above (or,
-/// flipped, below) them and scrolling with them: rounded elbows turn down into the first and
-/// last page's center, straight drops serve any pages in between. Page centers are derived
-/// from the band's own width, so the shape needs no measured geometry.
-struct SupersetRailShape: Shape {
-    let pageCount: Int
-    let pageSpacing: CGFloat
-    var flipped: Bool = false
-    var cornerRadius: CGFloat = 10
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        guard pageCount > 0 else { return path }
-        let pageWidth = (rect.width - CGFloat(pageCount - 1) * pageSpacing) / CGFloat(pageCount)
-        let centers = (0 ..< pageCount).map { pageWidth / 2 + CGFloat($0) * (pageWidth + pageSpacing) }
-        let railY: CGFloat = SetGroupThread.lineWidth / 2
-        // Verticals overshoot the band by a couple of points into the neighboring fill (bulge
-        // below, card above once flipped) so no join can open an antialiasing hairline.
-        let overshoot = rect.height + SetGroupThread.jointOverlap
-        guard let first = centers.first, let last = centers.last, pageCount > 1 else {
-            path.move(to: CGPoint(x: centers[0], y: 0))
-            path.addLine(to: CGPoint(x: centers[0], y: overshoot))
-            return flipped ? path.flippedVertically(height: rect.height) : path
         }
-        path.move(to: CGPoint(x: first, y: overshoot))
-        path.addLine(to: CGPoint(x: first, y: railY + cornerRadius))
-        path.addArc(
-            center: CGPoint(x: first + cornerRadius, y: railY + cornerRadius),
-            radius: cornerRadius,
-            startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false
-        )
-        path.addLine(to: CGPoint(x: last - cornerRadius, y: railY))
-        path.addArc(
-            center: CGPoint(x: last - cornerRadius, y: railY + cornerRadius),
-            radius: cornerRadius,
-            startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false
-        )
-        path.addLine(to: CGPoint(x: last, y: overshoot))
-        for center in centers.dropFirst().dropLast() {
-            path.move(to: CGPoint(x: center, y: railY))
-            path.addLine(to: CGPoint(x: center, y: overshoot))
-        }
-        return flipped ? path.flippedVertically(height: rect.height) : path
-    }
-}
-
-private extension Path {
-    func flippedVertically(height: CGFloat) -> Path {
-        applying(CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -height))
+        .animation(.snappy, value: selectedIndex)
+        // The lane's own exercise header already announces which exercise is on screen; a
+        // second, wordless announcement of the same thing only adds noise in VoiceOver.
+        .accessibilityHidden(true)
     }
 }
 

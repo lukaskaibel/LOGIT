@@ -606,7 +606,17 @@ final class StrengthProgressTests: XCTestCase {
     func testWindowTitlesAreDistinct() {
         let titles = Set(StrengthWindow.allCases.map(\.title))
         XCTAssertEqual(titles.count, StrengthWindow.allCases.count)
-        XCTAssertEqual(StrengthWindow.default, .eightWeeks)
+        // Four weeks, so the recent half of the comparison is the same window the rest of the app
+        // calls "current" — and the same one the Summary's Balance tile reads. Changing this back
+        // decouples the top pair, which is the thing the default exists to guarantee.
+        XCTAssertEqual(StrengthWindow.default, .fourWeeks)
+        // ...and it must land on exactly the same instant as the current-best window, not merely
+        // "about four weeks": the Summary's top pair claims both tiles read the same period.
+        let reference = Date.now
+        let recentStart = Calendar.current.date(
+            byAdding: .weekOfYear, value: -StrengthWindow.default.rawValue, to: reference
+        )
+        XCTAssertEqual(recentStart, Exercise.currentBestWindowStart(endingAt: reference))
     }
 
     /// The trend deadband: small wobble reads as steady and keeps the neutral arrow, so the tile

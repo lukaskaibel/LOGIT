@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Highlight items
 
-/// One card in the Progress tab's Highlights carousel — a recent improvement the user would
+/// One card in the Summary's Highlights carousel — a recent improvement the user would
 /// otherwise have to dig out of the detail charts. Ordered by `ProgressHighlights.compute`:
 /// milestones, then records, then the year crossing, then whole-training trends, then scoped
 /// (muscle-group / exercise) trends.
@@ -45,12 +45,6 @@ enum ProgressHighlight: Identifiable {
 /// already rounded the way `TrendIndicatorView` rounds, so thresholds and the pill can't disagree.
 struct ProgressTrend: Identifiable {
     enum Kind: String {
-        /// Whole-training volume.
-        case volume
-        /// Whole-training set count.
-        case sets
-        /// Whole-training workout count.
-        case workouts
         /// One muscle group's set count.
         case muscleGroupSets
         /// One exercise's volume.
@@ -138,7 +132,7 @@ enum MilestoneLadder {
 // MARK: - Computation
 
 /// Assembles the Highlights feed from the already-fetched workouts — no new Core Data fetches, the
-/// same deal as the rest of the Progress tab. All windows anchor to the start of today so the feed
+/// same deal as the rest of the Summary. All windows anchor to the start of today so the feed
 /// is stable within a day.
 enum ProgressHighlights {
 
@@ -147,12 +141,9 @@ enum ProgressHighlights {
 
     /// Noise floors: a trend must clear its relative threshold AND its absolute delta, with enough
     /// training in both windows, so "up 50%" can never come from 2 sets becoming 3.
-    private static let wholePercentFloor = 10
     private static let scopedPercentFloor = 15
-    private static let volumeDeltaFloorGrams = 500_000 // 500 kg
     private static let setsDeltaFloor = 5
-    private static let workoutsDeltaFloor = 2
-    private static let wholeMinWorkoutsPerWindow = 3
+    private static let minWorkoutsPerWindow = 3
     private static let muscleMinSetsPerWindow = 6
     private static let exerciseMinSessionsPerWindow = 2
     /// A year crossing is only impressive against a real year of training.
@@ -207,41 +198,17 @@ enum ProgressHighlights {
         let currentSets = currentWorkouts.flatMap { $0.sets }
         let priorSets = priorWorkouts.flatMap { $0.sets }
 
-        var wholeTrends: [ProgressTrend] = []
         var scopedTrends: [ProgressTrend] = []
 
-        let enoughWorkouts = currentWorkouts.count >= wholeMinWorkoutsPerWindow
-            && priorWorkouts.count >= wholeMinWorkoutsPerWindow
+        // Whole-training volume / sets / workout-count trends deliberately have no card: the core
+        // stat grid on the same scroll already reports those three numbers with their own trend
+        // pills. Highlights earns its space by saying what the grid can't — which muscle group and
+        // which lift moved.
+        let enoughWorkouts = currentWorkouts.count >= minWorkoutsPerWindow
+            && priorWorkouts.count >= minWorkoutsPerWindow
 
-        // Whole-training volume.
-        let currentVolume = getVolume(of: currentSets)
-        let priorVolume = getVolume(of: priorSets)
-        let volumeTrend = ProgressTrend(kind: .volume, currentValue: currentVolume, previousValue: priorVolume)
-        let volumeFires = enoughWorkouts
-            && volumeTrend.displayedPercent >= wholePercentFloor
-            && currentVolume - priorVolume >= volumeDeltaFloorGrams
-        if volumeFires { wholeTrends.append(volumeTrend) }
-
-        // Whole-training sets.
-        let setsTrend = ProgressTrend(kind: .sets, currentValue: currentSets.count, previousValue: priorSets.count)
-        let setsFire = enoughWorkouts
-            && setsTrend.displayedPercent >= wholePercentFloor
-            && currentSets.count - priorSets.count >= setsDeltaFloor
-        if setsFire { wholeTrends.append(setsTrend) }
-
-        // Workout count.
-        let workoutsTrend = ProgressTrend(
-            kind: .workouts, currentValue: currentWorkouts.count, previousValue: priorWorkouts.count
-        )
-        if priorWorkouts.count >= wholeMinWorkoutsPerWindow,
-           workoutsTrend.displayedPercent >= wholePercentFloor,
-           currentWorkouts.count - priorWorkouts.count >= workoutsDeltaFloor {
-            wholeTrends.append(workoutsTrend)
-        }
-
-        // Muscle-group set trends — suppressed as a family when the whole-training sets card fires
-        // (one card per metric family per scope: the strongest single story wins).
-        if !setsFire {
+        // Muscle-group set trends.
+        if enoughWorkouts {
             let service = MuscleGroupService()
             let currentByGroup = Dictionary(uniqueKeysWithValues: service.getMuscleGroupOccurances(in: currentSets))
             let priorByGroup = Dictionary(uniqueKeysWithValues: service.getMuscleGroupOccurances(in: priorSets))
@@ -256,8 +223,8 @@ enum ProgressHighlights {
             }
         }
 
-        // Exercise volume trends — same family rule against the whole-training volume card.
-        if !volumeFires {
+        // Exercise volume trends.
+        if enoughWorkouts {
             var exercises: [Exercise] = []
             var seen = Set<Exercise>()
             for workout in currentWorkouts {
@@ -280,7 +247,6 @@ enum ProgressHighlights {
             }
         }
 
-        wholeTrends.sort { $0.displayedPercent > $1.displayedPercent }
         scopedTrends.sort { $0.displayedPercent > $1.displayedPercent }
 
         // Year crossing — computed from full history, shown only while the crossing is recent.
@@ -293,7 +259,6 @@ enum ProgressHighlights {
         return milestones
             + plainRecords
             + yearItems
-            + wholeTrends.map { .trend($0) }
             + scopedTrends.map { .trend($0) }
     }
 

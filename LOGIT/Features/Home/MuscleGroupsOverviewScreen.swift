@@ -50,25 +50,8 @@ struct MuscleGroupsOverviewScreen: View {
                 PeriodPicker(selection: $period)
                 if hasData {
                     if selected.totalSets > 0 {
-                        donutHero(selected)
-                        section(
-                            titleKey: "muscleBalanceBelowTarget",
-                            systemImage: "arrow.down",
-                            entries: selected.calculator.underTargets()
-                        )
-                        section(
-                            titleKey: "muscleBalanceAboveTarget",
-                            systemImage: "arrow.up",
-                            entries: selected.calculator.overTargets()
-                        )
-                        section(
-                            titleKey: "muscleBalanceOnTargetSection",
-                            systemImage: "checkmark",
-                            entries: selected.calculator.entries
-                                .filter(\.isOnTarget)
-                                .sorted { $0.actualPercent > $1.actualPercent },
-                            isGood: true
-                        )
+                        goalHero(selected)
+                        goalSections(selected)
                     } else {
                         emptyBucketNote
                     }
@@ -96,49 +79,68 @@ struct MuscleGroupsOverviewScreen: View {
         .onChange(of: period) { rawSelection = nil }
     }
 
-    // MARK: - Donut hero
+    // MARK: - Goal hero
 
-    /// The muscle-group occurrence donut with the period's total sets in the centre and the period's
-    /// name beneath — the name keeps time-travel legible when a past bar is selected.
-    private func donutHero(_ bucket: MuscleBalanceBucket) -> some View {
-        VStack(spacing: 12) {
-            ZStack {
-                MuscleGroupOccurancesChart(muscleGroupOccurances: occurrences(in: bucket))
-                VStack(spacing: 1) {
-                    Text("\(bucket.totalSets)")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
+    /// The Balance tile's own chart at full size, over the count it reports. Same component, same
+    /// rule (a group counts once it is at least its target) — the detail screen is the tile with
+    /// room, not a second opinion.
+    ///
+    /// No axis labels under the tracks: the rows immediately below name every group in reading
+    /// order, and eight labels at track width would be abbreviations of the words already there.
+    private func goalHero(_ bucket: MuscleBalanceBucket) -> some View {
+        let entries = bucket.calculator.goalEntries
+        return VStack(spacing: 14) {
+            VStack(spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                    Text("\(bucket.calculator.atLeastTargetCount())")
                         .foregroundStyle(Color.label)
-                    Text(NSLocalizedString("sets", comment: ""))
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .textCase(.uppercase)
-                        .foregroundStyle(.secondary)
+                    Text("/\(entries.count)")
+                        .foregroundStyle(Color.secondaryLabel)
                 }
-            }
-            .frame(width: 190, height: 190)
-            Text(bucket.title)
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+                Text(
+                    String(
+                        format: NSLocalizedString("muscleBalanceGoalHeroCaption", comment: ""),
+                        bucket.totalSets
+                    )
+                )
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .contentTransition(.numericText())
+            }
+            MuscleBalanceTrackChart(entries: entries, spacing: 10, badgeDiameter: 22)
+                .frame(height: 130)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 6)
     }
 
-    /// The donut's input: this bucket's set occurrences per group, canonical order, untrained groups
-    /// omitted (the chart draws slices only for what was trained).
-    private func occurrences(in bucket: MuscleBalanceBucket) -> [(MuscleGroup, Int)] {
-        bucket.calculator.entries
-            .filter { $0.setCount > 0 }
-            .map { ($0.muscleGroup, $0.setCount) }
+    /// The eight groups as a two-column grid, split by verdict: what needs work, what is done, what
+    /// overshot. The grouping is what makes two columns readable — within a section every cell shares
+    /// a state, so scanning a column is comparing magnitudes rather than decoding badges.
+    ///
+    /// Below-target leads: it is the only section you can act on, and the other two are its cause.
+    @ViewBuilder
+    private func goalSections(_ bucket: MuscleBalanceBucket) -> some View {
+        let entries = bucket.calculator.goalEntries
+        let under = entries.filter { $0.goalState == .under }
+            .sorted { ($0.goalFraction ?? 0) < ($1.goalFraction ?? 0) }
+        let met = entries.filter { $0.goalState == .met }
+            .sorted { $0.actualPercent > $1.actualPercent }
+        let over = entries.filter { $0.goalState == .over }
+            .sorted { $0.deviation > $1.deviation }
+        VStack(spacing: SECTION_SPACING) {
+            goalSection("muscleBalanceBelowTargetSection", systemImage: "arrow.down", entries: under)
+            goalSection("muscleBalanceAtTargetSection", systemImage: "checkmark", entries: met, isGood: true)
+            goalSection("muscleBalanceAboveTargetSection", systemImage: "chevron.up.2", entries: over)
+        }
     }
 
-    // MARK: - Grouped sections
-
     @ViewBuilder
-    private func section(
-        titleKey: String,
+    private func goalSection(
+        _ titleKey: String,
         systemImage: String,
         entries: [MuscleBalanceEntry],
         isGood: Bool = false
@@ -165,36 +167,22 @@ struct MuscleGroupsOverviewScreen: View {
                         .contentTransition(.numericText())
                 }
                 .padding(.horizontal, 4)
-                VStack(spacing: 0) {
-                    ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
+                LazyVGrid(
+                    columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
+                    spacing: 8
+                ) {
+                    ForEach(entries) { entry in
                         Button {
                             homeNavigationCoordinator.path.append(.muscleGroupDetail(entry.muscleGroup, period))
                         } label: {
-                            barRow(entry)
+                            MuscleBalanceGoalCell(entry: entry)
                         }
-                        .buttonStyle(.plain)
-                        if index < entries.count - 1 {
-                            Divider()
-                        }
+                        .buttonStyle(TileButtonStyle())
                     }
                 }
-                .padding(.horizontal, CELL_PADDING)
-                .tileStyle()
             }
         }
     }
-
-    private func barRow(_ entry: MuscleBalanceEntry) -> some View {
-        HStack(spacing: 8) {
-            MuscleBalanceBar(entry: entry, showsName: true, showsDelta: true)
-            NavigationChevron()
-                .foregroundStyle(.secondary)
-        }
-        .padding(.vertical, 10)
-        .contentShape(Rectangle())
-    }
-
-    // MARK: - Chart
 
     private func chartSection(
         buckets: [MuscleBalanceBucket],

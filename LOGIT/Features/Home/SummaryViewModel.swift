@@ -8,21 +8,17 @@
 import Combine
 import Foundation
 
-/// Backs the redesigned Summary screen's period-scoped block. Holds the selected Week/Month/Year
-/// period and the one-time auto-fallback state, and filters the already-fetched top-level `[Workout]`
-/// **in memory** by date range (no new Core Data fetches). The period selector, the 2×2 core-stats
-/// grid, the Muscle Balance tile and the Records tile all read their window off this.
+/// Backs the Summary's month-scoped block: filters the already-fetched top-level `[Workout]`
+/// **in memory** by date range (no new Core Data fetches) and reduces it to what a stat tile draws.
+/// The 2×2 core-stats grid and the Muscle Balance tile read their window off this.
 @MainActor
 final class SummaryViewModel: ObservableObject {
-    /// The user-facing scope governing the whole scoped block. Defaults to the current week; the
-    /// auto-fallback may bump it to month/year on a blank Monday until the user picks a segment.
-    @Published var selectedPeriod: StatPeriod = .week
-    /// Whether `selectedPeriod` was bumped past an empty week by the auto-fallback — drives the
-    /// "showing this month" hint row on the empty-state screen.
-    @Published private(set) var didAutoFallback = false
-
-    /// Once the user taps a segment the auto-fallback stops second-guessing them.
-    private var userHasSelected = false
+    /// The scope the stat tiles and the muscle balance read. The month, since the Summary merged
+    /// into one screen: the *week* now lives entirely in the title row's goal pill, and leaving the
+    /// tiles week-scoped made them blank every Monday — which is what the old auto-fallback existed
+    /// to paper over. A month is long enough to always have something in it and still recent enough
+    /// to be "how I'm training now".
+    @Published var selectedPeriod: StatPeriod = .month
 
     /// The number of history buckets the core-stat mini bar charts show (current + 4 prior periods).
     /// Buckets in a stat tile's mini bar chart — the fixed five-slot preview idiom shared with the
@@ -47,34 +43,6 @@ final class SummaryViewModel: ObservableObject {
         let hasData: Bool
         let percentChange: Double?
         let buckets: [Double]
-    }
-
-    // MARK: - Period resolution
-
-    /// On appear: keep the week if it has any workouts, else fall back to the first larger period that
-    /// does (month, then year), once. Ref `summary-empty-state.html`.
-    func resolveInitialPeriod(workouts: [Workout]) {
-        guard !userHasSelected else { return }
-        if !filtered(workouts, to: .week).isEmpty {
-            set(.week, autoFallback: false)
-            return
-        }
-        for period in [StatPeriod.month, .year] where !filtered(workouts, to: period).isEmpty {
-            set(period, autoFallback: true)
-            return
-        }
-        set(.week, autoFallback: false)
-    }
-
-    /// The PeriodPicker's setter routes through here so a manual pick disables further auto-fallback.
-    func userSelected(_ period: StatPeriod) {
-        userHasSelected = true
-        set(period, autoFallback: false)
-    }
-
-    private func set(_ period: StatPeriod, autoFallback: Bool) {
-        selectedPeriod = period
-        didAutoFallback = autoFallback
     }
 
     // MARK: - Mode

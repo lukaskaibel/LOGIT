@@ -17,7 +17,7 @@ let HIGHLIGHT_CARD_WIDTH: CGFloat = 300
 
 // MARK: - Carousel
 
-/// The Highlights carousel on the Progress tab: uniform-height cards, view-aligned paging, the next
+/// The Summary's Highlights carousel: uniform-height cards, view-aligned paging, the next
 /// card peeking. Clipping is disabled so cards sweep the full screen width while scrolling even
 /// though the carousel sits inside the screen's horizontal padding.
 struct ProgressHighlightsCarousel: View {
@@ -98,9 +98,6 @@ struct ProgressHighlightCardView: View {
             return .exercise(records.exercise)
         case let .trend(trend):
             switch trend.kind {
-            case .volume: return .summaryStat(.volume, .month)
-            case .sets: return .summaryStat(.sets, .month)
-            case .workouts: return .weeklyGoal
             case .muscleGroupSets: return .muscleGroupDetail(trend.muscleGroup ?? .chest, .month)
             case .exerciseVolume:
                 if let exercise = trend.exercise { return .exercise(exercise) }
@@ -364,8 +361,6 @@ extension HighlightComparisonCard.Content {
         let windowCaption = NSLocalizedString("trendWindowCaption", comment: "")
         let scopeName: String
         switch trend.kind {
-        case .volume, .sets, .workouts:
-            scopeName = NSLocalizedString("allWorkouts", comment: "")
         case .muscleGroupSets:
             scopeName = trend.muscleGroup?.description ?? ""
         case .exerciseVolume:
@@ -373,12 +368,6 @@ extension HighlightComparisonCard.Content {
         }
 
         switch trend.kind {
-        case .volume:
-            headline = NSLocalizedString("trendMoreVolume", comment: "")
-        case .sets:
-            headline = NSLocalizedString("trendMoreSets", comment: "")
-        case .workouts:
-            headline = NSLocalizedString("trendMoreWorkouts", comment: "")
         case .muscleGroupSets:
             headline = String(
                 format: NSLocalizedString("trendMuscleSets", comment: ""),
@@ -393,18 +382,14 @@ extension HighlightComparisonCard.Content {
         caption = "\(scopeName) · \(windowCaption)"
 
         switch trend.kind {
-        case .volume, .exerciseVolume:
+        case .exerciseVolume:
             currentValue = abbreviatedVolume(convertWeightForDisplaying(trend.currentValue))
             previousValue = abbreviatedVolume(convertWeightForDisplaying(trend.previousValue))
             unit = WeightUnit.used.rawValue
-        case .sets, .muscleGroupSets:
+        case .muscleGroupSets:
             currentValue = String(trend.currentValue)
             previousValue = String(trend.previousValue)
             unit = NSLocalizedString("sets", comment: "")
-        case .workouts:
-            currentValue = String(trend.currentValue)
-            previousValue = String(trend.previousValue)
-            unit = NSLocalizedString("workouts", comment: "")
         }
 
         currentLabel = NSLocalizedString("last4Weeks", comment: "")
@@ -413,8 +398,6 @@ extension HighlightComparisonCard.Content {
         previousNumeric = Double(trend.previousValue)
         percentChange = Double(trend.displayedPercent)
         switch trend.kind {
-        case .volume, .sets, .workouts:
-            tint = .accentColor
         case .muscleGroupSets:
             tint = trend.muscleGroup?.color ?? .accentColor
         case .exerciseVolume:

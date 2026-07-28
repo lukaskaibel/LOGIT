@@ -943,13 +943,19 @@
 "weeklyGoalToGoMany" = "あと%d回";
 "weeklyStreakWeeks" = "%d週";
 "muscleBalance" = "筋肉バランス";
-"muscleBalanceEmpty" = "まだセットがありません";
-"muscleBalanceBalanced" = "バランス良好";
+"balance" = "バランス";
+"muscleBalanceGoalBasis" = "目標以上";
+"muscleBalanceBelowTargetSection" = "目標未満";
+"muscleBalanceAtTargetSection" = "目標達成";
+"muscleBalanceAboveTargetSection" = "目標超過";
+"muscleBalanceGoalHeroCaption" = "部位が目標以上 · %d セット";
+"muscleBalanceGoalAccessibility" = "%d/%d の筋肉部位が目標以上";
+"muscleBalanceActualOfTarget" = "%d%%／目標 %d%%";
+"muscleBalanceEmpty" = "トレーニングを続けると筋肉の配分が表示されます";
 "muscleBalanceMostTrained" = "最多 · %@";
 "muscleBalanceSetsToGo" = "%@ · あと%dセット";
 "muscleBalanceLightMonth" = "今月は%@が少なめ";
 "muscleBalanceLightYear" = "今年は%@が少なめ";
-"muscleBalanceOnTarget" = "8グループ中%dが目標内";
 "muscleBalanceBarA11y" = "%1$@：セットの%2$d%%、目標%3$d%%";
 "muscleBalanceRoomToBalance" = "調整の余地あり";
 "balanceVsTarget" = "目標との比較";
@@ -961,9 +967,6 @@
 "muscleTargetPreset_balanced" = "バランス";
 "muscleTargetPreset_upperFocus" = "上半身重視";
 "muscleTargetPreset_pushPullLegs" = "プッシュ / プル / 脚";
-"summaryRecordsCountOne" = "新記録1件";
-"summaryRecordsCountMany" = "新記録%d件";
-"summaryRecordsNone" = "新記録なし";
 "current" = "現在";
 "highest" = "最高値";
 "pinnedExercises" = "ピン留めした種目";
@@ -979,8 +982,6 @@
 "whatYoullTrack" = "記録できること";
 "volumeAndSets" = "ボリュームとセット";
 "records" = "記録";
-"summaryEmptyWeekHintMonth" = "今週はワークアウトなし — 今月を表示";
-"summaryEmptyWeekHintYear" = "今週はワークアウトなし — 今年を表示";
 "sessions" = "セッション";
 "rank" = "順位";
 "muscleDetailRankCaption" = "8グループ中";
@@ -989,6 +990,7 @@
 "topExercises" = "トップ種目";
 "muscleDetailPercentOfSets" = "セットの%d%%";
 "weekStreakSuffix" = "週連続";
+"weeklyGoalAccessibility" = "週間目標、%d/%d ワークアウト";
 "yearWeeksOnTarget" = "%2$d週中%1$d週が目標達成";
 "currentWeekNumber" = "第%d週";
 "bestStreakLabel" = "最高 · %d週";
@@ -1000,8 +1002,6 @@
 "muscleBalanceOnTrack" = "順調";
 "muscleDetailRingCaption" = "リングが満ちる＝目標達成・目標 %d%%";
 "muscleDetailShareOverTime" = "割合の推移";
-"muscleBalanceBelowTarget" = "目標未満";
-"muscleBalanceAboveTarget" = "目標超過";
 "pinKeyLifts" = "主要種目をピン留め";
 "chooseExercises" = "種目を選ぶ";
 "pinAMeasurement" = "測定値をピン留め";
@@ -1011,14 +1011,12 @@
 /* Muscle Balance — ring grouping (under / over / on target) */
 "muscleBalanceBuildUp" = "増やす";
 "muscleBalanceAhead" = "超過";
-"muscleBalanceOnTargetSection" = "目標どおり";
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "目標 %d%%";
 "muscleDetailEmptySubtitle" = "選択した期間にこの部位はトレーニングしていません。";
 
 /* Muscle Balance — tile "+N more" hint */
-"muscleBalanceMore" = "他%d件";
 
 
 /* Progress tab — overall progress trend */
@@ -1029,12 +1027,8 @@
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "初めて%@を突破";
-"trendMoreVolume" = "ボリューム増加";
-"trendMoreSets" = "セット数増加";
-"trendMoreWorkouts" = "ワークアウト増加";
 "trendMuscleSets" = "%@のセット数が増加";
 "trendExerciseVolume" = "%@のボリューム上昇";
-"allWorkouts" = "すべてのワークアウト";
 "trendWindowCaption" = "直近4週間 vs その前の4週間";
 "last4Weeks" = "直近4週間";
 "fourWeeksBefore" = "その前の4週間";
@@ -1131,7 +1125,7 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "筋力";
-"strengthBasis" = "推定1RM · 直近8週間";
+"strengthBasis" = "推定1RM";
 "strengthEmpty" = "ワークアウトを記録すると筋力の傾向が表示されます。";
 "strengthWindowCaption" = "その前の%d週間との比較";
 "nWeeks" = "%d週間";
@@ -1139,7 +1133,6 @@
 "allExercises" = "すべてのエクササイズ";
 "strengthTapGroup" = "グループをタップして絞り込み";
 "strengthBiggestMovers" = "変化が大きい種目";
-"strengthMoversCaption" = "バーの長さ = 変化 · セット数 = 重み";
-"strengthShowAllExercises" = "%d種目すべて表示";
+"strengthScrubHint" = "小さい順 · ドラッグして確認";
 "showLess" = "表示を減らす";
 "strengthInfo" = "各エクササイズの直近%d週間の推定1RM最高値を、その前の%d週間と比較し、セット数で重み付けして平均した値です。カーディオと自重のセットは1RMがないため含まれません。";

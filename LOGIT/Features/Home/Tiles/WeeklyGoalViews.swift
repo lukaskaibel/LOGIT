@@ -1,5 +1,5 @@
 //
-//  WeeklyGoalHeroTile.swift
+//  WeeklyGoalViews.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 29.06.26.
@@ -7,51 +7,21 @@
 
 import SwiftUI
 
-/// The always-on weekly-goal hero at the top of the Summary screen — the fix for the dead Monday: it
-/// has something to show even before the first workout of the week. Shows the shared `WeeklyGoalStrip`
-/// (this week's 7 days as muscle-group rings with the weekday letter + the week's completion ring) and,
-/// once a run is going, a minimal flame streak line. Free. The full milestone scoreboard lives on the
-/// Workout Goal detail screen this tile taps into — the Summary stays a glance.
-struct WeeklyGoalHeroTile: View {
-    let workouts: [Workout]
-
-    @AppStorage("workoutPerWeekTarget") private var target: Int = -1
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text(NSLocalizedString("weeklyGoal", comment: ""))
-                    .tileHeaderStyle()
-                Spacer()
-                NavigationChevron()
-                    .foregroundStyle(.secondary)
-            }
-            WeeklyGoalStrip(workouts: workouts, target: target)
-            if streak > 0 {
-                StreakLine(streak: streak)
-            }
-        }
-        .padding(CELL_PADDING)
-        .tileStyle()
-    }
-
-    private var streak: Int {
-        SummaryViewModel.currentWeeklyStreak(workouts: workouts, target: target)
-    }
-}
+// The weekly-goal views, shared by `WorkoutGoalScreen` and (for the streak) the Summary's
+// `WeeklyGoalCountPill`. The Summary's own hero tile that used to lead this file is gone: once
+// This Week and Progress merged into one scroll, the week became one fact among many and shrank to
+// the title-row pill, with the full week a tap away on the goal screen.
 
 // MARK: - Weekly goal strip (shared)
 
 /// This week rendered like a calendar week row: each day is a muscle-group occurrence ring with the
 /// weekday letter inside (accent outline for today, plain letter on rest days), followed by the week's
-/// completion ring on the right edge. Shared by `WeeklyGoalHeroTile` (Summary) and `WorkoutGoalScreen`'s
-/// "This week" tile so the two read identically.
+/// completion ring on the right edge. Rendered by `WorkoutGoalScreen`'s "This week" tile.
 struct WeeklyGoalStrip: View {
     let workouts: [Workout]
     let target: Int
     /// When `true`, the date sits inside each ring (the calendar "This week" tile, so its dates line up
-    /// with the month grid above). When `false` (default) the weekday letter sits inside the ring — the
-    /// standalone Summary hero.
+    /// with the month grid above). When `false` (default) the weekday letter sits inside the ring.
     var showsDate: Bool = false
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
@@ -276,7 +246,7 @@ struct MuscleOccurrenceRing: View {
 
 #Preview {
     FetchRequestWrapper(Workout.self) { workouts in
-        WeeklyGoalHeroTile(workouts: workouts)
+        WeeklyGoalStrip(workouts: workouts, target: 4)
             .previewEnvironmentObjects()
             .padding()
     }

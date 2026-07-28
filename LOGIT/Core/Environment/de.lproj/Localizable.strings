@@ -939,13 +939,19 @@
 "weeklyGoalToGoMany" = "Noch %d Workouts";
 "weeklyStreakWeeks" = "%d Wo.";
 "muscleBalance" = "Muskelbalance";
-"muscleBalanceEmpty" = "Noch keine Sätze erfasst";
-"muscleBalanceBalanced" = "Gut ausbalanciert";
+"balance" = "Balance";
+"muscleBalanceGoalBasis" = "auf oder über Ziel";
+"muscleBalanceBelowTargetSection" = "Unter Ziel";
+"muscleBalanceAtTargetSection" = "Auf Ziel";
+"muscleBalanceAboveTargetSection" = "Über Ziel";
+"muscleBalanceGoalHeroCaption" = "Gruppen auf oder über Ziel · %d Sätze";
+"muscleBalanceGoalAccessibility" = "%d von %d Muskelgruppen auf oder über Ziel";
+"muscleBalanceActualOfTarget" = "%d %% von %d %%";
+"muscleBalanceEmpty" = "Trainiere weiter für deine Muskelverteilung";
 "muscleBalanceMostTrained" = "Am meisten · %@";
 "muscleBalanceSetsToGo" = "%@ · noch %d Sätze";
 "muscleBalanceLightMonth" = "%@ diesen Monat zu wenig";
 "muscleBalanceLightYear" = "%@ dieses Jahr zu wenig";
-"muscleBalanceOnTarget" = "%d von 8 Gruppen im Ziel";
 "muscleBalanceBarA11y" = "%1$@: %2$d%% der Sätze, Ziel %3$d%%";
 "muscleBalanceRoomToBalance" = "Noch Luft zum Ausgleich";
 "balanceVsTarget" = "Balance vs. Ziel";
@@ -957,9 +963,6 @@
 "muscleTargetPreset_balanced" = "Ausgewogen";
 "muscleTargetPreset_upperFocus" = "Oberkörper-Fokus";
 "muscleTargetPreset_pushPullLegs" = "Push / Pull / Beine";
-"summaryRecordsCountOne" = "1 neuer Rekord";
-"summaryRecordsCountMany" = "%d neue Rekorde";
-"summaryRecordsNone" = "Keine neuen Rekorde";
 "current" = "Aktuell";
 "highest" = "Höchster";
 "pinnedExercises" = "Angeheftete Übungen";
@@ -975,8 +978,6 @@
 "whatYoullTrack" = "Was du verfolgst";
 "volumeAndSets" = "Volumen & Sätze";
 "records" = "Rekorde";
-"summaryEmptyWeekHintMonth" = "Diese Woche kein Workout – zeige diesen Monat";
-"summaryEmptyWeekHintYear" = "Diese Woche kein Workout – zeige dieses Jahr";
 "sessions" = "Einheiten";
 "rank" = "Rang";
 "muscleDetailRankCaption" = "von 8 Gruppen";
@@ -985,6 +986,7 @@
 "topExercises" = "Top-Übungen";
 "muscleDetailPercentOfSets" = "%d%% der Sätze";
 "weekStreakSuffix" = "Wochen-Streak";
+"weeklyGoalAccessibility" = "Wochenziel, %d von %d Workouts";
 "yearWeeksOnTarget" = "%1$d von %2$d Wochen im Ziel";
 "currentWeekNumber" = "Woche %d";
 "bestStreakLabel" = "Best · %d Wo.";
@@ -996,8 +998,6 @@
 "muscleBalanceOnTrack" = "Auf Kurs";
 "muscleDetailRingCaption" = "Voller Ring = im Ziel · Ziel %d %%";
 "muscleDetailShareOverTime" = "Anteil im Zeitverlauf";
-"muscleBalanceBelowTarget" = "Unter dem Ziel";
-"muscleBalanceAboveTarget" = "Über dem Ziel";
 "pinKeyLifts" = "Hefte deine wichtigsten Übungen an";
 "chooseExercises" = "Übungen auswählen";
 "pinAMeasurement" = "Maß anheften";
@@ -1007,14 +1007,12 @@
 /* Muscle Balance — ring grouping (under / over / on target) */
 "muscleBalanceBuildUp" = "Aufbauen";
 "muscleBalanceAhead" = "Voraus";
-"muscleBalanceOnTargetSection" = "Im Ziel";
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "Ziel %d%%";
 "muscleDetailEmptySubtitle" = "Du hast diese Muskelgruppe im gewählten Zeitraum nicht trainiert.";
 
 /* Muscle Balance — tile "+N more" hint */
-"muscleBalanceMore" = "+%d weitere";
 
 
 /* Progress tab — overall progress trend */
@@ -1025,12 +1023,8 @@
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "Erstmals über %@";
-"trendMoreVolume" = "Mehr Volumen";
-"trendMoreSets" = "Mehr Sätze";
-"trendMoreWorkouts" = "Mehr Workouts";
 "trendMuscleSets" = "Mehr %@-Sätze";
 "trendExerciseVolume" = "%@-Volumen steigt";
-"allWorkouts" = "Alle Workouts";
 "trendWindowCaption" = "Letzte 4 Wochen vs. die 4 davor";
 "last4Weeks" = "Letzte 4 Wochen";
 "fourWeeksBefore" = "4 Wochen davor";
@@ -1127,7 +1121,7 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "Kraft";
-"strengthBasis" = "Geschätztes 1RM · letzte 8 Wochen";
+"strengthBasis" = "Geschätztes 1RM";
 "strengthEmpty" = "Logge weiter Workouts, um deinen Krafttrend zu sehen.";
 "strengthWindowCaption" = "vs. die %d Wochen davor";
 "nWeeks" = "%d Wochen";
@@ -1135,7 +1129,6 @@
 "allExercises" = "Alle Übungen";
 "strengthTapGroup" = "Tippe eine Gruppe an";
 "strengthBiggestMovers" = "Größte Veränderungen";
-"strengthMoversCaption" = "Balkenlänge = Veränderung · Sätze = Gewichtung";
-"strengthShowAllExercises" = "Alle %d Übungen anzeigen";
+"strengthScrubHint" = "Sortiert von schwach zu stark · zum Ansehen ziehen";
 "showLess" = "Weniger anzeigen";
 "strengthInfo" = "Das beste geschätzte 1RM jeder Übung der letzten %d Wochen im Vergleich zu den %d davor, gemittelt und nach Anzahl der Sätze gewichtet. Cardio- und Körpergewichtssätze haben kein 1RM und zählen nicht.";

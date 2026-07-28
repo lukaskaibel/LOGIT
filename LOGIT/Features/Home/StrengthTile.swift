@@ -60,29 +60,32 @@ struct StrengthHeroPill: View {
 
 // MARK: - Tile
 
-/// The Progress tab's headline tile: the hero pill states the whole-training trend, and the movers
-/// beside it name the muscle groups carrying it — so the tile answers "how much" and "where from"
-/// without a chart. Taps into `StrengthScreen`, which pulls the same weighted mean fully apart.
+/// The Summary's Strength half: the trend as a headline figure, and beneath it every trained
+/// exercise as one ranked bar. Half width, paired with `MuscleBalanceGoalTile` — the two are
+/// deliberately the same shape (a field of vertical bars on a shared baseline) so the top of the
+/// screen reads as one component rather than two unrelated cards.
 ///
-/// There is deliberately no sparkline: the metric is a percent change, and a chart of a rate over
-/// time is both hard to read and nearly static (consecutive windows overlap almost entirely).
+/// The chart runs to the bottom edge with no caption under it. What that costs is stated plainly:
+/// nothing on the tile says the bars are *ranked* rather than chronological. `StrengthScreen`
+/// corrects that on the first tap, and the ramp climbing left to right does most of the work.
 struct StrengthTile: View {
     let progress: StrengthProgress
-    /// How many muscle groups the tile names beside the hero.
-    var maxMovers: Int = 3
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
+            subtitle
+                .padding(.top, 8)
             if let overall = progress.overallPercentChange {
-                HStack(alignment: .center, spacing: 16) {
-                    StrengthHeroPill(percentChange: overall, isCompact: true)
-                    movers
-                }
-                .padding(.top, 13)
+                hero(overall)
+                    .padding(.top, 2)
+                StrengthBarChart(changes: progress.changes)
+                    .frame(maxHeight: .infinity)
+                    .padding(.top, 12)
             } else {
                 emptyState
                     .padding(.top, 12)
+                Spacer(minLength: 0)
             }
         }
         .padding(CELL_PADDING)
@@ -91,47 +94,59 @@ struct StrengthTile: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 8) {
-                Text(NSLocalizedString("strength", comment: ""))
-                    .tileHeaderStyle()
-                Spacer(minLength: 8)
-                NavigationChevron()
-                    .foregroundStyle(.secondary)
-            }
-            Text(NSLocalizedString("strengthBasis", comment: ""))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        HStack(spacing: 6) {
+            Text(NSLocalizedString("strength", comment: ""))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.label)
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .minimumScaleFactor(0.7)
+            Spacer(minLength: 4)
+            NavigationChevron()
+                .foregroundStyle(Color.secondaryLabel)
         }
     }
 
-    /// The groups carrying the number, strongest first. Sorted by change rather than filtered to
-    /// gains: if the top three are declines, that is the honest read and the pills grey themselves.
-    private var movers: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            ForEach(progress.groups.prefix(maxMovers)) { group in
-                HStack(spacing: 8) {
-                    Text(group.muscleGroup.description)
-                        .font(.system(.subheadline, design: .rounded, weight: .bold))
-                        .foregroundStyle(group.muscleGroup.color)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                    Spacer(minLength: 4)
-                    TrendIndicatorView(
-                        percentChange: group.percentChange,
-                        positiveColor: group.muscleGroup.color
-                    )
-                }
-            }
+    private var subtitle: some View {
+        Text(NSLocalizedString("strengthBasis", comment: ""))
+            .font(.caption.weight(.medium))
+            .tracking(0.3)
+            .foregroundStyle(.tertiary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+    }
+
+    /// Arrow plus percent, both in the trend colour. The scaled-up `StrengthHeroPill` doesn't fit a
+    /// half-width tile beside the chart, and the chart below already carries the accent — so here
+    /// the figure wears it directly and the pill keeps its place on the detail screen's hero.
+    private func hero(_ percent: Double) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Image(systemName: strengthTrendSymbol(percent))
+                .font(.system(size: 15, weight: .black))
+            Text(String(format: "%.1f%%", abs(percent)))
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundStyle(strengthTrendColor(percent))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(heroAccessibilityLabel(percent))
+    }
+
+    private func heroAccessibilityLabel(_ percent: Double) -> Text {
+        let value = (abs(percent) / 100).formatted(.percent.precision(.fractionLength(1)))
+        if strengthTrendIsUp(percent) {
+            return Text(String(format: NSLocalizedString("trendUp", comment: ""), value))
+        }
+        if strengthTrendIsDown(percent) {
+            return Text(String(format: NSLocalizedString("trendDown", comment: ""), value))
+        }
+        return Text(NSLocalizedString("trendFlat", comment: ""))
     }
 
     /// Before there's a trend, the tile wears the same gray ring the core-stat tiles use while their
-    /// first period fills — the ring tracking how far the history reaches into the span being
-    /// compared, so it creeps forward with every workout instead of sitting at nothing.
+    /// first period fills — tracking how far the history reaches into the span being compared, so it
+    /// creeps forward with every workout instead of sitting at nothing.
     private var emptyState: some View {
         TrendPlaceholder(
             progress: progress.historyFraction,

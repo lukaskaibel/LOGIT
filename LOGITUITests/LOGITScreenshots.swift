@@ -58,10 +58,12 @@ final class LOGITScreenshots: XCTestCase {
         snapshot("01_Summary")
     }
 
-    /// The new Progress tab: the overall strength trend plus the pinned exercise
-    /// tiles. The app itself scrolls to a fixed anchor in this mode (HomeScreen's
-    /// screenshot `.task`), so the pinned tiles clear the Start Workout bar with
-    /// the Highlights still in view — deterministically, without a flaky gesture.
+    /// The lower half of the merged Summary: the core stat grid, muscle balance and
+    /// the pinned exercise tiles. The app itself scrolls to a fixed anchor in this
+    /// mode (HomeScreen's screenshot `.task`), so the pinned tiles clear the Start
+    /// Workout bar — deterministically, without a flaky gesture. (The `progress`
+    /// target name predates the tab merge; the fastlane title strings key off the
+    /// `02_Progress` file name, so both stay put.)
     func test02Progress() {
         launch(["-UITEST_DEEPLINK", "progress"])
         waitForTabBar()

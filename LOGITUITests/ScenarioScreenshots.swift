@@ -55,41 +55,50 @@ final class ScenarioScreenshots: XCTestCase {
         )
     }
 
-    // MARK: - Summary settings button (accessibility regression)
+    // MARK: - Summary nav bar (accessibility regression)
 
-    /// The Summary screen's settings avatar must stay reachable by identifier so
-    /// VoiceOver / UI automation can open Settings. Regression guard: the row used
-    /// to live in a `ToolbarItem(placement: .largeTitle)`, whose custom content
-    /// iOS 26 never exposes to the accessibility tree (the navigation bar reported
-    /// zero children) — it's now rendered as in-flow content. Also asserts that
-    /// hiding the Summary navigation bar does not leak into pushed detail screens.
-    func testSummarySettingsButtonAccessible() {
+    /// Regression guard for the Summary's in-flow large-title row. The weekly-goal count
+    /// pill sits in that row where the settings avatar used to; both are in-flow scroll
+    /// content rather than `ToolbarItem(placement: .largeTitle)` content, because iOS 26
+    /// never exposes that placement's custom content to accessibility (the navigation bar
+    /// reports zero children) and the control would be unreachable. Asserts the pill is
+    /// reachable by identifier and opens the goal screen, that Settings is still reachable
+    /// now that it is a tab rather than a sheet, and that hiding the Summary's navigation
+    /// bar does not leak into pushed detail screens.
+    func testSummaryNavigationBarAccessible() {
         let app = launchApp(scenario: "many")
 
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
         waitABit(2)
 
-        let settingsButton = app.buttons["settingsButton"]
+        let goalPill = app.buttons["weeklyGoalPill"]
         XCTAssertTrue(
-            settingsButton.waitForExistence(timeout: 5),
-            "settingsButton not reachable in the accessibility tree on Summary"
+            goalPill.waitForExistence(timeout: 5),
+            "weeklyGoalPill not reachable in the accessibility tree on Summary"
         )
-
-        settingsButton.tap()
-        // The Settings sheet: NavigationStack titled "Settings" with a Done button.
-        let done = app.buttons["Done"].firstMatch
-        XCTAssertTrue(done.waitForExistence(timeout: 5), "Settings sheet did not open from the settings button")
-        done.tap()
+        goalPill.tap()
+        let backButton = app.navigationBars.buttons.firstMatch
+        XCTAssertTrue(backButton.waitForExistence(timeout: 5), "Weekly goal pill did not push the goal screen")
+        backButton.tap()
         waitABit(1)
 
-        // Hiding the Summary nav bar must NOT leak into pushed detail screens — a
-        // stat tile should still push a screen whose navigation bar (back button) works.
+        // Settings moved out of the Summary into its own tab.
+        tapTab(app, at: 3)
+        waitABit(1)
+        XCTAssertTrue(
+            app.navigationBars["Settings"].waitForExistence(timeout: 5),
+            "Settings tab did not show the Settings screen"
+        )
+        tapTab(app, at: 0)
+        waitABit(1)
+
+        // A stat tile must still push a screen whose navigation bar (back button) works.
         let volume = app.buttons.matching(NSPredicate(format: "label BEGINSWITH[c] 'Volume'")).firstMatch
         XCTAssertTrue(volume.waitForExistence(timeout: 5), "Volume tile missing")
         volume.tap()
-        let backButton = app.navigationBars.buttons.firstMatch
-        XCTAssertTrue(backButton.waitForExistence(timeout: 5), "Detail screen has no navigation bar / back button (nav-bar hiding leaked)")
+        let detailBack = app.navigationBars.buttons.firstMatch
+        XCTAssertTrue(detailBack.waitForExistence(timeout: 5), "Detail screen has no navigation bar / back button")
     }
 
     // MARK: - Personal records (per-exercise cards)
@@ -552,7 +561,7 @@ final class ScenarioScreenshots: XCTestCase {
 
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
-        tapTab(app, at: 3)
+        tapTab(app, at: 4)
         waitABit(1)
 
         // The Search tab is a hub; go through its Exercises list. Prefer the list's search
@@ -1011,7 +1020,11 @@ final class ScenarioScreenshots: XCTestCase {
 
         tapTab(app, at: 3)
         waitABit()
-        attach(app, "\(prefix)_05_search")
+        attach(app, "\(prefix)_05_settings")
+
+        tapTab(app, at: 4)
+        waitABit()
+        attach(app, "\(prefix)_06_search")
 
         tapTab(app, at: 0)
         waitABit()
@@ -1033,7 +1046,7 @@ final class ScenarioScreenshots: XCTestCase {
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
         waitABit(1)
-        tapTab(app, at: 3)
+        tapTab(app, at: 4)
         waitABit(1)
 
         let exercisesRow = app.staticTexts["Exercises"].firstMatch
@@ -1123,7 +1136,7 @@ final class ScenarioScreenshots: XCTestCase {
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
         waitABit(1)
-        tapTab(app, at: 3)
+        tapTab(app, at: 4)
         waitABit(1)
 
         let exercisesRow = app.staticTexts["Exercises"].firstMatch
@@ -1215,7 +1228,9 @@ final class ScenarioScreenshots: XCTestCase {
     }
 
     /// Tab titles as they appear in English (the tests launch with -AppleLanguages (en)).
-    private static let tabLabels = ["Summary", "History", "Templates", "Search"]
+    /// In bar order. Settings became a tab when This Week / Progress merged into one
+    /// Summary and the profile avatar left the screen, so Search sits at 4 now.
+    private static let tabLabels = ["Summary", "History", "Templates", "Settings", "Search"]
 
     private func tapTab(_ app: XCUIApplication, at index: Int) {
         let label = Self.tabLabels[index]

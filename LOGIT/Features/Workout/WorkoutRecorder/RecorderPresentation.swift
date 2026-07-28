@@ -158,19 +158,19 @@ final class WorkoutRecorderPresentationController: SlidePresentationController {
         transition.update(max(0, min(progress, 1)))
     }
 
-    /// Ends the session with Transmission's own pan-gesture semantics: finish past the
-    /// distance threshold or on a fast downward flick, otherwise cancel so the screen
-    /// springs back up and stays presented.
-    func endExternalDismissal(progress: CGFloat, velocity: CGFloat) {
+    /// Ends the session. The driver only opens one after a deliberate downward pull (see
+    /// `RECORDER_DISMISS_ENGAGEMENT_DISTANCE`) — that pull *is* the commitment, and starting
+    /// the session already tore the tray down — so releasing finishes the dismissal. Dragging
+    /// back up above where the session engaged, or releasing while moving upward, cancels it
+    /// and the screen springs back. A flick never commits on its own: it never engages.
+    func endExternalDismissal(progress rawProgress: CGFloat, velocity: CGFloat) {
         guard isExternalDragActive else { return }
         guard let transition else {
             isExternalDragActive = false
             return
         }
-        let progress = max(0, min(progress, 1))
-        // 1/3 of the screen, like the original draggable cover; fast flicks always
-        // commit, upward release velocity always snaps back.
-        let shouldFinish = (progress >= 1 / 3 && velocity >= 0) || velocity >= 800
+        let shouldFinish = rawProgress >= 0 && velocity >= 0
+        let progress = max(0, min(rawProgress, 1))
         var completionSpeed = shouldFinish ? 1 - progress : progress
         if velocity >= 4000 {
             completionSpeed = 1
@@ -223,11 +223,6 @@ final class WorkoutRecorderPresentationController: SlidePresentationController {
 final class WorkoutRecorderDragDriver {
     weak var controller: WorkoutRecorderPresentationController?
 
-    /// Fallback thresholds for a flick that ends before the interactive session could
-    /// start (mirrors the session's own finish rule in `endExternalDismissal`).
-    private let dismissDistanceFraction: CGFloat = 1 / 3
-    private let dismissVelocity: CGFloat = 800
-
     /// Translation at the moment the interactive session actually starts (the tray
     /// teardown takes a runloop tick) — scrubbing measures from there, so the screen
     /// picks up at the finger without a jump.
@@ -266,11 +261,9 @@ final class WorkoutRecorderDragDriver {
             controller.endExternalDismissal(progress: progress, velocity: velocity.height)
         } else if !controller.presentedViewController.isBeingDismissed {
             // The gesture ended before the session could start (tray teardown still in
-            // flight). Fast flicks past the threshold still dismiss; anything else
-            // restores the tray.
-            let shouldDismiss = translation.height > height * dismissDistanceFraction
-                || velocity.height > dismissVelocity
-            if shouldDismiss {
+            // flight). Getting here already took the deliberate engagement pull, so commit
+            // unless the finger had come back up.
+            if translation.height > 0 {
                 controller.requestImmediateDismissal()
             } else {
                 controller.onDragChanged?(false)

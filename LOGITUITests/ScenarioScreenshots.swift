@@ -582,9 +582,10 @@ final class ScenarioScreenshots: XCTestCase {
     // removed from the accessibility tree. -UITEST_NO_SHEET suppresses the tray
     // so those elements stay queryable; tray-up flows are coordinate-driven.
     //
-    // Dismissal changed with the expandable header: a header drag now folds/unfolds
-    // the stats panel, so the recorder is dismissed by the set-list drag-to-dismiss
-    // (at the top) and by the header's Minimize button — not by a header drag.
+    // Dismissal: a header drag folds/unfolds the stats panel, so the recorder is
+    // dismissed by the set-list drag-to-dismiss (at the top), by pulling on a header
+    // that is already fully extended, and by the header's Minimize button. All drag
+    // paths only engage past a deliberate distance — a swipe never minimizes.
 
     /// Keyboard focus in the presented recorder, then Minimize back into the pill, then
     /// reopen. Tray suppressed so the header stays queryable; also proves the title field
@@ -647,18 +648,23 @@ final class ScenarioScreenshots: XCTestCase {
 
         // Scroll the list to the very top (it opens scrolled to the bottom). Swiping
         // down in the list area moves content down = scrolls up; verifies scrolling
-        // still works alongside the dismiss gesture.
+        // still works alongside the dismiss gesture. Each swipe stays well under the
+        // dismissal's engagement distance — scrolling back to the top must never
+        // minimize the recorder.
         let mid = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.32))
-        let low = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.62))
-        for _ in 0 ..< 6 {
+        let low = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.50))
+        for _ in 0 ..< 10 {
             mid.press(forDuration: 0.02, thenDragTo: low)
         }
         waitABit(1)
         attach(app, "list_01_scrolled_to_top")
+        XCTAssertTrue(tray.exists, "Scrolling the list back to its top must not minimize the recorder")
 
         // Drag down from the list body → dismiss. Starts at 0.55: at the top the
         // header is expanded (scroll-linked, like a large title) and occupies the
         // upper ~45% of the screen, so higher origins would drag the header instead.
+        // The travel (~0.35 of the screen) clears the engagement distance a mere
+        // swipe never reaches.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55)).press(
             forDuration: 0.1,
             thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)),
@@ -691,10 +697,11 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "recorder_06_tray_settled")
 
         // Scroll the list to the very top (it opens scrolled to the bottom) so the
-        // list-drag dismissal can engage.
+        // list-drag dismissal can engage. Short swipes: anything past the engagement
+        // distance would minimize the recorder before the drag under test.
         let mid = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.32))
-        let low = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.62))
-        for _ in 0 ..< 6 {
+        let low = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.50))
+        for _ in 0 ..< 10 {
             mid.press(forDuration: 0.02, thenDragTo: low)
         }
         waitABit(1)

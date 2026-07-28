@@ -46,9 +46,15 @@ struct TemplateSetCell: View {
     private var content: some View {
         VStack(spacing: 0) {
             if let indexInSetGroup = indexInSetGroup {
+                // Bare number, styled exactly like `WorkoutSetCell`'s — templates mirror
+                // workouts (AGENT.md), and "Set 1" beside a workout's "1" was the last thing
+                // making the two set rows read differently.
                 HStack {
-                    Text("\(NSLocalizedString("set", comment: "")) \(indexInSetGroup + 1)")
-                    Spacer()
+                    Text("\(indexInSetGroup + 1)")
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(.secondary)
+                        .fixedSize()
                     setContent
                 }
                 if let dropSet = templateSet as? TemplateDropSet, canEdit {

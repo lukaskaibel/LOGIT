@@ -1022,13 +1022,10 @@
 
 
 /* Progress tab — overall progress trend */
-"strengthProgress" = "Strength Progress";
 "trendingUp" = "Trending up";
 "trendingSteady" = "Holding steady";
 "trendingDown" = "Trending down";
 "byMuscleGroup" = "By muscle group";
-"strengthProgressBasis" = "Estimated 1RM · last 8 weeks vs the 8 before";
-"strengthProgressEmpty" = "Keep logging workouts to see your strength trend.";
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "First time past %@";
@@ -1131,3 +1128,18 @@
 "progressMetricRepetitionsDescription" = "Most reps in a single set";
 "progressMetricDurationDescription" = "Longest duration in a single set";
 "progressMetricDistanceDescription" = "Farthest distance in a single set";
+
+// Strength (Progress tab tile + detail)
+"strength" = "Strength";
+"strengthBasis" = "Estimated 1RM · last 8 weeks";
+"strengthEmpty" = "Keep logging workouts to see your strength trend.";
+"strengthWindowCaption" = "vs the %d weeks before";
+"nWeeks" = "%d weeks";
+"nSets" = "%d sets";
+"allExercises" = "All exercises";
+"strengthTapGroup" = "Tap a group to focus";
+"strengthBiggestMovers" = "Biggest movers";
+"strengthMoversCaption" = "Bar length = its change · set count = its weight";
+"strengthShowAllExercises" = "Show all %d exercises";
+"showLess" = "Show less";
+"strengthInfo" = "Each exercise's best estimated 1RM in the last %d weeks against the %d before, averaged and weighted by how many sets you did. Cardio and bodyweight sets carry no 1RM and don't count.";

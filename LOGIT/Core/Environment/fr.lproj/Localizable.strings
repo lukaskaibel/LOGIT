@@ -1022,13 +1022,10 @@
 
 
 /* Progress tab — overall progress trend */
-"strengthProgress" = "Progression en force";
 "trendingUp" = "En hausse";
 "trendingSteady" = "Stable";
 "trendingDown" = "En baisse";
 "byMuscleGroup" = "Par groupe musculaire";
-"strengthProgressBasis" = "1RM estimé · 8 dernières semaines vs les 8 précédentes";
-"strengthProgressEmpty" = "Continuez à enregistrer des séances pour voir votre tendance de force.";
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "Première fois au-dessus de %@";
@@ -1131,3 +1128,18 @@
 "progressMetricRepetitionsDescription" = "Le plus de répétitions en une série";
 "progressMetricDurationDescription" = "La plus longue durée en une série";
 "progressMetricDistanceDescription" = "La plus grande distance en une série";
+
+// Strength (Progress tab tile + detail)
+"strength" = "Force";
+"strengthBasis" = "1RM estimé · 8 dernières semaines";
+"strengthEmpty" = "Continuez à enregistrer des séances pour voir votre tendance de force.";
+"strengthWindowCaption" = "vs les %d semaines précédentes";
+"nWeeks" = "%d semaines";
+"nSets" = "%d séries";
+"allExercises" = "Tous les exercices";
+"strengthTapGroup" = "Touchez un groupe pour l'isoler";
+"strengthBiggestMovers" = "Plus grands changements";
+"strengthMoversCaption" = "Longueur = son évolution · séries = son poids";
+"strengthShowAllExercises" = "Voir les %d exercices";
+"showLess" = "Voir moins";
+"strengthInfo" = "Le meilleur 1RM estimé de chaque exercice sur les %d dernières semaines par rapport aux %d précédentes, moyenné et pondéré par le nombre de séries. Les séries de cardio et au poids du corps n'ont pas de 1RM et ne comptent pas.";

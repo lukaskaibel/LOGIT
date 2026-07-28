@@ -261,6 +261,8 @@ struct HomeScreen: View {
                         )
                     case .progressHighlights:
                         ProgressHighlightsScreen(workouts: workouts)
+                    case .strength:
+                        StrengthScreen(workouts: workouts)
                     case let .summaryRecords(period):
                         SummaryRecordsScreen(
                             workouts: summaryViewModel.filtered(workouts, to: period),

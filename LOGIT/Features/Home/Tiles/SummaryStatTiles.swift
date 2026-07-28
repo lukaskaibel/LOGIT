@@ -52,7 +52,7 @@ struct SummaryStatTile: View {
                     // One lone bar (or none) isn't a trend — it just reads as a half-loaded tile. Until
                     // a second period has data, show a quiet "building your trend" hint instead; the real
                     // bars return on their own once there's something to compare.
-                    SummaryTrendPlaceholder(progress: trendProgress)
+                    TrendPlaceholder(progress: trendProgress, text: NSLocalizedString("buildingYourTrend", comment: ""))
                 } else {
                     // The highlighted "this week" bar always uses the accent, even for duration — it
                     // marks the current period, not a judgement, so it reads the same as the other tiles.
@@ -89,44 +89,6 @@ struct SummaryStatTile: View {
         return data.buckets.enumerated().map { index, value in
             WorkoutRunsBarChart.Bar(slot: index, value: value, isCurrent: index == count - 1)
         }
-    }
-}
-
-// MARK: - Trend Placeholder
-
-/// The chart-slot placeholder a core-stat tile shows before it has a trend to draw — a quiet gray
-/// progress ring (around a small bar-chart glyph) beside "Building your trend", sitting where the
-/// bars would, so a brand-new week reads as *in progress* rather than an empty tile. All gray, no
-/// accent: it's a nudge, not data — the honest answer to "there's nothing to chart yet" without
-/// faking bars. The ring tracks how far through the current period the tile is, so it creeps forward
-/// as the week goes on.
-private struct SummaryTrendPlaceholder: View {
-    /// How far through the current period we are (0…1) — the ring's fill.
-    let progress: Double
-
-    var body: some View {
-        HStack(spacing: 9) {
-            ZStack {
-                Circle()
-                    .stroke(Color.fill, lineWidth: 3)
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(Color.secondaryLabel, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                    // Start at 12 o'clock and fill clockwise, like every other progress ring.
-                    .rotationEffect(.degrees(-90))
-                Image(systemName: "chart.bar.fill")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.tertiary)
-            }
-            .frame(width: 30, height: 30)
-            Text(NSLocalizedString("buildingYourTrend", comment: ""))
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.tertiary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
     }
 }
 

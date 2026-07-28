@@ -119,7 +119,8 @@ struct StrengthTile: View {
     /// half-width tile beside the chart, and the chart below already carries the accent — so here
     /// the figure wears it directly and the pill keeps its place on the detail screen's hero.
     private func hero(_ percent: Double) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 3) {
+        // Centred, not baseline-aligned: a glyph on a text baseline hangs low beside a 30 pt figure.
+        HStack(alignment: .center, spacing: 3) {
             Image(systemName: strengthTrendSymbol(percent))
                 .font(.system(size: 15, weight: .black))
             Text(String(format: "%.1f%%", abs(percent)))

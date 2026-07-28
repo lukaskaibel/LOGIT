@@ -31,8 +31,11 @@ struct StrengthBarChart: View {
     var spacing: CGFloat = 2
     /// Drawn unless the caller is showing a chart small enough that a hairline would be noise.
     var showsZeroLine: Bool = true
-    /// Set by `StrengthScreen` to drive scrub selection; nil on the tile, which isn't interactive.
+    /// Set by `StrengthScreen` to drive selection; nil on the tile, which isn't interactive.
     var selection: Binding<NSManagedObjectID?>?
+    /// When set, that group's bars keep their colour and every other bar drops to neutral grey —
+    /// the chart stays whole instead of filtering down, so a group is read *against* the rest.
+    var highlightedGroup: MuscleGroup?
 
     /// Below this the bars stop reading as bars, so the gap gives way first and then the bar itself
     /// is floored — past that point the chart is a texture, which is an acceptable thing for a tile
@@ -42,6 +45,9 @@ struct StrengthBarChart: View {
     /// step still visible on the tile surface.
     private static let rampSteps = 6
     private static let rampFloor: Double = 0.35
+    /// Declines keep the hue and lose the solidity — dimmer than the ramp's own floor so they read
+    /// as below the line rather than as a very small gain.
+    private static let declineOpacity: Double = 0.22
     /// Shortest a bar can be drawn. Every exercise in the ranking keeps one: a flat lift is part of
     /// the ranking and should hold its column, and columns that render nothing leave the movers
     /// crowded into a corner of an otherwise empty chart.
@@ -94,7 +100,7 @@ struct StrengthBarChart: View {
                 }
             }
             .contentShape(Rectangle())
-            .gesture(scrubGesture(ranked: ranked, width: geo.size.width))
+            .gesture(selectGesture(ranked: ranked, width: geo.size.width))
         }
     }
 
@@ -124,7 +130,7 @@ struct StrengthBarChart: View {
                     topTrailingRadius: change.percentChange > 0 ? 2 : 0,
                     style: .continuous
                 )
-                .fill(color(for: change.percentChange, maxGain: maxGain))
+                .fill(color(for: change, maxGain: maxGain))
                 .frame(height: max(magnitude, Self.minimumBarHeight))
                 .overlay {
                     if isSelected {
@@ -145,13 +151,27 @@ struct StrengthBarChart: View {
         .frame(height: height)
     }
 
-    /// Gains step through the accent ramp by rank; declines are flat neutral grey.
-    private func color(for percent: Double, maxGain: Double) -> Color {
-        guard percent > 0 else { return Color.secondaryLabel.opacity(0.55) }
-        guard maxGain > 0 else { return Color.accentColor }
-        let step = min(Int(percent / maxGain * Double(Self.rampSteps)), Self.rampSteps - 1)
+    /// Colour carries two things at once: identity and direction.
+    ///
+    /// Identity is the base hue — the accent normally, the muscle group's own colour once a group is
+    /// highlighted, and neutral grey for every bar outside that group. Direction is opacity: gains
+    /// step through the six-step ramp by rank, declines are drawn translucent in the same hue rather
+    /// than recoloured, so a decline reads as "less of this" instead of as a different category.
+    private func color(for change: StrengthProgress.ExerciseChange, maxGain: Double) -> Color {
+        let base: Color
+        if let highlightedGroup {
+            guard change.muscleGroup == highlightedGroup else {
+                return Color.secondaryLabel.opacity(change.percentChange > 0 ? 0.5 : 0.25)
+            }
+            base = highlightedGroup.color
+        } else {
+            base = .accentColor
+        }
+        guard change.percentChange > 0 else { return base.opacity(Self.declineOpacity) }
+        guard maxGain > 0 else { return base }
+        let step = min(Int(change.percentChange / maxGain * Double(Self.rampSteps)), Self.rampSteps - 1)
         let t = Double(step) / Double(Self.rampSteps - 1)
-        return Color.accentColor.opacity(Self.rampFloor + (1 - Self.rampFloor) * t)
+        return base.opacity(Self.rampFloor + (1 - Self.rampFloor) * t)
     }
 
     /// Keeps the 2 pt gap while the bars can afford it, then closes it rather than letting the bars
@@ -163,17 +183,29 @@ struct StrengthBarChart: View {
         return max((width - Self.minimumBarWidth * CGFloat(count)) / CGFloat(count - 1), 0)
     }
 
-    /// Nearest-column scrubbing. Individual bars are far under a tappable size at any realistic
-    /// exercise count, so the whole plot is the target and the finger picks the closest column.
-    private func scrubGesture(ranked: [StrengthProgress.ExerciseChange], width: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: 0)
+    /// Press and hold to select, then keep scrubbing while the finger is down.
+    ///
+    /// Not a plain drag: the chart lives inside a ScrollView, and a zero-distance drag claims every
+    /// touch that starts on the plot — so scrolling the screen from the chart became impossible and
+    /// a stray flick reassigned the selection. Requiring the hold first leaves the scroll gesture
+    /// untouched, and it makes selection deliberate rather than something a passing finger does.
+    /// The muscle-group grid below is the other way in, and it needs no gesture at all.
+    private func selectGesture(ranked: [StrengthProgress.ExerciseChange], width: CGFloat) -> some Gesture {
+        LongPressGesture(minimumDuration: 0.2)
+            .sequenced(before: DragGesture(minimumDistance: 0))
             .onChanged { value in
-                guard let selection, !ranked.isEmpty, width > 0 else { return }
-                let fraction = min(max(value.location.x / width, 0), 0.9999)
-                let index = Int(fraction * CGFloat(ranked.count))
-                let id = ranked[min(index, ranked.count - 1)].id
-                if selection.wrappedValue != id { selection.wrappedValue = id }
+                guard case let .second(_, drag?) = value else { return }
+                select(at: drag.location.x, ranked: ranked, width: width)
             }
+    }
+
+    /// Individual bars are far under a tappable size at any realistic exercise count, so the whole
+    /// plot is the target and the finger picks the closest column.
+    private func select(at x: CGFloat, ranked: [StrengthProgress.ExerciseChange], width: CGFloat) {
+        guard let selection, !ranked.isEmpty, width > 0 else { return }
+        let fraction = min(max(x / width, 0), 0.9999)
+        let id = ranked[min(Int(fraction * CGFloat(ranked.count)), ranked.count - 1)].id
+        if selection.wrappedValue != id { selection.wrappedValue = id }
     }
 }
 

@@ -19,7 +19,6 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
         case let .measurementDetail(type): return "measurementDetail\(type.rawValue)"
         case let .summaryStat(metric, period): return "summaryStat\(metric.rawValue)\(period?.rawValue ?? "")"
         case let .muscleGroupDetail(group, period): return "muscleGroupDetail\(group.rawValue)\(period.rawValue)"
-        case let .summaryRecords(period): return "summaryRecords\(period.rawValue)"
         case let .template(template): return "template\(String(describing: template.id))"
         case let .workout(workout): return "workout\(String(describing: workout.id))"
         default: return String(describing: self)
@@ -38,7 +37,6 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
          // The optional period pins the stat screen to a window (highlight cards open the chart
          // they compare over); nil keeps the Summary's currently selected period.
          summaryStat(WorkoutStatMetric, StatPeriod?),
-         summaryRecords(StatPeriod),
          targetPerWeek,
          weeklyGoal,
          template(Template),

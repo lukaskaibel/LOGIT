@@ -1,5 +1,5 @@
 //
-//  SummaryProgressTab.swift
+//  SummaryTrendSection.swift
 //  LOGIT
 //
 //  Created by Lukas Kaibel on 30.06.26.
@@ -8,46 +8,14 @@
 import CoreData
 import SwiftUI
 
-// MARK: - Summary tab
+// MARK: - Trend section
 
-/// The Summary screen's top switcher: the everyday `This Week` view vs the new `Progress` lens
-/// (recent highlights + the overall strength trend). Replaces the old Week / Month / Year period
-/// segments on the Summary — the longer windows still live on the stat detail screens.
-enum SummaryTab: String, CaseIterable, Identifiable {
-    case thisWeek, progress
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .thisWeek: return NSLocalizedString("thisWeek", comment: "")
-        case .progress: return NSLocalizedString("progress", comment: "")
-        }
-    }
-}
-
-/// The shared segmented `This Week` / `Progress` control, mirroring `PeriodPicker`'s styling.
-struct SummaryTabPicker: View {
-    @Binding var selection: SummaryTab
-
-    var body: some View {
-        Picker(NSLocalizedString("progress", comment: ""), selection: $selection) {
-            ForEach(SummaryTab.allCases) { tab in
-                Text(tab.title).tag(tab)
-            }
-        }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-    }
-}
-
-// MARK: - Progress tab
-
-/// The `Progress` tab body: the Strength tile leads as the tab's headline, the Highlights
-/// carousel below — recent bests, milestones, and trends as swipeable cards (see
-/// `ProgressHighlights`). Computes both off the already-fetched `[Workout]` in a `.task` (no new
-/// Core Data fetches), the way the Summary's records tile does.
-struct SummaryProgressTab: View {
+/// The Summary's opening band: the Strength tile, then the Highlights carousel — the trend, then
+/// what just happened. Strength leads because it always renders and barely moves week to week, which
+/// makes it a stable anchor; Highlights is conditional (it vanishes with nothing to show), so it can
+/// never be the thing the screen opens on. Both compute off the already-fetched `[Workout]` in one
+/// `.task`, with no new Core Data fetches.
+struct SummaryTrendSection: View {
     let workouts: [Workout]
 
     @EnvironmentObject private var database: Database

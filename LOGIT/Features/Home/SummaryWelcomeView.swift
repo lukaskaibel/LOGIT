@@ -79,7 +79,7 @@ struct SummaryWelcomeView: View {
                 columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
                 spacing: 10
             ) {
-                previewTile(icon: "flame.fill", name: NSLocalizedString("weeklyGoal", comment: ""))
+                previewTile(icon: "chart.line.uptrend.xyaxis", name: NSLocalizedString("strength", comment: ""))
                 previewTile(icon: "chart.bar.fill", name: NSLocalizedString("volumeAndSets", comment: ""))
                 previewTile(icon: "trophy.fill", name: NSLocalizedString("records", comment: ""))
                 previewTile(icon: "chart.pie.fill", name: NSLocalizedString("muscleBalance", comment: ""))

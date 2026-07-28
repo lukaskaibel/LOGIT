@@ -957,9 +957,6 @@
 "muscleTargetPreset_balanced" = "Ausgewogen";
 "muscleTargetPreset_upperFocus" = "Oberkörper-Fokus";
 "muscleTargetPreset_pushPullLegs" = "Push / Pull / Beine";
-"summaryRecordsCountOne" = "1 neuer Rekord";
-"summaryRecordsCountMany" = "%d neue Rekorde";
-"summaryRecordsNone" = "Keine neuen Rekorde";
 "current" = "Aktuell";
 "highest" = "Höchster";
 "pinnedExercises" = "Angeheftete Übungen";
@@ -975,8 +972,6 @@
 "whatYoullTrack" = "Was du verfolgst";
 "volumeAndSets" = "Volumen & Sätze";
 "records" = "Rekorde";
-"summaryEmptyWeekHintMonth" = "Diese Woche kein Workout – zeige diesen Monat";
-"summaryEmptyWeekHintYear" = "Diese Woche kein Workout – zeige dieses Jahr";
 "sessions" = "Einheiten";
 "rank" = "Rang";
 "muscleDetailRankCaption" = "von 8 Gruppen";
@@ -985,6 +980,7 @@
 "topExercises" = "Top-Übungen";
 "muscleDetailPercentOfSets" = "%d%% der Sätze";
 "weekStreakSuffix" = "Wochen-Streak";
+"weeklyGoalAccessibility" = "Wochenziel, %d von %d Workouts";
 "yearWeeksOnTarget" = "%1$d von %2$d Wochen im Ziel";
 "currentWeekNumber" = "Woche %d";
 "bestStreakLabel" = "Best · %d Wo.";
@@ -1025,12 +1021,8 @@
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "Erstmals über %@";
-"trendMoreVolume" = "Mehr Volumen";
-"trendMoreSets" = "Mehr Sätze";
-"trendMoreWorkouts" = "Mehr Workouts";
 "trendMuscleSets" = "Mehr %@-Sätze";
 "trendExerciseVolume" = "%@-Volumen steigt";
-"allWorkouts" = "Alle Workouts";
 "trendWindowCaption" = "Letzte 4 Wochen vs. die 4 davor";
 "last4Weeks" = "Letzte 4 Wochen";
 "fourWeeksBefore" = "4 Wochen davor";

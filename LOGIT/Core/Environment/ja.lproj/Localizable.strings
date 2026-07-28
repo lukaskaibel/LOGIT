@@ -961,9 +961,6 @@
 "muscleTargetPreset_balanced" = "バランス";
 "muscleTargetPreset_upperFocus" = "上半身重視";
 "muscleTargetPreset_pushPullLegs" = "プッシュ / プル / 脚";
-"summaryRecordsCountOne" = "新記録1件";
-"summaryRecordsCountMany" = "新記録%d件";
-"summaryRecordsNone" = "新記録なし";
 "current" = "現在";
 "highest" = "最高値";
 "pinnedExercises" = "ピン留めした種目";
@@ -979,8 +976,6 @@
 "whatYoullTrack" = "記録できること";
 "volumeAndSets" = "ボリュームとセット";
 "records" = "記録";
-"summaryEmptyWeekHintMonth" = "今週はワークアウトなし — 今月を表示";
-"summaryEmptyWeekHintYear" = "今週はワークアウトなし — 今年を表示";
 "sessions" = "セッション";
 "rank" = "順位";
 "muscleDetailRankCaption" = "8グループ中";
@@ -989,6 +984,7 @@
 "topExercises" = "トップ種目";
 "muscleDetailPercentOfSets" = "セットの%d%%";
 "weekStreakSuffix" = "週連続";
+"weeklyGoalAccessibility" = "週間目標、%d/%d ワークアウト";
 "yearWeeksOnTarget" = "%2$d週中%1$d週が目標達成";
 "currentWeekNumber" = "第%d週";
 "bestStreakLabel" = "最高 · %d週";
@@ -1029,12 +1025,8 @@
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "初めて%@を突破";
-"trendMoreVolume" = "ボリューム増加";
-"trendMoreSets" = "セット数増加";
-"trendMoreWorkouts" = "ワークアウト増加";
 "trendMuscleSets" = "%@のセット数が増加";
 "trendExerciseVolume" = "%@のボリューム上昇";
-"allWorkouts" = "すべてのワークアウト";
 "trendWindowCaption" = "直近4週間 vs その前の4週間";
 "last4Weeks" = "直近4週間";
 "fourWeeksBefore" = "その前の4週間";

@@ -961,9 +961,6 @@
 "muscleTargetPreset_balanced" = "Balanced";
 "muscleTargetPreset_upperFocus" = "Upper focus";
 "muscleTargetPreset_pushPullLegs" = "Push / Pull / Legs";
-"summaryRecordsCountOne" = "1 New Record";
-"summaryRecordsCountMany" = "%d New Records";
-"summaryRecordsNone" = "No new records";
 "current" = "Current";
 "highest" = "Highest";
 "pinnedExercises" = "Pinned Exercises";
@@ -979,8 +976,6 @@
 "whatYoullTrack" = "What you'll track";
 "volumeAndSets" = "Volume & Sets";
 "records" = "Records";
-"summaryEmptyWeekHintMonth" = "No workouts this week — showing this month";
-"summaryEmptyWeekHintYear" = "No workouts this week — showing this year";
 "sessions" = "Sessions";
 "rank" = "Rank";
 "muscleDetailRankCaption" = "of 8 groups";
@@ -989,6 +984,7 @@
 "topExercises" = "Top Exercises";
 "muscleDetailPercentOfSets" = "%d%% of sets";
 "weekStreakSuffix" = "week streak";
+"weeklyGoalAccessibility" = "Weekly goal, %d of %d workouts";
 "yearWeeksOnTarget" = "%1$d of %2$d weeks on target";
 "currentWeekNumber" = "Week %d";
 "bestStreakLabel" = "Best · %d wks";
@@ -1029,12 +1025,8 @@
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "First time past %@";
-"trendMoreVolume" = "More volume";
-"trendMoreSets" = "More sets";
-"trendMoreWorkouts" = "More workouts";
 "trendMuscleSets" = "More %@ sets";
 "trendExerciseVolume" = "%@ volume is up";
-"allWorkouts" = "All workouts";
 "trendWindowCaption" = "Last 4 weeks vs the 4 before";
 "last4Weeks" = "Last 4 weeks";
 "fourWeeksBefore" = "4 weeks before";

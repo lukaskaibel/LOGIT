@@ -12,35 +12,25 @@ import SwiftUI
 struct HomeScreen: View {
     // MARK: - AppStorage
 
-    @AppStorage("workoutPerWeekTarget") var targetPerWeek: Int = -1
     @AppStorage("pinnedMeasurements") private var pinnedMeasurementsData: Data = Data()
     @AppStorage("pinnedExercises") private var pinnedExercisesData: Data = Data()
 
     // MARK: - Environment
 
     @EnvironmentObject private var purchaseManager: PurchaseManager
-    @EnvironmentObject private var workoutRecorder: WorkoutRecorder
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
-    @EnvironmentObject private var measurementController: MeasurementEntryController
     @EnvironmentObject private var database: Database
 
     // MARK: - State
 
     @StateObject private var summaryViewModel = SummaryViewModel()
 
-    @State private var isShowingWorkoutRecorder = false
-    @State private var isShowingSettings = false
     @State private var isShowingMeasurementsEditSheet = false
     @State private var isShowingExercisesPinEditSheet = false
     @State private var isShowingMeasurementsTip = true
     @State private var isShowingExercisesTip = true
     @State private var isShowingStartWorkoutSheet = false
-    @State private var summaryRecords: [WorkoutProgressReport.ExerciseRecords] = []
-    // Default to the tab a marketing screenshot asked for (`-UITEST_DEEPLINK
-    // progress`) so the Progress capture opens without a visible tab flip;
-    // real launches always start on This Week.
-    @State private var selectedTab: SummaryTab =
-        ScreenshotFixtures.deepLinkTarget == "progress" ? .progress : .thisWeek
+    @State private var isShowingWorkoutGoalSheet = false
     @State private var didApplyScreenshotDeepLink = false
 
     // MARK: - Body
@@ -53,332 +43,181 @@ struct HomeScreen: View {
         ) { workouts in
             NavigationStack(path: $homeNavigationCoordinator.path) {
                 ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(spacing: 5) {
-                        if #unavailable(iOS 26.0) {
-                            header
-                                .padding([.top, .horizontal])
-                        } else {
-                            // Top inset reproduces the standing space the former
-                            // `.largeTitle` navigation-bar title occupied, so the row
-                            // lands where it did before moving in-flow.
-                            summaryHeader
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            summaryHeader(workouts: workouts)
                                 .padding(.horizontal)
-                                .padding(.top, 46)
-                        }
-                        VStack(spacing: SECTION_SPACING) {
-                            if #unavailable(iOS 26.0) {
-                                VStack(spacing: 0) {
-                                    Button {
-                                        homeNavigationCoordinator.path.append(.exerciseList)
-                                    } label: {
-                                        HStack {
-                                            HStack {
-                                                Image(systemName: "dumbbell")
-                                                    .frame(width: 40)
-                                                    .foregroundStyle(Color.accentColor)
-                                                Text(NSLocalizedString("exercises", comment: ""))
-                                                    .foregroundStyle(.white)
-                                            }
-                                            Spacer()
-                                            NavigationChevron()
-                                                .foregroundStyle(Color.secondaryLabel)
-                                        }
-                                        .padding(.trailing)
-                                        .padding(.vertical, 12)
-                                    }
-                                    Divider()
-                                        .padding(.leading, 45)
-                                    Button {
-                                        homeNavigationCoordinator.path.append(.templateList)
-                                    } label: {
-                                        HStack {
-                                            HStack {
-                                                Image(systemName: "list.bullet.rectangle.portrait")
-                                                    .frame(width: 40)
-                                                    .foregroundStyle(Color.accentColor)
-                                                Text(NSLocalizedString("templates", comment: ""))
-                                                    .foregroundStyle(.white)
-                                            }
-                                            Spacer()
-                                            NavigationChevron()
-                                                .foregroundStyle(Color.secondaryLabel)
-                                        }
-                                        .padding(.trailing)
-                                        .padding(.vertical, 12)
-                                    }
-                                }
-                                .font(.title2)
-                                .padding(.horizontal)
-                            }
-
-                            if summaryViewModel.mode(workouts: workouts) == .firstOpen {
-                                SummaryWelcomeView(
-                                    onStartWorkout: { isShowingStartWorkoutSheet = true },
-                                    onBrowseTemplates: { homeNavigationCoordinator.path.append(.templateList) }
-                                )
-                                .padding(.horizontal)
-                            } else {
-                            VStack(spacing: 8) {
-                                SummaryTabPicker(selection: $selectedTab)
-                                .padding(.vertical, 2)
-                                if selectedTab == .thisWeek {
-                                    weeklyGoalHero(workouts: workouts)
-                                    if summaryViewModel.didAutoFallback {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "info.circle")
-                                            Text(summaryViewModel.selectedPeriod == .year
-                                                ? NSLocalizedString("summaryEmptyWeekHintYear", comment: "")
-                                                : NSLocalizedString("summaryEmptyWeekHintMonth", comment: ""))
-                                        }
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    }
-                                    SummaryStatTileGrid(
-                                        viewModel: summaryViewModel,
-                                        workouts: workouts,
-                                        onOpenDetail: { metric in
-                                            homeNavigationCoordinator.path.append(.summaryStat(metric, nil))
-                                        }
+                                .padding(.top, 8)
+                            VStack(spacing: SECTION_SPACING) {
+                                if summaryViewModel.mode(workouts: workouts) == .firstOpen {
+                                    SummaryWelcomeView(
+                                        onStartWorkout: { isShowingStartWorkoutSheet = true },
+                                        onBrowseTemplates: { homeNavigationCoordinator.path.append(.templateList) }
                                     )
-                                    Button {
-                                        homeNavigationCoordinator.path.append(.muscleGroupsOverview)
-                                    } label: {
-                                        MuscleBalanceTile(
-                                            workouts: summaryViewModel.filtered(workouts, to: summaryViewModel.selectedPeriod),
-                                            period: summaryViewModel.selectedPeriod
-                                        )
-                                        .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(TileButtonStyle())
-                                    if !summaryRecords.isEmpty {
-                                        Button {
-                                            homeNavigationCoordinator.path.append(.summaryRecords(summaryViewModel.selectedPeriod))
-                                        } label: {
-                                            SummaryRecordsTile(
-                                                records: summaryRecords,
-                                                period: summaryViewModel.selectedPeriod
-                                            )
-                                            .contentShape(Rectangle())
-                                        }
-                                        .buttonStyle(TileButtonStyle())
-                                    }
                                 } else {
-                                    SummaryProgressTab(workouts: workouts)
+                                    summaryContent(workouts: workouts)
                                 }
                             }
                             .padding(.horizontal)
-                            .onAppear {
-                                summaryViewModel.resolveInitialPeriod(workouts: workouts)
-                                applyScreenshotDeepLinkIfNeeded(workouts: workouts)
-                            }
-                            .task(id: "\(summaryViewModel.selectedPeriod.rawValue)-\(workouts.count)") {
-                                summaryRecords = SummaryRecords.records(
-                                    in: summaryViewModel.filtered(workouts, to: summaryViewModel.selectedPeriod),
-                                    database: database
-                                )
-                            }
-
-                            if selectedTab == .progress {
-                                // Fixed scroll anchor for the Progress marketing
-                                // screenshot (see the `.task` on the ScrollView).
-                                Color.clear
-                                    .frame(height: 1)
-                                    .id("screenshotPinnedAnchor")
-                                exercisesSection
-                                    .padding(.horizontal)
-
-                                measurementsSection
-                                    .padding(.horizontal)
-                            }
-                            }
-
+                            .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                         }
-                        .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
-                        .padding(.top)
                     }
-                }
-                .background(
-                    VStack {
-                        ColorfulView(color: MuscleGroup.allCases.map({ $0.color }), speed: .constant(0))
-                            .mask(
-                                LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
-                                
+                    .background(
+                        VStack {
+                            ColorfulView(color: MuscleGroup.allCases.map({ $0.color }), speed: .constant(0))
+                                .mask(
+                                    LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .top, endPoint: .bottom)
+                                )
+                                .frame(height: 300)
+                            Spacer()
+                        }
+                        .ignoresSafeArea(.all)
+                    )
+                    // The title row is in-flow scroll content, so the navigation bar stays hidden here
+                    // (it must not leak into pushed screens — see ScenarioScreenshots). A soft top edge
+                    // effect keeps the ColorfulX wash reaching the very top instead of being cut off.
+                    .scrollEdgeEffectStyle(.soft, for: .top)
+                    .toolbar(.hidden, for: .navigationBar)
+                    .sheet(isPresented: $isShowingStartWorkoutSheet) {
+                        WorkoutStartSheet()
+                    }
+                    .sheet(isPresented: $isShowingWorkoutGoalSheet) {
+                        NavigationStack {
+                            ChangeWeeklyWorkoutGoalScreen()
+                        }
+                    }
+                    .sheet(isPresented: $isShowingMeasurementsEditSheet) {
+                        MeasurementsEditSheet(pinnedMeasurements: Binding(
+                            get: { pinnedMeasurements },
+                            set: { setPinnedMeasurements($0) }
+                        ))
+                    }
+                    .sheet(isPresented: $isShowingExercisesPinEditSheet) {
+                        ExercisesPinEditSheet(pinnedTiles: Binding(
+                            get: { pinnedExerciseTiles },
+                            set: { setPinnedExerciseTiles($0) }
+                        ))
+                    }
+                    .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
+                        switch destination {
+                        case let .exercise(exercise):
+                            ExerciseDetailScreen(exercise: exercise)
+                        case .exerciseList: ExerciseListScreen()
+                        case let .measurementDetail(measurementType):
+                            MeasurementDetailScreen(measurementType: measurementType)
+                        case .measurements: MeasurementsScreen()
+                        case .muscleGroupsOverview:
+                            MuscleGroupsOverviewScreen()
+                        case .muscleTargetSplit:
+                            MuscleTargetSplitScreen()
+                        case let .muscleGroupDetail(group, initialPeriod):
+                            MuscleGroupDetailScreen(muscleGroup: group, initialPeriod: initialPeriod)
+                        case let .summaryStat(metric, period):
+                            SummaryStatScreen(
+                                metric: metric,
+                                workouts: workouts,
+                                initialPeriod: period ?? summaryViewModel.selectedPeriod
                             )
-                            .frame(height: 300)
-                        Spacer()
+                        case .progressHighlights:
+                            ProgressHighlightsScreen(workouts: workouts)
+                        case .strength:
+                            StrengthScreen(workouts: workouts)
+                        case .targetPerWeek: TargetPerWeekDetailScreen()
+                        case .weeklyGoal: WorkoutGoalScreen(workouts: workouts)
+                        case let .template(template):
+                            TemplateDetailScreen(template: template)
+                        case .templateList: TemplateListScreen()
+                        case let .workout(workout):
+                            WorkoutDetailScreen(
+                                workout: workout,
+                                canNavigateToTemplate: true
+                            )
+                        case .workoutList: WorkoutListScreen()
+                        }
                     }
-                    .ignoresSafeArea(.all)
-                )
-                .sheet(isPresented: $isShowingSettings) {
-                    NavigationStack {
-                        SettingsScreen()
-                            .navigationTitle(NSLocalizedString("settings", comment: ""))
-                            .toolbar {
-                                ToolbarItem(placement: .topBarTrailing) {
-                                    Button(NSLocalizedString("done", comment: "")) {
-                                        isShowingSettings = false
-                                    }
-                                }
-                            }
+                    .onAppear {
+                        applyScreenshotDeepLinkIfNeeded(workouts: workouts)
                     }
-                }
-                .sheet(isPresented: $isShowingStartWorkoutSheet) {
-                    WorkoutStartSheet()
-                }
-                .sheet(isPresented: $isShowingMeasurementsEditSheet) {
-                    MeasurementsEditSheet(pinnedMeasurements: Binding(
-                        get: { pinnedMeasurements },
-                        set: { setPinnedMeasurements($0) }
-                    ))
-                }
-                .sheet(isPresented: $isShowingExercisesPinEditSheet) {
-                    ExercisesPinEditSheet(pinnedTiles: Binding(
-                        get: { pinnedExerciseTiles },
-                        set: { setPinnedExerciseTiles($0) }
-                    ))
-                }
-                .navigationDestination(for: HomeNavigationDestinationType.self) { destination in
-                    switch destination {
-                    case let .exercise(exercise):
-                        ExerciseDetailScreen(exercise: exercise)
-                    case .exerciseList: ExerciseListScreen()
-                    case let .measurementDetail(measurementType):
-                        MeasurementDetailScreen(measurementType: measurementType)
-                    case .measurements: MeasurementsScreen()
-                    case .muscleGroupsOverview:
-                        MuscleGroupsOverviewScreen()
-                    case .muscleTargetSplit:
-                        MuscleTargetSplitScreen()
-                    case let .muscleGroupDetail(group, initialPeriod):
-                        MuscleGroupDetailScreen(muscleGroup: group, initialPeriod: initialPeriod)
-                    case let .summaryStat(metric, period):
-                        SummaryStatScreen(
-                            metric: metric,
-                            workouts: workouts,
-                            initialPeriod: period ?? summaryViewModel.selectedPeriod
-                        )
-                    case .progressHighlights:
-                        ProgressHighlightsScreen(workouts: workouts)
-                    case .strength:
-                        StrengthScreen(workouts: workouts)
-                    case let .summaryRecords(period):
-                        SummaryRecordsScreen(
-                            workouts: summaryViewModel.filtered(workouts, to: period),
-                            period: period
-                        )
-                    case .targetPerWeek: TargetPerWeekDetailScreen()
-                    case .weeklyGoal: WorkoutGoalScreen(workouts: workouts)
-                    case let .template(template):
-                        TemplateDetailScreen(template: template)
-                    case .templateList: TemplateListScreen()
-                    case let .workout(workout):
-                        WorkoutDetailScreen(
-                            workout: workout,
-                            canNavigateToTemplate: true
-                        )
-                    case .workoutList: WorkoutListScreen()
+                    .task {
+                        // Screenshot-only, deterministic scroll for the marketing capture: once the
+                        // screen has laid out and seeded its pins, jump to a fixed anchor so the pinned
+                        // tiles clear the Start Workout bar. The UI test can't do this — its gesture
+                        // flick travels an unpredictable, per-run distance — so the app positions it
+                        // instead. No-op for real users (guarded on the fixtures + deep-link flags).
+                        guard ScreenshotFixtures.isEnabled,
+                              ScreenshotFixtures.deepLinkTarget == "progress" else { return }
+                        try? await Task.sleep(nanoseconds: 600_000_000)
+                        proxy.scrollTo("screenshotPinnedAnchor", anchor: UnitPoint(x: 0.5, y: 0.57))
                     }
-                }
-                .navigationTitle(NSLocalizedString("summary", comment: ""))
-                .toolbar(.hidden, for: .navigationBar)
-                .task {
-                    // Screenshot-only, deterministic scroll for the Progress
-                    // capture: once the tab has laid out and seeded its pins, jump
-                    // to a fixed anchor so the pinned tiles clear the Start Workout
-                    // bar while the Highlights stay in view. The UI test can't do
-                    // this — its gesture flick travels an unpredictable, per-run
-                    // distance — so the app positions it instead. No-op for real
-                    // users (guarded on the fixtures + deep-link flags).
-                    guard ScreenshotFixtures.isEnabled,
-                          ScreenshotFixtures.deepLinkTarget == "progress" else { return }
-                    try? await Task.sleep(nanoseconds: 600_000_000)
-                    proxy.scrollTo("screenshotPinnedAnchor", anchor: UnitPoint(x: 0.5, y: 0.63))
-                }
                 }
             }
             .scrollContentBackground(.hidden)
         }
     }
 
-    // MARK: - Supporting Views
+    // MARK: - Sections
 
-    private var header: some View {
-        VStack(alignment: .leading) {
-            Text(Date.now.formatted(date: .long, time: .omitted))
-                .screenHeaderTertiaryStyle()
-            if !purchaseManager.hasUnlockedPro {
-                Text("LOGIT")
-                    .screenHeaderStyle()
-            } else {
-                LogitProLogo()
-                    .screenHeaderStyle()
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    /// The Summary large-title row (title + settings avatar). Rendered as in-flow
-    /// scroll content rather than a `ToolbarItem(placement: .largeTitle)`: custom
-    /// large-title toolbar content is not exposed to the accessibility tree on
-    /// iOS 26 (the navigation bar reports zero children), so VoiceOver / UI
-    /// automation could never reach the settings button. In-flow content keeps the
-    /// identical look while staying fully accessible.
-    private var summaryHeader: some View {
+    /// The large-title row: "Summary" and the weekly-goal pill on one line, at the very top of the
+    /// scroll. Rendered in-flow rather than as a navigation-bar title for two reasons. It sits where
+    /// iOS 26's own apps put a large title — hard against the top inset — instead of below the empty
+    /// 44 pt bar row a stock large title reserves for toolbar items; and custom `.largeTitle`-placement
+    /// toolbar content is not exposed to the accessibility tree on iOS 26 (the bar reports zero
+    /// children), so a toolbar pill could never be reached by VoiceOver or UI automation. In-flow
+    /// content is fully accessible and costs only that the pill scrolls away with the title.
+    private func summaryHeader(workouts: [Workout]) -> some View {
         HStack {
             Text(NSLocalizedString("summary", comment: ""))
                 .font(.largeTitle.bold())
             Spacer()
-            Button {
-                isShowingSettings = true
-            } label: {
-                Image(systemName: "person.circle")
-                    .imageScale(.large)
-            }
-            .font(.title)
-            .foregroundStyle(.tint)
-            .accessibilityLabel(NSLocalizedString("settings", comment: ""))
-            .accessibilityIdentifier("settingsButton")
+            WeeklyGoalCountPill(
+                workouts: workouts,
+                onOpen: { homeNavigationCoordinator.path.append(.weeklyGoal) },
+                onSetGoal: { isShowingWorkoutGoalSheet = true }
+            )
         }
     }
 
-    @State private var isShowingWorkoutGoalSheet = false
+    /// The merged Summary, in bands: the trend and what just happened, then the raw numbers, then
+    /// balance, then the things the user chose to watch. Strength leads because it always renders;
+    /// the stat grid sits between Strength's per-muscle movers and Muscle Balance so the screen
+    /// doesn't look like it says the same thing twice.
+    @ViewBuilder
+    private func summaryContent(workouts: [Workout]) -> some View {
+        SummaryTrendSection(workouts: workouts)
 
-    private func weeklyGoalHero(workouts: [Workout]) -> some View {
-        Group {
-            if targetPerWeek > 0 {
-                Button {
-                    homeNavigationCoordinator.path.append(.weeklyGoal)
-                } label: {
-                    WeeklyGoalHeroTile(workouts: workouts)
-                }
-                .buttonStyle(TileButtonStyle())
-            } else {
-                TipView(
-                    title: NSLocalizedString("noWeeklyGoalTip", comment: ""),
-                    description: NSLocalizedString("noWeeklyGoalTipDescription", comment: ""),
-                    buttonAction: .init(
-                        title: NSLocalizedString("setGoal", comment: ""),
-                        action: { isShowingWorkoutGoalSheet = true }
-                    ),
-                    showDismissButton: false,
-                    isShown: .constant(true)
-                )
-                .sheet(isPresented: $isShowingWorkoutGoalSheet) {
-                    NavigationStack {
-                        ChangeWeeklyWorkoutGoalScreen()
-                    }
-                }
+        SummaryStatTileGrid(
+            viewModel: summaryViewModel,
+            workouts: workouts,
+            onOpenDetail: { metric in
+                homeNavigationCoordinator.path.append(.summaryStat(metric, nil))
             }
+        )
+
+        Button {
+            homeNavigationCoordinator.path.append(.muscleGroupsOverview)
+        } label: {
+            MuscleBalanceTile(
+                workouts: summaryViewModel.filtered(workouts, to: summaryViewModel.selectedPeriod),
+                period: summaryViewModel.selectedPeriod
+            )
+            .contentShape(Rectangle())
         }
+        .buttonStyle(TileButtonStyle())
+
+        // Fixed scroll anchor for the marketing screenshot (see the `.task` above).
+        Color.clear
+            .frame(height: 1)
+            .id("screenshotPinnedAnchor")
+
+        exercisesSection
+        measurementsSection
     }
 
     // MARK: - Marketing screenshot deep links
 
     /// Opens the screen named by `-UITEST_DEEPLINK` once the summary has data.
     /// Detail targets push onto the nav path; `progress` is already handled by
-    /// `selectedTab`'s initial value. Gated on `ScreenshotFixtures.isEnabled`
+    /// the pinned section's scroll anchor. Gated on `ScreenshotFixtures.isEnabled`
     /// so this can never run for a real user (App Store builds can't be handed
     /// launch arguments anyway).
     private func applyScreenshotDeepLinkIfNeeded(workouts: [Workout]) {
@@ -388,9 +227,8 @@ struct HomeScreen: View {
         didApplyScreenshotDeepLink = true
         switch target {
         case "progress":
-            // selectedTab is already .progress (its initial value); pin a few
-            // seeded lifts so the Progress tab shows real, climbing tiles
-            // instead of the empty-state teaser.
+            // Pin a few seeded lifts so the capture shows real, climbing tiles
+            // instead of the empty-state teaser; the scroll anchor does the framing.
             let all = (database.fetch(Exercise.self) as? [Exercise]) ?? []
             let tiles: [PinnedExerciseTile] = ["previewBenchPress", "previewSquat", "previewDeadlift", "previewOverheadPress"].compactMap { key in
                 let name = NSLocalizedString(key, comment: "")

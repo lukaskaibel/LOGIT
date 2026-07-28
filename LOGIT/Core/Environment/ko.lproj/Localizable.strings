@@ -961,9 +961,6 @@
 "muscleTargetPreset_balanced" = "균형";
 "muscleTargetPreset_upperFocus" = "상체 집중";
 "muscleTargetPreset_pushPullLegs" = "푸시 / 풀 / 레그";
-"summaryRecordsCountOne" = "신기록 1개";
-"summaryRecordsCountMany" = "신기록 %d개";
-"summaryRecordsNone" = "신기록 없음";
 "current" = "현재";
 "highest" = "최고";
 "pinnedExercises" = "고정된 운동";
@@ -979,8 +976,6 @@
 "whatYoullTrack" = "추적할 항목";
 "volumeAndSets" = "볼륨 및 세트";
 "records" = "기록";
-"summaryEmptyWeekHintMonth" = "이번 주 운동 없음 — 이번 달 표시";
-"summaryEmptyWeekHintYear" = "이번 주 운동 없음 — 올해 표시";
 "sessions" = "세션";
 "rank" = "순위";
 "muscleDetailRankCaption" = "8개 그룹 중";
@@ -989,6 +984,7 @@
 "topExercises" = "주요 운동";
 "muscleDetailPercentOfSets" = "세트의 %d%%";
 "weekStreakSuffix" = "주 연속";
+"weeklyGoalAccessibility" = "주간 목표, %d/%d 운동";
 "yearWeeksOnTarget" = "%2$d주 중 %1$d주 목표 달성";
 "currentWeekNumber" = "%d주차";
 "bestStreakLabel" = "최고 · %d주";
@@ -1029,12 +1025,8 @@
 
 // Progress highlights (carousel cards)
 "firstTimePast" = "처음으로 %@ 돌파";
-"trendMoreVolume" = "볼륨 증가";
-"trendMoreSets" = "세트 증가";
-"trendMoreWorkouts" = "운동 횟수 증가";
 "trendMuscleSets" = "%@ 세트 증가";
 "trendExerciseVolume" = "%@ 볼륨 상승";
-"allWorkouts" = "모든 운동";
 "trendWindowCaption" = "최근 4주 vs 이전 4주";
 "last4Weeks" = "최근 4주";
 "fourWeeksBefore" = "이전 4주";

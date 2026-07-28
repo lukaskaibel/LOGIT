@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// The Week / Month / Year scope shared by the Summary screen's period selector and the stat detail
+/// The Week / Month / Year scope shared by the Summary's month-scoped tiles and the stat detail
 /// screens. The single source of truth for "the current period", "the equivalent prior period", and
 /// the localized segment titles — replacing the per-screen private `ChartGranularity` enums every
 /// detail screen used to declare on its own.

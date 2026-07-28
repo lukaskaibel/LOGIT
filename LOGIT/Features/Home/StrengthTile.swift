@@ -60,7 +60,7 @@ struct StrengthHeroPill: View {
 
 // MARK: - Tile
 
-/// The Progress tab's headline tile: the hero pill states the whole-training trend, and the movers
+/// The Summary's headline tile: the hero pill states the whole-training trend, and the movers
 /// beside it name the muscle groups carrying it — so the tile answers "how much" and "where from"
 /// without a chart. Taps into `StrengthScreen`, which pulls the same weighted mean fully apart.
 ///

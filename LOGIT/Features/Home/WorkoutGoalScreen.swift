@@ -105,10 +105,10 @@ struct WorkoutGoalScreen: View {
         }
     }
 
-    /// The current week, lifted into a secondary tile that mirrors the Summary screen's
-    /// `WeeklyGoalHeroTile` exactly — the shared `WeeklyGoalStrip` (muscle-ring days with weekday letters
-    /// + the week's completion ring) and a `StreakLine`. Inset CELL_PADDING/2, like a set cell sits
-    /// inside a set-group cell.
+    /// The current week, lifted into a secondary tile: the shared `WeeklyGoalStrip` (muscle-ring days
+    /// with weekday letters + the week's completion ring) and a `StreakLine`. This row is why the
+    /// Summary's weekly-goal hero tile could be retired for a title-row pill — the full week already
+    /// lives here, one tap away. Inset CELL_PADDING/2, like a set cell sits inside a set-group cell.
     private func currentWeekRow(_ week: [Date]) -> some View {
         let streak = SummaryViewModel.currentWeeklyStreak(workouts: workouts, target: target)
         return VStack(alignment: .leading, spacing: 14) {

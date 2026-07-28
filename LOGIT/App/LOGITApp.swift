@@ -156,6 +156,15 @@ struct LOGIT: App {
                             TemplateListScreen()
                         }
                     }
+                    // Settings spends the last regular tab slot. It used to be a sheet behind the
+                    // Summary's profile avatar; that avatar had nowhere to live once the Summary's
+                    // title row became a scrolling one shared with the weekly-goal pill.
+                    Tab(NSLocalizedString("settings", comment: ""), systemImage: "gearshape.fill") {
+                        NavigationStack {
+                            SettingsScreen()
+                        }
+                    }
+                    .accessibilityIdentifier("settingsButton")
                     Tab(NSLocalizedString("search", comment: ""), systemImage: "magnifyingglass", role: .search) {
                         GlobalSearchScreen()
                     }

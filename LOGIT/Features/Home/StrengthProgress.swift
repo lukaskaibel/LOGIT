@@ -19,7 +19,11 @@ enum StrengthWindow: Int, CaseIterable, Identifiable {
     case eightWeeks = 8
     case twelveWeeks = 12
 
-    static let `default` = StrengthWindow.eightWeeks
+    /// Four weeks, so the recent half of the comparison is exactly the window the rest of the app
+    /// already calls "current" (`Exercise.currentBestWindowStart`). The prior four weeks are a
+    /// baseline and don't have to match anything, which is why the alignment claim holds: both
+    /// halves of the Summary's top pair describe the same four weeks.
+    static let `default` = StrengthWindow.fourWeeks
 
     var id: Int { rawValue }
 

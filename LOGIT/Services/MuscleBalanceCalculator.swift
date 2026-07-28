@@ -8,8 +8,22 @@
 import Foundation
 
 /// Where a muscle group sits against its target — under (too little), on target, or over (too much).
+/// Symmetric around the target: both directions are "off" by the same tolerance.
 enum MuscleBalanceState {
     case under, onTarget, over
+}
+
+/// The *goal* reading of the same standing, used by the Summary's Balance tile and the muscle-group
+/// overview: a group counts as soon as it is **at least** its target. Deliberately not symmetric —
+/// the tile draws a track filling toward a target, and a bar that is visibly full while the verdict
+/// says "not there yet" is a tile arguing with itself. Overshoot still counts; it just says so.
+enum MuscleBalanceGoalState {
+    /// Short of target — the track is partly filled and the remainder shows.
+    case under
+    /// At target, up to `MuscleTargetSplit.behindThreshold` points past it.
+    case met
+    /// More than the threshold past target: met, but worth admitting.
+    case over
 }
 
 /// One muscle group's standing against its target, for a given period: how many sets trained it, what
@@ -40,11 +54,21 @@ struct MuscleBalanceEntry: Identifiable {
         return .onTarget
     }
 
-    /// Under target by more than the threshold ("build up").
-    var isBehind: Bool { state == .under }
+    /// How full this group's track is, 1 meaning "at target". Nil when the user has zeroed the
+    /// target: a track that can never fill isn't a goal, and shouldn't be drawn or counted.
+    var goalFraction: Double? {
+        guard targetPercent > 0 else { return nil }
+        return Double(actualPercent) / Double(targetPercent)
+    }
 
-    /// Within the threshold band either side of target.
-    var isOnTarget: Bool { state == .onTarget }
+    /// The goal reading — see `MuscleBalanceGoalState`.
+    var goalState: MuscleBalanceGoalState {
+        guard targetPercent > 0 else { return .met }
+        if actualPercent < targetPercent { return .under }
+        return deviation > MuscleTargetSplit.behindThreshold ? .over : .met
+    }
+
+
 }
 
 /// Turns a period's workouts + the user's target split into per-group balance entries. Period-agnostic:
@@ -80,21 +104,16 @@ struct MuscleBalanceCalculator {
 
     // MARK: - Aggregates
 
-    /// How many of the 8 groups sit within the threshold band of their target — the tile footer's
-    /// "N of 8 on target".
-    func onTargetCount() -> Int {
-        entries.filter(\.isOnTarget).count
+    /// The groups the goal reading applies to: those the user actually targets. A zeroed target is
+    /// an explicit "I don't train this", so it leaves the chart and the denominator rather than
+    /// sitting as a track that can never fill.
+    var goalEntries: [MuscleBalanceEntry] {
+        entries.filter { $0.targetPercent > 0 }
     }
 
-    /// Under-target groups, most points under first (longest bar first) — the "Below target" list;
-    /// the Summary tile leads with these.
-    func underTargets() -> [MuscleBalanceEntry] {
-        entries.filter { $0.state == .under }.sorted { $0.deviation < $1.deviation }
-    }
-
-    /// Over-target groups, most over first — the "Above target" list, shown after the under ones.
-    func overTargets() -> [MuscleBalanceEntry] {
-        entries.filter { $0.state == .over }.sorted { $0.deviation > $1.deviation }
+    /// Numerator for the Balance tile: groups at least at their target.
+    func atLeastTargetCount() -> Int {
+        goalEntries.filter { $0.goalState != .under }.count
     }
 
     // MARK: - Rounding

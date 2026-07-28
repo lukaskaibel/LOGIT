@@ -178,9 +178,9 @@ struct HomeScreen: View {
     }
 
     /// The merged Summary, in bands: the trend and what just happened, then the raw numbers, then
-    /// balance, then the things the user chose to watch. Strength leads because it always renders;
-    /// the stat grid sits between Strength's per-muscle movers and Muscle Balance so the screen
-    /// doesn't look like it says the same thing twice.
+    /// the things the user chose to watch. Strength and Balance lead as a pair — both read the same
+    /// four weeks and are built from the same mark, so they answer "how am I moving" and "am I
+    /// covering everything" in one glance before the raw totals arrive.
     @ViewBuilder
     private func summaryContent(workouts: [Workout]) -> some View {
         SummaryTrendSection(workouts: workouts)
@@ -192,17 +192,6 @@ struct HomeScreen: View {
                 homeNavigationCoordinator.path.append(.summaryStat(metric, nil))
             }
         )
-
-        Button {
-            homeNavigationCoordinator.path.append(.muscleGroupsOverview)
-        } label: {
-            MuscleBalanceTile(
-                workouts: summaryViewModel.filtered(workouts, to: summaryViewModel.selectedPeriod),
-                period: summaryViewModel.selectedPeriod
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(TileButtonStyle())
 
         // Fixed scroll anchor for the marketing screenshot (see the `.task` above).
         Color.clear

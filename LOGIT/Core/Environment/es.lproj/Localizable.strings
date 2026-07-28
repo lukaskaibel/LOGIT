@@ -943,13 +943,17 @@
 "weeklyGoalToGoMany" = "Faltan %d entrenamientos";
 "weeklyStreakWeeks" = "%d sem";
 "muscleBalance" = "Balance muscular";
-"muscleBalanceEmpty" = "Aún no hay series";
-"muscleBalanceBalanced" = "Bien equilibrado";
+"balance" = "Balance";
+"muscleBalanceGoalBasis" = "Grupos musculares en su objetivo o por encima";
+"muscleBalanceGoalHeroCaption" = "grupos en su objetivo o por encima · %d series";
+"muscleBalanceGoalAccessibility" = "%d de %d grupos musculares en su objetivo o por encima";
+"muscleBalanceActualOfTarget" = "%d %% de %d %%";
+"muscleBalanceGoalSection" = "Todos los grupos";
+"muscleBalanceEmpty" = "Sigue entrenando para ver tu reparto muscular";
 "muscleBalanceMostTrained" = "Más entrenado · %@";
 "muscleBalanceSetsToGo" = "%@ · faltan %d series";
 "muscleBalanceLightMonth" = "%@ flojo este mes";
 "muscleBalanceLightYear" = "%@ flojo este año";
-"muscleBalanceOnTarget" = "%d de 8 grupos en objetivo";
 "muscleBalanceBarA11y" = "%1$@: %2$d%% de las series, objetivo %3$d%%";
 "muscleBalanceRoomToBalance" = "Margen para equilibrar";
 "balanceVsTarget" = "Balance vs objetivo";
@@ -996,8 +1000,6 @@
 "muscleBalanceOnTrack" = "En buen camino";
 "muscleDetailRingCaption" = "Anillo completo = en objetivo · Objetivo %d %%";
 "muscleDetailShareOverTime" = "Proporción en el tiempo";
-"muscleBalanceBelowTarget" = "Bajo el objetivo";
-"muscleBalanceAboveTarget" = "Sobre el objetivo";
 "pinKeyLifts" = "Fija tus ejercicios clave";
 "chooseExercises" = "Elegir ejercicios";
 "pinAMeasurement" = "Fijar una medida";
@@ -1007,14 +1009,12 @@
 /* Muscle Balance — ring grouping (under / over / on target) */
 "muscleBalanceBuildUp" = "Reforzar";
 "muscleBalanceAhead" = "Por encima";
-"muscleBalanceOnTargetSection" = "En objetivo";
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "Objetivo %d%%";
 "muscleDetailEmptySubtitle" = "No has entrenado este músculo en el periodo seleccionado.";
 
 /* Muscle Balance — tile "+N more" hint */
-"muscleBalanceMore" = "+%d más";
 
 
 /* Progress tab — overall progress trend */
@@ -1123,7 +1123,7 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "Fuerza";
-"strengthBasis" = "1RM estimado · últimas 8 semanas";
+"strengthBasis" = "1RM estimado";
 "strengthEmpty" = "Sigue registrando entrenamientos para ver tu tendencia de fuerza.";
 "strengthWindowCaption" = "vs. las %d semanas anteriores";
 "nWeeks" = "%d semanas";
@@ -1131,7 +1131,6 @@
 "allExercises" = "Todos los ejercicios";
 "strengthTapGroup" = "Toca un grupo para enfocarlo";
 "strengthBiggestMovers" = "Mayores cambios";
-"strengthMoversCaption" = "Longitud = su cambio · series = su peso";
-"strengthShowAllExercises" = "Ver los %d ejercicios";
+"strengthScrubHint" = "De peor a mejor · desliza para ver uno";
 "showLess" = "Ver menos";
 "strengthInfo" = "El mejor 1RM estimado de cada ejercicio en las últimas %d semanas frente a las %d anteriores, promediado y ponderado por el número de series. Las series de cardio y peso corporal no tienen 1RM y no cuentan.";

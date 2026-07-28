@@ -943,13 +943,17 @@
 "weeklyGoalToGoMany" = "%d workouts to go";
 "weeklyStreakWeeks" = "%d wk";
 "muscleBalance" = "Muscle Balance";
-"muscleBalanceEmpty" = "No sets logged yet";
-"muscleBalanceBalanced" = "Well balanced";
+"balance" = "Balance";
+"muscleBalanceGoalBasis" = "Muscle groups at or above target";
+"muscleBalanceGoalHeroCaption" = "groups at or above target · %d sets";
+"muscleBalanceGoalAccessibility" = "%d of %d muscle groups at or above target";
+"muscleBalanceActualOfTarget" = "%d%% of %d%%";
+"muscleBalanceGoalSection" = "Every group";
+"muscleBalanceEmpty" = "Keep training to see your muscle split";
 "muscleBalanceMostTrained" = "Most trained · %@";
 "muscleBalanceSetsToGo" = "%@ · %d sets to go";
 "muscleBalanceLightMonth" = "%@ light this month";
 "muscleBalanceLightYear" = "%@ light this year";
-"muscleBalanceOnTarget" = "%d of 8 groups on target";
 "muscleBalanceBarA11y" = "%1$@: %2$d%% of sets, target %3$d%%";
 "muscleBalanceRoomToBalance" = "Room to balance";
 "balanceVsTarget" = "Balance vs target";
@@ -996,8 +1000,6 @@
 "muscleBalanceOnTrack" = "On track";
 "muscleDetailRingCaption" = "Full ring = on target · Target %d%%";
 "muscleDetailShareOverTime" = "Share over time";
-"muscleBalanceBelowTarget" = "Below target";
-"muscleBalanceAboveTarget" = "Above target";
 "pinKeyLifts" = "Pin your key lifts";
 "chooseExercises" = "Choose exercises";
 "pinAMeasurement" = "Pin a measurement";
@@ -1007,14 +1009,12 @@
 /* Muscle Balance — ring grouping (under / over / on target) */
 "muscleBalanceBuildUp" = "Build up";
 "muscleBalanceAhead" = "Ahead";
-"muscleBalanceOnTargetSection" = "On target";
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "Target %d%%";
 "muscleDetailEmptySubtitle" = "You haven't trained this muscle in the selected period.";
 
 /* Muscle Balance — tile "+N more" hint */
-"muscleBalanceMore" = "+%d more";
 
 
 /* Progress tab — overall progress trend */
@@ -1123,7 +1123,7 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "Strength";
-"strengthBasis" = "Estimated 1RM · last 8 weeks";
+"strengthBasis" = "Estimated 1RM";
 "strengthEmpty" = "Keep logging workouts to see your strength trend.";
 "strengthWindowCaption" = "vs the %d weeks before";
 "nWeeks" = "%d weeks";
@@ -1131,7 +1131,6 @@
 "allExercises" = "All exercises";
 "strengthTapGroup" = "Tap a group to focus";
 "strengthBiggestMovers" = "Biggest movers";
-"strengthMoversCaption" = "Bar length = its change · set count = its weight";
-"strengthShowAllExercises" = "Show all %d exercises";
+"strengthScrubHint" = "Ranked worst to best · drag to inspect one";
 "showLess" = "Show less";
 "strengthInfo" = "Each exercise's best estimated 1RM in the last %d weeks against the %d before, averaged and weighted by how many sets you did. Cardio and bodyweight sets carry no 1RM and don't count.";

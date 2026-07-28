@@ -10,11 +10,14 @@ import SwiftUI
 
 // MARK: - Trend section
 
-/// The Summary's opening band: the Strength tile, then the Highlights carousel — the trend, then
-/// what just happened. Strength leads because it always renders and barely moves week to week, which
-/// makes it a stable anchor; Highlights is conditional (it vanishes with nothing to show), so it can
-/// never be the thing the screen opens on. Both compute off the already-fetched `[Workout]` in one
-/// `.task`, with no new Core Data fetches.
+/// The Summary's opening band: the Strength + Balance pair, then the Highlights carousel — the
+/// trend, then what just happened. The pair leads because both halves always render and barely move
+/// week to week, which makes them a stable anchor; Highlights is conditional (it vanishes with
+/// nothing to show), so it can never be the thing the screen opens on.
+///
+/// Both tiles read the **same four weeks** — `Exercise.currentBestWindowStart`, the window the rest
+/// of the app already means by "current". That is why they can sit side by side without a caption
+/// each: there is only one period on this band, so naming it twice would be noise.
 struct SummaryTrendSection: View {
     let workouts: [Workout]
 
@@ -23,15 +26,31 @@ struct SummaryTrendSection: View {
     @State private var strength: StrengthProgress = .empty
     @State private var highlights: [ProgressHighlight] = []
 
+    /// The same four weeks the Strength figure compares against — see the type doc.
+    private var currentWindowWorkouts: [Workout] {
+        let start = Exercise.currentBestWindowStart
+        return workouts.filter { !$0.isEmpty && ($0.date ?? .distantPast) >= start }
+    }
+
     var body: some View {
         VStack(spacing: 8) {
-            Button {
-                homeNavigationCoordinator.path.append(.strength)
-            } label: {
-                StrengthTile(progress: strength)
-                    .contentShape(Rectangle())
+            HStack(alignment: .top, spacing: 10) {
+                Button {
+                    homeNavigationCoordinator.path.append(.strength)
+                } label: {
+                    StrengthTile(progress: strength)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(TileButtonStyle())
+                Button {
+                    homeNavigationCoordinator.path.append(.muscleGroupsOverview)
+                } label: {
+                    MuscleBalanceGoalTile(workouts: currentWindowWorkouts)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(TileButtonStyle())
             }
-            .buttonStyle(TileButtonStyle())
+            .frame(height: PAIRED_TILE_HEIGHT)
             if !highlights.isEmpty {
                 highlightsSection
                     .padding(.top, 8)

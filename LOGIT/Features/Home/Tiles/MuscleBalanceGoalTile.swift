@@ -1,0 +1,132 @@
+//
+//  MuscleBalanceGoalTile.swift
+//  LOGIT
+//
+//  Created by Lukas Kaibel on 28.07.26.
+//
+
+import SwiftUI
+
+/// The Summary's Balance half: how many muscle groups reached their target share, over one filling
+/// track each. Half width, paired with `StrengthTile`.
+///
+/// The headline counts groups that are **at least** their target, which is the rule the tracks
+/// already draw — a bar visibly full while the count says otherwise is a tile arguing with itself.
+/// That is a deliberate departure from `MuscleBalanceEntry.state`, whose tolerance is symmetric and
+/// still governs the older diverging surfaces.
+///
+/// Untrained groups stay in the chart as empty tracks. A group with a real target and no sets is the
+/// most out-of-balance state there is, and hiding it would make the tile look *better* the worse the
+/// month went. Only a group the user has zeroed out drops away — that one can never fill, so it
+/// leaves the denominator too.
+struct MuscleBalanceGoalTile: View {
+    /// Workouts already narrowed to the window the tile reports.
+    let workouts: [Workout]
+
+    @EnvironmentObject private var targetSplitStore: MuscleTargetSplitStore
+    @EnvironmentObject private var muscleGroupService: MuscleGroupService
+
+    /// Below this many set occurrences the window can't describe a *distribution*: a single session
+    /// hits two or three groups, so the tile would report several groups "at or above target" purely
+    /// because everything else is absent. Roughly two full workouts.
+    private static let minimumSets = 20
+
+    private var calculator: MuscleBalanceCalculator {
+        MuscleBalanceCalculator(
+            workouts: workouts,
+            target: targetSplitStore.split,
+            muscleGroupService: muscleGroupService
+        )
+    }
+
+    var body: some View {
+        let calculator = self.calculator
+        let entries = calculator.goalEntries
+        return VStack(alignment: .leading, spacing: 0) {
+            header
+            if calculator.totalSets >= Self.minimumSets, !entries.isEmpty {
+                count(met: calculator.atLeastTargetCount(), total: entries.count)
+                    .padding(.top, 6)
+                MuscleBalanceTrackChart(entries: entries)
+                    .frame(maxHeight: .infinity)
+                    .padding(.top, 12)
+            } else {
+                emptyState
+                    .padding(.top, 12)
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(CELL_PADDING)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .tileStyle()
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 8) {
+                Text(NSLocalizedString("balance", comment: ""))
+                    .tileHeaderStyle()
+                Spacer(minLength: 4)
+                NavigationChevron()
+                    .foregroundStyle(.secondary)
+            }
+            Text(NSLocalizedString("muscleBalanceGoalBasis", comment: ""))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                // Two lines reserved in both tiles so the figures below them share a baseline
+                // whatever the locale does to the wording.
+                .lineLimit(2, reservesSpace: true)
+                .minimumScaleFactor(0.75)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    /// Deliberately not accent-coloured: Strength's figure carries the accent on the other half of
+    /// the pair, and two competing accents at the top of the screen is one too many. The denominator
+    /// stays secondary so the pair reads as a goal rather than a score.
+    private func count(met: Int, total: Int) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
+            Text("\(met)")
+                .foregroundStyle(Color.label)
+            Text("/\(total)")
+                .foregroundStyle(Color.secondaryLabel)
+        }
+        .font(.system(size: 30, weight: .bold, design: .rounded))
+        .monospacedDigit()
+        .minimumScaleFactor(0.7)
+        .lineLimit(1)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            Text(
+                String(
+                    format: NSLocalizedString("muscleBalanceGoalAccessibility", comment: ""),
+                    met, total
+                )
+            )
+        )
+    }
+
+    /// The same gray ring the Strength half and the core-stat tiles wear while they wait, with the
+    /// arc tracking how close the window is to enough sets to describe a split.
+    private var emptyState: some View {
+        TrendPlaceholder(
+            progress: Double(calculator.totalSets) / Double(Self.minimumSets),
+            text: NSLocalizedString("muscleBalanceEmpty", comment: ""),
+            systemImage: "chart.pie.fill",
+            alignment: .leading,
+            diameter: 34
+        )
+    }
+}
+
+#Preview {
+    FetchRequestWrapper(Workout.self) { workouts in
+        HStack(alignment: .top, spacing: 10) {
+            MuscleBalanceGoalTile(workouts: workouts)
+            MuscleBalanceGoalTile(workouts: [])
+        }
+        .frame(height: 190)
+        .padding()
+    }
+    .previewEnvironmentObjects()
+}

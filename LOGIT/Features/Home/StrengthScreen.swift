@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 27.07.26.
 //
 
+import CoreData
 import SwiftUI
 
 // MARK: - Screen
@@ -20,16 +21,18 @@ import SwiftUI
 struct StrengthScreen: View {
     let workouts: [Workout]
 
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
+
     /// Nil is the whole training; a group narrows the hero, and the composition, to it.
     @State private var selectedGroup: MuscleGroup?
     @State private var window: StrengthWindow = .default
     @State private var progress: StrengthProgress = .empty
-    @State private var showsAllExercises = false
+    /// The scrubbed exercise, by object ID. Nil until a finger lands on the chart.
+    @State private var selectedExerciseID: NSManagedObjectID?
 
-    /// Movers shown before the list collapses. Below about five the shortest bar is a stub and the
-    /// ranking stops reading, so the cap sits where the shape is still legible rather than at a
-    /// rounder number.
-    private static let collapsedExerciseCount = 5
+    /// Below this many bars the chart stops being a ranking and becomes a handful of columns, so it
+    /// widens them and labels each one instead of asking for a scrub it doesn't need.
+    private static let labelledChartThreshold = 8
 
     init(workouts: [Workout], initialGroup: MuscleGroup? = nil) {
         self.workouts = workouts
@@ -42,8 +45,8 @@ struct StrengthScreen: View {
                 windowPicker
                 hero
                 if progress.hasData {
-                    groupGrid
                     composition
+                    groupGrid
                 }
                 footnote
             }
@@ -64,6 +67,11 @@ struct StrengthScreen: View {
             // A group that lost its data under a narrower window can't stay selected.
             if let selectedGroup, progress.percentChange(in: selectedGroup) == nil {
                 self.selectedGroup = nil
+            }
+            // Nor can an exercise that dropped out of the recomputed scope.
+            if let id = selectedExerciseID,
+               !progress.exerciseChanges(in: selectedGroup).contains(where: { $0.id == id }) {
+                selectedExerciseID = nil
             }
         }
     }
@@ -139,7 +147,7 @@ struct StrengthScreen: View {
         let isSelected = selectedGroup == group
         Button {
             selectedGroup = group
-            showsAllExercises = false
+            selectedExerciseID = nil
         } label: {
             HStack(spacing: 6) {
                 Text(group?.description ?? NSLocalizedString("all", comment: ""))
@@ -176,42 +184,83 @@ struct StrengthScreen: View {
 
     // MARK: Composition
 
+    /// Every exercise in scope as one ranked bar, worst to best. Replaces the horizontal
+    /// `StrengthCompositionChart`: all of them fit at once, which is what retired that chart's
+    /// five-row cap and its "Show all" button.
+    ///
+    /// The readout sits **above** the plot rather than below it, so a scrubbing finger never covers
+    /// the thing it is selecting.
     private var composition: some View {
-        let all = progress.exerciseChanges(in: selectedGroup)
-        let shown = showsAllExercises ? all : Array(all.prefix(Self.collapsedExerciseCount))
+        let changes = progress.exerciseChanges(in: selectedGroup)
+        let ranked = changes.sorted { $0.percentChange < $1.percentChange }
+        let selected = ranked.first { $0.id == selectedExerciseID } ?? ranked.last
         return VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(NSLocalizedString("strengthBiggestMovers", comment: ""))
                     .font(.caption.weight(.bold))
                     .textCase(.uppercase)
                     .foregroundStyle(.secondary)
-                Text(NSLocalizedString("strengthMoversCaption", comment: ""))
+                Text(NSLocalizedString("strengthScrubHint", comment: ""))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
-            StrengthCompositionChart(changes: shown, scale: all)
-            if all.count > Self.collapsedExerciseCount {
-                Button {
-                    withAnimation(.snappy) { showsAllExercises.toggle() }
-                } label: {
-                    HStack {
-                        Text(
-                            showsAllExercises
-                                ? NSLocalizedString("showLess", comment: "")
-                                : String(format: NSLocalizedString("strengthShowAllExercises", comment: ""), all.count)
-                        )
-                        .foregroundStyle(Color.label)
-                        Spacer()
-                        Image(systemName: showsAllExercises ? "chevron.up" : "chevron.down")
-                            .foregroundStyle(Color.secondaryLabel)
-                            .font(.footnote.weight(.bold))
-                    }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 14)
+            if let selected {
+                readout(selected)
+            }
+            StrengthBarChart(
+                changes: changes,
+                spacing: ranked.count < Self.labelledChartThreshold ? 8 : 2,
+                selection: $selectedExerciseID
+            )
+            .frame(height: 150)
+            .animation(.snappy(duration: 0.2), value: selectedExerciseID)
+            .sensoryFeedback(.selection, trigger: selectedExerciseID)
+            if ranked.count < Self.labelledChartThreshold {
+                axisLabels(ranked)
+            }
+        }
+    }
+
+    /// The scrubbed exercise, as a row that taps through to its detail screen.
+    private func readout(_ change: StrengthProgress.ExerciseChange) -> some View {
+        Button {
+            homeNavigationCoordinator.path.append(.exercise(change.exercise))
+        } label: {
+            HStack(spacing: 10) {
+                Circle()
+                    .fill(change.muscleGroup.color)
+                    .frame(width: 9, height: 9)
+                Text(change.exercise.displayName)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(Color.label)
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                Text(String(format: NSLocalizedString("nSets", comment: ""), change.setCount))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                TrendIndicatorView(percentChange: change.percentChange)
+                NavigationChevron()
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 13)
+            .padding(.vertical, 11)
+            .frame(maxWidth: .infinity)
+            .secondaryTileStyle(insetShadow: true)
+        }
+        .buttonStyle(TileButtonStyle())
+    }
+
+    /// Under about eight bars there is room to name each column, so the chart stops depending on a
+    /// gesture to be readable at all.
+    private func axisLabels(_ ranked: [StrengthProgress.ExerciseChange]) -> some View {
+        HStack(spacing: 8) {
+            ForEach(ranked) { change in
+                Text(change.exercise.displayName)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
-                    .secondaryTileStyle(insetShadow: true)
-                }
-                .buttonStyle(TileButtonStyle())
             }
         }
     }
@@ -228,100 +277,3 @@ struct StrengthScreen: View {
     }
 }
 
-// MARK: - Composition chart
-
-/// Every exercise's change on **one shared zero axis** — the weighted mean pulled apart. The shared
-/// axis is the whole point: it is what lets the rows be compared to each other at a glance, and it is
-/// what a per-row centred tick (the muscle-balance chart's earlier, rejected shape) destroys.
-///
-/// Gains grow right of the axis in the muscle colour, declines grow left in neutral grey — never a
-/// warning colour. The axis sits wherever the deepest decline needs it, so both directions share one
-/// scale rather than each getting its own.
-struct StrengthCompositionChart: View {
-    let changes: [StrengthProgress.ExerciseChange]
-    /// The full (uncapped) set the axis is scaled against, so collapsing the list doesn't rescale
-    /// the bars underneath the user.
-    let scale: [StrengthProgress.ExerciseChange]
-
-    private let rowHeight: CGFloat = 34
-    private let barHeight: CGFloat = 14
-    private let nameWidth: CGFloat = 104
-    /// Room kept at the trailing edge for the value label that follows the longest bar.
-    private static let labelGutter: CGFloat = 46
-
-    /// Largest gain and largest decline in the scale set — one unit serves both sides.
-    private var extremes: (up: Double, down: Double) {
-        let up = scale.map(\.percentChange).filter { $0 > 0 }.max() ?? 0
-        let down = abs(scale.map(\.percentChange).filter { $0 < 0 }.min() ?? 0)
-        return (max(up, 0.001), down)
-    }
-
-    var body: some View {
-        VStack(spacing: 8) {
-            ForEach(changes) { change in
-                row(change)
-            }
-        }
-    }
-
-    private func row(_ change: StrengthProgress.ExerciseChange) -> some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .trailing, spacing: 0) {
-                Text(change.exercise.displayName)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                Text(String(format: NSLocalizedString("nSets", comment: ""), change.setCount))
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-            .frame(width: nameWidth, alignment: .trailing)
-            .padding(.trailing, 12)
-
-            GeometryReader { geometry in
-                let width = geometry.size.width
-                let (up, down) = extremes
-                // The value label sits past the end of its bar, so the bars are scaled against the
-                // width *minus* a gutter wide enough to hold it. Without this the longest bar — the
-                // one that sets the scale — always pushes its own label off the edge.
-                let unit = max(width - Self.labelGutter, 1) / CGFloat(up + down)
-                let zeroX = CGFloat(down) * unit
-                let isGain = change.percentChange > 0
-                let length = max(CGFloat(abs(change.percentChange)) * unit, 2)
-                let color = isGain ? change.muscleGroup.color : Color.secondaryLabel
-
-                ZStack(alignment: .topLeading) {
-                    // The shared axis.
-                    Rectangle()
-                        .fill(Color.separator)
-                        .frame(width: 1, height: rowHeight)
-                        .offset(x: zeroX)
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(isGain ? AnyShapeStyle(color.gradient) : AnyShapeStyle(color.opacity(0.4)))
-                        .frame(width: length, height: barHeight)
-                        .offset(x: isGain ? zeroX : zeroX - length, y: (rowHeight - barHeight) / 2)
-                    // The value sits on the far side of the axis from its bar, so the two can never
-                    // collide however long the bar gets.
-                    Text(signedPercentText(change.percentChange))
-                        .font(.system(.caption2, design: .rounded, weight: .bold))
-                        .foregroundStyle(isGain ? color : Color.secondaryLabel)
-                        .monospacedDigit()
-                        .fixedSize()
-                        .offset(x: isGain ? zeroX + length + 6 : zeroX + 6, y: (rowHeight - 14) / 2)
-                }
-            }
-            .frame(height: rowHeight)
-        }
-        .frame(height: rowHeight)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            "\(change.exercise.displayName), \(signedPercentText(change.percentChange)), "
-                + String(format: NSLocalizedString("nSets", comment: ""), change.setCount)
-        )
-    }
-
-    private func signedPercentText(_ percent: Double) -> String {
-        String(format: "%+.0f%%", percent)
-    }
-}

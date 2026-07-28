@@ -52,8 +52,10 @@ struct TrendPlaceholder: View {
             Text(text)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.tertiary)
-                .lineLimit(2)
-                .minimumScaleFactor(0.8)
+                // Three lines: the half-width Summary tiles are narrow enough that two truncated
+                // this copy mid-word.
+                .lineLimit(3)
+                .minimumScaleFactor(0.75)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }

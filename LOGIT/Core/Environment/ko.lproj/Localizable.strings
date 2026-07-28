@@ -943,13 +943,17 @@
 "weeklyGoalToGoMany" = "%d회 남음";
 "weeklyStreakWeeks" = "%d주";
 "muscleBalance" = "근육 균형";
-"muscleBalanceEmpty" = "아직 세트 없음";
-"muscleBalanceBalanced" = "균형 잡힘";
+"balance" = "밸런스";
+"muscleBalanceGoalBasis" = "목표 이상인 근육 부위";
+"muscleBalanceGoalHeroCaption" = "부위가 목표 이상 · %d 세트";
+"muscleBalanceGoalAccessibility" = "%d/%d 근육 부위가 목표 이상";
+"muscleBalanceActualOfTarget" = "%d%% / 목표 %d%%";
+"muscleBalanceGoalSection" = "모든 부위";
+"muscleBalanceEmpty" = "계속 운동하면 근육 분배가 표시됩니다";
 "muscleBalanceMostTrained" = "최다 훈련 · %@";
 "muscleBalanceSetsToGo" = "%@ · %d세트 남음";
 "muscleBalanceLightMonth" = "이번 달 %@ 부족";
 "muscleBalanceLightYear" = "올해 %@ 부족";
-"muscleBalanceOnTarget" = "8개 그룹 중 %d개 목표 달성";
 "muscleBalanceBarA11y" = "%1$@: 세트의 %2$d%%, 목표 %3$d%%";
 "muscleBalanceRoomToBalance" = "균형 개선 여지";
 "balanceVsTarget" = "목표 대비 균형";
@@ -996,8 +1000,6 @@
 "muscleBalanceOnTrack" = "순조로움";
 "muscleDetailRingCaption" = "링이 가득 차면 목표 달성 · 목표 %d%%";
 "muscleDetailShareOverTime" = "비율 추이";
-"muscleBalanceBelowTarget" = "목표 미만";
-"muscleBalanceAboveTarget" = "목표 초과";
 "pinKeyLifts" = "주요 운동 고정";
 "chooseExercises" = "운동 선택";
 "pinAMeasurement" = "측정값 고정";
@@ -1007,14 +1009,12 @@
 /* Muscle Balance — ring grouping (under / over / on target) */
 "muscleBalanceBuildUp" = "더 늘리기";
 "muscleBalanceAhead" = "초과";
-"muscleBalanceOnTargetSection" = "목표 달성";
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "목표 %d%%";
 "muscleDetailEmptySubtitle" = "선택한 기간에 이 부위를 운동하지 않았습니다.";
 
 /* Muscle Balance — tile "+N more" hint */
-"muscleBalanceMore" = "외 %d개";
 
 
 /* Progress tab — overall progress trend */
@@ -1123,7 +1123,7 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "근력";
-"strengthBasis" = "추정 1RM · 최근 8주";
+"strengthBasis" = "예상 1RM";
 "strengthEmpty" = "운동을 계속 기록하면 근력 추세를 볼 수 있습니다.";
 "strengthWindowCaption" = "이전 %d주 대비";
 "nWeeks" = "%d주";
@@ -1131,7 +1131,6 @@
 "allExercises" = "모든 운동";
 "strengthTapGroup" = "그룹을 탭해 집중해서 보기";
 "strengthBiggestMovers" = "변화가 큰 운동";
-"strengthMoversCaption" = "막대 길이 = 변화 · 세트 수 = 가중치";
-"strengthShowAllExercises" = "%d개 운동 모두 보기";
+"strengthScrubHint" = "낮은 순 정렬 · 드래그해서 확인";
 "showLess" = "간단히 보기";
 "strengthInfo" = "각 운동의 최근 %d주 최고 추정 1RM을 이전 %d주와 비교해 세트 수로 가중 평균한 값입니다. 유산소와 맨몸 세트는 1RM이 없어 포함되지 않습니다.";

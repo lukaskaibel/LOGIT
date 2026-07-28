@@ -273,31 +273,43 @@ final class ScenarioScreenshots: XCTestCase {
     }
 
     /// The non-rep measurement types in the recorder: the stress scenario's current workout
-    /// ends with a duration-typed Plank group (min/sec fields) and a weight+duration
-    /// Farmers Carry group — scroll to the bottom and capture them.
+    /// carries a duration-typed Plank group (min/sec fields) and a weight+duration
+    /// Farmer's Walk group — scroll each into view and capture it.
     func testRecorderMeasurementTypes() {
         let app = launchApp(
             scenario: "stress",
-            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET"]
+            // -UITEST_NO_SCROLLTO: park the list at the top and keep it there, so
+            // scrollRecorder's drags aren't undone by the recorder's own auto-scrolls.
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET", "-UITEST_NO_SCROLLTO"]
         )
 
         let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
         XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
         waitABit(2)
 
-        let plankHeader = app.staticTexts["Plank"]
-        for _ in 0 ..< 12 where !plankHeader.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(plankHeader.waitForExistence(timeout: 5), "Plank group not reachable")
+        XCTAssertTrue(
+            scrollRecorder(app, toGroup: "Plank"),
+            "Plank group not reachable"
+        )
         waitABit(1)
         attach(app, "recorder_duration_and_carry_types")
-        app.swipeUp()
+        // One group further down: the weight+duration carry. It renders under its
+        // default-library name ("Farmer's Walk"), not TestScenarios' fallback string —
+        // the fixture only falls back to that when the library isn't loaded.
+        XCTAssertTrue(
+            scrollRecorder(app, toGroup: "Farmer's Walk"),
+            "Farmer's Walk group not reachable"
+        )
         waitABit(1)
         attach(app, "recorder_measurement_types_bottom")
 
         // The exercise name opens the detail sheet: a duration exercise must show its
         // duration tile (fed by the seeded plank history) instead of weight/e1RM tiles.
+        // Back up to Plank first — the carry scroll left its header above the fold.
+        XCTAssertTrue(
+            scrollRecorder(app, toGroup: "Plank"),
+            "Plank group not reachable for the detail tap"
+        )
         app.staticTexts["Plank"].firstMatch.tap()
         waitABit(3)
         attach(app, "plank_detail_duration_tiles")
@@ -416,10 +428,10 @@ final class ScenarioScreenshots: XCTestCase {
         waitABit(2)
 
         let rowsHeader = app.staticTexts["Barbell Rows"].firstMatch
-        for _ in 0 ..< 14 where !rowsHeader.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(rowsHeader.waitForExistence(timeout: 5), "Superset group not reachable")
+        XCTAssertTrue(
+            scrollRecorder(app, toGroup: "Barbell Rows"),
+            "Superset group not reachable"
+        )
         waitABit(1)
         attach(app, "recorder_superset_page1")
 
@@ -447,21 +459,26 @@ final class ScenarioScreenshots: XCTestCase {
     func testRecorderDistanceTypes() {
         let app = launchApp(
             scenario: "stress",
-            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET"]
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET", "-UITEST_NO_SCROLLTO"]
         )
 
         let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
         XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
         waitABit(2)
 
-        let sledHeader = app.staticTexts["Sled Push"]
-        for _ in 0 ..< 14 where !sledHeader.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(sledHeader.waitForExistence(timeout: 5), "Sled Push group not reachable")
+        XCTAssertTrue(
+            scrollRecorder(app, toGroup: "Sled Push"),
+            "Sled Push group not reachable"
+        )
         waitABit(1)
         attach(app, "recorder_distance_types")
 
+        // Running sits one group above the sled, so bring it back into view before tapping
+        // its name — the sled scroll leaves it above the fold.
+        XCTAssertTrue(
+            scrollRecorder(app, toGroup: "Running"),
+            "Running group not reachable"
+        )
         app.staticTexts["Running"].firstMatch.tap()
         waitABit(3)
         attach(app, "running_detail_distance_tiles")
@@ -474,33 +491,26 @@ final class ScenarioScreenshots: XCTestCase {
     func testDistanceUnitChoiceMenu() {
         let app = launchApp(
             scenario: "stress",
-            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET"]
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET", "-UITEST_NO_SCROLLTO"]
         )
 
         let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
         XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
         waitABit(2)
 
-        // Scroll to the bottom group with a settle after each swipe — hammering isHittable
-        // between rapid swipes races the accessibility snapshot under simulator load.
-        let sledHeader = app.staticTexts["Sled Push"]
-        var sledReachable = sledHeader.exists && sledHeader.isHittable
-        for _ in 0 ..< 14 where !sledReachable {
-            app.swipeUp()
-            sledReachable = sledHeader.waitForExistence(timeout: 1) && sledHeader.isHittable
-        }
-        XCTAssertTrue(sledReachable, "Sled Push group not reachable")
+        let sledHeader = app.staticTexts["Sled Push"].firstMatch
+        XCTAssertTrue(
+            scrollRecorder(app, toGroup: "Sled Push"),
+            "Sled Push group not reachable"
+        )
         waitABit(1)
 
-        // Long-press the sled's first set row to open its context menu. The row's exact
-        // offset below the header varies slightly, so try a few plausible spots.
+        // Long-press one of the sled's set rows to open its context menu.
         let measurementItem = app.buttons["Measurement"].firstMatch
-        for dy in [4.5, 3.5, 5.5] where !measurementItem.exists {
-            sledHeader.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: dy))
-                .press(forDuration: 0.9)
-            _ = measurementItem.waitForExistence(timeout: 3)
-        }
-        XCTAssertTrue(measurementItem.exists, "Set context menu did not open on the sled set")
+        XCTAssertTrue(
+            openSetContextMenu(underHeader: sledHeader, probe: measurementItem),
+            "Set context menu did not open on the sled set"
+        )
         measurementItem.tap()
 
         let kilometersOption = app.buttons["Kilometers (km)"].firstMatch
@@ -510,15 +520,15 @@ final class ScenarioScreenshots: XCTestCase {
         )
         attach(app, "measurement_menu_distance_unit")
 
-        // The submenu holds all seven types plus the unit section, so the unit options can sit
-        // below its fold — scroll the open menu until the option is genuinely tappable.
+        // The submenu holds all seven types plus the unit section; give its presentation a
+        // few beats to settle before tapping (don't swipe here — a swipe over an open menu
+        // dismisses it rather than scrolling it).
         var tappedKilometers = false
         for _ in 0 ..< 4 where !tappedKilometers {
             if kilometersOption.exists, kilometersOption.isHittable {
                 kilometersOption.tap()
                 tappedKilometers = true
             } else {
-                app.swipeUp()
                 waitABit(1)
             }
         }
@@ -1239,6 +1249,99 @@ final class ScenarioScreenshots: XCTestCase {
 
     private func waitABit(_ seconds: UInt32 = 1) {
         sleep(seconds)
+    }
+
+    /// Scrolls the recorder's set list until the `name` set-group header rests in a band
+    /// where the group's own set rows sit on-screen below it, and reports whether it got
+    /// there. Callers should launch with `-UITEST_NO_SCROLLTO` (see below).
+    ///
+    /// Two things make this harder than "swipe until you see it", and both cost real
+    /// debugging time when ignored:
+    ///
+    /// 1. **Direction isn't obvious.** Left to itself the recorder auto-scrolls to the
+    ///    *bottom* of the list on appear, so a group in the middle of a long workout starts
+    ///    *above* the viewport and `swipeUp()` — the reflex — is a no-op against the bottom
+    ///    stop. That is exactly how #103 broke three tests here: it appended a superset and
+    ///    a closing group *after* their targets, the targets slid above the fold, and no
+    ///    number of upward swipes could ever bring them back. So take the direction from
+    ///    where the header actually is, and flip if half the budget turns up nothing.
+    /// 2. **The list scrolls itself.** Focusing a set field sends the list back to the
+    ///    bottom, and a drag landing on a value field focuses one — so a drag can silently
+    ///    undo itself. Hence `-UITEST_NO_SCROLLTO` at the caller (it switches off both the
+    ///    on-appear and the on-focus auto-scroll) and `dx: 0.12` here, which keeps the drag
+    ///    in the set-number column, clear of every field.
+    ///
+    /// Position is judged by frame, never by `isHittable`: the recorder draws its own header
+    /// and a fade mask over the list, and `isHittable` comes back false for headers that are
+    /// plainly on screen. Steering on it made this walk straight past its target to the end
+    /// of the list and back again.
+    ///
+    /// Controlled drags rather than `swipeUp()`/`swipeDown()`: a momentum flick overshoots
+    /// the band and oscillates around it. Each step is shorter than the band is tall, so a
+    /// step can't hop over the target.
+    @discardableResult
+    private func scrollRecorder(
+        _ app: XCUIApplication,
+        toGroup name: String,
+        maxSteps: Int = 14
+    ) -> Bool {
+        let header = app.staticTexts[name].firstMatch
+        let height = app.frame.height
+        // Clear of the recorder's in-flow header at the top, high enough that the group's
+        // set rows are still on-screen underneath.
+        let bandTop = height * 0.10
+        let bandBottom = height * 0.55
+        // Walk down the list first: with -UITEST_NO_SCROLLTO the list rests at the top, where
+        // every group is below — and where a downward drag would latch the recorder's
+        // drag-to-dismiss instead of scrolling.
+        var goingDownTheList = true
+
+        for step in 0 ..< maxSteps {
+            if let frame = onScreenFrame(of: header, in: app) {
+                if frame.midY >= bandTop, frame.midY <= bandBottom { return true }
+                goingDownTheList = frame.midY > bandBottom
+            } else if step == maxSteps / 2 {
+                // Never surfaced walking one way — the fixture must have moved it.
+                goingDownTheList.toggle()
+            }
+            let fromY = goingDownTheList ? 0.62 : 0.32
+            let toY = goingDownTheList ? 0.32 : 0.62
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.12, dy: fromY))
+                .press(
+                    forDuration: 0.05,
+                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.12, dy: toY))
+                )
+            waitABit(1)
+        }
+        if let frame = onScreenFrame(of: header, in: app) {
+            return frame.midY >= bandTop && frame.midY <= bandBottom
+        }
+        return false
+    }
+
+    /// `element`'s frame when it is actually laid out inside the app's bounds, else nil.
+    /// Off-list rows report either no element at all or an empty frame.
+    private func onScreenFrame(of element: XCUIElement, in app: XCUIApplication) -> CGRect? {
+        guard element.exists else { return nil }
+        let frame = element.frame
+        guard frame.height > 0, frame.maxY > 0, frame.minY < app.frame.height else { return nil }
+        return frame
+    }
+
+    /// Long-presses one of `header`'s set rows to open the row context menu, and reports
+    /// whether it opened. The rows sit a card-layout-dependent distance below the header,
+    /// so this probes a few plausible offsets (a press landing in the gap between two rows
+    /// opens nothing) and stops at the first one that produces the menu.
+    private func openSetContextMenu(
+        underHeader header: XCUIElement,
+        probe: XCUIElement
+    ) -> Bool {
+        for dy in [3.0, 4.5, 5.5, 6.5] where !probe.exists {
+            header.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: dy))
+                .press(forDuration: 0.9)
+            _ = probe.waitForExistence(timeout: 3)
+        }
+        return probe.exists
     }
 
     // MARK: - Regression tests (reported-bugs session 2026-07-21)

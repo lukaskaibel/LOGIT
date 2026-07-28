@@ -129,17 +129,17 @@ struct StrengthTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    /// Before there's a trend, the tile wears the same gray ring the core-stat tiles use while their
+    /// first period fills — the ring tracking how far the history reaches into the span being
+    /// compared, so it creeps forward with every workout instead of sitting at nothing.
     private var emptyState: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .font(.title3)
-                .foregroundStyle(.secondary)
-            Text(NSLocalizedString("strengthEmpty", comment: ""))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
-        }
+        TrendPlaceholder(
+            progress: progress.historyFraction,
+            text: NSLocalizedString("strengthEmpty", comment: ""),
+            systemImage: "chart.line.uptrend.xyaxis",
+            alignment: .leading,
+            diameter: 34
+        )
     }
 }
 

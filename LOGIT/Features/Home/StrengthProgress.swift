@@ -67,6 +67,9 @@ struct StrengthProgress {
     /// Every qualifying exercise, unordered.
     let changes: [ExerciseChange]
     let window: StrengthWindow
+    /// How much of the comparison span (two windows) the logged history covers, 0…1. Only used by
+    /// the empty state's ring, so it reads as "still filling up" rather than as nothing at all.
+    var historyFraction: Double = 0
 
     static let empty = StrengthProgress(changes: [], window: .default)
 
@@ -133,6 +136,14 @@ struct StrengthProgress {
             }
         }
 
+        // How far the history reaches into the span being compared — the empty state's progress.
+        let earliest = workouts.filter { !$0.isEmpty }.compactMap(\.date).min()
+        let spanDays = Double(2 * window.rawValue * 7)
+        let historyFraction: Double = earliest.map { first in
+            let days = reference.timeIntervalSince(first) / 86_400
+            return min(max(days / spanDays, 0), 1)
+        } ?? 0
+
         var changes: [ExerciseChange] = []
         for exercise in exercises {
             guard let group = exercise.muscleGroup else { continue }
@@ -161,7 +172,7 @@ struct StrengthProgress {
                 )
             )
         }
-        return StrengthProgress(changes: changes, window: window)
+        return StrengthProgress(changes: changes, window: window, historyFraction: historyFraction)
     }
 }
 

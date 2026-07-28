@@ -91,11 +91,15 @@ struct StrengthScreen: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             } else {
-                Text(NSLocalizedString("strengthEmpty", comment: ""))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.vertical, 20)
+                // Same gray ring the tile and the core-stat tiles wear while they wait for data.
+                TrendPlaceholder(
+                    progress: progress.historyFraction,
+                    text: NSLocalizedString("strengthEmpty", comment: ""),
+                    systemImage: "chart.line.uptrend.xyaxis",
+                    alignment: .leading,
+                    diameter: 40
+                )
+                .padding(.vertical, 16)
             }
         }
         .frame(maxWidth: .infinity)

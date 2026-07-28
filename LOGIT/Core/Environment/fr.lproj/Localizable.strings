@@ -1133,6 +1133,7 @@
 "allExercises" = "Tous les exercices";
 "strengthTapGroup" = "Touchez un groupe pour l'isoler";
 "strengthBiggestMovers" = "Plus grands changements";
-"strengthScrubHint" = "Du plus faible au plus fort · glissez pour en voir un";
+"strengthHoldHint" = "Du plus faible au plus fort · maintenez une barre ou choisissez un groupe";
+"strengthBestMover" = "Meilleure progression";
 "showLess" = "Voir moins";
 "strengthInfo" = "Le meilleur 1RM estimé de chaque exercice sur les %d dernières semaines par rapport aux %d précédentes, moyenné et pondéré par le nombre de séries. Les séries de cardio et au poids du corps n'ont pas de 1RM et ne comptent pas.";

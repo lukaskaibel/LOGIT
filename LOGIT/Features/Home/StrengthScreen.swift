@@ -54,6 +54,7 @@ struct StrengthScreen: View {
             .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
+        .sensoryFeedback(.selection, trigger: selectedGroup)
         .isBlockedWithoutPro()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -90,14 +91,22 @@ struct StrengthScreen: View {
 
     // MARK: Hero
 
+    /// The figure, left-aligned like the tile's, with whichever exercise the screen is currently
+    /// talking about beside it.
+    ///
+    /// It has three states and they share one shape. With nothing selected it shows the scope's
+    /// change and names its **best mover** — the single most useful thing the number can't say.
+    /// Hold a bar and it becomes that exercise: its own change, in its muscle group's colour, with
+    /// its name on the right. Selecting a group swaps the scope. The caption underneath is gone;
+    /// the window picker directly above already states the period, and saying it twice was noise.
     private var hero: some View {
-        VStack(spacing: 10) {
-            if let percent = progress.percentChange(in: selectedGroup) {
-                StrengthHeroPill(percentChange: percent)
-                Text("\(scopeName) · \(window.comparisonCaption)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+        HStack(alignment: .center, spacing: 14) {
+            if let percent = heroPercent {
+                figure(percent, color: heroColor)
+                Spacer(minLength: 8)
+                if let subject = heroSubject {
+                    subjectLabel(subject)
+                }
             } else {
                 // Same gray ring the tile and the core-stat tiles wear while they wait for data.
                 TrendPlaceholder(
@@ -110,12 +119,88 @@ struct StrengthScreen: View {
                 .padding(.vertical, 16)
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .animation(.snappy, value: selectedGroup)
+        .animation(.snappy, value: selectedExerciseID)
     }
 
-    private var scopeName: String {
-        selectedGroup?.description ?? NSLocalizedString("allExercises", comment: "")
+    /// Selected exercise wins, then the selected group, then the whole training.
+    private var heroPercent: Double? {
+        selectedChange?.percentChange ?? progress.percentChange(in: selectedGroup)
+    }
+
+    private var heroColor: Color {
+        selectedChange?.muscleGroup.color ?? selectedGroup?.color ?? .accentColor
+    }
+
+    /// The exercise the hero is naming: the selected one, or the scope's biggest gainer.
+    private var heroSubject: StrengthProgress.ExerciseChange? {
+        selectedChange ?? progress.exerciseChanges(in: selectedGroup)
+            .max { $0.percentChange < $1.percentChange }
+    }
+
+    private var selectedChange: StrengthProgress.ExerciseChange? {
+        guard let selectedExerciseID else { return nil }
+        return progress.changes.first { $0.id == selectedExerciseID }
+    }
+
+    private func figure(_ percent: Double, color: Color) -> some View {
+        HStack(alignment: .center, spacing: 4) {
+            Image(systemName: strengthTrendSymbol(percent))
+                .font(.system(size: 22, weight: .black))
+            Text(String(format: "%.1f%%", abs(percent)))
+                .font(.system(size: 44, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+        }
+        .foregroundStyle(strengthTrendIsDown(percent) ? Color.secondaryLabel : color)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(figureAccessibilityLabel(percent))
+    }
+
+    private func figureAccessibilityLabel(_ percent: Double) -> Text {
+        let value = (abs(percent) / 100).formatted(.percent.precision(.fractionLength(1)))
+        if strengthTrendIsUp(percent) {
+            return Text(String(format: NSLocalizedString("trendUp", comment: ""), value))
+        }
+        if strengthTrendIsDown(percent) {
+            return Text(String(format: NSLocalizedString("trendDown", comment: ""), value))
+        }
+        return Text(NSLocalizedString("trendFlat", comment: ""))
+    }
+
+    /// The exercise beside the figure. Tapping it opens that exercise, which is why the whole label
+    /// is a button rather than the separate readout row it replaces.
+    private func subjectLabel(_ change: StrengthProgress.ExerciseChange) -> some View {
+        Button {
+            homeNavigationCoordinator.path.append(.exercise(change.exercise))
+        } label: {
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(
+                    selectedExerciseID == nil
+                        ? NSLocalizedString("strengthBestMover", comment: "")
+                        : String(format: NSLocalizedString("nSets", comment: ""), change.setCount)
+                )
+                .font(.caption2.weight(.bold))
+                .textCase(.uppercase)
+                .foregroundStyle(.tertiary)
+                HStack(spacing: 4) {
+                    Text(change.exercise.displayName)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(change.muscleGroup.color)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.trailing)
+                        .minimumScaleFactor(0.8)
+                    NavigationChevron()
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: 165, alignment: .trailing)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(TileButtonStyle())
     }
 
     // MARK: Group grid
@@ -146,7 +231,7 @@ struct StrengthScreen: View {
         let color = group?.color ?? .accentColor
         let isSelected = selectedGroup == group
         Button {
-            selectedGroup = group
+            selectedGroup = selectedGroup == group ? nil : group
             selectedExerciseID = nil
         } label: {
             HStack(spacing: 6) {
@@ -184,70 +269,38 @@ struct StrengthScreen: View {
 
     // MARK: Composition
 
-    /// Every exercise in scope as one ranked bar, worst to best. Replaces the horizontal
-    /// `StrengthCompositionChart`: all of them fit at once, which is what retired that chart's
-    /// five-row cap and its "Show all" button.
-    ///
-    /// The readout sits **above** the plot rather than below it, so a scrubbing finger never covers
-    /// the thing it is selecting.
+    /// Every exercise as one ranked bar, worst to best — and *always* every exercise. Selecting a
+    /// group no longer filters the chart down to it; the group's bars simply keep their colour while
+    /// the rest drop to grey. Filtering answered "how did chest do"; highlighting answers "how did
+    /// chest do *compared with everything else*", which is the question a balance-minded screen is
+    /// actually for, and it stops the chart's shape changing under the finger on every tap.
     private var composition: some View {
-        let changes = progress.exerciseChanges(in: selectedGroup)
-        let ranked = changes.sorted { $0.percentChange < $1.percentChange }
-        let selected = ranked.first { $0.id == selectedExerciseID } ?? ranked.last
+        let all = progress.changes
+        let ranked = all.sorted { $0.percentChange < $1.percentChange }
         return VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(NSLocalizedString("strengthBiggestMovers", comment: ""))
                     .font(.caption.weight(.bold))
                     .textCase(.uppercase)
                     .foregroundStyle(.secondary)
-                Text(NSLocalizedString("strengthScrubHint", comment: ""))
+                Text(NSLocalizedString("strengthHoldHint", comment: ""))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
-            if let selected {
-                readout(selected)
-            }
             StrengthBarChart(
-                changes: changes,
+                changes: all,
                 spacing: ranked.count < Self.labelledChartThreshold ? 8 : 2,
-                selection: $selectedExerciseID
+                selection: $selectedExerciseID,
+                highlightedGroup: selectedGroup
             )
             .frame(height: 150)
             .animation(.snappy(duration: 0.2), value: selectedExerciseID)
+            .animation(.snappy(duration: 0.2), value: selectedGroup)
             .sensoryFeedback(.selection, trigger: selectedExerciseID)
             if ranked.count < Self.labelledChartThreshold {
                 axisLabels(ranked)
             }
         }
-    }
-
-    /// The scrubbed exercise, as a row that taps through to its detail screen.
-    private func readout(_ change: StrengthProgress.ExerciseChange) -> some View {
-        Button {
-            homeNavigationCoordinator.path.append(.exercise(change.exercise))
-        } label: {
-            HStack(spacing: 10) {
-                Circle()
-                    .fill(change.muscleGroup.color)
-                    .frame(width: 9, height: 9)
-                Text(change.exercise.displayName)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                Spacer(minLength: 4)
-                Text(String(format: NSLocalizedString("nSets", comment: ""), change.setCount))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                TrendIndicatorView(percentChange: change.percentChange)
-                NavigationChevron()
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 13)
-            .padding(.vertical, 11)
-            .frame(maxWidth: .infinity)
-            .secondaryTileStyle(insetShadow: true)
-        }
-        .buttonStyle(TileButtonStyle())
     }
 
     /// Under about eight bars there is room to name each column, so the chart stops depending on a

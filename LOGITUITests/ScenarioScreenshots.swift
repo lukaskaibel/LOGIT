@@ -261,10 +261,29 @@ final class ScenarioScreenshots: XCTestCase {
         XCTAssertTrue(exercise.waitForExistence(timeout: 10), "Exercise tray missing")
         exercise.tap()
         sleep(2)
+        let addSet = app.buttons["Add Set"].firstMatch
+
+        // Two sets first: the card must stay COMPACT. The scroll slack a short list is given
+        // is travel to scroll into, not height to grow into — the set rows sit one after
+        // another whatever the viewport has left over. Checked at two sets because the slack
+        // is split between the rows, so this is where a stretching card is most obvious (a
+        // regression from an unpinned swipe-to-delete row drew them ~150pt apart here).
+        XCTAssertTrue(addSet.exists, "Add Set button missing")
+        addSet.tap()
+        sleep(1)
+        let firstRow = app.staticTexts["1"].firstMatch
+        let secondRow = app.staticTexts["2"].firstMatch
+        XCTAssertTrue(firstRow.exists && secondRow.exists, "Set-index labels missing")
+        let rowPitch = secondRow.frame.minY - firstRow.frame.minY
+        XCTAssertLessThan(
+            rowPitch,
+            100,
+            "Set rows are \(rowPitch)pt apart — the card is stretching to fill the viewport instead of staying compact"
+        )
+
         // Grow the list to ~6 sets (the reported case): the card's Add Set row must not
         // be clipped and the card should run to the bottom edge under the tray.
-        let addSet = app.buttons["Add Set"].firstMatch
-        for _ in 0 ..< 5 where addSet.exists { addSet.tap() }
+        for _ in 0 ..< 4 where addSet.exists { addSet.tap() }
         sleep(2)
         attach(app, "short_bottom")
         // The Add Set row (bottom of the only card) must be fully on-screen, not clipped

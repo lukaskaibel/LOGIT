@@ -76,3 +76,66 @@ jobs:
         with:
           name: test-results
           path: TestResults.xcresult
+
+  # The four scenario-root tests from the standing ScenarioScreenshots suite: they
+  # launch the app in each critical data state (empty / one workout / rich history /
+  # free tier) and walk the tab roots, so they catch launch, seeding and tab-root
+  # regressions for ~2.5 minutes of test time. The rest of the suite is another ~18
+  # minutes and runs nightly instead (ui-tests-nightly.yml).
+  #
+  # Before this job existed the unit job's -skip-testing:LOGITUITests meant CI had
+  # never run a single UI test, and three recorder tests rotted unnoticed across
+  # #103/#105/#107 (fixed in #110).
+  ui-smoke:
+    name: UI Smoke Tests
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select latest Xcode version
+        run: |
+          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          echo "Using: $LATEST_XCODE"
+          sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+
+      - name: Resolve Swift Package dependencies
+        run: xcodebuild -resolvePackageDependencies -project LOGIT.xcodeproj -scheme LOGITScreenshots
+
+      - name: Create Secrets.swift stub
+        run: |
+          cat > LOGIT/Config/Secrets.swift << 'EOF'
+          let OPENAI_API_KEY = "test-key-for-ci"
+          let WISHKIT_API_KEY = "test-key-for-ci"
+          EOF
+
+      - name: Select iPhone simulator
+        run: bash .github/scripts/select-simulator.sh
+
+      - name: Run UI smoke tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project LOGIT.xcodeproj \
+            -scheme LOGITScreenshots \
+            -destination "$IOS_TEST_DESTINATION" \
+            -resultBundlePath UITestResults.xcresult \
+            -only-testing:LOGITUITests/ScenarioScreenshots/testEmptyScenario \
+            -only-testing:LOGITUITests/ScenarioScreenshots/testOneWorkoutScenario \
+            -only-testing:LOGITUITests/ScenarioScreenshots/testManyWorkoutsScenario \
+            -only-testing:LOGITUITests/ScenarioScreenshots/testFreeUserScenario \
+            -retry-tests-on-failure \
+            -test-iterations 2 \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty --color --report junit
+
+      # Carries the captured screenshots as well as the failure logs, so a red run
+      # can be diagnosed without reproducing it locally.
+      - name: Upload UI test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-smoke-results
+          path: UITestResults.xcresult

@@ -944,11 +944,13 @@
 "weeklyStreakWeeks" = "%d주";
 "muscleBalance" = "근육 균형";
 "balance" = "밸런스";
-"muscleBalanceGoalBasis" = "목표 이상인 근육 부위";
+"muscleBalanceGoalBasis" = "목표 이상";
+"muscleBalanceBelowTargetSection" = "목표 미만";
+"muscleBalanceAtTargetSection" = "목표 달성";
+"muscleBalanceAboveTargetSection" = "목표 초과";
 "muscleBalanceGoalHeroCaption" = "부위가 목표 이상 · %d 세트";
 "muscleBalanceGoalAccessibility" = "%d/%d 근육 부위가 목표 이상";
 "muscleBalanceActualOfTarget" = "%d%% / 목표 %d%%";
-"muscleBalanceGoalSection" = "모든 부위";
 "muscleBalanceEmpty" = "계속 운동하면 근육 분배가 표시됩니다";
 "muscleBalanceMostTrained" = "최다 훈련 · %@";
 "muscleBalanceSetsToGo" = "%@ · %d세트 남음";

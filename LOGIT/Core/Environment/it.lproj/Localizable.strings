@@ -944,11 +944,13 @@
 "weeklyStreakWeeks" = "%d sett";
 "muscleBalance" = "Equilibrio muscolare";
 "balance" = "Equilibrio";
-"muscleBalanceGoalBasis" = "Gruppi muscolari al target o oltre";
+"muscleBalanceGoalBasis" = "al target o oltre";
+"muscleBalanceBelowTargetSection" = "Sotto il target";
+"muscleBalanceAtTargetSection" = "Al target";
+"muscleBalanceAboveTargetSection" = "Sopra il target";
 "muscleBalanceGoalHeroCaption" = "gruppi al target o oltre · %d serie";
 "muscleBalanceGoalAccessibility" = "%d di %d gruppi muscolari al target o oltre";
 "muscleBalanceActualOfTarget" = "%d%% di %d%%";
-"muscleBalanceGoalSection" = "Tutti i gruppi";
 "muscleBalanceEmpty" = "Continua ad allenarti per vedere la tua distribuzione";
 "muscleBalanceMostTrained" = "Più allenato · %@";
 "muscleBalanceSetsToGo" = "%@ · mancano %d serie";

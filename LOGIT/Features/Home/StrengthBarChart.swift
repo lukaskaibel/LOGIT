@@ -42,8 +42,10 @@ struct StrengthBarChart: View {
     /// step still visible on the tile surface.
     private static let rampSteps = 6
     private static let rampFloor: Double = 0.35
-    /// Below this a change is reported as no bar at all rather than a stub.
-    private static let flatThreshold: Double = 0.5
+    /// Shortest a bar can be drawn. Every exercise in the ranking keeps one: a flat lift is part of
+    /// the ranking and should hold its column, and columns that render nothing leave the movers
+    /// crowded into a corner of an otherwise empty chart.
+    private static let minimumBarHeight: CGFloat = 2.5
 
     /// Worst first, so the ramp climbs left to right.
     private var ranked: [StrengthProgress.ExerciseChange] {
@@ -62,9 +64,10 @@ struct StrengthBarChart: View {
             let ranked = self.ranked
             let (up, down) = extremes
             let span = max(up + down, 0.001)
-            // Fraction of the height above the axis. Clamped so an all-gains or all-declines period
-            // still leaves the axis on screen rather than flush against an edge.
-            let upShare = min(max(up / span, 0.08), 0.92)
+            // Fraction of the height above the axis. Never clamped: with nothing declining the axis
+            // belongs on the bottom edge, and pinning it inboard made the tallest bar overshoot it
+            // and hang below the line.
+            let upShare = up / span
             let zeroY = geo.size.height * upShare
             let gap = resolvedSpacing(count: ranked.count, width: geo.size.width)
             let barWidth = max(
@@ -85,7 +88,9 @@ struct StrengthBarChart: View {
                     Rectangle()
                         .fill(Color.label.opacity(0.2))
                         .frame(height: 1)
-                        .offset(y: zeroY)
+                        // Nudged inboard only for drawing: with every lift up, the axis is the
+                        // bottom edge and an unclamped offset would put the line outside the frame.
+                        .offset(y: min(zeroY, geo.size.height - 1))
                 }
             }
             .contentShape(Rectangle())
@@ -102,7 +107,7 @@ struct StrengthBarChart: View {
         span: Double,
         maxGain: Double
     ) -> some View {
-        let magnitude = CGFloat(abs(change.percentChange) / span) * height
+        let magnitude = max(CGFloat(abs(change.percentChange) / span) * height, Self.minimumBarHeight)
         let isSelected = selection?.wrappedValue == change.id
         return ZStack(alignment: .top) {
             if isSelected {
@@ -119,11 +124,8 @@ struct StrengthBarChart: View {
                     topTrailingRadius: change.percentChange > 0 ? 2 : 0,
                     style: .continuous
                 )
-                // No forced minimum: a change that rounds to nothing gets no bar, and the zero
-                // line stands in for it. Stubs at every flat exercise read as a dashed axis, which
-                // looks like a rendering fault rather than a row of unchanged lifts.
                 .fill(color(for: change.percentChange, maxGain: maxGain))
-                .frame(height: abs(change.percentChange) < Self.flatThreshold ? 0 : max(magnitude, 1.5))
+                .frame(height: max(magnitude, Self.minimumBarHeight))
                 .overlay {
                     if isSelected {
                         UnevenRoundedRectangle(

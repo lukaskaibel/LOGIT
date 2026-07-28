@@ -944,11 +944,13 @@
 "weeklyStreakWeeks" = "%d wk";
 "muscleBalance" = "Muscle Balance";
 "balance" = "Balance";
-"muscleBalanceGoalBasis" = "Muscle groups at or above target";
+"muscleBalanceGoalBasis" = "at or above target";
+"muscleBalanceBelowTargetSection" = "Below target";
+"muscleBalanceAtTargetSection" = "At target";
+"muscleBalanceAboveTargetSection" = "Above target";
 "muscleBalanceGoalHeroCaption" = "groups at or above target · %d sets";
 "muscleBalanceGoalAccessibility" = "%d of %d muscle groups at or above target";
 "muscleBalanceActualOfTarget" = "%d%% of %d%%";
-"muscleBalanceGoalSection" = "Every group";
 "muscleBalanceEmpty" = "Keep training to see your muscle split";
 "muscleBalanceMostTrained" = "Most trained · %@";
 "muscleBalanceSetsToGo" = "%@ · %d sets to go";

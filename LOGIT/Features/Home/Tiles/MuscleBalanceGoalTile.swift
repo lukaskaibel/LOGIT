@@ -44,9 +44,11 @@ struct MuscleBalanceGoalTile: View {
         let entries = calculator.goalEntries
         return VStack(alignment: .leading, spacing: 0) {
             header
+            subtitle
+                .padding(.top, 8)
             if calculator.totalSets >= Self.minimumSets, !entries.isEmpty {
                 count(met: calculator.atLeastTargetCount(), total: entries.count)
-                    .padding(.top, 6)
+                    .padding(.top, 2)
                 MuscleBalanceTrackChart(entries: entries)
                     .frame(maxHeight: .infinity)
                     .padding(.top, 12)
@@ -62,23 +64,25 @@ struct MuscleBalanceGoalTile: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 8) {
-                Text(NSLocalizedString("balance", comment: ""))
-                    .tileHeaderStyle()
-                Spacer(minLength: 4)
-                NavigationChevron()
-                    .foregroundStyle(.secondary)
-            }
-            Text(NSLocalizedString("muscleBalanceGoalBasis", comment: ""))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                // Two lines reserved in both tiles so the figures below them share a baseline
-                // whatever the locale does to the wording.
-                .lineLimit(2, reservesSpace: true)
-                .minimumScaleFactor(0.75)
-                .fixedSize(horizontal: false, vertical: true)
+        HStack(spacing: 6) {
+            Text(NSLocalizedString("balance", comment: ""))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.label)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Spacer(minLength: 4)
+            NavigationChevron()
+                .foregroundStyle(Color.secondaryLabel)
         }
+    }
+
+    private var subtitle: some View {
+        Text(NSLocalizedString("muscleBalanceGoalBasis", comment: ""))
+            .font(.caption.weight(.medium))
+            .tracking(0.3)
+            .foregroundStyle(.tertiary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
     }
 
     /// Deliberately not accent-coloured: Strength's figure carries the accent on the other half of

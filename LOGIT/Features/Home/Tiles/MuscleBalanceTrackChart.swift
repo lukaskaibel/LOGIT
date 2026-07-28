@@ -55,6 +55,10 @@ struct MuscleBalanceTrackChart: View {
                 RoundedRectangle(cornerRadius: 3, style: .continuous)
                     .fill(color.opacity(isMet ? 0.25 : 1))
                     .frame(height: geo.size.height * fraction)
+            }
+            // Centred on the track rather than laid out by the fill's bottom-aligned stack, which
+            // parked every badge on the floor.
+            .overlay {
                 if isMet {
                     badge(for: entry.goalState, color: color)
                 }
@@ -89,47 +93,54 @@ struct MuscleBalanceTrackChart: View {
     }
 }
 
-/// The same track laid on its side, for the muscle-group overview's per-group rows. Carries what the
-/// vertical version has no room for: the group's name, its actual-of-target numbers, and the
-/// tolerance band that explains why a slightly-over group still reads as met.
-struct MuscleBalanceGoalRow: View {
+/// One muscle group as a compact cell for the overview's two-column grid: the name and its verdict
+/// on one line, the same filling track beneath, and the actual-of-target numbers under that.
+///
+/// A full-width row could carry all of that on a single line, but two columns halve the scrolling on
+/// a screen whose whole job is comparing eight groups — and the grouping into below / at / above
+/// target is what makes the columns readable, because everything in a section shares a verdict.
+struct MuscleBalanceGoalCell: View {
     let entry: MuscleBalanceEntry
 
     var body: some View {
         let color = entry.muscleGroup.color
         // Capped at target exactly like the vertical track, so "full" means the same thing on both
-        // surfaces. Overshoot is carried by the chevron rather than by extra bar length — a row that
-        // ran to twice target made an at-target group read as half done.
+        // surfaces. Overshoot is carried by the chevron rather than by extra bar length.
         let fraction = min(entry.goalFraction ?? 0, 1)
-        return HStack(spacing: 12) {
-            Text(entry.muscleGroup.description)
-                .font(.system(.subheadline, design: .rounded, weight: .bold))
-                .foregroundStyle(color)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .frame(width: 84, alignment: .leading)
+        return VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 5) {
+                Text(entry.muscleGroup.description)
+                    .font(.system(.subheadline, design: .rounded, weight: .bold))
+                    .foregroundStyle(color)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                Spacer(minLength: 2)
+                mark
+            }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
+                    // The unfilled remainder stays visible, the same way it does in the tile.
                     Capsule().fill(Color.label.opacity(0.07))
                     Capsule()
                         .fill(color.opacity(entry.goalState == .under ? 1 : 0.35))
                         .frame(width: geo.size.width * fraction)
                 }
             }
-            .frame(height: 12)
+            .frame(height: 10)
             Text(
                 String(
                     format: NSLocalizedString("muscleBalanceActualOfTarget", comment: ""),
                     entry.actualPercent, entry.targetPercent
                 )
             )
-            .font(.caption)
+            .font(.caption2)
             .monospacedDigit()
             .foregroundStyle(.secondary)
-            .frame(width: 76, alignment: .trailing)
-            mark
-                .frame(width: 16)
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 11)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .secondaryTileStyle()
         .accessibilityElement(children: .combine)
     }
 
@@ -141,11 +152,11 @@ struct MuscleBalanceGoalRow: View {
             EmptyView()
         case .met:
             Image(systemName: "checkmark")
-                .font(.caption.weight(.black))
+                .font(.caption2.weight(.black))
                 .foregroundStyle(entry.muscleGroup.color)
         case .over:
             Image(systemName: "chevron.up.2")
-                .font(.caption.weight(.black))
+                .font(.caption2.weight(.black))
                 .foregroundStyle(entry.muscleGroup.color)
         }
     }
@@ -157,8 +168,8 @@ struct MuscleBalanceGoalRow: View {
         VStack(spacing: 24) {
             MuscleBalanceTrackChart(entries: calculator.goalEntries)
                 .frame(height: 90)
-            VStack(spacing: 0) {
-                ForEach(calculator.goalEntries) { MuscleBalanceGoalRow(entry: $0).padding(.vertical, 6) }
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                ForEach(calculator.goalEntries) { MuscleBalanceGoalCell(entry: $0) }
             }
         }
         .padding()

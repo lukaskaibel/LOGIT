@@ -51,7 +51,7 @@ struct MuscleGroupsOverviewScreen: View {
                 if hasData {
                     if selected.totalSets > 0 {
                         goalHero(selected)
-                        goalRows(selected)
+                        goalSections(selected)
                     } else {
                         emptyBucketNote
                     }
@@ -117,35 +117,70 @@ struct MuscleGroupsOverviewScreen: View {
         .padding(.top, 6)
     }
 
-    /// Every targeted group as a row, in the same order the chart above draws them — the fill, its
-    /// actual-of-target numbers, and the verdict glyph. Tapping a row opens that group.
-    private func goalRows(_ bucket: MuscleBalanceBucket) -> some View {
+    /// The eight groups as a two-column grid, split by verdict: what needs work, what is done, what
+    /// overshot. The grouping is what makes two columns readable — within a section every cell shares
+    /// a state, so scanning a column is comparing magnitudes rather than decoding badges.
+    ///
+    /// Below-target leads: it is the only section you can act on, and the other two are its cause.
+    @ViewBuilder
+    private func goalSections(_ bucket: MuscleBalanceBucket) -> some View {
         let entries = bucket.calculator.goalEntries
+        let under = entries.filter { $0.goalState == .under }
             .sorted { ($0.goalFraction ?? 0) < ($1.goalFraction ?? 0) }
-        return VStack(spacing: SECTION_HEADER_SPACING) {
-            Text(NSLocalizedString("muscleBalanceGoalSection", comment: ""))
-                .font(.caption.weight(.bold))
-                .textCase(.uppercase)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        let met = entries.filter { $0.goalState == .met }
+            .sorted { $0.actualPercent > $1.actualPercent }
+        let over = entries.filter { $0.goalState == .over }
+            .sorted { $0.deviation > $1.deviation }
+        VStack(spacing: SECTION_SPACING) {
+            goalSection("muscleBalanceBelowTargetSection", systemImage: "arrow.down", entries: under)
+            goalSection("muscleBalanceAtTargetSection", systemImage: "checkmark", entries: met, isGood: true)
+            goalSection("muscleBalanceAboveTargetSection", systemImage: "chevron.up.2", entries: over)
+        }
+    }
+
+    @ViewBuilder
+    private func goalSection(
+        _ titleKey: String,
+        systemImage: String,
+        entries: [MuscleBalanceEntry],
+        isGood: Bool = false
+    ) -> some View {
+        if !entries.isEmpty {
+            VStack(spacing: SECTION_HEADER_SPACING) {
+                HStack(spacing: 8) {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(isGood ? Color.accentColor : Color.secondaryLabel)
+                        .frame(width: 24, height: 24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7)
+                                .fill(isGood ? Color.accentColor.opacity(0.16) : Color.fill)
+                        )
+                    Text(NSLocalizedString(titleKey, comment: ""))
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(Color.label)
+                    Spacer()
+                    Text("\(entries.count)")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(.tertiary)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                }
                 .padding(.horizontal, 4)
-            VStack(spacing: 0) {
-                ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
-                    Button {
-                        homeNavigationCoordinator.path.append(.muscleGroupDetail(entry.muscleGroup, period))
-                    } label: {
-                        MuscleBalanceGoalRow(entry: entry)
-                            .padding(.horizontal, CELL_PADDING)
-                            .padding(.vertical, 12)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    if index < entries.count - 1 {
-                        Divider().padding(.leading, CELL_PADDING)
+                LazyVGrid(
+                    columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
+                    spacing: 8
+                ) {
+                    ForEach(entries) { entry in
+                        Button {
+                            homeNavigationCoordinator.path.append(.muscleGroupDetail(entry.muscleGroup, period))
+                        } label: {
+                            MuscleBalanceGoalCell(entry: entry)
+                        }
+                        .buttonStyle(TileButtonStyle())
                     }
                 }
             }
-            .tileStyle()
         }
     }
 

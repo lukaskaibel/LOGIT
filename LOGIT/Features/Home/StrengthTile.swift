@@ -74,9 +74,11 @@ struct StrengthTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
+            subtitle
+                .padding(.top, 8)
             if let overall = progress.overallPercentChange {
                 hero(overall)
-                    .padding(.top, 6)
+                    .padding(.top, 2)
                 StrengthBarChart(changes: progress.changes)
                     .frame(maxHeight: .infinity)
                     .padding(.top, 12)
@@ -92,23 +94,25 @@ struct StrengthTile: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 8) {
-                Text(NSLocalizedString("strength", comment: ""))
-                    .tileHeaderStyle()
-                Spacer(minLength: 4)
-                NavigationChevron()
-                    .foregroundStyle(.secondary)
-            }
-            Text(NSLocalizedString("strengthBasis", comment: ""))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                // Two lines reserved in both tiles so the figures below them share a baseline
-                // whatever the locale does to the wording.
-                .lineLimit(2, reservesSpace: true)
-                .minimumScaleFactor(0.75)
-                .fixedSize(horizontal: false, vertical: true)
+        HStack(spacing: 6) {
+            Text(NSLocalizedString("strength", comment: ""))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.label)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Spacer(minLength: 4)
+            NavigationChevron()
+                .foregroundStyle(Color.secondaryLabel)
         }
+    }
+
+    private var subtitle: some View {
+        Text(NSLocalizedString("strengthBasis", comment: ""))
+            .font(.caption.weight(.medium))
+            .tracking(0.3)
+            .foregroundStyle(.tertiary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
     }
 
     /// Arrow plus percent, both in the trend colour. The scaled-up `StrengthHeroPill` doesn't fit a

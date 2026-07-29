@@ -70,8 +70,13 @@ enum TestScenario: String {
         if overrides["distanceUnit"] == nil {
             overrides["distanceUnit"] = DistanceUnit.km.rawValue
         }
-        // `empty` shows the no-goal state, the other scenarios a realistic goal.
-        overrides["workoutPerWeekTarget"] = self == .empty ? -1 : self == .stress ? 2 : 4
+        // `empty` shows the no-goal state, the other scenarios a realistic goal. An explicit
+        // `-workoutPerWeekTarget` wins, the way `-weightUnit` does: pairing a target with `empty` is
+        // the only way to reach the goal-set-but-nothing-logged-yet state — every user's Monday
+        // morning, and the one the weekly-goal ring's zero styling is about.
+        if overrides["workoutPerWeekTarget"] == nil {
+            overrides["workoutPerWeekTarget"] = self == .empty ? -1 : self == .stress ? 2 : 4
+        }
         // Per-user layout state stored as Data (object URIs / JSON) must not
         // leak in from the real store — the URIs wouldn't resolve against the
         // in-memory store anyway. A string value makes the Data reads fail so

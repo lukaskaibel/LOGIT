@@ -1131,11 +1131,11 @@
 "nWeeks" = "%d settimane";
 "nSets" = "%d serie";
 "allExercises" = "Tutti gli esercizi";
-"strengthTapGroup" = "Tocca un gruppo per isolarlo";
-"strengthBestMover" = "Miglior progresso";
 "strengthAxisMostDeclined" = "Calo maggiore";
 "strengthAxisLeastImproved" = "Progresso minore";
 "strengthAxisMostImproved" = "Progresso maggiore";
+"strengthStrongestLifts" = "Sollevamenti più pesanti";
+"strengthShowAllLifts" = "Mostra tutti i %d esercizi";
 "strengthAxisLeastDeclined" = "Calo minore";
 "showLess" = "Mostra meno";
 "strengthInfo" = "Il miglior 1RM stimato di ogni esercizio nelle ultime %d settimane rispetto alle %d precedenti, mediato e pesato in base al numero di serie. Le serie di cardio e a corpo libero non hanno 1RM e non contano.";

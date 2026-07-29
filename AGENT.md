@@ -24,6 +24,7 @@ The states, all driven by launch arguments (DEBUG builds only, implemented in
 | One workout (single data points, fresh trends) | `-SCENARIO one` |
 | Many workouts (long-time user, rich history) | `-SCENARIO many` |
 | Free tier (Pro locked) | add `-UITEST_FORCE_FREE` to any scenario |
+| Goal set but nothing logged yet (every user's Monday) | `-SCENARIO empty -workoutPerWeekTarget 4` — an explicit target beats the scenario's own, like `-weightUnit` |
 | Stress (2 years dense history + in-progress workout; for performance work, not part of the standard matrix) | `-SCENARIO stress`, add `-UITEST_SHOW_RECORDER 1` to land in the recorder |
 
 Standard matrix for a change: **empty, one, many (Pro implied on the

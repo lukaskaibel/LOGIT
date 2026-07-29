@@ -48,6 +48,12 @@ struct StrengthBarChart: View {
     /// Declines are grey at this weight — solid enough to read as a bar, muted enough that the
     /// accent side stays the thing you look at.
     private static let declineOpacity: Double = 0.55
+    /// A decline *inside* the selected scope keeps its colour and loses solidity instead of turning
+    /// grey: once something is highlighted, dropping its own declines to the same grey as everything
+    /// it was highlighted against would hide the half of the picture the selection is asking about.
+    private static let selectedDeclineOpacity: Double = 0.45
+    /// Everything outside the selection.
+    private static let dimmedOpacity: Double = 0.28
     /// Shortest a bar can be drawn. Every exercise in the ranking keeps one: a flat lift is part of
     /// the ranking and should hold its column, and columns that render nothing leave the movers
     /// crowded into a corner of an otherwise empty chart.
@@ -136,18 +142,6 @@ struct StrengthBarChart: View {
                 )
                 .fill(color(for: change, maxGain: maxGain))
                 .frame(height: max(magnitude, Self.minimumBarHeight))
-                .overlay {
-                    if isSelected {
-                        UnevenRoundedRectangle(
-                            topLeadingRadius: change.percentChange > 0 ? 2 : 0,
-                            bottomLeadingRadius: change.percentChange > 0 ? 0 : 2,
-                            bottomTrailingRadius: change.percentChange > 0 ? 0 : 2,
-                            topTrailingRadius: change.percentChange > 0 ? 2 : 0,
-                            style: .continuous
-                        )
-                        .strokeBorder(Color.label, lineWidth: 1.5)
-                    }
-                }
                 Spacer(minLength: 0)
             }
             .frame(height: height, alignment: .top)
@@ -155,25 +149,42 @@ struct StrengthBarChart: View {
         .frame(height: height)
     }
 
-    /// Gains carry identity and rank; declines are always neutral grey.
+    /// Three states, one rule: whatever is *in scope* wears a hue, everything else is dim grey.
     ///
-    /// Identity is the hue of a *gain* — the accent normally, the muscle group's own colour once a
-    /// group is highlighted, dim grey for gains outside that group. A decline never takes a hue at
-    /// all: tinting it in the same colour made it read as a faint gain of the same thing, and grey
-    /// is what every other trend surface in the app already uses for "down".
+    /// With nothing selected the scope is the whole training, so gains take the accent ramp and
+    /// declines are grey — the app's standing treatment for "down". Selecting an exercise narrows the
+    /// scope to that one bar; selecting a group narrows it to that group. In both cases the scope
+    /// wears the muscle group's own colour and everything outside drops to grey.
+    ///
+    /// A decline *inside* the scope keeps that colour and loses solidity rather than turning grey.
+    /// Grey is what "not what you asked about" already means here, so spending it on the selection's
+    /// own declines would hide exactly the half of the picture the selection is asking about.
     private func color(for change: StrengthProgress.ExerciseChange, maxGain: Double) -> Color {
-        guard change.percentChange > 0 else { return Color.secondaryLabel.opacity(Self.declineOpacity) }
-        let base: Color
+        // An exercise selection is narrower than a group's, so it wins.
+        if let selectedID = selection?.wrappedValue {
+            guard change.id == selectedID else { return Color.secondaryLabel.opacity(Self.dimmedOpacity) }
+            return scopedColor(change.muscleGroup.color, percent: change.percentChange, maxGain: maxGain)
+        }
         if let highlightedGroup {
             guard change.muscleGroup == highlightedGroup else {
-                return Color.secondaryLabel.opacity(0.28)
+                return Color.secondaryLabel.opacity(Self.dimmedOpacity)
             }
-            base = highlightedGroup.color
-        } else {
-            base = .accentColor
+            return scopedColor(highlightedGroup.color, percent: change.percentChange, maxGain: maxGain)
         }
+        guard change.percentChange > 0 else { return Color.secondaryLabel.opacity(Self.declineOpacity) }
+        return rampedColor(.accentColor, percent: change.percentChange, maxGain: maxGain)
+    }
+
+    /// In-scope: ramped when up, translucent when down — never grey.
+    private func scopedColor(_ base: Color, percent: Double, maxGain: Double) -> Color {
+        percent > 0
+            ? rampedColor(base, percent: percent, maxGain: maxGain)
+            : base.opacity(Self.selectedDeclineOpacity)
+    }
+
+    private func rampedColor(_ base: Color, percent: Double, maxGain: Double) -> Color {
         guard maxGain > 0 else { return base }
-        let step = min(Int(change.percentChange / maxGain * Double(Self.rampSteps)), Self.rampSteps - 1)
+        let step = min(Int(percent / maxGain * Double(Self.rampSteps)), Self.rampSteps - 1)
         let t = Double(step) / Double(Self.rampSteps - 1)
         return base.opacity(Self.rampFloor + (1 - Self.rampFloor) * t)
     }

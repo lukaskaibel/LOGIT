@@ -38,6 +38,9 @@ struct StrengthScreen: View {
     private static let groupCellHeight: CGFloat = 44
     /// Strongest lifts shown before the list collapses.
     private static let collapsedBestsCount = 5
+    /// Matches `StrengthBarChart`'s in-scope decline weight, so the figure and the bar it describes
+    /// fade by the same amount.
+    private static let scopedDeclineOpacity: Double = 0.45
 
     init(workouts: [Workout], initialGroup: MuscleGroup? = nil) {
         self.workouts = workouts
@@ -54,7 +57,7 @@ struct StrengthScreen: View {
                     groupGrid
                     strongest
                 }
-                footnote
+                about
             }
             .padding(.horizontal)
             .padding(.top)
@@ -171,9 +174,18 @@ struct StrengthScreen: View {
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
         }
-        .foregroundStyle(strengthTrendIsDown(percent) ? Color.secondaryLabel : color)
+        // A decline goes grey only when nothing is selected. Inside a scope it keeps that scope's
+        // colour and loses solidity instead — the same rule the bars follow, so the figure and the
+        // chart never disagree about what the selection is.
+        .foregroundStyle(figureColor(percent, color: color))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(figureAccessibilityLabel(percent))
+    }
+
+    private func figureColor(_ percent: Double, color: Color) -> Color {
+        guard strengthTrendIsDown(percent) else { return color }
+        let isScoped = selectedExerciseID != nil || selectedGroup != nil
+        return isScoped ? color.opacity(Self.scopedDeclineOpacity) : Color.secondaryLabel
     }
 
     private func figureAccessibilityLabel(_ percent: Double) -> Text {
@@ -317,24 +329,18 @@ struct StrengthScreen: View {
             let shown = showsAllBests ? all : Array(all.prefix(Self.collapsedBestsCount))
             VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
                 Text(NSLocalizedString("strengthStrongestLifts", comment: ""))
-                    .font(.caption.weight(.bold))
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 4)
-                VStack(spacing: 0) {
-                    ForEach(Array(shown.enumerated()), id: \.element.id) { index, best in
+                    .sectionHeaderStyle2()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(spacing: CELL_SPACING) {
+                    ForEach(shown) { best in
                         Button {
                             homeNavigationCoordinator.path.append(.exercise(best.exercise))
                         } label: {
-                            bestRow(best, rank: index + 1)
+                            bestRow(best)
                         }
-                        .buttonStyle(.plain)
-                        if index < shown.count - 1 {
-                            Divider().padding(.leading, 44)
-                        }
+                        .buttonStyle(TileButtonStyle())
                     }
                 }
-                .tileStyle()
                 if all.count > Self.collapsedBestsCount {
                     Button {
                         withAnimation(.snappy) { showsAllBests.toggle() }
@@ -369,44 +375,56 @@ struct StrengthScreen: View {
         return progress.bests.filter { $0.muscleGroup == selectedGroup }
     }
 
-    private func bestRow(_ best: StrengthProgress.ExerciseBest, rank: Int) -> some View {
-        HStack(spacing: 12) {
-            Text("\(rank)")
-                .font(.system(.footnote, design: .rounded, weight: .bold))
-                .foregroundStyle(.tertiary)
-                .monospacedDigit()
-                .frame(width: 16, alignment: .trailing)
-            Circle()
-                .fill(best.muscleGroup.color)
-                .frame(width: 8, height: 8)
-            Text(best.exercise.displayName)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.label)
-                .lineLimit(1)
+    /// The exercise-cell anatomy — name over its muscle group in the group's colour — with the value
+    /// trailing. The colour lives in the muscle-group line the way it does everywhere else in the
+    /// app, so the row needs no separate dot to carry identity.
+    ///
+    /// Each row states "e1RM" itself: the section header says which lifts these are, not what the
+    /// number is, and a column of bare weights beside exercise names reads as *lifted* weight.
+    private func bestRow(_ best: StrengthProgress.ExerciseBest) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(best.exercise.displayName)
+                    .font(.body.weight(.bold))
+                    .foregroundStyle(Color.label)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Text(best.muscleGroup.description)
+                    .font(.system(.footnote, design: .rounded, weight: .bold))
+                    .foregroundStyle(best.muscleGroup.color.gradient)
+            }
             Spacer(minLength: 8)
-            // `formatWeightForDisplay` keeps up to three decimals so a logged weight round-trips
-            // through integer grams. An e1RM is *derived*, so that precision is noise —
-            // `formatEstimatedOneRepMax` rounds it, which is what every other e1RM surface shows.
-            UnitView(
-                value: formatEstimatedOneRepMax(best.oneRepMax),
-                unit: WeightUnit.used.rawValue,
-                configuration: .small
-            )
+            VStack(alignment: .trailing, spacing: 1) {
+                Text(NSLocalizedString("e1RM", comment: ""))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                // `formatWeightForDisplay` keeps up to three decimals so a logged weight round-trips
+                // through integer grams. An e1RM is *derived*, so that precision is noise —
+                // `formatEstimatedOneRepMax` rounds it, like every other e1RM surface.
+                UnitView(
+                    value: formatEstimatedOneRepMax(best.oneRepMax),
+                    unit: WeightUnit.used.rawValue,
+                    configuration: .small
+                )
+            }
         }
-        .padding(.horizontal, CELL_PADDING)
-        .padding(.vertical, 12)
+        .padding(CELL_PADDING)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .tileStyle()
         .contentShape(Rectangle())
     }
 
-    private var footnote: some View {
-        HStack(alignment: .top, spacing: 6) {
-            Image(systemName: "info.circle")
-            Text(String(format: NSLocalizedString("strengthInfo", comment: ""), window.rawValue, window.rawValue))
-        }
-        .font(.footnote)
-        .foregroundStyle(.secondary)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 4)
+    /// The same "About <metric>" tile every other metric detail screen ends on. Two paragraphs,
+    /// because this screen depends on two things a reader has no reason to know: how the percentage
+    /// is built, and what an estimated 1RM even is — the unit every figure and the whole strongest
+    /// list are quoted in, and which was never explained anywhere on the way here.
+    private var about: some View {
+        AboutSection(
+            metricTitle: NSLocalizedString("strength", comment: ""),
+            text: String(format: NSLocalizedString("strengthInfo", comment: ""), window.rawValue, window.rawValue)
+                + "\n\n"
+                + NSLocalizedString("e1RMInfo", comment: "")
+        )
     }
 }
 

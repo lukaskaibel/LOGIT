@@ -1132,8 +1132,10 @@
 "nSets" = "%d series";
 "allExercises" = "Todos los ejercicios";
 "strengthTapGroup" = "Toca un grupo para enfocarlo";
-"strengthBiggestMovers" = "Mayores cambios";
-"strengthHoldHint" = "De peor a mejor · mantén una barra o elige un grupo";
 "strengthBestMover" = "Mayor avance";
+"strengthAxisMostDeclined" = "Mayor descenso";
+"strengthAxisLeastImproved" = "Menor avance";
+"strengthAxisMostImproved" = "Mayor avance";
+"strengthAxisLeastDeclined" = "Menor descenso";
 "showLess" = "Ver menos";
 "strengthInfo" = "El mejor 1RM estimado de cada ejercicio en las últimas %d semanas frente a las %d anteriores, promediado y ponderado por el número de series. Las series de cardio y peso corporal no tienen 1RM y no cuentan.";

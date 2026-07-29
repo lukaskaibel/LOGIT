@@ -1132,8 +1132,10 @@
 "nSets" = "%d세트";
 "allExercises" = "모든 운동";
 "strengthTapGroup" = "그룹을 탭해 집중해서 보기";
-"strengthBiggestMovers" = "변화가 큰 운동";
-"strengthHoldHint" = "낮은 순 · 막대를 길게 누르거나 부위 선택";
 "strengthBestMover" = "가장 향상된 종목";
+"strengthAxisMostDeclined" = "가장 큰 감소";
+"strengthAxisLeastImproved" = "가장 작은 향상";
+"strengthAxisMostImproved" = "가장 큰 향상";
+"strengthAxisLeastDeclined" = "가장 작은 감소";
 "showLess" = "간단히 보기";
 "strengthInfo" = "각 운동의 최근 %d주 최고 추정 1RM을 이전 %d주와 비교해 세트 수로 가중 평균한 값입니다. 유산소와 맨몸 세트는 1RM이 없어 포함되지 않습니다.";

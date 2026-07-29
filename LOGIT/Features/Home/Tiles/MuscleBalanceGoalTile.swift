@@ -61,6 +61,9 @@ struct MuscleBalanceGoalTile: View {
         .padding(CELL_PADDING)
         .frame(maxWidth: .infinity, alignment: .leading)
         .tileStyle()
+        // The whole card is the target. Without this the tile is only tappable where its own
+        // subviews are, so the gaps between the figure and the chart did nothing.
+        .contentShape(Rectangle())
     }
 
     private var header: some View {

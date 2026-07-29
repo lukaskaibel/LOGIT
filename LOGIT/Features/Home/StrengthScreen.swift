@@ -274,48 +274,41 @@ struct StrengthScreen: View {
     /// the rest drop to grey. Filtering answered "how did chest do"; highlighting answers "how did
     /// chest do *compared with everything else*", which is the question a balance-minded screen is
     /// actually for, and it stops the chart's shape changing under the finger on every tap.
+    ///
+    /// No section header and no per-bar names. The hero above already says what this is, and eight
+    /// rotated exercise labels were the densest thing on the screen while telling you the least —
+    /// the two ends of the ranking are what the axis actually needs to say.
     private var composition: some View {
-        let all = progress.changes
-        let ranked = all.sorted { $0.percentChange < $1.percentChange }
-        return VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(NSLocalizedString("strengthBiggestMovers", comment: ""))
-                    .font(.caption.weight(.bold))
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-                Text(NSLocalizedString("strengthHoldHint", comment: ""))
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
+        let ranked = progress.changes.sorted { $0.percentChange < $1.percentChange }
+        return VStack(alignment: .leading, spacing: 8) {
             StrengthBarChart(
-                changes: all,
+                changes: progress.changes,
                 spacing: ranked.count < Self.labelledChartThreshold ? 8 : 2,
                 selection: $selectedExerciseID,
                 highlightedGroup: selectedGroup
             )
-            .frame(height: 150)
+            .frame(height: 170)
             .animation(.snappy(duration: 0.2), value: selectedExerciseID)
             .animation(.snappy(duration: 0.2), value: selectedGroup)
             .sensoryFeedback(.selection, trigger: selectedExerciseID)
-            if ranked.count < Self.labelledChartThreshold {
-                axisLabels(ranked)
-            }
+            axisEnds(ranked)
         }
     }
 
-    /// Under about eight bars there is room to name each column, so the chart stops depending on a
-    /// gesture to be readable at all.
-    private func axisLabels(_ ranked: [StrengthProgress.ExerciseChange]) -> some View {
-        HStack(spacing: 8) {
-            ForEach(ranked) { change in
-                Text(change.exercise.displayName)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-            }
+    /// The axis names the *ranking*, not the bars: what the left end and the right end mean. Which
+    /// words depends on the data — with declines present the left end is a drop, not a small gain.
+    private func axisEnds(_ ranked: [StrengthProgress.ExerciseChange]) -> some View {
+        let hasDecline = (ranked.first?.percentChange ?? 0) < 0
+        let hasGain = (ranked.last?.percentChange ?? 0) > 0
+        return HStack {
+            Text(NSLocalizedString(hasDecline ? "strengthAxisMostDeclined" : "strengthAxisLeastImproved", comment: ""))
+            Spacer(minLength: 12)
+            Text(NSLocalizedString(hasGain ? "strengthAxisMostImproved" : "strengthAxisLeastDeclined", comment: ""))
         }
+        .font(.caption2)
+        .foregroundStyle(.tertiary)
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
     }
 
     private var footnote: some View {

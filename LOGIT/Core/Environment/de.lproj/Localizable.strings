@@ -1128,8 +1128,10 @@
 "nSets" = "%d Sätze";
 "allExercises" = "Alle Übungen";
 "strengthTapGroup" = "Tippe eine Gruppe an";
-"strengthBiggestMovers" = "Größte Veränderungen";
-"strengthHoldHint" = "Von schwach zu stark · Balken halten oder Gruppe wählen";
 "strengthBestMover" = "Größter Zuwachs";
+"strengthAxisMostDeclined" = "Stärkster Rückgang";
+"strengthAxisLeastImproved" = "Geringster Zuwachs";
+"strengthAxisMostImproved" = "Größter Zuwachs";
+"strengthAxisLeastDeclined" = "Geringster Rückgang";
 "showLess" = "Weniger anzeigen";
 "strengthInfo" = "Das beste geschätzte 1RM jeder Übung der letzten %d Wochen im Vergleich zu den %d davor, gemittelt und nach Anzahl der Sätze gewichtet. Cardio- und Körpergewichtssätze haben kein 1RM und zählen nicht.";

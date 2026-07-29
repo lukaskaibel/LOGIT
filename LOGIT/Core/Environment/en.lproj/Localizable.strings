@@ -1132,8 +1132,10 @@
 "nSets" = "%d sets";
 "allExercises" = "All exercises";
 "strengthTapGroup" = "Tap a group to focus";
-"strengthBiggestMovers" = "Biggest movers";
-"strengthHoldHint" = "Ranked worst to best · hold a bar, or pick a group";
 "strengthBestMover" = "Best mover";
+"strengthAxisMostDeclined" = "Most declined";
+"strengthAxisLeastImproved" = "Least improved";
+"strengthAxisMostImproved" = "Most improved";
+"strengthAxisLeastDeclined" = "Least declined";
 "showLess" = "Show less";
 "strengthInfo" = "Each exercise's best estimated 1RM in the last %d weeks against the %d before, averaged and weighted by how many sets you did. Cardio and bodyweight sets carry no 1RM and don't count.";

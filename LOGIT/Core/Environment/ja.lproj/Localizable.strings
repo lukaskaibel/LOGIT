@@ -1132,8 +1132,10 @@
 "nSets" = "%dセット";
 "allExercises" = "すべてのエクササイズ";
 "strengthTapGroup" = "グループをタップして絞り込み";
-"strengthBiggestMovers" = "変化が大きい種目";
-"strengthHoldHint" = "小さい順 · バーを長押し、または部位を選択";
 "strengthBestMover" = "最も伸びた種目";
+"strengthAxisMostDeclined" = "最大の低下";
+"strengthAxisLeastImproved" = "最小の伸び";
+"strengthAxisMostImproved" = "最大の伸び";
+"strengthAxisLeastDeclined" = "最小の低下";
 "showLess" = "表示を減らす";
 "strengthInfo" = "各エクササイズの直近%d週間の推定1RM最高値を、その前の%d週間と比較し、セット数で重み付けして平均した値です。カーディオと自重のセットは1RMがないため含まれません。";

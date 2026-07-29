@@ -45,9 +45,9 @@ struct StrengthBarChart: View {
     /// step still visible on the tile surface.
     private static let rampSteps = 6
     private static let rampFloor: Double = 0.35
-    /// Declines keep the hue and lose the solidity — dimmer than the ramp's own floor so they read
-    /// as below the line rather than as a very small gain.
-    private static let declineOpacity: Double = 0.22
+    /// Declines are grey at this weight — solid enough to read as a bar, muted enough that the
+    /// accent side stays the thing you look at.
+    private static let declineOpacity: Double = 0.55
     /// Shortest a bar can be drawn. Every exercise in the ranking keeps one: a flat lift is part of
     /// the ranking and should hold its column, and columns that render nothing leave the movers
     /// crowded into a corner of an otherwise empty chart.
@@ -101,6 +101,10 @@ struct StrengthBarChart: View {
             }
             .contentShape(Rectangle())
             .gesture(selectGesture(ranked: ranked, width: geo.size.width))
+            // Only claim touches where selection is actually wired up. On the Summary tile the chart
+            // fills most of the card, and a hit-testable shape here swallowed the taps meant for the
+            // button behind it — the tile opened only when a label happened to be hit.
+            .allowsHitTesting(selection != nil)
         }
     }
 
@@ -151,23 +155,23 @@ struct StrengthBarChart: View {
         .frame(height: height)
     }
 
-    /// Colour carries two things at once: identity and direction.
+    /// Gains carry identity and rank; declines are always neutral grey.
     ///
-    /// Identity is the base hue — the accent normally, the muscle group's own colour once a group is
-    /// highlighted, and neutral grey for every bar outside that group. Direction is opacity: gains
-    /// step through the six-step ramp by rank, declines are drawn translucent in the same hue rather
-    /// than recoloured, so a decline reads as "less of this" instead of as a different category.
+    /// Identity is the hue of a *gain* — the accent normally, the muscle group's own colour once a
+    /// group is highlighted, dim grey for gains outside that group. A decline never takes a hue at
+    /// all: tinting it in the same colour made it read as a faint gain of the same thing, and grey
+    /// is what every other trend surface in the app already uses for "down".
     private func color(for change: StrengthProgress.ExerciseChange, maxGain: Double) -> Color {
+        guard change.percentChange > 0 else { return Color.secondaryLabel.opacity(Self.declineOpacity) }
         let base: Color
         if let highlightedGroup {
             guard change.muscleGroup == highlightedGroup else {
-                return Color.secondaryLabel.opacity(change.percentChange > 0 ? 0.5 : 0.25)
+                return Color.secondaryLabel.opacity(0.28)
             }
             base = highlightedGroup.color
         } else {
             base = .accentColor
         }
-        guard change.percentChange > 0 else { return base.opacity(Self.declineOpacity) }
         guard maxGain > 0 else { return base }
         let step = min(Int(change.percentChange / maxGain * Double(Self.rampSteps)), Self.rampSteps - 1)
         let t = Double(step) / Double(Self.rampSteps - 1)
@@ -197,6 +201,10 @@ struct StrengthBarChart: View {
                 guard case let .second(_, drag?) = value else { return }
                 select(at: drag.location.x, ranked: ranked, width: width)
             }
+            // Lifting the finger clears it: the selection is a peek at one bar, not a mode you have
+            // to leave. Without this the hero kept talking about an exercise long after the gesture,
+            // and there was no obvious way to get back to the scope's own figure.
+            .onEnded { _ in selection?.wrappedValue = nil }
     }
 
     /// Individual bars are far under a tappable size at any realistic exercise count, so the whole

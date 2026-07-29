@@ -60,6 +60,17 @@ struct StrengthProgress {
         var id: NSManagedObjectID { exercise.objectID }
     }
 
+    /// One exercise's heaviest estimated 1RM in the recent window — the "strongest lifts" list, which
+    /// answers a different question from the rest of this type: not *how much did it move* but *what
+    /// can you actually lift*. Kept here because it falls out of the same pass over the sets.
+    struct ExerciseBest: Identifiable {
+        let exercise: Exercise
+        let muscleGroup: MuscleGroup
+        /// Best estimated 1RM in the recent window, in grams.
+        let oneRepMax: Int
+        var id: NSManagedObjectID { exercise.objectID }
+    }
+
     struct GroupProgress: Identifiable {
         let muscleGroup: MuscleGroup
         let percentChange: Double
@@ -70,6 +81,10 @@ struct StrengthProgress {
 
     /// Every qualifying exercise, unordered.
     let changes: [ExerciseChange]
+    /// Every exercise with a usable e1RM in the recent window, heaviest first. Unlike `changes` this
+    /// does *not* require a prior-window best: a lift you only started this month still has a weight,
+    /// and leaving it out of a "strongest" list would be plainly wrong.
+    var bests: [ExerciseBest] = []
     let window: StrengthWindow
     /// How much of the comparison span (two windows) the logged history covers, 0…1. Only used by
     /// the empty state's ring, so it reads as "still filling up" rather than as nothing at all.
@@ -149,6 +164,7 @@ struct StrengthProgress {
         } ?? 0
 
         var changes: [ExerciseChange] = []
+        var bests: [ExerciseBest] = []
         for exercise in exercises {
             guard let group = exercise.muscleGroup else { continue }
             var recentBest = 0
@@ -165,6 +181,9 @@ struct StrengthProgress {
                     priorBest = max(priorBest, e1rm)
                 }
             }
+            if recentBest > 0 {
+                bests.append(ExerciseBest(exercise: exercise, muscleGroup: group, oneRepMax: recentBest))
+            }
             guard recentBest > 0, priorBest > 0 else { continue }
             let raw = (Double(recentBest) - Double(priorBest)) / Double(priorBest) * 100
             changes.append(
@@ -176,7 +195,12 @@ struct StrengthProgress {
                 )
             )
         }
-        return StrengthProgress(changes: changes, window: window, historyFraction: historyFraction)
+        return StrengthProgress(
+            changes: changes,
+            bests: bests.sorted { $0.oneRepMax > $1.oneRepMax },
+            window: window,
+            historyFraction: historyFraction
+        )
     }
 }
 

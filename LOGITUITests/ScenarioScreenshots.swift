@@ -101,6 +101,49 @@ final class ScenarioScreenshots: XCTestCase {
         XCTAssertTrue(detailBack.waitForExistence(timeout: 5), "Detail screen has no navigation bar / back button")
     }
 
+    // MARK: - Weekly goal screen
+
+    /// The goal screen after the arc redesign: an arc carrying this week's count, the week's day
+    /// rings, one streak row, and the milestone ladder. The month calendar and the 52-week grid it
+    /// used to open with are gone (History already owns a ring calendar), and the ± toolbar button
+    /// went with them — the goal now lives in the line under the count, which is what this drives.
+    func testWeeklyGoalScreen() {
+        let app = launchApp(scenario: "many")
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        waitABit(2)
+
+        // The pill is the only way in; it pushes the screen whenever a goal exists.
+        let goalPill = app.buttons["weeklyGoalPill"]
+        XCTAssertTrue(goalPill.waitForExistence(timeout: 5), "weeklyGoalPill missing on Summary")
+        goalPill.tap()
+
+        let goalButton = app.buttons["weeklyGoalTargetButton"]
+        XCTAssertTrue(
+            goalButton.waitForExistence(timeout: 5),
+            "Goal screen didn't show the goal line under the count"
+        )
+        XCTAssertTrue(
+            app.staticTexts["Milestones"].waitForExistence(timeout: 3),
+            "Milestone list missing from the goal screen"
+        )
+        attach(app, "goal_01_arc")
+
+        // The goal moved out of the toolbar and into the sentence under the count.
+        goalButton.tap()
+        XCTAssertTrue(
+            app.buttons["Change Goal"].waitForExistence(timeout: 5),
+            "The goal line didn't open the target picker"
+        )
+        attach(app, "goal_02_picker")
+
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(
+            goalButton.waitForExistence(timeout: 5),
+            "Cancelling the picker didn't return to the goal screen"
+        )
+    }
+
     // MARK: - Personal records (per-exercise cards)
 
     /// The records surfaces after the per-exercise regrouping (one card/row/count per exercise,

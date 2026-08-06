@@ -7,35 +7,44 @@
 
 import SwiftUI
 
-// The weekly-goal views, shared by `WorkoutGoalScreen` and (for the streak) the Summary's
+// The weekly-goal views, shared by `WorkoutGoalScreen` and (for the streak milestones) the Summary's
 // `WeeklyGoalCountPill`. The Summary's own hero tile that used to lead this file is gone: once
 // This Week and Progress merged into one scroll, the week became one fact among many and shrank to
 // the title-row pill, with the full week a tap away on the goal screen.
+//
+// The `StreakLine` and `StreakScoreboard` that used to live here went with the goal screen's
+// redesign: the line's flame-and-number is now a row on that screen, and the scoreboard's
+// current-versus-goal became the first row of its milestone list, ring and all.
 
 // MARK: - Weekly goal strip (shared)
 
 /// This week rendered like a calendar week row: each day is a muscle-group occurrence ring with the
-/// weekday letter inside (accent outline for today, plain letter on rest days), followed by the week's
-/// completion ring on the right edge. Rendered by `WorkoutGoalScreen`'s "This week" tile.
+/// weekday letter inside (accent outline for today, plain letter on rest days), optionally followed by
+/// the week's completion ring on the right edge. Rendered by `WorkoutGoalScreen` under its arc.
 struct WeeklyGoalStrip: View {
     let workouts: [Workout]
     let target: Int
-    /// When `true`, the date sits inside each ring (the calendar "This week" tile, so its dates line up
-    /// with the month grid above). When `false` (default) the weekday letter sits inside the ring.
+    /// When `true`, the date sits inside each ring (a calendar context, so the dates line up with a
+    /// month grid). When `false` (default) the weekday letter sits inside the ring.
     var showsDate: Bool = false
+    /// The week's own progress ring on the trailing edge. Off wherever the count is already the
+    /// subject above the strip — on the goal screen the arc says it, and two rings would say it twice.
+    var showsCompletionRing: Bool = true
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     private let calendar = Calendar.current
 
     var body: some View {
-        // 8 equal columns: the 7 days + the completion ring, each centred in its column, so the leading
-        // and trailing insets match (no flush-right ring) and the columns line up with the calendar grid.
+        // Equal columns — the 7 days plus the completion ring when it's shown — each centred in its
+        // own column, so the leading and trailing insets match (no flush-right ring).
         HStack(spacing: 0) {
             ForEach(weekDays, id: \.self) { day in
                 dayCircle(day)
             }
-            completionRing
-                .frame(maxWidth: .infinity)
+            if showsCompletionRing {
+                completionRing
+                    .frame(maxWidth: .infinity)
+            }
         }
     }
 
@@ -107,27 +116,7 @@ struct WeeklyGoalStrip: View {
     }
 }
 
-// MARK: - Streak line (shared)
-
-/// A small flame + "N week streak" line shown under the weekly strip once a run is going.
-struct StreakLine: View {
-    let streak: Int
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "flame.fill")
-                .foregroundStyle(Color.accentColor)
-            Text("\(streak)")
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(Color.accentColor)
-            Text(NSLocalizedString("weekStreakSuffix", comment: ""))
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-        }
-    }
-}
-
-// MARK: - Streak milestones + scoreboard (shared)
+// MARK: - Streak milestones (shared)
 
 /// The weekly-streak milestone ladder — a month, quarter, half-year, year, two years — shared by the
 /// Summary hero and the Workout Goal screen so the two never disagree on what the next goal is.
@@ -158,56 +147,6 @@ enum StreakMilestone {
         let next = next(after: current)
         let bestIsNearer = previousBest > current && previousBest < next
         return bestIsNearer ? (previousBest, true) : (next, false)
-    }
-}
-
-/// The streak scoreboard: the goal ahead on the leading side — the next milestone (flag) or, when it's
-/// the nearer goal, the personal best (flame), with a ring tracking progress — and the current streak,
-/// the hero, on the trailing side. Shared by the Summary hero (in a secondary tile) and the Workout Goal
-/// screen so the two read identically.
-struct StreakScoreboard: View {
-    let current: Int
-    let target: Int
-    let targetIsBest: Bool
-
-    private var progress: Double { target > 0 ? min(Double(current) / Double(target), 1) : 0 }
-    private var fact: String { targetIsBest ? "" : StreakMilestone.fact(for: target) }
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            HStack(spacing: 11) {
-                ZStack {
-                    CompletionRing(progress: progress, lineWidth: 3)
-                    Image(systemName: targetIsBest ? "flame.fill" : "flag")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(Color.accentColor)
-                }
-                .frame(width: 38, height: 38)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString(targetIsBest ? "personalBest" : "nextMilestone", comment: ""))
-                        .font(.system(size: 10, weight: .heavy))
-                        .foregroundStyle(Color.accentColor)
-                    UnitView(value: "\(target)", unit: Self.weeksUnit(target), configuration: .normal, unitColor: Color.secondaryLabel)
-                    if !fact.isEmpty {
-                        Text(fact)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            Spacer(minLength: 12)
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(NSLocalizedString("current", comment: ""))
-                    .font(.system(size: 10, weight: .heavy))
-                    .foregroundStyle(.secondary)
-                UnitView(value: "\(current)", unit: Self.weeksUnit(current), configuration: .large, unitColor: Color.secondaryLabel)
-                    .foregroundStyle(Color.accentColor)
-            }
-        }
-    }
-
-    static func weeksUnit(_ n: Int) -> String {
-        NSLocalizedString(n == 1 ? "week" : "weeks", comment: "")
     }
 }
 

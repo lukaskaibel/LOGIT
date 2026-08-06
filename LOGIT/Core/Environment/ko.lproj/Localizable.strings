@@ -991,8 +991,9 @@
 "muscleDetailPercentOfSets" = "세트의 %d%%";
 "weekStreakSuffix" = "주 연속";
 "weeklyGoalAccessibility" = "주간 목표, %d/%d 운동";
-"yearWeeksOnTarget" = "%2$d주 중 %1$d주 목표 달성";
-"currentWeekNumber" = "%d주차";
+"weeklyGoalSubtitle" = "주 %d회 목표 중";
+"milestones" = "마일스톤";
+"weeksToGo" = "%d주 남음";
 "bestStreakLabel" = "최고 · %d주";
 "monthWorkoutsCount" = "%d회";
 "muscleBalanceEmptySubtitle" = "운동을 기록하면 근육 분포가 표시됩니다.";

@@ -991,8 +991,9 @@
 "muscleDetailPercentOfSets" = "%d%% des séries";
 "weekStreakSuffix" = "semaines d'affilée";
 "weeklyGoalAccessibility" = "Objectif hebdo, %d séances sur %d";
-"yearWeeksOnTarget" = "%1$d sur %2$d semaines dans la cible";
-"currentWeekNumber" = "Semaine %d";
+"weeklyGoalSubtitle" = "sur votre objectif de %d séances";
+"milestones" = "Paliers";
+"weeksToGo" = "encore %d";
 "bestStreakLabel" = "Record · %d sem";
 "monthWorkoutsCount" = "%d séances";
 "muscleBalanceEmptySubtitle" = "Enregistre une séance pour voir ta répartition musculaire.";

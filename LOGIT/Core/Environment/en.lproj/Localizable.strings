@@ -991,8 +991,9 @@
 "muscleDetailPercentOfSets" = "%d%% of sets";
 "weekStreakSuffix" = "week streak";
 "weeklyGoalAccessibility" = "Weekly goal, %d of %d workouts";
-"yearWeeksOnTarget" = "%1$d of %2$d weeks on target";
-"currentWeekNumber" = "Week %d";
+"weeklyGoalSubtitle" = "of your %d-workout goal";
+"milestones" = "Milestones";
+"weeksToGo" = "%d to go";
 "bestStreakLabel" = "Best · %d wks";
 "monthWorkoutsCount" = "%d workouts";
 "muscleBalanceEmptySubtitle" = "Log a workout to see your muscle split.";

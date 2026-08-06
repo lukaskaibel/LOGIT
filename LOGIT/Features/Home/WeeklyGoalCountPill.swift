@@ -7,18 +7,19 @@
 
 import SwiftUI
 
-/// The Summary's weekly goal, reduced to a title-row control: the week's count inside a completion
-/// ring.
+/// The Summary's weekly goal, reduced to a title-row control: the week's count inside the same 240°
+/// arc the goal screen opens with.
 ///
 /// It replaces the weekly-goal hero tile. Once This Week and Progress became one scroll, the week
 /// stopped being the screen's subject and became one fact among many — and a fact that already had a
 /// whole screen behind it. A tile was too much furniture for that; a control on the title row is the
 /// right size, and it puts the week where the eye already starts.
 ///
-/// The target is no longer spelled out: the ring *is* the target, so `3` inside a nearly closed ring
-/// says everything `3/4` did in half the width. VoiceOver still hears the full fraction. Day-level
-/// muscle colours deliberately don't come along — those are something you look at on purpose, and
-/// `WorkoutGoalScreen` renders them full size one tap away.
+/// The target is no longer spelled out: the arc *is* the target, so `3` inside a nearly closed arc
+/// says everything `3/4` did in half the width. VoiceOver still hears the full fraction. The shape is
+/// `WeeklyGoalArc` rather than a closed ring so that tapping it lands on the same gauge, grown to
+/// fill the screen — one mark, two sizes. Day-level muscle colours deliberately don't come along:
+/// those are something you look at on purpose, and the goal screen renders them full size.
 struct WeeklyGoalCountPill: View {
     let workouts: [Workout]
     /// Opens the goal screen — used whenever a target exists.
@@ -30,10 +31,11 @@ struct WeeklyGoalCountPill: View {
 
     private static let ringSize: CGFloat = 28
     private static let ringWidth: CGFloat = 3
-    /// A zero week still gets a mark: trimmed this short and drawn with round caps, the arc renders as
-    /// a single dot at twelve o'clock. It reads as where the ring *starts*, not as progress — one
-    /// workout would already sweep a quarter of the circle at the usual targets — and it keeps the
-    /// control from looking switched off on the one day of the week it matters most.
+    /// A zero week still gets a mark: trimmed this short and drawn with round caps, the sweep renders
+    /// as a single dot at its start — eight o'clock, the arc's own beginning. It reads as where the
+    /// week *starts*, not as progress — one workout would already sweep a quarter of the arc at the
+    /// usual targets — and it keeps the control from looking switched off on the one day of the week
+    /// it matters most.
     private static let minimumArc: Double = 0.005
 
     private var hasGoal: Bool { target > 0 }
@@ -82,16 +84,15 @@ struct WeeklyGoalCountPill: View {
         .accessibilityIdentifier("weeklyGoalPill")
     }
 
-    /// The count sits in the ring's middle rather than beside it: the ring already carries the target,
-    /// so the two belong to one mark. No checkmark for a met week — a closed ring says that, and the
-    /// number keeps saying something the clamped arc can't, namely that five workouts beat a four.
+    /// The count sits in the arc's middle rather than beside it: the arc already carries the target,
+    /// so the two belong to one mark. No checkmark for a met week — a closed arc says that, and the
+    /// number keeps saying something the clamped sweep can't, namely that five workouts beat a four.
     private var ring: some View {
-        CompletionRing(
+        WeeklyGoalArc(
             // Clamped, so an over-delivered week can't wrap round and read as a fresh one, and floored
             // so a fresh week still shows its starting dot.
             progress: max(target > 0 ? min(Double(count) / Double(target), 1) : 0, Self.minimumArc),
-            lineWidth: Self.ringWidth,
-            color: .accentColor
+            lineWidth: Self.ringWidth
         ) {
             Text("\(count)")
                 .font(.subheadline.weight(.bold))
@@ -99,6 +100,15 @@ struct WeeklyGoalCountPill: View {
                 .foregroundStyle(Color.accentColor)
         }
         .frame(width: Self.ringSize, height: Self.ringSize)
+        // The arc's ends stop half a radius below its centre, so the bottom quarter of its box is
+        // empty. Half of that comes back, which splits the difference: the count keeps the circle's
+        // own centre — anywhere higher and it floats off the sweep it belongs to — while the glass
+        // stops carrying the whole empty band as lopsided padding underneath it.
+        .padding(.bottom, -Self.arcBottomInset / 2)
+    }
+
+    private static var arcBottomInset: CGFloat {
+        WeeklyGoalArc<EmptyView>.bottomInset(size: ringSize, lineWidth: ringWidth)
     }
 
     private var streakLabel: some View {

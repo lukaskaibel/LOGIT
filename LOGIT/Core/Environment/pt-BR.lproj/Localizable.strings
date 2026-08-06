@@ -991,8 +991,9 @@
 "muscleDetailPercentOfSets" = "%d%% das séries";
 "weekStreakSuffix" = "semanas seguidas";
 "weeklyGoalAccessibility" = "Meta semanal, %d de %d treinos";
-"yearWeeksOnTarget" = "%1$d de %2$d semanas na meta";
-"currentWeekNumber" = "Semana %d";
+"weeklyGoalSubtitle" = "da sua meta de %d treinos";
+"milestones" = "Marcos";
+"weeksToGo" = "faltam %d";
 "bestStreakLabel" = "Melhor · %d sem";
 "monthWorkoutsCount" = "%d treinos";
 "muscleBalanceEmptySubtitle" = "Registre um treino para ver sua divisão muscular.";

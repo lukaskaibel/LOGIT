@@ -987,8 +987,9 @@
 "muscleDetailPercentOfSets" = "%d%% der Sätze";
 "weekStreakSuffix" = "Wochen-Streak";
 "weeklyGoalAccessibility" = "Wochenziel, %d von %d Workouts";
-"yearWeeksOnTarget" = "%1$d von %2$d Wochen im Ziel";
-"currentWeekNumber" = "Woche %d";
+"weeklyGoalSubtitle" = "von deinem Ziel: %d Workouts";
+"milestones" = "Meilensteine";
+"weeksToGo" = "noch %d";
 "bestStreakLabel" = "Best · %d Wo.";
 "monthWorkoutsCount" = "%d Workouts";
 "muscleBalanceEmptySubtitle" = "Logge ein Workout, um deine Muskelverteilung zu sehen.";

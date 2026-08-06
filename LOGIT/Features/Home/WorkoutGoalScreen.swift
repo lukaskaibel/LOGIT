@@ -7,34 +7,47 @@
 
 import SwiftUI
 
-/// The weekly-goal detail screen, reached from the Summary's Weekly Goal hero. Three stacked,
-/// self-labeling tiles — no hero, no section headers:
-///  1. a muscle-coloured month **calendar** where each workout day is an occurrence ring (arcs sized
-///     by that day's muscle-group set counts) and the current week is lifted into a highlighted tile
-///     carrying its progress;
-///  2. a **streak comparison** — the current weekly streak racing toward the all-time record;
-///  3. a year-navigable **52-week strip**, one cell per week (filled = on target), with prev/next year.
+/// The weekly-goal detail screen, reached from the Summary's weekly-goal pill. One subject, read top
+/// to bottom: a 240° arc carrying this week's count, the week itself as muscle-coloured day rings,
+/// then a hairline, the streak as a single row, and the milestone ladder the streak is climbing.
+///
+/// The month calendar and the 52-week year grid that used to open this screen are gone — History
+/// already renders a ring calendar, and a year grid is that same calendar in another costume. The
+/// milestones stay: the one being chased leads the list, carrying the progress ring the old streak
+/// scoreboard wore, and the flags already planted sit underneath it, newest first.
+///
+/// The goal itself moved out of the toolbar and into the sentence under the count ("of your
+/// 4-workout goal ›"), the way Books puts a reading goal under the day's minutes.
 struct WorkoutGoalScreen: View {
     let workouts: [Workout]
 
     @AppStorage("workoutPerWeekTarget") private var target: Int = -1
-    @EnvironmentObject private var muscleGroupService: MuscleGroupService
 
-    @State private var displayedMonth: Date = .now.startOfMonth
-    @State private var displayedYear: Int = Calendar.current.component(.year, from: .now)
     @State private var isShowingChangeGoalScreen = false
 
     private let calendar = Calendar.current
 
     var body: some View {
         ScrollView {
-            VStack(spacing: SECTION_SPACING) {
-                calendarTile
-                streakTile
-                yearTile
+            VStack(alignment: .leading, spacing: 0) {
+                arcHero
+                if hasGoal {
+                    WeeklyGoalStrip(workouts: workouts, target: target, showsCompletionRing: false)
+                        .padding(.top, 20)
+                    Rectangle()
+                        .fill(Color.white.opacity(0.07))
+                        .frame(height: 0.5)
+                        .padding(.top, 24)
+                    streakRow
+                        .padding(.top, 20)
+                    milestoneSection
+                        .padding(.top, 26)
+                } else {
+                    setGoalButton
+                        .padding(.top, 4)
+                }
             }
             .padding(.horizontal)
-            .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -42,13 +55,6 @@ struct WorkoutGoalScreen: View {
             ToolbarItem(placement: .principal) {
                 Text(NSLocalizedString("workoutGoal", comment: ""))
                     .font(.headline)
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isShowingChangeGoalScreen = true
-                } label: {
-                    Image(systemName: "plusminus.circle")
-                }
             }
         }
         .sheet(isPresented: $isShowingChangeGoalScreen) {
@@ -58,198 +64,176 @@ struct WorkoutGoalScreen: View {
         }
     }
 
-    // MARK: - Calendar
+    // MARK: - Hero
 
-    private var calendarTile: some View {
-        // Month paging (swipe the grid horizontally or tap the chevrons, both animated + haptic) lives in
-        // `SwipeableMonthView`; here we hand it the target-column weekday row and this month's week rows.
-        SwipeableMonthView(month: $displayedMonth) {
-            HStack(spacing: 0) {
-                ForEach(weekdaySymbols, id: \.self) { symbol in
-                    Text(symbol)
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(.tertiary)
-                        .frame(maxWidth: .infinity)
-                }
-                Image(systemName: "target")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .frame(width: 34)
-                    .frame(maxWidth: .infinity)
-            }
-            .padding(.horizontal, CELL_PADDING)
-        } weeks: { month in
-            VStack(spacing: 12) {
-                ForEach(weeks(of: month), id: \.self) { week in
-                    weekRowView(week, in: month)
+    private var arcHero: some View {
+        ZStack {
+            WeeklyGoalArc(progress: progress, lineWidth: Self.arcLineWidth)
+                .frame(width: Self.arcSize, height: Self.arcSize)
+                .accessibilityHidden(true)
+            VStack(spacing: 2) {
+                Text(NSLocalizedString("thisWeek", comment: ""))
+                    .font(.system(size: 10, weight: .heavy))
+                    .textCase(.uppercase)
+                    .foregroundStyle(count > 0 ? Color.accentColor : Color.secondaryLabel)
+                countLabel
+                if hasGoal {
+                    goalButton
                 }
             }
+            // The arc opens at the bottom, so the block sits a touch high inside it — that keeps the
+            // goal line clear of the two arc ends rather than wedged between them.
+            .padding(.bottom, 20)
         }
-    }
-
-    @ViewBuilder
-    private func weekRowView(_ week: [Date], in month: Date) -> some View {
-        if isCurrentWeek(week) {
-            currentWeekRow(week)
-        } else {
-            // 8 equal columns (7 days + the completion ring), each centred in its own column, so the
-            // ring isn't flush-right and the layout matches the shared `WeeklyGoalStrip` below.
-            HStack(spacing: 0) {
-                ForEach(week, id: \.self) { day in
-                    dayCell(day, in: month)
-                }
-                weekRing(for: week)
-                    .frame(maxWidth: .infinity)
-            }
-            .padding(.horizontal, CELL_PADDING)
-        }
-    }
-
-    /// The current week, lifted into a secondary tile: the shared `WeeklyGoalStrip` (muscle-ring days
-    /// with weekday letters + the week's completion ring) and a `StreakLine`. This row is why the
-    /// Summary's weekly-goal hero tile could be retired for a title-row pill — the full week already
-    /// lives here, one tap away. Inset CELL_PADDING/2, like a set cell sits inside a set-group cell.
-    private func currentWeekRow(_ week: [Date]) -> some View {
-        let streak = SummaryViewModel.currentWeeklyStreak(workouts: workouts, target: target)
-        return VStack(alignment: .leading, spacing: 14) {
-            Text(NSLocalizedString("thisWeek", comment: ""))
-                .tileHeaderStyle()
-                .padding(.leading, CELL_PADDING / 2)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            WeeklyGoalStrip(workouts: workouts, target: target, showsDate: true)
-            if streak > 0 {
-                StreakLine(streak: streak)
-            }
-        }
-        // Horizontal stays CELL_PADDING/2 so the dates line up with the month grid; vertical gets a
-        // touch more breathing room.
-        .padding(.vertical, CELL_PADDING * 3 / 4)
-        .padding(.horizontal, CELL_PADDING / 2)
-        .secondaryTileStyle()
-        .padding(.horizontal, CELL_PADDING / 2)
-    }
-
-    private func dayCell(_ day: Date, in month: Date) -> some View {
-        let inMonth = calendar.isDate(day, equalTo: month, toGranularity: .month)
-        let isToday = calendar.isDateInToday(day)
-        let isFuture = day > Date.now && !isToday
-        let occurrences = muscleOccurrences(on: day)
-        let hasWorkout = !occurrences.isEmpty
-        return ZStack {
-            if isToday {
-                Circle()
-                    .strokeBorder(Color.accentColor, lineWidth: 1.7)
-                    .frame(width: 32, height: 32)
-            } else if hasWorkout {
-                MuscleOccurrenceRing(occurrences: occurrences, lineWidth: 4)
-                    .frame(width: 32, height: 32)
-                    .accessibilityHidden(true)
-            }
-            Text("\(calendar.component(.day, from: day))")
-                .font(.system(size: 13, weight: (isToday || hasWorkout) ? .bold : .semibold))
-                .foregroundStyle(dayForeground(inMonth: inMonth, isToday: isToday, isFuture: isFuture, hasWorkout: hasWorkout))
-        }
-        .frame(width: 34, height: 34)
         .frame(maxWidth: .infinity)
+        // Reclaim the empty band under the arc's ends, or the strip floats away from the gauge.
+        .padding(.bottom, -WeeklyGoalArc<EmptyView>.bottomInset(size: Self.arcSize, lineWidth: Self.arcLineWidth))
     }
 
-    private func dayForeground(inMonth: Bool, isToday: Bool, isFuture: Bool, hasWorkout: Bool) -> Color {
-        if isToday { return .accentColor }
-        if hasWorkout { return .primary }
-        if !inMonth { return Color.white.opacity(0.18) }
-        if isFuture { return .tertiaryLabel }
-        return .secondaryLabel
-    }
+    private static let arcSize: CGFloat = 250
+    private static let arcLineWidth: CGFloat = 14
 
+    /// Once the week is won the count has said all it can, so the check takes its place — the same
+    /// swap the week rings make. Overshoot keeps reading as met; the day rings below carry the extras.
     @ViewBuilder
-    private func weekRing(for week: [Date]) -> some View {
-        let count = workoutCount(inWeekOf: week.first ?? .now)
-        let weekIsFuture = (week.first ?? .now).startOfWeek > Date.now
-        if target > 0, count >= target {
-            ZStack {
-                Circle().fill(Color.accentColor)
-                Image(systemName: "checkmark").font(.caption.weight(.bold)).foregroundStyle(.black)
-            }
-            .frame(width: 34, height: 34)
-        } else if count > 0 {
-            ZStack {
-                CompletionRing(progress: Double(count) / Double(max(target, 1)), lineWidth: 3.5)
-                Text("\(count)").font(.caption2.weight(.bold)).foregroundStyle(Color.accentColor)
-            }
-            .frame(width: 34, height: 34)
+    private var countLabel: some View {
+        if isMet {
+            Image(systemName: "checkmark")
+                .font(.system(size: 70, weight: .bold))
+                .foregroundStyle(Color.accentColor)
+                .frame(height: 84)
+                .accessibilityHidden(true)
         } else {
-            Circle()
-                .strokeBorder(Color.fill, lineWidth: 2)
-                .frame(width: 34, height: 34)
-                .opacity(weekIsFuture ? 0.6 : 1)
+            Text("\(count)")
+                .font(.system(size: 76, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(count > 0 ? Color.label : Color.secondaryLabel)
+                .frame(height: 84)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(goalAccessibilityLabel)
         }
+    }
+
+    private var goalButton: some View {
+        Button {
+            isShowingChangeGoalScreen = true
+        } label: {
+            HStack(spacing: 3) {
+                Text(String(format: NSLocalizedString("weeklyGoalSubtitle", comment: ""), target))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Image(systemName: "chevron.right")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .accessibilityLabel(NSLocalizedString("changeGoal", comment: ""))
+        .accessibilityIdentifier("weeklyGoalTargetButton")
+    }
+
+    /// Only reachable if something pushes this screen without a goal set — the Summary's pill opens
+    /// the picker directly in that case. Cheap to keep honest rather than render "of your 0-workout goal".
+    private var setGoalButton: some View {
+        Button {
+            isShowingChangeGoalScreen = true
+        } label: {
+            Label(NSLocalizedString("setGoal", comment: ""), systemImage: "target")
+        }
+        .buttonStyle(PrimaryButtonStyle())
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Streak
 
-    private var streakTile: some View {
-        let current = SummaryViewModel.currentWeeklyStreak(workouts: workouts, target: target)
-        let previousBest = SummaryViewModel.previousBestWeeklyStreak(workouts: workouts, target: target)
-        let allTimeBest = max(previousBest, current)
-        // Chase the next milestone by default (always a near goal ahead); the best steps in only when it's
-        // the nearer goal — see StreakMilestone.target. A bigger past record beyond the milestone keeps its
-        // own row below instead, so it's never lost.
-        let goal = StreakMilestone.target(current: current, previousBest: previousBest)
-        let showBest = allTimeBest > current && !goal.isBest
-        // Drop the milestone list (and the VStack spacing above it) when there's nothing to show — no
-        // achieved milestones and no personal-best row — so the tile isn't bottom-heavy.
-        let hasMilestones = showBest || StreakMilestone.all.contains { $0 <= current }
+    private var streakRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "flame.fill")
+                .foregroundStyle(streak > 0 ? Color.accentColor : Color.secondaryLabel)
+            Text("\(streak)")
+                .font(.title2.weight(.bold))
+                .fontDesign(.rounded)
+                .monospacedDigit()
+                .foregroundStyle(streak > 0 ? Color.accentColor : Color.secondaryLabel)
+            Text(NSLocalizedString("weekStreakSuffix", comment: ""))
+                .font(.headline)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 8)
+            if isRecordStreak {
+                Text(NSLocalizedString("newRecord", comment: ""))
+                    .font(.caption.weight(.heavy))
+                    .textCase(.uppercase)
+                    .foregroundStyle(Color.accentColor)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: - Milestones
+
+    /// The ladder: the flag being chased on top — the next milestone, or the personal best when that
+    /// is the nearer goal (`StreakMilestone.target`) — then every milestone already reached, newest
+    /// first. The top row is the only one that moves week to week, so it is the one wearing the ring.
+    private var milestoneSection: some View {
+        let goal = StreakMilestone.target(current: streak, previousBest: previousBest)
+        let achieved = StreakMilestone.all.filter { $0 <= streak }.sorted(by: >)
         return VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("streak", comment: ""))
+            Text(NSLocalizedString("milestones", comment: ""))
                 .tileHeaderStyle()
-            StreakScoreboard(current: current, target: goal.value, targetIsBest: goal.isBest)
-            if hasMilestones {
-                milestoneList(current: current, best: allTimeBest, showBest: showBest)
-            }
-        }
-        .padding(CELL_PADDING)
-        .tileStyle()
-    }
-
-    /// The next milestone on top, then the milestones already reached (newest first) — each in its own
-    /// secondary tile with a flag, the date it was (or will be) hit, and a calendar-meaning fact.
-    private func milestoneList(current: Int, best: Int, showBest: Bool) -> some View {
-        let achieved = StreakMilestone.all.filter { $0 <= current }.sorted(by: >)
-        return VStack(spacing: 8) {
-            if showBest, best > 0 {
-                personalBestTile(best)
-            }
-            ForEach(achieved, id: \.self) { milestone in
-                achievedMilestoneTile(milestone: milestone, current: current)
+            VStack(spacing: 8) {
+                nextMilestoneRow(goal: goal)
+                ForEach(achieved, id: \.self) { milestone in
+                    achievedMilestoneRow(milestone)
+                }
             }
         }
     }
 
-    /// The all-time best streak, kept in its own row with the flame that marks a record throughout the
-    /// app. The comparison above now chases milestones rather than the record, so this is where the best
-    /// stays visible — shown unless the best is already the goal being chased in the scoreboard.
-    private func personalBestTile(_ best: Int) -> some View {
-        HStack(spacing: 12) {
+    private func nextMilestoneRow(goal: (value: Int, isBest: Bool)) -> some View {
+        let fact = goal.isBest ? "" : StreakMilestone.fact(for: goal.value)
+        let remaining = max(goal.value - streak, 0)
+        return HStack(spacing: 12) {
             ZStack {
-                Circle().fill(Color.accentColor.opacity(0.18))
-                Image(systemName: "flame.fill")
+                CompletionRing(
+                    progress: goal.value > 0 ? Double(streak) / Double(goal.value) : 0,
+                    lineWidth: 3
+                )
+                Image(systemName: goal.isBest ? "flame.fill" : "flag")
                     .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(Color.accentColor)
             }
-            .frame(width: 30, height: 30)
+            .frame(width: 38, height: 38)
             VStack(alignment: .leading, spacing: 1) {
-                Text(NSLocalizedString("personalBest", comment: ""))
+                Text(NSLocalizedString(goal.isBest ? "personalBest" : "nextMilestone", comment: ""))
                     .font(.system(size: 10, weight: .heavy))
                     .foregroundStyle(Color.accentColor)
-                UnitView(value: "\(best)", unit: weeksUnit(best), configuration: .small, unitColor: Color.secondaryLabel)
+                UnitView(
+                    value: "\(goal.value)",
+                    unit: weeksUnit(goal.value),
+                    configuration: .small,
+                    unitColor: Color.secondaryLabel
+                )
+                if !fact.isEmpty {
+                    Text(fact)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             Spacer(minLength: 8)
+            Text(String(format: NSLocalizedString("weeksToGo", comment: ""), remaining))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.tertiary)
         }
         .padding(CELL_PADDING - 2)
-        .secondaryTileStyle()
+        // Dashed rather than filled: this flag isn't planted yet. The radius matches
+        // `secondaryTileStyle` so it lines up with the achieved rows below it.
+        .overlay {
+            RoundedRectangle(cornerRadius: 25)
+                .strokeBorder(Color.fill, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
+        }
+        .accessibilityElement(children: .combine)
     }
 
-    private func achievedMilestoneTile(milestone: Int, current: Int) -> some View {
+    private func achievedMilestoneRow(_ milestone: Int) -> some View {
         let fact = StreakMilestone.fact(for: milestone)
         return HStack(spacing: 12) {
             ZStack {
@@ -260,7 +244,12 @@ struct WorkoutGoalScreen: View {
             }
             .frame(width: 30, height: 30)
             VStack(alignment: .leading, spacing: 1) {
-                UnitView(value: "\(milestone)", unit: weeksUnit(milestone), configuration: .small, unitColor: Color.secondaryLabel)
+                UnitView(
+                    value: "\(milestone)",
+                    unit: weeksUnit(milestone),
+                    configuration: .small,
+                    unitColor: Color.secondaryLabel
+                )
                 if !fact.isEmpty {
                     Text(fact)
                         .font(.caption)
@@ -268,12 +257,13 @@ struct WorkoutGoalScreen: View {
                 }
             }
             Spacer(minLength: 8)
-            Text(shortDate(milestoneWeek(offset: milestone - current)))
+            Text(shortDate(milestoneWeek(offset: milestone - streak)))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
         }
         .padding(CELL_PADDING - 2)
         .secondaryTileStyle()
+        .accessibilityElement(children: .combine)
     }
 
     private func milestoneWeek(offset: Int) -> Date {
@@ -291,192 +281,44 @@ struct WorkoutGoalScreen: View {
         NSLocalizedString(n == 1 ? "week" : "weeks", comment: "")
     }
 
-    // MARK: - Year strip
-
-    private var yearTile: some View {
-        let weeks = weekStartsInYear(displayedYear)
-        let counts = weeklyCounts(in: yearRange(displayedYear))
-        let now = Date.now
-        let nowYear = calendar.component(.year, from: now)
-        // Percentage is over every week of the year that has already elapsed — future weeks
-        // haven't happened yet, so they're excluded from both the count and the denominator.
-        var onTarget = 0
-        var elapsedWeeks = 0
-        for ws in weeks where ws <= now {
-            elapsedWeeks += 1
-            if target > 0, (counts[ws] ?? 0) >= target { onTarget += 1 }
-        }
-        let percent = elapsedWeeks > 0 ? Int((Double(onTarget) / Double(elapsedWeeks) * 100).rounded()) : 0
-        return VStack(spacing: 14) {
-            HStack {
-                Button { displayedYear -= 1 } label: { Image(systemName: "chevron.left") }
-                    .disabled(displayedYear <= earliestYear)
-                Spacer()
-                Text(verbatim: "\(displayedYear)")
-                    .font(.headline)
-                Spacer()
-                Button { displayedYear += 1 } label: { Image(systemName: "chevron.right") }
-                    .disabled(displayedYear >= nowYear)
-            }
-            .foregroundStyle(.secondary)
-            VStack(spacing: 5) {
-                HStack(spacing: 3) {
-                    ForEach(weeks, id: \.self) { ws in
-                        yearCell(ws, now: now, counts: counts)
-                    }
-                }
-                if let currentIndex = currentWeekIndex(in: weeks, now: now) {
-                    weekNumberRow(
-                        weeks: weeks,
-                        currentIndex: currentIndex,
-                        weekNumber: calendar.component(.weekOfYear, from: now)
-                    )
-                }
-            }
-            HStack(spacing: 0) {
-                ForEach(Array(calendar.veryShortMonthSymbols.enumerated()), id: \.offset) { _, symbol in
-                    Text(symbol)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            HStack {
-                Text(String(format: NSLocalizedString("yearWeeksOnTarget", comment: ""), onTarget, elapsedWeeks))
-                Spacer()
-                Text(verbatim: "\(percent)%")
-            }
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(.secondary)
-            .padding(.top, 2)
-            .overlay(alignment: .top) {
-                Rectangle().fill(Color.white.opacity(0.07)).frame(height: 0.5)
-            }
-        }
-        .padding(CELL_PADDING)
-        .tileStyle()
-    }
-
-    private func yearCell(_ ws: Date, now: Date, counts: [Date: Int]) -> some View {
-        // Three clearly separated tiers: accent (target met) · solid gray (an elapsed week that
-        // missed) · faint ghost (a future week that hasn't happened yet).
-        let isFuture = ws > now
-        let met = !isFuture && target > 0 && (counts[ws] ?? 0) >= target
-        let fill: Color = met
-            ? Color.accentColor
-            : (isFuture ? Color.white.opacity(0.08) : Color.white.opacity(0.3))
-        return RoundedRectangle(cornerRadius: 2)
-            .fill(fill)
-            .frame(height: 22)
-            .frame(maxWidth: .infinity)
-    }
-
-    /// Index of the week cell containing today, or `nil` when the displayed year isn't the current one.
-    private func currentWeekIndex(in weeks: [Date], now: Date) -> Int? {
-        weeks.firstIndex { calendar.isDate($0, equalTo: now, toGranularity: .weekOfYear) }
-    }
-
-    /// A thin row beneath the strip carrying a white "Week N" label aligned under the current-week cell.
-    /// Mirrors the strip's equal-width columns so the label sits directly under its tick; the text is
-    /// drawn in a zero-impact overlay so a long label can overhang neighbouring (empty) columns.
-    private func weekNumberRow(weeks: [Date], currentIndex: Int, weekNumber: Int) -> some View {
-        HStack(spacing: 3) {
-            ForEach(Array(weeks.enumerated()), id: \.offset) { index, _ in
-                Color.clear
-                    .frame(height: 13)
-                    .frame(maxWidth: .infinity)
-                    .overlay {
-                        if index == currentIndex {
-                            Text(String(format: NSLocalizedString("currentWeekNumber", comment: ""), weekNumber))
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(.white)
-                                .fixedSize()
-                        }
-                    }
-            }
-        }
-    }
-
     // MARK: - Data
 
-    private var currentWeekCount: Int {
-        workouts.filter {
-            guard !$0.isEmpty, let d = $0.date else { return false }
-            return d >= Date.now.startOfWeek && d <= Date.now.endOfWeek
-        }.count
+    private var hasGoal: Bool { target > 0 }
+
+    private var count: Int {
+        let week = Date.now.startOfWeek ... Date.now.endOfWeek
+        return workouts.filter { !$0.isEmpty && week.contains($0.date ?? .distantPast) }.count
     }
 
-    private func weeklyCounts(in range: ClosedRange<Date>) -> [Date: Int] {
-        var counts: [Date: Int] = [:]
-        for workout in workouts where !workout.isEmpty {
-            guard let date = workout.date, range.contains(date) else { continue }
-            counts[date.startOfWeek, default: 0] += 1
+    private var isMet: Bool { hasGoal && count >= target }
+
+    /// Clamped, so an over-delivered week can't wrap the arc round and read as a fresh one.
+    private var progress: Double {
+        hasGoal ? min(Double(count) / Double(target), 1) : 0
+    }
+
+    private var streak: Int {
+        SummaryViewModel.currentWeeklyStreak(workouts: workouts, target: target)
+    }
+
+    private var previousBest: Int {
+        SummaryViewModel.previousBestWeeklyStreak(workouts: workouts, target: target)
+    }
+
+    /// A run that has passed everything before it. Held to two weeks so the very first won week
+    /// doesn't announce itself as a record.
+    private var isRecordStreak: Bool { streak >= 2 && streak > previousBest }
+
+    private var goalAccessibilityLabel: Text {
+        Text(String(format: NSLocalizedString("weeklyGoalAccessibility", comment: ""), count, target))
+    }
+}
+
+#Preview {
+    FetchRequestWrapper(Workout.self) { workouts in
+        NavigationStack {
+            WorkoutGoalScreen(workouts: workouts)
         }
-        return counts
-    }
-
-    private func workoutCount(inWeekOf day: Date) -> Int {
-        let start = day.startOfWeek
-        return workouts.filter {
-            guard !$0.isEmpty, let d = $0.date else { return false }
-            return d.startOfWeek == start
-        }.count
-    }
-
-    private func muscleOccurrences(on day: Date) -> [(MuscleGroup, Int)] {
-        let dayWorkouts = workouts.filter {
-            guard !$0.isEmpty, let d = $0.date else { return false }
-            return calendar.isDate(d, inSameDayAs: day)
-        }
-        guard !dayWorkouts.isEmpty else { return [] }
-        return muscleGroupService.getMuscleGroupOccurances(in: dayWorkouts)
-    }
-
-    private func isCurrentWeek(_ week: [Date]) -> Bool {
-        week.contains { calendar.isDateInToday($0) }
-    }
-
-    private func weeks(of month: Date) -> [[Date]] {
-        let monthEnd = month.endOfMonth
-        var weeks: [[Date]] = []
-        var cursor = month.startOfMonth.startOfWeek
-        while cursor <= monthEnd, weeks.count < 6 {
-            let week = (0 ..< 7).map { calendar.date(byAdding: .day, value: $0, to: cursor) ?? cursor }
-            weeks.append(week)
-            cursor = calendar.date(byAdding: .day, value: 7, to: cursor) ?? cursor
-        }
-        return weeks
-    }
-
-    /// Ordered week-start dates belonging to the given calendar year (52 or 53 of them).
-    private func weekStartsInYear(_ year: Int) -> [Date] {
-        guard let yearStart = calendar.date(from: DateComponents(year: year)),
-              let nextYearStart = calendar.date(from: DateComponents(year: year + 1)) else { return [] }
-        var weeks: [Date] = []
-        var cursor = yearStart.startOfWeek
-        while cursor < nextYearStart {
-            weeks.append(cursor)
-            cursor = (calendar.date(byAdding: .weekOfYear, value: 1, to: cursor) ?? cursor).startOfWeek
-        }
-        return weeks
-    }
-
-    private func yearRange(_ year: Int) -> ClosedRange<Date> {
-        let start = (calendar.date(from: DateComponents(year: year)) ?? .now).startOfWeek
-        let nextStart = calendar.date(from: DateComponents(year: year + 1)) ?? .now
-        let end = calendar.date(byAdding: .second, value: -1, to: nextStart) ?? nextStart
-        return start ... max(end, start)
-    }
-
-    private var earliestYear: Int {
-        let nowYear = calendar.component(.year, from: .now)
-        guard let earliest = workouts.compactMap({ $0.date }).min() else { return nowYear }
-        return min(calendar.component(.year, from: earliest), nowYear)
-    }
-
-    private var weekdaySymbols: [String] {
-        let symbols = calendar.veryShortWeekdaySymbols
-        let first = calendar.firstWeekday - 1
-        return Array(symbols[first...] + symbols[..<first])
+        .previewEnvironmentObjects()
     }
 }

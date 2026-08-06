@@ -991,8 +991,9 @@
 "muscleDetailPercentOfSets" = "セットの%d%%";
 "weekStreakSuffix" = "週連続";
 "weeklyGoalAccessibility" = "週間目標、%d/%d ワークアウト";
-"yearWeeksOnTarget" = "%2$d週中%1$d週が目標達成";
-"currentWeekNumber" = "第%d週";
+"weeklyGoalSubtitle" = "週%d回の目標のうち";
+"milestones" = "マイルストーン";
+"weeksToGo" = "あと%d週";
 "bestStreakLabel" = "最高 · %d週";
 "monthWorkoutsCount" = "%d回";
 "muscleBalanceEmptySubtitle" = "ワークアウトを記録すると筋肉の配分が表示されます。";

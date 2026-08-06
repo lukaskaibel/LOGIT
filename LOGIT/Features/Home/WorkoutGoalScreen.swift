@@ -86,9 +86,8 @@ struct WorkoutGoalScreen: View {
             .padding(.bottom, 20)
         }
         .frame(maxWidth: .infinity)
-        // The arc's ends stop at 4 and 8 o'clock, half a radius below the centre, so the bottom of its
-        // square box is empty. Reclaim it, or the strip below floats away from the gauge.
-        .padding(.bottom, -(Self.arcSize / 4 - Self.arcLineWidth / 2))
+        // Reclaim the empty band under the arc's ends, or the strip floats away from the gauge.
+        .padding(.bottom, -WeeklyGoalArc<EmptyView>.bottomInset(size: Self.arcSize, lineWidth: Self.arcLineWidth))
     }
 
     private static let arcSize: CGFloat = 250
@@ -312,38 +311,6 @@ struct WorkoutGoalScreen: View {
 
     private var goalAccessibilityLabel: Text {
         Text(String(format: NSLocalizedString("weeklyGoalAccessibility", comment: ""), count, target))
-    }
-}
-
-// MARK: - Arc
-
-/// The screen's gauge: a 240° arc opening at the bottom, wearing the same round caps, `.fill` track
-/// and accent gradient as `CompletionRing`, so the app's two progress shapes read as one family.
-private struct WeeklyGoalArc: View {
-    let progress: Double
-    var lineWidth: CGFloat = 14
-
-    /// 240° of the circle, which leaves a 120° opening centred on the bottom.
-    private static let sweep: CGFloat = 240.0 / 360.0
-
-    private var clampedProgress: Double { min(max(progress, 0), 1) }
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .trim(from: 0, to: Self.sweep)
-                .stroke(Color.fill, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-            Circle()
-                .trim(from: 0, to: Self.sweep * clampedProgress)
-                .stroke(
-                    Color.accentColor.gradient,
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                )
-                .animation(.snappy, value: clampedProgress)
-        }
-        // A circle's trim starts at 3 o'clock; 150° puts the arc's start at 8 o'clock, so the
-        // sweep runs up over the top and ends at 4 o'clock — symmetric about the vertical.
-        .rotationEffect(.degrees(150))
     }
 }
 

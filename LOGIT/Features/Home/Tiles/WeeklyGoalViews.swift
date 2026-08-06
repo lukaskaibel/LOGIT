@@ -116,6 +116,62 @@ struct WeeklyGoalStrip: View {
     }
 }
 
+// MARK: - Weekly goal arc (shared)
+
+/// The weekly goal's gauge: a 240° arc opening at the bottom, wearing `CompletionRing`'s round caps,
+/// `.fill` track and accent gradient so the app's progress shapes read as one family. Worn by the
+/// goal screen at full size and by the Summary's `WeeklyGoalCountPill` at control size, so the week
+/// keeps one silhouette wherever it appears.
+///
+/// The label is laid over the arc unrotated — only the two circles take the rotation that moves the
+/// arc's start to 8 o'clock.
+struct WeeklyGoalArc<Label: View>: View {
+    /// Completion 0…1; values outside are clamped.
+    let progress: Double
+    var lineWidth: CGFloat = 14
+    @ViewBuilder var label: () -> Label
+
+    /// 240° of the circle, which leaves a 120° opening centred on the bottom.
+    private static var sweep: CGFloat { 240.0 / 360.0 }
+
+    private var clampedProgress: Double { min(max(progress, 0), 1) }
+
+    var body: some View {
+        ZStack {
+            ZStack {
+                Circle()
+                    .trim(from: 0, to: Self.sweep)
+                    .stroke(Color.fill, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                Circle()
+                    .trim(from: 0, to: Self.sweep * clampedProgress)
+                    .stroke(
+                        Color.accentColor.gradient,
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                    )
+                    .animation(.snappy, value: clampedProgress)
+            }
+            // A circle's trim starts at 3 o'clock; 150° puts the arc's start at 8 o'clock, so the
+            // sweep runs up over the top and ends at 4 o'clock — symmetric about the vertical.
+            .rotationEffect(.degrees(150))
+            label()
+        }
+    }
+
+    /// The empty band under the arc: its ends stop half a radius below the centre, so the bottom
+    /// quarter of the square box carries no ink. Call sites subtract this as bottom padding, or
+    /// whatever sits underneath floats away from the gauge.
+    static func bottomInset(size: CGFloat, lineWidth: CGFloat) -> CGFloat {
+        size / 4 - lineWidth / 2
+    }
+}
+
+extension WeeklyGoalArc where Label == EmptyView {
+    /// A bare arc with nothing in its middle.
+    init(progress: Double, lineWidth: CGFloat = 14) {
+        self.init(progress: progress, lineWidth: lineWidth, label: { EmptyView() })
+    }
+}
+
 // MARK: - Streak milestones (shared)
 
 /// The weekly-streak milestone ladder — a month, quarter, half-year, year, two years — shared by the

@@ -63,8 +63,9 @@ final class ScenarioScreenshots: XCTestCase {
     /// never exposes that placement's custom content to accessibility (the navigation bar
     /// reports zero children) and the control would be unreachable. Asserts the pill is
     /// reachable by identifier and opens the goal screen, that Settings is still reachable
-    /// now that it is a tab rather than a sheet, and that hiding the Summary's navigation
-    /// bar does not leak into pushed detail screens.
+    /// now that it is a tab rather than a sheet, and that the Summary's own navigation bar —
+    /// which carries no title until the row scrolls under it — still pushes detail screens
+    /// with a working one.
     func testSummaryNavigationBarAccessible() {
         let app = launchApp(scenario: "many")
 

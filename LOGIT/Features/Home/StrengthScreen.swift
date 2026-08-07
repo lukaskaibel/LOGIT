@@ -76,6 +76,7 @@ struct StrengthScreen: View {
         }
         .task(id: "\(window.rawValue)-\(workouts.count)") {
             progress = StrengthProgress.compute(workouts: workouts, window: window)
+
             // A group that lost its data under a narrower window can't stay selected.
             if let selectedGroup, progress.percentChange(in: selectedGroup) == nil {
                 self.selectedGroup = nil
@@ -98,8 +99,8 @@ struct StrengthScreen: View {
 
     /// A caption over the figure, matching the tile's anatomy. The caption is the only thing that
     /// changes with selection: normally it names the basis ("Estimated 1RM"), and while a bar is held
-    /// it names that exercise in its muscle colour, with the figure below switching to that lift's
-    /// own change.
+    /// it names that exercise's e1RM in its muscle colour, with the figure below switching to that
+    /// lift's own change.
     ///
     /// Nothing sits to the right any more. A second figure beside the headline was read as one
     /// statement about it — "best mover Squat" next to a falling percentage parsed as a verdict on
@@ -129,7 +130,15 @@ struct StrengthScreen: View {
     @ViewBuilder
     private var caption: some View {
         if let selected = selectedChange {
-            Text(selected.exercise.displayName)
+            // Named *with* its basis. The bare exercise name left the figure below it unqualified —
+            // "Bench Press / 4.2%" reads as a weight change as easily as an e1RM one — and this is the
+            // one place the basis line stops saying what the number is.
+            Text(
+                String(
+                    format: NSLocalizedString("strengthExerciseBasis", comment: ""),
+                    selected.exercise.displayName
+                )
+            )
                 .font(.caption.weight(.bold))
                 .tracking(0.3)
                 .foregroundStyle(selected.muscleGroup.color)

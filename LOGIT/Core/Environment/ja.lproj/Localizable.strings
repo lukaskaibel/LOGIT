@@ -1127,6 +1127,7 @@
 // Strength (Progress tab tile + detail)
 "strength" = "筋力";
 "strengthBasis" = "推定1RM";
+"strengthExerciseBasis" = "%@のe1RM";
 "strengthEmpty" = "ワークアウトを記録すると筋力の傾向が表示されます。";
 "nWeeks" = "%d週間";
 "nMonths" = "%dか月";

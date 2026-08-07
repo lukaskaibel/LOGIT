@@ -1123,6 +1123,7 @@
 // Strength (Progress tab tile + detail)
 "strength" = "Kraft";
 "strengthBasis" = "Geschätztes 1RM";
+"strengthExerciseBasis" = "e1RM %@";
 "strengthEmpty" = "Logge weiter Workouts, um deinen Krafttrend zu sehen.";
 "nWeeks" = "%d Wochen";
 "nMonths" = "%d Monate";

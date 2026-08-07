@@ -17,7 +17,8 @@ import SwiftUI
 /// line barely moves.)
 ///
 /// Three sections: the hero for the selected scope, a muscle-group grid that *is* the scope selector,
-/// and the composition — every exercise on one shared zero axis.
+/// and the composition — every exercise on one shared zero axis. Those three need a trend to exist.
+/// The strongest-lifts list below them does not, and renders on its own terms.
 struct StrengthScreen: View {
     let workouts: [Workout]
 
@@ -25,7 +26,7 @@ struct StrengthScreen: View {
 
     /// Nil is the whole training; a group narrows the hero, and the composition, to it.
     @State private var selectedGroup: MuscleGroup?
-    @State private var window: StrengthWindow = .default
+    @State private var window: TrendWindow = .default
     @State private var progress: StrengthProgress = .empty
     /// The scrubbed exercise, by object ID. Nil until a finger lands on the chart.
     @State private var selectedExerciseID: NSManagedObjectID?
@@ -55,8 +56,9 @@ struct StrengthScreen: View {
                 if progress.hasData {
                     composition
                     groupGrid
-                    strongest
                 }
+                // Outside the trend gate on purpose — see `strongest`.
+                strongest
                 about
             }
             .padding(.horizontal)
@@ -89,13 +91,7 @@ struct StrengthScreen: View {
     // MARK: Window
 
     private var windowPicker: some View {
-        Picker(NSLocalizedString("strength", comment: ""), selection: $window) {
-            ForEach(StrengthWindow.allCases) { option in
-                Text(option.title).tag(option)
-            }
-        }
-        .pickerStyle(.segmented)
-        .labelsHidden()
+        TrendWindowPicker(selection: $window)
     }
 
     // MARK: Hero
@@ -115,13 +111,12 @@ struct StrengthScreen: View {
             if let percent = heroPercent {
                 figure(percent, color: heroColor)
             } else {
-                // Same gray ring the tile and the core-stat tiles wear while they wait for data.
+                // Same gray ring the tile and the core-stat tiles wear while they wait for data —
+                // at the same size, which is the point of it being one view.
                 TrendPlaceholder(
                     progress: progress.historyFraction,
                     text: NSLocalizedString("strengthEmpty", comment: ""),
-                    systemImage: "chart.line.uptrend.xyaxis",
-                    alignment: .leading,
-                    diameter: 40
+                    systemImage: "chart.line.uptrend.xyaxis"
                 )
                 .padding(.vertical, 12)
             }
@@ -322,6 +317,11 @@ struct StrengthScreen: View {
     ///
     /// Unlike the chart, a lift needs no prior-window best to appear: one you only started this
     /// month still has a weight, and leaving it out of a "strongest" list would be plainly wrong.
+    ///
+    /// Which is why it renders **outside** the screen's `hasData` gate, on its own `bests` check. It
+    /// used to sit inside, so a screen with one workout showed a "keep logging" placeholder over a
+    /// list it had already computed — the section's whole premise, contradicted by where it was put.
+    /// With no trend yet this is the only thing on the screen with something to say.
     @ViewBuilder
     private var strongest: some View {
         let all = scopedBests
@@ -421,7 +421,7 @@ struct StrengthScreen: View {
     private var about: some View {
         AboutSection(
             metricTitle: NSLocalizedString("strength", comment: ""),
-            text: String(format: NSLocalizedString("strengthInfo", comment: ""), window.rawValue, window.rawValue)
+            text: NSLocalizedString("strengthInfo", comment: "")
                 + "\n\n"
                 + NSLocalizedString("e1RMInfo", comment: "")
         )

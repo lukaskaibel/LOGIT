@@ -532,7 +532,7 @@ final class StrengthProgressTests: XCTestCase {
                 change("Bench Press", .chest, percent: 10, sets: 30),
                 change("Curls", .biceps, percent: 0, sets: 10),
             ],
-            window: .eightWeeks
+            window: .threeMonths
         )
         XCTAssertEqual(try XCTUnwrap(progress.overallPercentChange), 7.5, accuracy: 0.001)
     }
@@ -544,7 +544,7 @@ final class StrengthProgressTests: XCTestCase {
                 change("Incline Bench", .chest, percent: 20, sets: 10),
                 change("Curls", .biceps, percent: -40, sets: 100),
             ],
-            window: .eightWeeks
+            window: .threeMonths
         )
         XCTAssertEqual(try XCTUnwrap(progress.percentChange(in: .chest)), 15, accuracy: 0.001)
         XCTAssertEqual(try XCTUnwrap(progress.percentChange(in: .biceps)), -40, accuracy: 0.001)
@@ -555,7 +555,7 @@ final class StrengthProgressTests: XCTestCase {
     func testZeroSetCountStillCounts() {
         let progress = StrengthProgress(
             changes: [change("Bench Press", .chest, percent: 8, sets: 0)],
-            window: .eightWeeks
+            window: .threeMonths
         )
         XCTAssertEqual(try XCTUnwrap(progress.overallPercentChange), 8, accuracy: 0.001)
     }
@@ -567,7 +567,7 @@ final class StrengthProgressTests: XCTestCase {
                 change("Bench Press", .chest, percent: 9, sets: 10),
                 change("Incline Bench", .chest, percent: 9, sets: 10),
             ],
-            window: .eightWeeks
+            window: .threeMonths
         )
         XCTAssertEqual(progress.groups.map(\.muscleGroup), [.chest, .biceps])
         XCTAssertEqual(progress.groups.first?.exerciseCount, 2)
@@ -582,7 +582,7 @@ final class StrengthProgressTests: XCTestCase {
                 change("Big Decline", .back, percent: -18, sets: 10),
                 change("Mid Gain", .legs, percent: 7, sets: 10),
             ],
-            window: .eightWeeks
+            window: .threeMonths
         )
         XCTAssertEqual(
             progress.exerciseChanges().map { $0.exercise.name },
@@ -604,19 +604,36 @@ final class StrengthProgressTests: XCTestCase {
     }
 
     func testWindowTitlesAreDistinct() {
-        let titles = Set(StrengthWindow.allCases.map(\.title))
-        XCTAssertEqual(titles.count, StrengthWindow.allCases.count)
+        let titles = Set(TrendWindow.allCases.map(\.title))
+        XCTAssertEqual(titles.count, TrendWindow.allCases.count)
         // Four weeks, so the recent half of the comparison is the same window the rest of the app
         // calls "current" — and the same one the Summary's Balance tile reads. Changing this back
         // decouples the top pair, which is the thing the default exists to guarantee.
-        XCTAssertEqual(StrengthWindow.default, .fourWeeks)
+        XCTAssertEqual(TrendWindow.default, .fourWeeks)
         // ...and it must land on exactly the same instant as the current-best window, not merely
         // "about four weeks": the Summary's top pair claims both tiles read the same period.
         let reference = Date.now
-        let recentStart = Calendar.current.date(
-            byAdding: .weekOfYear, value: -StrengthWindow.default.rawValue, to: reference
-        )
+        let recentStart = TrendWindow.default.range(windowsAgo: 0, from: reference).lowerBound
         XCTAssertEqual(recentStart, Exercise.currentBestWindowStart(endingAt: reference))
+    }
+
+    /// Every window's history strip must tile the timeline without gaps or overlap, and its newest
+    /// bucket must end *now* — that last bar is what makes the detail screen open on the same data
+    /// the Balance tile summarized.
+    func testTrendWindowBucketsTileTheTimeline() {
+        let reference = Date.now
+        for window in TrendWindow.allCases {
+            let current = window.range(windowsAgo: 0, from: reference)
+            XCTAssertEqual(current.upperBound, reference, "\(window) must end now")
+            for n in 1 ..< window.historyBucketCount {
+                let older = window.range(windowsAgo: n, from: reference)
+                let newer = window.range(windowsAgo: n - 1, from: reference)
+                XCTAssertEqual(
+                    older.upperBound, newer.lowerBound,
+                    "\(window) bucket \(n) must abut its newer neighbour"
+                )
+            }
+        }
     }
 
     /// The trend deadband: small wobble reads as steady and keeps the neutral arrow, so the tile

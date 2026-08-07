@@ -137,6 +137,120 @@ enum StatPeriod: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Trend Window
+
+/// The **rolling** window the Summary's two trend surfaces report over — 4 weeks, 3 months or a year,
+/// each one ending *now* rather than on a calendar boundary. Distinct from `StatPeriod` on purpose:
+/// that enum answers "which calendar week/month/year is this", which is the right question for a
+/// running total and the wrong one for a trend, where a part-elapsed calendar month would make the
+/// number lie for three weeks out of four.
+///
+/// Shared by `StrengthScreen` and `MuscleGroupsOverviewScreen` so the two detail screens behind the
+/// Summary's top pair offer the same three timeframes. `default` is four weeks — the window
+/// `Exercise.currentBestWindowStart` already calls "current" and the one both tiles report, so each
+/// detail screen opens showing exactly what its tile summarized.
+enum TrendWindow: String, CaseIterable, Identifiable {
+    case fourWeeks, threeMonths, oneYear
+
+    static let `default` = TrendWindow.fourWeeks
+
+    var id: String { rawValue }
+
+    /// One window's length, as a calendar step. `.weekOfYear`/4 rather than `.day`/28 so the window
+    /// tracks the user's calendar the way every other span in the app does.
+    var step: (component: Calendar.Component, value: Int) {
+        switch self {
+        case .fourWeeks: return (.weekOfYear, 4)
+        case .threeMonths: return (.month, 3)
+        case .oneYear: return (.year, 1)
+        }
+    }
+
+    /// Segment title — "4 weeks" / "3 months" / "1 year".
+    var title: String {
+        switch self {
+        case .fourWeeks: return String(format: NSLocalizedString("nWeeks", comment: ""), 4)
+        case .threeMonths: return String(format: NSLocalizedString("nMonths", comment: ""), 3)
+        case .oneYear: return NSLocalizedString("oneYear", comment: "")
+        }
+    }
+
+    /// The header label for the window ending now — "Last 4 weeks" / "Last 3 months" / "Last year".
+    var currentWindowLabel: String {
+        switch self {
+        case .fourWeeks: return NSLocalizedString("last4Weeks", comment: "")
+        case .threeMonths: return String(format: NSLocalizedString("lastNMonths", comment: ""), 3)
+        case .oneYear: return NSLocalizedString("lastYear", comment: "")
+        }
+    }
+
+    /// The window `n` windows back — `n == 0` is the current one, which ends at `date` exactly. Each
+    /// older window is the same length again, counted back from there, so the run tiles the timeline
+    /// without gaps or overlap.
+    func range(windowsAgo n: Int, from date: Date = .now) -> ClosedRange<Date> {
+        let calendar = Calendar.current
+        let step = self.step
+        let end = calendar.date(byAdding: step.component, value: -n * step.value, to: date) ?? date
+        let start = calendar.date(byAdding: step.component, value: -step.value, to: end) ?? end
+        return start ... end
+    }
+
+    /// How many windows of history the balance strip shows: about half a year of four-week blocks,
+    /// two years of quarters, six years.
+    ///
+    /// Four weeks is capped by its **axis labels**, not by how much history is interesting. A rolling
+    /// four-week block has no name, so its label has to be a date ("9 Jun"), and thirteen of those —
+    /// a tidy calendar year — render as one unbroken run of overlapping text. Seven fit with room to
+    /// spare, and a reader wanting more history has two longer windows to switch to.
+    var historyBucketCount: Int {
+        switch self {
+        case .fourWeeks: return 7
+        case .threeMonths: return 8
+        case .oneYear: return 6
+        }
+    }
+
+    /// Axis label under a history bar — "6 Aug" / "Aug" / "2026".
+    ///
+    /// Taken from the window's **end**, not its start. A trailing window labelled by its start reads
+    /// as a calendar unit it isn't: the current year-long window runs from last August to today, and
+    /// labelling it "2025" says the wrong year outright. The end is the date the bar reaches, which
+    /// is what a reader scanning left to right is actually looking for.
+    func axisLabel(forWindowEnding end: Date) -> String {
+        switch self {
+        case .fourWeeks: return end.formatted(.dateTime.day().month(.abbreviated))
+        case .threeMonths: return end.formatted(.dateTime.month(.abbreviated))
+        case .oneYear: return end.formatted(.dateTime.year())
+        }
+    }
+
+    /// The calendar period a rolling window hands off to when navigating somewhere that still scopes
+    /// itself by calendar unit — the per-muscle detail screen, whose sets-history chart is built on
+    /// `StatPeriod`'s scroll geometry. Lossy by nature: four weeks has no calendar equivalent, and a
+    /// month is the closest unit that screen offers.
+    var nearestStatPeriod: StatPeriod {
+        switch self {
+        case .fourWeeks, .threeMonths: return .month
+        case .oneYear: return .year
+        }
+    }
+
+    /// The full title for a window: the "Last …" label for the current one, otherwise the span it
+    /// covers. Rolling windows don't have names ("June" is a calendar month, not a 4-week block), so
+    /// an older window can only honestly say which dates it holds.
+    func windowTitle(windowsAgo n: Int, from date: Date = .now) -> String {
+        guard n > 0 else { return currentWindowLabel }
+        let range = self.range(windowsAgo: n, from: date)
+        let format: Date.FormatStyle
+        switch self {
+        case .fourWeeks: format = .dateTime.day().month(.abbreviated)
+        case .threeMonths: format = .dateTime.month(.abbreviated).year()
+        case .oneYear: format = .dateTime.month(.abbreviated).year()
+        }
+        return "\(range.lowerBound.formatted(format)) - \(range.upperBound.formatted(format))"
+    }
+}
+
 // MARK: - Stat Basis
 
 /// How a period's workouts collapse into the single number a stat surface shows: the running

@@ -7,16 +7,20 @@
 
 import SwiftUI
 
-/// The Muscle Groups overview: the muscle-group occurrence donut leads — the same circle the app uses
-/// everywhere for muscle groups, with the period's total sets in its centre — over the groups grouped
-/// by standing (↓ Below target · ↑ Above target · ✓ On target), each row the diverging
-/// `MuscleBalanceBar` growing out of the target tick. Below, the slim segmented "Balance over time"
-/// chart: Week / Month / Year sets its grouping and tapping a bar rebinds the donut and sections to
-/// that period. Rows tap through to the muscle's own page. Pro; the Summary's Muscle Balance tile is
-/// the free hook into it.
+/// The Muscle Groups overview: the goal hero leads — how many groups reached their target share, over
+/// the same filling tracks the Balance tile draws — then the groups split by standing (↓ Below target ·
+/// ↑ Above target · ✓ On target) as a two-column grid. Below, the slim segmented "Balance over time"
+/// chart: the 4 weeks / 3 months / 1 year picker sets the window and tapping a bar rebinds the hero and
+/// sections to it. Rows tap through to the muscle's own page. Pro; the Summary's Balance tile is the
+/// free hook into it.
+///
+/// It opens on `TrendWindow.default` — the same rolling four weeks the tile reports — and the hero
+/// stays on the *current* window until a bar is tapped. It used to open on the newest window that had
+/// sets, which meant a tile saying "keep training" could open onto a fully drawn split from months ago,
+/// with nothing on screen naming the period. The header now always names the window it is showing.
 struct MuscleGroupsOverviewScreen: View {
-    @State private var period: StatPeriod = .month
-    /// The bar the gesture last selected (a bucket id), or nil for "none tapped yet" → newest with data.
+    @State private var window: TrendWindow = .default
+    /// The bar the gesture last selected (a bucket id), or nil for "none tapped yet" → the current window.
     @State private var rawSelection: String?
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
@@ -37,7 +41,7 @@ struct MuscleGroupsOverviewScreen: View {
         let target = targetSplitStore.split
         let buckets = MuscleBalanceHistory.buckets(
             from: allWorkouts,
-            period: period,
+            window: window,
             target: target,
             muscleGroupService: muscleGroupService
         )
@@ -47,7 +51,7 @@ struct MuscleGroupsOverviewScreen: View {
 
         return ScrollView {
             VStack(spacing: SECTION_SPACING) {
-                PeriodPicker(selection: $period)
+                TrendWindowPicker(selection: $window)
                 if hasData {
                     if selected.totalSets > 0 {
                         goalHero(selected)
@@ -76,14 +80,18 @@ struct MuscleGroupsOverviewScreen: View {
                     .font(.headline)
             }
         }
-        .onChange(of: period) { rawSelection = nil }
+        .onChange(of: window) { rawSelection = nil }
     }
 
     // MARK: - Goal hero
 
     /// The Balance tile's own chart at full size, over the count it reports. Same component, same
-    /// rule (a group counts once it is at least its target) — the detail screen is the tile with
-    /// room, not a second opinion.
+    /// rule (a group counts once it is at least its target), same window on arrival — the detail
+    /// screen is the tile with room, not a second opinion.
+    ///
+    /// The window name sits above the count. It is the one line that makes every other number on the
+    /// screen readable: the same hero can describe "Last 4 weeks" or a four-week block from last
+    /// autumn depending on which bar is selected, and without it the two are indistinguishable.
     ///
     /// No axis labels under the tracks: the rows immediately below name every group in reading
     /// order, and eight labels at track width would be abbreviations of the words already there.
@@ -91,6 +99,11 @@ struct MuscleGroupsOverviewScreen: View {
         let entries = bucket.calculator.goalEntries
         return VStack(spacing: 14) {
             VStack(spacing: 2) {
+                Text(bucket.title)
+                    .font(.caption.weight(.bold))
+                    .tracking(0.3)
+                    .foregroundStyle(.tertiary)
+                    .contentTransition(.identity)
                 HStack(alignment: .firstTextBaseline, spacing: 0) {
                     Text("\(bucket.calculator.atLeastTargetCount())")
                         .foregroundStyle(Color.label)
@@ -173,7 +186,9 @@ struct MuscleGroupsOverviewScreen: View {
                 ) {
                     ForEach(entries) { entry in
                         Button {
-                            homeNavigationCoordinator.path.append(.muscleGroupDetail(entry.muscleGroup, period))
+                            homeNavigationCoordinator.path.append(
+                                .muscleGroupDetail(entry.muscleGroup, window.nearestStatPeriod)
+                            )
                         } label: {
                             MuscleBalanceGoalCell(entry: entry)
                         }
@@ -258,13 +273,18 @@ struct MuscleGroupsOverviewScreen: View {
 
     // MARK: - Helpers
 
-    /// The bar currently selected, or — before any tap, or after a period switch — the most recent
-    /// bucket that has sets (so the donut and sections always open on real data).
+    /// The bar currently selected, or — before any tap, or after a window switch — the **current**
+    /// window, so the screen opens on exactly what the Balance tile reported.
+    ///
+    /// It deliberately does not reach back to the newest window that has sets. That fallback made an
+    /// empty current window silently show old data, which is how a placeholder tile could open onto a
+    /// populated screen; an empty window now says so via `emptyBucketNote` and the reader can tap
+    /// back through the strip themselves.
     private func resolveSelected(in buckets: [MuscleBalanceBucket]) -> MuscleBalanceBucket {
         if let rawSelection, let match = buckets.first(where: { $0.id == rawSelection }) {
             return match
         }
-        return buckets.last(where: { $0.totalSets > 0 }) ?? buckets[buckets.count - 1]
+        return buckets[buckets.count - 1]
     }
 
     /// Chart stack order: biggest target share first, so the composition is stable across periods.

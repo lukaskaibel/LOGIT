@@ -85,7 +85,6 @@ struct StrengthTile: View {
             } else {
                 emptyState
                     .padding(.top, 12)
-                Spacer(minLength: 0)
             }
         }
         .padding(CELL_PADDING)
@@ -151,13 +150,14 @@ struct StrengthTile: View {
     /// Before there's a trend, the tile wears the same gray ring the core-stat tiles use while their
     /// first period fills — tracking how far the history reaches into the span being compared, so it
     /// creeps forward with every workout instead of sitting at nothing.
+    ///
+    /// Greedy without a `Spacer` beside it, because `TrendPlaceholder` bottom-anchors itself: it
+    /// stands in for the chart, which runs to the tile's bottom edge.
     private var emptyState: some View {
         TrendPlaceholder(
             progress: progress.historyFraction,
             text: NSLocalizedString("strengthEmpty", comment: ""),
-            systemImage: "chart.line.uptrend.xyaxis",
-            alignment: .leading,
-            diameter: 34
+            systemImage: "chart.line.uptrend.xyaxis"
         )
     }
 }

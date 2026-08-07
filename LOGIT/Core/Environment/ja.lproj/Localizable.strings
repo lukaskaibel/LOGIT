@@ -1128,8 +1128,11 @@
 "strength" = "筋力";
 "strengthBasis" = "推定1RM";
 "strengthEmpty" = "ワークアウトを記録すると筋力の傾向が表示されます。";
-"strengthWindowCaption" = "その前の%d週間との比較";
 "nWeeks" = "%d週間";
+"nMonths" = "%dか月";
+"oneYear" = "1年";
+"lastNMonths" = "直近%dか月";
+"lastYear" = "直近1年";
 "nSets" = "%dセット";
 "allExercises" = "すべてのエクササイズ";
 "strengthAxisMostDeclined" = "最大の低下";
@@ -1139,4 +1142,4 @@
 "strengthShowAllLifts" = "%d 種目をすべて表示";
 "strengthAxisLeastDeclined" = "最小の低下";
 "showLess" = "表示を減らす";
-"strengthInfo" = "各エクササイズの直近%d週間の推定1RM最高値を、その前の%d週間と比較し、セット数で重み付けして平均した値です。カーディオと自重のセットは1RMがないため含まれません。";
+"strengthInfo" = "選択した期間における各エクササイズの推定1RMの最高値を、その前の期間と比較し、セット数で重み付けして平均したものです。有酸素運動と自重のセットは1RMがないためカウントされません。";

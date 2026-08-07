@@ -19,17 +19,19 @@ import SwiftUI
 /// most out-of-balance state there is, and hiding it would make the tile look *better* the worse the
 /// month went. Only a group the user has zeroed out drops away — that one can never fill, so it
 /// leaves the denominator too.
+///
+/// It draws from the **first set on**, matching `MuscleGroupsOverviewScreen`, which is what the tile
+/// taps through to. There used to be a 20-set floor here on the grounds that one session hits two or
+/// three groups and so reports them "at or above target" purely because everything else is absent —
+/// which is true, and the tile does read optimistically early on. But the detail screen never had
+/// that floor, so the pair contradicted each other: a placeholder tile opening onto a fully drawn
+/// split. One rule across both surfaces beats a defensible rule applied to only one of them.
 struct MuscleBalanceGoalTile: View {
     /// Workouts already narrowed to the window the tile reports.
     let workouts: [Workout]
 
     @EnvironmentObject private var targetSplitStore: MuscleTargetSplitStore
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
-
-    /// Below this many set occurrences the window can't describe a *distribution*: a single session
-    /// hits two or three groups, so the tile would report several groups "at or above target" purely
-    /// because everything else is absent. Roughly two full workouts.
-    private static let minimumSets = 20
 
     private var calculator: MuscleBalanceCalculator {
         MuscleBalanceCalculator(
@@ -46,7 +48,7 @@ struct MuscleBalanceGoalTile: View {
             header
             subtitle
                 .padding(.top, 8)
-            if calculator.totalSets >= Self.minimumSets, !entries.isEmpty {
+            if calculator.totalSets > 0, !entries.isEmpty {
                 count(met: calculator.atLeastTargetCount(), total: entries.count)
                     .padding(.top, 2)
                 MuscleBalanceTrackChart(entries: entries)
@@ -55,7 +57,6 @@ struct MuscleBalanceGoalTile: View {
             } else {
                 emptyState
                     .padding(.top, 12)
-                Spacer(minLength: 0)
             }
         }
         .padding(CELL_PADDING)
@@ -113,15 +114,19 @@ struct MuscleBalanceGoalTile: View {
         )
     }
 
-    /// The same gray ring the Strength half and the core-stat tiles wear while they wait, with the
-    /// arc tracking how close the window is to enough sets to describe a split.
+    /// The same gray ring the Strength half and the core-stat tiles wear while they wait.
+    ///
+    /// The arc stays at zero — it renders as `TrendPlaceholder`'s minimum "begun" fill. It used to
+    /// track progress toward the old set floor, but the tile now draws from the first set on, so
+    /// this state means the window is genuinely empty and there is no progress to report.
+    ///
+    /// Greedy without a `Spacer` beside it, because `TrendPlaceholder` bottom-anchors itself: it
+    /// stands in for the chart, which runs to the tile's bottom edge.
     private var emptyState: some View {
         TrendPlaceholder(
-            progress: Double(calculator.totalSets) / Double(Self.minimumSets),
+            progress: 0,
             text: NSLocalizedString("muscleBalanceEmpty", comment: ""),
-            systemImage: "chart.pie.fill",
-            alignment: .leading,
-            diameter: 34
+            systemImage: "chart.pie.fill"
         )
     }
 }

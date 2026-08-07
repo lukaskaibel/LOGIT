@@ -1124,8 +1124,11 @@
 "strength" = "Kraft";
 "strengthBasis" = "Geschätztes 1RM";
 "strengthEmpty" = "Logge weiter Workouts, um deinen Krafttrend zu sehen.";
-"strengthWindowCaption" = "vs. die %d Wochen davor";
 "nWeeks" = "%d Wochen";
+"nMonths" = "%d Monate";
+"oneYear" = "1 Jahr";
+"lastNMonths" = "Letzte %d Monate";
+"lastYear" = "Letztes Jahr";
 "nSets" = "%d Sätze";
 "allExercises" = "Alle Übungen";
 "strengthAxisMostDeclined" = "Stärkster Rückgang";
@@ -1135,4 +1138,4 @@
 "strengthShowAllLifts" = "Alle %d Übungen zeigen";
 "strengthAxisLeastDeclined" = "Geringster Rückgang";
 "showLess" = "Weniger anzeigen";
-"strengthInfo" = "Das beste geschätzte 1RM jeder Übung der letzten %d Wochen im Vergleich zu den %d davor, gemittelt und nach Anzahl der Sätze gewichtet. Cardio- und Körpergewichtssätze haben kein 1RM und zählen nicht.";
+"strengthInfo" = "Der beste geschätzte 1RM jeder Übung im gewählten Zeitraum gegenüber dem Zeitraum davor, gemittelt und nach der Anzahl deiner Sätze gewichtet. Cardio- und Körpergewichtssätze haben keinen 1RM und zählen nicht.";

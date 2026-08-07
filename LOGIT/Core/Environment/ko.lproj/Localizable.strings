@@ -1128,8 +1128,11 @@
 "strength" = "근력";
 "strengthBasis" = "예상 1RM";
 "strengthEmpty" = "운동을 계속 기록하면 근력 추세를 볼 수 있습니다.";
-"strengthWindowCaption" = "이전 %d주 대비";
 "nWeeks" = "%d주";
+"nMonths" = "%d개월";
+"oneYear" = "1년";
+"lastNMonths" = "최근 %d개월";
+"lastYear" = "최근 1년";
 "nSets" = "%d세트";
 "allExercises" = "모든 운동";
 "strengthAxisMostDeclined" = "가장 큰 감소";
@@ -1139,4 +1142,4 @@
 "strengthShowAllLifts" = "%d개 종목 모두 보기";
 "strengthAxisLeastDeclined" = "가장 작은 감소";
 "showLess" = "간단히 보기";
-"strengthInfo" = "각 운동의 최근 %d주 최고 추정 1RM을 이전 %d주와 비교해 세트 수로 가중 평균한 값입니다. 유산소와 맨몸 세트는 1RM이 없어 포함되지 않습니다.";
+"strengthInfo" = "선택한 기간 동안 각 운동의 최고 예상 1RM을 그 이전 기간과 비교해 세트 수로 가중 평균한 값입니다. 유산소와 맨몸 세트는 1RM이 없어 포함되지 않습니다.";

@@ -8,41 +8,46 @@
 import Combine
 import Foundation
 
-/// Backs the Summary's month-scoped block: filters the already-fetched top-level `[Workout]`
-/// **in memory** by date range (no new Core Data fetches) and reduces it to what a stat tile draws.
-/// The 2×2 core-stats grid and the Muscle Balance tile read their window off this.
+/// Backs the Summary's scoped block: filters the already-fetched top-level `[Workout]` **in memory**
+/// by date range (no new Core Data fetches) and reduces it to what a stat tile draws. The 2×2
+/// core-stats grid reads its window off this.
+///
+/// The window is a rolling `TrendWindow`, not a calendar period, and it comes from the screen's own
+/// picker rather than living here — the whole Summary reads one timeframe now, so no single view
+/// model owns it. The move off calendar months is what makes the four tiles comparable with the
+/// Strength and Balance pair above them: a month-scoped tile on the 3rd reported four days of
+/// training beside a pair reporting four weeks, and nothing on screen said so.
 @MainActor
 final class SummaryViewModel: ObservableObject {
-    /// The scope the stat tiles and the muscle balance read. The month, since the Summary merged
-    /// into one screen: the *week* now lives entirely in the title row's goal pill, and leaving the
-    /// tiles week-scoped made them blank every Monday — which is what the old auto-fallback existed
-    /// to paper over. A month is long enough to always have something in it and still recent enough
-    /// to be "how I'm training now".
-    @Published var selectedPeriod: StatPeriod = .month
-
-    /// The number of history buckets the core-stat mini bar charts show (current + 4 prior periods).
-    /// Buckets in a stat tile's mini bar chart — the fixed five-slot preview idiom shared with the
-    /// workout tiles' run bars. Deliberately shorter than `StatPeriod.historyBucketCount`, which
-    /// every labeled detail history follows; the tile is a glanceable teaser, the screen the reading
-    /// surface.
+    /// The number of history buckets the core-stat mini bar charts show (current + 4 prior windows).
+    /// The fixed five-slot preview idiom shared with the workout tiles' run bars. Deliberately
+    /// shorter than `TrendWindow.historyBucketCount`, which every labeled detail history follows; the
+    /// tile is a glanceable teaser, the screen the reading surface.
     static let statBucketCount = 5
 
     // MARK: - Stat Data
 
     /// Everything a core-stat tile renders. The tile reads a *per-workout average* — a typical
-    /// session, frequency divided out — so a light week and a heavy week compare on session quality
-    /// rather than on how many times the user showed up (that lives in the weekly-goal hero above).
-    /// The current period's average, the change versus the prior period's average, and the last five
-    /// periods as display-unit buckets (oldest → newest, last = current).
+    /// session, frequency divided out — so a light window and a heavy one compare on session quality
+    /// rather than on how many times the user showed up (that lives in the weekly-goal pill above).
+    ///
+    /// A per-workout average is also what lets the tile survive the window switch at all: it is the
+    /// same magnitude over four weeks as over a year, so the reader can widen the scope and still
+    /// read the number against the one they just saw. A running total would have ballooned by an
+    /// order of magnitude and broken the tile's own five-bar history with it.
     struct StatData {
-        /// The current period's per-workout average in raw units (grams / minutes / counts); 0 when
-        /// the period had no workout.
+        /// The current window's per-workout average in raw units (grams / minutes / counts); 0 when
+        /// the window had no workout.
         let rawAverage: Double
-        /// Whether the current period had any workout to average — false renders the "––" no-data
+        /// Whether the current window had any workout to average — false renders the "––" no-data
         /// tile instead of a misleading "0", since there is no session to average.
         let hasData: Bool
         let percentChange: Double?
+        /// The last five windows as display-unit buckets (oldest → newest, last = current).
         let buckets: [Double]
+        /// How much of the current-plus-prior window span the logged history covers, 0…1 — the fill
+        /// of the "building your trend" ring while there isn't a second window to compare against.
+        let historyFraction: Double
     }
 
     // MARK: - Mode
@@ -57,47 +62,48 @@ final class SummaryViewModel: ObservableObject {
 
     // MARK: - Filtering
 
-    /// Non-empty workouts whose date falls inside the period's current range.
-    func filtered(_ workouts: [Workout], to period: StatPeriod) -> [Workout] {
-        let range = period.currentRange()
-        return workouts.filter { workout in
+    /// Non-empty workouts falling inside the current window — what the Balance tile is handed.
+    func filtered(_ workouts: [Workout], to window: TrendWindow) -> [Workout] {
+        workouts.filter { workout in
             guard !workout.isEmpty, let date = workout.date else { return false }
-            return range.contains(date)
+            return window.contains(date)
         }
     }
 
     // MARK: - Core stats
 
-    func statData(for metric: WorkoutStatMetric, period: StatPeriod, workouts: [Workout]) -> StatData {
+    func statData(for metric: WorkoutStatMetric, window: TrendWindow, workouts: [Workout]) -> StatData {
         // Per bucket: the per-workout average (sum ÷ non-empty workout count), the divisor matching
-        // the "3 workouts" the weekly-goal hero counts so the tile reads as "per one of those". Empty
+        // the "3 workouts" the weekly-goal pill counts so the tile reads as "per one of those". Empty
         // workouts are excluded — they'd only drag an average down while inflating the count; a blank
-        // workout contributed nothing to the old sum either.
+        // workout contributed nothing to the sum either.
         var averages: [Double] = []
         var counts: [Int] = []
         for n in stride(from: Self.statBucketCount - 1, through: 0, by: -1) {
-            let range = period.range(periodsAgo: n)
-            let periodWorkouts = workouts.filter { workout in
+            let windowWorkouts = workouts.filter { workout in
                 guard !workout.isEmpty, let date = workout.date else { return false }
-                return range.contains(date)
+                return window.contains(date, windowsAgo: n)
             }
-            let sum = periodWorkouts.reduce(0) { $0 + metric.rawValue(of: $1) }
-            averages.append(StatBasis.perWorkout.aggregate(sum: sum, count: periodWorkouts.count))
-            counts.append(periodWorkouts.count)
+            let sum = windowWorkouts.reduce(0) { $0 + metric.rawValue(of: $1) }
+            averages.append(StatBasis.perWorkout.aggregate(sum: sum, count: windowWorkouts.count))
+            counts.append(windowWorkouts.count)
         }
         let currentAverage = averages.last ?? 0
         let currentCount = counts.last ?? 0
         let previousAverage = averages.count >= 2 ? averages[averages.count - 2] : 0
         let previousCount = counts.count >= 2 ? counts[counts.count - 2] : 0
-        // Both periods need a session to compare — a fresh, still-empty week never reads as a collapse.
+        // Both windows need a session to compare — a window that has only just opened never reads as
+        // a collapse.
         let percentChange: Double? = (currentCount > 0 && previousCount > 0 && previousAverage > 0)
             ? (currentAverage - previousAverage) / previousAverage * 100
             : nil
+        let firstDataDate = workouts.lazy.filter { !$0.isEmpty }.compactMap(\.date).min()
         return StatData(
             rawAverage: currentAverage,
             hasData: currentCount > 0,
             percentChange: percentChange,
-            buckets: averages.map { metric.displayValue(fromRaw: Int($0.rounded())) }
+            buckets: averages.map { metric.displayValue(fromRaw: Int($0.rounded())) },
+            historyFraction: window.historyFraction(firstDataDate: firstDataDate)
         )
     }
 

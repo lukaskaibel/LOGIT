@@ -98,13 +98,15 @@ struct ProgressHighlightCardView: View {
             return .exercise(records.exercise)
         case let .trend(trend):
             switch trend.kind {
-            case .muscleGroupSets: return .muscleGroupDetail(trend.muscleGroup ?? .chest, .month)
+            case .muscleGroupSets: return .muscleGroupDetail(trend.muscleGroup ?? .chest, trend.window)
             case .exerciseVolume:
                 if let exercise = trend.exercise { return .exercise(exercise) }
-                return .summaryStat(.volume, .month)
+                // Pinned to the window the card itself compares over, which is now nameable exactly
+                // — it used to open a calendar month, the nearest thing the old picker offered.
+                return .summaryStat(.volume, ProgressHighlights.recentWindow)
             }
         case .yearCrossing:
-            return .summaryStat(.volume, .year)
+            return .summaryStat(.volume, .oneYear)
         }
     }
 }
@@ -358,7 +360,10 @@ extension HighlightComparisonCard.Content {
     /// up — the caption below it owns the window, so the two can never contradict each other.
     init(trend: ProgressTrend) {
         symbol = "chart.line.uptrend.xyaxis"
-        let windowCaption = NSLocalizedString("trendWindowCaption", comment: "")
+        // The window the trend was actually measured over, not a fixed "last 4 weeks" — the
+        // highlights screen can widen it. The two bars below carry both periods, so naming the
+        // current one here is enough.
+        let windowCaption = trend.window.currentWindowLabel
         let scopeName: String
         switch trend.kind {
         case .muscleGroupSets:
@@ -392,8 +397,13 @@ extension HighlightComparisonCard.Content {
             unit = NSLocalizedString("sets", comment: "")
         }
 
-        currentLabel = NSLocalizedString("last4Weeks", comment: "")
-        previousLabel = NSLocalizedString("fourWeeksBefore", comment: "")
+        currentLabel = trend.window.currentWindowLabel
+        // "4 weeks before" is a phrase that only exists for the default window; a rolling three-month
+        // or year-long block has no name, so the older bar can only honestly say which dates it holds
+        // — the rule `TrendWindow.windowTitle` follows everywhere else.
+        previousLabel = trend.window == .fourWeeks
+            ? NSLocalizedString("fourWeeksBefore", comment: "")
+            : trend.window.windowTitle(windowsAgo: 1)
         currentNumeric = Double(trend.currentValue)
         previousNumeric = Double(trend.previousValue)
         percentChange = Double(trend.displayedPercent)
@@ -433,19 +443,32 @@ extension HighlightComparisonCard.Content {
 
 // MARK: - See-all screen
 
-/// Every current highlight as a vertical, priority-ordered list of the same cards — the overflow
-/// valve behind the carousel's "Show All" button.
+/// Every highlight in the chosen window as a vertical, priority-ordered list of the same cards — the
+/// screen behind the carousel's "Show All" button.
+///
+/// It carries the shared `TrendWindowPicker` like every other detail screen, and it is the only place
+/// a highlight's window can be widened: the Summary's carousel is pinned to the recent window so it
+/// keeps meaning "what just happened" (see `SummaryHighlightsSection`), and this is where a reader
+/// goes to ask the longer question. It opens on the recent window, so arriving here shows the same
+/// feed the carousel was showing before offering to widen it.
 struct ProgressHighlightsScreen: View {
     let workouts: [Workout]
 
     @EnvironmentObject private var database: Database
+    @State private var window: TrendWindow = ProgressHighlights.recentWindow
     @State private var items: [ProgressHighlight] = []
 
     var body: some View {
         ScrollView {
             VStack(spacing: 10) {
-                ForEach(items) { item in
-                    ProgressHighlightCardView(item: item)
+                TrendWindowPicker(selection: $window)
+                    .padding(.bottom, 6)
+                if items.isEmpty {
+                    emptyState
+                } else {
+                    ForEach(items) { item in
+                        ProgressHighlightCardView(item: item)
+                    }
                 }
                 footnote
             }
@@ -460,9 +483,21 @@ struct ProgressHighlightsScreen: View {
                     .font(.headline)
             }
         }
-        .task(id: workouts.count) {
-            items = ProgressHighlights.compute(workouts: workouts, database: database)
+        .task(id: "\(window.rawValue)-\(workouts.count)") {
+            items = ProgressHighlights.compute(workouts: workouts, database: database, window: window)
         }
+    }
+
+    /// A window can legitimately hold no highlights — the noise floors scale with it, so a quiet
+    /// three months reports nothing rather than promoting something that isn't a highlight. Say so,
+    /// instead of leaving the picker floating over a footnote.
+    private var emptyState: some View {
+        Text(NSLocalizedString("noData", comment: ""))
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 40)
+            .tileStyle()
     }
 
     private var footnote: some View {

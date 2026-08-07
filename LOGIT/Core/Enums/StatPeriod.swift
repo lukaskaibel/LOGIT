@@ -37,16 +37,6 @@ enum StatPeriod: String, CaseIterable, Identifiable {
         range(periodsAgo: 1, from: date)
     }
 
-    /// How far through the current period `now` sits — 0 at the period's first instant, 1 at its last
-    /// (clamped). Drives the "building your trend" ring on a fresh tile, so it fills as the week (or
-    /// month / year) goes on rather than sitting at a fixed mark.
-    func elapsedFraction(now: Date = .now) -> Double {
-        let range = currentRange(containing: now)
-        let total = range.upperBound.timeIntervalSince(range.lowerBound)
-        guard total > 0 else { return 0 }
-        return min(max(now.timeIntervalSince(range.lowerBound) / total, 0), 1)
-    }
-
     /// How many periods of history a period-scoped chart shows — the current period plus its recent
     /// past. One rule for every such chart in the app: 12 recent weeks, 12 recent months or 6 recent
     /// years, so switching screens never silently changes how far back "history" reaches.
@@ -139,22 +129,39 @@ enum StatPeriod: String, CaseIterable, Identifiable {
 
 // MARK: - Trend Window
 
-/// The **rolling** window the Summary's two trend surfaces report over — 4 weeks, 3 months or a year,
-/// each one ending *now* rather than on a calendar boundary. Distinct from `StatPeriod` on purpose:
-/// that enum answers "which calendar week/month/year is this", which is the right question for a
-/// running total and the wrong one for a trend, where a part-elapsed calendar month would make the
-/// number lie for three weeks out of four.
+/// The **rolling** window every scoped surface in the Summary reports over — 4 weeks, 3 months or a
+/// year, each one ending *now* rather than on a calendar boundary. Distinct from `StatPeriod` on
+/// purpose: that enum answers "which calendar week/month/year is this", which is the right question
+/// for a running total and the wrong one for a trend, where a part-elapsed calendar month would make
+/// the number lie for three weeks out of four.
 ///
-/// Shared by `StrengthScreen` and `MuscleGroupsOverviewScreen` so the two detail screens behind the
-/// Summary's top pair offer the same three timeframes. `default` is four weeks — the window
-/// `Exercise.currentBestWindowStart` already calls "current" and the one both tiles report, so each
-/// detail screen opens showing exactly what its tile summarized.
+/// **This is the Summary's one timeframe.** The screen carries a single `TrendWindowPicker`, and
+/// everything scoped by it — the Strength and Balance pair, the four core-stat tiles, the pinned
+/// exercise tiles — reads this same window, as do all six detail screens behind them (Strength,
+/// Muscle Groups, and the Volume / Duration / Sets / Reps stat screens). Before this the screen
+/// reported over five different spans at once with nothing on it saying so; anything new that scopes
+/// itself by time belongs on this enum and that picker, not on a private one.
+///
+/// Two things deliberately do **not** scope: the weekly-goal pill in the title row, which is a weekly
+/// target by definition, and the Highlights carousel, which lists events rather than aggregates and
+/// stays on the recent window so it keeps meaning "what just happened" (its own screen offers the
+/// picker to widen).
+///
+/// `default` is four weeks — the window `Exercise.currentBestWindowStart` already calls "current" and
+/// the one the tiles opened on before there was a picker.
 enum TrendWindow: String, CaseIterable, Identifiable {
     case fourWeeks, threeMonths, oneYear
 
     static let `default` = TrendWindow.fourWeeks
 
     var id: String { rawValue }
+
+    /// Restores a persisted selection, falling back to the default for an unknown or empty raw value
+    /// — the one place the `@AppStorage`-backed Summary scope is decoded, so a stale string from an
+    /// older build can't leave a screen scopeless.
+    static func stored(_ rawValue: String) -> TrendWindow {
+        TrendWindow(rawValue: rawValue) ?? .default
+    }
 
     /// One window's length, as a calendar step. `.weekOfYear`/4 rather than `.day`/28 so the window
     /// tracks the user's calendar the way every other span in the app does.
@@ -195,8 +202,57 @@ enum TrendWindow: String, CaseIterable, Identifiable {
         return start ... end
     }
 
-    /// How many windows of history the balance strip shows: about half a year of four-week blocks,
-    /// two years of quarters, six years.
+    /// The window ending now — "the selected timeframe" itself. Every scoped surface goes through
+    /// this rather than reaching for a date offset of its own, which is how the Summary ended up
+    /// reporting over five spans at once.
+    func currentRange(from date: Date = .now) -> ClosedRange<Date> {
+        range(windowsAgo: 0, from: date)
+    }
+
+    /// The current window's first instant — the cutoff an "is this in scope" filter compares against.
+    func windowStart(from date: Date = .now) -> Date {
+        currentRange(from: date).lowerBound
+    }
+
+    /// Whether `date` falls in the window `n` windows back. **Half-open at the lower edge**:
+    /// consecutive windows share a boundary instant, so a workout landing exactly on one counts once
+    /// — in the newer window — rather than in both. The one membership test for every rolling
+    /// window, so a bucket strip and the tile above it can't disagree about which side a workout
+    /// falls on.
+    func contains(_ date: Date, windowsAgo n: Int = 0, from reference: Date = .now) -> Bool {
+        let range = self.range(windowsAgo: n, from: reference)
+        return date > range.lowerBound && date <= range.upperBound
+    }
+
+    /// The dates a window covers, as a caption ("9 Jul – 6 Aug", "Jul 2026 – Aug 2026"). Rolling
+    /// windows have no names — "June" is a calendar month, not a four-week block — so naming one can
+    /// only mean saying which dates it holds. Granularity follows the window: days read as noise
+    /// across a year, and a month name is uselessly coarse across four weeks.
+    func dateSpan(_ range: ClosedRange<Date>) -> String {
+        let format: Date.FormatStyle
+        switch self {
+        case .fourWeeks: format = .dateTime.day().month(.abbreviated)
+        case .threeMonths, .oneYear: format = .dateTime.month(.abbreviated).year()
+        }
+        let start = range.lowerBound.formatted(format)
+        let end = range.upperBound.formatted(format)
+        return start == end ? start : "\(start) - \(end)"
+    }
+
+    /// How much of the span a trend needs — the current window plus the one before it — the logged
+    /// history actually covers, 0…1. The fill of the "building your trend" ring, so a fresh account
+    /// sees a placeholder that creeps forward as history accumulates rather than one stuck at a fixed
+    /// mark. Lives here because every scoped surface wants the same answer for the same window.
+    func historyFraction(firstDataDate: Date?, from reference: Date = .now) -> Double {
+        guard let firstDataDate else { return 0 }
+        let span = reference.timeIntervalSince(range(windowsAgo: 1, from: reference).lowerBound)
+        guard span > 0 else { return 0 }
+        return min(max(reference.timeIntervalSince(firstDataDate) / span, 0), 1)
+    }
+
+    /// How many windows of history a `TrendWindowHistoryChart` shows — the stat detail screens and the
+    /// muscle detail's sets chart: about half a year of four-week blocks, two years of quarters, six
+    /// years.
     ///
     /// Four weeks is capped by its **axis labels**, not by how much history is interesting. A rolling
     /// four-week block has no name, so its label has to be a date ("9 Jun"), and thirteen of those —
@@ -207,6 +263,19 @@ enum TrendWindow: String, CaseIterable, Identifiable {
         case .fourWeeks: return 7
         case .threeMonths: return 8
         case .oneYear: return 6
+        }
+    }
+
+    /// How much total history a strip of `historyBucketCount` windows covers, as a caption — "28
+    /// weeks", "24 months", "6 years". The counterpart to `StatPeriod`'s fixed "12 weeks" / "12
+    /// months" / "6 years" captions, computed rather than spelled out because the bucket counts
+    /// differ per window (see `historyBucketCount`) and a hardcoded string would drift from them.
+    var historySpanCaption: String {
+        let span = historyBucketCount * step.value
+        switch self {
+        case .fourWeeks: return String(format: NSLocalizedString("nWeeks", comment: ""), span)
+        case .threeMonths: return String(format: NSLocalizedString("nMonths", comment: ""), span)
+        case .oneYear: return NSLocalizedString("sixYears", comment: "")
         }
     }
 
@@ -221,17 +290,6 @@ enum TrendWindow: String, CaseIterable, Identifiable {
         case .fourWeeks: return end.formatted(.dateTime.day().month(.abbreviated))
         case .threeMonths: return end.formatted(.dateTime.month(.abbreviated))
         case .oneYear: return end.formatted(.dateTime.year())
-        }
-    }
-
-    /// The calendar period a rolling window hands off to when navigating somewhere that still scopes
-    /// itself by calendar unit — the per-muscle detail screen, whose sets-history chart is built on
-    /// `StatPeriod`'s scroll geometry. Lossy by nature: four weeks has no calendar equivalent, and a
-    /// month is the closest unit that screen offers.
-    var nearestStatPeriod: StatPeriod {
-        switch self {
-        case .fourWeeks, .threeMonths: return .month
-        case .oneYear: return .year
         }
     }
 

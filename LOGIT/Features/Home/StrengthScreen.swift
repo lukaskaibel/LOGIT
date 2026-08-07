@@ -26,7 +26,7 @@ struct StrengthScreen: View {
 
     /// Nil is the whole training; a group narrows the hero, and the composition, to it.
     @State private var selectedGroup: MuscleGroup?
-    @State private var window: TrendWindow = .default
+    @State private var window: TrendWindow
     @State private var progress: StrengthProgress = .empty
     /// The scrubbed exercise, by object ID. Nil until a finger lands on the chart.
     @State private var selectedExerciseID: NSManagedObjectID?
@@ -43,9 +43,12 @@ struct StrengthScreen: View {
     /// fade by the same amount.
     private static let scopedDeclineOpacity: Double = 0.45
 
-    init(workouts: [Workout], initialGroup: MuscleGroup? = nil) {
+    /// Opens on the window the Summary was showing, so the screen states the same measurement as the
+    /// tile that opened it.
+    init(workouts: [Workout], initialGroup: MuscleGroup? = nil, initialWindow: TrendWindow = .default) {
         self.workouts = workouts
         _selectedGroup = State(initialValue: initialGroup)
+        _window = State(initialValue: initialWindow)
     }
 
     var body: some View {

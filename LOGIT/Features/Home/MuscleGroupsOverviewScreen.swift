@@ -18,7 +18,13 @@ import SwiftUI
 /// newest window that had sets, which meant a tile saying "keep training" could open onto a fully drawn
 /// split from months ago, with nothing on screen naming the period.
 struct MuscleGroupsOverviewScreen: View {
-    @State private var window: TrendWindow = .default
+    @State private var window: TrendWindow
+
+    /// Opens on the window the Summary was showing, so the screen states the same measurement as the
+    /// Balance tile that opened it.
+    init(initialWindow: TrendWindow = .default) {
+        _window = State(initialValue: initialWindow)
+    }
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     @EnvironmentObject private var targetSplitStore: MuscleTargetSplitStore
@@ -176,7 +182,7 @@ struct MuscleGroupsOverviewScreen: View {
                     ForEach(entries) { entry in
                         Button {
                             homeNavigationCoordinator.path.append(
-                                .muscleGroupDetail(entry.muscleGroup, window.nearestStatPeriod)
+                                .muscleGroupDetail(entry.muscleGroup, window)
                             )
                         } label: {
                             MuscleBalanceGoalCell(entry: entry)

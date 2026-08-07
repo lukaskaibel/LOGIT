@@ -14,6 +14,10 @@ struct HomeScreen: View {
 
     @AppStorage("pinnedMeasurements") private var pinnedMeasurementsData: Data = Data()
     @AppStorage("pinnedExercises") private var pinnedExercisesData: Data = Data()
+    /// The Summary's one timeframe, persisted so the screen comes back the way it was left — see
+    /// `TrendWindow`. Stored as the raw string because `@AppStorage` can't hold the enum directly;
+    /// `TrendWindow.stored` is the only place it's decoded.
+    @AppStorage("summaryTrendWindow") private var summaryTrendWindowRaw: String = TrendWindow.default.rawValue
 
     // MARK: - Environment
 
@@ -34,6 +38,14 @@ struct HomeScreen: View {
     @State private var didApplyScreenshotDeepLink = false
 
     // MARK: - Body
+
+    /// The screen's selected timeframe, read from and written back to `summaryTrendWindowRaw`.
+    private var trendWindow: Binding<TrendWindow> {
+        Binding(
+            get: { TrendWindow.stored(summaryTrendWindowRaw) },
+            set: { summaryTrendWindowRaw = $0.rawValue }
+        )
+    }
 
     var body: some View {
         FetchRequestWrapper(
@@ -107,21 +119,21 @@ struct HomeScreen: View {
                             MeasurementDetailScreen(measurementType: measurementType)
                         case .measurements: MeasurementsScreen()
                         case .muscleGroupsOverview:
-                            MuscleGroupsOverviewScreen()
+                            MuscleGroupsOverviewScreen(initialWindow: trendWindow.wrappedValue)
                         case .muscleTargetSplit:
                             MuscleTargetSplitScreen()
-                        case let .muscleGroupDetail(group, initialPeriod):
-                            MuscleGroupDetailScreen(muscleGroup: group, initialPeriod: initialPeriod)
-                        case let .summaryStat(metric, period):
+                        case let .muscleGroupDetail(group, initialWindow):
+                            MuscleGroupDetailScreen(muscleGroup: group, initialWindow: initialWindow)
+                        case let .summaryStat(metric, window):
                             SummaryStatScreen(
                                 metric: metric,
                                 workouts: workouts,
-                                initialPeriod: period ?? summaryViewModel.selectedPeriod
+                                initialWindow: window ?? trendWindow.wrappedValue
                             )
                         case .progressHighlights:
                             ProgressHighlightsScreen(workouts: workouts)
                         case .strength:
-                            StrengthScreen(workouts: workouts)
+                            StrengthScreen(workouts: workouts, initialWindow: trendWindow.wrappedValue)
                         case .targetPerWeek: TargetPerWeekDetailScreen()
                         case .weeklyGoal: WorkoutGoalScreen(workouts: workouts)
                         case let .template(template):
@@ -177,21 +189,38 @@ struct HomeScreen: View {
         }
     }
 
-    /// The merged Summary, in bands: the trend and what just happened, then the raw numbers, then
-    /// the things the user chose to watch. Strength and Balance lead as a pair — both read the same
-    /// four weeks and are built from the same mark, so they answer "how am I moving" and "am I
-    /// covering everything" in one glance before the raw totals arrive.
+    /// The merged Summary, in bands: the timeframe, then the trend, then the raw numbers, then the
+    /// things the user chose to watch, and last what just happened.
+    ///
+    /// The picker comes first because everything under it is scoped by it — Strength and Balance, the
+    /// four core stats, and the pinned exercise tiles all report over the one window it names. Before
+    /// it existed the screen reported over five different spans at once and said so nowhere, which
+    /// made the tiles quietly incomparable: a month-scoped Volume tile on the 3rd sat beside a
+    /// four-week Strength tile.
+    ///
+    /// Strength and Balance lead the content because both halves always render and barely move
+    /// window to window, so they anchor the screen; they answer "how am I moving" and "am I covering
+    /// everything" in one glance before the raw numbers arrive. Highlights closes it — see
+    /// `SummaryHighlightsSection` for why it is both last and unscoped.
     @ViewBuilder
     private func summaryContent(workouts: [Workout]) -> some View {
-        SummaryTrendSection(workouts: workouts)
+        TrendWindowPicker(selection: trendWindow)
 
-        SummaryStatTileGrid(
-            viewModel: summaryViewModel,
-            workouts: workouts,
-            onOpenDetail: { metric in
-                homeNavigationCoordinator.path.append(.summaryStat(metric, nil))
-            }
-        )
+        // The pair and the 2×2 grid are one block of six tiles reading one window, so they share the
+        // grid's own spacing rather than the section gap — a `SECTION_SPACING` break between them
+        // read as a boundary between two things, which is exactly what the picker just removed.
+        VStack(spacing: SummaryStatTileGrid.tileSpacing) {
+            SummaryTrendPair(workouts: workouts, window: trendWindow.wrappedValue)
+
+            SummaryStatTileGrid(
+                viewModel: summaryViewModel,
+                workouts: workouts,
+                window: trendWindow.wrappedValue,
+                onOpenDetail: { metric in
+                    homeNavigationCoordinator.path.append(.summaryStat(metric, nil))
+                }
+            )
+        }
 
         // Fixed scroll anchor for the marketing screenshot (see the `.task` above).
         Color.clear
@@ -200,6 +229,7 @@ struct HomeScreen: View {
 
         exercisesSection
         measurementsSection
+        SummaryHighlightsSection(workouts: workouts)
     }
 
     // MARK: - Marketing screenshot deep links
@@ -366,7 +396,11 @@ struct HomeScreen: View {
                 ) {
                     ForEach(pinnedExerciseTiles.prefix(4), id: \.id) { pinnedTile in
                         if let exercise = database.getExercise(byID: pinnedTile.exerciseID) {
-                            pinnedExerciseTileView(for: exercise, tileType: pinnedTile.tileType)
+                            pinnedExerciseTileView(
+                                for: exercise,
+                                tileType: pinnedTile.tileType,
+                                window: trendWindow.wrappedValue
+                            )
                         }
                     }
                 }
@@ -394,8 +428,19 @@ struct HomeScreen: View {
         }
     }
     
+    /// A pinned tile, scoped to the screen's selected window like everything else under the picker.
+    ///
+    /// These tiles can follow the picker where the exercise detail screen's cannot: pinned, they lead
+    /// with the exercise name and carry the metric in the subtitle (`showsExerciseName`), so they
+    /// never print the words "current best" — the app-wide term for the four-week window that the
+    /// recorder badges, the workout detail and the exercise screen all share. Widening the value here
+    /// re-scopes a number; widening it there would redefine a term.
     @ViewBuilder
-    private func pinnedExerciseTileView(for exercise: Exercise, tileType: ExerciseTileType) -> some View {
+    private func pinnedExerciseTileView(
+        for exercise: Exercise,
+        tileType: ExerciseTileType,
+        window: TrendWindow
+    ) -> some View {
         FetchRequestWrapper(
             WorkoutSetGroup.self,
             sortDescriptors: [SortDescriptor(\.workout?.date, order: .reverse)],
@@ -405,19 +450,17 @@ struct HomeScreen: View {
             Button {
                 homeNavigationCoordinator.path.append(.exercise(exercise))
             } label: {
-                // Pinned tiles stand alone with no exercise heading around them, so each leads with
-                // the exercise name and carries its metric name in the subtitle (`showsExerciseName`).
                 switch tileType {
                 case .weight:
-                    ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
+                    ExerciseWeightTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true, window: window)
                 case .repetitions:
-                    ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
+                    ExerciseRepetitionsTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true, window: window)
                 case .volume:
-                    ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
+                    ExerciseVolumeTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true, window: window)
                 case .setVolume:
-                    ExerciseSetVolumeTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
+                    ExerciseSetVolumeTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true, window: window)
                 case .estimatedOneRepMax:
-                    ExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true)
+                    ExerciseE1RMTile(exercise: exercise, workoutSets: workoutSets, showsExerciseName: true, window: window)
                 }
             }
             .buttonStyle(TileButtonStyle())

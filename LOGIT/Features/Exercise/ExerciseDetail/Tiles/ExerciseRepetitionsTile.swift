@@ -12,6 +12,9 @@ struct ExerciseRepetitionsTile: View {
     let workoutSets: [WorkoutSet]
     /// Leads the tile with the exercise name (the pinned Summary grid); see `ExerciseBestMetricTile`.
     var showsExerciseName: Bool = false
+    /// The span the value covers — four weeks (the app-wide "current best") on the detail screen, the
+    /// Summary's selected window when pinned. See `ExerciseBestMetricTile`.
+    var window: TrendWindow = .fourWeeks
 
     var body: some View {
         ExerciseBestMetricTile(
@@ -20,6 +23,7 @@ struct ExerciseRepetitionsTile: View {
             title: ExercisePrimaryMetric.repetitions.shortTitle,
             unit: NSLocalizedString("rps", comment: ""),
             showsExerciseName: showsExerciseName,
+            window: window,
             metricValue: { $0.maximum(.repetitions, for: exercise) },
             formattedValue: { String($0) },
             chartValue: { Double($0) }

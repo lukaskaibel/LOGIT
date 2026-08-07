@@ -986,7 +986,6 @@
 "rank" = "順位";
 "muscleDetailRankCaption" = "8グループ中";
 "targetShare" = "目標シェア";
-"twelveWeeks" = "12週間";
 "topExercises" = "トップ種目";
 "muscleDetailPercentOfSets" = "セットの%d%%";
 "weekStreakSuffix" = "週連続";
@@ -997,6 +996,7 @@
 "bestStreakLabel" = "最高 · %d週";
 "monthWorkoutsCount" = "%d回";
 "muscleBalanceEmptySubtitle" = "ワークアウトを記録すると筋肉の配分が表示されます。";
+"setsOverTime" = "時間ごとのセット数";
 "muscleBalanceGridCaption" = "セットの割合・目標スプリット比";
 "muscleBalanceOnTargetShort" = "8つ中%dつが目標内";
 "muscleBalanceOnTrack" = "順調";
@@ -1029,14 +1029,13 @@
 "firstTimePast" = "初めて%@を突破";
 "trendMuscleSets" = "%@のセット数が増加";
 "trendExerciseVolume" = "%@のボリューム上昇";
-"trendWindowCaption" = "直近4週間 vs その前の4週間";
 "last4Weeks" = "直近4週間";
 "fourWeeksBefore" = "その前の4週間";
 "yearSoFar" = "%@年 これまで";
 "yearCrossingHeadline" = "%@年が%@年をすでに上回りました";
 "monthsToSpare" = "%dか月を残して";
 "monthToSpare" = "1か月を残して";
-"highlightsInfo" = "マイルストーンと記録は直近4週間が対象です。トレンドは直近4週間とその前の4週間を比較します。";
+"highlightsInfo" = "マイルストーンと記録は選択した期間が対象です。トレンドはその期間と直前の同じ長さの期間を比較します。";
 "streak" = "連続記録";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
@@ -1044,10 +1043,6 @@
 "rangeThreeMonths" = "3か月";
 "rangeYear" = "1年";
 "rangeAllTime" = "全期間";
-"setsPerWeekTitle" = "週ごとのセット数";
-"setsPerMonthTitle" = "月ごとのセット数";
-"setsPerYearTitle" = "年ごとのセット数";
-"twelveMonths" = "12か月";
 "sixYears" = "6年";
 
 // History rework (week/month section recap + filter sheet)

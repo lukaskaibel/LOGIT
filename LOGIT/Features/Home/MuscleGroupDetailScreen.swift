@@ -10,17 +10,23 @@ import SwiftUI
 
 /// The single-muscle detail: a target-share tile (the diverging `MuscleBalanceBar` showing how the
 /// group's share sits against target, with a "↓ Below target / ↑ Above target / ✓ On target" pill),
-/// a 2×2 stat grid, a sets-history chart following the selected period, and the top exercises that
-/// train it. Opens scoped to the period the caller was showing (the overview's picker carries over).
-/// Pro — the full per-muscle breakdown is the analytics behind the wall.
+/// a 2×2 stat grid, a sets-history chart following the selected window, and the top exercises that
+/// train it. Opens scoped to the window the caller was showing — the Summary's picker carries all the
+/// way down here through Muscle Groups. Pro — the full per-muscle breakdown is the analytics behind
+/// the wall.
+///
+/// It used to carry a calendar Week / Month / Year picker, which made it the one screen in the chain
+/// that changed vocabulary: Summary on four rolling weeks → Muscle Groups on four rolling weeks →
+/// this screen on a calendar month, with the switch never mentioned. The route now hands over a
+/// `TrendWindow` unchanged.
 struct MuscleGroupDetailScreen: View {
     let muscleGroup: MuscleGroup
 
-    @State private var period: StatPeriod
+    @State private var window: TrendWindow
 
-    init(muscleGroup: MuscleGroup, initialPeriod: StatPeriod = .month) {
+    init(muscleGroup: MuscleGroup, initialWindow: TrendWindow = .default) {
         self.muscleGroup = muscleGroup
-        _period = State(initialValue: initialPeriod)
+        _window = State(initialValue: initialWindow)
     }
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
@@ -40,8 +46,9 @@ struct MuscleGroupDetailScreen: View {
     }
 
     private func content(allWorkouts: [Workout]) -> some View {
-        let range = period.currentRange()
-        let periodWorkouts = allWorkouts.filter { ($0.date).map { range.contains($0) } ?? false }
+        // `TrendWindow.contains` rather than a range check, so the boundary instant two windows share
+        // falls on the same side here as it does in every other rolling-window surface.
+        let periodWorkouts = allWorkouts.filter { ($0.date).map { window.contains($0) } ?? false }
         let occurrences = muscleGroupService.getMuscleGroupOccurances(in: periodWorkouts)
         let total = occurrences.reduce(0) { $0 + $1.1 }
         let groupSetCount = occurrences.first { $0.0 == muscleGroup }?.1 ?? 0
@@ -56,7 +63,7 @@ struct MuscleGroupDetailScreen: View {
 
         return ScrollView {
             VStack(spacing: SECTION_SPACING) {
-                PeriodPicker(selection: $period)
+                TrendWindowPicker(selection: $window)
                 if groupSetCount > 0 {
                     targetShare(entry: entry, percent: percent)
                     statGrid(setCount: groupSetCount, volume: volume, sessions: sessions, rank: rank)
@@ -117,7 +124,10 @@ struct MuscleGroupDetailScreen: View {
         switch state {
         case .under: word = "muscleBalanceBelowTarget"; icon = "arrow.down"; isGood = false
         case .over: word = "muscleBalanceAboveTarget"; icon = "arrow.up"; isGood = false
-        case .onTarget: word = "muscleBalanceOnTargetSection"; icon = "checkmark"; isGood = true
+        // `muscleBalanceAtTargetSection` — the key the overview's section header uses. This read
+        // `…OnTargetSection`, which has never existed in any locale, so the badge printed the raw
+        // key on screen.
+        case .onTarget: word = "muscleBalanceAtTargetSection"; icon = "checkmark"; isGood = true
         }
         return HStack(spacing: 5) {
             Image(systemName: icon)
@@ -187,52 +197,43 @@ struct MuscleGroupDetailScreen: View {
 
     // MARK: - Sets history chart
 
-    /// Sets per period over recent history, following the selected period like every other
-    /// period-scoped history chart (12 weeks / 12 months / 6 years), current period highlighted.
+    /// Sets per window over recent history, one bar per `TrendWindow` back from now, current window
+    /// highlighted. Titled "Sets over time" like the overview's "Balance over time" one level up
+    /// rather than "Sets per month": a rolling window has no name to put after "per", and the caption
+    /// beside it already says how far the strip reaches.
     private func setsHistoryChart(allWorkouts: [Workout]) -> some View {
         let sets = setsTraining(in: allWorkouts)
-        let buckets = PeriodHistoryChart.buckets(for: period) { range in
-            Double(sets.filter { ($0.workout?.date).map { range.contains($0) } ?? false }.count)
-        }
+        let buckets = TrendWindowBucket.history(
+            for: window,
+            raw: { range in
+                Double(sets.filter { set in
+                    guard let date = set.workout?.date else { return false }
+                    return date > range.lowerBound && date <= range.upperBound
+                }.count)
+            },
+            display: { $0 },
+            formatted: { String(Int($0.rounded())) }
+        )
         return VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
             HStack {
-                Text(setsHistoryTitle)
+                Text(NSLocalizedString("setsOverTime", comment: ""))
                     .sectionHeaderStyle2()
                 Spacer()
-                Text(setsHistoryCaption)
+                Text(window.historySpanCaption)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
-            // The shared period-history chart in its compact tile form — the same bars as the Summary
-            // and exercise detail screens, so tapping to inspect a period works here too, just without
-            // the x-axis labels the surrounding header already stands in for.
-            PeriodHistoryChart(
+            // The shared rolling-window chart in a compact tile — the same bars as the stat detail
+            // screens, so tapping to inspect a window works here too, at the tile's height.
+            TrendWindowHistoryChart(
                 buckets: buckets,
-                period: period,
                 valueLabel: NSLocalizedString("sets", comment: ""),
                 currentBarStyle: AnyShapeStyle(color),
                 unit: NSLocalizedString("sets", comment: ""),
-                height: 120,
-                showsXAxisLabels: false
+                height: 120
             )
             .padding(CELL_PADDING)
             .tileStyle()
-        }
-    }
-
-    private var setsHistoryTitle: String {
-        switch period {
-        case .week: return NSLocalizedString("setsPerWeekTitle", comment: "")
-        case .month: return NSLocalizedString("setsPerMonthTitle", comment: "")
-        case .year: return NSLocalizedString("setsPerYearTitle", comment: "")
-        }
-    }
-
-    private var setsHistoryCaption: String {
-        switch period {
-        case .week: return NSLocalizedString("twelveWeeks", comment: "")
-        case .month: return NSLocalizedString("twelveMonths", comment: "")
-        case .year: return NSLocalizedString("sixYears", comment: "")
         }
     }
 
@@ -296,7 +297,7 @@ struct MuscleGroupDetailScreen: View {
     // MARK: - Helpers
 
     private var periodCaption: String {
-        period.currentPeriodLabel
+        window.currentWindowLabel
     }
 
     private func setGroupsTraining(in workouts: [Workout]) -> [WorkoutSetGroup] {

@@ -950,7 +950,7 @@
 "muscleBalanceAboveTargetSection" = "Above target";
 "muscleBalanceGoalHeroCaption" = "groups at or above target · %d sets";
 "muscleBalanceGoalAccessibility" = "%d of %d muscle groups at or above target";
-"muscleBalanceActualOfTarget" = "%d%% of %d%%";
+"muscleBalanceOfTarget" = "of %d%% target";
 "muscleBalanceEmpty" = "Keep training to see your muscle split";
 "muscleBalanceMostTrained" = "Most trained · %@";
 "muscleBalanceSetsToGo" = "%@ · %d sets to go";
@@ -997,7 +997,6 @@
 "bestStreakLabel" = "Best · %d wks";
 "monthWorkoutsCount" = "%d workouts";
 "muscleBalanceEmptySubtitle" = "Log a workout to see your muscle split.";
-"muscleBalanceOverTime" = "Balance over time";
 "muscleBalanceGridCaption" = "% of sets · vs your target split";
 "muscleBalanceOnTargetShort" = "%d of 8 on target";
 "muscleBalanceOnTrack" = "On track";

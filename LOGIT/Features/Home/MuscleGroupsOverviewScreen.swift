@@ -8,20 +8,17 @@
 import SwiftUI
 
 /// The Muscle Groups overview: the goal hero leads — how many groups reached their target share, over
-/// the same filling tracks the Balance tile draws — then the groups split by standing (↓ Below target ·
-/// ↑ Above target · ✓ On target) as a two-column grid. Below, the slim segmented "Balance over time"
-/// chart: the 4 weeks / 3 months / 1 year picker sets the window and tapping a bar rebinds the hero and
-/// sections to it. Rows tap through to the muscle's own page. Pro; the Summary's Balance tile is the
-/// free hook into it.
+/// the same filling tracks the Balance tile draws — then the groups themselves, split by standing
+/// (⌄ Below target · ✓ At target · ⌃⌃ Above target) as a two-column grid of tiles. The 4 weeks /
+/// 3 months / 1 year picker sets the window. Tiles tap through to the muscle's own page. Pro; the
+/// Summary's Balance tile is the free hook into it.
 ///
-/// It opens on `TrendWindow.default` — the same rolling four weeks the tile reports — and the hero
-/// stays on the *current* window until a bar is tapped. It used to open on the newest window that had
-/// sets, which meant a tile saying "keep training" could open onto a fully drawn split from months ago,
-/// with nothing on screen naming the period. The header now always names the window it is showing.
+/// It opens on `TrendWindow.default` — the same rolling four weeks the tile reports — and it only ever
+/// describes the window the picker names, which the header states outright. It used to open on the
+/// newest window that had sets, which meant a tile saying "keep training" could open onto a fully drawn
+/// split from months ago, with nothing on screen naming the period.
 struct MuscleGroupsOverviewScreen: View {
     @State private var window: TrendWindow = .default
-    /// The bar the gesture last selected (a bucket id), or nil for "none tapped yet" → the current window.
-    @State private var rawSelection: String?
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     @EnvironmentObject private var targetSplitStore: MuscleTargetSplitStore
@@ -38,28 +35,20 @@ struct MuscleGroupsOverviewScreen: View {
     }
 
     private func content(allWorkouts: [Workout]) -> some View {
-        let target = targetSplitStore.split
-        let buckets = MuscleBalanceHistory.buckets(
-            from: allWorkouts,
-            window: window,
-            target: target,
+        let range = window.range(windowsAgo: 0)
+        let windowWorkouts = allWorkouts.filter { ($0.date).map { range.contains($0) } ?? false }
+        let calculator = MuscleBalanceCalculator(
+            workouts: windowWorkouts,
+            target: targetSplitStore.split,
             muscleGroupService: muscleGroupService
         )
-        let orderedGroups = orderedGroups(for: target)
-        let hasData = buckets.contains { $0.totalSets > 0 }
-        let selected = resolveSelected(in: buckets)
 
         return ScrollView {
             VStack(spacing: SECTION_SPACING) {
                 TrendWindowPicker(selection: $window)
-                if hasData {
-                    if selected.totalSets > 0 {
-                        goalHero(selected)
-                        goalSections(selected)
-                    } else {
-                        emptyBucketNote
-                    }
-                    chartSection(buckets: buckets, orderedGroups: orderedGroups, selectedID: selected.id)
+                if calculator.totalSets > 0 {
+                    goalHero(calculator)
+                    goalSections(calculator)
                 } else {
                     emptyState
                 }
@@ -69,9 +58,8 @@ struct MuscleGroupsOverviewScreen: View {
             .padding(.top)
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
         }
-        // Selecting a bar re-splits the sections, morphs the donut, and ticks a selection haptic.
-        .animation(.snappy(duration: 0.3), value: selected.id)
-        .sensoryFeedback(.selection, trigger: selected.id)
+        // Switching the window re-splits the sections and morphs the tracks.
+        .animation(.snappy(duration: 0.3), value: window)
         .isBlockedWithoutPro()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -80,7 +68,6 @@ struct MuscleGroupsOverviewScreen: View {
                     .font(.headline)
             }
         }
-        .onChange(of: window) { rawSelection = nil }
     }
 
     // MARK: - Goal hero
@@ -89,23 +76,22 @@ struct MuscleGroupsOverviewScreen: View {
     /// rule (a group counts once it is at least its target), same window on arrival — the detail
     /// screen is the tile with room, not a second opinion.
     ///
-    /// The window name sits above the count. It is the one line that makes every other number on the
-    /// screen readable: the same hero can describe "Last 4 weeks" or a four-week block from last
-    /// autumn depending on which bar is selected, and without it the two are indistinguishable.
+    /// The window name sits above the count, because every other number on the screen is a share
+    /// *of that window*: four weeks and a year produce very different splits from the same training.
     ///
-    /// No axis labels under the tracks: the rows immediately below name every group in reading
+    /// No axis labels under the tracks: the tiles immediately below name every group in reading
     /// order, and eight labels at track width would be abbreviations of the words already there.
-    private func goalHero(_ bucket: MuscleBalanceBucket) -> some View {
-        let entries = bucket.calculator.goalEntries
+    private func goalHero(_ calculator: MuscleBalanceCalculator) -> some View {
+        let entries = calculator.goalEntries
         return VStack(spacing: 14) {
             VStack(spacing: 2) {
-                Text(bucket.title)
+                Text(window.currentWindowLabel)
                     .font(.caption.weight(.bold))
                     .tracking(0.3)
                     .foregroundStyle(.tertiary)
                     .contentTransition(.identity)
                 HStack(alignment: .firstTextBaseline, spacing: 0) {
-                    Text("\(bucket.calculator.atLeastTargetCount())")
+                    Text("\(calculator.atLeastTargetCount())")
                         .foregroundStyle(Color.label)
                     Text("/\(entries.count)")
                         .foregroundStyle(Color.secondaryLabel)
@@ -116,7 +102,7 @@ struct MuscleGroupsOverviewScreen: View {
                 Text(
                     String(
                         format: NSLocalizedString("muscleBalanceGoalHeroCaption", comment: ""),
-                        bucket.totalSets
+                        calculator.totalSets
                     )
                 )
                 .font(.subheadline)
@@ -136,8 +122,8 @@ struct MuscleGroupsOverviewScreen: View {
     ///
     /// Below-target leads: it is the only section you can act on, and the other two are its cause.
     @ViewBuilder
-    private func goalSections(_ bucket: MuscleBalanceBucket) -> some View {
-        let entries = bucket.calculator.goalEntries
+    private func goalSections(_ calculator: MuscleBalanceCalculator) -> some View {
+        let entries = calculator.goalEntries
         let under = entries.filter { $0.goalState == .under }
             .sorted { ($0.goalFraction ?? 0) < ($1.goalFraction ?? 0) }
         let met = entries.filter { $0.goalState == .met }
@@ -145,12 +131,15 @@ struct MuscleGroupsOverviewScreen: View {
         let over = entries.filter { $0.goalState == .over }
             .sorted { $0.deviation > $1.deviation }
         VStack(spacing: SECTION_SPACING) {
-            goalSection("muscleBalanceBelowTargetSection", systemImage: "arrow.down", entries: under)
+            goalSection("muscleBalanceBelowTargetSection", systemImage: "chevron.down", entries: under)
             goalSection("muscleBalanceAtTargetSection", systemImage: "checkmark", entries: met, isGood: true)
             goalSection("muscleBalanceAboveTargetSection", systemImage: "chevron.up.2", entries: over)
         }
     }
 
+    /// The header glyphs are the ones the tracks already use: a group short of target has no badge and
+    /// gets the plain chevron down, at target is the check the badge wears, and overshoot is the same
+    /// double chevron the badge wears — each in the circle the badges are drawn in.
     @ViewBuilder
     private func goalSection(
         _ titleKey: String,
@@ -166,7 +155,7 @@ struct MuscleGroupsOverviewScreen: View {
                         .foregroundStyle(isGood ? Color.accentColor : Color.secondaryLabel)
                         .frame(width: 24, height: 24)
                         .background(
-                            RoundedRectangle(cornerRadius: 7)
+                            Circle()
                                 .fill(isGood ? Color.accentColor.opacity(0.16) : Color.fill)
                         )
                     Text(NSLocalizedString(titleKey, comment: ""))
@@ -199,39 +188,9 @@ struct MuscleGroupsOverviewScreen: View {
         }
     }
 
-    private func chartSection(
-        buckets: [MuscleBalanceBucket],
-        orderedGroups: [MuscleGroup],
-        selectedID: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-            Text(NSLocalizedString("muscleBalanceOverTime", comment: ""))
-                .sectionHeaderStyle2()
-                .frame(maxWidth: .infinity, alignment: .leading)
-            MuscleBalanceHistoryChart(
-                buckets: buckets,
-                orderedGroups: orderedGroups,
-                selectedID: selectedID,
-                rawSelection: $rawSelection
-            )
-            .padding(CELL_PADDING)
-            .tileStyle()
-        }
-    }
+    // MARK: - Empty state
 
-    // MARK: - Empty states
-
-    /// The selected bucket has no sets (the user tapped an empty bar) though other periods do.
-    private var emptyBucketNote: some View {
-        Text(NSLocalizedString("noData", comment: ""))
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 30)
-            .tileStyle()
-    }
-
-    /// No sets anywhere in the window — nothing to chart at all.
+    /// No sets in the window the picker names — nothing to split.
     private var emptyState: some View {
         VStack(spacing: 10) {
             BodyMapFigure(highlighted: nil)
@@ -269,34 +228,6 @@ struct MuscleGroupsOverviewScreen: View {
             .tileStyle()
         }
         .buttonStyle(TileButtonStyle())
-    }
-
-    // MARK: - Helpers
-
-    /// The bar currently selected, or — before any tap, or after a window switch — the **current**
-    /// window, so the screen opens on exactly what the Balance tile reported.
-    ///
-    /// It deliberately does not reach back to the newest window that has sets. That fallback made an
-    /// empty current window silently show old data, which is how a placeholder tile could open onto a
-    /// populated screen; an empty window now says so via `emptyBucketNote` and the reader can tap
-    /// back through the strip themselves.
-    private func resolveSelected(in buckets: [MuscleBalanceBucket]) -> MuscleBalanceBucket {
-        if let rawSelection, let match = buckets.first(where: { $0.id == rawSelection }) {
-            return match
-        }
-        return buckets[buckets.count - 1]
-    }
-
-    /// Chart stack order: biggest target share first, so the composition is stable across periods.
-    private func orderedGroups(for target: MuscleTargetSplit) -> [MuscleGroup] {
-        MuscleGroup.allCases.sorted {
-            let lhs = target.percentage(for: $0)
-            let rhs = target.percentage(for: $1)
-            if lhs != rhs { return lhs > rhs }
-            let li = MuscleGroup.allCases.firstIndex(of: $0) ?? 0
-            let ri = MuscleGroup.allCases.firstIndex(of: $1) ?? 0
-            return li < ri
-        }
     }
 }
 

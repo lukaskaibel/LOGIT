@@ -950,7 +950,7 @@
 "muscleBalanceAboveTargetSection" = "目標超過";
 "muscleBalanceGoalHeroCaption" = "部位が目標以上 · %d セット";
 "muscleBalanceGoalAccessibility" = "%d/%d の筋肉部位が目標以上";
-"muscleBalanceActualOfTarget" = "%d%%／目標 %d%%";
+"muscleBalanceOfTarget" = "目標 %d%%";
 "muscleBalanceEmpty" = "トレーニングを続けると筋肉の配分が表示されます";
 "muscleBalanceMostTrained" = "最多 · %@";
 "muscleBalanceSetsToGo" = "%@ · あと%dセット";
@@ -997,7 +997,6 @@
 "bestStreakLabel" = "最高 · %d週";
 "monthWorkoutsCount" = "%d回";
 "muscleBalanceEmptySubtitle" = "ワークアウトを記録すると筋肉の配分が表示されます。";
-"muscleBalanceOverTime" = "時間ごとのバランス";
 "muscleBalanceGridCaption" = "セットの割合・目標スプリット比";
 "muscleBalanceOnTargetShort" = "8つ中%dつが目標内";
 "muscleBalanceOnTrack" = "順調";

@@ -950,7 +950,7 @@
 "muscleBalanceAboveTargetSection" = "목표 초과";
 "muscleBalanceGoalHeroCaption" = "부위가 목표 이상 · %d 세트";
 "muscleBalanceGoalAccessibility" = "%d/%d 근육 부위가 목표 이상";
-"muscleBalanceActualOfTarget" = "%d%% / 목표 %d%%";
+"muscleBalanceOfTarget" = "목표 %d%%";
 "muscleBalanceEmpty" = "계속 운동하면 근육 분배가 표시됩니다";
 "muscleBalanceMostTrained" = "최다 훈련 · %@";
 "muscleBalanceSetsToGo" = "%@ · %d세트 남음";
@@ -997,7 +997,6 @@
 "bestStreakLabel" = "최고 · %d주";
 "monthWorkoutsCount" = "%d회";
 "muscleBalanceEmptySubtitle" = "운동을 기록하면 근육 분포가 표시됩니다.";
-"muscleBalanceOverTime" = "기간별 균형";
 "muscleBalanceGridCaption" = "세트 비율 · 목표 분배 대비";
 "muscleBalanceOnTargetShort" = "8개 중 %d개 목표 내";
 "muscleBalanceOnTrack" = "순조로움";

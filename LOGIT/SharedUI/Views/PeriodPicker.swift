@@ -24,11 +24,31 @@ struct PeriodPicker: View {
     }
 }
 
+/// The rolling-window counterpart: the shared 4 weeks / 3 months / 1 year control behind the
+/// Summary's top pair. Separate from `PeriodPicker` because the two enums answer different
+/// questions — see `TrendWindow` — and a screen picking a rolling window must never be handed a
+/// calendar period by mistake.
+struct TrendWindowPicker: View {
+    @Binding var selection: TrendWindow
+
+    var body: some View {
+        Picker(NSLocalizedString("period", comment: ""), selection: $selection) {
+            ForEach(TrendWindow.allCases) { window in
+                Text(window.title).tag(window)
+            }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+    }
+}
+
 #Preview {
     VStack(spacing: 20) {
         PeriodPicker(selection: .constant(.week))
         PeriodPicker(selection: .constant(.month))
         PeriodPicker(selection: .constant(.year))
+        TrendWindowPicker(selection: .constant(.fourWeeks))
+        TrendWindowPicker(selection: .constant(.oneYear))
     }
     .padding()
 }

@@ -1128,8 +1128,11 @@
 "strength" = "Fuerza";
 "strengthBasis" = "1RM estimado";
 "strengthEmpty" = "Sigue registrando entrenamientos para ver tu tendencia de fuerza.";
-"strengthWindowCaption" = "vs. las %d semanas anteriores";
 "nWeeks" = "%d semanas";
+"nMonths" = "%d meses";
+"oneYear" = "1 año";
+"lastNMonths" = "Últimos %d meses";
+"lastYear" = "Último año";
 "nSets" = "%d series";
 "allExercises" = "Todos los ejercicios";
 "strengthAxisMostDeclined" = "Mayor descenso";
@@ -1139,4 +1142,4 @@
 "strengthShowAllLifts" = "Ver los %d levantamientos";
 "strengthAxisLeastDeclined" = "Menor descenso";
 "showLess" = "Ver menos";
-"strengthInfo" = "El mejor 1RM estimado de cada ejercicio en las últimas %d semanas frente a las %d anteriores, promediado y ponderado por el número de series. Las series de cardio y peso corporal no tienen 1RM y no cuentan.";
+"strengthInfo" = "El mejor 1RM estimado de cada ejercicio en el periodo seleccionado frente al periodo anterior, promediado y ponderado según cuántas series hiciste. Las series de cardio y peso corporal no tienen 1RM y no cuentan.";

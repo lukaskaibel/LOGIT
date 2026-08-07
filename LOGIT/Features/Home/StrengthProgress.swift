@@ -8,42 +8,15 @@
 import CoreData
 import SwiftUI
 
-// MARK: - Window
-
-/// The comparison window behind the Strength figure: the last N weeks against the N before them.
-/// Rolling, never a calendar month — a partial month would make the number lie for three weeks out
-/// of four. The tile always uses `.default`; the detail screen lets you widen or narrow it, which is
-/// a real change to what's measured rather than a chart range.
-enum StrengthWindow: Int, CaseIterable, Identifiable {
-    case fourWeeks = 4
-    case eightWeeks = 8
-    case twelveWeeks = 12
-
-    /// Four weeks, so the recent half of the comparison is exactly the window the rest of the app
-    /// already calls "current" (`Exercise.currentBestWindowStart`). The prior four weeks are a
-    /// baseline and don't have to match anything, which is why the alignment claim holds: both
-    /// halves of the Summary's top pair describe the same four weeks.
-    static let `default` = StrengthWindow.fourWeeks
-
-    var id: Int { rawValue }
-
-    /// "8 weeks" — the picker segment.
-    var title: String {
-        String(format: NSLocalizedString("nWeeks", comment: ""), rawValue)
-    }
-
-    /// "vs the 8 weeks before" — the caption under a value.
-    var comparisonCaption: String {
-        String(format: NSLocalizedString("strengthWindowCaption", comment: ""), rawValue)
-    }
-}
-
 // MARK: - Model
 
 /// The whole-training strength trend: every trained exercise's percent change in estimated 1RM over
-/// the recent window vs the equally long window before it, weighted by how many sets it took to get
-/// there. Cardio and bodyweight sets carry no e1RM and drop out; an exercise needs a usable best in
-/// BOTH windows to count — with nothing to compare against there is no trend.
+/// the recent `TrendWindow` vs the equally long window before it, weighted by how many sets it took
+/// to get there. Cardio and bodyweight sets carry no e1RM and drop out; an exercise needs a usable
+/// best in BOTH windows to count — with nothing to compare against there is no trend.
+///
+/// The tile always reports `TrendWindow.default`; the detail screen lets you widen it, which is a
+/// real change to what's measured rather than a chart range.
 ///
 /// The per-exercise changes are kept rather than averaged away, because they are what the headline
 /// number *is*: the detail screen shows the weighted mean pulled back apart.
@@ -85,7 +58,7 @@ struct StrengthProgress {
     /// does *not* require a prior-window best: a lift you only started this month still has a weight,
     /// and leaving it out of a "strongest" list would be plainly wrong.
     var bests: [ExerciseBest] = []
-    let window: StrengthWindow
+    let window: TrendWindow
     /// How much of the comparison span (two windows) the logged history covers, 0…1. Only used by
     /// the empty state's ring, so it reads as "still filling up" rather than as nothing at all.
     var historyFraction: Double = 0
@@ -136,14 +109,11 @@ struct StrengthProgress {
 
     static func compute(
         workouts: [Workout],
-        window: StrengthWindow = .default,
+        window: TrendWindow = .default,
         reference: Date = .now
     ) -> StrengthProgress {
-        let calendar = Calendar.current
-        guard
-            let recentStart = calendar.date(byAdding: .weekOfYear, value: -window.rawValue, to: reference),
-            let priorStart = calendar.date(byAdding: .weekOfYear, value: -2 * window.rawValue, to: reference)
-        else { return StrengthProgress(changes: [], window: window) }
+        let recentStart = window.range(windowsAgo: 0, from: reference).lowerBound
+        let priorStart = window.range(windowsAgo: 1, from: reference).lowerBound
 
         // Unique exercises trained across the fetched workouts.
         var exercises: [Exercise] = []
@@ -157,10 +127,10 @@ struct StrengthProgress {
 
         // How far the history reaches into the span being compared — the empty state's progress.
         let earliest = workouts.filter { !$0.isEmpty }.compactMap(\.date).min()
-        let spanDays = Double(2 * window.rawValue * 7)
+        let span = reference.timeIntervalSince(priorStart)
         let historyFraction: Double = earliest.map { first in
-            let days = reference.timeIntervalSince(first) / 86_400
-            return min(max(days / spanDays, 0), 1)
+            guard span > 0 else { return 0 }
+            return min(max(reference.timeIntervalSince(first) / span, 0), 1)
         } ?? 0
 
         var changes: [ExerciseChange] = []

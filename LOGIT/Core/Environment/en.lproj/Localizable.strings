@@ -1128,8 +1128,11 @@
 "strength" = "Strength";
 "strengthBasis" = "Estimated 1RM";
 "strengthEmpty" = "Keep logging workouts to see your strength trend.";
-"strengthWindowCaption" = "vs the %d weeks before";
 "nWeeks" = "%d weeks";
+"nMonths" = "%d months";
+"oneYear" = "1 year";
+"lastNMonths" = "Last %d months";
+"lastYear" = "Last year";
 "nSets" = "%d sets";
 "allExercises" = "All exercises";
 "strengthAxisMostDeclined" = "Most declined";
@@ -1139,4 +1142,4 @@
 "strengthShowAllLifts" = "Show all %d lifts";
 "strengthAxisLeastDeclined" = "Least declined";
 "showLess" = "Show less";
-"strengthInfo" = "Each exercise's best estimated 1RM in the last %d weeks against the %d before, averaged and weighted by how many sets you did. Cardio and bodyweight sets carry no 1RM and don't count.";
+"strengthInfo" = "Each exercise's best estimated 1RM in the selected timeframe against the timeframe before it, averaged and weighted by how many sets you did. Cardio and bodyweight sets carry no 1RM and don't count.";

@@ -950,7 +950,7 @@
 "muscleBalanceAboveTargetSection" = "Sopra il target";
 "muscleBalanceGoalHeroCaption" = "gruppi al target o oltre · %d serie";
 "muscleBalanceGoalAccessibility" = "%d di %d gruppi muscolari al target o oltre";
-"muscleBalanceActualOfTarget" = "%d%% di %d%%";
+"muscleBalanceOfTarget" = "su %d%% obiettivo";
 "muscleBalanceEmpty" = "Continua ad allenarti per vedere la tua distribuzione";
 "muscleBalanceMostTrained" = "Più allenato · %@";
 "muscleBalanceSetsToGo" = "%@ · mancano %d serie";
@@ -997,7 +997,6 @@
 "bestStreakLabel" = "Migliore · %d sett";
 "monthWorkoutsCount" = "%d allenamenti";
 "muscleBalanceEmptySubtitle" = "Registra un allenamento per vedere la tua ripartizione muscolare.";
-"muscleBalanceOverTime" = "Equilibrio nel tempo";
 "muscleBalanceGridCaption" = "% delle serie · vs la tua ripartizione target";
 "muscleBalanceOnTargetShort" = "%d su 8 a target";
 "muscleBalanceOnTrack" = "In linea";

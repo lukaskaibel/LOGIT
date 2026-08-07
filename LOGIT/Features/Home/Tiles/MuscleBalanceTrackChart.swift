@@ -34,14 +34,35 @@ struct MuscleBalanceTrackChart: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: spacing) {
             ForEach(ordered) { entry in
-                track(entry)
+                MuscleBalanceTrack(entry: entry, badgeDiameter: badgeDiameter)
             }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
     }
 
-    private func track(_ entry: MuscleBalanceEntry) -> some View {
+    private var accessibilityLabel: Text {
+        let met = entries.filter { $0.goalState != .under }.count
+        let base = String(
+            format: NSLocalizedString("muscleBalanceGoalAccessibility", comment: ""),
+            met, entries.count
+        )
+        let short = entries.filter { $0.goalState == .under }
+            .sorted { ($0.goalFraction ?? 0) < ($1.goalFraction ?? 0) }
+            .prefix(2)
+            .map(\.muscleGroup.description)
+        guard !short.isEmpty else { return Text(base) }
+        return Text(base + ", " + short.joined(separator: ", "))
+    }
+}
+
+/// One muscle group's filling track, normalised to its own target — the shared bar behind both the
+/// chart above and the overview's cells, so the two can never drift apart.
+struct MuscleBalanceTrack: View {
+    let entry: MuscleBalanceEntry
+    var badgeDiameter: CGFloat = 13
+
+    var body: some View {
         let color = entry.muscleGroup.color
         let fraction = min(entry.goalFraction ?? 0, 1)
         let isMet = entry.goalState != .under
@@ -77,24 +98,16 @@ struct MuscleBalanceTrackChart: View {
         }
         .frame(width: badgeDiameter, height: badgeDiameter)
     }
-
-    private var accessibilityLabel: Text {
-        let met = entries.filter { $0.goalState != .under }.count
-        let base = String(
-            format: NSLocalizedString("muscleBalanceGoalAccessibility", comment: ""),
-            met, entries.count
-        )
-        let short = entries.filter { $0.goalState == .under }
-            .sorted { ($0.goalFraction ?? 0) < ($1.goalFraction ?? 0) }
-            .prefix(2)
-            .map(\.muscleGroup.description)
-        guard !short.isEmpty else { return Text(base) }
-        return Text(base + ", " + short.joined(separator: ", "))
-    }
 }
 
-/// One muscle group as a compact cell for the overview's two-column grid: the name and its verdict
-/// on one line, the same filling track beneath, and the actual-of-target numbers under that.
+/// One muscle group as a compact cell for the overview's two-column grid: the name at the top, the
+/// group's share of the period large at the bottom-leading corner over the target it is measured
+/// against, and its filling track standing full height on the trailing edge.
+///
+/// That is the app's tile anatomy — title, big value, caption, chart — so the grid reads as tiles
+/// rather than as a second kind of row. The track is literally `MuscleBalanceTrack`, the same bar the
+/// hero chart above draws, badge and all: a cell and its bar in the hero say the same thing in the
+/// same shape, and the verdict glyph lives in one place instead of being repeated beside the name.
 ///
 /// A full-width row could carry all of that on a single line, but two columns halve the scrolling on
 /// a screen whose whole job is comparing eight groups — and the grouping into below / at / above
@@ -102,62 +115,78 @@ struct MuscleBalanceTrackChart: View {
 struct MuscleBalanceGoalCell: View {
     let entry: MuscleBalanceEntry
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// One height for every cell, so a grid row stays even and every track is measured against the
+    /// same span. Dropped at accessibility sizes, where the text has to be free to grow.
+    private static let height: CGFloat = 104
+    /// The track's height once the cell is no longer fixed-height: it can't fill the leftover space,
+    /// so it takes a flat height rather than collapsing.
+    private static let accessibilityTrackHeight: CGFloat = 72
+    /// Roughly the hero chart's own width-to-height ratio at this cell's height (its tracks run about
+    /// 37×130), so the tile's bar reads as one of those bars rather than a thinner cousin.
+    private static let trackWidth: CGFloat = 24
+    /// Narrower than the track, like the hero's badges — the bar has to stay visible around it.
+    private static let badgeDiameter: CGFloat = 16
+
+    private var usesFixedHeight: Bool { !dynamicTypeSize.isAccessibilitySize }
+
     var body: some View {
-        let color = entry.muscleGroup.color
-        // Capped at target exactly like the vertical track, so "full" means the same thing on both
-        // surfaces. Overshoot is carried by the chevron rather than by extra bar length.
-        let fraction = min(entry.goalFraction ?? 0, 1)
-        return VStack(alignment: .leading, spacing: 7) {
-            HStack(spacing: 5) {
+        HStack(alignment: .bottom, spacing: 12) {
+            VStack(alignment: .leading, spacing: 0) {
                 Text(entry.muscleGroup.description)
                     .font(.system(.subheadline, design: .rounded, weight: .bold))
-                    .foregroundStyle(color)
+                    .foregroundStyle(entry.muscleGroup.color)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
-                Spacer(minLength: 2)
-                mark
-            }
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    // The unfilled remainder stays visible, the same way it does in the tile.
-                    Capsule().fill(Color.label.opacity(0.07))
-                    Capsule()
-                        .fill(color.opacity(entry.goalState == .under ? 1 : 0.35))
-                        .frame(width: geo.size.width * fraction)
-                }
-            }
-            .frame(height: 10)
-            Text(
-                String(
-                    format: NSLocalizedString("muscleBalanceActualOfTarget", comment: ""),
-                    entry.actualPercent, entry.targetPercent
+                Spacer(minLength: 10)
+                // Neutral, like every other value in the app: the name and the track already carry
+                // the group's colour, and a coloured number would read as a verdict of its own.
+                UnitView(
+                    value: "\(entry.actualPercent)",
+                    unit: "%",
+                    configuration: .large,
+                    unitColor: .secondaryLabel
                 )
-            )
-            .font(.caption2)
-            .monospacedDigit()
-            .foregroundStyle(.secondary)
+                .foregroundStyle(Color.label)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                Text(
+                    String(
+                        format: NSLocalizedString("muscleBalanceOfTarget", comment: ""),
+                        entry.targetPercent
+                    )
+                )
+                .font(.caption2)
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .padding(.top, 2)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            track
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 11)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: usesFixedHeight ? Self.height : nil)
         .secondaryTileStyle()
         .accessibilityElement(children: .combine)
     }
 
-    /// Never colour alone: the state is a glyph, so it survives greyscale and colour-blindness.
+    /// Fills the cell's height at normal sizes; at accessibility sizes the cell grows with its text,
+    /// so the track takes a fixed height instead (a `GeometryReader` given no height to work with
+    /// would have nothing to divide).
     @ViewBuilder
-    private var mark: some View {
-        switch entry.goalState {
-        case .under:
-            EmptyView()
-        case .met:
-            Image(systemName: "checkmark")
-                .font(.caption2.weight(.black))
-                .foregroundStyle(entry.muscleGroup.color)
-        case .over:
-            Image(systemName: "chevron.up.2")
-                .font(.caption2.weight(.black))
-                .foregroundStyle(entry.muscleGroup.color)
+    private var track: some View {
+        if usesFixedHeight {
+            MuscleBalanceTrack(entry: entry, badgeDiameter: Self.badgeDiameter)
+                .frame(width: Self.trackWidth)
+                .frame(maxHeight: .infinity)
+        } else {
+            MuscleBalanceTrack(entry: entry, badgeDiameter: Self.badgeDiameter)
+                .frame(width: Self.trackWidth, height: Self.accessibilityTrackHeight)
         }
     }
 }

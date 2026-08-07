@@ -17,8 +17,8 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
         switch self {
         case let .exercise(exercise): return "exercise\(String(describing: exercise.id))"
         case let .measurementDetail(type): return "measurementDetail\(type.rawValue)"
-        case let .summaryStat(metric, period): return "summaryStat\(metric.rawValue)\(period?.rawValue ?? "")"
-        case let .muscleGroupDetail(group, period): return "muscleGroupDetail\(group.rawValue)\(period.rawValue)"
+        case let .summaryStat(metric, window): return "summaryStat\(metric.rawValue)\(window?.rawValue ?? "")"
+        case let .muscleGroupDetail(group, window): return "muscleGroupDetail\(group.rawValue)\(window.rawValue)"
         case let .template(template): return "template\(String(describing: template.id))"
         case let .workout(workout): return "workout\(String(describing: workout.id))"
         default: return String(describing: self)
@@ -30,13 +30,16 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
          measurementDetail(MeasurementEntryType),
          measurements,
          muscleGroupsOverview,
-         muscleGroupDetail(MuscleGroup, StatPeriod),
+         // Carries the window down from Muscle Groups, which carried it from the Summary — the whole
+         // chain reports over one timeframe.
+         muscleGroupDetail(MuscleGroup, TrendWindow),
          muscleTargetSplit,
          progressHighlights,
          strength,
-         // The optional period pins the stat screen to a window (highlight cards open the chart
-         // they compare over); nil keeps the Summary's currently selected period.
-         summaryStat(WorkoutStatMetric, StatPeriod?),
+         // The optional window pins the stat screen to a timeframe (highlight cards open the chart
+         // they compare over); nil — every route from the Summary itself — inherits the screen's
+         // selected window, so the detail can't report a different span from the tile that opened it.
+         summaryStat(WorkoutStatMetric, TrendWindow?),
          targetPerWeek,
          weeklyGoal,
          template(Template),

@@ -12,6 +12,9 @@ struct ExerciseSetVolumeTile: View {
     let workoutSets: [WorkoutSet]
     /// Leads the tile with the exercise name (the pinned Summary grid); see `ExerciseBestMetricTile`.
     var showsExerciseName: Bool = false
+    /// The span the value covers — four weeks (the app-wide "current best") on the detail screen, the
+    /// Summary's selected window when pinned. See `ExerciseBestMetricTile`.
+    var window: TrendWindow = .fourWeeks
 
     var body: some View {
         ExerciseBestMetricTile(
@@ -21,6 +24,7 @@ struct ExerciseSetVolumeTile: View {
             unit: WeightUnit.used.rawValue,
             requiresPro: true,
             showsExerciseName: showsExerciseName,
+            window: window,
             metricValue: { $0.volume(for: exercise) },
             formattedValue: { formatWeightForDisplay($0) },
             chartValue: { convertWeightForDisplayingDecimal($0) }

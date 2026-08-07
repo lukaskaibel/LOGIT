@@ -9,21 +9,22 @@ import SwiftUI
 
 // MARK: - Summary Stat Tile
 
-/// One period-scoped core stat on the Summary screen — the shared `MetricTile` carrying a Summary
-/// value: the *per-workout average* over the selected period (a typical session, frequency divided
-/// out), the change versus the prior period's average, and a five-bucket history bar chart with the
-/// current period highlighted. The "per workout" subtitle names the basis right under the number.
-/// Parallel to `WorkoutStatTile` (which is hardwired to "this workout vs prior runs"), but reading
-/// the period block's window instead.
+/// One window-scoped core stat on the Summary screen — the shared `MetricTile` carrying a Summary
+/// value: the *per-workout average* over the screen's selected `TrendWindow` (a typical session,
+/// frequency divided out), the change versus the prior window's average, and a five-bucket history
+/// bar chart with the current window highlighted. The "per workout" subtitle names the basis right
+/// under the number. Parallel to `WorkoutStatTile` (which is hardwired to "this workout vs prior
+/// runs"), but reading the Summary's one timeframe instead.
 ///
-/// The highlighted bar always uses the app accent — it marks "this week" (the current period). The
-/// trend pill tints with the accent for a genuine gain and mutes to gray for a decline or no change
-/// (handled by `TrendIndicatorView`) — the same rule for every metric, duration included.
+/// The tile carries no caption naming its window, deliberately: the picker at the top of the screen
+/// names it once for everything below, which is the whole point of there being one picker.
+///
+/// The highlighted bar always uses the app accent — it marks the current window. The trend pill
+/// tints with the accent for a genuine gain and mutes to gray for a decline or no change (handled by
+/// `TrendIndicatorView`) — the same rule for every metric, duration included.
 struct SummaryStatTile: View {
     let metric: WorkoutStatMetric
     let data: SummaryViewModel.StatData
-    /// The scoped period — the placeholder ring reads how far through it we are.
-    let period: StatPeriod
     let onOpen: () -> Void
 
     /// Positive trends carry the app accent; `TrendIndicatorView` mutes declines and flat weeks to
@@ -50,12 +51,12 @@ struct SummaryStatTile: View {
             ) {
                 if showsTrendPlaceholder {
                     // One lone bar (or none) isn't a trend — it just reads as a half-loaded tile. Until
-                    // a second period has data, show a quiet "building your trend" hint instead; the real
+                    // a second window has data, show a quiet "building your trend" hint instead; the real
                     // bars return on their own once there's something to compare.
-                    TrendPlaceholder(progress: trendProgress, text: NSLocalizedString("buildingYourTrend", comment: ""))
+                    TrendPlaceholder(progress: data.historyFraction, text: NSLocalizedString("buildingYourTrend", comment: ""))
                 } else {
-                    // The highlighted "this week" bar always uses the accent, even for duration — it
-                    // marks the current period, not a judgement, so it reads the same as the other tiles.
+                    // The highlighted current-window bar always uses the accent, even for duration —
+                    // it marks the window, not a judgement, so it reads like the other tiles.
                     WorkoutRunsBarChart(bars: bars, currentStyle: AnyShapeStyle(Color.accentColor))
                 }
             }
@@ -63,26 +64,20 @@ struct SummaryStatTile: View {
         .buttonStyle(TileButtonStyle())
     }
 
-    /// Fewer than two periods with data means there's no trend to plot yet — a single bar, or none.
-    /// Swap the bar chart for the placeholder, but only once this period itself has a value: an
+    /// Fewer than two windows with data means there's no trend to plot yet — a single bar, or none.
+    /// Swap the bar chart for the placeholder, but only once this window itself has a value: an
     /// all-empty tile already shows "––" and keeps the shared chart's own no-data treatment.
     private var showsTrendPlaceholder: Bool {
-        data.hasData && periodsWithData < 2
+        data.hasData && windowsWithData < 2
     }
 
-    /// Periods in the five-bucket window that have data — gates the placeholder (a lone period isn't
+    /// Windows in the five-bucket strip that have data — gates the placeholder (a lone window isn't
     /// a trend).
-    private var periodsWithData: Int {
+    private var windowsWithData: Int {
         data.buckets.filter { $0 > 0 }.count
     }
 
-    /// The placeholder ring's fill — how far through the current period we are, so it creeps forward
-    /// as the week (or month / year) goes on rather than sitting at a fixed mark.
-    private var trendProgress: Double {
-        period.elapsedFraction()
-    }
-
-    /// The five history buckets right-aligned into the fixed five-slot chart, newest (current period)
+    /// The five history buckets right-aligned into the fixed five-slot chart, newest (current window)
     /// last and highlighted.
     private var bars: [WorkoutRunsBarChart.Bar] {
         let count = data.buckets.count
@@ -95,44 +90,48 @@ struct SummaryStatTile: View {
 // MARK: - Summary Stat Grid
 
 /// The Summary screen's 2×2 core-stats grid — volume and duration, then sets and reps — scoped to the
-/// view model's selected period, each tile a button into its `SummaryStatScreen`. Collapses to one
-/// column at accessibility type sizes, like the workout-detail grid.
+/// screen's selected `TrendWindow`, each tile a button into its `SummaryStatScreen` on that same
+/// window. Collapses to one column at accessibility type sizes, like the workout-detail grid.
 struct SummaryStatTileGrid: View {
     @ObservedObject var viewModel: SummaryViewModel
     let workouts: [Workout]
+    /// The Summary's one timeframe, owned by the screen and passed down — see `TrendWindow`.
+    let window: TrendWindow
     let onOpenDetail: (WorkoutStatMetric) -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private let spacing: CGFloat = 10
+    /// The gap between tiles. Exposed because the Strength + Balance pair above the grid sits on the
+    /// same rhythm — the six tiles are one block reading one window, not two sections.
+    static let tileSpacing: CGFloat = 10
+
+    private var spacing: CGFloat { Self.tileSpacing }
 
     var body: some View {
-        let period = viewModel.selectedPeriod
         if dynamicTypeSize.isAccessibilitySize {
             VStack(spacing: spacing) {
                 ForEach(WorkoutStatMetric.allCases) { metric in
-                    tile(metric, period: period)
+                    tile(metric)
                 }
             }
         } else {
             VStack(spacing: spacing) {
                 HStack(alignment: .top, spacing: spacing) {
-                    tile(.volume, period: period)
-                    tile(.duration, period: period)
+                    tile(.volume)
+                    tile(.duration)
                 }
                 HStack(alignment: .top, spacing: spacing) {
-                    tile(.sets, period: period)
-                    tile(.repetitions, period: period)
+                    tile(.sets)
+                    tile(.repetitions)
                 }
             }
         }
     }
 
-    private func tile(_ metric: WorkoutStatMetric, period: StatPeriod) -> some View {
+    private func tile(_ metric: WorkoutStatMetric) -> some View {
         SummaryStatTile(
             metric: metric,
-            data: viewModel.statData(for: metric, period: period, workouts: workouts),
-            period: period,
+            data: viewModel.statData(for: metric, window: window, workouts: workouts),
             onOpen: { onOpenDetail(metric) }
         )
     }

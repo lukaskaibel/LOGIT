@@ -986,7 +986,6 @@
 "rank" = "Posizione";
 "muscleDetailRankCaption" = "di 8 gruppi";
 "targetShare" = "Quota target";
-"twelveWeeks" = "12 settimane";
 "topExercises" = "Esercizi principali";
 "muscleDetailPercentOfSets" = "%d%% delle serie";
 "weekStreakSuffix" = "settimane di fila";
@@ -997,6 +996,7 @@
 "bestStreakLabel" = "Migliore · %d sett";
 "monthWorkoutsCount" = "%d allenamenti";
 "muscleBalanceEmptySubtitle" = "Registra un allenamento per vedere la tua ripartizione muscolare.";
+"setsOverTime" = "Serie nel tempo";
 "muscleBalanceGridCaption" = "% delle serie · vs la tua ripartizione target";
 "muscleBalanceOnTargetShort" = "%d su 8 a target";
 "muscleBalanceOnTrack" = "In linea";
@@ -1029,14 +1029,13 @@
 "firstTimePast" = "Prima volta oltre %@";
 "trendMuscleSets" = "Più serie per %@";
 "trendExerciseVolume" = "Volume di %@ in crescita";
-"trendWindowCaption" = "Ultime 4 settimane vs le 4 precedenti";
 "last4Weeks" = "Ultime 4 settimane";
 "fourWeeksBefore" = "4 settimane prima";
 "yearSoFar" = "%@ finora";
 "yearCrossingHeadline" = "%@ ha già superato %@";
 "monthsToSpare" = "con %d mesi di anticipo";
 "monthToSpare" = "con 1 mese di anticipo";
-"highlightsInfo" = "Traguardi e record coprono le ultime 4 settimane. Le tendenze confrontano le ultime 4 settimane con le 4 precedenti.";
+"highlightsInfo" = "Traguardi e record coprono il periodo selezionato. Le tendenze lo confrontano con il periodo precedente.";
 "streak" = "Serie";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
@@ -1044,10 +1043,6 @@
 "rangeThreeMonths" = "3M";
 "rangeYear" = "1A";
 "rangeAllTime" = "Tutto";
-"setsPerWeekTitle" = "Serie a settimana";
-"setsPerMonthTitle" = "Serie al mese";
-"setsPerYearTitle" = "Serie all'anno";
-"twelveMonths" = "12 mesi";
 "sixYears" = "6 anni";
 
 // History rework (week/month section recap + filter sheet)

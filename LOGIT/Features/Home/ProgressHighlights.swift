@@ -40,9 +40,9 @@ enum ProgressHighlight: Identifiable {
     }
 }
 
-/// A rolling-window trend: the last 4 weeks against the 4 before, for one scope + metric family.
-/// Values are in base units (grams for volume, plain counts otherwise); the displayed percent is
-/// already rounded the way `TrendIndicatorView` rounds, so thresholds and the pill can't disagree.
+/// A rolling-window trend: one window against the equally long one before it, for one scope + metric
+/// family. Values are in base units (grams for volume, plain counts otherwise); the displayed percent
+/// is already rounded the way `TrendIndicatorView` rounds, so thresholds and the pill can't disagree.
 struct ProgressTrend: Identifiable {
     enum Kind: String {
         /// One muscle group's set count.
@@ -59,6 +59,9 @@ struct ProgressTrend: Identifiable {
     /// Base-unit totals of the recent and prior windows.
     let currentValue: Int
     let previousValue: Int
+    /// The window the two values were measured over — the card labels its bars from this, so a
+    /// widened highlights screen can't go on saying "4 weeks before".
+    var window: TrendWindow = ProgressHighlights.recentWindow
 
     /// Rounded display percent (`TrendIndicatorView`'s rounding), guaranteed > 0 by construction.
     var displayedPercent: Int {
@@ -132,20 +135,41 @@ enum MilestoneLadder {
 // MARK: - Computation
 
 /// Assembles the Highlights feed from the already-fetched workouts — no new Core Data fetches, the
-/// same deal as the rest of the Summary. All windows anchor to the start of today so the feed
-/// is stable within a day.
+/// same deal as the rest of the Summary.
+///
+/// Everything is scoped to one `TrendWindow` and compared against the window before it: which
+/// records count as recent, which trends are measured, and how recent a year crossing has to be to
+/// still be worth celebrating. The Summary's carousel always passes `recentWindow`, whatever the
+/// screen's picker says — see `SummaryHighlightsSection` — while `ProgressHighlightsScreen` lets a
+/// reader widen it.
 enum ProgressHighlights {
 
-    /// Rolling window length used by all trends: 4 weeks, the app's standard recent window.
-    private static let windowDays = 28
+    /// The window the Summary's carousel is fixed to, and what the highlights screen opens on: four
+    /// weeks, the app's standard recent window. A highlight is an *event*, and an event stops being a
+    /// highlight once it stops being recent, so the carousel keeps this clock even when the rest of
+    /// the Summary is reading a year.
+    static let recentWindow = TrendWindow.fourWeeks
 
     /// Noise floors: a trend must clear its relative threshold AND its absolute delta, with enough
-    /// training in both windows, so "up 50%" can never come from 2 sets becoming 3.
+    /// training in both windows, so "up 50%" can never come from 2 sets becoming 3. The counting
+    /// floors are quoted per four weeks and scaled by `floorScale` — three workouts is a real month
+    /// of training and a rounding error in a year.
     private static let scopedPercentFloor = 15
     private static let setsDeltaFloor = 5
     private static let minWorkoutsPerWindow = 3
     private static let muscleMinSetsPerWindow = 6
     private static let exerciseMinSessionsPerWindow = 2
+
+    /// How many four-week blocks a window holds — the multiplier on every count-based noise floor, so
+    /// widening the window raises the bar for a trend instead of letting a year's worth of slack
+    /// through.
+    private static func floorScale(for window: TrendWindow) -> Int {
+        switch window {
+        case .fourWeeks: return 1
+        case .threeMonths: return 3
+        case .oneYear: return 13
+        }
+    }
     /// A year crossing is only impressive against a real year of training.
     private static let yearCrossingMinPreviousWorkouts = 20
 
@@ -155,6 +179,7 @@ enum ProgressHighlights {
     static func compute(
         workouts: [Workout],
         database: Database,
+        window: TrendWindow = ProgressHighlights.recentWindow,
         reference: Date = .now
     ) -> [ProgressHighlight] {
         let calendar = Calendar.current
@@ -162,9 +187,14 @@ enum ProgressHighlights {
         // before this session, the way the exercise tiles do.
         let finished = workouts.filter { !$0.isEmpty && !$0.isCurrentWorkout }
 
-        // Bests: the existing records feed over the recent window, split into milestones + records.
-        let windowStart = Exercise.currentBestWindowStart
-        let recentWorkouts = finished.filter { ($0.date ?? .distantPast) >= windowStart }
+        // Every window anchors to the start of tomorrow rather than to this instant, so today counts
+        // in full and the feed doesn't reshuffle as the day goes on.
+        let anchor = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: reference)) ?? reference
+        let currentRange = window.range(windowsAgo: 0, from: anchor)
+        let priorRange = window.range(windowsAgo: 1, from: anchor)
+
+        // Bests: the existing records feed over the window, split into milestones + records.
+        let recentWorkouts = finished.filter { ($0.date ?? .distantPast) > currentRange.lowerBound }
         let records = SummaryRecords.records(in: recentWorkouts, database: database)
         var milestones: [ProgressHighlight] = []
         var plainRecords: [ProgressHighlight] = []
@@ -185,18 +215,19 @@ enum ProgressHighlights {
             }
         }
 
-        // Rolling windows: [end-28d, end) vs [end-56d, end-28d), end = start of tomorrow so today
-        // counts fully.
-        let end = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: reference)) ?? reference
-        guard
-            let currentStart = calendar.date(byAdding: .day, value: -windowDays, to: end),
-            let priorStart = calendar.date(byAdding: .day, value: -2 * windowDays, to: end)
-        else { return milestones + plainRecords }
-
-        let currentWorkouts = finished.filter { ($0.date ?? .distantPast) >= currentStart && ($0.date ?? .distantPast) < end }
-        let priorWorkouts = finished.filter { ($0.date ?? .distantPast) >= priorStart && ($0.date ?? .distantPast) < currentStart }
+        // The window against the equally long one before it. Half-open at the lower edge, so a
+        // workout on the shared boundary instant counts in the newer window only.
+        let currentWorkouts = finished.filter { workout in
+            guard let date = workout.date else { return false }
+            return date > currentRange.lowerBound && date <= currentRange.upperBound
+        }
+        let priorWorkouts = finished.filter { workout in
+            guard let date = workout.date else { return false }
+            return date > priorRange.lowerBound && date <= priorRange.upperBound
+        }
         let currentSets = currentWorkouts.flatMap { $0.sets }
         let priorSets = priorWorkouts.flatMap { $0.sets }
+        let scale = floorScale(for: window)
 
         var scopedTrends: [ProgressTrend] = []
 
@@ -204,8 +235,8 @@ enum ProgressHighlights {
         // stat grid on the same scroll already reports those three numbers with their own trend
         // pills. Highlights earns its space by saying what the grid can't — which muscle group and
         // which lift moved.
-        let enoughWorkouts = currentWorkouts.count >= minWorkoutsPerWindow
-            && priorWorkouts.count >= minWorkoutsPerWindow
+        let enoughWorkouts = currentWorkouts.count >= minWorkoutsPerWindow * scale
+            && priorWorkouts.count >= minWorkoutsPerWindow * scale
 
         // Muscle-group set trends.
         if enoughWorkouts {
@@ -215,10 +246,13 @@ enum ProgressHighlights {
             for group in MuscleGroup.allCases {
                 let current = currentByGroup[group] ?? 0
                 let prior = priorByGroup[group] ?? 0
-                guard current >= muscleMinSetsPerWindow, prior >= muscleMinSetsPerWindow else { continue }
-                let trend = ProgressTrend(kind: .muscleGroupSets, muscleGroup: group, currentValue: current, previousValue: prior)
+                guard current >= muscleMinSetsPerWindow * scale, prior >= muscleMinSetsPerWindow * scale else { continue }
+                let trend = ProgressTrend(
+                    kind: .muscleGroupSets, muscleGroup: group,
+                    currentValue: current, previousValue: prior, window: window
+                )
                 guard trend.displayedPercent >= scopedPercentFloor,
-                      current - prior >= setsDeltaFloor else { continue }
+                      current - prior >= setsDeltaFloor * scale else { continue }
                 scopedTrends.append(trend)
             }
         }
@@ -236,12 +270,15 @@ enum ProgressHighlights {
             for exercise in exercises {
                 let currentSessions = currentWorkouts.filter { $0.exercises.contains(exercise) }
                 let priorSessions = priorWorkouts.filter { $0.exercises.contains(exercise) }
-                guard currentSessions.count >= exerciseMinSessionsPerWindow,
-                      priorSessions.count >= exerciseMinSessionsPerWindow else { continue }
+                guard currentSessions.count >= exerciseMinSessionsPerWindow * scale,
+                      priorSessions.count >= exerciseMinSessionsPerWindow * scale else { continue }
                 let current = getVolume(of: currentSessions.flatMap { $0.sets }, for: exercise)
                 let prior = getVolume(of: priorSessions.flatMap { $0.sets }, for: exercise)
                 guard prior > 0 else { continue }
-                let trend = ProgressTrend(kind: .exerciseVolume, exercise: exercise, currentValue: current, previousValue: prior)
+                let trend = ProgressTrend(
+                    kind: .exerciseVolume, exercise: exercise,
+                    currentValue: current, previousValue: prior, window: window
+                )
                 guard trend.displayedPercent >= scopedPercentFloor else { continue }
                 scopedTrends.append(trend)
             }
@@ -252,7 +289,7 @@ enum ProgressHighlights {
         // Year crossing — computed from full history, shown only while the crossing is recent.
         var yearItems: [ProgressHighlight] = []
         if let crossing = yearCrossing(in: finished, reference: reference, calendar: calendar),
-           crossing.crossingDate >= currentStart {
+           crossing.crossingDate > currentRange.lowerBound {
             yearItems.append(.yearCrossing(crossing))
         }
 

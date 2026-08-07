@@ -127,11 +127,7 @@ struct StrengthProgress {
 
         // How far the history reaches into the span being compared — the empty state's progress.
         let earliest = workouts.filter { !$0.isEmpty }.compactMap(\.date).min()
-        let span = reference.timeIntervalSince(priorStart)
-        let historyFraction: Double = earliest.map { first in
-            guard span > 0 else { return 0 }
-            return min(max(reference.timeIntervalSince(first) / span, 0), 1)
-        } ?? 0
+        let historyFraction = window.historyFraction(firstDataDate: earliest, from: reference)
 
         var changes: [ExerciseChange] = []
         var bests: [ExerciseBest] = []

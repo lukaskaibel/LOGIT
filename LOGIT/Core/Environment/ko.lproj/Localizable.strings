@@ -986,7 +986,6 @@
 "rank" = "순위";
 "muscleDetailRankCaption" = "8개 그룹 중";
 "targetShare" = "목표 비중";
-"twelveWeeks" = "12주";
 "topExercises" = "주요 운동";
 "muscleDetailPercentOfSets" = "세트의 %d%%";
 "weekStreakSuffix" = "주 연속";
@@ -997,6 +996,7 @@
 "bestStreakLabel" = "최고 · %d주";
 "monthWorkoutsCount" = "%d회";
 "muscleBalanceEmptySubtitle" = "운동을 기록하면 근육 분포가 표시됩니다.";
+"setsOverTime" = "기간별 세트";
 "muscleBalanceGridCaption" = "세트 비율 · 목표 분배 대비";
 "muscleBalanceOnTargetShort" = "8개 중 %d개 목표 내";
 "muscleBalanceOnTrack" = "순조로움";
@@ -1029,14 +1029,13 @@
 "firstTimePast" = "처음으로 %@ 돌파";
 "trendMuscleSets" = "%@ 세트 증가";
 "trendExerciseVolume" = "%@ 볼륨 상승";
-"trendWindowCaption" = "최근 4주 vs 이전 4주";
 "last4Weeks" = "최근 4주";
 "fourWeeksBefore" = "이전 4주";
 "yearSoFar" = "%@년 현재까지";
 "yearCrossingHeadline" = "%@년이 벌써 %@년을 넘어섰어요";
 "monthsToSpare" = "%d개월 남기고";
 "monthToSpare" = "1개월 남기고";
-"highlightsInfo" = "마일스톤과 기록은 최근 4주를 다룹니다. 추세는 최근 4주와 이전 4주를 비교합니다.";
+"highlightsInfo" = "마일스톤과 기록은 선택한 기간을 다룹니다. 추세는 그 기간을 직전 기간과 비교합니다.";
 "streak" = "연속 기록";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
@@ -1044,10 +1043,6 @@
 "rangeThreeMonths" = "3개월";
 "rangeYear" = "1년";
 "rangeAllTime" = "전체";
-"setsPerWeekTitle" = "주별 세트 수";
-"setsPerMonthTitle" = "월별 세트 수";
-"setsPerYearTitle" = "연도별 세트 수";
-"twelveMonths" = "12개월";
 "sixYears" = "6년";
 
 // History rework (week/month section recap + filter sheet)

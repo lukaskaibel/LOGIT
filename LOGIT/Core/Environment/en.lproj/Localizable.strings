@@ -986,7 +986,6 @@
 "rank" = "Rank";
 "muscleDetailRankCaption" = "of 8 groups";
 "targetShare" = "Target Share";
-"twelveWeeks" = "12 weeks";
 "topExercises" = "Top Exercises";
 "muscleDetailPercentOfSets" = "%d%% of sets";
 "weekStreakSuffix" = "week streak";
@@ -997,6 +996,7 @@
 "bestStreakLabel" = "Best · %d wks";
 "monthWorkoutsCount" = "%d workouts";
 "muscleBalanceEmptySubtitle" = "Log a workout to see your muscle split.";
+"setsOverTime" = "Sets over time";
 "muscleBalanceGridCaption" = "% of sets · vs your target split";
 "muscleBalanceOnTargetShort" = "%d of 8 on target";
 "muscleBalanceOnTrack" = "On track";
@@ -1029,14 +1029,13 @@
 "firstTimePast" = "First time past %@";
 "trendMuscleSets" = "More %@ sets";
 "trendExerciseVolume" = "%@ volume is up";
-"trendWindowCaption" = "Last 4 weeks vs the 4 before";
 "last4Weeks" = "Last 4 weeks";
 "fourWeeksBefore" = "4 weeks before";
 "yearSoFar" = "%@ so far";
 "yearCrossingHeadline" = "%@ already beat %@";
 "monthsToSpare" = "with %d months to spare";
 "monthToSpare" = "with 1 month to spare";
-"highlightsInfo" = "Milestones and records cover the last 4 weeks. Trends compare the last 4 weeks with the 4 before.";
+"highlightsInfo" = "Milestones and records cover the selected window. Trends compare it with the window before it.";
 "streak" = "Streak";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
@@ -1044,10 +1043,6 @@
 "rangeThreeMonths" = "3M";
 "rangeYear" = "1Y";
 "rangeAllTime" = "All";
-"setsPerWeekTitle" = "Sets per Week";
-"setsPerMonthTitle" = "Sets per Month";
-"setsPerYearTitle" = "Sets per Year";
-"twelveMonths" = "12 months";
 "sixYears" = "6 years";
 
 // History rework (week/month section recap + filter sheet)

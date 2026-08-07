@@ -8,69 +8,89 @@
 import CoreData
 import SwiftUI
 
-// MARK: - Trend section
+// MARK: - Trend pair
 
-/// The Summary's opening band: the Strength + Balance pair, then the Highlights carousel — the
-/// trend, then what just happened. The pair leads because both halves always render and barely move
-/// week to week, which makes them a stable anchor; Highlights is conditional (it vanishes with
-/// nothing to show), so it can never be the thing the screen opens on.
+/// The Summary's opening band: the Strength + Balance pair. It leads because both halves always
+/// render and barely move window to window, which makes them a stable anchor for the screen.
 ///
-/// Both tiles read the **same four weeks** — `Exercise.currentBestWindowStart`, the window the rest
-/// of the app already means by "current". That is why they can sit side by side without a caption
-/// each: there is only one period on this band, so naming it twice would be noise.
-struct SummaryTrendSection: View {
+/// Both tiles read the screen's selected `TrendWindow` — the same one the four stat tiles and the
+/// pinned exercise tiles below them read. That is why neither carries a caption naming its period:
+/// there is one timeframe on this screen and the picker above already names it.
+struct SummaryTrendPair: View {
+    let workouts: [Workout]
+    /// The Summary's one timeframe — see `TrendWindow`.
+    let window: TrendWindow
+
+    @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
+    @State private var strength: StrengthProgress = .empty
+
+    /// The workouts inside the selected window — what Balance reports over.
+    private var currentWindowWorkouts: [Workout] {
+        workouts.filter { workout in
+            guard !workout.isEmpty, let date = workout.date else { return false }
+            return window.contains(date)
+        }
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Button {
+                homeNavigationCoordinator.path.append(.strength)
+            } label: {
+                StrengthTile(progress: strength)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(TileButtonStyle())
+            Button {
+                homeNavigationCoordinator.path.append(.muscleGroupsOverview)
+            } label: {
+                MuscleBalanceGoalTile(workouts: currentWindowWorkouts)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(TileButtonStyle())
+        }
+        .frame(height: PAIRED_TILE_HEIGHT)
+        .task(id: "\(window.rawValue)-\(workouts.count)") {
+            strength = StrengthProgress.compute(workouts: workouts, window: window)
+        }
+    }
+}
+
+// MARK: - Highlights
+
+/// The Highlights band: what just happened, as a carousel of the top few by priority, with "Show All"
+/// leading to the full list.
+///
+/// It sits at the **bottom** of the Summary and stays on the recent window whatever the screen's
+/// picker says — the two facts are the same decision. Highlights are *events* (a record, a milestone,
+/// a crossing), not aggregates, and an event only counts as a highlight while it is recent: scoped to
+/// a year the carousel would fill with records from ten months ago, which is accurate and no longer
+/// "what just happened". Everything above it on the screen answers "how am I training"; this answers
+/// "what did I just do", so it reads last and keeps its own clock. `ProgressHighlightsScreen` carries
+/// the picker for a reader who does want to look further back.
+///
+/// The section renders nothing at all when there is nothing to show — which is the other reason it
+/// can't lead the screen.
+struct SummaryHighlightsSection: View {
     let workouts: [Workout]
 
     @EnvironmentObject private var database: Database
     @EnvironmentObject private var homeNavigationCoordinator: HomeNavigationCoordinator
-    @State private var strength: StrengthProgress = .empty
     @State private var highlights: [ProgressHighlight] = []
 
-    /// The same four weeks the Strength figure compares against — see the type doc.
-    private var currentWindowWorkouts: [Workout] {
-        let start = Exercise.currentBestWindowStart
-        return workouts.filter { !$0.isEmpty && ($0.date ?? .distantPast) >= start }
-    }
-
     var body: some View {
-        VStack(spacing: 8) {
-            HStack(alignment: .top, spacing: 10) {
-                Button {
-                    homeNavigationCoordinator.path.append(.strength)
-                } label: {
-                    StrengthTile(progress: strength)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(TileButtonStyle())
-                Button {
-                    homeNavigationCoordinator.path.append(.muscleGroupsOverview)
-                } label: {
-                    MuscleBalanceGoalTile(workouts: currentWindowWorkouts)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(TileButtonStyle())
-            }
-            .frame(height: PAIRED_TILE_HEIGHT)
-            if !highlights.isEmpty {
-                highlightsSection
-                    .padding(.top, 8)
-            }
-        }
-        .task(id: workouts.count) {
-            strength = StrengthProgress.compute(workouts: workouts)
-            highlights = ProgressHighlights.compute(workouts: workouts, database: database)
-        }
-    }
-
-    /// Section header + carousel. The carousel shows the top few by priority; "Show All" appears
-    /// only once there is genuinely more than it shows.
-    private var highlightsSection: some View {
+        // The conditional sits *inside* a container that always exists, so `.task` has something to
+        // attach to. On a `Group` whose content is empty the modifier is distributed to zero children
+        // and never runs — which leaves `highlights` empty forever and the section permanently hidden.
         VStack(spacing: SECTION_HEADER_SPACING) {
-            HStack {
-                Text(NSLocalizedString("highlights", comment: ""))
-                    .sectionHeaderStyle2()
-                Spacer()
-                if highlights.count > ProgressHighlights.carouselLimit {
+            if !highlights.isEmpty {
+                HStack {
+                    Text(NSLocalizedString("highlights", comment: ""))
+                        .sectionHeaderStyle2()
+                    Spacer()
+                    // Always offered, not only on overflow: the button is the way into the screen
+                    // that can widen the window, so it has to be there even when the carousel
+                    // happens to be showing everything the recent window holds.
                     Button {
                         homeNavigationCoordinator.path.append(.progressHighlights)
                     } label: {
@@ -78,9 +98,16 @@ struct SummaryTrendSection: View {
                     }
                     .fontWeight(.semibold)
                 }
+                ProgressHighlightsCarousel(
+                    items: Array(highlights.prefix(ProgressHighlights.carouselLimit))
+                )
             }
-            ProgressHighlightsCarousel(
-                items: Array(highlights.prefix(ProgressHighlights.carouselLimit))
+        }
+        .task(id: workouts.count) {
+            highlights = ProgressHighlights.compute(
+                workouts: workouts,
+                database: database,
+                window: ProgressHighlights.recentWindow
             )
         }
     }

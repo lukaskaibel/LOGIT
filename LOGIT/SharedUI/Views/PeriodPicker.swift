@@ -24,10 +24,19 @@ struct PeriodPicker: View {
     }
 }
 
-/// The rolling-window counterpart: the shared 4 weeks / 3 months / 1 year control behind the
-/// Summary's top pair. Separate from `PeriodPicker` because the two enums answer different
-/// questions — see `TrendWindow` — and a screen picking a rolling window must never be handed a
-/// calendar period by mistake.
+/// **The Summary's timeframe control** — 4 weeks / 3 months / 1 year, over `TrendWindow`'s rolling
+/// windows. One instance sits under the Summary's title and scopes the whole screen; each of the six
+/// detail screens behind it (Strength, Muscle Groups, and the Volume / Duration / Sets / Reps stat
+/// screens) carries the same control with the same three options, opened on whatever the Summary was
+/// showing. Highlights' own screen carries it too.
+///
+/// Deliberately one component rather than a picker per screen: the options have to stay identical
+/// everywhere, and the previous arrangement — a `PeriodPicker` here, a `TrendWindowPicker` there,
+/// nothing at all on a third screen — is exactly how the timeframes drifted apart. A new scoped
+/// surface adopts this; it does not declare its own.
+///
+/// Separate from `PeriodPicker` because the two enums answer different questions — see `TrendWindow`
+/// — and a screen picking a rolling window must never be handed a calendar period by mistake.
 struct TrendWindowPicker: View {
     @Binding var selection: TrendWindow
 

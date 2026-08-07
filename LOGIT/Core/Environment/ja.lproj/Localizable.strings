@@ -957,7 +957,6 @@
 "muscleBalanceSetsToGo" = "%@ · あと%dセット";
 "muscleBalanceLightMonth" = "今月は%@が少なめ";
 "muscleBalanceLightYear" = "今年は%@が少なめ";
-"muscleBalanceBarA11y" = "%1$@：セットの%2$d%%、目標%3$d%%";
 "muscleBalanceRoomToBalance" = "調整の余地あり";
 "balanceVsTarget" = "目標との比較";
 "adjustTargetSplit" = "目標配分を調整";
@@ -986,9 +985,11 @@
 "sessions" = "セッション";
 "rank" = "順位";
 "muscleDetailRankCaption" = "8グループ中";
-"targetShare" = "目標シェア";
+"share" = "シェア";
+"muscleDetailSetsVsTarget" = "セット数と目標";
+"muscleDetailTargetSetsCaption" = "%1$@ · 目標 %2$d%%";
+"muscleDetailShareOfSets" = "全セット中";
 "topExercises" = "トップ種目";
-"muscleDetailPercentOfSets" = "セットの%d%%";
 "weekStreakSuffix" = "週連続";
 "weeklyGoalAccessibility" = "週間目標、%d/%d ワークアウト";
 "weeklyGoalSubtitle" = "週%d回の目標のうち";

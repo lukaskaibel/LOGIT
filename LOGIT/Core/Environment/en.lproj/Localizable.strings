@@ -957,7 +957,6 @@
 "muscleBalanceSetsToGo" = "%@ · %d sets to go";
 "muscleBalanceLightMonth" = "%@ light this month";
 "muscleBalanceLightYear" = "%@ light this year";
-"muscleBalanceBarA11y" = "%1$@: %2$d%% of sets, target %3$d%%";
 "muscleBalanceRoomToBalance" = "Room to balance";
 "balanceVsTarget" = "Balance vs target";
 "adjustTargetSplit" = "Adjust target split";
@@ -986,9 +985,11 @@
 "sessions" = "Sessions";
 "rank" = "Rank";
 "muscleDetailRankCaption" = "of 8 groups";
-"targetShare" = "Target Share";
+"share" = "Share";
+"muscleDetailSetsVsTarget" = "Sets vs target";
+"muscleDetailTargetSetsCaption" = "%1$@ · %2$d%% target share";
+"muscleDetailShareOfSets" = "of all sets";
 "topExercises" = "Top Exercises";
-"muscleDetailPercentOfSets" = "%d%% of sets";
 "weekStreakSuffix" = "week streak";
 "weeklyGoalAccessibility" = "Weekly goal, %d of %d workouts";
 "weeklyGoalSubtitle" = "of your %d-workout goal";

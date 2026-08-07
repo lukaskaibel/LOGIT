@@ -32,6 +32,9 @@ struct HomeScreen: View {
     @State private var isShowingStartWorkoutSheet = false
     @State private var isShowingWorkoutGoalSheet = false
     @State private var didApplyScreenshotDeepLink = false
+    @State private var isShowingNavigationTitle = false
+    @State private var titleRowHeight: CGFloat = 0
+    @State private var windowTopInset: CGFloat = 0
 
     // MARK: - Body
 
@@ -48,6 +51,13 @@ struct HomeScreen: View {
                             summaryHeader(workouts: workouts)
                                 .padding(.horizontal)
                                 .padding(.top, 8)
+                                // Just how tall the row is, which only changes with Dynamic Type.
+                                // How far it has travelled is the scroll geometry's business below.
+                                .onGeometryChange(for: CGFloat.self) { proxy in
+                                    proxy.size.height
+                                } action: { _, height in
+                                    titleRowHeight = height
+                                }
                             VStack(spacing: SECTION_SPACING) {
                                 if summaryViewModel.mode(workouts: workouts) == .firstOpen {
                                     SummaryWelcomeView(
@@ -73,11 +83,36 @@ struct HomeScreen: View {
                         }
                         .ignoresSafeArea(.all)
                     )
-                    // The title row is in-flow scroll content, so the navigation bar stays hidden here
-                    // (it must not leak into pushed screens — see ScenarioScreenshots). A soft top edge
-                    // effect keeps the ColorfulX wash reaching the very top instead of being cut off.
+                    // A soft top edge effect keeps the ColorfulX wash reaching the very top instead
+                    // of being cut off, and blurs the tiles under the bar once they scroll up.
                     .scrollEdgeEffectStyle(.soft, for: .top)
-                    .toolbar(.hidden, for: .navigationBar)
+                    // The handover: the row gives the title up to the navigation bar once it has
+                    // travelled its own height, the swap a stock large title makes. Measured
+                    // against the row, so it holds at any Dynamic Type size, and resolved to a Bool
+                    // in here rather than kept as a moving offset, so a scroll re-renders this
+                    // screen twice on the way down instead of once per frame.
+                    //
+                    // Travel is `contentOffset` against the window's top inset, and deliberately NOT
+                    // against `contentInsets.top`. Giving the bar a title is what makes it claim its
+                    // 44 pt row, and that row lands in `contentInsets.top` — and so in the
+                    // `.scrollView` coordinate space, and in every global frame inside the stack.
+                    // Judging the title by a measure the title itself moves is a feedback loop, and
+                    // it latched: the bar title stuck on over an unscrolled Summary with the large
+                    // title shoved down below it. `contentOffset` only moves when the user scrolls.
+                    .onScrollGeometryChange(for: Bool.self) { geometry in
+                        guard titleRowHeight > 0 else { return false }
+                        let travel = geometry.contentOffset.y + windowTopInset
+                        return travel > titleRowHeight - Self.titleHandoverPoint
+                    } action: { _, hasScrolledPastTitleRow in
+                        isShowingNavigationTitle = hasScrolledPastTitleRow
+                    }
+                    // The real navigation bar, carrying only the collapsed title. An inline bar with
+                    // an empty title claims no layout space, so the large title below still starts
+                    // hard against the top inset — the whole reason it is in-flow content (see
+                    // `summaryHeader`) — while scrolling still gets the system's own bar: its glass,
+                    // its scroll edge effect, its title crossfade, and a proper accessibility heading.
+                    .navigationTitle(isShowingNavigationTitle ? NSLocalizedString("summary", comment: "") : "")
+                    .navigationBarTitleDisplayMode(.inline)
                     .sheet(isPresented: $isShowingStartWorkoutSheet) {
                         WorkoutStartSheet()
                     }
@@ -151,11 +186,24 @@ struct HomeScreen: View {
                     }
                 }
             }
+            // Outside the navigation stack, so this is the window's own top inset — the one measure
+            // on this screen the navigation bar cannot move. See the handover above for why that
+            // matters.
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.safeAreaInsets.top
+            } action: { _, top in
+                windowTopInset = top
+            }
             .scrollContentBackground(.hidden)
         }
     }
 
     // MARK: - Sections
+
+    /// How much of the title row may still be showing when the navigation bar takes the title over:
+    /// a sliver, so the swap lands as the row disappears under the bar rather than after it is
+    /// already gone.
+    private static let titleHandoverPoint: CGFloat = 16
 
     /// The large-title row: "Summary" and the weekly-goal pill on one line, at the very top of the
     /// scroll. Rendered in-flow rather than as a navigation-bar title for two reasons. It sits where
@@ -163,7 +211,9 @@ struct HomeScreen: View {
     /// 44 pt bar row a stock large title reserves for toolbar items; and custom `.largeTitle`-placement
     /// toolbar content is not exposed to the accessibility tree on iOS 26 (the bar reports zero
     /// children), so a toolbar pill could never be reached by VoiceOver or UI automation. In-flow
-    /// content is fully accessible and costs only that the pill scrolls away with the title.
+    /// content is fully accessible and costs only that the pill scrolls away with the title. Only
+    /// the *collapsed* half of a large title is left to the navigation bar, which owns it from
+    /// `titleHandoverPoint` on.
     private func summaryHeader(workouts: [Workout]) -> some View {
         HStack {
             Text(NSLocalizedString("summary", comment: ""))

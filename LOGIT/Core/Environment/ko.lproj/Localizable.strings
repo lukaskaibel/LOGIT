@@ -1127,6 +1127,7 @@
 // Strength (Progress tab tile + detail)
 "strength" = "근력";
 "strengthBasis" = "예상 1RM";
+"strengthExerciseBasis" = "%@ e1RM";
 "strengthEmpty" = "운동을 계속 기록하면 근력 추세를 볼 수 있습니다.";
 "nWeeks" = "%d주";
 "nMonths" = "%d개월";

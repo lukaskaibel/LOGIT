@@ -33,6 +33,13 @@ final class ExerciseMergeService {
     /// Merges `source` exercise into `target` exercise.
     /// All WorkoutSetGroups, TemplateSetGroups, and PinnedExerciseTiles referencing `source`
     /// are reassigned to `target`, then `source` is deleted.
+    ///
+    /// Reassignment walks `source`'s own relationships rather than fetching by id and asking each
+    /// group which exercise it thinks it trains. Both of those detours have bitten: a nil `source.id`
+    /// made the fetch match nothing, and `setGroup.exercise` resolves through the group's
+    /// `exerciseOrder` id list, so a group whose list had drifted answered "no exercise" and was
+    /// skipped — leaving it attached to an exercise about to be deleted. The relationship is the one
+    /// thing that cannot lie about who holds what.
     func merge(source: Exercise, into target: Exercise) throws {
         guard source != target else {
             throw ExerciseMergeError.sameExercise
@@ -52,39 +59,72 @@ final class ExerciseMergeService {
     // MARK: - Private
 
     private func reassignWorkoutSetGroups(from source: Exercise, to target: Exercise) {
-        let allSetGroups = database.fetch(
-            WorkoutSetGroup.self,
-            predicate: NSPredicate(format: "ANY exercises_.id == %@", (source.id ?? UUID()) as CVarArg)
-        ) as? [WorkoutSetGroup] ?? []
+        let allSetGroups = (source.setGroups_?.allObjects as? [WorkoutSetGroup]) ?? []
 
         for setGroup in allSetGroups {
-            if setGroup.exercise == source {
-                removeFromSourceSetGroupOrder(setGroup: setGroup, source: source)
-                setGroup.exercise = target
+            // Rebuild the group's exercise list from the relationship, substituting target for
+            // source at whichever positions source occupies. Going through `exercise` /
+            // `secondaryExercise` would read the drifted order list back in.
+            let current = (setGroup.exercises_?.allObjects as? [Exercise]) ?? []
+            let ordered = Database.reconciled(
+                current: setGroup.exerciseOrder, members: current.compactMap { $0.id }
+            ) ?? setGroup.exerciseOrder ?? []
+            let byId = Dictionary(current.compactMap { ex in ex.id.map { ($0, ex) } }) { first, _ in first }
+
+            var replacement = ordered.compactMap { byId[$0] }.map { $0 == source ? target : $0 }
+            if replacement.isEmpty { replacement = [target] }
+            // A super set whose two exercises were merged together collapses to one lane rather
+            // than listing the target twice.
+            if replacement.count == 2, replacement[0] == replacement[1] {
+                replacement.removeLast()
             }
-            if setGroup.secondaryExercise == source {
-                removeFromSourceSetGroupOrder(setGroup: setGroup, source: source)
-                setGroup.secondaryExercise = target
-            }
+
+            removeFromSourceSetGroupOrder(setGroup: setGroup, source: source)
+            setGroup.exercises_ = NSSet(array: replacement)
+            setGroup.exerciseOrder = replacement.compactMap { $0.id }
+            appendToTargetSetGroupOrder(setGroup: setGroup, target: target)
+            setGroup.reattributeEntries()
         }
     }
 
     private func reassignTemplateSetGroups(from source: Exercise, to target: Exercise) {
-        let allTemplateSetGroups = database.fetch(
-            TemplateSetGroup.self,
-            predicate: NSPredicate(format: "ANY exercises_.id == %@", (source.id ?? UUID()) as CVarArg)
-        ) as? [TemplateSetGroup] ?? []
+        let allTemplateSetGroups = (source.templateSetGroups_?.allObjects as? [TemplateSetGroup]) ?? []
 
         for setGroup in allTemplateSetGroups {
-            if setGroup.exercise == source {
-                removeFromSourceTemplateSetGroupOrder(setGroup: setGroup, source: source)
-                setGroup.exercise = target
+            let current = (setGroup.exercises_?.allObjects as? [Exercise]) ?? []
+            let ordered = Database.reconciled(
+                current: setGroup.exerciseOrder, members: current.compactMap { $0.id }
+            ) ?? setGroup.exerciseOrder ?? []
+            let byId = Dictionary(current.compactMap { ex in ex.id.map { ($0, ex) } }) { first, _ in first }
+
+            var replacement = ordered.compactMap { byId[$0] }.map { $0 == source ? target : $0 }
+            if replacement.isEmpty { replacement = [target] }
+            if replacement.count == 2, replacement[0] == replacement[1] {
+                replacement.removeLast()
             }
-            if setGroup.secondaryExercise == source {
-                removeFromSourceTemplateSetGroupOrder(setGroup: setGroup, source: source)
-                setGroup.secondaryExercise = target
-            }
+
+            removeFromSourceTemplateSetGroupOrder(setGroup: setGroup, source: source)
+            setGroup.exercises_ = NSSet(array: replacement)
+            setGroup.exerciseOrder = replacement.compactMap { $0.id }
+            appendToTargetTemplateSetGroupOrder(setGroup: setGroup, target: target)
+            setGroup.reattributeEntries()
         }
+    }
+
+    private func appendToTargetSetGroupOrder(setGroup: WorkoutSetGroup, target: Exercise) {
+        guard let groupID = setGroup.id else { return }
+        var order = target.setGroupOrder ?? []
+        guard !order.contains(groupID) else { return }
+        order.append(groupID)
+        target.setGroupOrder = order
+    }
+
+    private func appendToTargetTemplateSetGroupOrder(setGroup: TemplateSetGroup, target: Exercise) {
+        guard let groupID = setGroup.id else { return }
+        var order = target.templateSetGroupOrder ?? []
+        guard !order.contains(groupID) else { return }
+        order.append(groupID)
+        target.templateSetGroupOrder = order
     }
 
     private func removeFromSourceSetGroupOrder(setGroup: WorkoutSetGroup, source: Exercise) {

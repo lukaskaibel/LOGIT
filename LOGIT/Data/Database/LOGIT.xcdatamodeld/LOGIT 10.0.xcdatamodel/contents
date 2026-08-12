@@ -14,9 +14,9 @@
         <attribute name="setGroupOrder" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[UUID]"/>
         <attribute name="templateSetGroupOrder" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[UUID]"/>
         <relationship name="setEntries_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SetEntry" inverseName="exercise" inverseEntity="SetEntry"/>
-        <relationship name="setGroups_" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="WorkoutSetGroup" inverseName="exercises_" inverseEntity="WorkoutSetGroup"/>
+        <relationship name="setGroups_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="WorkoutSetGroup" inverseName="exercises_" inverseEntity="WorkoutSetGroup"/>
         <relationship name="templateSetEntries_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TemplateSetEntry" inverseName="exercise" inverseEntity="TemplateSetEntry"/>
-        <relationship name="templateSetGroups_" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TemplateSetGroup" inverseName="exercises_" inverseEntity="TemplateSetGroup"/>
+        <relationship name="templateSetGroups_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TemplateSetGroup" inverseName="exercises_" inverseEntity="TemplateSetGroup"/>
     </entity>
     <entity name="MeasurementEntry" representedClassName="MeasurementEntry" syncable="YES" codeGenerationType="class">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>

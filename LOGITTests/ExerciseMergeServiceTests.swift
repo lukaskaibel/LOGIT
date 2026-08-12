@@ -327,4 +327,169 @@ final class ExerciseMergeServiceTests: XCTestCase {
         XCTAssertEqual(target.setGroups.count, 1)
         XCTAssertNil(database.getExercise(byID: source.id!))
     }
+
+    // MARK: - History Survival
+
+    /// The 2026-07-28 data loss, reduced to its mechanism: a set group whose `exerciseOrder` id
+    /// list no longer resolves answers "no exercise" to `setGroup.exercise`, so the old
+    /// reassignment skipped it and left it attached to the source — which the cascade delete rule
+    /// then took down, erasing that workout's history. Reassignment now walks the relationship,
+    /// and the relationship no longer cascades.
+    func testMergeReassignsSetGroupWithDriftedExerciseOrder() {
+        let source = builder.createExercise(name: "Benchpress")
+        let target = builder.createExercise(name: "_default.exercise.barbellBenchPress")
+
+        let workout = builder.createWorkout(name: "Push Day", date: .daysAgo(30))
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: source,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 8, weight: 90000, setGroup: setGroup)
+
+        // Drift: the relationship still holds source, the id list no longer names it.
+        setGroup.exerciseOrder = []
+        XCTAssertNil(setGroup.exercise, "precondition: the group can no longer name its exercise")
+
+        try! mergeService.merge(source: source, into: target)
+
+        XCTAssertEqual(setGroup.exercise, target, "the group must survive and follow the merge")
+        XCTAssertEqual(setGroup.sets.count, 1)
+        XCTAssertEqual(setGroup.sets.first?.maximum(.weight, for: target), 90000)
+        XCTAssertEqual(target.setGroups.count, 1, "and be visible through the target's order list")
+        XCTAssertEqual(workout.setGroups.count, 1, "and still be part of its workout")
+    }
+
+    /// Whatever else goes wrong, deleting an exercise must never delete a past workout's sets.
+    /// This is the guarantee the Cascade→Nullify change buys, and it holds even when the group is
+    /// still fully attached to the exercise being deleted.
+    func testDeletingExerciseKeepsWorkoutHistory() {
+        let exercise = builder.createExercise(name: "Barbell Row")
+        let workout = builder.createWorkout(name: "Pull Day", date: .daysAgo(10))
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: exercise,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 10, weight: 70000, setGroup: setGroup)
+        let setGroupID = setGroup.id!
+
+        database.context.delete(exercise)
+        // Delete rules are applied here, not at `delete(_:)` — this is the moment the old
+        // Cascade rule would have taken the set group and its sets.
+        database.context.processPendingChanges()
+
+        let surviving = database.fetch(
+            WorkoutSetGroup.self, predicate: NSPredicate(format: "id == %@", setGroupID as CVarArg)
+        ) as? [WorkoutSetGroup] ?? []
+        XCTAssertEqual(surviving.count, 1, "the set group must outlive its exercise")
+        XCTAssertEqual(surviving.first?.sets.count, 1, "with its sets intact")
+        XCTAssertEqual(workout.setGroups.count, 1, "and still belong to the workout")
+    }
+
+    /// A merged-away exercise leaves entries naming the target; if the group's own link is lost
+    /// (a peer's delete racing the reassignment), the repair sweep puts it back.
+    func testRepairAdoptsOrphanedSetGroupFromItsEntries() {
+        let exercise = builder.createExercise(name: "Overhead Press")
+        let workout = builder.createWorkout(name: "Shoulders", date: .daysAgo(5))
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: exercise,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 6, weight: 45000, setGroup: setGroup)
+
+        // Sever only the group→exercise link, as a nullify from a remote delete would.
+        setGroup.exercises_ = NSSet()
+        setGroup.exerciseOrder = []
+        XCTAssertNil(setGroup.exercise)
+
+        Database.performRelationshipRepair(in: database.context)
+
+        XCTAssertEqual(setGroup.exercise, exercise, "the entries still knew what this group trained")
+        XCTAssertEqual(exercise.setGroups.count, 1)
+    }
+
+    /// A set group missing from its exercise's id list is invisible everywhere that reads
+    /// `exercise.sets` — the Summary strength tile, records, the in-workout comparison. The sweep
+    /// relists it without touching ids it cannot account for.
+    func testRepairRelistsSetGroupMissingFromOrderList() {
+        let exercise = builder.createExercise(name: "Squat")
+        let workout = builder.createWorkout(name: "Legs", date: .daysAgo(3))
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: exercise,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 5, weight: 120000, setGroup: setGroup)
+
+        let strangerID = UUID()
+        exercise.setGroupOrder = [strangerID]
+        XCTAssertEqual(exercise.setGroups.count, 0, "precondition: the group is invisible")
+
+        Database.performRelationshipRepair(in: database.context)
+
+        XCTAssertEqual(exercise.setGroups.count, 1, "the group is visible again")
+        XCTAssertEqual(exercise.sets.count, 1)
+        XCTAssertTrue(
+            exercise.setGroupOrder?.contains(strangerID) ?? false,
+            "ids the sweep cannot account for are left alone — pruning them would flap between devices"
+        )
+    }
+
+    /// Duplicated ids show one set group twice and double-count its volume.
+    func testRepairCollapsesDuplicatedOrderEntries() {
+        let exercise = builder.createExercise(name: "Deadlift")
+        let workout = builder.createWorkout(name: "Pull", date: .daysAgo(2))
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: exercise,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 3, weight: 140000, setGroup: setGroup)
+
+        exercise.setGroupOrder = [setGroup.id!, setGroup.id!]
+        XCTAssertEqual(exercise.setGroups.count, 2, "precondition: counted twice")
+
+        Database.performRelationshipRepair(in: database.context)
+
+        XCTAssertEqual(exercise.setGroups.count, 1)
+    }
+
+    /// Deleting the last set of a group whose `setOrder` has drifted must not take the group —
+    /// and its other sets — with it.
+    func testDeletingSetKeepsGroupWhenSetOrderDrifted() {
+        let exercise = builder.createExercise(name: "Lat Pulldown")
+        let workout = builder.createWorkout(name: "Back", date: .daysAgo(1))
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: exercise,
+            workout: workout
+        )
+        let first = database.newStandardSet(repetitions: 12, weight: 40000, setGroup: setGroup)
+        database.newStandardSet(repetitions: 10, weight: 45000, setGroup: setGroup)
+
+        // Drift: the group reports zero sets while still holding two.
+        setGroup.setOrder = []
+        XCTAssertEqual(setGroup.numberOfSets, 0, "precondition: the group looks empty")
+
+        database.delete(first)
+        drainContext()
+
+        let remaining = ((setGroup.sets_?.allObjects as? [WorkoutSet]) ?? [])
+            .filter { !$0.isDeleted }
+        XCTAssertFalse(setGroup.isDeleted, "the group must survive")
+        XCTAssertEqual(remaining.count, 1, "only the deleted set is gone")
+    }
+
+    // MARK: - Helpers
+
+    /// `Database.delete` enqueues its work on the context's queue, which on the main-queue view
+    /// context lands on the next run-loop turn. Same drain the other database tests use.
+    private func drainContext() {
+        let drained = expectation(description: "context drained")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { drained.fulfill() }
+        waitForExpectations(timeout: 10.0)
+        database.context.processPendingChanges()
+    }
 }

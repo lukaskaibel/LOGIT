@@ -121,6 +121,7 @@ public class Database: ObservableObject {
         if !usesInMemoryStore {
             startSetEntryReconciliation()
             backfillSetEntries()
+            repairOrderedRelationships()
         }
     }
 
@@ -140,6 +141,10 @@ public class Database: ObservableObject {
             self.setEntryReconciliationDebounce?.cancel()
             let workItem = DispatchWorkItem { [weak self] in
                 self?.backfillSetEntries()
+                // Imported changes are the main way an ordered relationship and its id list drift
+                // apart (a property-level merge takes one device's whole array), so the repair
+                // sweep rides along with the backfill on the same debounce and context.
+                self?.repairOrderedRelationships()
             }
             self.setEntryReconciliationDebounce = workItem
             DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: workItem)
@@ -282,7 +287,12 @@ public class Database: ObservableObject {
                     updatedSets.remove(at: index)
                     setGroup.sets = updatedSets
                 }
-                if setGroup.numberOfSets == 0 {
+                // Count the relationship, not `numberOfSets`: that reads `setOrder`, and a set
+                // group whose id list has drifted reports zero sets while still holding them —
+                // which would take the whole group, and every set in it, down with this one.
+                let remainingSets = (setGroup.sets_?.allObjects as? [WorkoutSet] ?? [])
+                    .filter { $0 != workoutSet }
+                if remainingSets.isEmpty {
                     self.context.delete(setGroup)
                 } else {
                     self.context.delete(workoutSet)

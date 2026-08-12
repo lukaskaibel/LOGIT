@@ -97,14 +97,20 @@ struct ExerciseVolumeTile: View {
 
     // MARK: - Chart
 
-    /// The five periods as bars, the current one highlighted. Bars are keyed by their period's start
-    /// as a plain category rather than binned by a calendar unit: a rolling window has no unit to
-    /// bin by, and binning weeks by `.weekOfYear` only ever restated what the keys already say.
+    /// The five periods as bars, the current one highlighted.
+    ///
+    /// The x-axis is **categorical** — one slot per shown period, keyed by its position — not the
+    /// period's start date on a continuous scale. A rolling window has no calendar unit for `BarMark`
+    /// to bin by, and without a bin the axis has no band for a proportional bar width to be a
+    /// proportion *of*: the shared `footerBarWidth` ratio resolved to nothing and the bars vanished
+    /// entirely. Slots also match how the other tile charts (and the detail screens' strips) lay
+    /// their bars out, so every tile's bars end up the same width.
     private func barChart(_ shown: [PeriodVolume]) -> some View {
-        Chart {
-            ForEach(shown) { period in
+        let slots = (0 ..< max(shown.count, 1)).map(String.init)
+        return Chart {
+            ForEach(Array(shown.enumerated()), id: \.element.id) { index, period in
                 BarMark(
-                    x: .value("Period", period.start),
+                    x: .value("Period", String(index)),
                     y: .value("Volume", convertWeightForDisplayingDecimal(period.volume)),
                     width: TileBarChartStyle.footerBarWidth
                 )
@@ -115,18 +121,9 @@ struct ExerciseVolumeTile: View {
                 .tileBarStyle()
             }
         }
-        .chartXScale(domain: chartDomain(shown))
+        .chartXScale(domain: slots)
         .chartXAxis {}
         .chartYAxis {}
-    }
-
-    /// The plot's span: the oldest shown period's start through the newest one's end, so the five
-    /// bars sit evenly however long a period is.
-    private func chartDomain(_ shown: [PeriodVolume]) -> ClosedRange<Date> {
-        guard let first = shown.first, let last = shown.last, first.start < last.end else {
-            return Date.now.startOfWeek ... Date.now.endOfWeek
-        }
-        return first.start ... last.end
     }
 
     // MARK: - Periods

@@ -22,39 +22,46 @@ import SwiftUI
 /// sweep (see `continuousForegroundStyle`) so the gradient doesn't restart inside each; a flat
 /// (`color:`) accent keeps a plain foreground, so a per-glyph `foregroundStyle` inside the label
 /// still wins over the pill's tint — the two-line badges rely on this.
-struct ProgressIndicatorPill<Label: View>: View {
-    /// Padding and spacing presets. `.regular` is the trend / gain / "n improved" pill; `.prominent`
-    /// is the in-workout metric badge (a touch wider for its two-line content); `.compact` is quieter
-    /// metadata like the lapsed-tile pill — smaller and tighter, a size below a score; `.hero` is the
-    /// Strength tile, the one place where the pill *is* the headline rather than an annotation on one.
-    enum Size {
-        case regular, prominent, compact, hero
+/// Padding and spacing presets for `ProgressIndicatorPill`. `.regular` is the trend / gain /
+/// "n improved" pill; `.prominent` is the in-workout metric badge (a touch wider for its two-line
+/// content); `.compact` is quieter metadata like the lapsed-tile pill — smaller and tighter, a size
+/// below a score; `.hero` is the Strength tile, the one place where the pill *is* the headline
+/// rather than an annotation on one.
+///
+/// Deliberately a top-level type rather than nested in the (generic) pill: nested types of a generic
+/// struct carry its parameter, so a view storing one as a property would pin every pill it builds to
+/// a single `Label` type.
+enum ProgressPillSize {
+    case regular, prominent, compact, hero
 
-        var horizontalPadding: CGFloat {
-            switch self {
-            case .regular: return 10
-            case .prominent: return 12
-            case .compact: return 8
-            case .hero: return 18
-            }
-        }
-
-        var verticalPadding: CGFloat {
-            switch self {
-            case .regular, .prominent: return 6
-            case .compact: return 5
-            case .hero: return 9
-            }
-        }
-
-        var spacing: CGFloat {
-            switch self {
-            case .regular, .prominent: return 4
-            case .compact: return 3
-            case .hero: return 9
-            }
+    var horizontalPadding: CGFloat {
+        switch self {
+        case .regular: return 10
+        case .prominent: return 12
+        case .compact: return 8
+        case .hero: return 18
         }
     }
+
+    var verticalPadding: CGFloat {
+        switch self {
+        case .regular, .prominent: return 6
+        case .compact: return 5
+        case .hero: return 9
+        }
+    }
+
+    var spacing: CGFloat {
+        switch self {
+        case .regular, .prominent: return 4
+        case .compact: return 3
+        case .hero: return 9
+        }
+    }
+}
+
+struct ProgressIndicatorPill<Label: View>: View {
+    typealias Size = ProgressPillSize
 
     /// The leading SF Symbol — `arrow.up`/`arrow.down` for a trend, `trophy.fill` for a record,
     /// `arrow.up` for a gain, `minus` for "no change". Nil draws the label alone: a flat trend shows

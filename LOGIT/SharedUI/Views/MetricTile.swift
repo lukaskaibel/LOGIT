@@ -10,11 +10,19 @@ import SwiftUI
 // MARK: - Metric Tile
 
 /// The shared metric tile behind every stat on the exercise-detail and workout-detail screens: a
-/// title row with an optional navigation chevron, an optional gray subtitle, and the large label-
-/// colored value; beneath them a full-width chart supplied by the caller — a line sparkline bleeding to
-/// the tile's bottom and side edges, or a bar chart inset just enough (`chartBleeds: false`) that its
-/// rounded bars sit inside the corners — with the trend pill overlaid on the chart's bottom-leading
-/// corner (the line fades in from the left so it doesn't collide with the pill).
+/// title row carrying the navigation chevron beside the title and the trend pill in the trailing
+/// corner, an optional gray subtitle, and the large label-colored value; beneath them the caller's
+/// chart, running the tile's **full width** — a line sparkline bleeding to the bottom and side
+/// edges, or a bar chart inset just enough (`chartBleeds: false`) that its rounded bars sit inside
+/// the corners.
+///
+/// The pill sits in the title row rather than beside the value or over the chart's corner, and both
+/// alternatives are ruled out by arithmetic rather than taste: the value is a 28pt `.title` and a
+/// four-digit volume with its unit already fills the tile's 144pt of content width, while a pill in
+/// the chart's bottom-leading corner makes the chart's width depend on whether a pill exists (two
+/// tiles in one row then get differently-sized charts) and forces the sparkline to fade away its
+/// leading third just to clear it. In the title row it costs no width the number needs and no height
+/// at all — the title shrinks to fit instead (see `titleMinimumScale`).
 ///
 /// The accent (a flat muscle color, or a workout's multi-muscle gradient) tints only the trend pill
 /// and, through the caller's chart, the highlighted bar/line; the number itself always stays neutral
@@ -74,14 +82,19 @@ struct MetricTile<ChartContent: View>: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    /// Every tile is pinned to one height so a grid row stays even, and a value too long to share a
-    /// line with the trend pill pushes the pill onto its own line by stealing height from the chart
-    /// rather than growing the tile. Dropped at accessibility sizes, where the tiles stack in one
-    /// column and size to their content.
+    /// Every tile is pinned to one height so a grid row stays even; the chart takes whatever height
+    /// the text block above it leaves rather than growing the tile. Dropped at accessibility sizes,
+    /// where the tiles stack in one column and size to their content.
     private static var fixedHeight: CGFloat { 172 }
     /// The chart's height once the tile is no longer fixed-height (accessibility sizes): the footer
     /// can't fill the leftover space, so it takes a flat height instead of collapsing.
     private static var accessibilityChartHeight: CGFloat { 64 }
+    /// How far the title may shrink before it truncates instead. The pill now shares its row, so the
+    /// longest titles ("Set Volume", "Satzvolumen") no longer fit at full size — they scale down a
+    /// step rather than losing their tail, which is what makes a metric name still readable. Titles
+    /// longer than any metric name (a pinned tile leads with the *exercise* name) bottom out here and
+    /// truncate: past this point shrinking stops buying legibility.
+    private static var titleMinimumScale: CGFloat { 0.75 }
 
     private var usesFixedHeight: Bool { !dynamicTypeSize.isAccessibilitySize }
 
@@ -102,25 +115,40 @@ struct MetricTile<ChartContent: View>: View {
         .tileStyle()
     }
 
+    /// Title, its chevron, then the trend pill in the trailing corner. The chevron travels with the
+    /// title rather than staying pinned to the trailing edge: it marks *this title* as tappable, and
+    /// leaving it in the corner would put two unrelated things there and cost the title the width
+    /// between them. "Title ›" is iOS's own pattern for a heading that navigates.
     private var header: some View {
-        HStack(spacing: 6) {
+        // Tight spacing, deliberately: every point between the four items is a point the title can't
+        // use, and at 6pt each the longest metric names ("Repetitions" beside a three-glyph percent)
+        // ran out of room to shrink into and truncated instead.
+        HStack(spacing: 4) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.label)
                 .lineLimit(1)
                 // A long title ("Satzvolumen") gets shrunk rather than ellipsized.
-                .minimumScaleFactor(0.7)
-            Spacer(minLength: 4)
+                .minimumScaleFactor(Self.titleMinimumScale)
             if showsChevron {
                 NavigationChevron()
                     .foregroundStyle(Color.secondaryLabel)
             }
+            Spacer(minLength: 4)
+            if hasPill {
+                pill
+                    // The pill never compresses to make room — the title shrinks instead.
+                    .fixedSize()
+                    // The pill summarises data the tile may be gating; the title row deliberately
+                    // stays legible on a locked tile, so the pill has to be blurred on its own.
+                    .proBlurred(requiresPro)
+            }
         }
     }
 
-    /// The padded subtitle + value/pill block sitting above the full-bleed chart footer. The text
-    /// keeps the tile's `CELL_PADDING` inset; the chart carries none and bleeds to the rounded bottom
-    /// and side edges, the way the personal-record card's all-time line does.
+    /// The padded subtitle + value block sitting above the full-bleed chart footer. The text keeps
+    /// the tile's `CELL_PADDING` inset; the chart carries none and bleeds to the rounded bottom and
+    /// side edges, the way the personal-record card's all-time line does.
     private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
@@ -143,19 +171,11 @@ struct MetricTile<ChartContent: View>: View {
             .minimumScaleFactor(0.7)
     }
 
-    /// The chart and its trend pill, side by side: the pill sits at the bottom-leading corner and the
-    /// chart fills the space to its RIGHT, so the two never overlap and the gap between them stays
-    /// constant. The line bleeds to the trailing + bottom edges; a bar chart takes a small inset there
-    /// so its rounded bars clear the corners.
+    /// The chart, across the tile's whole width — nothing shares the row, so its geometry is the same
+    /// on every tile whatever state it's in. A line bleeds to the leading, trailing and bottom edges;
+    /// a bar chart takes `CELL_PADDING` on all three so its rounded bars clear the corners.
     private var chartFooter: some View {
-        HStack(alignment: .bottom, spacing: 8) {
-            if hasPill {
-                pill
-                    .padding(.leading, CELL_PADDING)
-                    .padding(.bottom, CELL_PADDING)
-            }
-            chartContent
-        }
+        chartContent
     }
 
     /// The chart itself: on a fixed-height tile it fills whatever the value block leaves above it; at
@@ -175,17 +195,11 @@ struct MetricTile<ChartContent: View>: View {
     }
 
     /// Zero for a bleeding (line) chart — it runs to the edges, the only chart with reduced padding for
-    /// now. A bar chart sits inside the tile's normal `CELL_PADDING`, like the header and value above it:
-    /// full trailing + bottom padding, and full leading too unless a pill sits beside it (then the pill
-    /// + HStack spacing already hold the bars in).
+    /// now. A bar chart sits inside the tile's normal `CELL_PADDING`, like the header and value above
+    /// it, on all three sides.
     private var chartFooterInsets: EdgeInsets {
         guard !chartBleeds else { return EdgeInsets() }
-        return EdgeInsets(
-            top: 0,
-            leading: hasPill ? 0 : CELL_PADDING,
-            bottom: CELL_PADDING,
-            trailing: CELL_PADDING
-        )
+        return EdgeInsets(top: 0, leading: CELL_PADDING, bottom: CELL_PADDING, trailing: CELL_PADDING)
     }
 
     @ViewBuilder
@@ -233,6 +247,9 @@ struct MetricTile<ChartContent: View>: View {
         }
     }
 
+    /// The title row's trailing pill — the trend percent, or one of the two state pills that stand in
+    /// for it. All three are `.compact`: in the title row the pill annotates a 15pt heading, not the
+    /// 28pt value it used to sit under.
     @ViewBuilder
     private var pill: some View {
         if let percentChange {
@@ -240,7 +257,8 @@ struct MetricTile<ChartContent: View>: View {
                 percentChange: percentChange,
                 positiveColor: accentColor,
                 positiveStyle: accent,
-                isRecord: isRecord
+                isRecord: isRecord,
+                size: .compact
             )
         } else if let lapsedSince {
             TileLapsedPill(date: lapsedSince)
@@ -249,7 +267,7 @@ struct MetricTile<ChartContent: View>: View {
         }
     }
 
-    /// Whether any pill applies — drives whether the bleeding line reserves the space to its left.
+    /// Whether any pill applies — a trend percent, or one of the two state pills standing in for it.
     private var hasPill: Bool {
         percentChange != nil || lapsedSince != nil || lastBestDate != nil
     }

@@ -1455,7 +1455,7 @@ private extension WorkoutLiveActivityAttributes {
         ExerciseMetricDisplay(
             repetitionSegments: [reps],
             repetitionSegmentPlaceholders: [repsPlaceholder],
-            repetitionsUnit: "reps",
+            repetitionsUnit: "rep",
             weightSegments: [weight],
             weightSegmentPlaceholders: [weightPlaceholder],
             weightUnit: "kg"

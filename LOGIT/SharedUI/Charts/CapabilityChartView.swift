@@ -52,7 +52,7 @@ struct CapabilityChartView: View {
     /// weight / e1RM / reps, a rounded magnitude for set volume).
     let yScaleMax: Int
     let color: Color
-    /// Unit shown after the header and tooltip values ("kg", "reps").
+    /// Unit shown after the header and tooltip values ("kg", "rep").
     let unit: String
     /// Accessibility series name for the y-values (not rendered).
     let valueLabel: String

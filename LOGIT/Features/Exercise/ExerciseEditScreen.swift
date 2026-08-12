@@ -275,7 +275,7 @@ struct ExerciseEditScreen: View {
 
     /// The unit the recorder's field will carry — the caption explains a chip in the same
     /// vocabulary the set row will use. Reps use the human-readable short form ("Reps"),
-    /// not the field's terse "rps".
+    /// not the field's terse "rep".
     private func unitHint(for field: SetTrackedField) -> String {
         switch field {
         case .repetitions: return NSLocalizedString("repsShort", comment: "")

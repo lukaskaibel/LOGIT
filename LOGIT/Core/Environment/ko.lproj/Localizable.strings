@@ -306,7 +306,7 @@
 "reorderExercises" = "운동 재정렬";
 "repetitions" = "반복";
 "repetitionsPR" = "반복홍보";
-"reps" = "rps";
+"reps" = "회";
 "replaceExercise" = "운동 대체";
 "replaceSecondaryExercise" = "보조 운동 대체";
 "restorePurchase" = "구매 복원";
@@ -927,7 +927,7 @@
 "restoreFailedText" = "구매를 복원할 수 없습니다. 연결을 확인하고 다시 시도해 주세요.";
 
 /* Workout stats (workout detail tiles & detail screens) */
-"rps" = "rps";
+"rps" = "회";
 "average" = "평균";
 "volumePerSet" = "세트당 볼륨";
 "workoutStatCompareSameInfo" = "트렌드는 이번 워크아웃을 같은 워크아웃의 이전 실행과 비교합니다. 막대는 최근 실행을 보여주며, 오른쪽의 강조된 막대가 이번 워크아웃입니다.";

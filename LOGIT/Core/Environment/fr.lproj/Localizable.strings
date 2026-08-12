@@ -306,7 +306,7 @@
 "reorderExercises" = "Réorganiser les exercices";
 "repetitions" = "Répétitions";
 "repetitionsPR" = "Répétitions PR";
-"reps" = "rps";
+"reps" = "rép";
 "replaceExercise" = "Remplacer l'exercice";
 "replaceSecondaryExercise" = "Remplacer l'exercice secondaire";
 "restorePurchase" = "Restaurer l'achat";
@@ -927,7 +927,7 @@
 "restoreFailedText" = "Impossible de restaurer ton achat. Vérifie ta connexion et réessaie.";
 
 /* Workout stats (workout detail tiles & detail screens) */
-"rps" = "rps";
+"rps" = "rép";
 "average" = "Moyenne";
 "volumePerSet" = "Volume par série";
 "workoutStatCompareSameInfo" = "La tendance compare cette séance avec ta dernière exécution de la même séance. Les barres montrent ses exécutions récentes — cette séance est la barre mise en évidence à droite.";

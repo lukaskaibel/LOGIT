@@ -13,7 +13,7 @@
 "acceptPrivacyPolicy" = "개인 정보 보호 정책에 동의";
 "add" = "추가";
 "addExercise" = "운동 추가";
-"addExercisesFromBelow" = "아래에서 연습을 추가하세요.";
+"addExercisesFromBelow" = "아래에서 운동 종목을 추가하세요.";
 "addMeasurement" = "측정 추가";
 "addMeasurements" = "측정값 추가";
 "addNote" = "메모 추가";
@@ -28,7 +28,7 @@
 "allEntries" = "모든 항목";
 "allSetsCompleted" = "모든 세트 완료";
 "alreadyExists" = "이미 존재합니다.";
-"areYouSure?" = "확실합니까?";
+"areYouSure?" = "확실한가요?";
 "autoRenewMonth" = "매달 자동으로 갱신됩니다";
 "ascending" = "오름차순";
 "availableWith" = "사용 가능";
@@ -36,10 +36,10 @@
 // MARK: - B
 
 "back" = "등";
-"best" = "최상의";
+"best" = "최고";
 "biceps" = "이두근";
-"bicepsLeft" = "왼쪽 팔뚝";
-"bicepsRight" = "이두근 오른쪽";
+"bicepsLeft" = "왼쪽 이두근";
+"bicepsRight" = "오른쪽 이두근";
 "bodyFatPercentage" = "체지방";
 "bodyParts" = "신체 부위";
 "bodyweight" = "체중";
@@ -48,7 +48,7 @@
 
 "caloriesBurned" = "칼로리 소모량";
 "cancel" = "취소";
-"cardio" = "심장강화";
+"cardio" = "유산소";
 "changeGoal" = "목표 변경";
 "charts" = "차트";
 "chartsPromotionText" = "체중부터 반복수, 볼륨, 세트까지 피트니스 여정의 모든 단계를 시각화하세요!";
@@ -56,14 +56,14 @@
 "chooseExercise" = "운동을 선택하세요";
 "chooseSecondaryExercise" = "보조 운동 선택";
 "chooseTemplateText" = "템플릿을 선택하거나 빈 운동을 시작하세요";
-"completed" = "완전한";
-"continue" = "계속하다";
+"completed" = "완료";
+"continue" = "계속";
 "continueWorkout" = "운동 계속하기";
 "copyRepetitions" = "복사 반복";
 "copySet" = "복사 세트";
 "copyWeight" = "무게 복사";
 "coreMetrics" = "핵심 지표";
-"create" = "만들다";
+"create" = "만들기";
 "createExercise" = "운동 만들기";
 "createTemplate" = "템플릿 생성";
 "creatingTemplateFailed" = "템플릿 생성 실패";
@@ -93,12 +93,12 @@
 "deleteWorkout" = "운동 삭제";
 "deleteWorkoutDescription" = "운동을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.";
 "descending" = "내림차순";
-"discardWorkout" = "운동 취소";
-"dismiss" = "해고하다";
+"discardWorkout" = "운동 폐기";
+"dismiss" = "닫기";
 "done" = "완료";
 "dropCount" = "드롭 횟수";
 "dropSet" = "드롭 세트";
-"duration" = "지속";
+"duration" = "시간";
 
 // MARK: - E
 
@@ -114,7 +114,7 @@
 "evening" = "저녁";
 "exercise" = "운동 종목";
 "exerciseName" = "운동명";
-"exerciseNameCantStartWithDefault" = "운동 이름은 \"_default\"로 시작할 수 없습니다. 이 접두사는 기본 제공 연습용으로 예약되어 있습니다.";
+"exerciseNameCantStartWithDefault" = "운동 이름은 \"_default\"로 시작할 수 없습니다. 이 접두사는 기본 제공 운동용으로 예약되어 있습니다.";
 "exerciseNameDescription" = "운동 이름을 입력하세요.";
 "exercises" = "운동 종목";
 "exerciseLibrary" = "운동 라이브러리";
@@ -126,9 +126,9 @@
 "finishWorkout" = "운동 끝내기";
 "finishWorkoutConfimation" = "운동을 끝내시겠어요?";
 "five" = "다섯";
-"focus" = "집중하다";
-"focusedOn" = "집중하다";
-"four" = "4개";
+"focus" = "중점";
+"focusedOn" = "중점 부위";
+"four" = "넷";
 "fourWeeksAgo" = "4주 전";
 "FromPhoto" = "사진에서";
 "failedToLoadPrivacyPolicy" = "개인정보처리방침을 로드하지 못했습니다.";
@@ -141,7 +141,7 @@
 "generateTemplate" = "템플릿 생성";
 "generateWorkout" = "운동 생성";
 "generatingTemplate" = "템플릿 생성 중";
-"generatingWorkout" = "운동 생성";
+"generatingWorkout" = "운동 생성 중";
 "generatingWorkoutFailed" = "운동 생성 실패";
 "generatingWorkoutFailedText" = "사진에 운동 내용이 포함되어 있는지 확인하고 다시 시도하세요.";
 "gettingStarted" = "시작하기";
@@ -156,7 +156,7 @@
 
 // MARK: - H (continued)
 
-"hidden" = "숨겨진";
+"hidden" = "숨김";
 
 // MARK: - I
 
@@ -178,33 +178,33 @@
 "lastSetReferencePrefix" = "이전";
 "lastWorkout" = "마지막 운동";
 "legs" = "다리";
-"letsGetStarted" = "시작하자";
+"letsGetStarted" = "시작해요";
 "letsGetStartedDescription" = "운동을 시작하기 전에 경험을 최적화하기 위한 빠른 설정을 수행해야 합니다.";
 "liveActivityNextUp" = "다음";
 "liveActivitySetLabelCurrent" = "현재의";
 "liveActivitySetLabelPrev" = "이전";
 "licenceAgreement" = "라이센스 계약";
-"lookupExercise" = "%@를 찾아보세요";
+"lookupExercise" = "%@ 찾아보기";
 
 // MARK: - M
 
 "measurementBodyweight" = "체중";
 "measurementCaloriesBurned" = "칼로리 소모량";
-"calfLeft" = "종아리 왼쪽";
-"forearmLeft" = "팔뚝 왼쪽";
-"thighLeft" = "허벅지 왼쪽";
+"calfLeft" = "왼쪽 종아리";
+"forearmLeft" = "왼쪽 팔뚝";
+"thighLeft" = "왼쪽 허벅지";
 "neck" = "목";
-"calfRight" = "종아리 오른쪽";
-"forearmRight" = "팔뚝 오른쪽";
-"thighRight" = "허벅지 오른쪽";
+"calfRight" = "오른쪽 종아리";
+"forearmRight" = "오른쪽 팔뚝";
+"thighRight" = "오른쪽 허벅지";
 "waist" = "허리";
 "measurements" = "측정";
 "min" = "분";
 "minimize" = "최소화";
-"missing" = "없어진";
+"missing" = "누락";
 "measurementsPromotionDescription" = "체중, 체지방, 팔, 가슴, 허리 등 신체 부위 측정을 추적하여 진행 상황을 명확하게 확인하세요.";
 "month" = "월";
-"monthly" = "월간 간행물";
+"monthly" = "매월";
 "morning" = "아침";
 "muscleGroup" = "근육 그룹";
 "muscleGroups" = "근육 그룹";
@@ -217,7 +217,7 @@
 "name" = "이름";
 "nameCantBeEmpty" = "이름은 비워둘 수 없습니다.";
 "navBack" = "뒤로";
-"never" = "절대";
+"never" = "없음";
 "newestFirst" = "최신순";
 "newExercise" = "새로운 운동";
 "newTemplate" = "새 템플릿";
@@ -229,10 +229,10 @@
 "noAttempts" = "시도 없음";
 "noData" = "데이터 없음";
 "noEntriesConfirmation" = "이 운동에는 항목이 없습니다. 폐기하시겠습니까?";
-"noExerciseDataMessage" = "운동에서 이 운동 종목을 수행하면 진행 상황이 여기에 표시됩니다.";
+"noExerciseDataMessage" = "이 운동 종목으로 운동하면 진행 상황이 여기에 표시됩니다.";
 "noExerciseDataTitle" = "아직 데이터가 없습니다";
 "noExercises" = "운동 종목 없음";
-"noExercisesInWeek" = "주중에는 운동하지 않음";
+"noExercisesInWeek" = "이번 주 운동 종목 없음";
 "noExercisesTip" = "아직 운동이 없습니다";
 "noExercisesTipDescription" = "시작하려면 개인 운동 라이브러리를 구축하세요.";
 "noHistory" = "기록 없음";
@@ -242,7 +242,7 @@
 "noNetworkConnectionMessage" = "인터넷 연결을 확인하고 다시 시도해 주세요.";
 "none" = "없음";
 "noon" = "정오";
-"normalset" = "정상";
+"normalset" = "일반";
 "noTemplates" = "템플릿 없음";
 "noTemplatesTip" = "아직 템플릿이 없습니다.";
 "noTemplatesTipDescription" = "빠른 액세스를 위해 좋아하는 루틴을 저장하세요.";
@@ -254,20 +254,20 @@
 "now" = "지금";
 "noWidgetsAdded" = "추가된 위젯 없음";
 "noWorkouts" = "운동 없음";
-"noWorkoutsInWeek" = "주에는 운동 없음";
+"noWorkoutsInWeek" = "이번 주 운동 없음";
 "noWorkoutsThisWeek" = "이번 주에는 운동이 없습니다";
-"noWorkoutsTip" = "아직 운동하지 않음";
+"noWorkoutsTip" = "아직 운동이 없습니다";
 "noWorkoutsTipDescription" = "진행 상황을 추적하려면 훈련 기록을 시작하세요.";
 
 // MARK: - O
 
-"ok" = "좋아요";
+"ok" = "확인";
 "oldestFirst" = "오래된 것부터";
 "one" = "하나";
 "onlyFewSeconds" = "이 작업은 몇 초밖에 걸리지 않습니다...";
 "openSettings" = "설정 열기";
 "overallSets" = "전체 세트";
-"overallVolume" = "전체 거래량";
+"overallVolume" = "전체 볼륨";
 "overview" = "개요";
 
 // MARK: - P
@@ -276,36 +276,36 @@
 "performed" = "수행됨";
 "personalBest" = "개인 최고 기록";
 "perDay" = "하루당";
-"pinExercises" = "핀 연습";
-"pinExercisesTip" = "핀 연습";
+"pinExercises" = "운동 고정";
+"pinExercisesTip" = "운동 고정";
 "pinExercisesTipDescription" = "운동을 고정하여 진행 상황을 빠르게 확인하세요.";
-"pinMeasurementsTip" = "핀 측정";
-"pinMeasurementsTipDescription" = "시간 경과에 따른 변화를 모니터링하기 위한 핀 측정.";
+"pinMeasurementsTip" = "측정값 고정";
+"pinMeasurementsTipDescription" = "측정값을 고정해 변화를 확인하세요.";
 "pinned" = "고정됨";
-"addPin" = "핀 추가";
+"addPin" = "고정";
 "perWeek" = "주당";
 "PerWeek" = "주당";
 "planAhead" = "미리 계획하기";
-"pressPlusToAdd" = "+를 눌러 \"%@\"를 추가하세요.";
-"pressPlusToAddExercise" = "운동을 추가하려면 +를 누르세요.";
+"pressPlusToAdd" = "+를 눌러 \"%@\" 추가";
+"pressPlusToAddExercise" = "+를 눌러 운동 종목 추가";
 "preventAutoLock" = "자동 잠금 방지";
 "preventAutoLockDescription" = "운동 중에 화면을 활성 상태로 유지합니다.";
 "price" = "가격";
 "privacyPolicy" = "개인정보 처리방침";
 "termsAndConditions" = "이용 약관";
-"profile" = "Pro파일";
+"profile" = "프로필";
 "progress" = "진행 상황";
 
 // MARK: - R
 
 "recentAttempts" = "최근 시도";
 "recentWorkouts" = "최근 운동";
-"remove" = "제거하다";
+"remove" = "제거";
 "rename" = "이름 바꾸기";
-"reorderingDone" = "재주문 완료";
+"reorderingDone" = "완료";
 "reorderExercises" = "운동 재정렬";
 "repetitions" = "반복";
-"repetitionsPR" = "반복홍보";
+"repetitionsPR" = "반복 PR";
 "reps" = "회";
 "replaceExercise" = "운동 대체";
 "replaceSecondaryExercise" = "보조 운동 대체";
@@ -321,19 +321,19 @@
 "saveTime" = "시간 절약";
 "scanATemplate" = "템플릿 스캔";
 "scanAWorkout" = "운동 스캔";
-"scanWorkout" = "스캔 운동";
+"scanWorkout" = "운동 스캔";
 "scanWorkoutDescription" = "사진에서 운동을 가져옵니다.";
 "scanAWorkoutPromotionText" = "사진을 운동으로 변환하고 즉시 훈련을 시작하세요!";
 "search" = "검색";
 "searchEverything" = "검색";
-"searchPrompt" = "모든 것을 검색하세요";
+"searchPrompt" = "전체 검색";
 "searchPromptDescription" = "모든 운동, 워크아웃, 템플릿을 한 곳에서 검색하세요.";
-"searchExercises" = "운동에서 검색";
-"searchWorkouts" = "운동에서 검색";
+"searchExercises" = "운동 종목 검색";
+"searchWorkouts" = "운동 기록 검색";
 "noSearchResults" = "결과를 찾을 수 없습니다";
 "noSearchResultsFor" = "\"%@\"에 대한 검색결과가 없습니다.";
-"showMoreResults" = "%d 더 많은 결과 표시";
-"sec" = "비서";
+"showMoreResults" = "결과 %d개 더 보기";
+"sec" = "초";
 "meters.short" = "m";
 "yards.short" = "yd";
 "unitKilometers" = "킬로미터 (km)";
@@ -350,7 +350,7 @@
 "setsIncomplete" = "불완전한 세트";
 "setType" = "세트 유형";
 "settings" = "설정";
-"seven" = "세븐";
+"seven" = "일곱";
 "shoulders" = "어깨";
 "shareAsTemplate" = "템플릿으로 공유";
 "sharedTemplate" = "공유 템플릿";
@@ -366,10 +366,10 @@
 "showInstructions" = "지침 표시";
 "showMeasurements" = "측정값 표시";
 "showSubscriptions" = "구독 표시";
-"six" = "육";
-"skip" = "건너뛰다";
+"six" = "여섯";
+"skip" = "건너뛰기";
 "sortBy" = "정렬 기준";
-"standard" = "기준";
+"standard" = "표준";
 "start" = "시작";
 "startEmpty" = "빈 운동 시작";
 "startFromScan" = "스캔에서 시작";
@@ -380,7 +380,7 @@
 "workoutStartSheetDescription" = "어떻게 시작하고 싶은지 선택하세요.";
 "stop" = "정지";
 "stopwatch" = "스톱워치";
-"subscription" = "신청";
+"subscription" = "구독";
 "summary" = "요약";
 "support" = "지원";
 "superSet" = "슈퍼세트";
@@ -397,41 +397,41 @@
 "templateFromPhotoDescription" = "사진에서 템플릿을 추출합니다.";
 "templateNeverUsed" = "사용된 적이 없는 템플릿";
 "templates" = "템플릿";
-"this" = "이것";
+"this" = "이번";
 "thisMonth" = "이번 달";
 "thisWeek" = "이번 주";
 "ThisWeek" = "이번 주";
 "thisYear" = "올해";
-"three" = "삼";
+"three" = "셋";
 "threeWeeksAgo" = "3주 전";
-"time" = "시간";
+"time" = "회";
 "tip" = "팁";
 "timer" = "타이머";
 "manualTimer" = "수동 타이머";
 "manualTimerDescription" = "필요할 때마다 맞춤 기간을 사용하세요.";
 "autoRestTimerDescription" = "세트의 반복 횟수를 입력하면 자동으로 시작됩니다.";
 "autoRestStopwatchDescription" = "자동으로 시작되며 경과시간을 휴식시간으로 저장합니다.";
-"ready" = "준비가 된";
-"running" = "달리기";
+"ready" = "준비됨";
+"running" = "진행 중";
 "paused" = "일시중지됨";
-"reset" = "다시 놓기";
+"reset" = "재설정";
 "timerIsMuted" = "타이머가 음소거됨";
 "timerSoundOn" = "소리 켜기";
-"times" = "타임스";
-"timesUp" = "시간이 다 됐어!";
+"times" = "회";
+"timesUp" = "시간이 다 됐습니다!";
 "timesUpBody" = "운동 타이머가 완료되었습니다.";
 "timerWarningBody" = "%@ 남았습니다.";
 "stopwatchMinuteTitle" = "스톱워치";
 "stopwatchMinuteBody" = "%@가 경과되었습니다.";
 "title" = "제목";
-"to" = "에게";
+"to" = "~";
 "today" = "오늘";
-"toGo" = "가다";
-"total" = "총";
+"toGo" = "남음";
+"total" = "합계";
 "trendDown" = "이전 기간보다 %@ 감소";
 "trendUp" = "이전 기간보다 %@ 증가";
 "trendFlat" = "이전 기간과 변화 없음";
-"trackMore" = "더 많이 추적하세요";
+"trackMore" = "더 많은 기록";
 "triceps" = "삼두근";
 "two" = "둘";
 "twoWeeksAgo" = "2주 전";
@@ -454,7 +454,7 @@
 "useThisPhoto" = "이 사진 사용";
 
 // MARK: - R (continued)
-"retakePhoto" = "다시 잡다";
+"retakePhoto" = "다시 찍기";
 
 // MARK: - W
 "viewTemplate" = "템플릿 보기";
@@ -471,9 +471,9 @@
 "weeklyWorkoutGoalDescription" = "일주일에 하고 싶은 운동 횟수를 설정하세요.";
 "weight" = "중량";
 "weightPR" = "무게 PR";
-"weightUnit" = "중량단위";
+"weightUnit" = "중량 단위";
 "weightUnitDescription" = "앱 전체에서 사용하려는 단위를 선택하세요.";
-"welcomeTo" = "에 오신 것을 환영합니다";
+"welcomeTo" = "환영합니다";
 "whatsStillMissing" = "아직 무엇이 빠졌나요?";
 "widget" = "위젯";
 "weekOfThe" = "주";
@@ -500,7 +500,7 @@
 // MARK: - V (continued)
 
 "value" = "값";
-"visible" = "보이는";
+"visible" = "표시";
 
 // MARK: - Y
 
@@ -516,7 +516,7 @@
 // MARK: - Measurements Edit Sheet
 
 "editMeasurements" = "측정 편집";
-"editPinnedMeasurements" = "수정됨 고정됨";
+"editPinnedMeasurements" = "고정 항목 편집";
 "dragToReorder" = "드래그하여 재정렬하세요.";
 "noMeasurementsSelected" = "선택한 측정값이 없습니다.";
 "noDate" = "날짜 없음";
@@ -536,11 +536,11 @@
 "_default.exercise.inclinedDumbbellBenchPress" = "인클라인 덤벨 벤치 프레스";
 "_default.exercise.dumbbellFly" = "덤벨 플라이";
 "_default.exercise.cableCrossovers" = "케이블 크로스오버";
-"_default.exercise.declineBenchPress" = "벤치 프레스 거부";
+"_default.exercise.declineBenchPress" = "디클라인 벤치 프레스";
 "_default.exercise.chestDips" = "가슴 딥";
 "_default.exercise.pecDeckFly" = "펙 데크 플라이";
 "_default.exercise.pullups" = "풀업";
-"_default.exercise.chinups" = "턱걸이";
+"_default.exercise.chinups" = "친업";
 "_default.exercise.australianPullups" = "오스트레일리안 풀업";
 "_default.exercise.latPulldowns" = "랫 풀다운";
 "_default.exercise.barbellRows" = "바벨 로우";
@@ -557,20 +557,20 @@
 "_default.exercise.walkingLunges" = "워킹 런지";
 "_default.exercise.barbellLunges" = "바벨 런지";
 "_default.exercise.dumbbellLunges" = "덤벨 런지";
-"_default.exercise.legExtension" = "다리 확장";
-"_default.exercise.legCurls" = "다리 컬";
-"_default.exercise.calfRaises" = "송아지 레이즈";
+"_default.exercise.legExtension" = "레그 익스텐션";
+"_default.exercise.legCurls" = "레그 컬";
+"_default.exercise.calfRaises" = "카프 레이즈";
 "_default.exercise.seatedCalfRaises" = "시티드 카프 레이즈";
 "_default.exercise.bulgarianSplitSquats" = "불가리안 스플릿 스쿼트";
-"_default.exercise.hackSquats" = "해킹 스쿼트";
+"_default.exercise.hackSquats" = "핵 스쿼트";
 "_default.exercise.gobletSquats" = "고블릿 스쿼트";
-"_default.exercise.legPressCalfRaise" = "레그 프레스 종아리 올리기";
-"_default.exercise.hipThrust" = "엉덩이 추력";
+"_default.exercise.legPressCalfRaise" = "레그 프레스 카프 레이즈";
+"_default.exercise.hipThrust" = "힙 스러스트";
 "_default.exercise.handstandPushups" = "물구나무서기 푸쉬업";
 "_default.exercise.militaryPress" = "밀리터리 프레스";
 "_default.exercise.shoulderPress" = "숄더 프레스";
 "_default.exercise.dumbbellShoulderPress" = "덤벨 숄더 프레스";
-"_default.exercise.uprightRows" = "수직 행";
+"_default.exercise.uprightRows" = "업라이트 로우";
 "_default.exercise.lateralRaises" = "래터럴 레이즈";
 "_default.exercise.frontRaises" = "프론트 레이즈";
 "_default.exercise.rearDeltRaise" = "리어 델트 레이즈";
@@ -578,16 +578,16 @@
 "_default.exercise.cableRaises" = "케이블 레이즈";
 "_default.exercise.dips" = "딥";
 "_default.exercise.tricepPushdowns" = "삼두근 푸시다운";
-"_default.exercise.overheadTricepExtension" = "오버헤드 삼두근 확장";
+"_default.exercise.overheadTricepExtension" = "오버헤드 트라이셉 익스텐션";
 "_default.exercise.closeGripBenchPress" = "클로즈 그립 벤치 프레스";
-"_default.exercise.tricepKickbacks" = "삼두근 반동";
+"_default.exercise.tricepKickbacks" = "트라이셉 킥백";
 "_default.exercise.skullCrushers" = "스컬 크러셔";
 "_default.exercise.diamondPushups" = "다이아몬드 푸시업";
-"_default.exercise.ropeTricepExtensions" = "로프 삼두근 확장";
+"_default.exercise.ropeTricepExtensions" = "로프 트라이셉 익스텐션";
 "_default.exercise.barbellCurls" = "바벨 컬";
 "_default.exercise.dumbbellCurls" = "덤벨 컬";
 "_default.exercise.hammerCurls" = "해머 컬";
-"_default.exercise.preacherCurls" = "설교자 컬";
+"_default.exercise.preacherCurls" = "프리처 컬";
 "_default.exercise.concentrationCurls" = "컨센트레이션 컬";
 "_default.exercise.cableCurls" = "케이블 컬";
 "_default.exercise.inclineDumbbellCurls" = "인클라인 덤벨 컬";
@@ -597,10 +597,10 @@
 "_default.exercise.bicycles" = "바이시클 크런치";
 "_default.exercise.legRaises" = "레그 레이즈";
 "_default.exercise.hangingKneeRaises" = "행잉 니 레이즈";
-"_default.exercise.plank" = "널빤지";
+"_default.exercise.plank" = "플랭크";
 "_default.exercise.sidePlank" = "사이드 플랭크";
 "_default.exercise.russianTwists" = "러시안 트위스트";
-"_default.exercise.mountainClimbers" = "산악인";
+"_default.exercise.mountainClimbers" = "마운틴 클라이머";
 "_default.exercise.abWheelRollout" = "Ab 휠 롤아웃";
 "_default.exercise.hangingLegRaises" = "행잉 레그 레이즈";
 "_default.exercise.cableCrunches" = "케이블 크런치";
@@ -608,48 +608,48 @@
 "_default.exercise.cycling" = "사이클링";
 "_default.exercise.rowing" = "로잉";
 "_default.exercise.jumpRope" = "줄넘기";
-"_default.exercise.elliptical" = "타원형";
-"_default.exercise.stairClimber" = "계단 등반가";
+"_default.exercise.elliptical" = "일립티컬";
+"_default.exercise.stairClimber" = "스텝밀";
 "_default.exercise.swimming" = "수영";
 "_default.exercise.burpees" = "버피";
 "_default.exercise.boxJumps" = "박스 점프";
 "_default.exercise.battleRopes" = "배틀 로프";
-"_default.exercise.barbellShrugs" = "바벨 어깨 으쓱";
-"_default.exercise.dumbbellShrugs" = "덤벨 어깨 으쓱";
+"_default.exercise.barbellShrugs" = "바벨 슈러그";
+"_default.exercise.dumbbellShrugs" = "덤벨 슈러그";
 "_default.exercise.widegripPullups" = "와이드 그립 풀업";
 "_default.exercise.closegripPullups" = "클로즈 그립 풀업";
 "_default.exercise.assistedPullups" = "보조 풀업";
-"_default.exercise.chestSupportedRows" = "가슴 지지 행";
+"_default.exercise.chestSupportedRows" = "체스트 서포티드 로우";
 "_default.exercise.pendlayRows" = "펜들레이 로우";
-"_default.exercise.landmineRows" = "지뢰밭";
+"_default.exercise.landmineRows" = "랜드마인 로우";
 "_default.exercise.cablePulldowns" = "케이블 풀다운";
 "_default.exercise.seatedRowMachine" = "시티드 로우 머신";
 "_default.exercise.reverseFly" = "리버스 플라이";
-"_default.exercise.goodMornings" = "좋은 아침";
-"_default.exercise.backExtensions" = "등 확장";
-"_default.exercise.hyperextensions" = "하이퍼확장";
-"_default.exercise.reverseHyperextensions" = "역방향 하이퍼확장";
+"_default.exercise.goodMornings" = "굿모닝";
+"_default.exercise.backExtensions" = "백 익스텐션";
+"_default.exercise.hyperextensions" = "하이퍼익스텐션";
+"_default.exercise.reverseHyperextensions" = "리버스 하이퍼익스텐션";
 "_default.exercise.dumbbellPullover" = "덤벨 풀오버";
 "_default.exercise.machineFly" = "머신 플라이";
-"_default.exercise.landminePress" = "지뢰 프레스";
+"_default.exercise.landminePress" = "랜드마인 프레스";
 "_default.exercise.inclineCableFly" = "인클라인 케이블 플라이";
-"_default.exercise.singleArmCablePress" = "단일 암 케이블 프레스";
+"_default.exercise.singleArmCablePress" = "싱글 암 케이블 프레스";
 "_default.exercise.dumbbellFloorPress" = "덤벨 플로어 프레스";
-"_default.exercise.pistolSquats" = "권총 스쿼트";
+"_default.exercise.pistolSquats" = "피스톨 스쿼트";
 "_default.exercise.boxSquats" = "박스 스쿼트";
 "_default.exercise.sissySquats" = "시시 스쿼트";
 "_default.exercise.zercherSquats" = "저처 스쿼트";
 "_default.exercise.legPressWideStance" = "레그 프레스 와이드 스탠스";
-"_default.exercise.legPressNarrowStance" = "레그 프레스 좁은 자세";
+"_default.exercise.legPressNarrowStance" = "레그 프레스 내로우 스탠스";
 "_default.exercise.nordics" = "노르딕 컬";
 "_default.exercise.gluteHamRaise" = "글루트 햄 레이즈";
 "_default.exercise.seatedLegCurls" = "시티드 레그 컬";
 "_default.exercise.standingLegCurls" = "스탠딩 레그 컬";
 "_default.exercise.lyingLegCurls" = "라잉 레그 컬";
 "_default.exercise.singleLegDeadlift" = "싱글 레그 데드리프트";
-"_default.exercise.cableKickbacks" = "케이블 리베이트";
-"_default.exercise.abductorMachine" = "납치범 기계";
-"_default.exercise.adductorMachine" = "내전근 기계";
+"_default.exercise.cableKickbacks" = "케이블 킥백";
+"_default.exercise.abductorMachine" = "외전근 머신";
+"_default.exercise.adductorMachine" = "내전근 머신";
 "_default.exercise.stepUps" = "스텝 업";
 "_default.exercise.reverseGripBenchPress" = "리버스 그립 벤치 프레스";
 "_default.exercise.reverseCurls" = "리버스 컬";
@@ -659,9 +659,9 @@
 "_default.exercise.cableHammerCurls" = "케이블 해머 컬";
 "_default.exercise.dragCurls" = "드래그 컬";
 "_default.exercise.wristCurls" = "손목 컬";
-"_default.exercise.reverseWristCurls" = "리버스 리스트 컬";
+"_default.exercise.reverseWristCurls" = "리버스 손목 컬";
 "_default.exercise.seatedTricepPress" = "시티드 트라이셉스 프레스";
-"_default.exercise.oneArmTricepExtension" = "한 팔 삼두근 확장";
+"_default.exercise.oneArmTricepExtension" = "원암 트라이셉 익스텐션";
 "_default.exercise.tricepDips" = "삼두근 딥스";
 "_default.exercise.benchDips" = "벤치 딥스";
 "_default.exercise.reverseGripTricepPushdowns" = "리버스 그립 트라이셉 푸시다운";
@@ -678,53 +678,53 @@
 "_default.exercise.seatedBentOverLateralRaises" = "시티드 벤트 오버 레터럴 레이즈";
 "_default.exercise.plateFrontRaise" = "플레이트 프론트 레이즈";
 "_default.exercise.barbellFrontRaise" = "바벨 프론트 레이즈";
-"_default.exercise.highPulls" = "높은 당김";
+"_default.exercise.highPulls" = "하이 풀";
 "_default.exercise.vUps" = "V-업";
 "_default.exercise.reverseCrunches" = "리버스 크런치";
 "_default.exercise.flutterKicks" = "플러터 킥";
 "_default.exercise.scissorKicks" = "가위차기";
 "_default.exercise.deadBug" = "데드버그";
-"_default.exercise.birdDog" = "새 개";
-"_default.exercise.hollowBodyHold" = "중공 바디 홀드";
-"_default.exercise.toesToBar" = "발가락 바";
-"_default.exercise.lSit" = "L-싯";
+"_default.exercise.birdDog" = "버드독";
+"_default.exercise.hollowBodyHold" = "할로우 바디 홀드";
+"_default.exercise.toesToBar" = "토즈 투 바";
+"_default.exercise.lSit" = "L싯";
 "_default.exercise.dragonFlags" = "드래곤 플래그";
-"_default.exercise.windshieldWipers" = "앞유리 와이퍼";
+"_default.exercise.windshieldWipers" = "윈드실드 와이퍼";
 "_default.exercise.paloffPress" = "팔로프 프레스";
-"_default.exercise.woodchops" = "나무 갈비";
+"_default.exercise.woodchops" = "우드찹";
 "_default.exercise.obliqueCrunches" = "오블리크 크런치";
 "_default.exercise.sprints" = "스프린트";
-"_default.exercise.hiitTraining" = "HIIT 훈련";
+"_default.exercise.hiitTraining" = "HIIT 트레이닝";
 "_default.exercise.assaultBike" = "어썰트 바이크";
 "_default.exercise.rowingMachine" = "로잉머신";
 "_default.exercise.skiErg" = "스키 에르그";
 "_default.exercise.farmersWalk" = "파머스 워크";
 "_default.exercise.rackPulls" = "랙 풀";
 "_default.exercise.snatchGripDeadlift" = "스내치 그립 데드리프트";
-"_default.exercise.deficitDeadlift" = "적자 데드리프트";
+"_default.exercise.deficitDeadlift" = "데피싯 데드리프트";
 "_default.exercise.trapBarDeadlift" = "트랩 바 데드리프트";
-"_default.exercise.cleanAndPress" = "청소하고 누르십시오";
+"_default.exercise.cleanAndPress" = "클린 앤 프레스";
 "_default.exercise.powerClean" = "파워클린";
-"_default.exercise.hangClean" = "깨끗한 행잉";
+"_default.exercise.hangClean" = "행 클린";
 "_default.exercise.snatch" = "인상";
-"_default.exercise.hangSnatch" = "잡아채기";
+"_default.exercise.hangSnatch" = "행 스내치";
 "_default.exercise.pushPress" = "푸시 프레스";
 "_default.exercise.pushJerk" = "푸시 저크";
 "_default.exercise.splitJerk" = "스플릿 저크";
-"_default.exercise.thrusters" = "추진기";
-"_default.exercise.wallBalls" = "벽 공";
+"_default.exercise.thrusters" = "쓰러스터";
+"_default.exercise.wallBalls" = "월 볼";
 "_default.exercise.turkishGetUp" = "터키쉬 겟업";
 "_default.exercise.kettlebellSwings" = "케틀벨 스윙";
 "_default.exercise.kettlebellSnatch" = "케틀벨 스내치";
 "_default.exercise.kettlebellClean" = "케틀벨 클린";
-"_default.exercise.gobletSquatWithKettlebell" = "케틀벨을 이용한 고블릿 스쿼트";
+"_default.exercise.gobletSquatWithKettlebell" = "케틀벨 고블릿 스쿼트";
 "_default.exercise.singleArmKettlebellPress" = "싱글 암 케틀벨 프레스";
 "_default.exercise.ropeClimbs" = "로프 클라이밍";
 "_default.exercise.sledPush" = "슬레드 푸시";
-"_default.exercise.sledPull" = "썰매 당기기";
+"_default.exercise.sledPull" = "슬레드 풀";
 "_default.exercise.tireFlips" = "타이어 뒤집기";
 "_default.exercise.medicineBallSlams" = "메디신 볼 슬램";
-"_default.exercise.wallClimbs" = "벽 오르기";
+"_default.exercise.wallClimbs" = "월 클라임";
 "_default.exercise.muscleUps" = "머슬업";
 "_default.exercise.ringDips" = "링 딥";
 "_default.exercise.ringPushups" = "링 푸쉬업";
@@ -768,16 +768,16 @@
 "avgLessExerciseSetsThisYearThanLastYear" = "올해 이 운동의 평균 세트 수는 작년보다 적습니다.";
 
 // MARK: - Exercise Weight Highlights
-"higherMaxWeightThisMonthThanLastMonth" = "이번 달 최고의 체중이 지난 달보다 높습니다.";
-"lowerMaxWeightThisMonthThanLastMonth" = "이번 달 최고의 체중이 지난달보다 낮습니다.";
-"higherMaxWeightThisYearThanLastYear" = "올해 최고의 체중은 작년보다 높습니다.";
-"lowerMaxWeightThisYearThanLastYear" = "올해 최고의 체중은 작년보다 낮습니다.";
+"higherMaxWeightThisMonthThanLastMonth" = "이번 달 최고 중량이 지난달보다 높습니다.";
+"lowerMaxWeightThisMonthThanLastMonth" = "이번 달 최고 중량이 지난달보다 낮습니다.";
+"higherMaxWeightThisYearThanLastYear" = "올해 최고 중량이 작년보다 높습니다.";
+"lowerMaxWeightThisYearThanLastYear" = "올해 최고 중량이 작년보다 낮습니다.";
 
 // MARK: - Exercise Repetitions Highlights
-"higherMaxRepsThisMonthThanLastMonth" = "이번 달 최고 담당자 수가 지난 달보다 높습니다.";
-"lowerMaxRepsThisMonthThanLastMonth" = "이번 달 최고 담당자 수가 지난달보다 낮습니다.";
-"higherMaxRepsThisYearThanLastYear" = "올해 최고의 담당자가 작년보다 높습니다.";
-"lowerMaxRepsThisYearThanLastYear" = "올해 최고의 담당자가 작년보다 낮습니다.";
+"higherMaxRepsThisMonthThanLastMonth" = "이번 달 최고 반복 수가 지난달보다 많습니다.";
+"lowerMaxRepsThisMonthThanLastMonth" = "이번 달 최고 반복 수가 지난달보다 적습니다.";
+"higherMaxRepsThisYearThanLastYear" = "올해 최고 반복 수가 작년보다 많습니다.";
+"lowerMaxRepsThisYearThanLastYear" = "올해 최고 반복 수가 작년보다 적습니다.";
 
 // MARK: - Measurement Highlights
 "measurementHigherThisMonthThanLastMonth" = "이번 달 평균이 지난달보다 높습니다.";
@@ -786,10 +786,11 @@
 "measurementLowerThisYearThanLastYear" = "올해 평균이 작년보다 낮습니다.";
 
 // MARK: - Welcome Screen
-"track" = "길";
+"track" = "기록";
 "goals" = "목표";
+"welcomeGoalsCategory" = "설정";
 "getStarted" = "시작하기";
-"welcomeWorkoutsDescription" = "운동, 세트, ​​담당자를 기록하여 모든 세션을 추적하세요.";
+"welcomeWorkoutsDescription" = "운동 종목, 세트, 반복 수를 기록하여 모든 세션을 추적하세요.";
 "welcomeProgressDescription" = "자세한 차트와 통계를 통해 시간 경과에 따른 개선 사항을 확인하세요.";
 "welcomeTemplatesDescription" = "탭 한 번으로 좋아하는 루틴을 저장하고 운동을 시작하세요.";
 "welcomeGoalsDescription" = "주간 목표를 설정하고 피트니스 목표를 달성할 수 있도록 동기를 부여하세요.";
@@ -811,7 +812,7 @@
 
 // App Store — Live Activity showcase (in-app labels only; frameit supplies headline)
 "screenshotLiveActivityModeAutoCaption" = "자동 타이머";
-"screenshotLiveActivityModeLoggingCaption" = "추적 설정";
+"screenshotLiveActivityModeLoggingCaption" = "세트 기록";
 
 // MARK: - Exercise Merging
 "mergeExercise" = "병합";
@@ -824,7 +825,7 @@
 "mergeConfirmation" = "\"%@\"의 모든 운동 기록이 \"%@\"로 이동됩니다. \"%@\"가 삭제됩니다. 이 작업은 취소할 수 없습니다.";
 "mergeInto" = "병합 대상";
 "willBeDeleted" = "삭제됩니다";
-"willRemain" = "남을 것이다";
+"willRemain" = "유지됨";
 "defaultExercise" = "기본";
 "changeExercise" = "운동 변경";
 "error" = "오류";

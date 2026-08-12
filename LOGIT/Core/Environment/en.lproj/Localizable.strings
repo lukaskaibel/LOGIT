@@ -788,6 +788,7 @@
 // MARK: - Welcome Screen
 "track" = "Track";
 "goals" = "Goals";
+"welcomeGoalsCategory" = "Set";
 "getStarted" = "Get Started";
 "welcomeWorkoutsDescription" = "Log your exercises, sets, and reps to keep track of every session.";
 "welcomeProgressDescription" = "See your improvements over time with detailed charts and statistics.";

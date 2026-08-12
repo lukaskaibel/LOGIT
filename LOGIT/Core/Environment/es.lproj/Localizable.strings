@@ -13,22 +13,22 @@
 "acceptPrivacyPolicy" = "Aceptar Política de Privacidad";
 "add" = "Agregar";
 "addExercise" = "Agregar ejercicio";
-"addExercisesFromBelow" = "Agregue ejercicios desde abajo.";
+"addExercisesFromBelow" = "Añade ejercicios desde abajo.";
 "addMeasurement" = "Agregar medida";
 "addMeasurements" = "Agregar medidas";
 "addNote" = "Agregar nota";
 "addNote..." = "Agregar nota...";
-"addSet" = "Agregar conjunto";
-"addSetAfter" = "Agregar conjunto después";
-"addSetBefore" = "Agregar conjunto antes";
+"addSet" = "Añadir serie";
+"addSetAfter" = "Añadir serie después";
+"addSetBefore" = "Añadir serie antes";
 "addWorkout" = "Agregar entrenamiento";
-"addToHistory" = "Agregar a la historia";
+"addToHistory" = "Añadir al historial";
 "afternoon" = "Tarde";
 "all" = "Todo";
 "allEntries" = "Todas las entradas";
-"allSetsCompleted" = "Todos los conjuntos completados";
+"allSetsCompleted" = "Todas las series completadas";
 "alreadyExists" = "ya existe.";
-"areYouSure?" = "¿Está seguro?";
+"areYouSure?" = "¿Seguro?";
 "autoRenewMonth" = "Se renueva automáticamente cada mes";
 "ascending" = "Ascendente";
 "availableWith" = "Disponible con";
@@ -38,11 +38,11 @@
 "back" = "Espalda";
 "best" = "Mejor";
 "biceps" = "Bíceps";
-"bicepsLeft" = "Bíceps Izquierdo";
+"bicepsLeft" = "Bíceps izquierdo";
 "bicepsRight" = "Bíceps derecho";
 "bodyFatPercentage" = "Grasa corporal";
 "bodyParts" = "Partes del cuerpo";
-"bodyweight" = "peso corporal";
+"bodyweight" = "Peso corporal";
 
 // MARK: - C
 
@@ -53,21 +53,21 @@
 "charts" = "Gráficos";
 "chartsPromotionText" = "Desde peso hasta repeticiones, volumen y series: ¡visualiza cada paso de tu viaje de acondicionamiento físico!";
 "chest" = "Pecho";
-"chooseExercise" = "Elija ejercicio";
-"chooseSecondaryExercise" = "Elija ejercicio secundario";
+"chooseExercise" = "Elige un ejercicio";
+"chooseSecondaryExercise" = "Elige un ejercicio secundario";
 "chooseTemplateText" = "Elige una plantilla o comienza un entrenamiento vacío";
 "completed" = "Terminado";
 "continue" = "Continuar";
 "continueWorkout" = "Continuar entrenamiento";
 "copyRepetitions" = "Copiar repeticiones";
-"copySet" = "Conjunto de copias";
-"copyWeight" = "Peso de copia";
+"copySet" = "Copiar serie";
+"copyWeight" = "Copiar peso";
 "coreMetrics" = "Métricas principales";
 "create" = "Crear";
 "createExercise" = "Crear ejercicio";
 "createTemplate" = "Crear plantilla";
 "creatingTemplateFailed" = "Error al crear la plantilla";
-"creatingTemplateFailedText" = "Asegúrese de que la imagen seleccionada contenga un entrenamiento.";
+"creatingTemplateFailedText" = "Asegúrate de que la imagen contenga un entrenamiento.";
 "currentBest" = "Mejor marca actual";
 "groupIndexOfTotal" = "%1$d de %2$d";
 "previousBest" = "Mejor marca anterior";
@@ -84,9 +84,9 @@
 "date" = "Fecha";
 "defaultExercises" = "Ejercicios predeterminados";
 "defaultExercisesDescription" = "¿Quieres utilizar la biblioteca de ejercicios predeterminada?";
-"delete" = "Borrar";
+"delete" = "Eliminar";
 "deleteExerciseConfirmation" = "¿Quieres eliminar el ejercicio? Esta acción no se puede deshacer.";
-"deleteSets" = "Eliminar series y finalizar el entrenamiento";
+"deleteSets" = "Eliminar series y finalizar entrenamiento";
 "deleteSetsWithoutEntries" = "¿Eliminar todas las series sin entradas y finalizar el entrenamiento?";
 "deleteTemplate" = "Eliminar plantilla";
 "deleteTemplateMsg" = "¿Quieres eliminar esta plantilla? Esto no se puede deshacer.";
@@ -94,10 +94,10 @@
 "deleteWorkoutDescription" = "¿Eliminar entrenamiento? Esta acción no se puede deshacer.";
 "descending" = "Descendente";
 "discardWorkout" = "Descartar entrenamiento";
-"dismiss" = "Despedir";
-"done" = "OK";
-"dropCount" = "Conteo de gotas";
-"dropSet" = "conjunto de gotas";
+"dismiss" = "Cerrar";
+"done" = "Hecho";
+"dropCount" = "Número de drops";
+"dropSet" = "Dropset";
 "duration" = "Duración";
 
 // MARK: - E
@@ -110,49 +110,49 @@
 "editWorkout" = "Editar entrenamiento";
 "eight" = "Ocho";
 "end" = "Fin";
-"endWorkout" = "Finalizar el entrenamiento";
+"endWorkout" = "Finalizar entrenamiento";
 "evening" = "Noche";
 "exercise" = "Ejercicio";
 "exerciseName" = "Nombre del ejercicio";
 "exerciseNameCantStartWithDefault" = "El nombre del ejercicio no puede comenzar con \"_default\". Este prefijo está reservado para ejercicios integrados.";
-"exerciseNameDescription" = "Introduzca el nombre del ejercicio.";
-"exercises" = "Ceremonias";
+"exerciseNameDescription" = "Introduce el nombre del ejercicio.";
+"exercises" = "Ejercicios";
 "exerciseLibrary" = "Biblioteca de ejercicios";
 
 // MARK: - F
 
 "finishSetup" = "Finalizar la configuración";
 "finish" = "Finalizar";
-"finishWorkout" = "Terminar el entrenamiento";
+"finishWorkout" = "Finalizar entrenamiento";
 "finishWorkoutConfimation" = "¿Quieres terminar el entrenamiento?";
 "five" = "Cinco";
-"focus" = "Enfocar";
+"focus" = "Enfoque";
 "focusedOn" = "Centrado en";
-"four" = "cuatro";
+"four" = "Cuatro";
 "fourWeeksAgo" = "Hace cuatro semanas";
 "FromPhoto" = "De la foto";
 "failedToLoadPrivacyPolicy" = "No se pudo cargar la política de privacidad.";
 "failedToLoadTermsAndConditions" = "No se pudieron cargar los términos y condiciones.";
-"failedToMatchExercises" = "No se pudieron combinar los ejercicios.";
+"failedToMatchExercises" = "No se pudieron asociar los ejercicios.";
 "failedToReadFile" = "No se pudo leer el archivo: %@";
 
 // MARK: - G
 
 "generateTemplate" = "Generar plantilla";
 "generateWorkout" = "Generar entrenamiento";
-"generatingTemplate" = "Plantilla generadora";
+"generatingTemplate" = "Generando plantilla";
 "generatingWorkout" = "Generando entrenamiento";
 "generatingWorkoutFailed" = "Error al generar entrenamiento";
 "generatingWorkoutFailedText" = "Asegúrate de que la foto contenga un entrenamiento y vuelve a intentarlo.";
-"gettingStarted" = "Empezando";
-"goal" = "Meta";
+"gettingStarted" = "Primeros pasos";
+"goal" = "Objetivo";
 
 // MARK: - H
 
-"highlights" = "Reflejos";
+"highlights" = "Destacados";
 "hips" = "Caderas";
-"history" = "Historia";
-"home" = "Hogar";
+"history" = "Historial";
+"home" = "Inicio";
 
 // MARK: - H (continued)
 
@@ -160,26 +160,26 @@
 
 // MARK: - I
 
-"incompleteSetsWillNotBeSaved" = "Los conjuntos incompletos no se guardarán.";
+"incompleteSetsWillNotBeSaved" = "Las series incompletas no se guardarán.";
 "importError" = "Error de importación";
 "instructions" = "Instrucciones";
 "inviteToWorkout" = "Invitar a entrenar";
 
 // MARK: - K
 
-"keepTrackingForComparison" = "Siga el seguimiento para comparar períodos.";
+"keepTrackingForComparison" = "Sigue registrando para comparar periodos.";
 
 // MARK: - L
 
 "latest" = "El último";
 "lastMonth" = "Mes pasado";
-"lastUsed" = "último usado";
+"lastUsed" = "Último uso";
 "lastWeek" = "La semana pasada";
 "lastSetReferencePrefix" = "Último";
 "lastWorkout" = "Último entrenamiento";
 "legs" = "Piernas";
 "letsGetStarted" = "Empecemos";
-"letsGetStartedDescription" = "Antes de que puedas comenzar a hacer ejercicio, debemos realizar una configuración rápida para optimizar tu experiencia.";
+"letsGetStartedDescription" = "Antes de empezar a entrenar, haremos una configuración rápida para optimizar tu experiencia.";
 "liveActivityNextUp" = "A continuación";
 "liveActivitySetLabelCurrent" = "Actual";
 "liveActivitySetLabelPrev" = "Anterior";
@@ -188,28 +188,28 @@
 
 // MARK: - M
 
-"measurementBodyweight" = "peso corporal";
+"measurementBodyweight" = "Peso corporal";
 "measurementCaloriesBurned" = "Calorías quemadas";
-"calfLeft" = "Pantorrilla Izquierda";
-"forearmLeft" = "antebrazo izquierdo";
-"thighLeft" = "muslo izquierdo";
+"calfLeft" = "Pantorrilla izquierda";
+"forearmLeft" = "Antebrazo izquierdo";
+"thighLeft" = "Muslo izquierdo";
 "neck" = "Cuello";
-"calfRight" = "Pantorrilla Derecha";
-"forearmRight" = "antebrazo derecho";
-"thighRight" = "Muslo Derecho";
+"calfRight" = "Pantorrilla derecha";
+"forearmRight" = "Antebrazo derecho";
+"thighRight" = "Muslo derecho";
 "waist" = "Cintura";
 "measurements" = "Medidas";
-"min" = "mín.";
+"min" = "min";
 "minimize" = "Minimizar";
-"missing" = "Desaparecido";
-"measurementsPromotionDescription" = "Realice un seguimiento del peso corporal, la grasa corporal y las medidas de partes del cuerpo, como brazos, pecho y cintura, para ver claramente su progreso.";
+"missing" = "Falta";
+"measurementsPromotionDescription" = "Registra peso corporal, grasa corporal y medidas como brazos, pecho y cintura para ver tu progreso.";
 "month" = "Mes";
 "monthly" = "Mensual";
 "morning" = "Mañana";
-"muscleGroup" = "grupo muscular";
-"muscleGroups" = "Grupos de músculos";
-"muscleGroupSplit" = "División del grupo muscular";
-"muscleMass" = "masa muscular";
+"muscleGroup" = "Grupo muscular";
+"muscleGroups" = "Grupos musculares";
+"muscleGroupSplit" = "Reparto por grupo muscular";
+"muscleMass" = "Masa muscular";
 "myTemplates" = "Mis plantillas";
 
 // MARK: - N
@@ -218,13 +218,13 @@
 "nameCantBeEmpty" = "El nombre no puede estar vacío.";
 "navBack" = "Atrás";
 "never" = "Nunca";
-"newestFirst" = "Lo más nuevo primero";
+"newestFirst" = "Más recientes primero";
 "newExercise" = "Nuevo ejercicio";
 "newTemplate" = "Nueva plantilla";
 "newTemplateFromWorkout" = "Usar como plantilla...";
 "newWorkout" = "Nuevo entrenamiento";
 "newWorkoutDescription" = "Desarrolla tu entrenamiento desde cero.";
-"night" = "Noche";
+"night" = "Madrugada";
 "nine" = "Nueve";
 "noAttempts" = "Sin intentos";
 "noData" = "Sin datos";
@@ -234,22 +234,22 @@
 "noExercises" = "Sin ejercicios";
 "noExercisesInWeek" = "Sin ejercicio en la semana";
 "noExercisesTip" = "Aún no hay ejercicios";
-"noExercisesTipDescription" = "Cree su biblioteca de ejercicios personal para comenzar.";
-"noHistory" = "Sin historia";
+"noExercisesTipDescription" = "Crea tu biblioteca de ejercicios personal para empezar.";
+"noHistory" = "Sin historial";
 "noMeasurements" = "Sin medidas";
 "noName" = "Sin nombre";
 "noNetworkConnection" = "Sin conexión de red";
-"noNetworkConnectionMessage" = "Por favor verifique su conexión a Internet e inténtelo nuevamente.";
+"noNetworkConnectionMessage" = "Comprueba tu conexión a Internet e inténtalo de nuevo.";
 "none" = "Ninguno";
 "noon" = "Mediodía";
 "normalset" = "Normal";
 "noTemplates" = "Sin plantillas";
 "noTemplatesTip" = "Aún no hay plantillas";
-"noTemplatesTipDescription" = "Guarde sus rutinas favoritas para un acceso rápido.";
+"noTemplatesTipDescription" = "Guarda tus rutinas favoritas para acceder rápido.";
 "notificationsDisabled" = "Notificaciones deshabilitadas";
-"notificationsDisabledMessage" = "Para permitir que el temporizador reproduzca un sonido y muestre cuándo termina, las notificaciones deben estar habilitadas.";
+"notificationsDisabledMessage" = "Para que el temporizador suene y avise al terminar, las notificaciones deben estar activadas.";
 "enableTimerNotifications" = "Habilitar notificaciones del temporizador";
-"enableTimerNotificationsMessage" = "Reciba una notificación cuando finalice su temporizador de descanso, incluso cuando la aplicación esté en segundo plano. Esto le ayuda a mantenerse encaminado durante su entrenamiento.";
+"enableTimerNotificationsMessage" = "Recibe un aviso cuando termine tu descanso, incluso con la app en segundo plano. Así no pierdes el ritmo del entrenamiento.";
 "notNow" = "Ahora no";
 "now" = "Ahora";
 "noWidgetsAdded" = "No se agregaron widgets";
@@ -257,16 +257,16 @@
 "noWorkoutsInWeek" = "Sin entrenamientos en la semana";
 "noWorkoutsThisWeek" = "No hay entrenamientos esta semana";
 "noWorkoutsTip" = "Aún no hay entrenamientos";
-"noWorkoutsTipDescription" = "Comience a registrar su entrenamiento para seguir su progreso.";
+"noWorkoutsTipDescription" = "Empieza a registrar tu entrenamiento para seguir tu progreso.";
 
 // MARK: - O
 
-"ok" = "De acuerdo";
-"oldestFirst" = "El más viejo primero";
+"ok" = "OK";
+"oldestFirst" = "Más antiguos primero";
 "one" = "Uno";
-"onlyFewSeconds" = "Esto sólo te llevará unos segundos...";
+"onlyFewSeconds" = "Esto solo tardará unos segundos...";
 "openSettings" = "Abrir configuración";
-"overallSets" = "Conjuntos generales";
+"overallSets" = "Series totales";
 "overallVolume" = "Volumen total";
 "overview" = "Descripción general";
 
@@ -276,32 +276,32 @@
 "performed" = "Realizado";
 "personalBest" = "Mejor marca personal";
 "perDay" = "por día";
-"pinExercises" = "Ejercicios de alfiler";
-"pinExercisesTip" = "Ejercicios de alfiler";
+"pinExercises" = "Fijar ejercicios";
+"pinExercisesTip" = "Fijar ejercicios";
 "pinExercisesTipDescription" = "Fija ejercicios para ver rápidamente tu progreso.";
-"pinMeasurementsTip" = "Medidas de los pines";
-"pinMeasurementsTipDescription" = "Mediciones de pines para monitorear los cambios a lo largo del tiempo.";
+"pinMeasurementsTip" = "Fijar medidas";
+"pinMeasurementsTipDescription" = "Fija medidas para seguir los cambios con el tiempo.";
 "pinned" = "Fijado";
-"addPin" = "Agregar PIN";
+"addPin" = "Fijar";
 "perWeek" = "por semana";
 "PerWeek" = "Por semana";
-"planAhead" = "Planifique con anticipación";
-"pressPlusToAdd" = "Presione + para agregar \"%@\"";
-"pressPlusToAddExercise" = "Pulsa + para añadir un ejercicio.";
+"planAhead" = "Planifica con antelación";
+"pressPlusToAdd" = "Pulsa + para añadir \"%@\"";
+"pressPlusToAddExercise" = "Pulsa + para añadir un ejercicio";
 "preventAutoLock" = "Evitar el bloqueo automático";
 "preventAutoLockDescription" = "Mantiene la pantalla activa durante el entrenamiento.";
 "price" = "Precio";
 "privacyPolicy" = "Privacidad";
 "termsAndConditions" = "Términos y condiciones";
-"profile" = "Archivo Pro";
+"profile" = "Perfil";
 "progress" = "Progreso";
 
 // MARK: - R
 
 "recentAttempts" = "Intentos recientes";
 "recentWorkouts" = "Entrenamientos recientes";
-"remove" = "Eliminar";
-"rename" = "Rebautizar";
+"remove" = "Quitar";
+"rename" = "Renombrar";
 "reorderingDone" = "Reordenamiento hecho";
 "reorderExercises" = "Reordenar ejercicios";
 "repetitions" = "Repeticiones";
@@ -313,7 +313,7 @@
 
 // MARK: - S
 
-"save" = "Ahorrar";
+"save" = "Guardar";
 "saveAsTemplate" = "Guardar como plantilla";
 "saveFailedMessage" = "No se pudieron guardar tus últimos cambios. Podrían perderse al cerrar la app. Inténtalo de nuevo.";
 "saveFailedTitle" = "Error al guardar";
@@ -321,19 +321,19 @@
 "saveTime" = "Ahorra tiempo";
 "scanATemplate" = "Escanear una plantilla";
 "scanAWorkout" = "Escanear un entrenamiento";
-"scanWorkout" = "Entrenamiento de escaneo";
+"scanWorkout" = "Escanear entrenamiento";
 "scanWorkoutDescription" = "Importa ejercicios desde una foto.";
 "scanAWorkoutPromotionText" = "¡Convierte una foto en un entrenamiento y comienza a entrenar al instante!";
 "search" = "Buscar";
 "searchEverything" = "Buscar";
-"searchPrompt" = "buscar todo";
-"searchPromptDescription" = "Busque todos sus ejercicios, entrenamientos y plantillas en un solo lugar.";
-"searchExercises" = "Buscar en Ejercicios";
-"searchWorkouts" = "Buscar en Entrenamientos";
-"noSearchResults" = "No se encontraron resultados";
+"searchPrompt" = "Buscar en todo";
+"searchPromptDescription" = "Busca en todos tus ejercicios, entrenamientos y plantillas desde un solo sitio.";
+"searchExercises" = "Buscar en ejercicios";
+"searchWorkouts" = "Buscar en entrenamientos";
+"noSearchResults" = "Sin resultados";
 "noSearchResultsFor" = "No se han encontrado resultados para \"%@\"";
-"showMoreResults" = "Mostrar %d más resultados";
-"sec" = "segundo";
+"showMoreResults" = "Mostrar %d resultados más";
+"sec" = "seg";
 "meters.short" = "m";
 "yards.short" = "yd";
 "unitKilometers" = "Kilómetros (km)";
@@ -342,19 +342,19 @@
 "unitYards" = "Yardas (yd)";
 "selectDuration" = "Seleccionar duración";
 "selectExercise" = "Seleccionar ejercicio";
-"selectMuscleGroup" = "Seleccionar grupo de músculos";
+"selectMuscleGroup" = "Seleccionar grupo muscular";
 "selectSecondaryExercise" = "Seleccionar ejercicio secundario";
 "selectTemplate" = "Seleccionar plantilla";
 "set" = "Serie";
 "sets" = "Series";
-"setsIncomplete" = "Conjuntos incompletos";
-"setType" = "Tipo de conjunto";
+"setsIncomplete" = "Series incompletas";
+"setType" = "Tipo de serie";
 "settings" = "Ajustes";
 "seven" = "Siete";
 "shoulders" = "Hombros";
 "shareAsTemplate" = "Compartir como plantilla";
 "sharedTemplate" = "Plantilla compartida";
-"sharedTemplateDescription" = "Revise y guarde esta plantilla en su colección.";
+"sharedTemplateDescription" = "Revisa y guarda esta plantilla en tu colección.";
 "sharedWorkout" = "Entrenamiento compartido";
 "sharedWorkoutDescription" = "Alguien te invitó a agregar este entrenamiento a tu historial.";
 "shareTemplate" = "Compartir plantilla";
@@ -379,7 +379,7 @@
 "startWorkout" = "Iniciar entrenamiento";
 "workoutStartSheetDescription" = "Elige cómo te gustaría empezar.";
 "stop" = "Detener";
-"stopwatch" = "Cronógrafo";
+"stopwatch" = "Cronómetro";
 "subscription" = "Suscripción";
 "summary" = "Resumen";
 "support" = "Soporte";
@@ -390,67 +390,67 @@
 
 "target" = "Objetivo";
 "targetPerWeek" = "Objetivo por semana";
-"targetPerWeekDescription" = "Seleccione su objetivo de entrenamiento por semana.";
+"targetPerWeekDescription" = "Elige tu objetivo de entrenamientos por semana.";
 "template" = "Plantilla";
-"templateExplanation" = "Utilice plantillas para planificar y reutilizar entrenamientos. Puede seleccionar una plantilla al iniciar un entrenamiento.";
+"templateExplanation" = "Usa plantillas para planificar y reutilizar entrenamientos. Puedes elegir una al empezar un entrenamiento.";
 "templateFromPhoto" = "Plantilla de foto";
 "templateFromPhotoDescription" = "Extrae una plantilla de una foto.";
 "templateNeverUsed" = "Plantilla nunca utilizada";
 "templates" = "Plantillas";
 "this" = "Este";
-"thisMonth" = "este mes";
+"thisMonth" = "Este mes";
 "thisWeek" = "Esta semana";
 "ThisWeek" = "Esta semana";
-"thisYear" = "este año";
+"thisYear" = "Este año";
 "three" = "Tres";
 "threeWeeksAgo" = "Hace tres semanas";
-"time" = "tiempo";
+"time" = "vez";
 "tip" = "Consejo";
-"timer" = "Minutero";
+"timer" = "Temporizador";
 "manualTimer" = "Temporizador manual";
 "manualTimerDescription" = "Utilice una duración personalizada siempre que la necesite.";
 "autoRestTimerDescription" = "Comienza automáticamente una vez que se han ingresado las repeticiones de una serie.";
 "autoRestStopwatchDescription" = "Se inicia automáticamente y guarda el tiempo transcurrido como duración de descanso.";
 "ready" = "Listo";
-"running" = "Correr";
+"running" = "En curso";
 "paused" = "En pausa";
 "reset" = "Reiniciar";
 "timerIsMuted" = "Temporizador silenciado";
 "timerSoundOn" = "Sonido activado";
 "times" = "veces";
 "timesUp" = "¡Se acabó el tiempo!";
-"timesUpBody" = "Su cronómetro de entrenamiento está listo.";
+"timesUpBody" = "Tu temporizador de entrenamiento ha terminado.";
 "timerWarningBody" = "%@ restante.";
-"stopwatchMinuteTitle" = "Cronógrafo";
-"stopwatchMinuteBody" = "%@ transcurrió.";
+"stopwatchMinuteTitle" = "Cronómetro";
+"stopwatchMinuteBody" = "%@ transcurridos.";
 "title" = "Título";
 "to" = "a";
 "today" = "Hoy";
-"toGo" = "ir";
+"toGo" = "restantes";
 "total" = "Total";
 "trendDown" = "%@ menos que en el período anterior";
 "trendUp" = "%@ más que en el período anterior";
 "trendFlat" = "Sin cambios respecto al período anterior";
-"trackMore" = "Seguimiento más";
+"trackMore" = "Registra más";
 "triceps" = "Tríceps";
 "two" = "Dos";
 "twoWeeksAgo" = "Hace dos semanas";
-"autoRestStopwatch" = "Cronómetro de reposo automático";
+"autoRestStopwatch" = "Cronómetro automático";
 
 // MARK: - U
 
 "unit" = "Unidad de peso";
 "distanceUnit" = "Unidad de distancia";
-"unitDescription" = "Seleccione la unidad que desea utilizar. Cualquier entrada anterior se convertirá en caso de cambio.";
-"unpinned" = "Desanclar";
+"unitDescription" = "Elige la unidad que quieras usar. Las entradas anteriores se convertirán.";
+"unpinned" = "No fijado";
 "unused" = "No usado";
 "unsupportedFileType" = "Este tipo de archivo no es compatible.";
 "unknownExercise" = "Desconocido";
 "update" = "Actualizar";
 "upgradeTo" = "Actualizar a";
-"useDefaultExercises" = "Utilice ejercicios predeterminados";
+"useDefaultExercises" = "Usar ejercicios predeterminados";
 "useTemplate" = "Usar plantilla";
-"useTemplateDescription" = "Comience con una rutina de ejercicios guardada.";
+"useTemplateDescription" = "Empieza con una rutina guardada.";
 "useThisPhoto" = "Usa esta foto";
 
 // MARK: - R (continued)
@@ -472,12 +472,12 @@
 "weight" = "Peso";
 "weightPR" = "Peso PR";
 "weightUnit" = "Unidad de peso";
-"weightUnitDescription" = "Seleccione la unidad que desea utilizar en toda la aplicación.";
+"weightUnitDescription" = "Elige la unidad que quieras usar en toda la app.";
 "welcomeTo" = "Bienvenido a";
 "whatsStillMissing" = "¿Qué falta todavía?";
-"widget" = "widget";
-"weekOfThe" = "semana de la";
-"workout" = "Workout";
+"widget" = "Widget";
+"weekOfThe" = "Semana del";
+"workout" = "Entrenamiento";
 "workoutGoal" = "Objetivo de entrenamiento";
 
 // MARK: - Workout Goal screen
@@ -493,9 +493,9 @@
 "streakAtBest" = "Tu mejor racha hasta ahora";
 "streakToBeatRecordOne" = "1 semana para batir tu récord";
 "streakToBeatRecordMany" = "%d semanas para batir tu récord";
-"workoutHistory" = "Historia";
-"workouts" = "Workouts";
-"workoutTarget" = "objetivo de entrenamiento";
+"workoutHistory" = "Historial";
+"workouts" = "Entrenamientos";
+"workoutTarget" = "Objetivo de entrenamiento";
 
 // MARK: - V (continued)
 
@@ -516,7 +516,7 @@
 // MARK: - Measurements Edit Sheet
 
 "editMeasurements" = "Editar medidas";
-"editPinnedMeasurements" = "Editar fijado";
+"editPinnedMeasurements" = "Editar fijadas";
 "dragToReorder" = "Arrastra para reordenar";
 "noMeasurementsSelected" = "Ninguna medida seleccionada";
 "noDate" = "Sin fecha";
@@ -529,214 +529,214 @@
 
 // MARK: - Default Exercise Names
 
-"_default.exercise.pushups" = "Lagartijas";
+"_default.exercise.pushups" = "Flexiones";
 "_default.exercise.barbellBenchPress" = "Press de banca con barra";
 "_default.exercise.dumbbellBenchPress" = "Press de banca con mancuernas";
 "_default.exercise.inclinedBarbellBenchPress" = "Press de banca inclinado con barra";
 "_default.exercise.inclinedDumbbellBenchPress" = "Press de banca inclinado con mancuernas";
-"_default.exercise.dumbbellFly" = "Mosca con mancuernas";
-"_default.exercise.cableCrossovers" = "Cruces de cables";
+"_default.exercise.dumbbellFly" = "Aperturas con mancuernas";
+"_default.exercise.cableCrossovers" = "Cruce de poleas";
 "_default.exercise.declineBenchPress" = "Press de banca declinado";
-"_default.exercise.chestDips" = "Inmersiones de pecho";
-"_default.exercise.pecDeckFly" = "Mosca de cubierta Pec";
+"_default.exercise.chestDips" = "Fondos en paralelas";
+"_default.exercise.pecDeckFly" = "Contractor (peck deck)";
 "_default.exercise.pullups" = "Dominadas";
-"_default.exercise.chinups" = "Dominadas";
+"_default.exercise.chinups" = "Dominadas supinas";
 "_default.exercise.australianPullups" = "Dominadas australianas";
-"_default.exercise.latPulldowns" = "Jalones laterales";
+"_default.exercise.latPulldowns" = "Jalón al pecho";
 "_default.exercise.barbellRows" = "Remo con barra";
 "_default.exercise.dumbbellRows" = "Remo con mancuernas";
-"_default.exercise.seatedCableRows" = "Remo de cable sentado";
-"_default.exercise.tBarRows" = "Filas con barra en T";
+"_default.exercise.seatedCableRows" = "Remo en polea sentado";
+"_default.exercise.tBarRows" = "Remo en barra T";
 "_default.exercise.deadlift" = "Peso muerto";
-"_default.exercise.sumoDeadlift" = "Peso muerto de sumo";
+"_default.exercise.sumoDeadlift" = "Peso muerto sumo";
 "_default.exercise.romanianDeadlift" = "Peso muerto rumano";
-"_default.exercise.facePulls" = "Tirones de cara";
-"_default.exercise.squats" = "sentadillas";
-"_default.exercise.frontSquats" = "Sentadillas frontales";
+"_default.exercise.facePulls" = "Face pull";
+"_default.exercise.squats" = "Sentadillas";
+"_default.exercise.frontSquats" = "Sentadilla frontal";
 "_default.exercise.legPress" = "Prensa de piernas";
-"_default.exercise.walkingLunges" = "Estocadas caminando";
-"_default.exercise.barbellLunges" = "Estocadas con barra";
-"_default.exercise.dumbbellLunges" = "Estocadas con mancuernas";
-"_default.exercise.legExtension" = "Extensión de piernas";
-"_default.exercise.legCurls" = "Curl de piernas";
-"_default.exercise.calfRaises" = "Elevaciones de pantorrillas";
-"_default.exercise.seatedCalfRaises" = "Elevaciones de pantorrillas sentado";
-"_default.exercise.bulgarianSplitSquats" = "Sentadillas divididas búlgaras";
-"_default.exercise.hackSquats" = "Hackear sentadillas";
-"_default.exercise.gobletSquats" = "Sentadillas en copa";
-"_default.exercise.legPressCalfRaise" = "Levantamiento de pantorrillas con prensa de piernas";
-"_default.exercise.hipThrust" = "Empuje de cadera";
-"_default.exercise.handstandPushups" = "Flexiones de manos";
-"_default.exercise.militaryPress" = "Prensa militar";
-"_default.exercise.shoulderPress" = "Prensa de hombros";
+"_default.exercise.walkingLunges" = "Zancadas caminando";
+"_default.exercise.barbellLunges" = "Zancadas con barra";
+"_default.exercise.dumbbellLunges" = "Zancadas con mancuernas";
+"_default.exercise.legExtension" = "Extensión de cuádriceps";
+"_default.exercise.legCurls" = "Curl femoral";
+"_default.exercise.calfRaises" = "Elevación de gemelos";
+"_default.exercise.seatedCalfRaises" = "Elevación de gemelos sentado";
+"_default.exercise.bulgarianSplitSquats" = "Sentadilla búlgara";
+"_default.exercise.hackSquats" = "Sentadilla hack";
+"_default.exercise.gobletSquats" = "Sentadilla goblet";
+"_default.exercise.legPressCalfRaise" = "Gemelos en prensa";
+"_default.exercise.hipThrust" = "Hip thrust";
+"_default.exercise.handstandPushups" = "Flexiones en pino";
+"_default.exercise.militaryPress" = "Press militar";
+"_default.exercise.shoulderPress" = "Press de hombros";
 "_default.exercise.dumbbellShoulderPress" = "Press de hombros con mancuernas";
-"_default.exercise.uprightRows" = "Filas verticales";
+"_default.exercise.uprightRows" = "Remo al mentón";
 "_default.exercise.lateralRaises" = "Elevaciones laterales";
 "_default.exercise.frontRaises" = "Elevaciones frontales";
-"_default.exercise.rearDeltRaise" = "Elevación del deltoides trasero";
-"_default.exercise.arnoldPress" = "Prensa Arnold";
-"_default.exercise.cableRaises" = "Elevaciones de cable";
-"_default.exercise.dips" = "Luces cortas";
-"_default.exercise.tricepPushdowns" = "Flexiones de tríceps";
+"_default.exercise.rearDeltRaise" = "Elevación deltoides posterior";
+"_default.exercise.arnoldPress" = "Press Arnold";
+"_default.exercise.cableRaises" = "Elevaciones en polea";
+"_default.exercise.dips" = "Fondos";
+"_default.exercise.tricepPushdowns" = "Extensión de tríceps en polea";
 "_default.exercise.overheadTricepExtension" = "Extensión de tríceps por encima de la cabeza";
 "_default.exercise.closeGripBenchPress" = "Press de banca con agarre cerrado";
-"_default.exercise.tricepKickbacks" = "Contragolpes de tríceps";
-"_default.exercise.skullCrushers" = "Trituradoras de calaveras";
-"_default.exercise.diamondPushups" = "Flexiones de diamante";
+"_default.exercise.tricepKickbacks" = "Patada de tríceps";
+"_default.exercise.skullCrushers" = "Press francés";
+"_default.exercise.diamondPushups" = "Flexiones diamante";
 "_default.exercise.ropeTricepExtensions" = "Extensiones de tríceps con cuerda";
 "_default.exercise.barbellCurls" = "Curl con barra";
 "_default.exercise.dumbbellCurls" = "Curl con mancuernas";
-"_default.exercise.hammerCurls" = "Rizos de martillo";
-"_default.exercise.preacherCurls" = "Rizos de predicador";
-"_default.exercise.concentrationCurls" = "Rizos de concentración";
-"_default.exercise.cableCurls" = "Rizos de cable";
+"_default.exercise.hammerCurls" = "Curl martillo";
+"_default.exercise.preacherCurls" = "Curl predicador";
+"_default.exercise.concentrationCurls" = "Curl concentrado";
+"_default.exercise.cableCurls" = "Curl en polea";
 "_default.exercise.inclineDumbbellCurls" = "Curl inclinado con mancuernas";
-"_default.exercise.ezBarCurls" = "Rizos con barra EZ";
-"_default.exercise.situps" = "abdominales";
-"_default.exercise.crunches" = "abdominales";
-"_default.exercise.bicycles" = "abdominales en bicicleta";
+"_default.exercise.ezBarCurls" = "Curl con barra Z";
+"_default.exercise.situps" = "Abdominales completos";
+"_default.exercise.crunches" = "Crunch abdominal";
+"_default.exercise.bicycles" = "Crunch bicicleta";
 "_default.exercise.legRaises" = "Elevaciones de piernas";
-"_default.exercise.hangingKneeRaises" = "Elevaciones de rodillas colgantes";
-"_default.exercise.plank" = "Tablón";
+"_default.exercise.hangingKneeRaises" = "Elevación de rodillas en suspensión";
+"_default.exercise.plank" = "Plancha";
 "_default.exercise.sidePlank" = "Plancha lateral";
 "_default.exercise.russianTwists" = "Giros rusos";
-"_default.exercise.mountainClimbers" = "Alpinistas";
-"_default.exercise.abWheelRollout" = "Despliegue de la rueda abdominal";
-"_default.exercise.hangingLegRaises" = "Elevaciones de piernas colgantes";
-"_default.exercise.cableCrunches" = "abdominales con cable";
-"_default.exercise.running" = "Correr";
+"_default.exercise.mountainClimbers" = "Escaladores";
+"_default.exercise.abWheelRollout" = "Rueda abdominal";
+"_default.exercise.hangingLegRaises" = "Elevación de piernas en suspensión";
+"_default.exercise.cableCrunches" = "Crunch en polea";
+"_default.exercise.running" = "Carrera";
 "_default.exercise.cycling" = "Ciclismo";
 "_default.exercise.rowing" = "Remo";
-"_default.exercise.jumpRope" = "saltar la cuerda";
+"_default.exercise.jumpRope" = "Saltar a la comba";
 "_default.exercise.elliptical" = "Elíptico";
-"_default.exercise.stairClimber" = "Escalador de escaleras";
-"_default.exercise.swimming" = "Nadar";
-"_default.exercise.burpees" = "burpees";
-"_default.exercise.boxJumps" = "Saltos de caja";
+"_default.exercise.stairClimber" = "Escaladora";
+"_default.exercise.swimming" = "Natación";
+"_default.exercise.burpees" = "Burpees";
+"_default.exercise.boxJumps" = "Saltos al cajón";
 "_default.exercise.battleRopes" = "Cuerdas de batalla";
-"_default.exercise.barbellShrugs" = "Encogimiento de hombros con barra";
-"_default.exercise.dumbbellShrugs" = "Encogimiento de hombros con mancuernas";
-"_default.exercise.widegripPullups" = "Pull-ups con agarre ancho";
+"_default.exercise.barbellShrugs" = "Encogimientos con barra";
+"_default.exercise.dumbbellShrugs" = "Encogimientos con mancuernas";
+"_default.exercise.widegripPullups" = "Dominadas con agarre ancho";
 "_default.exercise.closegripPullups" = "Dominadas con agarre cerrado";
 "_default.exercise.assistedPullups" = "Dominadas asistidas";
-"_default.exercise.chestSupportedRows" = "Remo con apoyo en el pecho";
-"_default.exercise.pendlayRows" = "Filas colgantes";
-"_default.exercise.landmineRows" = "Filas de minas terrestres";
-"_default.exercise.cablePulldowns" = "Tiradores de cables";
-"_default.exercise.seatedRowMachine" = "Máquina de remo sentado";
-"_default.exercise.reverseFly" = "Mosca inversa";
-"_default.exercise.goodMornings" = "buenos dias";
+"_default.exercise.chestSupportedRows" = "Remo con apoyo pectoral";
+"_default.exercise.pendlayRows" = "Remo Pendlay";
+"_default.exercise.landmineRows" = "Remo landmine";
+"_default.exercise.cablePulldowns" = "Jalón en polea";
+"_default.exercise.seatedRowMachine" = "Remo en máquina sentado";
+"_default.exercise.reverseFly" = "Aperturas inversas";
+"_default.exercise.goodMornings" = "Good mornings";
 "_default.exercise.backExtensions" = "Extensiones de espalda";
-"_default.exercise.hyperextensions" = "hiperextensiones";
+"_default.exercise.hyperextensions" = "Hiperextensiones";
 "_default.exercise.reverseHyperextensions" = "Hiperextensiones inversas";
-"_default.exercise.dumbbellPullover" = "Jersey con mancuernas";
-"_default.exercise.machineFly" = "Mosca de la máquina";
-"_default.exercise.landminePress" = "Prensa de minas terrestres";
-"_default.exercise.inclineCableFly" = "Mosca con cable inclinado";
-"_default.exercise.singleArmCablePress" = "Prensa de cable de un solo brazo";
+"_default.exercise.dumbbellPullover" = "Pullover con mancuerna";
+"_default.exercise.machineFly" = "Aperturas en máquina";
+"_default.exercise.landminePress" = "Press landmine";
+"_default.exercise.inclineCableFly" = "Aperturas en polea inclinado";
+"_default.exercise.singleArmCablePress" = "Press en polea a una mano";
 "_default.exercise.dumbbellFloorPress" = "Press de suelo con mancuernas";
-"_default.exercise.pistolSquats" = "Sentadillas con pistola";
-"_default.exercise.boxSquats" = "Sentadillas en caja";
-"_default.exercise.sissySquats" = "Sentadillas mariquitas";
-"_default.exercise.zercherSquats" = "Sentadillas Zercher";
-"_default.exercise.legPressWideStance" = "Postura amplia de prensa de piernas";
-"_default.exercise.legPressNarrowStance" = "Postura estrecha de prensa de piernas";
-"_default.exercise.nordics" = "Rizos nórdicos";
-"_default.exercise.gluteHamRaise" = "Levantamiento de jamón de glúteos";
-"_default.exercise.seatedLegCurls" = "Curl de piernas sentado";
-"_default.exercise.standingLegCurls" = "Curl de piernas de pie";
-"_default.exercise.lyingLegCurls" = "Flexiones de piernas acostadas";
-"_default.exercise.singleLegDeadlift" = "Peso muerto con una sola pierna";
-"_default.exercise.cableKickbacks" = "Contragolpes de cable";
+"_default.exercise.pistolSquats" = "Sentadilla pistol";
+"_default.exercise.boxSquats" = "Sentadilla al cajón";
+"_default.exercise.sissySquats" = "Sentadilla sissy";
+"_default.exercise.zercherSquats" = "Sentadilla Zercher";
+"_default.exercise.legPressWideStance" = "Prensa con apertura amplia";
+"_default.exercise.legPressNarrowStance" = "Prensa con apertura estrecha";
+"_default.exercise.nordics" = "Curl nórdico";
+"_default.exercise.gluteHamRaise" = "Elevación glúteo-femoral";
+"_default.exercise.seatedLegCurls" = "Curl femoral sentado";
+"_default.exercise.standingLegCurls" = "Curl femoral de pie";
+"_default.exercise.lyingLegCurls" = "Curl femoral tumbado";
+"_default.exercise.singleLegDeadlift" = "Peso muerto a una pierna";
+"_default.exercise.cableKickbacks" = "Patada de glúteo en polea";
 "_default.exercise.abductorMachine" = "Máquina abductora";
 "_default.exercise.adductorMachine" = "Máquina de aductores";
-"_default.exercise.stepUps" = "Pasos ascendentes";
+"_default.exercise.stepUps" = "Subidas al cajón";
 "_default.exercise.reverseGripBenchPress" = "Press de banca con agarre inverso";
-"_default.exercise.reverseCurls" = "Rizos inversos";
-"_default.exercise.spiderCurls" = "Rizos de araña";
-"_default.exercise.zottmanCurls" = "Rizos Zottman";
+"_default.exercise.reverseCurls" = "Curl inverso";
+"_default.exercise.spiderCurls" = "Curl spider";
+"_default.exercise.zottmanCurls" = "Curl Zottman";
 "_default.exercise.seatedInclineCurls" = "Curl inclinado sentado";
-"_default.exercise.cableHammerCurls" = "Rizos de martillo de cable";
-"_default.exercise.dragCurls" = "Arrastrar rizos";
-"_default.exercise.wristCurls" = "Flexiones de muñeca";
-"_default.exercise.reverseWristCurls" = "Flexiones de muñeca inversas";
+"_default.exercise.cableHammerCurls" = "Curl martillo en polea";
+"_default.exercise.dragCurls" = "Drag curl";
+"_default.exercise.wristCurls" = "Curl de muñeca";
+"_default.exercise.reverseWristCurls" = "Curl de muñeca inverso";
 "_default.exercise.seatedTricepPress" = "Press de tríceps sentado";
 "_default.exercise.oneArmTricepExtension" = "Extensión de tríceps con un brazo";
-"_default.exercise.tricepDips" = "Inmersiones de tríceps";
-"_default.exercise.benchDips" = "Inmersiones en banco";
-"_default.exercise.reverseGripTricepPushdowns" = "Flexiones de tríceps con agarre inverso";
-"_default.exercise.jmPress" = "Prensa JM";
-"_default.exercise.tatePress" = "Prensa Tate";
+"_default.exercise.tricepDips" = "Fondos de tríceps";
+"_default.exercise.benchDips" = "Fondos en banco";
+"_default.exercise.reverseGripTricepPushdowns" = "Extensión de tríceps en polea supino";
+"_default.exercise.jmPress" = "JM press";
+"_default.exercise.tatePress" = "Tate press";
 "_default.exercise.seatedDumbbellPress" = "Press sentado con mancuernas";
-"_default.exercise.machineShoulderPress" = "Press de hombros con máquina";
-"_default.exercise.pikePushups" = "Flexiones en pica";
-"_default.exercise.behindTheNeckPress" = "Prensa detrás del cuello";
-"_default.exercise.dumbbellScaption" = "Escapción con mancuernas";
+"_default.exercise.machineShoulderPress" = "Press de hombros en máquina";
+"_default.exercise.pikePushups" = "Flexiones pike";
+"_default.exercise.behindTheNeckPress" = "Press tras nuca";
+"_default.exercise.dumbbellScaption" = "Elevación en plano escapular";
 "_default.exercise.cableLateralRaises" = "Elevaciones laterales con cable";
-"_default.exercise.bentOverLateralRaises" = "Elevaciones laterales inclinadas";
-"_default.exercise.reverseDeclineFly" = "Mosca declinada inversa";
-"_default.exercise.seatedBentOverLateralRaises" = "Elevaciones laterales inclinadas sentado";
-"_default.exercise.plateFrontRaise" = "Elevación frontal de la placa";
+"_default.exercise.bentOverLateralRaises" = "Pájaros con mancuernas";
+"_default.exercise.reverseDeclineFly" = "Aperturas inversas declinado";
+"_default.exercise.seatedBentOverLateralRaises" = "Pájaros sentado";
+"_default.exercise.plateFrontRaise" = "Elevación frontal con disco";
 "_default.exercise.barbellFrontRaise" = "Elevación frontal con barra";
-"_default.exercise.highPulls" = "Tirones altos";
+"_default.exercise.highPulls" = "High pull";
 "_default.exercise.vUps" = "V-ups";
-"_default.exercise.reverseCrunches" = "Abdominales inversos";
-"_default.exercise.flutterKicks" = "Patadas agitadas";
+"_default.exercise.reverseCrunches" = "Crunch inverso";
+"_default.exercise.flutterKicks" = "Flutter kicks";
 "_default.exercise.scissorKicks" = "Patadas de tijera";
-"_default.exercise.deadBug" = "Insecto muerto";
-"_default.exercise.birdDog" = "Perro pájaro";
-"_default.exercise.hollowBodyHold" = "Retención del cuerpo hueco";
-"_default.exercise.toesToBar" = "Dedos de los pies a la barra";
-"_default.exercise.lSit" = "L-sentarse";
-"_default.exercise.dragonFlags" = "Banderas de dragón";
+"_default.exercise.deadBug" = "Dead bug";
+"_default.exercise.birdDog" = "Bird dog";
+"_default.exercise.hollowBodyHold" = "Hollow body hold";
+"_default.exercise.toesToBar" = "Pies a la barra";
+"_default.exercise.lSit" = "L-sit";
+"_default.exercise.dragonFlags" = "Dragon flags";
 "_default.exercise.windshieldWipers" = "Limpiaparabrisas";
-"_default.exercise.paloffPress" = "Prensa Paloff";
-"_default.exercise.woodchops" = "Chuletas de madera";
-"_default.exercise.obliqueCrunches" = "Abdominales oblicuos";
+"_default.exercise.paloffPress" = "Press Pallof";
+"_default.exercise.woodchops" = "Leñador en polea";
+"_default.exercise.obliqueCrunches" = "Crunch oblicuo";
 "_default.exercise.sprints" = "Sprints";
 "_default.exercise.hiitTraining" = "Entrenamiento HIIT";
-"_default.exercise.assaultBike" = "Bicicleta de asalto";
-"_default.exercise.rowingMachine" = "Máquina de remo";
-"_default.exercise.skiErg" = "Ergio de esquí";
+"_default.exercise.assaultBike" = "Assault bike";
+"_default.exercise.rowingMachine" = "Remoergómetro";
+"_default.exercise.skiErg" = "Ski erg";
 "_default.exercise.farmersWalk" = "Paseo del granjero";
-"_default.exercise.rackPulls" = "Tiradores de estante";
-"_default.exercise.snatchGripDeadlift" = "Peso muerto con agarre de arranque";
-"_default.exercise.deficitDeadlift" = "Peso muerto deficitario";
-"_default.exercise.trapBarDeadlift" = "Peso muerto con barra trampa";
-"_default.exercise.cleanAndPress" = "Limpiar y presionar";
-"_default.exercise.powerClean" = "Limpieza energética";
-"_default.exercise.hangClean" = "colgar limpio";
-"_default.exercise.snatch" = "Arrebatar";
-"_default.exercise.hangSnatch" = "Colgar Arrebatar";
-"_default.exercise.pushPress" = "Empujar prensa";
-"_default.exercise.pushJerk" = "Empujar idiota";
-"_default.exercise.splitJerk" = "Jerk dividido";
-"_default.exercise.thrusters" = "Propulsores";
-"_default.exercise.wallBalls" = "Bolas de pared";
-"_default.exercise.turkishGetUp" = "Levántate turco";
-"_default.exercise.kettlebellSwings" = "Columpios con pesas rusas";
-"_default.exercise.kettlebellSnatch" = "Arranque con pesas rusas";
-"_default.exercise.kettlebellClean" = "Limpieza con pesas rusas";
-"_default.exercise.gobletSquatWithKettlebell" = "Sentadilla en copa con pesa rusa";
-"_default.exercise.singleArmKettlebellPress" = "Press con pesa rusa de un solo brazo";
-"_default.exercise.ropeClimbs" = "Escaladas de cuerda";
+"_default.exercise.rackPulls" = "Rack pull";
+"_default.exercise.snatchGripDeadlift" = "Peso muerto agarre de arrancada";
+"_default.exercise.deficitDeadlift" = "Peso muerto en déficit";
+"_default.exercise.trapBarDeadlift" = "Peso muerto con barra hexagonal";
+"_default.exercise.cleanAndPress" = "Cargada y press";
+"_default.exercise.powerClean" = "Cargada de potencia";
+"_default.exercise.hangClean" = "Cargada colgante";
+"_default.exercise.snatch" = "Arrancada";
+"_default.exercise.hangSnatch" = "Arrancada colgante";
+"_default.exercise.pushPress" = "Push press";
+"_default.exercise.pushJerk" = "Push jerk";
+"_default.exercise.splitJerk" = "Split jerk";
+"_default.exercise.thrusters" = "Thrusters";
+"_default.exercise.wallBalls" = "Wall balls";
+"_default.exercise.turkishGetUp" = "Turkish get-up";
+"_default.exercise.kettlebellSwings" = "Swing con kettlebell";
+"_default.exercise.kettlebellSnatch" = "Arrancada con kettlebell";
+"_default.exercise.kettlebellClean" = "Cargada con kettlebell";
+"_default.exercise.gobletSquatWithKettlebell" = "Sentadilla goblet con kettlebell";
+"_default.exercise.singleArmKettlebellPress" = "Press de kettlebell a una mano";
+"_default.exercise.ropeClimbs" = "Trepa de cuerda";
 "_default.exercise.sledPush" = "Empuje de trineo";
-"_default.exercise.sledPull" = "Tirador de trineo";
-"_default.exercise.tireFlips" = "Volteos de llantas";
+"_default.exercise.sledPull" = "Arrastre de trineo";
+"_default.exercise.tireFlips" = "Volteo de neumático";
 "_default.exercise.medicineBallSlams" = "Golpes con balón medicinal";
-"_default.exercise.wallClimbs" = "Escaladas de pared";
-"_default.exercise.muscleUps" = "Musculos";
-"_default.exercise.ringDips" = "Inmersiones de anillo";
-"_default.exercise.ringPushups" = "Flexiones de anillo";
-"_default.exercise.ringRows" = "Filas de anillos";
-"_default.exercise.walking" = "Caminata";
+"_default.exercise.wallClimbs" = "Wall climbs";
+"_default.exercise.muscleUps" = "Muscle-ups";
+"_default.exercise.ringDips" = "Fondos en anillas";
+"_default.exercise.ringPushups" = "Flexiones en anillas";
+"_default.exercise.ringRows" = "Remo en anillas";
+"_default.exercise.walking" = "Caminar";
 "_default.exercise.inclineTreadmillWalk" = "Caminata inclinada en cinta";
 "_default.exercise.rucking" = "Rucking";
-"_default.exercise.suitcaseCarry" = "Acarreo de maleta";
-"_default.exercise.overheadCarry" = "Acarreo por encima de la cabeza";
-"_default.exercise.yokeCarry" = "Acarreo de yugo";
-"_default.exercise.sandbagCarry" = "Acarreo de saco de arena";
-"_default.exercise.shuttleRun" = "Carrera de ida y vuelta";
+"_default.exercise.suitcaseCarry" = "Suitcase carry";
+"_default.exercise.overheadCarry" = "Transporte sobre la cabeza";
+"_default.exercise.yokeCarry" = "Yoke carry";
+"_default.exercise.sandbagCarry" = "Transporte de saco";
+"_default.exercise.shuttleRun" = "Carrera de lanzadera";
 
 // MARK: - Default Template Names & Descriptions
 
@@ -768,10 +768,10 @@
 "avgLessExerciseSetsThisYearThanLastYear" = "Estás promediando menos series para este ejercicio este año que el año pasado.";
 
 // MARK: - Exercise Weight Highlights
-"higherMaxWeightThisMonthThanLastMonth" = "Su mejor peso este mes es mayor que el del mes pasado.";
-"lowerMaxWeightThisMonthThanLastMonth" = "Su mejor peso este mes es menor que el del mes pasado.";
-"higherMaxWeightThisYearThanLastYear" = "Su mejor peso este año es mayor que el del año pasado.";
-"lowerMaxWeightThisYearThanLastYear" = "Su mejor peso este año es menor que el del año pasado.";
+"higherMaxWeightThisMonthThanLastMonth" = "Tu mejor peso este mes es mayor que el del mes pasado.";
+"lowerMaxWeightThisMonthThanLastMonth" = "Tu mejor peso este mes es menor que el del mes pasado.";
+"higherMaxWeightThisYearThanLastYear" = "Tu mejor peso este año es mayor que el del año pasado.";
+"lowerMaxWeightThisYearThanLastYear" = "Tu mejor peso este año es menor que el del año pasado.";
 
 // MARK: - Exercise Repetitions Highlights
 "higherMaxRepsThisMonthThanLastMonth" = "Tus mejores repeticiones este mes son mayores que las del mes pasado.";
@@ -780,29 +780,30 @@
 "lowerMaxRepsThisYearThanLastYear" = "Tus mejores repeticiones este año son inferiores a las del año pasado.";
 
 // MARK: - Measurement Highlights
-"measurementHigherThisMonthThanLastMonth" = "Su promedio este mes es más alto que el del mes pasado.";
-"measurementLowerThisMonthThanLastMonth" = "Su promedio este mes es menor que el del mes pasado.";
-"measurementHigherThisYearThanLastYear" = "Su promedio este año es más alto que el año pasado.";
-"measurementLowerThisYearThanLastYear" = "Su promedio este año es menor que el año pasado.";
+"measurementHigherThisMonthThanLastMonth" = "Tu promedio este mes es más alto que el del mes pasado.";
+"measurementLowerThisMonthThanLastMonth" = "Tu promedio este mes es menor que el del mes pasado.";
+"measurementHigherThisYearThanLastYear" = "Tu promedio este año es más alto que el del año pasado.";
+"measurementLowerThisYearThanLastYear" = "Tu promedio este año es menor que el del año pasado.";
 
 // MARK: - Welcome Screen
-"track" = "Pista";
+"track" = "Registra";
 "goals" = "Objetivos";
+"welcomeGoalsCategory" = "Fija";
 "getStarted" = "Empezar";
-"welcomeWorkoutsDescription" = "Registre sus ejercicios, series y repeticiones para realizar un seguimiento de cada sesión.";
-"welcomeProgressDescription" = "Vea sus mejoras a lo largo del tiempo con gráficos y estadísticas detallados.";
+"welcomeWorkoutsDescription" = "Registra tus ejercicios, series y repeticiones para seguir cada sesión.";
+"welcomeProgressDescription" = "Mira tus mejoras con el tiempo con gráficos y estadísticas detallados.";
 "welcomeTemplatesDescription" = "Guarda tus rutinas favoritas y comienza a entrenar con un solo toque.";
-"welcomeGoalsDescription" = "Establezca objetivos semanales y manténgase motivado para alcanzar sus objetivos de acondicionamiento físico.";
+"welcomeGoalsDescription" = "Fija objetivos semanales y mantén la motivación para lograr tus metas.";
 "noGoalSet" = "Aún no se ha fijado ningún objetivo";
 "noWeeklyGoalTip" = "Sin objetivo semanal";
-"noWeeklyGoalTipDescription" = "Establezca un objetivo para realizar un seguimiento del progreso de su entrenamiento semanal.";
+"noWeeklyGoalTipDescription" = "Fija un objetivo para seguir tu progreso semanal.";
 "setGoal" = "Establecer objetivo";
 
 // Rest Duration
 "addRest" = "Agregar descanso";
 "editRest" = "Editar descanso";
 "restBetweenSets" = "Descanso entre series";
-"autoRestTimer" = "Temporizador de descanso automático";
+"autoRestTimer" = "Descanso automático";
 
 // Live Activity widget (keep labels compact — layout is tight)
 "liveActivitySetRowPrevious" = "Anterior";
@@ -811,24 +812,24 @@
 
 // App Store — Live Activity showcase (in-app labels only; frameit supplies headline)
 "screenshotLiveActivityModeAutoCaption" = "Temporizador automático";
-"screenshotLiveActivityModeLoggingCaption" = "Establecer seguimiento";
+"screenshotLiveActivityModeLoggingCaption" = "Registro de series";
 
 // MARK: - Exercise Merging
 "mergeExercise" = "Unir";
 "mergeExercises" = "Fusionar ejercicios";
-"selectExerciseToMerge" = "Seleccione el ejercicio con el que fusionarse";
-"mergeDirectionDescription" = "Elija qué ejercicio debe permanecer. Se transferirá todo el historial de entrenamiento.";
+"selectExerciseToMerge" = "Selecciona el ejercicio con el que fusionar";
+"mergeDirectionDescription" = "Elige qué ejercicio se conserva. Se transferirá todo el historial.";
 "defaultExerciseAlwaysRemains" = "Los ejercicios predeterminados siempre permanecen.";
 "cannotMergeDefaultExercises" = "Los ejercicios predeterminados no se pueden fusionar entre sí.";
 "cannotMergeSameExercise" = "Un ejercicio no puede fusionarse consigo mismo.";
 "mergeConfirmation" = "Todo el historial de entrenamiento de \"%@\" se moverá a \"%@\". Se eliminará \"%@\". Esto no se puede deshacer.";
-"mergeInto" = "Fusionarse en";
+"mergeInto" = "Fusionar con";
 "willBeDeleted" = "Será eliminado";
-"willRemain" = "permanecerá";
-"defaultExercise" = "Por defecto";
-"changeExercise" = "Ejercicio de cambio";
+"willRemain" = "Permanecerá";
+"defaultExercise" = "Predeterminado";
+"changeExercise" = "Cambiar ejercicio";
 "error" = "Error";
-"suggested" = "sugerido";
+"suggested" = "Sugerido";
 
 // MARK: - Screenshot Fixtures
 
@@ -937,8 +938,8 @@
 "workoutSetsAboutInfo" = "El número de series registradas en un entrenamiento — una medida simple de cuánto hiciste en una sesión, independiente del peso en la barra.";
 "workoutRepsAboutInfo" = "Todas las repeticiones registradas en un entrenamiento, sumadas en todas las series. Junto con las series y el volumen, describe cuánto trabajo contuvo una sesión.";
 "period" = "Período";
-"weeklyGoal" = "Meta semanal";
-"weeklyGoalReached" = "Meta alcanzada";
+"weeklyGoal" = "Objetivo semanal";
+"weeklyGoalReached" = "Objetivo alcanzado";
 "weeklyGoalToGoOne" = "Falta 1 entrenamiento";
 "weeklyGoalToGoMany" = "Faltan %d entrenamientos";
 "weeklyStreakWeeks" = "%d sem";
@@ -989,14 +990,14 @@
 "topExercises" = "Mejores ejercicios";
 "muscleDetailPercentOfSets" = "%d%% de las series";
 "weekStreakSuffix" = "semanas seguidas";
-"weeklyGoalAccessibility" = "Meta semanal, %d de %d workouts";
-"weeklyGoalSubtitle" = "de tu objetivo de %d workouts";
+"weeklyGoalAccessibility" = "Objetivo semanal, %d de %d entrenamientos";
+"weeklyGoalSubtitle" = "de tu objetivo de %d entrenamientos";
 "milestones" = "Hitos";
 "weeksToGo" = "faltan %d";
 "bestStreakLabel" = "Mejor · %d sem";
 "monthWorkoutsCount" = "%d entrenamientos";
 "muscleBalanceEmptySubtitle" = "Registra un entrenamiento para ver tu reparto muscular.";
-"setsOverTime" = "Series a lo largo del tiempo";
+"setsOverTime" = "Series en el tiempo";
 "muscleBalanceGridCaption" = "% de series · vs. tu reparto objetivo";
 "muscleBalanceOnTargetShort" = "%d de 8 en objetivo";
 "muscleBalanceOnTrack" = "En buen camino";
@@ -1133,7 +1134,7 @@
 "strengthAxisMostDeclined" = "Mayor descenso";
 "strengthAxisLeastImproved" = "Menor avance";
 "strengthAxisMostImproved" = "Mayor avance";
-"strengthStrongestLifts" = "Levantamientos más fuertes";
+"strengthStrongestLifts" = "Mejores levantamientos";
 "strengthShowAllLifts" = "Ver los %d levantamientos";
 "strengthAxisLeastDeclined" = "Menor descenso";
 "showLess" = "Ver menos";

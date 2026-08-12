@@ -31,6 +31,11 @@ import SwiftUI
 /// one type size across every surface at the cost of a taller block in narrow tiles — and since the
 /// placeholder stands in for a chart that runs to the bottom edge, it grows upward into slack that
 /// was empty anyway.
+///
+/// Which is why the ring is pinned to the *bottom of the row* as well as the bottom of the space:
+/// wrapping copy must push its own extra lines upward, never carry the ring up with it. Keep the
+/// copy short regardless — two lines in a half-width tile — so the block stays a caption beside a
+/// mark rather than a paragraph filling the tile.
 struct TrendPlaceholder: View {
     /// How far along the wait is, 0…1. Values outside are clamped; zero still shows `minimumFill`.
     let progress: Double
@@ -48,7 +53,10 @@ struct TrendPlaceholder: View {
     private var fill: Double { min(max(progress, Self.minimumFill), 1) }
 
     var body: some View {
-        HStack(spacing: 9) {
+        // Bottom-aligned inside the row, not centred: the ring stands where a chart's baseline would
+        // and has to stay there, so a caption that wraps to a second line grows *upward* past it
+        // instead of dragging it up the tile with it.
+        HStack(alignment: .bottom, spacing: 9) {
             ZStack {
                 Circle()
                     .stroke(Color.fill, lineWidth: Self.lineWidth)
@@ -89,7 +97,7 @@ struct TrendPlaceholder: View {
         HStack(alignment: .top, spacing: 10) {
             TrendPlaceholder(
                 progress: 0.15,
-                text: "Keep logging workouts to see your strength trend.",
+                text: "Building your strength trend",
                 systemImage: "chart.line.uptrend.xyaxis"
             )
             TrendPlaceholder(

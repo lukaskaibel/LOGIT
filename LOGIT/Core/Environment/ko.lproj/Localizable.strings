@@ -1123,7 +1123,7 @@
 "strength" = "근력";
 "strengthBasis" = "전체 e1RM";
 "strengthExerciseBasis" = "%@ e1RM";
-"strengthEmpty" = "운동을 계속 기록하면 근력 추세를 볼 수 있습니다.";
+"strengthEmpty" = "근력 추세 만드는 중";
 "nWeeks" = "%d주";
 "nMonths" = "%d개월";
 "oneYear" = "1년";

@@ -1119,7 +1119,7 @@
 "strength" = "Kraft";
 "strengthBasis" = "e1RM gesamt";
 "strengthExerciseBasis" = "e1RM %@";
-"strengthEmpty" = "Logge weiter Workouts, um deinen Krafttrend zu sehen.";
+"strengthEmpty" = "Dein Krafttrend entsteht";
 "nWeeks" = "%d Wochen";
 "nMonths" = "%d Monate";
 "oneYear" = "1 Jahr";

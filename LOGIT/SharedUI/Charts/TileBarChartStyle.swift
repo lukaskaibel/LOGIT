@@ -34,8 +34,12 @@ enum TileBarChartStyle {
     /// showing.
     static let footerBarWidth: MarkDimension = .ratio(0.6)
 
-    /// Corner radius of the rounded bar caps.
-    static let cornerRadius: CGFloat = 9
+    /// Corner radius of the bar caps — the app's one bar radius, shared with every full chart
+    /// (`PeriodHistoryChart`, `TrendWindowHistoryChart`, `WorkoutStatScreen`, the Strength and
+    /// muscle-balance bars). A tile's bars are meant to read as a small copy of the chart they tap
+    /// into, and at the old 9pt they didn't: on a bar this narrow that radius rounds the whole cap
+    /// into a capsule, so the tile drew lozenges where the detail screen draws columns.
+    static let cornerRadius: CGFloat = 3
 }
 
 extension ChartContent {

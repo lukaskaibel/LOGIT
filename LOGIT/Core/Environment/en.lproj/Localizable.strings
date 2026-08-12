@@ -1123,7 +1123,7 @@
 "strength" = "Strength";
 "strengthBasis" = "Overall e1RM";
 "strengthExerciseBasis" = "e1RM %@";
-"strengthEmpty" = "Keep logging workouts to see your strength trend.";
+"strengthEmpty" = "Building your strength trend";
 "nWeeks" = "%d weeks";
 "nMonths" = "%d months";
 "oneYear" = "1 year";

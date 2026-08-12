@@ -18,8 +18,9 @@ import SwiftUI
 ///
 /// Tap or press-and-hold any bar to inspect it: a rule mark and a value card name the exact value and
 /// period, the touched bar lights up and the rest dim — the same gesture the scrollable capability
-/// charts use. The y-axis keeps ~1/6 headroom above the tallest bar so a peak never touches the
-/// ceiling (matching the stat tiles). One component, so the history charts can't drift apart again —
+/// charts use. The y-axis tops out on a round `chartAxisTop` just above the tallest bar in view, so a
+/// peak never touches the ceiling and the plot closes on a labelled grid line rather than trailing off
+/// into open space above the bars. One component, so the history charts can't drift apart again —
 /// the compact muscle tile is this same chart with `height` / `showsXAxisLabels` turned down, not a
 /// hand-rolled copy.
 struct PeriodHistoryChart: View {
@@ -71,7 +72,7 @@ struct PeriodHistoryChart: View {
     var body: some View {
         // The y-axis fits the tallest bar in view (passed in while scrolling) or, static, the tallest
         // across every bucket.
-        let maxValue = yDomainMax ?? (buckets.map(\.value).max() ?? 0)
+        let axisTop = chartAxisTop(above: yDomainMax ?? (buckets.map(\.value).max() ?? 0))
         let selectedBucket = selectedDate.flatMap { nearestBucket(to: $0) }
         scrollableIfNeeded(
             Chart {
@@ -104,8 +105,9 @@ struct PeriodHistoryChart: View {
                         .averageLineStyle()
                 }
             }
-            // ~1/6 headroom above the tallest bar so a peak never touches the ceiling (matches tiles).
-            .chartYScale(domain: 0 ... max(maxValue * 1.15, 1))
+            // A round ceiling just above the tallest bar in view, so the plot closes on a labelled
+            // grid line instead of open space (see `chartAxisTop`).
+            .chartYScale(domain: 0 ... axisTop)
             .chartXSelection(value: $selectedDate)
             .chartXAxis {
                 if showsXAxisLabels {
@@ -134,13 +136,14 @@ struct PeriodHistoryChart: View {
                 }
             }
             .chartYAxis {
-                AxisMarks(values: .automatic(desiredCount: 3))
+                // Zero, the midpoint and the ceiling — the top mark is the point: it closes the plot.
+                AxisMarks(values: [0, axisTop / 2, axisTop])
             }
             // Ease the y-scale and the dashed average to their new values as bars scroll in and out, so
             // the axis rescales and the line glides instead of snapping. Applied to the chart's marks
             // and scale here, *inside* the scroll wrapper `scrollableIfNeeded` adds — the horizontal
             // scroll is a modifier outside this animation's scope, so it keeps tracking the finger.
-            .animation(.easeInOut(duration: 0.3), value: maxValue)
+            .animation(.easeInOut(duration: 0.3), value: axisTop)
             .animation(.easeInOut(duration: 0.3), value: averageLine)
         )
         .frame(height: height)
@@ -306,6 +309,29 @@ extension PeriodHistoryChart {
         guard current > 0, previous > 0 else { return nil }
         return (current - previous) / previous * 100
     }
+}
+
+/// The shared y-axis ceiling for the app's bar charts: the smallest round step **above** the tallest
+/// bar in view. The scale stops there and the axis draws its top mark on it, so a chart is closed by a
+/// labelled grid line instead of trailing off into open space above the bars — the same frame the
+/// exercise-detail capability charts have always had, where the ceiling is a fixed ladder.
+///
+/// The ceiling is picked as **twice a round half** rather than as a round number in its own right, so
+/// that the axis's three marks — zero, the midpoint and the top — all land on legible values whatever
+/// the magnitude: 0 / 600 / 1,200 rather than 0 / 634 / 1,268. The small nudge above the tallest bar
+/// guarantees a gap between the peak and the ceiling, so the top bar never merges into the grid line
+/// that closes the plot.
+func chartAxisTop(above maxValue: Double, headroom: Double = 1.06) -> Double {
+    guard maxValue > 0, maxValue.isFinite else { return 1 }
+    let half = maxValue * headroom / 2
+    let magnitude = pow(10, floor(log10(half)))
+    let mantissa = half / magnitude
+    // Round mantissas only — every one of these doubles to something equally round, which is what
+    // makes both the midpoint label and the top label readable.
+    let steps: [Double] = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]
+    // The 1e-9 slack keeps a float remainder ("1.0000000000000002") from skipping a whole step.
+    let step = steps.first { $0 >= mantissa - 1e-9 } ?? 10
+    return 2 * step * magnitude
 }
 
 extension ChartContent {

@@ -250,9 +250,10 @@ enum TrendWindow: String, CaseIterable, Identifiable {
         return min(max(reference.timeIntervalSince(firstDataDate) / span, 0), 1)
     }
 
-    /// How many windows of history a `TrendWindowHistoryChart` shows — the stat detail screens and the
-    /// muscle detail's sets chart: about half a year of four-week blocks, two years of quarters, six
-    /// years.
+    /// How many windows of history a `TrendWindowHistoryChart` shows **at once** — the stat detail
+    /// screens and the muscle detail's sets chart: about half a year of four-week blocks, two years of
+    /// quarters, six years. The strip itself runs back to the first logged workout; this is the width
+    /// of the viewport that scrolls along it.
     ///
     /// Four weeks is capped by its **axis labels**, not by how much history is interesting. A rolling
     /// four-week block has no name, so its label has to be a date ("9 Jun"), and thirteen of those —
@@ -266,8 +267,8 @@ enum TrendWindow: String, CaseIterable, Identifiable {
         }
     }
 
-    /// How much total history a strip of `historyBucketCount` windows covers, as a caption — "28
-    /// weeks", "24 months", "6 years". The counterpart to `StatPeriod`'s fixed "12 weeks" / "12
+    /// How much history a viewport of `historyBucketCount` windows covers, as a caption — "28 weeks",
+    /// "24 months", "6 years". The counterpart to `StatPeriod`'s fixed "12 weeks" / "12
     /// months" / "6 years" captions, computed rather than spelled out because the bucket counts
     /// differ per window (see `historyBucketCount`) and a hardcoded string would drift from them.
     var historySpanCaption: String {
@@ -427,5 +428,95 @@ extension StatPeriod {
     func visibleWindowRange(from scrollPosition: Date, now: Date = .now) -> ClosedRange<Date> {
         let end = Calendar.current.date(byAdding: .second, value: visibleDomainSeconds(now: now), to: scrollPosition) ?? scrollPosition
         return scrollPosition ... end
+    }
+}
+
+/// The scrollable-strip math for the rolling-window history charts — the `TrendWindow` counterpart to
+/// the extension above.
+///
+/// A rolling window has no calendar unit to bin or snap to (four weeks is not a month), so the strip
+/// is plotted on a **synthetic timeline**: one window per day, counted off an arbitrary epoch. Bucket
+/// `i` sits on day `i`, the viewport is `historyBucketCount` days wide, and the scroll snaps to
+/// midnight — which is to say to whole windows. The dates are pure geometry and never shown; the axis
+/// labels come from the buckets.
+///
+/// The synthetic day is what buys the strip the machinery Swift Charts only gives a date axis: bars
+/// binned by a unit — so `width: .ratio` means "a fraction of a slot", and axis labels centre under
+/// the bar they name — and `valueAligned` scroll snapping, so a scroll comes to rest on whole windows.
+/// On a plain numeric axis none of that holds: `.ratio` has no step to take a fraction of and renders
+/// the bars zero-wide, labels hang off the mark's leading edge, and the scroll rests wherever it
+/// stops.
+///
+/// Every question about "which windows are on screen" is answered here, so the bars, the axis labels,
+/// the y-scale and the moving average line can't disagree about the visible window.
+extension TrendWindow {
+    /// Day zero of the synthetic timeline. Arbitrary and fixed — only differences matter.
+    static let stripEpoch = Calendar.current.startOfDay(for: Date(timeIntervalSinceReferenceDate: 0))
+
+    /// The synthetic date bucket `index` is plotted on. Counted in calendar days rather than in
+    /// 86,400-second steps so every step lands on a real midnight, which is what the scroll snaps to.
+    static func stripDate(forIndex index: Int) -> Date {
+        Calendar.current.date(byAdding: .day, value: index, to: stripEpoch) ?? stripEpoch
+    }
+
+    /// The bucket index a point on the synthetic timeline falls on — the inverse of `stripDate`.
+    static func stripIndex(for date: Date) -> Int {
+        Calendar.current.dateComponents([.day], from: stripEpoch, to: date).day ?? 0
+    }
+
+    /// One day, in seconds — the unit `chartXVisibleDomain` is expressed in.
+    static let stripDaySeconds = 86_400
+    /// How far back a strip may reach, in windows — a guard against one stray date decades in the past
+    /// turning the chart into hundreds of bars. Nine years of four-week blocks, thirty of quarters.
+    static let maxHistoryWindowCount = 120
+
+    /// The windows the strip covers, oldest first, the current one last: at least `historyBucketCount`
+    /// of them so a young history still fills the viewport, extended back until the oldest one reaches
+    /// `firstDataDate`. Contiguous by construction (each window abuts its neighbour), which is what
+    /// lets `bucketIndex(of:in:)` binary-search them.
+    func historyRanges(firstDataDate: Date?, now: Date = .now) -> [ClosedRange<Date>] {
+        var ranges: [ClosedRange<Date>] = []
+        var windowsAgo = 0
+        while windowsAgo < Self.maxHistoryWindowCount {
+            let range = self.range(windowsAgo: windowsAgo, from: now)
+            ranges.append(range)
+            windowsAgo += 1
+            let needsMoreForViewport = windowsAgo < historyBucketCount
+            let reachesFurtherBack = firstDataDate.map { $0 < range.lowerBound } ?? false
+            guard needsMoreForViewport || reachesFurtherBack else { break }
+        }
+        return ranges.reversed()
+    }
+
+    /// Which bucket of a strip a date falls in, or nil when it sits outside it. **Half-open at the
+    /// lower edge** like `contains`, so a date landing on the instant two windows share counts in the
+    /// newer one only. A binary search rather than a scan: a strip runs to dozens of buckets and every
+    /// consumer walks its whole dataset through this.
+    static func bucketIndex(of date: Date, in ranges: [ClosedRange<Date>]) -> Int? {
+        guard let first = ranges.first, let last = ranges.last,
+              date > first.lowerBound, date <= last.upperBound else { return nil }
+        var low = 0
+        var high = ranges.count - 1
+        while low < high {
+            let mid = (low + high) / 2
+            if date <= ranges[mid].upperBound { high = mid } else { low = mid + 1 }
+        }
+        return low
+    }
+
+    /// The buckets on screen at `scrollPosition` — the viewport's leading edge on the synthetic
+    /// timeline. Mid gesture the edge sits between two buckets; the day count rounds toward the one
+    /// occupying the viewport's first slot, so the average and the y-scale step over cleanly rather
+    /// than flickering between two answers around the halfway point.
+    func visibleIndices(scrollPosition: Date, bucketCount: Int) -> Range<Int> {
+        guard bucketCount > 0 else { return 0 ..< 0 }
+        let first = min(max(Self.stripIndex(for: scrollPosition), 0), max(bucketCount - 1, 0))
+        let last = min(first + historyBucketCount, bucketCount)
+        return first ..< last
+    }
+
+    /// The scroll offset that puts the current window at the trailing edge — where every strip opens.
+    func trailingScrollPosition(bucketCount: Int) -> Date {
+        Self.stripDate(forIndex: max(bucketCount - historyBucketCount, 0))
     }
 }

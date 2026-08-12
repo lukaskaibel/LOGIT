@@ -197,20 +197,25 @@ struct MuscleGroupDetailScreen: View {
 
     // MARK: - Sets history chart
 
-    /// Sets per window over recent history, one bar per `TrendWindow` back from now, current window
-    /// highlighted. Titled "Sets over time" like the overview's "Balance over time" one level up
-    /// rather than "Sets per month": a rolling window has no name to put after "per", and the caption
-    /// beside it already says how far the strip reaches.
+    /// Sets per window over history, one bar per `TrendWindow` back from now, current window
+    /// highlighted, scrollable back through everything logged. Titled "Sets over time" like the
+    /// overview's "Balance over time" one level up rather than "Sets per month": a rolling window has
+    /// no name to put after "per", and the caption beside it already says how wide the viewport is.
     private func setsHistoryChart(allWorkouts: [Workout]) -> some View {
         let sets = setsTraining(in: allWorkouts)
+        let ranges = window.historyRanges(firstDataDate: allWorkouts.compactMap(\.date).min())
+        // One pass over the sets, each placed in its window by binary search — the strip runs to
+        // dozens of windows now, and filtering the whole set list per window would be quadratic.
+        var counts = [Double](repeating: 0, count: ranges.count)
+        for set in sets {
+            guard let date = set.workout?.date,
+                  let index = TrendWindow.bucketIndex(of: date, in: ranges) else { continue }
+            counts[index] += 1
+        }
         let buckets = TrendWindowBucket.history(
             for: window,
-            raw: { range in
-                Double(sets.filter { set in
-                    guard let date = set.workout?.date else { return false }
-                    return date > range.lowerBound && date <= range.upperBound
-                }.count)
-            },
+            ranges: ranges,
+            raw: counts,
             display: { $0 },
             formatted: { String(Int($0.rounded())) }
         )
@@ -224,14 +229,20 @@ struct MuscleGroupDetailScreen: View {
                     .foregroundStyle(.secondary)
             }
             // The shared rolling-window chart in a compact tile — the same bars as the stat detail
-            // screens, so tapping to inspect a window works here too, at the tile's height.
+            // screens, so tapping to inspect a window and scrolling back through the history work here
+            // too, at the tile's height. It keeps its own scroll position: there is no header beside
+            // it that has to move with the viewport.
             TrendWindowHistoryChart(
+                window: window,
                 buckets: buckets,
                 valueLabel: NSLocalizedString("sets", comment: ""),
                 currentBarStyle: AnyShapeStyle(color),
                 unit: NSLocalizedString("sets", comment: ""),
                 height: 120
             )
+            // A fresh chart per window: the strip is re-tiled wholesale when the window changes, and
+            // its scroll offset would otherwise point into a strip that no longer exists.
+            .id(window)
             .padding(CELL_PADDING)
             .tileStyle()
         }

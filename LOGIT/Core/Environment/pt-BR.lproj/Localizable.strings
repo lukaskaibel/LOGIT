@@ -1120,7 +1120,7 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "Força";
-"strengthBasis" = "1RM estimado";
+"strengthBasis" = "e1RM geral";
 "strengthExerciseBasis" = "e1RM %@";
 "strengthEmpty" = "Continue registrando treinos para ver sua tendência de força.";
 "nWeeks" = "%d semanas";

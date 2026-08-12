@@ -63,7 +63,7 @@ struct FirstStartScreen: View {
                         
                         featureRow(
                             icon: "target",
-                            category: NSLocalizedString("set", comment: ""),
+                            category: NSLocalizedString("welcomeGoalsCategory", comment: ""),
                             title: NSLocalizedString("goals", comment: ""),
                             description: NSLocalizedString("welcomeGoalsDescription", comment: "")
                         )

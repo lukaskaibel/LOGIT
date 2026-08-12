@@ -1138,3 +1138,13 @@
 "strengthAxisLeastDeclined" = "Least declined";
 "showLess" = "Show less";
 "strengthInfo" = "Each exercise's best estimated 1RM in the selected timeframe against the timeframe before it, averaged and weighted by how many sets you did. Cardio and bodyweight sets carry no 1RM and don't count.";
+
+
+// MARK: - Data Export
+
+"data" = "Data";
+"exportAllData" = "Export All Data";
+"exportAllDataDescription" = "Saves every workout, exercise, template and measurement as a JSON file you keep. Readable in any text editor, and independent of iCloud.";
+"exportResult" = "Exported %d workouts and %d sets.";
+"exportFailedTitle" = "Export Failed";
+"exportFailedMessage" = "Your data could not be written to a file. Please try again.";

@@ -1138,3 +1138,13 @@
 "strengthAxisLeastDeclined" = "最小の低下";
 "showLess" = "表示を減らす";
 "strengthInfo" = "選択した期間における各エクササイズの推定1RMの最高値を、その前の期間と比較し、セット数で重み付けして平均したものです。有酸素運動と自重のセットは1RMがないためカウントされません。";
+
+
+// MARK: - Data Export
+
+"data" = "データ";
+"exportAllData" = "すべてのデータを書き出す";
+"exportAllDataDescription" = "すべてのワークアウト、エクササイズ、テンプレート、測定値を自分専用のJSONファイルとして保存します。どのテキストエディタでも読め、iCloudに依存しません。";
+"exportResult" = "%d件のワークアウトと%d件のセットを書き出しました。";
+"exportFailedTitle" = "書き出しに失敗しました";
+"exportFailedMessage" = "データをファイルに書き込めませんでした。もう一度お試しください。";

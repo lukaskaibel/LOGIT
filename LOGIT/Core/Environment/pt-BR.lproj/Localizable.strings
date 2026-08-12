@@ -1138,3 +1138,13 @@
 "strengthAxisLeastDeclined" = "Menor queda";
 "showLess" = "Ver menos";
 "strengthInfo" = "O melhor 1RM estimado de cada exercício no período selecionado em relação ao período anterior, com média ponderada pelo número de séries que você fez. Séries de cardio e peso corporal não têm 1RM e não contam.";
+
+
+// MARK: - Data Export
+
+"data" = "Dados";
+"exportAllData" = "Exportar todos os dados";
+"exportAllDataDescription" = "Salva cada treino, exercício, modelo e medição em um arquivo JSON que é seu. Legível em qualquer editor de texto e independente do iCloud.";
+"exportResult" = "%d treinos e %d séries exportados.";
+"exportFailedTitle" = "Falha na exportação";
+"exportFailedMessage" = "Não foi possível gravar seus dados em um arquivo. Tente novamente.";

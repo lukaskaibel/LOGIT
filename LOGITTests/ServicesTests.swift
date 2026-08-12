@@ -1325,3 +1325,136 @@ final class BodyWeightSyncTests: XCTestCase {
         XCTAssertEqual(exportable, [native])
     }
 }
+
+// MARK: - DataArchiveService Tests
+
+final class DataArchiveServiceTests: XCTestCase {
+
+    private var database: Database!
+    private var builder: TestDataBuilder!
+    private var service: DataArchiveService!
+
+    override func setUp() {
+        super.setUp()
+        // An unseeded throwaway store, not the preview dataset: these assert on what the archive
+        // contains, so the store must contain only what the test puts in it.
+        database = Database(inMemory: true)
+        builder = TestDataBuilder(database: database)
+        service = DataArchiveService(database: database)
+    }
+
+    override func tearDown() {
+        database = nil
+        builder = nil
+        service = nil
+        super.tearDown()
+    }
+
+    private func makeSession(
+        exercise: Exercise, reps: Int, weight: Int, daysAgo: Int
+    ) -> WorkoutSetGroup {
+        let workout = builder.createWorkout(name: "Session", date: .daysAgo(daysAgo))
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false, exercise: exercise, workout: workout
+        )
+        database.newStandardSet(repetitions: reps, weight: weight, setGroup: setGroup)
+        return setGroup
+    }
+
+    func testArchiveCarriesWorkoutsExercisesAndValues() throws {
+        let exercise = builder.createExercise(name: "Bench Press")
+        makeSession(exercise: exercise, reps: 8, weight: 90_000, daysAgo: 3)
+
+        let (url, summary) = try service.exportArchive()
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        XCTAssertEqual(summary.workouts, 1)
+        XCTAssertEqual(summary.sets, 1)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let archive = try decoder.decode(LOGITArchive.self, from: Data(contentsOf: url))
+
+        XCTAssertEqual(archive.formatVersion, LOGITArchive.currentFormatVersion)
+        XCTAssertTrue(archive.exercises.contains { $0.id == exercise.id && $0.name == "Bench Press" })
+
+        let entry = try XCTUnwrap(archive.workouts.first?.setGroups.first?.sets.first?.entries.first)
+        XCTAssertEqual(entry.repetitions, 8)
+        XCTAssertEqual(entry.weight, 90_000, "weights stay in grams, as the archive's units field says")
+        XCTAssertEqual(entry.exerciseId, exercise.id, "the entry names the exercise it trained")
+    }
+
+    /// The whole point of a backup: it must contain data the UI currently cannot see. A set group
+    /// missing from its workout's order list is invisible in the app — it must still be archived.
+    func testArchiveIncludesSetGroupsHiddenByADriftedOrderList() throws {
+        let exercise = builder.createExercise(name: "Squat")
+        let setGroup = makeSession(exercise: exercise, reps: 5, weight: 120_000, daysAgo: 1)
+        let workout = try XCTUnwrap(setGroup.workout)
+
+        workout.setGroupOrder = []
+        XCTAssertEqual(workout.setGroups.count, 0, "precondition: invisible to the app")
+
+        let (url, _) = try service.exportArchive()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let archive = try decoder.decode(LOGITArchive.self, from: Data(contentsOf: url))
+
+        let archived = try XCTUnwrap(archive.workouts.first)
+        XCTAssertEqual(archived.setGroups.count, 1, "the archive keeps what the order list forgot")
+        XCTAssertEqual(archived.setGroups.first?.sets.first?.entries.first?.repetitions, 5)
+    }
+
+    func testArchiveCarriesTemplatesAndMeasurements() throws {
+        let exercise = builder.createExercise(name: "Deadlift")
+        let template = database.newTemplate(name: "Pull Day")
+        let templateGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false, exercise: exercise, template: template
+        )
+        database.newTemplateStandardSet(repetitions: 3, weight: 140_000, setGroup: templateGroup)
+        builder.createMeasurementEntry(type: .bodyweight, value: 78_000, date: .daysAgo(2))
+
+        let (url, summary) = try service.exportArchive()
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        XCTAssertEqual(summary.templates, 1)
+        XCTAssertEqual(summary.measurements, 1)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let archive = try decoder.decode(LOGITArchive.self, from: Data(contentsOf: url))
+        XCTAssertEqual(archive.templates.first?.name, "Pull Day")
+        XCTAssertEqual(archive.templates.first?.setGroups.first?.exerciseIds, [try XCTUnwrap(exercise.id)])
+        XCTAssertEqual(archive.measurements.first?.value, 78_000)
+        XCTAssertEqual(archive.measurements.first?.type, MeasurementEntryType.bodyweight.rawValue)
+    }
+
+    /// A legacy-shaped set (no SetEntry rows) must archive its values, not an empty entry list.
+    func testArchiveExportsLegacySetsThroughTheSameDerivationTheAppReads() throws {
+        let exercise = builder.createExercise(name: "Row")
+        let setGroup = makeSession(exercise: exercise, reps: 12, weight: 60_000, daysAgo: 4)
+        let workoutSet = try XCTUnwrap(setGroup.sets.first as? StandardSet)
+        workoutSet.removeAllEntries()
+        workoutSet.repetitions = 12
+        workoutSet.weight = 60_000
+        database.context.processPendingChanges()
+        XCTAssertTrue(workoutSet.entries.isEmpty, "precondition: legacy-shaped")
+
+        let (url, _) = try service.exportArchive()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let archive = try decoder.decode(LOGITArchive.self, from: Data(contentsOf: url))
+
+        let entry = try XCTUnwrap(archive.workouts.first?.setGroups.first?.sets.first?.entries.first)
+        XCTAssertEqual(entry.repetitions, 12)
+        XCTAssertEqual(entry.weight, 60_000)
+    }
+
+    func testArchiveFilenameIsDatedAndSortable() {
+        var components = DateComponents()
+        components.year = 2026; components.month = 8; components.day = 12
+        let date = Calendar(identifier: .gregorian).date(from: components)!
+        XCTAssertEqual(DataArchiveService.filename(for: date), "LOGIT-Backup-2026-08-12.json")
+    }
+}

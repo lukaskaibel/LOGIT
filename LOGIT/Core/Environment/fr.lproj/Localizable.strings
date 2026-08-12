@@ -1138,3 +1138,13 @@
 "strengthAxisLeastDeclined" = "Plus faible baisse";
 "showLess" = "Voir moins";
 "strengthInfo" = "Le meilleur 1RM estimé de chaque exercice sur la période sélectionnée par rapport à la période précédente, moyenné et pondéré selon le nombre de séries réalisées. Les séries de cardio et au poids du corps n'ont pas de 1RM et ne comptent pas.";
+
+
+// MARK: - Data Export
+
+"data" = "Données";
+"exportAllData" = "Exporter toutes les données";
+"exportAllDataDescription" = "Enregistre chaque séance, exercice, modèle et mesure dans un fichier JSON qui vous appartient. Lisible dans n'importe quel éditeur de texte et indépendant d'iCloud.";
+"exportResult" = "%d séances et %d séries exportées.";
+"exportFailedTitle" = "Échec de l'exportation";
+"exportFailedMessage" = "Vos données n'ont pas pu être écrites dans un fichier. Veuillez réessayer.";

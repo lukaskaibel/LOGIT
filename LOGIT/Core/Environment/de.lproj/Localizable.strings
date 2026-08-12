@@ -1134,3 +1134,13 @@
 "strengthAxisLeastDeclined" = "Geringster Rückgang";
 "showLess" = "Weniger anzeigen";
 "strengthInfo" = "Der beste geschätzte 1RM jeder Übung im gewählten Zeitraum gegenüber dem Zeitraum davor, gemittelt und nach der Anzahl deiner Sätze gewichtet. Cardio- und Körpergewichtssätze haben keinen 1RM und zählen nicht.";
+
+
+// MARK: - Data Export
+
+"data" = "Daten";
+"exportAllData" = "Alle Daten exportieren";
+"exportAllDataDescription" = "Sichert jedes Workout, jede Übung, Vorlage und Messung als JSON-Datei, die dir gehört. In jedem Texteditor lesbar und unabhängig von iCloud.";
+"exportResult" = "%d Workouts und %d Sätze exportiert.";
+"exportFailedTitle" = "Export fehlgeschlagen";
+"exportFailedMessage" = "Deine Daten konnten nicht in eine Datei geschrieben werden. Bitte versuche es erneut.";

@@ -30,6 +30,18 @@ struct SettingsScreen: View {
     @State private var isShowingPrivacyPolicy = false
     @State private var isShowingTermsAndConditions = false
     @State private var isShowingHealthAccessDeniedAlert = false
+    @State private var isExporting = false
+    @State private var exportResult: ExportResult?
+    @State private var isShowingExportFailedAlert = false
+    @State private var lastExportSummary: DataArchiveService.Summary?
+
+    /// The finished archive, held until the share sheet is dismissed. `Identifiable` so the sheet
+    /// is driven by the item itself — presenting on a bool would race the file being written.
+    private struct ExportResult: Identifiable {
+        let id = UUID()
+        let url: URL
+        let summary: DataArchiveService.Summary
+    }
 
     // MARK: - Body
 
@@ -41,6 +53,7 @@ struct SettingsScreen: View {
                 if healthKitSyncManager.isHealthDataAvailable {
                     appleHealthSection
                 }
+                dataSection
                 feedbackSection
                 aboutSection
                 subscriptionSection
@@ -85,6 +98,17 @@ struct SettingsScreen: View {
                     }
                     .navigationBarTitleDisplayMode(.large)
             }
+        }
+        .sheet(item: $exportResult) { result in
+            ShareSheet(activityItems: [result.url])
+        }
+        .alert(
+            NSLocalizedString("exportFailedTitle", comment: ""),
+            isPresented: $isShowingExportFailedAlert
+        ) {
+            Button(NSLocalizedString("ok", comment: ""), role: .cancel) {}
+        } message: {
+            Text(NSLocalizedString("exportFailedMessage", comment: ""))
         }
     }
 
@@ -228,6 +252,68 @@ struct SettingsScreen: View {
         }
         .padding(CELL_PADDING)
         .tileStyle()
+    }
+
+    /// Your training history as a file you keep. Everything else the app stores is a mirror of the
+    /// same iCloud records, so one bad sync — or signing out of iCloud, which makes Core Data purge
+    /// the local store — can take every copy at once. This one is outside all of that.
+    private var dataSection: some View {
+        section(NSLocalizedString("data", comment: "")) {
+            VStack(alignment: .leading, spacing: 10) {
+                Button {
+                    exportArchive()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "square.and.arrow.up.on.square")
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 24)
+                        Text(NSLocalizedString("exportAllData", comment: ""))
+                            .foregroundStyle(Color.label)
+                        Spacer()
+                        if isExporting {
+                            ProgressView()
+                        }
+                    }
+                }
+                .disabled(isExporting)
+                .accessibilityIdentifier("exportAllData")
+                Text(NSLocalizedString("exportAllDataDescription", comment: ""))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if let lastExportSummary {
+                    Text(
+                        String(
+                            format: NSLocalizedString("exportResult", comment: ""),
+                            lastExportSummary.workouts, lastExportSummary.sets
+                        )
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.green)
+                }
+            }
+            .padding(CELL_PADDING)
+            .tileStyle()
+        }
+    }
+
+    private func exportArchive() {
+        isExporting = true
+        let service = DataArchiveService(database: database)
+        // Off the main thread: the encode walks every set in the store. The service does its own
+        // Core Data reads on the context's queue.
+        DispatchQueue.global(qos: .userInitiated).async {
+            let result = Result { try service.exportArchive() }
+            DispatchQueue.main.async {
+                isExporting = false
+                switch result {
+                case let .success((url, summary)):
+                    lastExportSummary = summary
+                    exportResult = ExportResult(url: url, summary: summary)
+                case .failure:
+                    isShowingExportFailedAlert = true
+                }
+            }
+        }
     }
 
     /// Enabling asks for read **and** write access to body weight, then reconciles both sides

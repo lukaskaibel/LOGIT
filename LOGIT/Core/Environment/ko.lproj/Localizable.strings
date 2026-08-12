@@ -1138,3 +1138,13 @@
 "strengthAxisLeastDeclined" = "가장 작은 감소";
 "showLess" = "간단히 보기";
 "strengthInfo" = "선택한 기간 동안 각 운동의 최고 예상 1RM을 그 이전 기간과 비교해 세트 수로 가중 평균한 값입니다. 유산소와 맨몸 세트는 1RM이 없어 포함되지 않습니다.";
+
+
+// MARK: - Data Export
+
+"data" = "데이터";
+"exportAllData" = "모든 데이터 내보내기";
+"exportAllDataDescription" = "모든 운동, 종목, 템플릿, 측정값을 사용자가 보관하는 JSON 파일로 저장합니다. 어떤 텍스트 편집기에서도 열 수 있으며 iCloud와 무관합니다.";
+"exportResult" = "운동 %d개와 세트 %d개를 내보냈습니다.";
+"exportFailedTitle" = "내보내기 실패";
+"exportFailedMessage" = "데이터를 파일로 저장하지 못했습니다. 다시 시도해 주십시오.";

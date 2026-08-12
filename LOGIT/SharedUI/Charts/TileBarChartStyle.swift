@@ -21,13 +21,18 @@ import SwiftUI
 /// their own styling.
 enum TileBarChartStyle {
     /// Bar width as a fraction of each slot — wide bars with a small gap between them. The home tiles
-    /// keep this; the metric-tile footer charts use the slim fixed width below.
+    /// keep this; the metric-tile footer charts take the slimmer ratio below.
     static let barWidth: MarkDimension = .ratio(0.8)
-    /// A slim fixed bar for the metric-tile footer charts (exercise Volume/Sets, workout stat tiles).
-    /// Their chart now spans the full tile width (the line tiles bleed edge to edge), and at the 0.8
-    /// ratio the bars turned chunky — a fixed slim width keeps the thin bars they had in the old compact
-    /// corner slot, independent of how wide the footer is.
-    static let footerBarWidth: MarkDimension = .fixed(10)
+    /// Bar width for the metric-tile footer charts (Summary stat tiles, exercise Volume/Sets, workout
+    /// stat tiles) — the same fraction-of-slot the full detail charts use, so a tile's bars read as a
+    /// small copy of the chart behind them rather than a different chart with the same numbers.
+    ///
+    /// It was a fixed 10pt while the trend pill occupied the footer's leading corner and the bars had
+    /// roughly half the tile to live in. Now that the chart spans the full width, a fixed width no
+    /// longer tracks the slots: five 10pt bars across 144pt read as tally marks in a mostly empty
+    /// field. A ratio widens with the slot instead, and stays right whatever bar count a tile ends up
+    /// showing.
+    static let footerBarWidth: MarkDimension = .ratio(0.6)
 
     /// Corner radius of the rounded bar caps.
     static let cornerRadius: CGFloat = 9

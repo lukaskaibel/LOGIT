@@ -23,8 +23,20 @@ struct TrendIndicatorView: View {
     /// "PR", and the pill keeps the positive tint regardless of direction — a record is always a win,
     /// and a percentage beside a record has no baseline to be a percentage *of*.
     var isRecord: Bool = false
+    /// Pill size. `.regular` everywhere the trend is a headline beside a value; `.compact` in the
+    /// metric tiles' title row, where the pill annotates a 15pt title rather than a 28pt number and
+    /// shares its slot with the lapsed / last-best pills, which are compact for the same reason.
+    var size: ProgressPillSize = .regular
 
     private enum Direction { case up, down, flat }
+
+    /// The percent's font, matched to the pill size — footnote in the regular pill, caption2 in the
+    /// compact one, the size `TileLapsedPill` and `TileDatePill` already use.
+    private var labelFont: Font {
+        size == .compact
+            ? .system(.caption2, design: .rounded, weight: .bold)
+            : .system(.footnote, design: .rounded, weight: .bold)
+    }
 
     /// Displayed magnitude as an integer percent, capped so tiny baselines don't
     /// produce absurdly wide badges. Anything that rounds to 0 reads as no change.
@@ -59,16 +71,16 @@ struct TrendIndicatorView: View {
     private var displayedFraction: Double { Double(magnitude) / 100 }
 
     var body: some View {
-        ProgressIndicatorPill(symbol: symbolName, style: tint) {
+        ProgressIndicatorPill(symbol: symbolName, style: tint, size: size) {
             // At a record the percent gives way to "PR" — beside the trophy a percentage reads as
             // "x % above what?" (the record has no higher baseline to beat), so the trophy + "PR"
             // says all there is to say. The percent returns the moment it's no longer a record.
             if isRecord {
                 Text(NSLocalizedString("personalRecordShort", comment: ""))
-                    .font(.system(.footnote, design: .rounded, weight: .bold))
+                    .font(labelFont)
             } else {
                 Text(displayedFraction, format: .percent.precision(.fractionLength(0)))
-                    .font(.system(.footnote, design: .rounded, weight: .bold))
+                    .font(labelFont)
                     .monospacedDigit()
             }
         }

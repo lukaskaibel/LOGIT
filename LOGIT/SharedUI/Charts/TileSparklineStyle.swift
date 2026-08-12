@@ -45,11 +45,13 @@ enum TileSparklineStyle {
     /// Opacity of the carry-forward line — quieter than the solid line behind it.
     static let carryForwardOpacity: CGFloat = 0.45
     /// Fraction of the width over which the leading edge fades in.
+    ///
+    /// The full-bleed metric-tile line used to take a much longer fade (0.33) because the trend pill
+    /// sat over its bottom-left corner and the line had to dissolve behind it. The pill now lives in
+    /// the tile's title row, so the line fades in over the same short distance as every other tile
+    /// sparkline — and the leading fifth of the plotted history, previously spent hiding a badge, is
+    /// visible again.
     static let leadingFadeLocation: CGFloat = 0.12
-    /// A longer leading fade for the full-bleed metric-tile line, which carries the trend pill over its
-    /// bottom-left corner: the line dissolves to transparent under the pill so it emerges to the pill's
-    /// right instead of starting abruptly behind it.
-    static let bleedLeadingFadeLocation: CGFloat = 0.33
 
     /// The translucent fill under the line — a top-heavy tint. Swift Charts won't reliably fade an
     /// `AreaMark` to clear at the baseline on its own (the fill gradient maps to a range far taller
@@ -197,16 +199,16 @@ extension View {
         )
     }
 
-    /// The full-bleed metric-tile line's fade: it dissolves IN from the leading edge over a longer span
-    /// than the corner sparklines — far enough to clear the trend pill the tile overlays at the bottom-
-    /// left — and OUT toward the bottom, with no clip, so the line still runs to the trailing and bottom
-    /// edges. The leading fade is why the line doesn't start abruptly behind the pill.
+    /// The full-bleed metric-tile line's fade: it dissolves IN from the leading edge and OUT toward the
+    /// bottom, with no clip, so the line runs to all three edges instead of ending on a hard vertical.
+    /// Same short leading fade as the clipped corner sparklines — the long one this used to take was
+    /// there to hide the trend pill, which has since moved to the tile's title row.
     func tileSparklineBleedFadeMask() -> some View {
         mask(
             LinearGradient(
                 gradient: Gradient(stops: [
                     .init(color: .clear, location: 0.0),
-                    .init(color: .black, location: TileSparklineStyle.bleedLeadingFadeLocation),
+                    .init(color: .black, location: TileSparklineStyle.leadingFadeLocation),
                     .init(color: .black, location: 1.0),
                 ]),
                 startPoint: .leading,

@@ -328,7 +328,7 @@ private struct LiveActivityShowcaseCurrentSetCard: View {
             Spacer(minLength: 10)
 
             HStack(alignment: .lastTextBaseline, spacing: 12) {
-                previousUnit(value: "9", unit: "reps")
+                previousUnit(value: "9", unit: NSLocalizedString("reps", comment: ""))
                 previousUnit(value: "30", unit: "kg")
             }
         }

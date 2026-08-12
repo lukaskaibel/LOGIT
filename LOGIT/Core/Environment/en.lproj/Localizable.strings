@@ -306,7 +306,7 @@
 "reorderExercises" = "Reorder Exercises";
 "repetitions" = "Repetitions";
 "repetitionsPR" = "Repetitions PR";
-"reps" = "rps";
+"reps" = "rep";
 "replaceExercise" = "Replace Exercise";
 "replaceSecondaryExercise" = "Replace Secondary Exercise";
 "restorePurchase" = "Restore Purchase";
@@ -927,7 +927,7 @@
 "restoreFailedText" = "Your purchase couldn't be restored. Please check your connection and try again.";
 
 /* Workout stats (workout detail tiles & detail screens) */
-"rps" = "rps";
+"rps" = "rep";
 "average" = "Average";
 "volumePerSet" = "Volume per Set";
 "workoutStatCompareSameInfo" = "The trend compares this workout with your previous run of the same workout. The bars show its most recent runs — this workout is the highlighted bar on the right.";

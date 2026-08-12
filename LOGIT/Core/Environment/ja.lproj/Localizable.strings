@@ -306,7 +306,7 @@
 "reorderExercises" = "エクササイズを並べ替える";
 "repetitions" = "回数";
 "repetitionsPR" = "繰り返し PR";
-"reps" = "RP";
+"reps" = "回";
 "replaceExercise" = "置き換え運動";
 "replaceSecondaryExercise" = "二次的な運動を置き換える";
 "restorePurchase" = "購入を復元する";
@@ -927,7 +927,7 @@
 "restoreFailedText" = "購入を復元できませんでした。接続を確認してもう一度お試しください。";
 
 /* Workout stats (workout detail tiles & detail screens) */
-"rps" = "RP";
+"rps" = "回";
 "average" = "平均";
 "volumePerSet" = "セットごとのボリューム";
 "workoutStatCompareSameInfo" = "トレンドは、このワークアウトを同じワークアウトの前回の実施と比較します。バーは直近の実施を示し、右端の強調されたバーがこのワークアウトです。";

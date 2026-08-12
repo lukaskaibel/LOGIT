@@ -1122,7 +1122,7 @@
 "strength" = "Force";
 "strengthBasis" = "e1RM global";
 "strengthExerciseBasis" = "e1RM %@";
-"strengthEmpty" = "Continuez à enregistrer des séances pour voir votre tendance de force.";
+"strengthEmpty" = "Tendance de force en cours";
 "nWeeks" = "%d semaines";
 "nMonths" = "%d mois";
 "oneYear" = "1 an";

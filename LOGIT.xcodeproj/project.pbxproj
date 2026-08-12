@@ -237,6 +237,7 @@
 		80SE00032F70CC0100SE0003 /* SetEntry+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00042F70CC0100SE0004 /* SetEntry+.swift */; };
 		80SE00052F70CC0100SE0005 /* TemplateSetEntry+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00062F70CC0100SE0006 /* TemplateSetEntry+.swift */; };
 		80SE00072F70CC0100SE0007 /* Database+SetEntryBackfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00082F70CC0100SE0008 /* Database+SetEntryBackfill.swift */; };
+		80RR00012F80AA0100RR0001 /* Database+RelationshipRepair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */; };
 		80SE000C2F70CC0100SE000C /* SetEntryMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00092F70CC0100SE0009 /* SetEntryMigrationTests.swift */; };
 		80SE000D2F70CC0100SE000D /* LOGIT-v7-legacy.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 80SE000A2F70CC0100SE000A /* LOGIT-v7-legacy.sqlite */; };
 		80SE00112F70CC0100SE0011 /* SetEntryFieldsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00122F70CC0100SE0012 /* SetEntryFieldsRow.swift */; };
@@ -603,6 +604,7 @@
 		80SE00042F70CC0100SE0004 /* SetEntry+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetEntry+.swift"; sourceTree = "<group>"; };
 		80SE00062F70CC0100SE0006 /* TemplateSetEntry+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TemplateSetEntry+.swift"; sourceTree = "<group>"; };
 		80SE00082F70CC0100SE0008 /* Database+SetEntryBackfill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+SetEntryBackfill.swift"; sourceTree = "<group>"; };
+		80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+RelationshipRepair.swift"; sourceTree = "<group>"; };
 		80SE00092F70CC0100SE0009 /* SetEntryMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetEntryMigrationTests.swift; sourceTree = "<group>"; };
 		80SE000A2F70CC0100SE000A /* LOGIT-v7-legacy.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LOGIT-v7-legacy.sqlite"; sourceTree = "<group>"; };
 		80SE000B2F70CC0100SE000B /* make_v7_fixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = make_v7_fixture.swift; sourceTree = "<group>"; };
@@ -950,6 +952,7 @@
 				801BBCC62DF7338A00CDB1FB /* Database+Preview.swift */,
 				801BBCC72DF7338A00CDB1FB /* Database+SetConvert.swift */,
 				80SE00082F70CC0100SE0008 /* Database+SetEntryBackfill.swift */,
+				80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */,
 				801BBCC82DF7338A00CDB1FB /* FetchRequestWrapper.swift */,
 				DD50531C168D4EDFB527D76A /* SetEntityClasses.swift */,
 				801BBCC92DF7338A00CDB1FB /* LOGIT.xcdatamodeld */,
@@ -1766,6 +1769,7 @@
 				80SE00032F70CC0100SE0003 /* SetEntry+.swift in Sources */,
 				80SE00052F70CC0100SE0005 /* TemplateSetEntry+.swift in Sources */,
 				80SE00072F70CC0100SE0007 /* Database+SetEntryBackfill.swift in Sources */,
+				80RR00012F80AA0100RR0001 /* Database+RelationshipRepair.swift in Sources */,
 				801BBDB82DF7338A00CDB1FB /* WorkoutRecorderScreen.swift in Sources */,
 				801BBDB92DF7338A00CDB1FB /* ExerciseListScreen.swift in Sources */,
 				801BBDBA2DF7338A00CDB1FB /* StandardSet+.swift in Sources */,

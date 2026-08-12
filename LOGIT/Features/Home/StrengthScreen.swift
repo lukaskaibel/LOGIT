@@ -101,9 +101,10 @@ struct StrengthScreen: View {
     // MARK: Hero
 
     /// A caption over the figure, matching the tile's anatomy. The caption is the only thing that
-    /// changes with selection: normally it names the basis ("Estimated 1RM"), and while a bar is held
-    /// it names that exercise's e1RM in its muscle colour, with the figure below switching to that
-    /// lift's own change.
+    /// changes with selection: normally it names the basis and its scope ("Overall e1RM"), and while
+    /// a bar is held it names that exercise's e1RM in its muscle colour, with the figure below
+    /// switching to that lift's own change. Basis first, scope second — the same two facts in both
+    /// states, so the line reads as one sentence being re-scoped rather than replaced.
     ///
     /// Nothing sits to the right any more. A second figure beside the headline was read as one
     /// statement about it — "best mover Squat" next to a falling percentage parsed as a verdict on

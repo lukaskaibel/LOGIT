@@ -1120,7 +1120,7 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "Strength";
-"strengthBasis" = "Estimated 1RM";
+"strengthBasis" = "Overall e1RM";
 "strengthExerciseBasis" = "e1RM %@";
 "strengthEmpty" = "Keep logging workouts to see your strength trend.";
 "nWeeks" = "%d weeks";

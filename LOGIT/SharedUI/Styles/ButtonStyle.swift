@@ -31,13 +31,20 @@ struct PrimaryButtonStyle: ButtonStyle {
 }
 
 struct SecondaryButtonStyle: ButtonStyle {
+    /// Tint for the label and, translucently, the capsule behind it. Defaults to the accent
+    /// colour; pass a muscle-group gradient (e.g. `workout.sets.muscleGroupGradientStyle()`) to
+    /// have the button carry the session's own colours.
+    var tint: AnyShapeStyle = AnyShapeStyle(Color.accentColor)
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.body, design: .rounded, weight: .bold))
-            .foregroundColor(.accentColor)
+            .foregroundStyle(tint)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(Color.accentColor.secondaryTranslucentBackground)
+            // The same 0.2 as `Color.secondaryTranslucentBackground`, which only exists for
+            // colours — a gradient tint has to fade itself.
+            .background(tint.opacity(0.2))
             .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? MIN_BUTTON_SCALE : 1.0)
             .onChange(of: configuration.isPressed) { _, isPressed in

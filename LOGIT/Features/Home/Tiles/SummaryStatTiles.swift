@@ -5,23 +5,77 @@
 //  Created by Lukas Kaibel on 29.06.26.
 //
 
+import Charts
 import SwiftUI
+
+// MARK: - Bin Strip
+
+/// The mini bar chart under a Summary stat tile's value: the selected window broken into its days,
+/// weeks or months, **every bar in the accent** because every bar is inside the timeframe the picker
+/// names. An untrained bin draws no bar, so a strip of days shows the rhythm of a training week for
+/// free — three bars, a gap, two bars.
+///
+/// It replaced a five-slot strip of whole *windows* with only the last one tinted, which meant a tile
+/// set to "4 weeks" spent four fifths of its chart on the twenty weeks before them. Sized in ratios
+/// rather than points (see `TileBarChartStyle.footerBarWidth`) so twenty-eight bars in a half-width
+/// tile stay bars rather than becoming tally marks.
+struct SummaryBinStrip: View {
+    /// Bin values in display units, oldest → newest. Zero means untrained.
+    let bins: [Double]
+    let style: AnyShapeStyle
+
+    var body: some View {
+        let maxValue = bins.max() ?? 0
+        Chart {
+            ForEach(Array(bins.enumerated()), id: \.offset) { index, value in
+                if value > 0 {
+                    BarMark(
+                        x: .value("Bin", String(index)),
+                        y: .value("Value", value),
+                        width: TileBarChartStyle.footerBarWidth
+                    )
+                    .foregroundStyle(style)
+                    .tileBarStyle()
+                }
+            }
+        }
+        .chartXScale(domain: (0 ..< max(bins.count, 1)).map(String.init))
+        .chartYScale(domain: 0 ... max(maxValue, 1))
+        .chartXAxis {}
+        .chartYAxis {}
+        .overlay {
+            if maxValue <= 0 {
+                Text(NSLocalizedString("noData", comment: ""))
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+}
 
 // MARK: - Summary Stat Tile
 
 /// One window-scoped core stat on the Summary screen — the shared `MetricTile` carrying a Summary
 /// value: the *per-workout average* over the screen's selected `TrendWindow` (a typical session,
-/// frequency divided out), the change versus the prior window's average, and a five-bucket history
-/// bar chart with the current window highlighted. The "per workout" subtitle names the basis right
-/// under the number. Parallel to `WorkoutStatTile` (which is hardwired to "this workout vs prior
-/// runs"), but reading the Summary's one timeframe instead.
+/// frequency divided out), the change versus the previous window's average, and a strip of that same
+/// window's bins underneath. The "per workout" subtitle names the basis right under the number.
+/// Parallel to `WorkoutStatTile` (which is hardwired to "this workout vs prior runs"), but reading the
+/// Summary's one timeframe instead.
 ///
 /// The tile carries no caption naming its window, deliberately: the picker at the top of the screen
-/// names it once for everything below, which is the whole point of there being one picker.
+/// names it once for everything below, which is the whole point of there being one picker. Everything
+/// on the tile now honours that — the number, the percentage, and every bar are the selected window
+/// and nothing else, so reading "10,000 kg" and "+8%" off one tile and "+3.5%" off the Strength tile
+/// beside it are statements about the same four weeks.
 ///
-/// The highlighted bar always uses the app accent — it marks the current window. The trend pill
-/// tints with the accent for a genuine gain and mutes to gray for a decline or no change (handled by
-/// `TrendIndicatorView`) — the same rule for every metric, duration included.
+/// There is no "building your trend" placeholder any more. It existed because one lone bar among five
+/// windows read as a half-loaded tile; a single bar among twenty-eight days is just a true statement
+/// about a window with one workout in it. A window with nothing in it still shows "––" and the shared
+/// chart's own no-data treatment.
+///
+/// Every bar uses the app accent. The trend pill tints with the accent for a genuine gain and mutes to
+/// gray for a decline or no change (handled by `TrendIndicatorView`) — the same rule for every metric,
+/// duration included.
 struct SummaryStatTile: View {
     let metric: WorkoutStatMetric
     let data: SummaryViewModel.StatData
@@ -50,40 +104,30 @@ struct SummaryStatTile: View {
                 chartBleeds: false
             ) {
                 if showsTrendPlaceholder {
-                    // One lone bar (or none) isn't a trend — it just reads as a half-loaded tile. Until
-                    // a second window has data, show a quiet "building your trend" hint instead; the real
-                    // bars return on their own once there's something to compare.
+                    // One lone bar in an otherwise empty strip doesn't read as "you trained once" —
+                    // it reads as a half-loaded tile, and it sits beside a Strength tile that says
+                    // "building your strength trend" in exactly this situation. Show the same hint
+                    // until the window holds something to see; the bars return on their own.
                     TrendPlaceholder(progress: data.historyFraction, text: NSLocalizedString("buildingYourTrend", comment: ""))
                 } else {
-                    // The highlighted current-window bar always uses the accent, even for duration —
-                    // it marks the window, not a judgement, so it reads like the other tiles.
-                    WorkoutRunsBarChart(bars: bars, currentStyle: AnyShapeStyle(Color.accentColor))
+                    // Every bar the accent, even on the duration tile — the bars mark the window, not
+                    // a judgement, so they read like the other three tiles.
+                    SummaryBinStrip(bins: data.bins, style: AnyShapeStyle(Color.accentColor))
                 }
             }
         }
         .buttonStyle(TileButtonStyle())
     }
 
-    /// Fewer than two windows with data means there's no trend to plot yet — a single bar, or none.
-    /// Swap the bar chart for the placeholder, but only once this window itself has a value: an
-    /// all-empty tile already shows "––" and keeps the shared chart's own no-data treatment.
+    /// A single trained bin is a stripe, not a chart. Swap it for the placeholder, but only once the
+    /// window itself has a value: an all-empty tile already shows "––" and keeps the strip's own
+    /// no-data treatment.
+    ///
+    /// The threshold is *bins with training*, not windows with data as it was when a bar was a whole
+    /// window — the strip is inside one window now, so "is there enough here to draw" is a question
+    /// about this window alone.
     private var showsTrendPlaceholder: Bool {
-        data.hasData && windowsWithData < 2
-    }
-
-    /// Windows in the five-bucket strip that have data — gates the placeholder (a lone window isn't
-    /// a trend).
-    private var windowsWithData: Int {
-        data.buckets.filter { $0 > 0 }.count
-    }
-
-    /// The five history buckets right-aligned into the fixed five-slot chart, newest (current window)
-    /// last and highlighted.
-    private var bars: [WorkoutRunsBarChart.Bar] {
-        let count = data.buckets.count
-        return data.buckets.enumerated().map { index, value in
-            WorkoutRunsBarChart.Bar(slot: index, value: value, isCurrent: index == count - 1)
-        }
+        data.hasData && data.bins.filter { $0 > 0 }.count < 2
     }
 }
 

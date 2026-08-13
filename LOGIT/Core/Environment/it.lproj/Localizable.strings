@@ -76,7 +76,7 @@
 "newRecord" = "Nuovo record";
 "currentBestInfo" = "Il tuo migliore attuale è il valore più alto delle ultime 4 settimane. L'andamento mostra quanto è più alto rispetto al tuo migliore nelle 4 settimane precedenti.";
 "currentBestComparisonInfo" = "Il tuo migliore attuale (a destra) è il valore più alto delle ultime 4 settimane. Il distintivo mostra come si confronta con il tuo migliore nel periodo mostrato a sinistra; scorri per confrontare con qualsiasi periodo.";
-"averageComparisonInfo" = "La media (a sinistra) è il tuo valore tipico nei periodi mostrati, senza contare quello attuale in corso. Il distintivo mostra come il periodo attuale (a destra) si confronta con essa.";
+"averageComparisonInfo" = "A sinistra c'è lo stesso intervallo di tempo immediatamente precedente a quello mostrato. Il distintivo mostra come il periodo mostrato (a destra) si confronta con esso.";
 "currentWorkout" = "Allenamento attuale";
 
 // MARK: - D
@@ -1129,6 +1129,9 @@
 "oneYear" = "1 anno";
 "lastNMonths" = "Ultimi %d mesi";
 "lastYear" = "Ultimo anno";
+"previous4Weeks" = "4 settimane precedenti";
+"previousNMonths" = "%d mesi precedenti";
+"previousYear" = "Anno precedente";
 "nSets" = "%d serie";
 "allExercises" = "Tutti gli esercizi";
 "strengthAxisMostDeclined" = "Calo maggiore";

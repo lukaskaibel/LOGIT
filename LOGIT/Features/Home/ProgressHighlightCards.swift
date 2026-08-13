@@ -398,12 +398,11 @@ extension HighlightComparisonCard.Content {
         }
 
         currentLabel = trend.window.currentWindowLabel
-        // "4 weeks before" is a phrase that only exists for the default window; a rolling three-month
-        // or year-long block has no name, so the older bar can only honestly say which dates it holds
-        // — the rule `TrendWindow.windowTitle` follows everywhere else.
-        previousLabel = trend.window == .fourWeeks
-            ? NSLocalizedString("fourWeeksBefore", comment: "")
-            : trend.window.windowTitle(windowsAgo: 1)
+        // The same "Previous …" phrasing the scoped detail headers use, so a highlight card and the
+        // screen it came from name the baseline identically. It used to say "4 weeks before" for the
+        // default window and fall back to a bare date span for the other two, which made the one
+        // comparison the app makes everywhere read three different ways.
+        previousLabel = trend.window.previousWindowLabel
         currentNumeric = Double(trend.currentValue)
         previousNumeric = Double(trend.previousValue)
         percentChange = Double(trend.displayedPercent)

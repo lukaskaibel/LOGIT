@@ -76,7 +76,7 @@
 "newRecord" = "Neuer Rekord";
 "currentBestInfo" = "Dein aktueller Bestwert ist der höchste Wert der letzten 4 Wochen. Der Trend zeigt, wie viel höher er ist als dein Bestwert in den 4 Wochen davor.";
 "currentBestComparisonInfo" = "Dein aktueller Bestwert (rechts) ist der höchste Wert der letzten 4 Wochen. Das Abzeichen zeigt, wie er sich zu deinem Bestwert im angezeigten Zeitraum links verhält – scrolle, um mit beliebigen Zeiträumen zu vergleichen.";
-"averageComparisonInfo" = "Der Durchschnitt (links) ist dein typischer Wert über die angezeigten Zeiträume, ohne den laufenden aktuellen Zeitraum. Das Abzeichen zeigt, wie sich der aktuelle Zeitraum (rechts) dazu verhält.";
+"averageComparisonInfo" = "Links steht derselbe Zeitraum unmittelbar vor dem angezeigten. Das Abzeichen zeigt, wie sich der angezeigte Zeitraum (rechts) dazu verhält.";
 "currentWorkout" = "Aktuelles Workout";
 
 // MARK: - D
@@ -1125,6 +1125,9 @@
 "oneYear" = "1 Jahr";
 "lastNMonths" = "Letzte %d Monate";
 "lastYear" = "Letztes Jahr";
+"previous4Weeks" = "Vorherige 4 Wochen";
+"previousNMonths" = "Vorherige %d Monate";
+"previousYear" = "Vorheriges Jahr";
 "nSets" = "%d Sätze";
 "allExercises" = "Alle Übungen";
 "strengthAxisMostDeclined" = "Stärkster Rückgang";

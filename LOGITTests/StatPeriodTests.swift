@@ -323,3 +323,210 @@ final class WeeklyStreakTests: XCTestCase {
         XCTAssertEqual(digitCount(atThreshold), 4, "1000 should render as four whole digits")
     }
 }
+
+// MARK: - TrendWindow bins
+
+/// The bins a scoped surface draws: one bar per day / week / month **inside** the selected window.
+///
+/// The invariants here are what make the Summary's one picker mean one thing. A bar is a slice of the
+/// selected timeframe, the viewport is exactly one window wide, and the comparison's baseline is the
+/// equally long window immediately before it — so "avg. volume 10,000 kg" and "+8%" read off the same
+/// four weeks the picker names, and off the same four weeks the Strength tile beside them reads.
+final class TrendWindowBinTests: XCTestCase {
+    private let calendar = Calendar.current
+
+    private func date(_ year: Int, _ month: Int, _ day: Int, hour: Int = 12) -> Date {
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+        components.hour = hour
+        return calendar.date(from: components)!
+    }
+
+    /// A viewport is one window of bins — the count the tiles draw and the chart scrolls by.
+    func testBinsPerWindowCoverTheWindow() {
+        XCTAssertEqual(TrendWindow.fourWeeks.binsPerWindow, 28, "four weeks is twenty-eight days")
+        XCTAssertEqual(TrendWindow.threeMonths.binsPerWindow, 13, "a quarter is thirteen weeks")
+        XCTAssertEqual(TrendWindow.oneYear.binsPerWindow, 12, "a year is twelve months")
+        // Every option has to land in the same range, or the three tiles stop reading alike: a tile
+        // is ~140pt wide, and past ~30 bars the bars stop being bars.
+        for window in TrendWindow.allCases {
+            XCTAssertTrue(
+                (12 ... 28).contains(window.binsPerWindow),
+                "\(window) draws \(window.binsPerWindow) bars — outside the density every window shares"
+            )
+        }
+    }
+
+    /// `binRanges(count:)` returns exactly what was asked for, newest last.
+    func testBinRangesReturnTheRequestedCountEndingNow() {
+        let reference = date(2026, 8, 12)
+        for window in TrendWindow.allCases {
+            let ranges = window.binRanges(count: window.binsPerWindow, now: reference)
+            XCTAssertEqual(ranges.count, window.binsPerWindow, "\(window)")
+            let newest = ranges.last!
+            XCTAssertTrue(
+                reference > newest.lowerBound && reference <= newest.upperBound,
+                "\(window)'s newest bin must be the one holding now"
+            )
+        }
+    }
+
+    /// Bins must tile the timeline exactly — each bin's upper bound *is* its newer neighbour's lower
+    /// bound. Anything else and a workout on a boundary is either counted twice or lost, and the
+    /// binary search in `binIndex` stops being valid.
+    func testBinsTileTheTimelineWithoutGapsOrOverlap() {
+        let reference = date(2026, 8, 12)
+        for window in TrendWindow.allCases {
+            let ranges = window.binRanges(count: window.binsPerWindow * 2, now: reference)
+            for index in 1 ..< ranges.count {
+                XCTAssertEqual(
+                    ranges[index - 1].upperBound, ranges[index].lowerBound,
+                    "\(window) bin \(index) must abut its older neighbour"
+                )
+            }
+        }
+    }
+
+    /// The half-open lower edge, shared with `TrendWindow.contains`: a date landing exactly on the
+    /// instant two bins share counts once.
+    func testBinBoundaryCountsOnce() {
+        let reference = date(2026, 8, 12)
+        for window in TrendWindow.allCases {
+            let ranges = window.binRanges(count: window.binsPerWindow, now: reference)
+            let boundary = ranges[ranges.count - 1].lowerBound
+            let index = TrendWindow.binIndex(of: boundary, in: ranges)
+            XCTAssertEqual(
+                index, ranges.count - 2,
+                "\(window): a date on a shared boundary belongs to exactly one bin"
+            )
+        }
+    }
+
+    /// Every day of a four-week window gets its own bar, and a workout lands in the bar for its day.
+    func testFourWeekBinsAreCalendarDays() {
+        let reference = date(2026, 8, 12)
+        let ranges = TrendWindow.fourWeeks.binRanges(count: 28, now: reference)
+        // The newest bin is today; a workout logged this morning belongs to it.
+        let thisMorning = date(2026, 8, 12, hour: 7)
+        XCTAssertEqual(TrendWindow.binIndex(of: thisMorning, in: ranges), 27)
+        // …and one logged a week ago belongs seven bars to its left.
+        let weekAgo = date(2026, 8, 5, hour: 7)
+        XCTAssertEqual(TrendWindow.binIndex(of: weekAgo, in: ranges), 20)
+        // A workout older than the strip falls outside it rather than being clamped into the oldest
+        // bar, which would pile months of training onto one bin.
+        XCTAssertNil(TrendWindow.binIndex(of: date(2026, 1, 1), in: ranges))
+    }
+
+    /// The strip reaches back to the first logged workout, so nothing scrollable is binned off its
+    /// end — and stops at the cap rather than growing without bound.
+    func testStripReachesFirstDataDateAndRespectsTheCap() {
+        let reference = date(2026, 8, 12)
+        for window in TrendWindow.allCases {
+            let first = calendar.date(byAdding: .month, value: -7, to: reference)!
+            let ranges = window.binRanges(firstDataDate: first, now: reference)
+            XCTAssertNotNil(
+                TrendWindow.binIndex(of: first, in: ranges),
+                "\(window): the first logged workout must fall inside the strip"
+            )
+            XCTAssertGreaterThanOrEqual(ranges.count, window.binsPerWindow, "\(window) must fill a viewport")
+
+            // A stray date decades back is capped rather than turning the chart into thousands of bars.
+            let ancient = calendar.date(byAdding: .year, value: -60, to: reference)!
+            let capped = window.binRanges(firstDataDate: ancient, now: reference)
+            XCTAssertLessThanOrEqual(capped.count, TrendWindow.maxStripBinCount, "\(window)")
+        }
+    }
+
+    /// No history at all still fills exactly one viewport — an empty tile draws an empty window, not
+    /// a single bar.
+    func testStripWithoutHistoryIsExactlyOneWindow() {
+        for window in TrendWindow.allCases {
+            let ranges = window.binRanges(firstDataDate: nil, now: date(2026, 8, 12))
+            XCTAssertEqual(ranges.count, window.binsPerWindow, "\(window)")
+        }
+    }
+
+    /// The scroll opens with the newest bin at the trailing edge, showing exactly the current window
+    /// — the picker names the viewport, so what it names has to be what is on screen.
+    func testStripOpensOnTheCurrentWindow() {
+        let reference = date(2026, 8, 12)
+        for window in TrendWindow.allCases {
+            let ranges = window.binRanges(firstDataDate: calendar.date(byAdding: .year, value: -1, to: reference), now: reference)
+            let position = window.trailingScrollPosition(binCount: ranges.count)
+            let visible = window.visibleIndices(scrollPosition: position, binCount: ranges.count)
+            XCTAssertEqual(visible.count, window.binsPerWindow, "\(window) shows one window at a time")
+            XCTAssertEqual(visible.upperBound, ranges.count, "\(window) opens at the trailing edge")
+        }
+    }
+
+    /// The comparison's baseline is the window immediately before the visible one — adjacent, equally
+    /// long, and never overlapping it. This is the invariant that stopped the tile and its detail
+    /// screen printing two different percentages for the same metric.
+    func testPrecedingWindowIsAdjacentAndEquallyLong() {
+        let reference = date(2026, 8, 12)
+        for window in TrendWindow.allCases {
+            let ranges = window.binRanges(firstDataDate: calendar.date(byAdding: .year, value: -2, to: reference), now: reference)
+            let visible = window.visibleIndices(
+                scrollPosition: window.trailingScrollPosition(binCount: ranges.count),
+                binCount: ranges.count
+            )
+            let preceding = window.precedingIndices(before: visible)
+            XCTAssertEqual(preceding.count, window.binsPerWindow, "\(window): baseline is one whole window")
+            XCTAssertEqual(preceding.upperBound, visible.lowerBound, "\(window): baseline abuts the visible window")
+        }
+    }
+
+    /// Too little history for a full baseline yields *no* baseline rather than a partial one — the
+    /// header shows "––" instead of comparing four weeks against the five days behind them.
+    func testPrecedingWindowIsEmptyWithoutAFullWindowBehindIt() {
+        for window in TrendWindow.allCases {
+            // A strip only one viewport long: there is nothing before the visible window.
+            let visible = 0 ..< window.binsPerWindow
+            XCTAssertTrue(window.precedingIndices(before: visible).isEmpty, "\(window)")
+        }
+    }
+
+    /// Only every `binAxisStride`-th bin is labelled, counted back from the newest so the most recent
+    /// bin always carries one — twenty-eight dates in a row would render as an unbroken smear.
+    func testAxisLabelsAreStridedAndAnchoredAtTheNewestBin() {
+        let reference = date(2026, 8, 12)
+        for window in TrendWindow.allCases {
+            let ranges = window.binRanges(count: window.binsPerWindow, now: reference)
+            let bins = TrendWindowBin.strip(
+                for: window,
+                ranges: ranges,
+                raw: ranges.map { _ in 1 },
+                display: { $0 },
+                formatted: { String(Int($0)) }
+            )
+            XCTAssertNotNil(bins.last?.axisLabel, "\(window): the newest bin must be labelled")
+            let labelled = bins.filter { $0.axisLabel != nil }.count
+            XCTAssertTrue(
+                (3 ... 8).contains(labelled),
+                "\(window) drew \(labelled) axis labels across a viewport — too few to read by, or too many to fit"
+            )
+        }
+    }
+
+    /// An untrained bin draws no bar. That is what makes a strip of days show the rhythm of a
+    /// training week rather than a solid block.
+    func testUntrainedBinsHaveNoBar() {
+        let window = TrendWindow.fourWeeks
+        let ranges = window.binRanges(count: 28, now: date(2026, 8, 12))
+        let bins = TrendWindowBin.strip(
+            for: window,
+            ranges: ranges,
+            raw: ranges.enumerated().map { index, _ in index % 2 == 0 ? 0 : 1000 },
+            display: { $0 },
+            formatted: { String(Int($0)) }
+        )
+        XCTAssertEqual(bins.filter { $0.value == 0 }.count, 14)
+        // …and the dashed reference line averages only the bins that hold training, so rest days
+        // can't drag it below the bars it is meant to sit among.
+        let stats = TrendWindowBin.visibleStats(bins: bins, indices: 0 ..< bins.count)
+        XCTAssertEqual(stats.trainedMean, 1000)
+        XCTAssertEqual(stats.displayMax, 1000)
+    }
+}

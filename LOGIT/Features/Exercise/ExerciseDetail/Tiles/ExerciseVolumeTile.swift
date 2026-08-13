@@ -15,45 +15,47 @@ import SwiftUI
 ///
 /// Its period comes from `window`. On the exercise detail screen that's nil and the tile is weekly —
 /// "Volume · This Week", the reading it has always had, and the one the screen around it is built
-/// for. Pinned on the Summary it gets that screen's selected `TrendWindow` instead, so a pinned
-/// volume tile covers the same span as every other tile beside it rather than being the one square
-/// on the grid still reporting a calendar week.
+/// for: five bars, one per calendar week, the current one tinted.
+///
+/// Pinned on the Summary it gets that screen's selected `TrendWindow` instead, and then it draws the
+/// same thing every other tile under the picker draws: the window split into its **bins** (days for
+/// four weeks, weeks for a quarter, months for a year), every bar tinted because every bar is in
+/// scope, compared against the equally long window immediately before. It used to show five whole
+/// windows with one tinted — so a tile set to "4 weeks" spent four fifths of its chart outside the
+/// timeframe — and its pill fell back to the *best* of those five when the previous window was empty,
+/// a baseline reaching months outside the span the tile claimed to report.
 struct ExerciseVolumeTile: View {
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
     /// Leads the tile with the exercise name and moves the metric name into the subtitle (the pinned
     /// Summary grid); see `ExerciseBestMetricTile`. Off by default (the detail screen).
     var showsExerciseName: Bool = false
-    /// The period one bar covers: nil for calendar weeks, otherwise the Summary's rolling window.
+    /// The span the tile reports: nil for the calendar week, otherwise the Summary's rolling window.
     var window: TrendWindow? = nil
 
-    /// Bars in the footer chart — the current period plus the four before it.
-    private static let bucketCount = 5
+    /// Bars in the weekly footer chart — this week plus the four before it.
+    private static let weekCount = 5
 
-    /// One period's volume. `start` is the period's first instant, which is what the bars are keyed
-    /// and sorted by whether the periods are calendar weeks or rolling windows.
-    private struct PeriodVolume: Identifiable {
-        let start: Date
-        let end: Date
-        let volume: Int
-        var id: Date { start }
+    /// What the tile draws and says, however its span is defined.
+    private struct Report {
+        /// Bar heights in display units, oldest → newest. A zero draws no bar.
+        let bars: [Double]
+        /// The reported span's volume, in raw storage units.
+        let current: Int
+        /// What the trend pill measures against, in raw units. Zero means nothing to compare.
+        let baseline: Int
+        /// Trained at some point, but not inside anything the tile can show.
+        let isLapsed: Bool
     }
 
     var body: some View {
         let sets = workoutSets.filter { $0.workout?.isCurrentWorkout != true }
-        let shown = shownVolumes(in: sets)
-        let currentVolume = shown.last?.volume ?? 0
-        let previousVolume = shown.dropLast().last?.volume ?? 0
-        // Baseline for the trend pill: the period before, or — when that one was a rest period — the
-        // best earlier period shown, so the pill stays present whenever there's a prior period to
-        // compare to.
-        let bestPriorVolume = shown.dropLast().map(\.volume).max() ?? 0
-        let baseline = previousVolume > 0 ? previousVolume : bestPriorVolume
         let hasAnyVolume = sets.contains { $0.volume(for: exercise) > 0 }
-        // No volume anywhere in the five shown periods but some further back: untrained for longer
-        // than the chart reaches. Fall back to the "last best" — the most recent trained period's
-        // volume, dated — to match the four best-value tiles, instead of a "0" over an empty chart.
-        let isLapsed = hasAnyVolume && !shown.contains { $0.volume > 0 }
+        let report = window.map { self.windowReport(in: sets, window: $0, hasAnyVolume: hasAnyVolume) }
+            ?? weeklyReport(in: sets, hasAnyVolume: hasAnyVolume)
+        let currentVolume = report.current
+        let baseline = report.baseline
+        let isLapsed = report.isLapsed
         let lastBest = isLapsed ? lastTrainedPeriod(in: sets) : nil
         let muscleColor = exercise.muscleGroup?.color ?? .accentColor
         MetricTile(
@@ -86,39 +88,44 @@ struct ExerciseVolumeTile: View {
             chartBleeds: false
         ) {
             // Lapsed → no chart, matching the four best-value tiles (the date carries the story); the
-            // empty slot keeps the row height. Otherwise the regular five bars.
+            // empty slot keeps the row height.
             if isLapsed {
                 Color.clear
             } else {
-                barChart(shown)
+                barChart(report.bars)
             }
         }
     }
 
     // MARK: - Chart
 
-    /// The five periods as bars, the current one highlighted.
+    /// The bars, oldest → newest. Windowed, every bar wears the muscle colour — they are all inside
+    /// the selected timeframe. Weekly, only the current week does and the four behind it stay quiet
+    /// gray, which is the comparison that mode is built on.
     ///
-    /// The x-axis is **categorical** — one slot per shown period, keyed by its position — not the
-    /// period's start date on a continuous scale. A rolling window has no calendar unit for `BarMark`
-    /// to bin by, and without a bin the axis has no band for a proportional bar width to be a
-    /// proportion *of*: the shared `footerBarWidth` ratio resolved to nothing and the bars vanished
-    /// entirely. Slots also match how the other tile charts (and the detail screens' strips) lay
-    /// their bars out, so every tile's bars end up the same width.
-    private func barChart(_ shown: [PeriodVolume]) -> some View {
-        let slots = (0 ..< max(shown.count, 1)).map(String.init)
+    /// The x-axis is **categorical** — one slot per bar, keyed by its position — not a date on a
+    /// continuous scale. Neither a rolling window nor a mixed run of bins has a calendar unit for
+    /// `BarMark` to bin by, and without a bin the axis has no band for a proportional bar width to be
+    /// a proportion *of*: the shared `footerBarWidth` ratio resolved to nothing and the bars vanished
+    /// entirely. Slots also match how the other tile charts lay their bars out, so every tile's bars
+    /// end up the same width.
+    private func barChart(_ bars: [Double]) -> some View {
+        let slots = (0 ..< max(bars.count, 1)).map(String.init)
+        let muscleColor = exercise.muscleGroup?.color ?? .accentColor
+        let isWindowed = window != nil
         return Chart {
-            ForEach(Array(shown.enumerated()), id: \.element.id) { index, period in
-                BarMark(
-                    x: .value("Period", String(index)),
-                    y: .value("Volume", convertWeightForDisplayingDecimal(period.volume)),
-                    width: TileBarChartStyle.footerBarWidth
-                )
-                .foregroundStyle(
-                    period.id == shown.last?.id
-                        ? (exercise.muscleGroup?.color ?? .accentColor) : Color.fill
-                )
-                .tileBarStyle()
+            ForEach(Array(bars.enumerated()), id: \.offset) { index, value in
+                if value > 0 {
+                    BarMark(
+                        x: .value("Period", String(index)),
+                        y: .value("Volume", value),
+                        width: TileBarChartStyle.footerBarWidth
+                    )
+                    .foregroundStyle(
+                        isWindowed || index == bars.count - 1 ? muscleColor : Color.fill
+                    )
+                    .tileBarStyle()
+                }
             }
         }
         .chartXScale(domain: slots)
@@ -128,31 +135,64 @@ struct ExerciseVolumeTile: View {
 
     // MARK: - Periods
 
-    /// The five periods the tile reports on, oldest → newest, the last one current. Rolling windows
-    /// come straight off `TrendWindow`; weeks are counted back from this week's start.
-    private func shownVolumes(in sets: [WorkoutSet]) -> [PeriodVolume] {
-        (0 ..< Self.bucketCount).reversed().map { periodsAgo in
-            let range = periodRange(periodsAgo: periodsAgo)
-            // Half-open at the lower edge so a set on the instant two periods share counts once.
-            let periodSets = sets.filter { set in
+    /// The pinned reading: the selected window split into its bins, against the window before it.
+    ///
+    /// Both windows are binned in **one** strip so the two spans are defined by exactly the same
+    /// boundaries — the same construction the Summary's own stat tiles use — and only the newer half
+    /// is drawn. There is no "best earlier period" fallback here: a baseline is the previous window or
+    /// there is none, because anything else would compare the named timeframe against an unnamed one.
+    private func windowReport(in sets: [WorkoutSet], window: TrendWindow, hasAnyVolume: Bool) -> Report {
+        let perWindow = window.binsPerWindow
+        let ranges = window.binRanges(count: perWindow * 2)
+        var binned = [[WorkoutSet]](repeating: [], count: ranges.count)
+        for set in sets {
+            guard let date = set.workout?.date,
+                  let index = TrendWindow.binIndex(of: date, in: ranges) else { continue }
+            binned[index].append(set)
+        }
+        let volumes = binned.map { getVolume(of: $0, for: exercise) }
+        let split = ranges.count - perWindow
+        let current = volumes[split...].reduce(0, +)
+        let previous = volumes[..<split].reduce(0, +)
+        return Report(
+            bars: volumes[split...].map { convertWeightForDisplayingDecimal($0) },
+            current: current,
+            baseline: previous,
+            // Trained at some point, but nothing in either window the tile can draw or compare.
+            isLapsed: hasAnyVolume && current == 0 && previous == 0
+        )
+    }
+
+    /// The detail screen's reading: five calendar weeks, this one last. The baseline is last week, or
+    /// — when that was a rest week — the best of the weeks on the chart, so the pill stays present
+    /// whenever there is a prior week to compare to. That fallback is safe here in a way it is not
+    /// under a picker: all five weeks are on screen, and the tile names its span "This Week" rather
+    /// than borrowing a timeframe the whole screen claims.
+    private func weeklyReport(in sets: [WorkoutSet], hasAnyVolume: Bool) -> Report {
+        let volumes = (0 ..< Self.weekCount).reversed().map { weeksAgo -> Int in
+            let range = weekRange(weeksAgo: weeksAgo)
+            // Half-open at the lower edge so a set on the instant two weeks share counts once.
+            let weekSets = sets.filter { set in
                 guard let date = set.workout?.date else { return false }
                 return date > range.lowerBound && date <= range.upperBound
             }
-            return PeriodVolume(
-                start: range.lowerBound,
-                end: range.upperBound,
-                volume: getVolume(of: periodSets, for: exercise)
-            )
+            return getVolume(of: weekSets, for: exercise)
         }
+        let current = volumes.last ?? 0
+        let previous = volumes.dropLast().last ?? 0
+        let bestPrior = volumes.dropLast().max() ?? 0
+        return Report(
+            bars: volumes.map { convertWeightForDisplayingDecimal($0) },
+            current: current,
+            baseline: previous > 0 ? previous : bestPrior,
+            isLapsed: hasAnyVolume && !volumes.contains { $0 > 0 }
+        )
     }
 
-    private func periodRange(periodsAgo n: Int) -> ClosedRange<Date> {
-        if let window {
-            return window.range(windowsAgo: n)
-        }
+    private func weekRange(weeksAgo n: Int) -> ClosedRange<Date> {
         let calendar = Calendar.current
         let anchor = calendar.date(byAdding: .weekOfYear, value: -n, to: .now) ?? .now
-        // The week's start is exclusive here (see `shownVolumes`), so back it off an instant —
+        // The week's start is exclusive here (see `weeklyReport`), so back it off an instant —
         // otherwise a set logged exactly at midnight on a Monday would fall out of its own week.
         return anchor.startOfWeek.addingTimeInterval(-1) ... anchor.endOfWeek
     }

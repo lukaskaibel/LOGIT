@@ -76,7 +76,7 @@
 "newRecord" = "새 기록";
 "currentBestInfo" = "현재 최고는 최근 4주 동안의 최고 값입니다. 추세는 그 값을 달성하기 전 4주 동안의 최고보다 얼마나 높은지 보여줍니다.";
 "currentBestComparisonInfo" = "현재 최고(오른쪽)는 최근 4주 동안의 최고 값입니다. 배지는 왼쪽에 표시된 기간의 최고와 어떻게 비교되는지 보여줍니다. 스크롤하여 원하는 기간과 비교하세요.";
-"averageComparisonInfo" = "평균(왼쪽)은 표시된 기간의 일반적인 값으로, 진행 중인 현재 기간은 제외합니다. 배지는 현재 기간(오른쪽)이 이와 어떻게 비교되는지 보여줍니다.";
+"averageComparisonInfo" = "왼쪽은 화면에 표시된 기간 바로 앞의 같은 길이의 기간입니다. 배지는 표시된 기간(오른쪽)이 이와 어떻게 비교되는지 보여줍니다.";
 "currentWorkout" = "현재 운동";
 
 // MARK: - D
@@ -1129,6 +1129,9 @@
 "oneYear" = "1년";
 "lastNMonths" = "최근 %d개월";
 "lastYear" = "최근 1년";
+"previous4Weeks" = "이전 4주";
+"previousNMonths" = "이전 %d개월";
+"previousYear" = "이전 1년";
 "nSets" = "%d세트";
 "allExercises" = "모든 운동";
 "strengthAxisMostDeclined" = "가장 큰 감소";

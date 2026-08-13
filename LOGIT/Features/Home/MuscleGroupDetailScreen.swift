@@ -197,22 +197,26 @@ struct MuscleGroupDetailScreen: View {
 
     // MARK: - Sets history chart
 
-    /// Sets per window over history, one bar per `TrendWindow` back from now, current window
-    /// highlighted, scrollable back through everything logged. Titled "Sets over time" like the
-    /// overview's "Balance over time" one level up rather than "Sets per month": a rolling window has
-    /// no name to put after "per", and the caption beside it already says how wide the viewport is.
+    /// Sets over the selected window, one bar per day / week / month of it, scrollable back through
+    /// everything logged a window at a time. Titled "Sets over time" like the overview's "Balance over
+    /// time" one level up rather than "Sets per month": the bin size follows the picker, so no one
+    /// unit belongs after "per".
+    ///
+    /// No caption beside the header. It used to say how wide the viewport was, back when that was a
+    /// span the picker didn't name (twenty-eight weeks for a four-week window); the viewport is now
+    /// exactly the selected window, which the picker directly above already names.
     private func setsHistoryChart(allWorkouts: [Workout]) -> some View {
         let sets = setsTraining(in: allWorkouts)
-        let ranges = window.historyRanges(firstDataDate: allWorkouts.compactMap(\.date).min())
-        // One pass over the sets, each placed in its window by binary search — the strip runs to
-        // dozens of windows now, and filtering the whole set list per window would be quadratic.
+        let ranges = window.binRanges(firstDataDate: allWorkouts.compactMap(\.date).min())
+        // One pass over the sets, each placed in its bin by binary search — the strip runs to hundreds
+        // of bins, and filtering the whole set list per bin would be quadratic.
         var counts = [Double](repeating: 0, count: ranges.count)
         for set in sets {
             guard let date = set.workout?.date,
-                  let index = TrendWindow.bucketIndex(of: date, in: ranges) else { continue }
+                  let index = TrendWindow.binIndex(of: date, in: ranges) else { continue }
             counts[index] += 1
         }
-        let buckets = TrendWindowBucket.history(
+        let bins = TrendWindowBin.strip(
             for: window,
             ranges: ranges,
             raw: counts,
@@ -220,23 +224,18 @@ struct MuscleGroupDetailScreen: View {
             formatted: { String(Int($0.rounded())) }
         )
         return VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-            HStack {
-                Text(NSLocalizedString("setsOverTime", comment: ""))
-                    .sectionHeaderStyle2()
-                Spacer()
-                Text(window.historySpanCaption)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-            // The shared rolling-window chart in a compact tile — the same bars as the stat detail
-            // screens, so tapping to inspect a window and scrolling back through the history work here
-            // too, at the tile's height. It keeps its own scroll position: there is no header beside
-            // it that has to move with the viewport.
+            Text(NSLocalizedString("setsOverTime", comment: ""))
+                .sectionHeaderStyle2()
+                .frame(maxWidth: .infinity, alignment: .leading)
+            // The shared bin chart in a compact tile — the same bars as the stat detail screens, so
+            // tapping to inspect a bin and scrolling back through the history work here too, at the
+            // tile's height. It keeps its own scroll position: there is no header beside it that has
+            // to move with the viewport.
             TrendWindowHistoryChart(
                 window: window,
-                buckets: buckets,
+                bins: bins,
                 valueLabel: NSLocalizedString("sets", comment: ""),
-                currentBarStyle: AnyShapeStyle(color),
+                barStyle: AnyShapeStyle(color),
                 unit: NSLocalizedString("sets", comment: ""),
                 height: 120
             )

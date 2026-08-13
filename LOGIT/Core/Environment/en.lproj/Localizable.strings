@@ -76,7 +76,7 @@
 "newRecord" = "New Record";
 "currentBestInfo" = "Your current best is the highest value in the last 4 weeks. The trend shows how much higher it is than your best in the 4 weeks before you reached it.";
 "currentBestComparisonInfo" = "Your current best (right) is the highest value in the last 4 weeks. The badge shows how it compares to your best in the shown period on the left — scroll to compare against any time.";
-"averageComparisonInfo" = "The average (left) is your typical value over the periods shown, not counting the current one still in progress. The badge shows how the current period (right) compares to it.";
+"averageComparisonInfo" = "The left side is the same length of time immediately before the one on screen. The badge shows how the period on screen (right) compares to it.";
 "currentWorkout" = "Current Workout";
 
 // MARK: - D
@@ -1129,6 +1129,9 @@
 "oneYear" = "1 year";
 "lastNMonths" = "Last %d months";
 "lastYear" = "Last year";
+"previous4Weeks" = "Previous 4 weeks";
+"previousNMonths" = "Previous %d months";
+"previousYear" = "Previous year";
 "nSets" = "%d sets";
 "allExercises" = "All exercises";
 "strengthAxisMostDeclined" = "Most declined";

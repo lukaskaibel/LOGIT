@@ -250,63 +250,95 @@ enum TrendWindow: String, CaseIterable, Identifiable {
         return min(max(reference.timeIntervalSince(firstDataDate) / span, 0), 1)
     }
 
-    /// How many windows of history a `TrendWindowHistoryChart` shows **at once** — the stat detail
-    /// screens and the muscle detail's sets chart: about half a year of four-week blocks, two years of
-    /// quarters, six years. The strip itself runs back to the first logged workout; this is the width
-    /// of the viewport that scrolls along it.
+    /// The header label for the window immediately before the one being read — "Previous 4 weeks" /
+    /// "Previous 3 months" / "Previous year". The neutral side of every scoped comparison: whatever a
+    /// scoped surface reports, it reports it against the same length of time directly before.
+    var previousWindowLabel: String {
+        switch self {
+        case .fourWeeks: return NSLocalizedString("previous4Weeks", comment: "")
+        case .threeMonths: return String(format: NSLocalizedString("previousNMonths", comment: ""), 3)
+        case .oneYear: return NSLocalizedString("previousYear", comment: "")
+        }
+    }
+
+    // MARK: Bins
+
+    /// What one bar covers **inside** a window — the unit the history strips and the tile charts are
+    /// drawn in.
     ///
-    /// Four weeks is capped by its **axis labels**, not by how much history is interesting. A rolling
-    /// four-week block has no name, so its label has to be a date ("9 Jun"), and thirteen of those —
-    /// a tidy calendar year — render as one unbroken run of overlapping text. Seven fit with room to
-    /// spare, and a reader wanting more history has two longer windows to switch to.
-    var historyBucketCount: Int {
+    /// A bar is a slice of the selected timeframe, not a whole timeframe of its own. That is the point
+    /// of the picker: pick "4 weeks" and every bar on screen is a day of those four weeks, so the
+    /// number in the header and the bars under it describe the same span. Bars used to be windows —
+    /// picking "4 weeks" drew five four-week blocks and highlighted one, which meant four fifths of
+    /// every chart sat outside the timeframe the screen claimed to be reporting.
+    ///
+    /// Bins are **calendar** units, unlike the rolling windows that contain them: a day is a day, so
+    /// "one bar per workout day" is literally true and an untrained day is a visible gap.
+    var bin: Calendar.Component {
+        switch self {
+        case .fourWeeks: return .day
+        case .threeMonths: return .weekOfYear
+        case .oneYear: return .month
+        }
+    }
+
+    /// How many bins fill one window — the width of the scrolling viewport, in bars.
+    ///
+    /// Every window lands at 12–28 bars, which is what keeps the three options reading at the same
+    /// density: a tile ~140pt wide gives a 28-bar strip ~3pt bars, and the same strip on a detail
+    /// screen is simply a larger copy. Finer bins do not survive the longer windows — a year of days
+    /// is 365 bars, under half a point each in a tile — which is why the unit steps up with the
+    /// window instead of staying a day throughout.
+    ///
+    /// The counts are the window in bins: 28 days, 13 weeks (91 days ≈ a quarter), 12 months.
+    var binsPerWindow: Int {
+        switch self {
+        case .fourWeeks: return 28
+        case .threeMonths: return 13
+        case .oneYear: return 12
+        }
+    }
+
+    /// Label every `binAxisStride`-th bin, counted back from the newest — 28 day bars cannot each
+    /// carry a date without the labels running together. The strides leave 4–7 labels across a
+    /// viewport: weekly marks across four weeks, every third week across a quarter, every second
+    /// month across a year.
+    var binAxisStride: Int {
         switch self {
         case .fourWeeks: return 7
-        case .threeMonths: return 8
-        case .oneYear: return 6
+        case .threeMonths: return 3
+        case .oneYear: return 2
         }
     }
 
-    /// How much history a viewport of `historyBucketCount` windows covers, as a caption — "28 weeks",
-    /// "24 months", "6 years". The counterpart to `StatPeriod`'s fixed "12 weeks" / "12
-    /// months" / "6 years" captions, computed rather than spelled out because the bucket counts
-    /// differ per window (see `historyBucketCount`) and a hardcoded string would drift from them.
-    var historySpanCaption: String {
-        let span = historyBucketCount * step.value
-        switch self {
-        case .fourWeeks: return String(format: NSLocalizedString("nWeeks", comment: ""), span)
-        case .threeMonths: return String(format: NSLocalizedString("nMonths", comment: ""), span)
-        case .oneYear: return NSLocalizedString("sixYears", comment: "")
-        }
-    }
-
-    /// Axis label under a history bar — "6 Aug" / "Aug" / "2026".
+    /// Axis label under a bin — "9 Aug" for a day or a week (the week's first day), "Aug" for a month.
     ///
-    /// Taken from the window's **end**, not its start. A trailing window labelled by its start reads
-    /// as a calendar unit it isn't: the current year-long window runs from last August to today, and
-    /// labelling it "2025" says the wrong year outright. The end is the date the bar reaches, which
-    /// is what a reader scanning left to right is actually looking for.
-    func axisLabel(forWindowEnding end: Date) -> String {
+    /// Taken from the bin's **start**, unlike the old per-window labels which had to use the end: a
+    /// bin is a real calendar unit, so its start names it exactly ("the week of 9 Aug"), while a
+    /// rolling window has no name and could only be labelled by the date it reached.
+    func binAxisLabel(for range: ClosedRange<Date>) -> String {
         switch self {
-        case .fourWeeks: return end.formatted(.dateTime.day().month(.abbreviated))
-        case .threeMonths: return end.formatted(.dateTime.month(.abbreviated))
-        case .oneYear: return end.formatted(.dateTime.year())
+        case .fourWeeks, .threeMonths:
+            return range.lowerBound.formatted(.dateTime.day().month(.abbreviated))
+        case .oneYear:
+            return range.lowerBound.formatted(.dateTime.month(.abbreviated))
         }
     }
 
-    /// The full title for a window: the "Last …" label for the current one, otherwise the span it
-    /// covers. Rolling windows don't have names ("June" is a calendar month, not a 4-week block), so
-    /// an older window can only honestly say which dates it holds.
-    func windowTitle(windowsAgo n: Int, from date: Date = .now) -> String {
-        guard n > 0 else { return currentWindowLabel }
-        let range = self.range(windowsAgo: n, from: date)
-        let format: Date.FormatStyle
+    /// The full name of a bin for the inspect card — "Mon, 9 Aug" / "9 - 15 Aug" / "Aug 2026". A bin
+    /// is a calendar unit, so unlike a rolling window it can simply be named.
+    func binTitle(for range: ClosedRange<Date>) -> String {
         switch self {
-        case .fourWeeks: format = .dateTime.day().month(.abbreviated)
-        case .threeMonths: format = .dateTime.month(.abbreviated).year()
-        case .oneYear: format = .dateTime.month(.abbreviated).year()
+        case .fourWeeks:
+            return range.lowerBound.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
+        case .threeMonths:
+            // The bin's last *day*: its upper bound is the next week's first instant (see `binRanges`),
+            // which would print the following Monday.
+            let lastDay = range.upperBound.addingTimeInterval(-1)
+            return "\(range.lowerBound.formatted(.dateTime.day().month(.abbreviated))) - \(lastDay.formatted(.dateTime.day().month(.abbreviated)))"
+        case .oneYear:
+            return range.lowerBound.formatted(.dateTime.month(.abbreviated).year())
         }
-        return "\(range.lowerBound.formatted(format)) - \(range.upperBound.formatted(format))"
     }
 }
 
@@ -434,65 +466,92 @@ extension StatPeriod {
 /// The scrollable-strip math for the rolling-window history charts — the `TrendWindow` counterpart to
 /// the extension above.
 ///
-/// A rolling window has no calendar unit to bin or snap to (four weeks is not a month), so the strip
-/// is plotted on a **synthetic timeline**: one window per day, counted off an arbitrary epoch. Bucket
-/// `i` sits on day `i`, the viewport is `historyBucketCount` days wide, and the scroll snaps to
-/// midnight — which is to say to whole windows. The dates are pure geometry and never shown; the axis
-/// labels come from the buckets.
+/// The strip's bars are **bins** — days, weeks or months inside the selected window (see `bin`) — and
+/// its viewport is exactly one window wide, so what the picker names is what is on screen. Bins are
+/// evenly spaced whatever unit they are, and a week bin is not a calendar unit `BarMark` can bin a
+/// *mixed* strip by, so the strip is plotted on a **synthetic timeline**: one bin per day, counted off
+/// an arbitrary epoch. Bin `i` sits on day `i`, the viewport is `binsPerWindow` days wide, and the
+/// scroll snaps to midnight — which is to say to whole bins. The dates are pure geometry and never
+/// shown; the axis labels come from the bins' real ranges.
 ///
 /// The synthetic day is what buys the strip the machinery Swift Charts only gives a date axis: bars
 /// binned by a unit — so `width: .ratio` means "a fraction of a slot", and axis labels centre under
-/// the bar they name — and `valueAligned` scroll snapping, so a scroll comes to rest on whole windows.
+/// the bar they name — and `valueAligned` scroll snapping, so a scroll comes to rest on whole bins.
 /// On a plain numeric axis none of that holds: `.ratio` has no step to take a fraction of and renders
 /// the bars zero-wide, labels hang off the mark's leading edge, and the scroll rests wherever it
 /// stops.
 ///
-/// Every question about "which windows are on screen" is answered here, so the bars, the axis labels,
-/// the y-scale and the moving average line can't disagree about the visible window.
+/// Every question about "which bins are on screen" is answered here, so the bars, the axis labels,
+/// the y-scale, the header and the average line can't disagree about the visible window.
 extension TrendWindow {
     /// Day zero of the synthetic timeline. Arbitrary and fixed — only differences matter.
     static let stripEpoch = Calendar.current.startOfDay(for: Date(timeIntervalSinceReferenceDate: 0))
 
-    /// The synthetic date bucket `index` is plotted on. Counted in calendar days rather than in
+    /// The synthetic date bin `index` is plotted on. Counted in calendar days rather than in
     /// 86,400-second steps so every step lands on a real midnight, which is what the scroll snaps to.
     static func stripDate(forIndex index: Int) -> Date {
         Calendar.current.date(byAdding: .day, value: index, to: stripEpoch) ?? stripEpoch
     }
 
-    /// The bucket index a point on the synthetic timeline falls on — the inverse of `stripDate`.
+    /// The bin index a point on the synthetic timeline falls on — the inverse of `stripDate`.
     static func stripIndex(for date: Date) -> Int {
         Calendar.current.dateComponents([.day], from: stripEpoch, to: date).day ?? 0
     }
 
     /// One day, in seconds — the unit `chartXVisibleDomain` is expressed in.
     static let stripDaySeconds = 86_400
-    /// How far back a strip may reach, in windows — a guard against one stray date decades in the past
-    /// turning the chart into hundreds of bars. Nine years of four-week blocks, thirty of quarters.
-    static let maxHistoryWindowCount = 120
+    /// How far back a strip may reach, in bins — a guard against one stray date decades in the past
+    /// turning the chart into thousands of bars, and the ceiling on how many `BarMark`s a scrolling
+    /// chart has to carry. Roughly fourteen months of days, seven and a half years of weeks, thirty
+    /// years of months; a reader wanting further back than a strip of days reaches has two longer
+    /// windows to switch to, which is the same trade the bin sizes themselves make.
+    static let maxStripBinCount = 400
 
-    /// The windows the strip covers, oldest first, the current one last: at least `historyBucketCount`
-    /// of them so a young history still fills the viewport, extended back until the oldest one reaches
-    /// `firstDataDate`. Contiguous by construction (each window abuts its neighbour), which is what
-    /// lets `bucketIndex(of:in:)` binary-search them.
-    func historyRanges(firstDataDate: Date?, now: Date = .now) -> [ClosedRange<Date>] {
+    /// The most recent `count` bins, oldest first, the one holding `now` last.
+    ///
+    /// Each bin runs from its calendar unit's first instant to the next one's, so the ranges tile the
+    /// timeline exactly — every bin's upper bound *is* its newer neighbour's lower bound. That is the
+    /// same shared-boundary tiling `range(windowsAgo:)` produces, which is what lets
+    /// `binIndex(of:in:)` binary-search a strip of bins and a strip of windows identically, and
+    /// what makes the half-open lower edge one rule rather than two.
+    func binRanges(count: Int, now: Date = .now) -> [ClosedRange<Date>] {
+        let calendar = Calendar.current
+        let wanted = min(max(count, 1), Self.maxStripBinCount)
         var ranges: [ClosedRange<Date>] = []
-        var windowsAgo = 0
-        while windowsAgo < Self.maxHistoryWindowCount {
-            let range = self.range(windowsAgo: windowsAgo, from: now)
-            ranges.append(range)
-            windowsAgo += 1
-            let needsMoreForViewport = windowsAgo < historyBucketCount
-            let reachesFurtherBack = firstDataDate.map { $0 < range.lowerBound } ?? false
-            guard needsMoreForViewport || reachesFurtherBack else { break }
+        var cursor = now
+        while ranges.count < wanted {
+            guard let interval = calendar.dateInterval(of: bin, for: cursor) else { break }
+            ranges.append(interval.start ... interval.end)
+            // An instant inside the previous bin — `dateInterval` finds it from any date it contains.
+            cursor = interval.start.addingTimeInterval(-1)
         }
         return ranges.reversed()
     }
 
-    /// Which bucket of a strip a date falls in, or nil when it sits outside it. **Half-open at the
-    /// lower edge** like `contains`, so a date landing on the instant two windows share counts in the
-    /// newer one only. A binary search rather than a scan: a strip runs to dozens of buckets and every
-    /// consumer walks its whole dataset through this.
-    static func bucketIndex(of date: Date, in ranges: [ClosedRange<Date>]) -> Int? {
+    /// The bins a scrollable strip covers: at least `binsPerWindow` so a young history still fills the
+    /// viewport, extended back far enough to reach `firstDataDate`, capped at `maxStripBinCount`.
+    ///
+    /// The reach is counted in bin units and padded by two. `dateComponents` counts *whole* units
+    /// between two dates, so a first workout last Sunday and a "now" on Monday spans zero weeks while
+    /// occupying two week bins; the slack costs a couple of empty bins off the left edge, which are
+    /// simply gaps nobody has to scroll to, and guarantees the oldest workout is never binned off the
+    /// end of the strip.
+    func binRanges(firstDataDate: Date?, now: Date = .now) -> [ClosedRange<Date>] {
+        var count = binsPerWindow
+        if let firstDataDate, firstDataDate < now {
+            let spanned = Calendar.current
+                .dateComponents([bin], from: firstDataDate, to: now)
+                .value(for: bin) ?? 0
+            count = max(count, spanned + 2)
+        }
+        return binRanges(count: count, now: now)
+    }
+
+    /// Which bin of a strip a date falls in, or nil when it sits outside it. **Half-open at the lower
+    /// edge** like `contains`, so a date landing on the instant two bins share counts once. A binary
+    /// search rather than a scan: a strip runs to hundreds of bins and every consumer walks its whole
+    /// dataset through this.
+    static func binIndex(of date: Date, in ranges: [ClosedRange<Date>]) -> Int? {
         guard let first = ranges.first, let last = ranges.last,
               date > first.lowerBound, date <= last.upperBound else { return nil }
         var low = 0
@@ -504,19 +563,32 @@ extension TrendWindow {
         return low
     }
 
-    /// The buckets on screen at `scrollPosition` — the viewport's leading edge on the synthetic
-    /// timeline. Mid gesture the edge sits between two buckets; the day count rounds toward the one
-    /// occupying the viewport's first slot, so the average and the y-scale step over cleanly rather
-    /// than flickering between two answers around the halfway point.
-    func visibleIndices(scrollPosition: Date, bucketCount: Int) -> Range<Int> {
-        guard bucketCount > 0 else { return 0 ..< 0 }
-        let first = min(max(Self.stripIndex(for: scrollPosition), 0), max(bucketCount - 1, 0))
-        let last = min(first + historyBucketCount, bucketCount)
+    /// The bins on screen at `scrollPosition` — the viewport's leading edge on the synthetic timeline.
+    /// Exactly one window wide, which is the whole point: what the picker names is what is on screen.
+    /// Mid gesture the edge sits between two bins; the day count rounds toward the one occupying the
+    /// viewport's first slot, so the header and the y-scale step over cleanly rather than flickering
+    /// between two answers around the halfway point.
+    func visibleIndices(scrollPosition: Date, binCount: Int) -> Range<Int> {
+        guard binCount > 0 else { return 0 ..< 0 }
+        let first = min(max(Self.stripIndex(for: scrollPosition), 0), max(binCount - 1, 0))
+        let last = min(first + binsPerWindow, binCount)
         return first ..< last
     }
 
-    /// The scroll offset that puts the current window at the trailing edge — where every strip opens.
-    func trailingScrollPosition(bucketCount: Int) -> Date {
-        Self.stripDate(forIndex: max(bucketCount - historyBucketCount, 0))
+    /// The window's worth of bins immediately *before* `visible` — the neutral side of the comparison,
+    /// and the reason a scoped percentage means what the picker says it means. Empty when the strip
+    /// does not reach back a whole further window, which is what makes the header show "––" rather
+    /// than compare against a partial span.
+    func precedingIndices(before visible: Range<Int>) -> Range<Int> {
+        let end = visible.lowerBound
+        let start = end - binsPerWindow
+        guard start >= 0 else { return end ..< end }
+        return start ..< end
+    }
+
+    /// The scroll offset that puts the newest bin at the trailing edge — where every strip opens, so
+    /// the viewport starts on exactly the selected window.
+    func trailingScrollPosition(binCount: Int) -> Date {
+        Self.stripDate(forIndex: max(binCount - binsPerWindow, 0))
     }
 }

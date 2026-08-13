@@ -617,15 +617,15 @@ final class StrengthProgressTests: XCTestCase {
         XCTAssertEqual(recentStart, Exercise.currentBestWindowStart(endingAt: reference))
     }
 
-    /// Every window's history strip must tile the timeline without gaps or overlap, and its newest
-    /// bucket must end *now* — that last bar is what makes the detail screen open on the same data
-    /// the Balance tile summarized.
-    func testTrendWindowBucketsTileTheTimeline() {
+    /// Every window must tile the timeline without gaps or overlap, and the current one must end
+    /// *now* — the windows are what the scoped comparisons are measured over, so a gap between one
+    /// and the next would drop training out of both sides of a percentage.
+    func testTrendWindowsTileTheTimeline() {
         let reference = Date.now
         for window in TrendWindow.allCases {
             let current = window.range(windowsAgo: 0, from: reference)
             XCTAssertEqual(current.upperBound, reference, "\(window) must end now")
-            for n in 1 ..< window.historyBucketCount {
+            for n in 1 ..< 6 {
                 let older = window.range(windowsAgo: n, from: reference)
                 let newer = window.range(windowsAgo: n - 1, from: reference)
                 XCTAssertEqual(

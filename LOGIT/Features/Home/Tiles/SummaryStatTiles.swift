@@ -163,7 +163,7 @@ struct SummaryBinStrip: View {
     private var gridLabels: [SummaryBinGridLabels.Label] {
         guard hasGrid, let window else { return [] }
         return Swift.stride(from: 0, to: bins.count, by: max(window.tileAxisStride, 1)).map { index in
-            SummaryBinGridLabels.Label(index: index, text: window.binAxisLabel(for: binRanges[index]))
+            SummaryBinGridLabels.Label(index: index, text: window.tileAxisLabel(for: binRanges[index]))
         }
     }
 }

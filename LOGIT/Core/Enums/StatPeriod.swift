@@ -314,9 +314,12 @@ enum TrendWindow: String, CaseIterable, Identifiable {
     /// The stride between the dates written under a **tile's** bin strip, in bins — deliberately
     /// coarser than `binAxisStride`, which labels a full-width detail chart.
     ///
-    /// A half-width tile leaves its strip about 145pt, which is four dates' worth of room. Each
-    /// window's stride is the one that lands exactly four *and* falls on a boundary worth naming:
-    /// every week across four weeks, every four weeks across a quarter, every quarter across a year.
+    /// Each window's stride is the one that lands exactly four labels *and* falls on a boundary worth
+    /// naming: every week across four weeks, every four weeks across a quarter, every quarter across
+    /// a year. Four is what a half-width tile's ~145pt strip holds without the labels crowding, and
+    /// the boundaries are the ones a reader counts in anyway — a date every three days would be
+    /// denser without being more useful.
+    ///
     /// The labels are counted forward from the window's first bin (the chart's leading edge), so the
     /// oldest date always carries one and the trailing edge — where a label would have nowhere to
     /// sit — never does.
@@ -325,6 +328,24 @@ enum TrendWindow: String, CaseIterable, Identifiable {
         case .fourWeeks: return 7
         case .threeMonths: return 4
         case .oneYear: return 3
+        }
+    }
+
+    /// The date written under a **tile's** bin strip: the bare number wherever a number names the bin
+    /// — the day of the month for a day bin or a week bin ("17", "24") — and the abbreviated month
+    /// for a month bin ("Sep").
+    ///
+    /// Shorter than `binAxisLabel`'s "17 Jul" on purpose. Four of those fill a half-width tile edge to
+    /// edge, which reads as a wall of text under bars only three points wide; the month is also the
+    /// part a reader doesn't need, since a four-week strip spans at most two of them and the numbers
+    /// only run one way. A month bin keeps its name because "9" is a code, not a date — the one place
+    /// a number would cost legibility rather than buy it.
+    func tileAxisLabel(for range: ClosedRange<Date>) -> String {
+        switch self {
+        case .fourWeeks, .threeMonths:
+            return range.lowerBound.formatted(.dateTime.day())
+        case .oneYear:
+            return range.lowerBound.formatted(.dateTime.month(.abbreviated))
         }
     }
 

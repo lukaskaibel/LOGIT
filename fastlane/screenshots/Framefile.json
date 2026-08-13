@@ -4,11 +4,11 @@
       "color": "#C6FF4B",
       "fonts": [
         {
-          "font": "../../../../../../../System/Library/Fonts/Hiragino Sans GB.ttc",
+          "font": "./.fonts/Hiragino Sans GB.ttc",
           "supported": ["ja"]
         },
         {
-          "font": "../../../../../../../System/Library/Fonts/AppleSDGothicNeo.ttc",
+          "font": "./.fonts/AppleSDGothicNeo.ttc",
           "supported": ["ko"]
         },
         {
@@ -22,11 +22,11 @@
       "color": "#FFFFFF",
       "fonts": [
         {
-          "font": "../../../../../../../System/Library/Fonts/Hiragino Sans GB.ttc",
+          "font": "./.fonts/Hiragino Sans GB.ttc",
           "supported": ["ja"]
         },
         {
-          "font": "../../../../../../../System/Library/Fonts/AppleSDGothicNeo.ttc",
+          "font": "./.fonts/AppleSDGothicNeo.ttc",
           "supported": ["ko"]
         },
         {

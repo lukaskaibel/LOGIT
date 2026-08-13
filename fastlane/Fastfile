@@ -44,6 +44,39 @@ if File.exist?(DOTENV)
 end
 
 # ------------------------------------------------------------------------------
+# frameit CJK fonts
+# ------------------------------------------------------------------------------
+# frameit rewrites every `font` path in Framefile.json as
+# `File.join(<the Framefile's folder>, value)` (frameit/config_parser.rb,
+# `change_paths_to_absolutes!`). File.join does not honour a leading slash, so an
+# absolute path silently becomes `.../fastlane/screenshots/System/Library/...`
+# and framing fails. The only form that reaches a system font is a relative path
+# with exactly enough `..` to climb to `/` — which depends on how deep the
+# checkout sits (7 from the main clone, 10 from a .claude/worktrees/<name>
+# worktree). That is why framing produced nothing here while working in the main
+# checkout, and it failed with an exit code of 0.
+#
+# So the Framefile points at `./.fonts/` instead, and the fonts are staged there
+# at run time: one stable relative path at any depth. They are gitignored rather
+# than committed — they are Apple's, and the pair is ~78 MB.
+CJK_FONTS = ["Hiragino Sans GB.ttc", "AppleSDGothicNeo.ttc"].freeze
+
+def stage_frameit_fonts!
+  require "fileutils"
+  dest = File.join(SCREENSHOT_DIR, ".fonts")
+  FileUtils.mkdir_p(dest)
+  CJK_FONTS.each do |name|
+    target = File.join(dest, name)
+    next if File.exist?(target)
+
+    source = File.join("/System/Library/Fonts", name)
+    UI.user_error!("Missing system font #{source} — frameit needs it for the ja/ko captions") unless File.exist?(source)
+    FileUtils.cp(source, target)
+    UI.message("Staged #{name} for frameit")
+  end
+end
+
+# ------------------------------------------------------------------------------
 # App Store Connect API key
 # ------------------------------------------------------------------------------
 def asc_api_key
@@ -86,11 +119,13 @@ platform :ios do
       override_status_bar: true,
       concurrent_simulators: true
     )
+    stage_frameit_fonts!
     frame_screenshots(path: SCREENSHOT_DIR)
   end
 
   desc "Re-run frameit only (cheap: reuses existing raw PNGs)."
   lane :reframe do
+    stage_frameit_fonts!
     frame_screenshots(path: SCREENSHOT_DIR)
   end
 

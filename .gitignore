@@ -33,3 +33,6 @@ vendor/
 
 # Claude Code local config
 .claude/
+
+# CJK system fonts staged for frameit at run time (Apple fonts, never committed)
+fastlane/screenshots/.fonts/

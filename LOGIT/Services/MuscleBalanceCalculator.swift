@@ -7,16 +7,14 @@
 
 import Foundation
 
-/// Where a muscle group sits against its target — under (too little), on target, or over (too much).
-/// Symmetric around the target: both directions are "off" by the same tolerance.
-enum MuscleBalanceState {
-    case under, onTarget, over
-}
-
-/// The *goal* reading of the same standing, used by the Summary's Balance tile and the muscle-group
-/// overview: a group counts as soon as it is **at least** its target. Deliberately not symmetric —
-/// the tile draws a track filling toward a target, and a bar that is visibly full while the verdict
-/// says "not there yet" is a tile arguing with itself. Overshoot still counts; it just says so.
+/// Where a muscle group sits against its target: it counts as soon as it is **at least** its target.
+/// Deliberately not symmetric — every surface draws a track filling toward a target, and a bar that is
+/// visibly full while the verdict says "not there yet" is a tile arguing with itself. Overshoot still
+/// counts; it just says so.
+///
+/// The one verdict in the app. A symmetric `MuscleBalanceState` used to sit beside it for the
+/// single-muscle detail's pill, which meant the same group could be "on target" on one screen and
+/// "at target" or worse on the next.
 enum MuscleBalanceGoalState {
     /// Short of target — the track is partly filled and the remainder shows.
     case under
@@ -27,8 +25,8 @@ enum MuscleBalanceGoalState {
 }
 
 /// One muscle group's standing against its target, for a given period: how many sets trained it, what
-/// share of the period that is, and how far that share sits from the user's target. The diverging
-/// `MuscleBalanceBar` (Summary tile, overview sections, single-muscle detail) renders off these.
+/// share of the period that is, and how far that share sits from the user's target. The filling
+/// `MuscleBalanceTrack` (Summary tile, overview hero and tiles, single-muscle detail) renders off these.
 struct MuscleBalanceEntry: Identifiable {
     let muscleGroup: MuscleGroup
     /// Set occurrences training this group in the period (a super set counts toward both its groups,
@@ -42,17 +40,9 @@ struct MuscleBalanceEntry: Identifiable {
 
     var id: MuscleGroup { muscleGroup }
 
-    /// Signed gap from target in percentage points — negative means under-trained. The diverging
-    /// `MuscleBalanceBar` grows out of the target tick by this much, left (under) or right (over).
+    /// Signed gap from target in percentage points — negative means under-trained. Sorts the
+    /// above-target section, and decides `goalState`'s "met" versus "over".
     var deviation: Int { actualPercent - targetPercent }
-
-    /// Where the group sits relative to target: under / over (more than `behindThreshold` points off)
-    /// or on target (within the band). Drives the grouped lists and the state pill.
-    var state: MuscleBalanceState {
-        if deviation < -MuscleTargetSplit.behindThreshold { return .under }
-        if deviation > MuscleTargetSplit.behindThreshold { return .over }
-        return .onTarget
-    }
 
     /// How full this group's track is, 1 meaning "at target". Nil when the user has zeroed the
     /// target: a track that can never fill isn't a goal, and shouldn't be drawn or counted.

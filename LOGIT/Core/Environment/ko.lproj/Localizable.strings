@@ -956,7 +956,6 @@
 "muscleBalanceSetsToGo" = "%@ · %d세트 남음";
 "muscleBalanceLightMonth" = "이번 달 %@ 부족";
 "muscleBalanceLightYear" = "올해 %@ 부족";
-"muscleBalanceBarA11y" = "%1$@: 세트의 %2$d%%, 목표 %3$d%%";
 "muscleBalanceRoomToBalance" = "균형 개선 여지";
 "balanceVsTarget" = "목표 대비 균형";
 "adjustTargetSplit" = "목표 배분 조정";
@@ -985,9 +984,11 @@
 "sessions" = "세션";
 "rank" = "순위";
 "muscleDetailRankCaption" = "8개 그룹 중";
-"targetShare" = "목표 비중";
+"share" = "비중";
+"muscleDetailSetsVsTarget" = "세트 수와 목표";
+"muscleDetailTargetSetsCaption" = "%1$@ · 목표 %2$d%%";
+"muscleDetailShareOfSets" = "전체 세트 중";
 "topExercises" = "주요 운동";
-"muscleDetailPercentOfSets" = "세트의 %d%%";
 "weekStreakSuffix" = "주 연속";
 "weeklyGoalAccessibility" = "주간 목표, %d/%d 운동";
 "weeklyGoalSubtitle" = "주 %d회 목표 중";

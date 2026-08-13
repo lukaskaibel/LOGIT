@@ -956,7 +956,6 @@
 "muscleBalanceSetsToGo" = "%@ · faltan %d series";
 "muscleBalanceLightMonth" = "%@ flojo este mes";
 "muscleBalanceLightYear" = "%@ flojo este año";
-"muscleBalanceBarA11y" = "%1$@: %2$d%% de las series, objetivo %3$d%%";
 "muscleBalanceRoomToBalance" = "Margen para equilibrar";
 "balanceVsTarget" = "Balance vs objetivo";
 "adjustTargetSplit" = "Ajustar reparto objetivo";
@@ -985,9 +984,11 @@
 "sessions" = "Sesiones";
 "rank" = "Posición";
 "muscleDetailRankCaption" = "de 8 grupos";
-"targetShare" = "Cuota objetivo";
+"share" = "Cuota";
+"muscleDetailSetsVsTarget" = "Series vs objetivo";
+"muscleDetailTargetSetsCaption" = "%1$@ · objetivo %2$d %%";
+"muscleDetailShareOfSets" = "de todas las series";
 "topExercises" = "Mejores ejercicios";
-"muscleDetailPercentOfSets" = "%d%% de las series";
 "weekStreakSuffix" = "semanas seguidas";
 "weeklyGoalAccessibility" = "Objetivo semanal, %d de %d entrenamientos";
 "weeklyGoalSubtitle" = "de tu objetivo de %d entrenamientos";

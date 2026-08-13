@@ -12,8 +12,8 @@ import SwiftUI
 ///
 /// The headline counts groups that are **at least** their target, which is the rule the tracks
 /// already draw — a bar visibly full while the count says otherwise is a tile arguing with itself.
-/// That is a deliberate departure from `MuscleBalanceEntry.state`, whose tolerance is symmetric and
-/// still governs the older diverging surfaces.
+/// That rule is `MuscleBalanceEntry.goalState`, and since the single-muscle detail adopted it too it
+/// is the only reading of "at target" left in the app.
 ///
 /// Untrained groups stay in the chart as empty tracks. A group with a real target and no sets is the
 /// most out-of-balance state there is, and hiding it would make the tile look *better* the worse the

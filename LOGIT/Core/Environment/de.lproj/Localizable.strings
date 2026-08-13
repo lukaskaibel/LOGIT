@@ -927,8 +927,7 @@
 "rps" = "Wdh";
 "average" = "Durchschnitt";
 "volumePerSet" = "Volumen pro Satz";
-"workoutStatCompareSameInfo" = "Der Trend vergleicht dieses Workout mit deiner vorherigen Ausführung desselben Workouts. Die Balken zeigen die letzten Ausführungen — dieses Workout ist der hervorgehobene Balken rechts.";
-"workoutStatCompareRecentInfo" = "Dieses Workout hat keine vorherigen Ausführungen, daher vergleicht der Trend es mit dem Durchschnitt deiner letzten Workouts. Die Balken zeigen diese Workouts — dieses ist der hervorgehobene Balken rechts.";
+"workoutStatCompareRecentInfo" = "Der Trend vergleicht dieses Workout mit dem Durchschnitt deiner letzten %d Workouts. Die Balken zeigen sie — dieses Workout ist der hervorgehobene Balken rechts.";
 "workoutVolumeAboutInfo" = "Das Volumen ist das insgesamt bewegte Gewicht eines Workouts — Gewicht × Wiederholungen, summiert über alle Sätze. Im Vergleich über Workouts hinweg zeigt es, wie viel Arbeit in deinen Einheiten steckt.";
 "workoutDurationAboutInfo" = "Die Dauer ist die Zeit vom Start eines Workouts bis zum Abschluss. Länger oder kürzer ist für sich genommen weder besser noch schlechter — zusammen mit dem Volumen zeigt sie, wie dicht dein Training ist.";
 "workoutSetsAboutInfo" = "Die Anzahl der in einem Workout erfassten Sätze — ein einfaches Maß dafür, wie viel du in einer Einheit gemacht hast, unabhängig vom Gewicht auf der Stange.";

@@ -931,8 +931,7 @@
 "rps" = "rep";
 "average" = "Average";
 "volumePerSet" = "Volume per Set";
-"workoutStatCompareSameInfo" = "The trend compares this workout with your previous run of the same workout. The bars show its most recent runs — this workout is the highlighted bar on the right.";
-"workoutStatCompareRecentInfo" = "This workout has no previous runs, so the trend compares it with the average of your most recent workouts. The bars show those workouts — this one is the highlighted bar on the right.";
+"workoutStatCompareRecentInfo" = "The trend compares this workout with the average of your last %d workouts. The bars show them — this one is the highlighted bar on the right.";
 "workoutVolumeAboutInfo" = "Volume is the total weight moved in a workout — weight × reps, summed over every set. Compared across workouts, it shows how much overall work your sessions contain.";
 "workoutDurationAboutInfo" = "Duration is the time from starting a workout to finishing it. Neither longer nor shorter is better by itself — read it together with volume to see how dense your training is.";
 "workoutSetsAboutInfo" = "The number of sets logged in a workout — a simple measure of how much you did in a session, independent of the weight on the bar.";

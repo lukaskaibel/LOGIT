@@ -128,28 +128,39 @@ private func totalRepetitions(of workoutSet: WorkoutSet) -> Int {
 
 // MARK: - Run History
 
-/// The comparison basis behind the workout stat tiles: the last few previous runs of the same
-/// workout (same template, else same name) — or, when this workout has no previous runs, the
-/// latest workouts of any kind, so first-run and unnamed workouts still get a comparison instead
-/// of empty tiles. One basis for the whole grid; the four tiles can never disagree about what
-/// "vs. last time" means.
+/// The comparison basis behind a stat tile's bars: a run of sessions, oldest → newest, with the
+/// session the tile is about last. One basis for a whole grid, so its four tiles can never disagree
+/// about what "vs. last time" means.
+///
+/// The workout detail's grid takes the *last eight workouts of any kind* ending with this one —
+/// the same eight its detail screens draw on their run axis, so tapping a tile never changes which
+/// sessions you are being compared against. The template detail builds its own history from that
+/// template's sessions instead, where a like-for-like previous run genuinely exists.
 struct WorkoutRunHistory {
     enum Basis {
         /// Previous runs of this same workout — the pill compares against the immediately
-        /// previous run, a precise like-for-like.
+        /// previous run, a precise like-for-like. The template detail's grid.
         case sameWorkout
-        /// Recent workouts of any kind — the pill compares against their *average*, since a
-        /// single unrelated workout (push vs. legs) would swing the percent for reasons that
-        /// have nothing to do with progress.
+        /// Consecutive workouts of any kind — the pill compares against the *average* of the runs
+        /// shown, this session included, which is exactly the number the detail screen's scoreboard
+        /// carries for the same window. A single unrelated session (push vs. legs) can't swing it
+        /// the way a like-for-like comparison against one workout would.
         case recentWorkouts
     }
 
+    /// Workouts in a workout-detail comparison — the tile's bars and the window its detail screen
+    /// opens on are the same eight sessions. `WorkoutStatScreen` scrolls back through more of them;
+    /// the tile just shows the window.
+    static let windowCount = 8
+
     let basis: Basis
-    /// Oldest → newest with the workout itself last; at most `WorkoutRunsBarChart.slotCount`.
+    /// Oldest → newest with the workout itself last; at most the chart's slot count.
     let runs: [Workout]
 
     func percentChange(for metric: WorkoutStatMetric) -> Double? {
         guard let current = runs.last.map({ metric.rawValue(of: $0) }), current > 0 else { return nil }
+        // Sessions with no value for this metric (a workout with no recorded end, on duration)
+        // don't count — the same rule the detail screen's axis applies by not giving them a bar.
         let priorValues = runs.dropLast().map { metric.rawValue(of: $0) }.filter { $0 > 0 }
         guard !priorValues.isEmpty else { return nil }
         let baseline: Double
@@ -159,56 +170,25 @@ struct WorkoutRunHistory {
                   previous > 0 else { return nil }
             baseline = Double(previous)
         case .recentWorkouts:
-            baseline = Double(priorValues.reduce(0, +)) / Double(priorValues.count)
+            baseline = Double(priorValues.reduce(0, +) + current) / Double(priorValues.count + 1)
         }
         return (Double(current) - baseline) / baseline * 100
     }
 
+    /// The window behind the workout detail's grid: this workout and the seven logged before it,
+    /// whatever they were. Opening an older workout takes the seven before *it*, so the tile always
+    /// shows the same eight bars its detail screen opens on.
     static func compute(for workout: Workout, database: Database) -> WorkoutRunHistory {
-        let maxPriorRuns = WorkoutRunsBarChart.slotCount - 1
         guard let workoutDate = workout.date else {
             return WorkoutRunHistory(basis: .recentWorkouts, runs: [workout])
         }
-        let lineage = previousRuns(of: workout, before: workoutDate, database: database, limit: maxPriorRuns)
-        if !lineage.isEmpty {
-            return WorkoutRunHistory(basis: .sameWorkout, runs: lineage.reversed() + [workout])
-        }
-        let recents = recentWorkouts(before: workoutDate, excluding: workout, database: database, limit: maxPriorRuns)
-        return WorkoutRunHistory(basis: .recentWorkouts, runs: recents.reversed() + [workout])
-    }
-
-    /// Previous runs of the same workout, newest first: from the same template when there is
-    /// one, else earlier workouts with the same name. The single-run version of this lived in
-    /// the progress section's volume comparison before the stat tiles absorbed it.
-    private static func previousRuns(
-        of workout: Workout,
-        before workoutDate: Date,
-        database: Database,
-        limit: Int
-    ) -> [Workout] {
-        if let template = workout.template {
-            return Array(
-                template.workouts
-                    .filter {
-                        $0 != workout && !$0.isCurrentWorkout && !$0.isEmpty
-                            && ($0.date ?? .distantFuture) < workoutDate
-                    }
-                    .sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
-                    .prefix(limit)
-            )
-        }
-        guard let name = workout.name, !name.isEmpty else { return [] }
-        let sameName = (database.fetch(
-            Workout.self,
-            sortingKey: "date",
-            ascending: false,
-            predicate: NSPredicate(
-                format: "name ==[c] %@ AND date < %@ AND (isCurrentWorkout == nil OR isCurrentWorkout == NO)",
-                name,
-                workoutDate as NSDate
-            )
-        ) as? [Workout]) ?? []
-        return Array(sameName.filter { $0 != workout && !$0.isEmpty }.prefix(limit))
+        let previous = recentWorkouts(
+            before: workoutDate,
+            excluding: workout,
+            database: database,
+            limit: windowCount - 1
+        )
+        return WorkoutRunHistory(basis: .recentWorkouts, runs: previous.reversed() + [workout])
     }
 
     private static func recentWorkouts(
@@ -232,12 +212,11 @@ struct WorkoutRunHistory {
 
 // MARK: - Run History Chart
 
-/// The mini bar chart under a stat tile's value: this workout against its previous runs, one bar
-/// per run in a fixed five-slot frame (bars keep the same width however little history there is,
-/// and the newest run is always rightmost). Only the current workout's bar is drawn in
-/// `currentStyle` — the tile's accent — every previous run stays quiet gray, whichever comparison
-/// basis is behind it (the label's info button spells the basis out). Short, wide, softly-rounded
-/// bars.
+/// The mini bar chart under a stat tile's value: this session against the ones before it, one bar
+/// per run in a fixed frame (bars keep the same width however little history there is, and the
+/// newest run is always rightmost). Only the current run's bar is drawn in `currentStyle` — the
+/// tile's accent — every earlier one stays quiet gray, whichever comparison basis is behind it (the
+/// label's info button spells the basis out). Short, wide, softly-rounded bars.
 struct WorkoutRunsBarChart: View {
     struct Bar: Identifiable {
         let slot: Int
@@ -247,10 +226,16 @@ struct WorkoutRunsBarChart: View {
         var id: Int { slot }
     }
 
-    static let slotCount = 5
+    /// Slots for the strips that show five things: the Summary's period buckets and the template
+    /// detail's recent sessions. The workout detail's tiles pass `WorkoutRunHistory.windowCount`
+    /// instead — their bars are the same eight workouts their detail screens open on.
+    static let defaultSlotCount = 5
 
     let bars: [Bar]
     let currentStyle: AnyShapeStyle
+    /// Slots in the frame, however many bars arrive — what keeps the bar width fixed and lets a
+    /// short history right-align instead of stretching across the tile.
+    var slotCount: Int = defaultSlotCount
 
     var body: some View {
         let maxValue = bars.map(\.value).max() ?? 0
@@ -267,7 +252,7 @@ struct WorkoutRunsBarChart: View {
                 }
             }
         }
-        .chartXScale(domain: (0 ..< Self.slotCount).map(String.init))
+        .chartXScale(domain: (0 ..< slotCount).map(String.init))
         .chartYScale(domain: 0 ... max(maxValue, 1))
         .chartXAxis {}
         .chartYAxis {}
@@ -303,14 +288,16 @@ struct WorkoutStatTile: View {
 
     var body: some View {
         let raw = metric.rawValue(of: workout)
-        let explanationKey = history.basis == .sameWorkout
-            ? "workoutStatCompareSameInfo"
-            : "workoutStatCompareRecentInfo"
         MetricTile(
             title: metric.title,
             label: .info(
                 NSLocalizedString("thisWorkout", comment: ""),
-                explanation: NSLocalizedString(explanationKey, comment: "")
+                // The copy names the window's size, so it takes the count rather than spelling
+                // "eight" out in eight languages that would then quietly go stale.
+                explanation: String(
+                    format: NSLocalizedString("workoutStatCompareRecentInfo", comment: ""),
+                    WorkoutRunHistory.windowCount
+                )
             ),
             value: raw > 0 ? metric.formattedValue(fromRaw: raw) : nil,
             unit: metric.unit,
@@ -321,14 +308,14 @@ struct WorkoutStatTile: View {
             requiresPro: metric.requiresPro,
             chartBleeds: false
         ) {
-            WorkoutRunsBarChart(bars: runBars, currentStyle: barStyle)
+            WorkoutRunsBarChart(bars: runBars, currentStyle: barStyle, slotCount: WorkoutRunHistory.windowCount)
         }
     }
 
     /// Right-aligned into the chart's fixed slots: the newest run sits in the last slot however
     /// few runs there are. Runs without a usable value keep their slot as a gap.
     private var runBars: [WorkoutRunsBarChart.Bar] {
-        let offset = WorkoutRunsBarChart.slotCount - history.runs.count
+        let offset = WorkoutRunHistory.windowCount - history.runs.count
         return history.runs.enumerated().map { index, run in
             WorkoutRunsBarChart.Bar(
                 slot: offset + index,

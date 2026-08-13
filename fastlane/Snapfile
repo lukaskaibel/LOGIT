@@ -7,6 +7,13 @@ devices([
   "iPhone 17 Pro Max" # 6.9" - required display size
 ])
 
+# `devices` matches simulators by NAME, and this machine carries three called
+# "iPhone 17 Pro Max" (iOS 26.0, 26.4 and 27.0). Without a runtime the pick is
+# arbitrary, so a run can silently land on a different OS than the one the app
+# is built against - and any OS-driven layout shift then ships to the store.
+# Pin it to the SDK the project builds with.
+ios_version("26.4")
+
 languages([
   "en-US",
   "de-DE",

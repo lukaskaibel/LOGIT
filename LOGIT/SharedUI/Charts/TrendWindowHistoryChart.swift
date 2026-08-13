@@ -97,6 +97,18 @@ extension TrendWindowBin {
         var trainedMean: Double?
     }
 
+    /// The bin a raw selection point on the synthetic timeline inspects: the one whose slot it lands
+    /// in, and only if that bin **holds training**.
+    ///
+    /// An untrained bin draws no bar, so there is nothing there to inspect — a card reading "0" hung
+    /// over a gap said less than the gap itself, and dragging along the strip flickered one up over
+    /// every rest day. A tap or drag onto a gap now leaves the chart alone.
+    static func selectableIndex(at date: Date, in bins: [TrendWindowBin]) -> Int? {
+        let index = TrendWindow.stripIndex(for: date)
+        guard index >= 0, index < bins.count, bins[index].value > 0 else { return nil }
+        return index
+    }
+
     static func visibleStats(bins: [TrendWindowBin], indices: Range<Int>) -> VisibleStats {
         guard !indices.isEmpty, indices.upperBound <= bins.count else {
             return VisibleStats(displayMax: 0, trainedMean: nil)
@@ -118,6 +130,28 @@ extension TrendWindowBin {
     }
 }
 
+// MARK: - Live gesture values
+
+/// Holds a chart's raw scroll offset and raw selection point **without invalidating anything when they
+/// move**.
+///
+/// `chartScrollPosition` and `chartXSelection` write their bindings on every frame of a gesture. Keeping
+/// those values in `@State` therefore re-ran the chart's body — and the header above it — dozens of
+/// times a second, each pass rebuilding all several hundred `BarMark`s of the strip: that is what made
+/// these charts stutter under a finger. Charts still has to read its own raw values back mid-gesture (a
+/// rounded offset fights the scroll, and a rounded selection point changes what a tap means), so they
+/// live here, in a reference the view system does not watch. What the view *observes* is the pair of
+/// bin indices derived from them — the bin at the leading edge and the inspected bin — and those step
+/// once per bar crossed.
+final class ChartGestureValues {
+    var scrollOffset: Date
+    var selection: Date?
+
+    init(scrollOffset: Date) {
+        self.scrollOffset = scrollOffset
+    }
+}
+
 // MARK: - Chart
 
 /// The shared bin bar chart behind the Summary's detail screens: one bar per day / week / month of the
@@ -131,10 +165,19 @@ extension TrendWindowBin {
 /// viewport is exactly one window wide, scrolling back a screenful is scrolling back one window: the
 /// header beside it keeps describing "a window", just an earlier one.
 ///
-/// Tap or press-and-hold a bar to inspect it — a value card names the exact value and which day, week
-/// or month it belongs to, the touched bar lights up and the rest dim. The y-axis tops out on a round
-/// `chartAxisTop` above the tallest visible bar, so a peak never touches the ceiling and the plot is
-/// closed by a labelled grid line.
+/// Tap or press-and-hold a **trained** bar to inspect it — a value card names the exact value and which
+/// day, week or month it belongs to, the touched bar lights up and the rest dim. Untrained bins are not
+/// selectable: they draw no bar, so there is nothing there to inspect, and a card reading "0" hanging
+/// over a gap said less than the gap itself. The y-axis tops out on a round `chartAxisTop` above the
+/// tallest visible bar, so a peak never touches the ceiling and the plot is closed by a labelled grid
+/// line.
+///
+/// **What a gesture is allowed to re-render.** A strip runs to `TrendWindow.maxStripBinCount` bars, so
+/// every pass over this body rebuilds several hundred `BarMark`s — the one thing a scroll or a drag
+/// must not do per frame. Both gestures are therefore quantised to *bins*: the live scroll offset lives
+/// in an unobserved `ScrollOffsetBox` and only the leading bin index is state, and the raw selection
+/// point is resolved to a bin index before it is stored. A finger crossing a four-week viewport
+/// re-renders 28 times, not once per frame, and the header above the chart moves on the same beat.
 struct TrendWindowHistoryChart: View {
     let window: TrendWindow
     let bins: [TrendWindowBin]
@@ -151,12 +194,17 @@ struct TrendWindowHistoryChart: View {
     /// eases to its new height as the strip scrolls.
     var averageLine: Double? = nil
     /// Bound by an owner that reads the visible window itself, so its header can move with the chart
-    /// (the stat detail screens). Nil lets the chart keep its own position — the muscle detail's
-    /// compact tile, which has no header to keep in step.
-    var scrollPosition: Binding<Date>? = nil
+    /// (the stat detail screens): the strip index of the bin at the viewport's leading edge, written
+    /// once per bar the scroll crosses. Nil lets the chart keep the position to itself — the muscle
+    /// detail's compact tile, which has no header to keep in step.
+    var leadingBin: Binding<Int>? = nil
 
-    @State private var ownScrollPosition: Date
-    @State private var selectedDate: Date?
+    /// The raw values Charts writes as a finger moves, deliberately invisible to SwiftUI — see
+    /// `ChartGestureValues`.
+    @State private var gesture: ChartGestureValues
+    @State private var ownLeadingBin: Int
+    /// The inspected bin's strip index, already snapped and already filtered to a trained bin.
+    @State private var selectedIndex: Int?
 
     init(
         window: TrendWindow,
@@ -166,7 +214,7 @@ struct TrendWindowHistoryChart: View {
         unit: String = "",
         height: CGFloat = 260,
         averageLine: Double? = nil,
-        scrollPosition: Binding<Date>? = nil
+        leadingBin: Binding<Int>? = nil
     ) {
         self.window = window
         self.bins = bins
@@ -175,30 +223,66 @@ struct TrendWindowHistoryChart: View {
         self.unit = unit
         self.height = height
         self.averageLine = averageLine
-        self.scrollPosition = scrollPosition
-        _ownScrollPosition = State(initialValue: window.trailingScrollPosition(binCount: bins.count))
+        self.leadingBin = leadingBin
+        let trailing = window.trailingLeadingBin(binCount: bins.count)
+        _gesture = State(initialValue: ChartGestureValues(scrollOffset: TrendWindow.stripDate(forIndex: trailing)))
+        _ownLeadingBin = State(initialValue: trailing)
     }
 
-    private var scrollBinding: Binding<Date> { scrollPosition ?? $ownScrollPosition }
+    // MARK: - Scrolling
 
-    /// The bin whose slot the raw selection point lands in — snaps the tap onto a bar.
+    /// Reads back the exact offset, so the plot never fights the finger, while the only thing the view
+    /// watches is `ownLeadingBin`.
+    private var scrollBinding: Binding<Date> {
+        Binding(
+            get: { gesture.scrollOffset },
+            set: { date in
+                gesture.scrollOffset = date
+                let index = min(max(TrendWindow.stripIndex(for: date), 0), max(bins.count - 1, 0))
+                if index != ownLeadingBin { ownLeadingBin = index }
+                if let leadingBin, leadingBin.wrappedValue != index { leadingBin.wrappedValue = index }
+            }
+        )
+    }
+
+    // MARK: - Selection
+
     private var selectedBin: TrendWindowBin? {
-        guard let selectedDate else { return nil }
-        let index = TrendWindow.stripIndex(for: selectedDate)
-        guard index >= 0, index < bins.count else { return nil }
-        return bins[index]
+        guard let selectedIndex, selectedIndex < bins.count else { return nil }
+        return bins[selectedIndex]
+    }
+
+    /// Reads back Charts' own raw selection point — the gesture is its to interpret — while snapping it
+    /// onto a bin **before** it becomes state, so a drag across the strip re-renders once per bar rather
+    /// than once per touch sample, and drops the selection entirely when that bin holds no training.
+    private var selectionBinding: Binding<Date?> {
+        Binding(
+            get: { gesture.selection },
+            set: { date in
+                gesture.selection = date
+                let resolved = date.flatMap { TrendWindowBin.selectableIndex(at: $0, in: bins) }
+                if resolved != selectedIndex { selectedIndex = resolved }
+            }
+        )
     }
 
     var body: some View {
         let visible = TrendWindowBin.visibleStats(
             bins: bins,
-            indices: window.visibleIndices(scrollPosition: scrollBinding.wrappedValue, binCount: bins.count)
+            indices: window.visibleIndices(leadingBin: ownLeadingBin, binCount: bins.count)
         )
         let axisTop = chartAxisTop(above: visible.displayMax)
         let selected = selectedBin
+        let axis = axisLabels
         Chart {
             ForEach(bins) { bin in
-                bar(for: bin, selected: selected)
+                bar(for: bin, dimmed: selected != nil)
+            }
+            // The inspected bar, redrawn lit on top of its dimmed self, and the one mark in the strip
+            // carrying an annotation. Hanging the card off every bar and showing it for one meant
+            // several hundred annotations laid out per pass.
+            if let selected {
+                inspectedBar(for: selected)
             }
             // The visible window's typical bar, as a dashed reference. Drawn last so it sits above the
             // bars.
@@ -211,26 +295,29 @@ struct TrendWindowHistoryChart: View {
         // A round ceiling just above the tallest bar in view, so the plot closes on a labelled grid
         // line instead of open space (see `chartAxisTop`).
         .chartYScale(domain: 0 ... axisTop)
-        .chartXSelection(value: $selectedDate)
+        .chartXSelection(value: selectionBinding)
         .chartXAxis {
             // Only the labelled bins get a mark — a grid line under all twenty-eight bars of a
-            // four-week strip would read as hatching, and their labels would collide outright.
-            AxisMarks(values: bins.filter { $0.axisLabel != nil }.map(\.stripDate)) { value in
-                if let date = value.as(Date.self),
-                   let bin = bins.first(where: { $0.index == TrendWindow.stripIndex(for: date) }),
-                   let label = bin.axisLabel {
-                    AxisGridLine()
-                        .foregroundStyle(Color.gray.opacity(0.4))
-                    // The newest bin hugs the right edge on first load, where a centred label is
-                    // silently clipped to half a date ("Au"). Hang that one trailing off its mark so
-                    // it renders whole; every other label centres under the bar it names. Styling
-                    // lives on the Text inside the closure — hierarchical styles on the AxisMark
-                    // resolve against the chart's accent on iOS 26 (labels turned lime).
-                    AxisValueLabel(anchor: bin.index == bins.count - 1 ? .topTrailing : nil) {
-                        Text(label)
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(Color.secondaryLabel)
-                            .fixedSize()
+            // four-week strip would read as hatching, and their labels would collide outright. The
+            // label is looked up by index rather than searched for: this closure runs per mark, and a
+            // linear scan through the strip inside it re-derived a bin index for every bar of it.
+            AxisMarks(values: axis.values) { value in
+                if let date = value.as(Date.self) {
+                    let index = TrendWindow.stripIndex(for: date)
+                    if let label = axis.byIndex[index] {
+                        AxisGridLine()
+                            .foregroundStyle(Color.gray.opacity(0.4))
+                        // The newest bin hugs the right edge on first load, where a centred label is
+                        // silently clipped to half a date ("Au"). Hang that one trailing off its mark
+                        // so it renders whole; every other label centres under the bar it names.
+                        // Styling lives on the Text inside the closure — hierarchical styles on the
+                        // AxisMark resolve against the chart's accent on iOS 26 (labels turned lime).
+                        AxisValueLabel(anchor: index == bins.count - 1 ? .topTrailing : nil) {
+                            Text(label)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.secondaryLabel)
+                                .fixedSize()
+                        }
                     }
                 }
             }
@@ -261,27 +348,59 @@ struct TrendWindowHistoryChart: View {
     /// One bin's bar, binned to its day on the synthetic timeline so `width` reads as a fraction of the
     /// slot. Split out of the `Chart` builder to keep that builder inside what the type checker will
     /// chew through in reasonable time.
-    private func bar(for bin: TrendWindowBin, selected: TrendWindowBin?) -> some ChartContent {
+    ///
+    /// `dimmed` is a plain Bool rather than "is this the selected bin" so that moving the selection
+    /// from one bar to the next leaves every other bar's mark unchanged — the lit bar is drawn over the
+    /// top by `inspectedBar`.
+    private func bar(for bin: TrendWindowBin, dimmed: Bool) -> some ChartContent {
         BarMark(
             x: .value("Bin", bin.stripDate, unit: .day),
             y: .value(valueLabel, bin.value),
             width: .ratio(0.6)
         )
-        .foregroundStyle(selected?.id == bin.id ? AnyShapeStyle(Color.label) : barStyle)
+        .foregroundStyle(barStyle)
         .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
         // A tapped bar stays lit; every other bar goes quiet while one is inspected.
-        .opacity(selected == nil || selected?.id == bin.id ? 1.0 : 0.4)
+        .opacity(dimmed ? 0.4 : 1.0)
+    }
+
+    /// The inspected bar and its value card, drawn opaque over the dimmed strip.
+    private func inspectedBar(for bin: TrendWindowBin) -> some ChartContent {
+        BarMark(
+            x: .value("Bin", bin.stripDate, unit: .day),
+            y: .value(valueLabel, bin.value),
+            width: .ratio(0.6)
+        )
+        .foregroundStyle(Color.label)
+        .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
         .annotation(
             position: annotationPosition(for: bin),
             overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
         ) {
-            if selected?.id == bin.id {
-                annotationCard(for: bin)
-            }
+            annotationCard(for: bin)
         }
     }
 
-    // MARK: - Selection
+    // MARK: - Axis
+
+    /// The x-axis marks, derived in one pass: the labelled bins' strip dates for `AxisMarks(values:)`
+    /// and their labels keyed by strip index for the closure that draws them.
+    private struct AxisLabels {
+        var values: [Date] = []
+        var byIndex: [Int: String] = [:]
+    }
+
+    private var axisLabels: AxisLabels {
+        var result = AxisLabels()
+        for bin in bins {
+            guard let label = bin.axisLabel else { continue }
+            result.values.append(bin.stripDate)
+            result.byIndex[bin.index] = label
+        }
+        return result
+    }
+
+    // MARK: - Inspect card
 
     /// Hang the card leading when the inspected bar sits in the right third of the *viewport*, trailing
     /// in the left third, centred otherwise — so an edge bar's card never lays out past the plot. The
@@ -291,8 +410,7 @@ struct TrendWindowHistoryChart: View {
     private func annotationPosition(for bin: TrendWindowBin) -> AnnotationPosition {
         let length = Double(window.binsPerWindow)
         guard length > 0 else { return .top }
-        let leadingIndex = Double(TrendWindow.stripIndex(for: scrollBinding.wrappedValue))
-        let fraction = (Double(bin.index) + 0.5 - leadingIndex) / length
+        let fraction = (Double(bin.index) + 0.5 - Double(ownLeadingBin)) / length
         if fraction > 0.66 { return .topLeading }
         if fraction < 0.33 { return .topTrailing }
         return .top
@@ -374,7 +492,11 @@ struct TrendWindowStatChartView: View {
     var positiveStyle: AnyShapeStyle? = nil
     var explanation: String? = nil
 
-    @State private var scrollPosition: Date
+    /// The strip index of the bin at the viewport's leading edge — what the chart reports back as it
+    /// scrolls, and the only thing about the scroll this header watches. A raw offset would re-run this
+    /// body (and rebuild the whole strip below it) every frame of a gesture; the bin index steps once
+    /// per bar, which is exactly as often as the numbers here can change.
+    @State private var leadingBin: Int
 
     init(
         window: TrendWindow,
@@ -398,11 +520,11 @@ struct TrendWindowStatChartView: View {
         self.positiveColor = positiveColor
         self.positiveStyle = positiveStyle
         self.explanation = explanation
-        _scrollPosition = State(initialValue: window.trailingScrollPosition(binCount: bins.count))
+        _leadingBin = State(initialValue: window.trailingLeadingBin(binCount: bins.count))
     }
 
     var body: some View {
-        let visibleIndices = window.visibleIndices(scrollPosition: scrollPosition, binCount: bins.count)
+        let visibleIndices = window.visibleIndices(leadingBin: leadingBin, binCount: bins.count)
         let precedingIndices = window.precedingIndices(before: visibleIndices)
         let current = value(visibleIndices)
         let previous = value(precedingIndices)
@@ -441,7 +563,7 @@ struct TrendWindowStatChartView: View {
                 barStyle: barStyle,
                 unit: unit,
                 averageLine: stats.trainedMean,
-                scrollPosition: $scrollPosition
+                leadingBin: $leadingBin
             )
             // A fresh chart per window: the strip is re-binned wholesale when the window changes, and a
             // stale selection or scroll offset would otherwise point into a strip that no longer
@@ -449,12 +571,12 @@ struct TrendWindowStatChartView: View {
             .id(window)
         }
         .onChange(of: window) {
-            scrollPosition = window.trailingScrollPosition(binCount: bins.count)
+            leadingBin = window.trailingLeadingBin(binCount: bins.count)
         }
     }
 
     private var isAtTrailingEdge: Bool {
-        window.visibleIndices(scrollPosition: scrollPosition, binCount: bins.count).upperBound >= bins.count
+        window.visibleIndices(leadingBin: leadingBin, binCount: bins.count).upperBound >= bins.count
     }
 
     /// The dates a run of bins covers. The upper bound is the *next* bin's first instant (bins tile the

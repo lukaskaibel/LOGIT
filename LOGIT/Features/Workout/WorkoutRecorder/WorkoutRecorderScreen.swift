@@ -781,9 +781,9 @@ struct WorkoutRecorderScreen: View {
     }
 
     /// The unfolded half of the header: the workout detail's Volume and Repetitions stat tiles
-    /// above the Minimize and Finish actions. The tiles appear only once the workout has a
-    /// logged value — an empty (fresh / template) start shows just the two buttons, so the panel
-    /// stays small. The actions use the app's shared secondary/primary button styles, so they
+    /// above the Minimize and Finish (Cancel, while nothing is logged) actions. The tiles appear
+    /// only once the workout has a logged value — an empty (fresh / template) start shows just
+    /// the two buttons, so the panel stays small. The actions use the app's shared secondary/primary button styles, so they
     /// match the Add Set button's capsule height and read as the standard action hierarchy.
     private func headerExpandedPanel(for workout: Workout) -> some View {
         VStack(spacing: 8) {
@@ -795,14 +795,21 @@ struct WorkoutRecorderScreen: View {
                     Label(NSLocalizedString("minimize", comment: ""), systemImage: "arrow.down.right.and.arrow.up.left")
                 }
                 .buttonStyle(TertiaryButtonStyle())
+                // Nothing logged yet means there is no session to finish — the action just
+                // throws the empty workout away, so it says Cancel rather than promising a
+                // finished workout (and skips the finish confirmation).
+                let hasEntries = workout.hasEntries
                 Button {
-                    guard workout.hasEntries else {
+                    guard hasEntries else {
                         finishWorkout(shouldSave: false)
                         return
                     }
                     isShowingFinishConfirmation = true
                 } label: {
-                    Label(NSLocalizedString("finish", comment: ""), systemImage: "flag.checkered")
+                    Label(
+                        NSLocalizedString(hasEntries ? "finish" : "cancel", comment: ""),
+                        systemImage: hasEntries ? "flag.checkered" : "xmark"
+                    )
                 }
                 .buttonStyle(SecondaryButtonStyle())
             }

@@ -257,7 +257,7 @@ struct TemplateDetailScreen: View {
     /// Right-aligned into the chart's fixed five slots, newest run last — the template-side twin of
     /// `WorkoutStatTile.runBars`.
     private func runBars(for metric: WorkoutStatMetric, history: WorkoutRunHistory) -> [WorkoutRunsBarChart.Bar] {
-        let offset = WorkoutRunsBarChart.slotCount - history.runs.count
+        let offset = WorkoutRunsBarChart.defaultSlotCount - history.runs.count
         let latestID = history.runs.last?.objectID
         return history.runs.enumerated().map { index, run in
             WorkoutRunsBarChart.Bar(
@@ -321,7 +321,7 @@ struct TemplateDetailScreen: View {
         Array(
             template.workouts
                 .filter { !$0.isEmpty && !$0.isCurrentWorkout }
-                .suffix(WorkoutRunsBarChart.slotCount)
+                .suffix(WorkoutRunsBarChart.defaultSlotCount)
         )
     }
 

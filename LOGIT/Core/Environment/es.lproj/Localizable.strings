@@ -931,8 +931,7 @@
 "rps" = "rep";
 "average" = "Promedio";
 "volumePerSet" = "Volumen por serie";
-"workoutStatCompareSameInfo" = "La tendencia compara este entrenamiento con tu ejecución anterior del mismo entrenamiento. Las barras muestran sus últimas ejecuciones — este entrenamiento es la barra destacada de la derecha.";
-"workoutStatCompareRecentInfo" = "Este entrenamiento no tiene ejecuciones anteriores, así que la tendencia lo compara con el promedio de tus últimos entrenamientos. Las barras muestran esos entrenamientos — este es la barra destacada de la derecha.";
+"workoutStatCompareRecentInfo" = "La tendencia compara este entrenamiento con el promedio de tus últimos %d entrenamientos. Las barras los muestran — este es la barra destacada de la derecha.";
 "workoutVolumeAboutInfo" = "El volumen es el peso total movido en un entrenamiento — peso × repeticiones, sumado en todas las series. Comparado entre entrenamientos, muestra cuánto trabajo contienen tus sesiones.";
 "workoutDurationAboutInfo" = "La duración es el tiempo desde que inicias un entrenamiento hasta que lo terminas. Ni más larga ni más corta es mejor por sí sola — léela junto con el volumen para ver qué tan denso es tu entrenamiento.";
 "workoutSetsAboutInfo" = "El número de series registradas en un entrenamiento — una medida simple de cuánto hiciste en una sesión, independiente del peso en la barra.";

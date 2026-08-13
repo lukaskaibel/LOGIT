@@ -41,6 +41,9 @@ final class SummaryViewModel: ObservableObject {
         /// of it (see `TrendWindow.bin`). Every one is in scope, so the tile draws them all in the
         /// accent; a zero is an untrained bin and draws no bar at all.
         let bins: [Double]
+        /// The calendar span each of those bins covers, in the same order — what the strip's grid
+        /// writes its dates from. Parallel to `bins`, so index `i` is bin `i`'s span.
+        let binRanges: [ClosedRange<Date>]
         /// How much of the current-plus-previous window span the logged history covers, 0…1 — the
         /// fill of the "building your trend" ring while the window holds too little to draw.
         let historyFraction: Double
@@ -106,6 +109,7 @@ final class SummaryViewModel: ObservableObject {
                     fromRaw: Int(StatBasis.perWorkout.aggregate(sum: sums[index], count: counts[index]).rounded())
                 )
             },
+            binRanges: Array(ranges[split ..< ranges.count]),
             historyFraction: window.historyFraction(
                 firstDataDate: workouts.lazy.filter { !$0.isEmpty }.compactMap(\.date).min()
             )

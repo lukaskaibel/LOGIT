@@ -311,6 +311,23 @@ enum TrendWindow: String, CaseIterable, Identifiable {
         }
     }
 
+    /// The stride between the dates written under a **tile's** bin strip, in bins — deliberately
+    /// coarser than `binAxisStride`, which labels a full-width detail chart.
+    ///
+    /// A half-width tile leaves its strip about 145pt, which is four dates' worth of room. Each
+    /// window's stride is the one that lands exactly four *and* falls on a boundary worth naming:
+    /// every week across four weeks, every four weeks across a quarter, every quarter across a year.
+    /// The labels are counted forward from the window's first bin (the chart's leading edge), so the
+    /// oldest date always carries one and the trailing edge — where a label would have nowhere to
+    /// sit — never does.
+    var tileAxisStride: Int {
+        switch self {
+        case .fourWeeks: return 7
+        case .threeMonths: return 4
+        case .oneYear: return 3
+        }
+    }
+
     /// Axis label under a bin — "9 Aug" for a day or a week (the week's first day), "Aug" for a month.
     ///
     /// Taken from the bin's **start**, unlike the old per-window labels which had to use the end: a

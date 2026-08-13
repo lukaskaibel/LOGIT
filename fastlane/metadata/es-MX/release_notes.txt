@@ -1,22 +1,32 @@
-LOGIT 5.0 es nuestra actualización más grande hasta ahora: un Resumen rediseñado y una forma completamente nueva de ver tu progreso.
+LOGIT 5.1 reúne todo tu progreso en un solo Resumen, rehace el grabador de entrenamientos y agrega nuevas formas de registrar lo que entrenas.
 
-Pestaña Progreso
-Ve tu tendencia de fuerza de un vistazo. Tus récords personales recientes y una puntuación de progreso general muestran exactamente qué tan lejos has llegado, desglosado por grupo muscular.
+Un solo Resumen
+Esta semana y Progreso ahora son una sola pantalla. Elige el periodo una vez —4 semanas, 3 meses o un año— y cada tarjeta, gráfica y pantalla de detalle lo seguirá.
 
-Objetivo semanal y rachas
-La pantalla de Objetivo semanal rediseñada sigue tu racha semana tras semana y te mantiene tras la próxima meta. Toda tu semana está justo en el Resumen, todos los días.
+Fuerza de un vistazo
+Una nueva tarjeta de Fuerza encabeza el Resumen con tu tendencia y abre una pantalla de detalle completa: tus mejores levantamientos, los ejercicios que impulsan el cambio y una gráfica que puedes mantener presionada para consultar cualquier punto.
 
-Equilibrio muscular
-Un resumen de Grupos musculares renovado muestra cómo se reparte tu entrenamiento por todo el cuerpo y señala los grupos que se van quedando atrás, para que no descuides ninguno.
+Equilibrio muscular, reconstruido
+La vista de Grupos musculares ahora muestra cada grupo como una barra que se llena con su parte de tus series, para que veas de un vistazo qué entrenas y qué estás descuidando.
 
-Récords personales, reinventados
-Los detalles de cada ejercicio ahora abren con fichas de métricas claras, comparaciones lado a lado y gráficas de peso, repeticiones, volumen y 1RM estimado.
+Tu semana, en el Resumen
+El objetivo semanal ahora es un anillo con el conteo adentro, y ese mismo arco te acompaña en el botón de comenzar entrenamiento.
 
-Más en la 5.0
-· Fija tus ejercicios y mediciones favoritos en la pestaña Progreso
-· Empieza más rápido con plantillas de workout listas para usar
-· Reordena ejercicios en el editor y el grabador de workouts
-· Un grabador más fluido y rápido mientras capturas tus series
-· Correcciones importantes de estabilidad, incluida una que evita la rara pérdida de datos durante la sincronización con iCloud
+Un grabador mejor
+El encabezado del entrenamiento se pliega al desplazarte y vuelve a bajar con el dedo. Las superseries son una sola tarjeta con los ejercicios paginados adentro, compartiendo una única barra de acciones.
+
+Nuevas formas de registrar
+Registra distancia, distancia + duración, peso + distancia y ejercicios solo de duración o solo de repeticiones. El editor de ejercicios ahora arma la medición a partir de los campos que realmente registras, con vista previa en vivo.
+
+Apple Health
+Los entrenamientos terminados se escriben en Salud, incluida una importación de tu historial, además de sincronización bidireccional del peso corporal y una estimación de calorías activas para cada entrenamiento.
+
+Más en 5.1
+· Historial con secciones semanales, estadísticas por sección y filtros
+· Las plantillas ahora siguen exactamente el diseño de los entrenamientos
+· Exporta todo lo que has registrado en un archivo que tú conservas
+· Cuenta regresiva del descanso en la Dynamic Island
+· Borrar un ejercicio ya no afecta tu historial de entrenamientos
+· Gráficas más nítidas, redondeo de libras corregido y mejor redacción en todos los idiomas
 
 Gracias por entrenar con LOGIT. ¡Sigue así!

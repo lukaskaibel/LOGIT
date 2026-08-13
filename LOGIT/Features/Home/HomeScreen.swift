@@ -310,6 +310,8 @@ struct HomeScreen: View {
             setPinnedMeasurements([.bodyweight, .bodyFatPercentage])
         case "goal":
             homeNavigationCoordinator.path = [.weeklyGoal]
+        case "strength":
+            homeNavigationCoordinator.path = [.strength]
         case "muscleOverview":
             homeNavigationCoordinator.path = [.muscleGroupsOverview]
         case "measurement":

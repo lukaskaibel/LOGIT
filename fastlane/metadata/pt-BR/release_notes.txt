@@ -1,22 +1,32 @@
-O LOGIT 5.0 é a nossa maior atualização até hoje — um Resumo redesenhado e uma forma totalmente nova de acompanhar seu progresso.
+O LOGIT 5.1 reúne todo o seu progresso em um único Resumo, reconstrói o gravador de treino e traz novas formas de registrar o que você treina.
 
-Aba Progresso
-Veja sua tendência de força de relance. Os recordes pessoais recentes e uma pontuação geral de progresso mostram exatamente o quanto você evoluiu, detalhados por grupo muscular.
+Um só Resumo
+Esta semana e Progresso agora são uma única tela. Escolha o período uma vez — 4 semanas, 3 meses ou um ano — e cada bloco, gráfico e tela de detalhe segue essa escolha.
 
-Meta semanal e sequências
-A tela de Meta Semanal redesenhada acompanha sua sequência semana após semana e mantém você em busca do próximo marco. Sua semana inteira fica logo no Resumo, todos os dias.
+Força num relance
+Um novo bloco de Força abre o Resumo com a sua tendência e leva a uma tela de detalhe completa: seus melhores levantamentos, os exercícios que puxam a mudança e um gráfico que você pode manter pressionado para ler qualquer ponto.
 
-Equilíbrio muscular
-A visão geral de Grupos Musculares reformulada mostra como seu treino se distribui pelo corpo e sinaliza os grupos que estão ficando para trás, para que nada seja esquecido.
+Equilíbrio muscular, reconstruído
+A visão geral dos Grupos Musculares agora mostra cada grupo como uma barra que se preenche com a sua fatia das séries, para você ver num relance o que treina e o que anda deixando de lado.
 
-Recordes pessoais, reinventados
-Os detalhes de cada exercício agora começam com blocos de métricas limpos, comparações lado a lado e gráficos de peso, repetições, volume e 1RM estimado.
+Sua semana, no Resumo
+A meta semanal agora é um anel com a contagem no centro, e o mesmo arco acompanha você no botão de iniciar treino.
 
-Mais no 5.0
-· Fixe seus exercícios e medidas favoritos na aba Progresso
-· Comece mais rápido com modelos de treino prontos
-· Reordene exercícios no editor e no registrador de treinos
-· Um registrador mais fluido e rápido enquanto você digita as séries
-· Correções importantes de estabilidade, incluindo uma correção para a rara perda de dados durante a sincronização com o iCloud
+Um gravador melhor
+O cabeçalho do treino se recolhe conforme você rola e volta a descer com o dedo. Os supersets são um único cartão com os exercícios paginados dentro dele, com uma só barra de ações.
 
-Obrigado por treinar com o LOGIT. Continue firme!
+Novas formas de registrar
+Registre distância, distância + duração, peso + distância e exercícios só de duração ou só de repetições. O editor de exercícios agora monta a medição a partir dos campos que você realmente acompanha, com pré-visualização ao vivo.
+
+Apple Saúde
+Treinos finalizados são gravados no Saúde, incluindo o preenchimento do seu histórico, além de sincronização do peso corporal nos dois sentidos e uma estimativa de calorias ativas para cada treino.
+
+Mais na 5.1
+· Histórico com seções semanais, estatísticas por seção e filtros
+· Os modelos agora seguem exatamente o design dos treinos
+· Exporte tudo o que você registrou em um arquivo que fica com você
+· Contagem regressiva do descanso na Dynamic Island
+· Excluir um exercício não mexe mais no seu histórico de treinos
+· Gráficos mais nítidos, arredondamento de libras corrigido e textos melhores em todos os idiomas
+
+Obrigado por treinar com o LOGIT. Continue assim!

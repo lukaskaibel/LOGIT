@@ -1,5 +1,5 @@
 "01_Summary" = "Il tuo allenamento\na colpo d’occhio.";
-"02_Progress" = "Guarda la tua\nforza crescere.";
+"02_Progress" = "Tutti i numeri\nche ti interessano.";
 "03_Streak" = "Mantieni viva\nla tua streak.";
 "04_MuscleBalance" = "Bilancia ogni\ngruppo muscolare.";
 "05_ExerciseDetail" = "Conosci i tuoi\nrecord personali.";
@@ -7,3 +7,4 @@
 "07_SuperDropSet" = "Superset e\ndrop set pronti.";
 "08_LiveActivity" = "Il workout sulla\nschermata di blocco.";
 "09_BodyMeasurements" = "Guarda il corpo\nche cambia.";
+"10_Strength" = "Guarda la forza\ndietro ogni serie.";

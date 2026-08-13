@@ -1,5 +1,5 @@
 "01_Summary" = "TREINE";
-"02_Progress" = "PROGRESSO";
+"02_Progress" = "NÚMEROS";
 "03_Streak" = "SEQUÊNCIA";
 "04_MuscleBalance" = "EQUILÍBRIO";
 "05_ExerciseDetail" = "RECORDES";
@@ -7,3 +7,4 @@
 "07_SuperDropSet" = "INTENSIDADE";
 "08_LiveActivity" = "LIVE";
 "09_BodyMeasurements" = "MEDIDAS";
+"10_Strength" = "FORÇA";

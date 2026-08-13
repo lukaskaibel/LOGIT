@@ -82,6 +82,10 @@
     {
       "filter": "09_BodyMeasurements",
       "keyword": { "color": "#7AD39F" }
+    },
+    {
+      "filter": "10_Strength",
+      "keyword": { "color": "#C6FF4B" }
     }
   ]
 }

@@ -1,22 +1,32 @@
-LOGIT 5.0 è il nostro aggiornamento più grande di sempre: un Riepilogo ridisegnato e un modo tutto nuovo di vedere i tuoi progressi.
+LOGIT 5.1 raccoglie tutti i tuoi progressi in un unico Riepilogo, ricostruisce il registratore di allenamento e aggiunge nuovi modi per registrare ciò che alleni.
 
-Scheda Progressi
-Osserva l'andamento della tua forza a colpo d'occhio. I record personali recenti e un punteggio di progresso complessivo mostrano con esattezza quanta strada hai fatto, suddiviso per gruppo muscolare.
+Un unico Riepilogo
+Questa settimana e Progressi ora sono un'unica schermata. Scegli il periodo una volta — 4 settimane, 3 mesi o un anno — e ogni riquadro, grafico e schermata di dettaglio lo segue.
 
-Obiettivo settimanale e streak
-La nuova schermata Obiettivo settimanale tiene traccia della tua streak settimana dopo settimana e ti spinge verso il prossimo traguardo. Tutta la settimana è sempre lì, nel Riepilogo.
+La forza a colpo d'occhio
+Un nuovo riquadro Forza apre il Riepilogo con il tuo andamento e porta a una schermata di dettaglio completa: i tuoi sollevamenti migliori, gli esercizi che spingono il cambiamento e un grafico che puoi tenere premuto per leggere qualsiasi punto.
 
-Equilibrio muscolare
-La panoramica dei Gruppi muscolari, ricostruita da zero, mostra come distribuisci l'allenamento sul corpo e segnala i gruppi rimasti indietro, così non trascuri nulla.
+Equilibrio muscolare, ricostruito
+La panoramica dei Gruppi muscolari mostra ora ogni gruppo come una barra che si riempie con la sua quota delle tue serie, così vedi a colpo d'occhio cosa alleni e cosa trascuri.
 
-Record personali, ripensati
-I dettagli degli esercizi ora si aprono con riquadri chiari, confronti affiancati e grafici per peso, ripetizioni, volume e 1RM stimato.
+La tua settimana, nel Riepilogo
+L'obiettivo settimanale è ora un anello con il conteggio al centro, e lo stesso arco ti accompagna sul pulsante di avvio allenamento.
 
-Altro in 5.0
-· Fissa esercizi e misurazioni preferiti nella scheda Progressi
-· Parti più in fretta con i modelli di workout pronti all'uso
-· Riordina gli esercizi nell'editor e nel registratore
-· Un registratore più fluido e veloce mentre inserisci le serie
-· Importanti correzioni di stabilità, tra cui la risoluzione di una rara perdita di dati durante la sincronizzazione iCloud
+Un registratore migliore
+L'intestazione dell'allenamento si ripiega mentre scorri e si riapre con un trascinamento del dito. I superset sono un'unica scheda con gli esercizi sfogliabili all'interno, con una sola barra di azioni.
+
+Nuovi modi di registrare
+Registra distanza, distanza + durata, peso + distanza ed esercizi di sola durata o sole ripetizioni. L'editor degli esercizi ora compone la misurazione dai campi che segui davvero, con anteprima in tempo reale.
+
+Apple Salute
+Gli allenamenti conclusi vengono scritti in Salute, incluso il recupero della tua cronologia, più la sincronizzazione bidirezionale del peso corporeo e una stima delle calorie attive per ogni allenamento.
+
+Altro nella 5.1
+· Cronologia con sezioni settimanali, statistiche per sezione e filtri
+· I modelli ora seguono esattamente il design degli allenamenti
+· Esporta tutto ciò che hai registrato in un file che resta tuo
+· Conto alla rovescia del recupero nella Dynamic Island
+· Eliminare un esercizio non tocca più la cronologia dei tuoi allenamenti
+· Grafici più nitidi, arrotondamento delle libbre corretto e formulazioni migliori in tutte le lingue
 
 Grazie per allenarti con LOGIT. Continua così!

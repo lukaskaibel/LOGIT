@@ -1,22 +1,32 @@
-LOGIT 5.0 est notre plus grande mise à jour à ce jour : un Résumé repensé et une toute nouvelle façon de visualiser vos progrès.
+LOGIT 5.1 rassemble toute ta progression dans un seul Résumé, repense l'enregistreur de séance et ajoute de nouvelles façons de noter ce que tu travailles.
 
-Onglet Progrès
-Voyez l’évolution de votre force en un coup d’œil. Vos records personnels récents et un score de progression global montrent exactement le chemin parcouru, détaillé par groupe musculaire.
+Un seul Résumé
+Cette semaine et Progression ne font plus qu'un écran. Choisis ta période une fois — 4 semaines, 3 mois ou un an — et chaque tuile, graphique et écran de détail la suit.
 
-Objectif hebdomadaire et séries
-L’écran Objectif hebdomadaire repensé suit votre série semaine après semaine et vous pousse vers le prochain palier. Toute votre semaine s’affiche directement sur le Résumé, chaque jour.
+La force en un coup d'œil
+Une nouvelle tuile Force ouvre le Résumé avec ta tendance et mène à un écran de détail complet : tes meilleurs mouvements, les exercices qui font bouger la courbe et un graphique que tu peux maintenir pour lire n'importe quel point.
 
-Équilibre musculaire
-La vue Groupes musculaires reconçue montre comment votre entraînement se répartit sur tout le corps et signale les groupes à la traîne, pour ne rien négliger.
+Équilibre musculaire, reconstruit
+L'aperçu des Groupes musculaires affiche désormais chaque groupe comme une barre qui se remplit selon sa part de tes séries : tu vois d'un coup d'œil ce que tu travailles et ce que tu délaisses.
 
-Records personnels, réinventés
-Les détails d’exercice s’ouvrent désormais sur des tuiles claires, des comparaisons côte à côte et des graphiques pour le poids, les répétitions, le volume et le 1RM estimé.
+Ta semaine, dans le Résumé
+L'objectif hebdo est maintenant un anneau avec le compte au centre, et le même arc t'accompagne sur le bouton de démarrage de séance.
 
-Encore plus dans la 5.0
-· Épinglez vos exercices et mesures favoris dans l’onglet Progrès
-· Démarrez plus vite avec des modèles de séance prêts à l’emploi
-· Réorganisez les exercices dans l’éditeur et l’enregistreur de séance
-· Un enregistreur plus fluide et plus rapide pendant que vous saisissez vos séries
-· Corrections de stabilité importantes, dont un correctif contre une rare perte de données lors de la synchronisation iCloud
+Un meilleur enregistreur
+L'en-tête de la séance se replie quand tu fais défiler et se rouvre d'un glissement du doigt. Les supersets forment une seule carte dont les exercices défilent à l'intérieur, avec une barre d'actions commune.
 
-Merci de vous entraîner avec LOGIT. Continuez comme ça !
+De nouvelles façons de noter
+Enregistre la distance, distance + durée, poids + distance, ainsi que des exercices en durée seule ou en répétitions seules. L'éditeur d'exercice compose désormais la mesure à partir des champs que tu suis vraiment, avec un aperçu en direct.
+
+Apple Santé
+Les séances terminées sont écrites dans Santé, avec une reprise de ton historique, plus une synchronisation du poids dans les deux sens et une estimation des calories actives pour chaque séance.
+
+Plus dans la 5.1
+· Historique avec sections hebdomadaires, statistiques par section et filtres
+· Les modèles suivent maintenant exactement le design des séances
+· Exporte tout ce que tu as enregistré dans un fichier qui t'appartient
+· Compte à rebours du repos dans la Dynamic Island
+· Supprimer un exercice ne touche plus à ton historique de séances
+· Graphiques plus nets, arrondi des livres corrigé et meilleures formulations dans toutes les langues
+
+Merci de t'entraîner avec LOGIT. Continue comme ça !

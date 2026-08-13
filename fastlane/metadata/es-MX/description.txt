@@ -7,11 +7,13 @@ Registra y planifica
 · Crea tu propia biblioteca de ejercicios
 · Guarda plantillas o empieza con las que ya vienen listas
 · Registra superseries y drop sets para llevar tus límites más lejos
+· Registra peso, repeticiones, duración o distancia, según el ejercicio
 · Reordena ejercicios sobre la marcha mientras entrenas
 · Sincroniza tus datos entre todos tus dispositivos con iCloud
+· Comparte entrenamientos y peso corporal con Apple Salud
 
 Mira tu progreso
-· Una pestaña Progreso dedicada con tu tendencia de fuerza general
+· Un solo Resumen encabezado por tu tendencia de fuerza general
 · Récords personales y momentos destacados recientes de cada ejercicio
 · Objetivos semanales con rachas para mantener tu impulso
 · Equilibrio muscular que muestra lo que entrenas y lo que descuidas

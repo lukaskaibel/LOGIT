@@ -10,7 +10,7 @@ Muscle balance, rebuilt
 The Muscle Groups overview now shows each group as a filling bar with its share of your sets, so you can see at a glance what you train and what you neglect.
 
 Your week, on the Summary
-The weekly goal is now a ring with the count inside, and the same arc rides along on the Start Workout button.
+The weekly goal is now an arc with your count inside, right in the Summary's title row. Tap it and the same arc opens full size, over your week in muscle colours, your streak and the next milestone.
 
 A better recorder
 The workout header folds away as you scroll and pulls back down with your finger. Supersets are a single card with the exercises paged inside it, sharing one action bar.

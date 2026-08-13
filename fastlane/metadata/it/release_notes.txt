@@ -10,7 +10,7 @@ Equilibrio muscolare, ricostruito
 La panoramica dei Gruppi muscolari mostra ora ogni gruppo come una barra che si riempie con la sua quota delle tue serie, così vedi a colpo d'occhio cosa alleni e cosa trascuri.
 
 La tua settimana, nel Riepilogo
-L'obiettivo settimanale è ora un anello con il conteggio al centro, e lo stesso arco ti accompagna sul pulsante di avvio allenamento.
+L'obiettivo settimanale è ora un arco con il tuo conteggio al centro, nella riga del titolo del Riepilogo. Toccalo e lo stesso arco si apre a tutto schermo, sopra la tua settimana nei colori dei muscoli, la tua streak e il prossimo traguardo.
 
 Un registratore migliore
 L'intestazione dell'allenamento si ripiega mentre scorri e si riapre con un trascinamento del dito. I superset sono un'unica scheda con gli esercizi sfogliabili all'interno, con una sola barra di azioni.

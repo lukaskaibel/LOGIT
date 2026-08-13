@@ -10,7 +10,7 @@ Une nouvelle tuile Force ouvre le Résumé avec ta tendance et mène à un écra
 L'aperçu des Groupes musculaires affiche désormais chaque groupe comme une barre qui se remplit selon sa part de tes séries : tu vois d'un coup d'œil ce que tu travailles et ce que tu délaisses.
 
 Ta semaine, dans le Résumé
-L'objectif hebdo est maintenant un anneau avec le compte au centre, et le même arc t'accompagne sur le bouton de démarrage de séance.
+L'objectif hebdo est maintenant un arc avec ton compte au centre, directement dans la ligne de titre du Résumé. Touche-le et le même arc s'ouvre en grand, au-dessus de ta semaine en couleurs musculaires, de ta série et du prochain jalon.
 
 Un meilleur enregistreur
 L'en-tête de la séance se replie quand tu fais défiler et se rouvre d'un glissement du doigt. Les supersets forment une seule carte dont les exercices défilent à l'intérieur, avec une barre d'actions commune.

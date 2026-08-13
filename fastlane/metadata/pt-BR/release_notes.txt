@@ -10,7 +10,7 @@ Equilíbrio muscular, reconstruído
 A visão geral dos Grupos Musculares agora mostra cada grupo como uma barra que se preenche com a sua fatia das séries, para você ver num relance o que treina e o que anda deixando de lado.
 
 Sua semana, no Resumo
-A meta semanal agora é um anel com a contagem no centro, e o mesmo arco acompanha você no botão de iniciar treino.
+A meta semanal agora é um arco com a sua contagem no centro, na própria linha de título do Resumo. Toque nele e o mesmo arco se abre em tela cheia, sobre a sua semana em cores dos músculos, sua sequência e o próximo marco.
 
 Um gravador melhor
 O cabeçalho do treino se recolhe conforme você rola e volta a descer com o dedo. Os supersets são um único cartão com os exercícios paginados dentro dele, com uma só barra de ações.

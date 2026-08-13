@@ -49,8 +49,9 @@ final class LOGITScreenshots: XCTestCase {
 
     // MARK: - Screens (ordered by screenshot filename)
 
-    /// The Summary hero: weekly-goal ring, the Strength and Balance pair and the
-    /// core stat tiles — the single merged home since 5.1.
+    /// The top of the merged Summary: the title row's weekly-goal arc, the
+    /// timeframe picker, then the Strength and Balance pair over the 2×2 core
+    /// stat tiles — one screen since This Week and Progress merged in #113.
     func test01Summary() {
         launch()
         waitForTabBar()
@@ -78,10 +79,12 @@ final class LOGITScreenshots: XCTestCase {
         snapshot("03_Streak")
     }
 
-    /// The Muscle Groups overview: circle section headers over per-group tiles,
-    /// each a vertical filling bar with the group's share of your sets. (The
-    /// donut and the diverging balance bars this used to capture were both
-    /// removed in #124.)
+    /// The Muscle Groups overview: the "groups at target" hero over the
+    /// `MuscleBalanceTrackChart`, then the eight groups as a two-column grid
+    /// split by verdict (below target first, then at target, then overshoot),
+    /// each section under a circled chevron/check header. (The donut and the
+    /// diverging balance bars this comment used to describe were both removed
+    /// in #124.)
     func test04MuscleBalance() {
         launch(["-UITEST_DEEPLINK", "muscleOverview"])
         waitForPushedScreen()

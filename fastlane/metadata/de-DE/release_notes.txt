@@ -10,7 +10,7 @@ Muskel-Balance, neu gebaut
 Die Muskelgruppen-Übersicht zeigt jede Gruppe jetzt als füllenden Balken mit ihrem Anteil an deinen Sätzen. So siehst du auf einen Blick, was du trainierst – und was zu kurz kommt.
 
 Deine Woche, direkt in der Übersicht
-Das Wochenziel ist jetzt ein Ring mit der Anzahl in der Mitte, und derselbe Bogen begleitet dich auf dem Workout-starten-Button.
+Das Wochenziel ist jetzt ein Bogen mit deiner Anzahl in der Mitte – direkt in der Titelzeile der Übersicht. Tippe darauf, und derselbe Bogen öffnet sich in voller Größe, über deiner Woche in Muskelfarben, deiner Serie und dem nächsten Meilenstein.
 
 Ein besserer Recorder
 Der Workout-Header klappt beim Scrollen ein und lässt sich mit dem Finger wieder herunterziehen. Supersätze sind eine einzige Karte, in der die Übungen durchgeblättert werden – mit einer gemeinsamen Aktionsleiste.

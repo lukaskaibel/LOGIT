@@ -10,7 +10,7 @@ Equilibrio muscular, reconstruido
 La vista de Grupos musculares ahora muestra cada grupo como una barra que se llena con su parte de tus series, para que veas de un vistazo qué entrenas y qué estás descuidando.
 
 Tu semana, en el Resumen
-El objetivo semanal ahora es un anillo con el conteo adentro, y ese mismo arco te acompaña en el botón de comenzar entrenamiento.
+El objetivo semanal ahora es un arco con tu conteo adentro, en la fila del título del Resumen. Tócalo y ese mismo arco se abre a pantalla completa, sobre tu semana en colores musculares, tu racha y el siguiente hito.
 
 Un grabador mejor
 El encabezado del entrenamiento se pliega al desplazarte y vuelve a bajar con el dedo. Las superseries son una sola tarjeta con los ejercicios paginados adentro, compartiendo una única barra de acciones.

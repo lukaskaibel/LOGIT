@@ -529,4 +529,31 @@ final class TrendWindowBinTests: XCTestCase {
         XCTAssertEqual(stats.trainedMean, 1000)
         XCTAssertEqual(stats.displayMax, 1000)
     }
+
+    /// …and an untrained bin cannot be inspected either. A tap or a drag landing on a gap resolves to
+    /// no selection at all, rather than to a card reading "0" hanging over empty space.
+    func testUntrainedBinsAreNotSelectable() {
+        let window = TrendWindow.fourWeeks
+        let ranges = window.binRanges(count: 28, now: date(2026, 8, 12))
+        let bins = TrendWindowBin.strip(
+            for: window,
+            ranges: ranges,
+            raw: ranges.enumerated().map { index, _ in index % 2 == 0 ? 0 : 1000 },
+            display: { $0 },
+            formatted: { String(Int($0)) }
+        )
+        for bin in bins {
+            // The point the gesture reports is anywhere in the bin's slot, not its exact start.
+            let insideTheSlot = bin.stripDate.addingTimeInterval(3600 * 7)
+            let selected = TrendWindowBin.selectableIndex(at: insideTheSlot, in: bins)
+            if bin.value > 0 {
+                XCTAssertEqual(selected, bin.index, "trained bin \(bin.index) should be selectable")
+            } else {
+                XCTAssertNil(selected, "untrained bin \(bin.index) should not be selectable")
+            }
+        }
+        // Off either end of the strip there is nothing to select.
+        XCTAssertNil(TrendWindowBin.selectableIndex(at: TrendWindow.stripDate(forIndex: -1), in: bins))
+        XCTAssertNil(TrendWindowBin.selectableIndex(at: TrendWindow.stripDate(forIndex: 28), in: bins))
+    }
 }

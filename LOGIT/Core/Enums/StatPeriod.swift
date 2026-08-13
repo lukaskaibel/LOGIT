@@ -563,16 +563,26 @@ extension TrendWindow {
         return low
     }
 
+    /// The bins on screen when bin `leadingBin` occupies the viewport's first slot. Exactly one window
+    /// wide, which is the whole point: what the picker names is what is on screen.
+    ///
+    /// Indices, not a date, because this is what the charts actually watch while a finger is on them: a
+    /// scroll offset moves every frame, but the leading *bin* changes once per bar crossed, and
+    /// re-reading the header off the index is what keeps a scroll from re-rendering hundreds of bars
+    /// sixty times a second.
+    func visibleIndices(leadingBin: Int, binCount: Int) -> Range<Int> {
+        guard binCount > 0 else { return 0 ..< 0 }
+        let first = min(max(leadingBin, 0), max(binCount - 1, 0))
+        let last = min(first + binsPerWindow, binCount)
+        return first ..< last
+    }
+
     /// The bins on screen at `scrollPosition` — the viewport's leading edge on the synthetic timeline.
-    /// Exactly one window wide, which is the whole point: what the picker names is what is on screen.
     /// Mid gesture the edge sits between two bins; the day count rounds toward the one occupying the
     /// viewport's first slot, so the header and the y-scale step over cleanly rather than flickering
     /// between two answers around the halfway point.
     func visibleIndices(scrollPosition: Date, binCount: Int) -> Range<Int> {
-        guard binCount > 0 else { return 0 ..< 0 }
-        let first = min(max(Self.stripIndex(for: scrollPosition), 0), max(binCount - 1, 0))
-        let last = min(first + binsPerWindow, binCount)
-        return first ..< last
+        visibleIndices(leadingBin: Self.stripIndex(for: scrollPosition), binCount: binCount)
     }
 
     /// The window's worth of bins immediately *before* `visible` — the neutral side of the comparison,
@@ -586,9 +596,14 @@ extension TrendWindow {
         return start ..< end
     }
 
-    /// The scroll offset that puts the newest bin at the trailing edge — where every strip opens, so
-    /// the viewport starts on exactly the selected window.
+    /// The leading bin that puts the newest bin at the trailing edge — where every strip opens, so the
+    /// viewport starts on exactly the selected window.
+    func trailingLeadingBin(binCount: Int) -> Int {
+        max(binCount - binsPerWindow, 0)
+    }
+
+    /// `trailingLeadingBin` as a scroll offset on the synthetic timeline.
     func trailingScrollPosition(binCount: Int) -> Date {
-        Self.stripDate(forIndex: max(binCount - binsPerWindow, 0))
+        Self.stripDate(forIndex: trailingLeadingBin(binCount: binCount))
     }
 }

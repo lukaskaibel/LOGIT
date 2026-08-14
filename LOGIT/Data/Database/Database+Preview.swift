@@ -46,20 +46,53 @@ extension Database {
         // History reads like a long-time user and the weekly-goal streak spans
         // months, not weeks. Every workout lands cleanly inside its own calendar
         // week (aligned to `startOfWeek`), so each week clears the weekly target
-        // and the streak stays unbroken. Bench Press, Deadlift and Squat climb
-        // steadily week over week, which drives the exercise charts, the Progress
-        // highlights / overall-trend tile and the pinned exercise tiles.
+        // and the streak stays unbroken. Every lift moves week over week — the
+        // compounds climbing hard, the accessories drifting either way (see
+        // `weights(week:)`) — which drives the exercise charts, the Strength
+        // ranking, the Progress highlights and the pinned exercise tiles.
 
         let calendar = Calendar.current
         let numberOfWeeks = 20
         let thisWeekStart = Date.now.startOfWeek
 
         // A lift's working weight for a given week (grams): `base` in the oldest
-        // week growing to `base + gain` in the newest, rounded to a tidy 2.5 kg
-        // step so the numbers read as hand-entered.
-        func progressedWeight(week w: Int, base: Int, gain: Int) -> Int {
+        // week moving to `base + gain` in the newest, rounded to a tidy step so the
+        // numbers read as hand-entered. A negative `gain` is a lift going backwards.
+        //
+        // `step` is 2.5 kg for barbell work and 1 kg for the lighter accessories,
+        // where a 2.5 kg grid is too coarse to show a small drift at all.
+        func progressedWeight(week w: Int, base: Int, gain: Int, step: Int = 2500) -> Int {
             let t = Double(numberOfWeeks - 1 - w) / Double(max(numberOfWeeks - 1, 1))
-            return Int(((Double(base) + t * Double(gain)) / 2500).rounded()) * 2500
+            return Int(((Double(base) + t * Double(gain)) / Double(step)).rounded()) * step
+        }
+
+        // Every lift gets its own trajectory instead of three climbing and the rest
+        // pinned flat. The Strength screen ranks exercises from least to most
+        // improved, so a fixture where only the compounds move renders three bars
+        // against a row of flat stubs — the drifts, and especially the lifts going
+        // backwards, are what make that ranking read as a real training history.
+        //
+        // Overall e1RM still trends up: the compounds climb 28-40 kg and dominate
+        // the average, while the accessories that fade give up 4-7 kg.
+        func weights(week w: Int) -> (
+            bench: Int, incline: Int, ohp: Int, lateralRaise: Int, tricepsExt: Int,
+            squat: Int, lunge: Int, legExt: Int,
+            deadlift: Int, row: Int, latPulldown: Int, curl: Int
+        ) {
+            (
+                bench: progressedWeight(week: w, base: 72000, gain: 28000),        // 72 -> 100 kg
+                incline: progressedWeight(week: w, base: 45000, gain: 12500),      // 45 -> 57.5
+                ohp: progressedWeight(week: w, base: 45000, gain: -7500),          // 45 -> 37.5, stalled out
+                lateralRaise: progressedWeight(week: w, base: 20000, gain: -4000, step: 1000),  // 20 -> 16
+                tricepsExt: progressedWeight(week: w, base: 22000, gain: 6000, step: 1000),     // 22 -> 28
+                squat: progressedWeight(week: w, base: 80000, gain: 40000),        // 80 -> 120 kg
+                lunge: progressedWeight(week: w, base: 55000, gain: -7000, step: 1000),         // 55 -> 48
+                legExt: progressedWeight(week: w, base: 35000, gain: 10000, step: 1000),        // 35 -> 45
+                deadlift: progressedWeight(week: w, base: 100_000, gain: 40000),   // 100 -> 140 kg
+                row: progressedWeight(week: w, base: 45000, gain: 13000, step: 1000),           // 45 -> 58
+                latPulldown: progressedWeight(week: w, base: 52000, gain: 18000, step: 1000),   // 52 -> 70
+                curl: progressedWeight(week: w, base: 32000, gain: -4000, step: 1000)           // 32 -> 28
+            )
         }
 
         // The date `offset` days into the calendar week `w` weeks before this one.
@@ -68,46 +101,49 @@ extension Database {
             return calendar.date(byAdding: .day, value: offset, to: weekStart) ?? weekStart
         }
 
-        func seedPushDay(on day: Date, benchWeight: Int, minutes: Int) {
+        func seedPushDay(on day: Date, week w: Int, minutes: Int) {
+            let kg = weights(week: w)
             let push = database.newWorkout(name: NSLocalizedString("previewPushDay", comment: ""), date: day)
             push.endDate = calendar.date(byAdding: .minute, value: minutes, to: day)
             let benchGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: benchpress, workout: push)
-            for _ in 0 ..< 5 { database.newStandardSet(repetitions: 5, weight: benchWeight, setGroup: benchGroup) }
+            for _ in 0 ..< 5 { database.newStandardSet(repetitions: 5, weight: kg.bench, setGroup: benchGroup) }
             let ohpGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: overheadPress, workout: push)
-            for _ in 0 ..< 3 { database.newStandardSet(repetitions: 10, weight: 30000, setGroup: ohpGroup) }
+            for _ in 0 ..< 3 { database.newStandardSet(repetitions: 10, weight: kg.ohp, setGroup: ohpGroup) }
             let inclineGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: inclinedBenchpress, workout: push)
-            for _ in 0 ..< 3 { database.newStandardSet(repetitions: 12, weight: 50000, setGroup: inclineGroup) }
+            for _ in 0 ..< 3 { database.newStandardSet(repetitions: 12, weight: kg.incline, setGroup: inclineGroup) }
             let dipsGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: dips, workout: push)
             for reps in [8, 8, 6] { database.newStandardSet(repetitions: reps, weight: 0, setGroup: dipsGroup) }
             let superGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: tricepsExtensions, workout: push)
             superGroup.secondaryExercise = lateralRaises
             for _ in 0 ..< 3 {
-                database.newSuperSet(repetitionsFirstExercise: 12, repetitionsSecondExercise: 14, weightFirstExercise: 25000, weightSecondExercise: 18000, setGroup: superGroup)
+                database.newSuperSet(repetitionsFirstExercise: 12, repetitionsSecondExercise: 14, weightFirstExercise: kg.tricepsExt, weightSecondExercise: kg.lateralRaise, setGroup: superGroup)
             }
         }
 
-        func seedPullDay(on day: Date, deadliftWeight: Int, minutes: Int) {
+        func seedPullDay(on day: Date, week w: Int, minutes: Int) {
+            let kg = weights(week: w)
             let pull = database.newWorkout(name: NSLocalizedString("previewPullDay", comment: ""), date: day)
             pull.endDate = calendar.date(byAdding: .minute, value: minutes, to: day)
             let deadliftGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: deadlift, workout: pull)
-            for _ in 0 ..< 4 { database.newStandardSet(repetitions: 5, weight: deadliftWeight, setGroup: deadliftGroup) }
+            for _ in 0 ..< 4 { database.newStandardSet(repetitions: 5, weight: kg.deadlift, setGroup: deadliftGroup) }
             let latGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: latPulldown, workout: pull)
-            for _ in 0 ..< 3 { database.newDropSet(repetitions: [5, 8], weights: [60000, 45000], setGroup: latGroup) }
+            for _ in 0 ..< 3 { database.newDropSet(repetitions: [5, 8], weights: [kg.latPulldown, kg.latPulldown * 3 / 4], setGroup: latGroup) }
             let rowGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: standingRows, workout: pull)
-            for _ in 0 ..< 4 { database.newStandardSet(repetitions: 8, weight: 50000, setGroup: rowGroup) }
+            for _ in 0 ..< 4 { database.newStandardSet(repetitions: 8, weight: kg.row, setGroup: rowGroup) }
             let curlGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: bicepsCurls, workout: pull)
-            for _ in 0 ..< 3 { database.newStandardSet(repetitions: 12, weight: 30000, setGroup: curlGroup) }
+            for _ in 0 ..< 3 { database.newStandardSet(repetitions: 12, weight: kg.curl, setGroup: curlGroup) }
         }
 
-        func seedLegDay(on day: Date, squatWeight: Int, minutes: Int) {
+        func seedLegDay(on day: Date, week w: Int, minutes: Int) {
+            let kg = weights(week: w)
             let leg = database.newWorkout(name: NSLocalizedString("previewLegDay", comment: ""), date: day)
             leg.endDate = calendar.date(byAdding: .minute, value: minutes, to: day)
             let squatGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: squat, workout: leg)
-            for reps in [8, 8, 6, 6] { database.newStandardSet(repetitions: reps, weight: squatWeight, setGroup: squatGroup) }
+            for reps in [8, 8, 6, 6] { database.newStandardSet(repetitions: reps, weight: kg.squat, setGroup: squatGroup) }
             let lungesGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: lunges, workout: leg)
-            for _ in 0 ..< 4 { database.newStandardSet(repetitions: 12, weight: 50000, setGroup: lungesGroup) }
+            for _ in 0 ..< 4 { database.newStandardSet(repetitions: 12, weight: kg.lunge, setGroup: lungesGroup) }
             let legExtGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: legExtensions, workout: leg)
-            for reps in [[8, 5], [6, 4], [6, 4]] { database.newDropSet(repetitions: reps, weights: [40000, 25000], setGroup: legExtGroup) }
+            for reps in [[8, 5], [6, 4], [6, 4]] { database.newDropSet(repetitions: reps, weights: [kg.legExt, kg.legExt * 5 / 8], setGroup: legExtGroup) }
             let absGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: crunches, workout: leg)
             for _ in 0 ..< 3 { database.newStandardSet(repetitions: 12, weight: 0, setGroup: absGroup) }
         }
@@ -118,15 +154,12 @@ extension Database {
         // positive. `date(...) <= .now` guards against seeding into the future.
         let durations = [65, 58, 72, 55, 68, 61, 70]
         for w in 0 ..< numberOfWeeks {
-            let bench = progressedWeight(week: w, base: 72000, gain: 28000)     // ~72 -> 100 kg
-            let dead = progressedWeight(week: w, base: 100_000, gain: 40000)    // ~100 -> 140 kg
-            let squatW = progressedWeight(week: w, base: 80000, gain: 40000)    // ~80 -> 120 kg
             let push = date(dayOffset: 1, weeksAgo: w)
             let pull = date(dayOffset: 3, weeksAgo: w)
             let leg = date(dayOffset: 0, weeksAgo: w)
-            if push <= .now { seedPushDay(on: push, benchWeight: bench, minutes: durations[w % durations.count]) }
-            if pull <= .now { seedPullDay(on: pull, deadliftWeight: dead, minutes: durations[(w + 2) % durations.count]) }
-            if leg <= .now { seedLegDay(on: leg, squatWeight: squatW, minutes: durations[(w + 4) % durations.count]) }
+            if push <= .now { seedPushDay(on: push, week: w, minutes: durations[w % durations.count]) }
+            if pull <= .now { seedPullDay(on: pull, week: w, minutes: durations[(w + 2) % durations.count]) }
+            if leg <= .now { seedLegDay(on: leg, week: w, minutes: durations[(w + 4) % durations.count]) }
         }
 
         // MARK: Templates

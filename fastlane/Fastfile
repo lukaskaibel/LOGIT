@@ -227,6 +227,13 @@ platform :ios do
       # caller can force fetch-only so a release can never regenerate certificates
       # and invalidate other machines: `fastlane release readonly:true`.
       readonly: options.fetch(:readonly, is_ci),
+      # match reuses whatever profile is already stored in the match repo, even
+      # when the App ID has since gained a capability the stored copy predates —
+      # the profile is still valid, just missing the entitlement, so nothing
+      # prompts a refresh and exportArchive fails on the mismatch. Pass
+      # `force_profiles:true` to reissue the profile. This regenerates PROFILES
+      # only; certificates are untouched, so other machines keep signing.
+      force: options.fetch(:force_profiles, false),
       api_key: api_key
     )
 
@@ -300,6 +307,13 @@ platform :ios do
       # caller can force fetch-only so a release can never regenerate certificates
       # and invalidate other machines: `fastlane release readonly:true`.
       readonly: options.fetch(:readonly, is_ci),
+      # match reuses whatever profile is already stored in the match repo, even
+      # when the App ID has since gained a capability the stored copy predates —
+      # the profile is still valid, just missing the entitlement, so nothing
+      # prompts a refresh and exportArchive fails on the mismatch. Pass
+      # `force_profiles:true` to reissue the profile. This regenerates PROFILES
+      # only; certificates are untouched, so other machines keep signing.
+      force: options.fetch(:force_profiles, false),
       api_key: api_key
     )
 

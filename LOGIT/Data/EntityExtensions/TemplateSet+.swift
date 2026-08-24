@@ -40,8 +40,8 @@ public extension TemplateSet {
                     order: $0.order,
                     repetitions: $0.repetitions,
                     weight: $0.weight,
-                    duration: $0.duration,
-                    distance: $0.distance,
+                    durationMs: $0.durationMs,
+                    distanceMm: $0.distanceMm,
                     exercise: owningExercise(of: $0)
                 )
             }
@@ -60,7 +60,7 @@ public extension TemplateSet {
                 order: order,
                 repetitions: repetitions,
                 weight: weight,
-                duration: 0,
+                durationMs: 0,
                 exercise: exercise
             )
         }
@@ -130,8 +130,8 @@ public extension TemplateSet {
         entry.type = values.type
         entry.repetitions = values.repetitions
         entry.weight = values.weight
-        entry.duration = values.duration
-        entry.distance = values.distance
+        entry.durationMs = values.durationMs
+        entry.distanceMm = values.distanceMm
         entry.exercise = values.exercise
         entry.templateSet = self
         return entry
@@ -176,8 +176,8 @@ public extension TemplateSet {
                     order: value.order,
                     repetitions: 0,
                     weight: 0,
-                    duration: 0,
-                    distance: 0,
+                    durationMs: 0,
+                    distanceMm: 0,
                     exercise: positionalExercise(forOrder: value.order) ?? value.exercise
                 )
             )

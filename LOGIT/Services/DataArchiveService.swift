@@ -27,7 +27,9 @@ import OSLog
 ///   appends anything the relationship holds that the list forgot — a backup must never inherit a
 ///   display bug.
 struct LOGITArchive: Codable {
-    static let currentFormatVersion = 1
+    /// Bumped to 2 when durations became milliseconds and distances millimeters, so an
+    /// archive read months from now is never ambiguous about which unit its numbers are in.
+    static let currentFormatVersion = 2
 
     let formatVersion: Int
     let exportedAt: Date
@@ -82,6 +84,7 @@ struct ArchivedEntry: Codable {
     let measurementType: String
     let repetitions: Int
     let weight: Int
+    /// Milliseconds, and millimeters — see the archive's `units`.
     let duration: Int
     let distance: Int
     let exerciseId: UUID?
@@ -174,7 +177,7 @@ final class DataArchiveService {
             formatVersion: LOGITArchive.currentFormatVersion,
             exportedAt: .now,
             appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?",
-            units: "weights in grams, distances in meters, durations in seconds, dates in ISO 8601",
+            units: "weights in grams, distances in millimeters, durations in milliseconds, dates in ISO 8601",
             exercises: exercises.map { exercise in
                 ArchivedExercise(
                     id: exercise.id,
@@ -271,8 +274,8 @@ final class DataArchiveService {
             measurementType: values.type.rawValue,
             repetitions: Int(values.repetitions),
             weight: Int(values.weight),
-            duration: Int(values.duration),
-            distance: Int(values.distance),
+            duration: Int(values.durationMs),
+            distance: Int(values.distanceMm),
             exerciseId: values.exercise?.id
         )
     }

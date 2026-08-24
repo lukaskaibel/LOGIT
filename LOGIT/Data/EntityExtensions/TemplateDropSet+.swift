@@ -18,7 +18,7 @@ public extension TemplateDropSet {
                 order: (entries.last?.order ?? -1) + 1,
                 repetitions: 0,
                 weight: 0,
-                duration: 0,
+                durationMs: 0,
                 exercise: setGroup?.exercise
             )
         )

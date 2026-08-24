@@ -237,8 +237,8 @@ enum TestScenario: String {
                 )
                 for setIndex in 0 ..< 3 {
                     let plankSet = database.newStandardSet(setGroup: plankGroup)
-                    plankSet.entries.first?.duration =
-                        Int64(45 + (session - (sessionCount - 12)) * 3 - setIndex * 5)
+                    plankSet.entries.first?.durationMs =
+                        Int64(45 + (session - (sessionCount - 12)) * 3 - setIndex * 5) * 1000
                 }
             }
             // Recent pull sessions end with a treadmill run, giving the distance metric
@@ -251,10 +251,10 @@ enum TestScenario: String {
                     workout: workout
                 )
                 let runSet = database.newStandardSet(setGroup: runGroup)
-                runSet.entries.first?.distance =
-                    Int64(3000 + (session - (sessionCount - 12)) * 100)
-                runSet.entries.first?.duration =
-                    Int64(1100 + (session - (sessionCount - 12)) * 20)
+                runSet.entries.first?.distanceMm =
+                    Int64(3000 + (session - (sessionCount - 12)) * 100) * 1000
+                runSet.entries.first?.durationMs =
+                    Int64(1100 + (session - (sessionCount - 12)) * 20) * 1000
             }
         }
 
@@ -291,7 +291,7 @@ enum TestScenario: String {
         for setIndex in 0 ..< 3 {
             let plankSet = database.newStandardSet(setGroup: plankGroup)
             if setIndex < 2 {
-                plankSet.entries.first?.duration = Int64(75 - setIndex * 15)
+                plankSet.entries.first?.durationMs = Int64(75 - setIndex * 15) * 1000
             }
         }
         let carryGroup = database.newWorkoutSetGroup(
@@ -303,7 +303,7 @@ enum TestScenario: String {
             let carrySet = database.newStandardSet(setGroup: carryGroup)
             if setIndex == 0 {
                 carrySet.entries.first?.weight = 40000
-                carrySet.entries.first?.duration = 45
+                carrySet.entries.first?.durationMs = 45_000
             }
         }
 
@@ -318,8 +318,8 @@ enum TestScenario: String {
         for setIndex in 0 ..< 2 {
             let runSet = database.newStandardSet(setGroup: runGroup)
             if setIndex == 0 {
-                runSet.entries.first?.distance = 4200
-                runSet.entries.first?.duration = 1320
+                runSet.entries.first?.distanceMm = 4_200_000
+                runSet.entries.first?.durationMs = 1_320_000
             }
         }
         let sledGroup = database.newWorkoutSetGroup(
@@ -331,7 +331,7 @@ enum TestScenario: String {
             let sledSet = database.newStandardSet(setGroup: sledGroup)
             if setIndex == 0 {
                 sledSet.entries.first?.weight = 60000
-                sledSet.entries.first?.distance = 20
+                sledSet.entries.first?.distanceMm = 20_000
             }
         }
 

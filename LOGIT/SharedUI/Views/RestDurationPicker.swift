@@ -89,5 +89,5 @@ struct RestDurationLabel: View {
 /// Formats seconds into a compact rest time string (e.g. "1:30", "0:30", "3:00") — the same digital
 /// reading recorded set durations wear, so a rest interval and a held set are written alike.
 func restTimeString(seconds: Int) -> String {
-    formatDurationForDisplay(seconds)
+    formatDurationForDisplay(seconds: seconds)
 }

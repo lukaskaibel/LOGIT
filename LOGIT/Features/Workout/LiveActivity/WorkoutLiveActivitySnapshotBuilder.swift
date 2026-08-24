@@ -297,13 +297,13 @@ enum WorkoutLiveActivitySnapshotBuilder {
                 performanceSegments.append(String(shown))
                 performancePlaceholders.append(value.repetitions == 0)
             } else if let distanceStyle = value.type.distanceStyle(for: value.exercise) {
-                let shown = value.distance > 0 ? value.distance : (template?.distance ?? 0)
+                let shown = value.distanceMm > 0 ? value.distanceMm : (template?.distanceMm ?? 0)
                 performanceSegments.append(formatDistanceForDisplay(shown, style: distanceStyle))
-                performancePlaceholders.append(value.distance == 0)
+                performancePlaceholders.append(value.distanceMm == 0)
             } else if value.type.usesDuration {
-                let shown = value.duration > 0 ? value.duration : (template?.duration ?? 0)
-                performanceSegments.append(formatDurationForDisplay(Int(shown)))
-                performancePlaceholders.append(value.duration == 0)
+                let shown = value.durationMs > 0 ? value.durationMs : (template?.durationMs ?? 0)
+                performanceSegments.append(formatDurationForDisplay(milliseconds: Int64(shown)))
+                performancePlaceholders.append(value.durationMs == 0)
             }
             if value.type.usesWeight {
                 let shown = value.weight > 0 ? value.weight : (template?.weight ?? 0)
@@ -367,11 +367,11 @@ enum WorkoutLiveActivitySnapshotBuilder {
             } else if let distanceStyle = value.type.distanceStyle(for: value.exercise) {
                 // Distance-tracking types show only the distance here — the display carries one
                 // unit for all segments, so a duration fallback would mislabel seconds as km.
-                if value.distance > 0 {
-                    performanceSegments.append(formatDistanceForDisplay(value.distance, style: distanceStyle))
+                if value.distanceMm > 0 {
+                    performanceSegments.append(formatDistanceForDisplay(value.distanceMm, style: distanceStyle))
                 }
-            } else if value.type.usesDuration, !value.type.usesRepetitions, value.duration > 0 {
-                performanceSegments.append(formatDurationForDisplay(Int(value.duration)))
+            } else if value.type.usesDuration, !value.type.usesRepetitions, value.durationMs > 0 {
+                performanceSegments.append(formatDurationForDisplay(milliseconds: value.durationMs))
             }
             if value.type.usesWeight, value.weight > 0 {
                 weightSegments.append(formatWeightForDisplay(value.weight))

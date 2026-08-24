@@ -284,12 +284,85 @@ final class EntityExtensionTests: XCTestCase {
         XCTAssertEqual(maxReps, 0, "Should return 0 for wrong exercise")
     }
 
+    // MARK: - Fine-Grained Units (model v11)
+
+    /// A row written before v11 — or by a device still on an older app version, which keeps
+    /// syncing through CloudKit for as long as that install lives — carries only whole seconds
+    /// and whole meters. It has to read as the same measurement, not a thousandth of one. This
+    /// fallback is what lets the model version ship without a conversion sweep.
+    func testLegacyWholeUnitRowsReadAsFineGrainedValues() throws {
+        let exercise = builder.createExercise(name: "Treadmill Run")
+        let set = builder.createStandardSet(repetitions: 0, weight: 0, exercise: exercise)
+        set.overrideMeasurementType(.distanceAndDuration)
+        let entry = try XCTUnwrap(set.entries.first)
+        // Exactly the shape an older writer leaves behind: coarse attributes set, fine ones absent.
+        entry.durationMillis = nil
+        entry.distanceMillimeters = nil
+        entry.duration = 90
+        entry.distance = 5000
+
+        XCTAssertEqual(entry.durationMs, 90_000, "90 s must read as 90000 ms")
+        XCTAssertEqual(entry.distanceMm, 5_000_000, "5000 m must read as 5 million mm")
+        XCTAssertTrue(entry.hasValue, "A legacy row is not empty")
+        XCTAssertEqual(set.maximum(.duration, for: exercise), 90_000)
+    }
+
+    /// Writing keeps the legacy attributes populated, so a device on an older app version still
+    /// shows a sensible number for a set entered here. The mirror is rounded, not truncated.
+    func testWritingFineGrainedValuesMirrorsRoundedWholeUnits() throws {
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.overrideMeasurementType(.distanceAndDuration)
+        let entry = try XCTUnwrap(set.entries.first)
+
+        entry.durationMs = 12_340
+        XCTAssertEqual(entry.duration, 12, "12.34 s mirrors as 12 s")
+        entry.durationMs = 12_500
+        XCTAssertEqual(entry.duration, 13, "12.5 s rounds up, it does not truncate")
+        entry.durationMs = 12_499
+        XCTAssertEqual(entry.duration, 12)
+
+        entry.distanceMm = 40_250
+        XCTAssertEqual(entry.distance, 40, "40.25 m mirrors as 40 m")
+        XCTAssertEqual(entry.distanceMm, 40_250, "…while the precise value is untouched")
+    }
+
+    /// Clearing has to clear both representations — a stale mirror would resurrect the value on
+    /// an older device.
+    func testClearingZeroesBothRepresentations() throws {
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.overrideMeasurementType(.distanceAndDuration)
+        let entry = try XCTUnwrap(set.entries.first)
+        entry.durationMs = 12_340
+        entry.distanceMm = 40_250
+
+        entry.clearValues()
+
+        XCTAssertEqual(entry.durationMs, 0)
+        XCTAssertEqual(entry.duration, 0)
+        XCTAssertEqual(entry.distanceMm, 0)
+        XCTAssertEqual(entry.distance, 0)
+        XCTAssertFalse(entry.hasValue)
+    }
+
+    /// Sub-second and sub-meter values are real values, not the empty placeholder — the recorder's
+    /// rest timer and the Live Activity read `hasPerformanceValue` to know a set was performed.
+    func testSubUnitValuesCountAsPerformed() throws {
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.overrideMeasurementType(.duration)
+        let entry = try XCTUnwrap(set.entries.first)
+        entry.durationMs = 400
+
+        XCTAssertTrue(entry.hasValue, "0.4 s is a recorded value")
+        XCTAssertTrue(entry.hasPerformanceValue, "…and counts as performed")
+        XCTAssertEqual(entry.duration, 0, "even though the legacy mirror rounds it away")
+    }
+
     // MARK: - Distance Entry Tests
 
     func testDistanceCountsAsEntryAndPerformance() {
         let set = database.newStandardSet(repetitions: 0, weight: 0)
         set.overrideMeasurementType(.distanceAndDuration)
-        set.entries.first?.distance = 5000
+        set.entries.first?.distanceMm = 5_000_000
 
         XCTAssertTrue(set.hasEntry, "A recorded distance is a value")
         XCTAssertTrue(
@@ -301,7 +374,7 @@ final class EntityExtensionTests: XCTestCase {
     func testDurationAloneMarksDistanceAndDurationEntryPerformed() {
         let set = database.newStandardSet(repetitions: 0, weight: 0)
         set.overrideMeasurementType(.distanceAndDuration)
-        set.entries.first?.duration = 90
+        set.entries.first?.durationMs = 90_000
 
         XCTAssertTrue(set.hasRepetitionEntry, "Either field of distance+duration counts as performed")
     }
@@ -318,10 +391,10 @@ final class EntityExtensionTests: XCTestCase {
     func testClearEntriesZeroesDistance() {
         let set = database.newStandardSet(repetitions: 0, weight: 0)
         set.overrideMeasurementType(.distanceAndDuration)
-        set.entries.first?.distance = 5000
+        set.entries.first?.distanceMm = 5_000_000
         set.clearEntries()
 
-        XCTAssertEqual(set.entries.first?.distance, 0, "Distance should be cleared")
+        XCTAssertEqual(set.entries.first?.distanceMm, 0, "Distance should be cleared")
         XCTAssertFalse(set.hasEntry)
     }
 
@@ -329,22 +402,22 @@ final class EntityExtensionTests: XCTestCase {
         let exercise = builder.createExercise(name: "Running")
         let set = builder.createStandardSet(repetitions: 0, weight: 0, exercise: exercise)
         set.overrideMeasurementType(.distanceAndDuration)
-        set.entries.first?.distance = 5000
+        set.entries.first?.distanceMm = 5_000_000
 
-        XCTAssertEqual(set.maximum(.distance, for: exercise), 5000)
+        XCTAssertEqual(set.maximum(.distance, for: exercise), 5_000_000)
     }
 
     func testRetypeKeepsStoredDistance() {
         let set = database.newStandardSet(repetitions: 0, weight: 0)
         set.overrideMeasurementType(.distanceAndDuration)
-        set.entries.first?.distance = 5000
+        set.entries.first?.distanceMm = 5_000_000
 
         // Re-typing never clears values: the distance is invisible under reps-only and
         // intact when switching back.
         set.overrideMeasurementType(.repsOnly)
         XCTAssertFalse(set.hasEntry, "Reps-only tracks no distance, so the set reads empty")
         set.overrideMeasurementType(.distanceAndDuration)
-        XCTAssertEqual(set.entries.first?.distance, 5000)
+        XCTAssertEqual(set.entries.first?.distanceMm, 5_000_000)
         XCTAssertTrue(set.hasEntry)
     }
 
@@ -392,7 +465,7 @@ final class EntityExtensionTests: XCTestCase {
         set.matchStructure(toEntryValues: templateSet.entryValues)
 
         XCTAssertEqual(set.entries.first?.type, .weightAndDistance)
-        XCTAssertEqual(set.entries.first?.distance, 0, "Structure matching starts values empty")
+        XCTAssertEqual(set.entries.first?.distanceMm, 0, "Structure matching starts values empty")
     }
 
     // MARK: - WorkoutSet Max Entry Tests

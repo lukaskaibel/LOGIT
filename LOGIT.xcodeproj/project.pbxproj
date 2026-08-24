@@ -683,6 +683,7 @@
 		F3C48765200C9745764F2EAA /* PeriodHistoryChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PeriodHistoryChart.swift; sourceTree = "<group>"; };
 		EAFB1FBB846E1E6F66BCFFBC /* TrendWindowHistoryChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrendWindowHistoryChart.swift; sourceTree = "<group>"; };
 		FB2659B3B29420E28C58F4B1 /* LOGIT 10.0.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 10.0.xcdatamodel"; sourceTree = "<group>"; };
+		FB2659B3B29420E28C58F4B2 /* LOGIT 11.0.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 11.0.xcdatamodel"; sourceTree = "<group>"; };
 		FE01CA11AB1E5077AE000001 /* SummaryTrendSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryTrendSection.swift; sourceTree = "<group>"; };
 		FE91C0394869857C0E932723 /* MeasurementWatchlistRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementWatchlistRow.swift; sourceTree = "<group>"; };
 		FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupDetailScreen.swift; sourceTree = "<group>"; };
@@ -2421,6 +2422,7 @@
 		801BBCC92DF7338A00CDB1FB /* LOGIT.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				FB2659B3B29420E28C58F4B2 /* LOGIT 11.0.xcdatamodel */,
 				FB2659B3B29420E28C58F4B1 /* LOGIT 10.0.xcdatamodel */,
 				80AA00092F84DD0100AA0009 /* LOGIT 9.0.xcdatamodel */,
 				80AA00082F70CC0100AA0008 /* LOGIT 8.0.xcdatamodel */,
@@ -2432,7 +2434,7 @@
 				801BBD602DF7338A00CDB1FB /* LOGIT 3.0.xcdatamodel */,
 				801BBD612DF7338A00CDB1FB /* WorkoutDiary.xcdatamodel */,
 			);
-			currentVersion = FB2659B3B29420E28C58F4B1 /* LOGIT 10.0.xcdatamodel */;
+			currentVersion = FB2659B3B29420E28C58F4B2 /* LOGIT 11.0.xcdatamodel */;
 			path = LOGIT.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

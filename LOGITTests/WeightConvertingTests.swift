@@ -334,50 +334,88 @@ final class DistanceConvertingTests: XCTestCase {
     func testConvertDistanceForStoringKm() {
         userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
 
-        XCTAssertEqual(convertDistanceForStoring(5.5), 5500, "5.5 km should store as 5500 meters")
+        XCTAssertEqual(convertDistanceForStoring(5.5), 5_500_000, "5.5 km should store as 5.5 million mm")
     }
 
     func testConvertDistanceForStoringMi() {
         userDefaultsHelper.setTestValue("mi", forKey: "distanceUnit")
 
-        XCTAssertEqual(convertDistanceForStoring(1.0), 1609, "1 mi should store as 1609 meters")
+        XCTAssertEqual(convertDistanceForStoring(1.0), 1_609_344, "1 mi should store as 1609344 mm")
     }
 
     func testConvertDistanceForDisplayingDecimalKm() {
         userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
 
-        XCTAssertEqual(convertDistanceForDisplayingDecimal(5500), 5.5, accuracy: 0.001)
+        XCTAssertEqual(convertDistanceForDisplayingDecimal(5_500_000), 5.5, accuracy: 0.001)
     }
 
     func testConvertDistanceForDisplayingDecimalMi() {
         userDefaultsHelper.setTestValue("mi", forKey: "distanceUnit")
 
-        XCTAssertEqual(convertDistanceForDisplayingDecimal(1609), 1.0, accuracy: 0.01)
+        XCTAssertEqual(convertDistanceForDisplayingDecimal(1_609_344), 1.0, accuracy: 0.01)
     }
 
     func testFormatDistanceDropsTrailingZeros() {
         userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
 
-        XCTAssertEqual(formatDistanceForDisplay(Int64(5000)), "5")
-        XCTAssertEqual(formatDistanceForDisplay(Int64(5500)), "5.5")
-        XCTAssertEqual(formatDistanceForDisplay(Int64(5550)), "5.55")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5_000_000)), "5")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5_500_000)), "5.5")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5_550_000)), "5.55")
         XCTAssertEqual(formatDistanceForDisplay(Int64(0)), "0")
     }
 
     // MARK: - Short Distances (m/yd)
 
-    func testShortDistanceMetersPassThrough() {
+    func testShortDistanceMetersConvertToMillimeters() {
         userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
 
-        XCTAssertEqual(convertShortDistanceForStoring(40), 40, "Meters store as meters")
-        XCTAssertEqual(convertShortDistanceForDisplaying(40), 40)
+        XCTAssertEqual(convertShortDistanceForStoring(40), 40_000, "40 m is 40000 mm")
+        XCTAssertEqual(convertShortDistanceForDisplayingDecimal(40_000), 40, accuracy: 0.001)
     }
 
     func testShortDistanceYardsConversion() {
         userDefaultsHelper.setTestValue("mi", forKey: "distanceUnit")
 
-        XCTAssertEqual(convertShortDistanceForStoring(50), 46, "50 yd should store as 46 meters")
-        XCTAssertEqual(convertShortDistanceForDisplaying(46), 50, "46 meters should display as 50 yd")
+        XCTAssertEqual(convertShortDistanceForStoring(50), 45_720, "50 yd should store as 45720 mm")
+        XCTAssertEqual(convertShortDistanceForDisplayingDecimal(45_720), 50, accuracy: 0.001)
+    }
+
+    /// The short scale carries decimals since v11 — a measured 40.25 m carry is a real number,
+    /// and it must survive the trip to storage and back.
+    func testShortDistanceKeepsTwoDecimals() {
+        userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
+
+        XCTAssertEqual(convertShortDistanceForStoring(40.25), 40_250)
+        XCTAssertEqual(convertShortDistanceForDisplayingDecimal(40_250), 40.25, accuracy: 0.001)
+        XCTAssertEqual(formatDistanceForDisplay(Int64(40_250), style: .short), "40.25")
+        // A whole value still reads whole — no "40.00" on the gym floor.
+        XCTAssertEqual(formatDistanceForDisplay(Int64(40_000), style: .short), "40")
+    }
+
+    /// The reason storage is millimeters and the decimal cap is two: every two-decimal value
+    /// the user can type must come back unchanged in BOTH unit systems. Centimeter storage
+    /// fails this in yards (0.06 yd would redisplay as 0.05), and a third decimal fails too.
+    func testEveryTwoDecimalEntryRoundTripsInBothUnitSystems() {
+        for unit in ["km", "mi"] {
+            userDefaultsHelper.setTestValue(unit, forKey: "distanceUnit")
+            for step in 1...2000 {
+                let entered = Double(step) / 100
+                let shortRoundTrip = convertShortDistanceForDisplayingDecimal(
+                    convertShortDistanceForStoring(entered)
+                )
+                XCTAssertEqual(
+                    shortRoundTrip, entered, accuracy: 0.0001,
+                    "\(entered) in the short scale did not survive storage in \(unit)"
+                )
+                let longRoundTrip = convertDistanceForDisplayingDecimal(
+                    convertDistanceForStoring(entered)
+                )
+                XCTAssertEqual(
+                    longRoundTrip, entered, accuracy: 0.0001,
+                    "\(entered) in the long scale did not survive storage in \(unit)"
+                )
+            }
+        }
     }
 
     // MARK: - Style Dispatch
@@ -385,8 +423,8 @@ final class DistanceConvertingTests: XCTestCase {
     func testFormatDistanceForDisplayByStyle() {
         userDefaultsHelper.setTestValue("km", forKey: "distanceUnit")
 
-        XCTAssertEqual(formatDistanceForDisplay(Int64(5500), style: .long), "5.5")
-        XCTAssertEqual(formatDistanceForDisplay(Int64(40), style: .short), "40")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(5_500_000), style: .long), "5.5")
+        XCTAssertEqual(formatDistanceForDisplay(Int64(40_000), style: .short), "40")
         XCTAssertEqual(distanceUnitTitle(for: .long), "km")
         XCTAssertEqual(distanceUnitTitle(for: .short), "m")
     }

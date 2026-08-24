@@ -122,10 +122,18 @@ struct SetEntryDTO: Codable {
     let type: String?
     let repetitions: Int?
     let weight: Int?
+    /// Whole seconds, rounded. Kept populated for receivers on app versions that predate
+    /// millisecond durations — a shared file travels to strangers, whose app may be older than
+    /// the sender's, so the coarse value stays the one every version can read.
     let duration: Int?
     /// Meters. Additive on top of format version 2 — receivers without distance support
     /// decode leniently and ignore it.
     let distance: Int?
+    /// Milliseconds, and millimeters: the precise values, additive on top of format version 2
+    /// in exactly the way `distance` was. Receivers that understand them prefer them; older
+    /// ones ignore the keys and read the rounded pair above.
+    let durationMillis: Int?
+    let distanceMillimeters: Int?
     /// Index into the set group's exercises (0 = primary); meaningful for compound sets.
     let exerciseIndex: Int?
 
@@ -133,8 +141,21 @@ struct SetEntryDTO: Codable {
         self.type = values.type.rawValue
         self.repetitions = Int(values.repetitions)
         self.weight = Int(values.weight)
-        self.duration = Int(values.duration)
-        self.distance = Int(values.distance)
+        self.duration = Int(roundedToThousands(values.durationMs))
+        self.distance = Int(roundedToThousands(values.distanceMm))
+        self.durationMillis = Int(values.durationMs)
+        self.distanceMillimeters = Int(values.distanceMm)
         self.exerciseIndex = exerciseIndex
+    }
+
+    /// The entry's duration in milliseconds, preferring the precise key and falling back to the
+    /// whole seconds an older sender wrote.
+    var resolvedDurationMs: Int64 {
+        durationMillis.map(Int64.init) ?? Int64(duration ?? 0) * 1000
+    }
+
+    /// The entry's distance in millimeters, on the same terms.
+    var resolvedDistanceMm: Int64 {
+        distanceMillimeters.map(Int64.init) ?? Int64(distance ?? 0) * 1000
     }
 }

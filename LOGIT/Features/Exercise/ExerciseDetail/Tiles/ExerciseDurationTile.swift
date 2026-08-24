@@ -21,7 +21,7 @@ struct ExerciseDurationTile: View {
             unit: "",
             showsExerciseName: showsExerciseName,
             metricValue: { $0.maximum(.duration, for: exercise) },
-            formattedValue: { formatDurationForDisplay($0) },
+            formattedValue: { formatDurationForDisplay(milliseconds: Int64($0)) },
             chartValue: { Double($0) }
         )
     }

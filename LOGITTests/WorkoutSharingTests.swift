@@ -310,8 +310,8 @@ final class WorkoutDTOTests: XCTestCase {
         let sg = database.newWorkoutSetGroup(exercise: exercise, workout: workout)
         let set = sg.sets[0]
         set.overrideMeasurementType(.distanceAndDuration)
-        set.entries.first?.distance = 5500
-        set.entries.first?.duration = 1500
+        set.entries.first?.distanceMm = 5_500_000
+        set.entries.first?.durationMs = 1_500_000
 
         let dto = WorkoutDTO(from: workout)
         let encoder = JSONEncoder()
@@ -324,8 +324,18 @@ final class WorkoutDTOTests: XCTestCase {
 
         let entry = try XCTUnwrap(decoded.setGroups[0].sets[0].entries?.first)
         XCTAssertEqual(entry.type, SetMeasurementType.distanceAndDuration.rawValue)
-        XCTAssertEqual(entry.distance, 5500, "Distance (meters) must survive the share round-trip")
-        XCTAssertEqual(entry.duration, 1500)
+        XCTAssertEqual(
+            entry.distanceMillimeters, 5_500_000,
+            "Distance (millimeters) must survive the share round-trip"
+        )
+        XCTAssertEqual(entry.durationMillis, 1_500_000)
+        XCTAssertEqual(
+            entry.distance, 5500,
+            "The rounded meters stay populated for receivers on older app versions"
+        )
+        XCTAssertEqual(entry.duration, 1500, "…and the rounded seconds alongside them")
+        XCTAssertEqual(entry.resolvedDistanceMm, 5_500_000)
+        XCTAssertEqual(entry.resolvedDurationMs, 1_500_000)
     }
 
     func testWorkoutDTORoundTripSuperSets() throws {

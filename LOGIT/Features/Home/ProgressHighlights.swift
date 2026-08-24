@@ -105,9 +105,10 @@ enum MilestoneLadder {
         + Array(stride(from: 545, through: 1000, by: 50))
 
     private static let repsSteps = [10, 15, 20, 25, 30, 40, 50, 75, 100]
-    /// Seconds.
+    /// Seconds — converted to the stored milliseconds by `steps(for:)`.
     private static let durationSteps = [30, 60, 120, 180, 300, 600]
-    /// Meters — 1 k, 2.5 k, 5 k, 10 k, 15 k, half and full marathon.
+    /// Meters — 1 k, 2.5 k, 5 k, 10 k, 15 k, half and full marathon. Converted to the stored
+    /// millimeters by `steps(for:)`.
     private static let distanceSteps = [1000, 2500, 5000, 10000, 15000, 21098, 42195]
 
     /// All ladder steps for a metric, converted to the metric's base units (grams for weights).
@@ -119,8 +120,10 @@ enum MilestoneLadder {
             let displaySteps = WeightUnit.used == .kg ? kgSteps : lbsSteps
             return displaySteps.map { Int(convertWeightForStoring(Double($0))) }
         case .repetitions: return repsSteps
-        case .duration: return durationSteps
-        case .distance: return distanceSteps
+        // The ladders are written in the units a lifter says out loud; storage has been
+        // finer-grained since v11, so both scale by a thousand here rather than in the lists.
+        case .duration: return durationSteps.map { $0 * 1000 }
+        case .distance: return distanceSteps.map { $0 * 1000 }
         }
     }
 

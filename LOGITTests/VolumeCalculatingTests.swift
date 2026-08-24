@@ -430,62 +430,129 @@ final class MilestoneLadderTests: XCTestCase {
         XCTAssertNil(MilestoneLadder.highestStep(crossedFrom: 10, to: 12, metric: .repetitions))
     }
 
+    /// The ladders are written in the units a lifter says out loud, but crossings are tested
+    /// against stored values — millimeters for distance, milliseconds for duration since v11.
     func testDistanceLadderIncludesHalfMarathon() {
         XCTAssertEqual(
-            MilestoneLadder.highestStep(crossedFrom: 15_000, to: 21_100, metric: .distance),
-            21_098
+            MilestoneLadder.highestStep(
+                crossedFrom: 15_000_000, to: 21_100_000, metric: .distance
+            ),
+            21_098_000
+        )
+    }
+
+    /// A 15 km run in millimeters is a ten-digit number; the same run in the old meters would
+    /// have sailed past every step at once, which is what this guards.
+    func testDurationLadderUsesMilliseconds() {
+        XCTAssertEqual(
+            MilestoneLadder.highestStep(crossedFrom: 45_000, to: 65_000, metric: .duration),
+            60_000,
+            "A 45 s hold growing to 65 s crosses the one-minute step"
+        )
+        XCTAssertNil(
+            MilestoneLadder.highestStep(crossedFrom: 45, to: 65, metric: .duration),
+            "Values that look like seconds cross nothing — the ladder lives in milliseconds"
         )
     }
 }
 
 // MARK: - Duration formatting
 
-/// Recorded durations are stored as whole seconds but displayed as a digital reading, so a held
-/// plank and a treadmill run read the way a clock does rather than as a bare seconds count.
+/// Recorded durations are stored as milliseconds and displayed as a digital reading, so a held
+/// plank and a treadmill run read the way a clock does rather than as a bare seconds count — and
+/// a sprint keeps the hundredths it was timed to.
 final class DurationFormattingTests: XCTestCase {
     func testSubMinuteKeepsLeadingZeroMinute() {
-        XCTAssertEqual(formatDurationForDisplay(45), "0:45")
-        XCTAssertEqual(formatDurationForDisplay(5), "0:05")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 45), "0:45")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 5), "0:05")
     }
 
     func testWholeMinute() {
-        XCTAssertEqual(formatDurationForDisplay(60), "1:00")
-        XCTAssertEqual(formatDurationForDisplay(90), "1:30")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 60), "1:00")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 90), "1:30")
     }
 
     func testManyMinutesPadsSecondsNotMinutes() {
         // The reported case: a 1280-second run read as "1280 SEC".
-        XCTAssertEqual(formatDurationForDisplay(1280), "21:20")
-        XCTAssertEqual(formatDurationForDisplay(1320), "22:00")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 1280), "21:20")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 1320), "22:00")
     }
 
     func testHoursSplitOffAndPadMinutes() {
-        XCTAssertEqual(formatDurationForDisplay(3600), "1:00:00")
-        XCTAssertEqual(formatDurationForDisplay(3700), "1:01:40")
-        XCTAssertEqual(formatDurationForDisplay(7325), "2:02:05")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 3600), "1:00:00")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 3700), "1:01:40")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 7325), "2:02:05")
     }
 
     func testZeroAndNegativeAreSafe() {
-        XCTAssertEqual(formatDurationForDisplay(0), "0:00")
+        XCTAssertEqual(formatDurationForDisplay(seconds: 0), "0:00")
         // Values can't be negative in the store, but the formatter must not produce "-1:-1".
-        XCTAssertEqual(formatDurationForDisplay(-30), "0:00")
+        XCTAssertEqual(formatDurationForDisplay(seconds: -30), "0:00")
+        XCTAssertEqual(formatDurationForDisplay(milliseconds: 0), "0:00")
+        XCTAssertEqual(formatDurationForDisplay(milliseconds: -30_000), "0:00")
+    }
+
+    /// Every duration logged before milliseconds existed — and every whole-second one entered
+    /// since — must read exactly as it always did. No trailing ".00" anywhere.
+    func testWholeSecondMillisecondsReadIdenticallyToSeconds() {
+        for seconds in [0, 5, 45, 60, 90, 1280, 3600, 7325] {
+            XCTAssertEqual(
+                formatDurationForDisplay(milliseconds: Int64(seconds) * 1000),
+                formatDurationForDisplay(seconds: seconds),
+                "\(seconds)s must read the same through both formatters"
+            )
+        }
+    }
+
+    /// The sprint case: hundredths show only when the value carries them.
+    func testSubSecondPrecisionShowsHundredths() {
+        XCTAssertEqual(formatDurationForDisplay(milliseconds: 12_340), "0:12.34")
+        XCTAssertEqual(formatDurationForDisplay(milliseconds: 12_300), "0:12.30")
+        XCTAssertEqual(formatDurationForDisplay(milliseconds: 90_500), "1:30.50")
+        // Rounded to hundredths first, so a value a hair under a full second doesn't print .99
+        XCTAssertEqual(formatDurationForDisplay(milliseconds: 12_999), "0:13")
+        XCTAssertEqual(formatDurationForDisplay(milliseconds: 12_996), "0:13")
+    }
+
+    /// The entry field spells the same number without the colons, since the unit sits beside it.
+    func testEntryFieldSecondsSpelling() {
+        XCTAssertEqual(formatDurationSecondsForEntry(milliseconds: 12_340), "12.34")
+        XCTAssertEqual(formatDurationSecondsForEntry(milliseconds: 45_000), "45")
+        XCTAssertEqual(formatDurationSecondsForEntry(milliseconds: 12_300), "12.3")
+        XCTAssertEqual(formatDurationSecondsForEntry(milliseconds: 0), "0")
     }
 
     /// The rest-duration picker delegates to the shared formatter — its output must not drift.
     func testRestTimeStringMatchesSharedFormatter() {
         for seconds in [30, 60, 90, 120, 180] {
-            XCTAssertEqual(restTimeString(seconds: seconds), formatDurationForDisplay(seconds))
+            XCTAssertEqual(restTimeString(seconds: seconds), formatDurationForDisplay(seconds: seconds))
         }
     }
 
     /// VoiceOver gets words, not a pair of bare numbers.
     func testAccessibleDurationSpellsUnitsAndHidesZeroes() {
-        let ninety = accessibleDurationForDisplay(90)
+        let ninety = accessibleDurationForDisplay(seconds: 90)
         XCTAssertTrue(ninety.contains("1"), "Expected a minute component in \(ninety)")
         XCTAssertTrue(ninety.contains("30"), "Expected a second component in \(ninety)")
         // A sub-minute hold shouldn't announce "0 minutes".
-        let fortyFive = accessibleDurationForDisplay(45)
+        let fortyFive = accessibleDurationForDisplay(seconds: 45)
         XCTAssertFalse(fortyFive.hasPrefix("0"), "Zero-valued units should be hidden: \(fortyFive)")
+    }
+
+    /// A whole-second millisecond value is spoken exactly like the seconds value; a sprint time
+    /// is spoken as a decimal rather than gaining a milliseconds unit.
+    func testAccessibleDurationFromMilliseconds() {
+        XCTAssertEqual(
+            accessibleDurationForDisplay(milliseconds: 90_000),
+            accessibleDurationForDisplay(seconds: 90)
+        )
+        // The decimal separator is the reader's, not ours — German VoiceOver says "12,34".
+        let separator = Locale.current.decimalSeparator ?? "."
+        let sprint = accessibleDurationForDisplay(milliseconds: 12_340)
+        XCTAssertTrue(
+            sprint.contains("12\(separator)34"),
+            "Expected a decimal seconds reading in \(sprint)"
+        )
     }
 }
 

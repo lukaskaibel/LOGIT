@@ -139,6 +139,49 @@ extension Workout {
         sets.filter { !$0.hasEntry }.isEmpty
     }
 
+    // MARK: - Effort & Note
+
+    /// The workout's 1…10 effort rating, or `nil` when it was never rated.
+    ///
+    /// Stored as a non-optional scalar where **0 spells "unrated"** — the same shape
+    /// `MeasurementEntry.value_` uses, and the reason the raw attribute keeps its underscore.
+    /// Writing a value outside 1…10 clamps rather than throwing: HealthKit rejects those samples
+    /// outright, so an out-of-range score must never reach the export.
+    var effortScore: Int? {
+        get { effortScore_ == 0 ? nil : Int(effortScore_) }
+        set {
+            guard let newValue else {
+                effortScore_ = 0
+                return
+            }
+            effortScore_ = Int16(min(max(newValue, 1), 10))
+        }
+    }
+
+    var effort: WorkoutEffort? {
+        effortScore.flatMap(WorkoutEffort.init(score:))
+    }
+
+    var hasNote: Bool {
+        !(note?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+    }
+
+    /// The note from the last time this workout's template was run, for the recorder's recall
+    /// row. Nil for a workout with no template, and never this workout's own note.
+    ///
+    /// Resolved in memory off the template's (small) workout list rather than with a fetch — the
+    /// recorder reads this once per appearance, not per frame.
+    var previousTemplateNote: (note: String, date: Date)? {
+        guard let template else { return nil }
+        let candidates = template.workouts
+            .filter { $0 != self && $0.hasNote && $0.date != nil }
+        guard let previous = candidates.max(by: { ($0.date ?? .distantPast) < ($1.date ?? .distantPast) }),
+              let note = previous.note,
+              let date = previous.date
+        else { return nil }
+        return (note, date)
+    }
+
     static func getStandardName(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"

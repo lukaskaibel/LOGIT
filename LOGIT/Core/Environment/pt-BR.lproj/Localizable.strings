@@ -1152,3 +1152,17 @@
 "exportResult" = "%d treinos e %d séries exportados.";
 "exportFailedTitle" = "Falha na exportação";
 "exportFailedMessage" = "Não foi possível gravar seus dados em um arquivo. Tente novamente.";
+
+"note" = "Nota";
+"howHardWasIt" = "Quão difícil foi?";
+"workoutNotePrompt" = "O que foi bem? O que mudar?";
+"effort" = "Esforço";
+"effortEasy" = "Fácil";
+"effortModerate" = "Moderado";
+"effortHard" = "Difícil";
+"effortAllOut" = "Máximo";
+"notRated" = "Não avaliado";
+"effortOptional" = "Opcional — alimenta a carga de treino no Fitness.";
+"lastTime" = "Da última vez";
+"previewWorkoutNote" = "O supino ficou fácil com 80 — na próxima, 82,5. Manter os cotovelos fechados no desenvolvimento.";
+"setsIncompleteWillNotBeSaved" = "%d séries incompletas — não serão salvas.";

@@ -1152,3 +1152,17 @@
 "exportResult" = "Se exportaron %d entrenamientos y %d series.";
 "exportFailedTitle" = "Error al exportar";
 "exportFailedMessage" = "No se pudieron escribir tus datos en un archivo. Inténtalo de nuevo.";
+
+"note" = "Nota";
+"howHardWasIt" = "¿Cómo de duro fue?";
+"workoutNotePrompt" = "¿Qué fue bien? ¿Qué cambiar?";
+"effort" = "Esfuerzo";
+"effortEasy" = "Fácil";
+"effortModerate" = "Moderado";
+"effortHard" = "Difícil";
+"effortAllOut" = "Al máximo";
+"notRated" = "Sin valorar";
+"effortOptional" = "Opcional: contribuye a la carga de entrenamiento en Fitness.";
+"lastTime" = "La última vez";
+"previewWorkoutNote" = "El press de banca fue fácil con 80: la próxima vez, 82,5. Mantén los codos pegados en el press militar.";
+"setsIncompleteWillNotBeSaved" = "%d series incompletas: no se guardarán.";

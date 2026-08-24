@@ -1109,6 +1109,108 @@ final class HealthKitSyncManagerTests: XCTestCase {
 
         XCTAssertNil(workout.healthKitPayload)
     }
+
+    // MARK: - Effort
+
+    func testHealthKitPayloadCarriesEffortScore() {
+        let workout = database.newWorkout()
+        workout.id = UUID()
+        workout.date = Date(timeIntervalSinceNow: -7200)
+        workout.endDate = Date(timeIntervalSinceNow: -3600)
+        workout.effortScore = 7
+
+        XCTAssertEqual(workout.healthKitPayload?.effortScore, 7)
+    }
+
+    /// An unrated workout must export no effort sample at all — a 0 would be read back as a
+    /// rating, and HealthKit only accepts 1…10 anyway.
+    func testHealthKitPayloadHasNoEffortScoreWhenUnrated() {
+        let workout = database.newWorkout()
+        workout.id = UUID()
+        workout.date = Date(timeIntervalSinceNow: -7200)
+        workout.endDate = Date(timeIntervalSinceNow: -3600)
+
+        XCTAssertNil(workout.effortScore)
+        XCTAssertNil(workout.healthKitPayload?.effortScore)
+    }
+
+    func testEffortScoreRoundTripsAndTreatsZeroAsUnrated() {
+        let workout = database.newWorkout()
+        XCTAssertNil(workout.effortScore, "A new workout is unrated, not a zero rating")
+
+        workout.effortScore = 1
+        XCTAssertEqual(workout.effortScore, 1, "1 is a real rating and must not read as unrated")
+
+        workout.effortScore = 10
+        XCTAssertEqual(workout.effortScore, 10)
+
+        workout.effortScore = nil
+        XCTAssertNil(workout.effortScore)
+    }
+
+    /// Out-of-range values clamp rather than reaching the export: HealthKit rejects them outright.
+    func testEffortScoreClampsOutOfRangeValues() {
+        let workout = database.newWorkout()
+        workout.effortScore = 42
+        XCTAssertEqual(workout.effortScore, 10)
+        workout.effortScore = -3
+        XCTAssertEqual(workout.effortScore, 1)
+    }
+
+    func testWorkoutEffortBucketsMatchApples() {
+        // Apple's own boundaries — a 7 rated here has to read "Hard" in Fitness too.
+        for score in 1...3 { XCTAssertEqual(WorkoutEffort(score: score), .easy, "\(score)") }
+        for score in 4...6 { XCTAssertEqual(WorkoutEffort(score: score), .moderate, "\(score)") }
+        for score in 7...8 { XCTAssertEqual(WorkoutEffort(score: score), .hard, "\(score)") }
+        for score in 9...10 { XCTAssertEqual(WorkoutEffort(score: score), .allOut, "\(score)") }
+        XCTAssertNil(WorkoutEffort(score: 0))
+        XCTAssertNil(WorkoutEffort(score: 11))
+    }
+
+    // MARK: - Note
+
+    func testHasNoteIgnoresWhitespaceOnlyNotes() {
+        let workout = database.newWorkout()
+        XCTAssertFalse(workout.hasNote)
+        workout.note = "   \n  "
+        XCTAssertFalse(workout.hasNote, "Whitespace is not a note — the recall row must still show")
+        workout.note = "Go 82.5 next time"
+        XCTAssertTrue(workout.hasNote)
+    }
+
+    /// The recall row's source: the most recent *other* workout on the same template that has a
+    /// note. Never this workout's own note, and nothing at all without a template.
+    func testPreviousTemplateNoteFindsMostRecentNotedSession() {
+        let template = database.newTemplate(name: "Push Day")
+
+        let older = database.newWorkout(name: "Push Day", date: Date(timeIntervalSinceNow: -86400 * 14))
+        older.template = template
+        older.note = "Older note"
+
+        let newer = database.newWorkout(name: "Push Day", date: Date(timeIntervalSinceNow: -86400 * 7))
+        newer.template = template
+        newer.note = "Bench felt easy at 80"
+
+        let current = database.newWorkout(name: "Push Day", date: Date())
+        current.template = template
+        current.note = "This session's own note"
+
+        let previous = current.previousTemplateNote
+        XCTAssertEqual(previous?.note, "Bench felt easy at 80")
+        XCTAssertEqual(previous?.date, newer.date)
+    }
+
+    func testPreviousTemplateNoteIsNilWithoutTemplateOrNotes() {
+        let untemplated = database.newWorkout(name: "Free session", date: Date())
+        XCTAssertNil(untemplated.previousTemplateNote, "No template means nothing honest to recall")
+
+        let template = database.newTemplate(name: "Leg Day")
+        let unnoted = database.newWorkout(name: "Leg Day", date: Date(timeIntervalSinceNow: -86400))
+        unnoted.template = template
+        let current = database.newWorkout(name: "Leg Day", date: Date())
+        current.template = template
+        XCTAssertNil(current.previousTemplateNote)
+    }
 }
 
 // MARK: - CalorieEstimatorTests

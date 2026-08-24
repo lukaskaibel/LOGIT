@@ -1152,3 +1152,17 @@
 "exportResult" = "%d件のワークアウトと%d件のセットを書き出しました。";
 "exportFailedTitle" = "書き出しに失敗しました";
 "exportFailedMessage" = "データをファイルに書き込めませんでした。もう一度お試しください。";
+
+"note" = "メモ";
+"howHardWasIt" = "きつさはどれくらい？";
+"workoutNotePrompt" = "良かった点は？次に変える点は？";
+"effort" = "運動強度";
+"effortEasy" = "楽";
+"effortModerate" = "普通";
+"effortHard" = "きつい";
+"effortAllOut" = "全力";
+"notRated" = "未評価";
+"effortOptional" = "任意 — フィットネスのトレーニング負荷に反映されます。";
+"lastTime" = "前回";
+"previewWorkoutNote" = "ベンチは80で余裕だった。次は82.5へ。ショルダープレスは肘を締める。";
+"setsIncompleteWillNotBeSaved" = "未入力のセットが%d件 — 保存されません。";

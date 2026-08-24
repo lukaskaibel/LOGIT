@@ -237,6 +237,7 @@
 		80NEWTEST00B /* WorkoutSharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00C /* WorkoutSharingTests.swift */; };
 		80RR00012F80AA0100RR0001 /* Database+RelationshipRepair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */; };
 		80SE00012F70CC0100SE0001 /* SetMeasurementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00022F70CC0100SE0002 /* SetMeasurementType.swift */; };
+		80DG00012F70CC0100DG0001 /* ExerciseDurationGoal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DG00022F70CC0100DG0002 /* ExerciseDurationGoal.swift */; };
 		80SE00032F70CC0100SE0003 /* SetEntry+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00042F70CC0100SE0004 /* SetEntry+.swift */; };
 		80SE00052F70CC0100SE0005 /* TemplateSetEntry+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00062F70CC0100SE0006 /* TemplateSetEntry+.swift */; };
 		80SE00072F70CC0100SE0007 /* Database+SetEntryBackfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00082F70CC0100SE0008 /* Database+SetEntryBackfill.swift */; };
@@ -606,6 +607,7 @@
 		80NEWTEST00C /* WorkoutSharingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSharingTests.swift; sourceTree = "<group>"; };
 		80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+RelationshipRepair.swift"; sourceTree = "<group>"; };
 		80SE00022F70CC0100SE0002 /* SetMeasurementType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMeasurementType.swift; sourceTree = "<group>"; };
+		80DG00022F70CC0100DG0002 /* ExerciseDurationGoal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDurationGoal.swift; sourceTree = "<group>"; };
 		80SE00042F70CC0100SE0004 /* SetEntry+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetEntry+.swift"; sourceTree = "<group>"; };
 		80SE00062F70CC0100SE0006 /* TemplateSetEntry+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TemplateSetEntry+.swift"; sourceTree = "<group>"; };
 		80SE00082F70CC0100SE0008 /* Database+SetEntryBackfill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+SetEntryBackfill.swift"; sourceTree = "<group>"; };
@@ -881,6 +883,7 @@
 				62318B964175E7D02FE83914 /* MuscleTargetSplit.swift */,
 				8571CBB4B50589F1F8F36F44 /* StatPeriod.swift */,
 				80SE00022F70CC0100SE0002 /* SetMeasurementType.swift */,
+				80DG00022F70CC0100DG0002 /* ExerciseDurationGoal.swift */,
 				801BBCA32DF7338A00CDB1FB /* WeightUnit.swift */,
 				80DI00012F84DD0100DI0001 /* DistanceUnit.swift */,
 				C82BC4F48812B4D49D4E38E2 /* ChartRange.swift */,
@@ -1772,6 +1775,7 @@
 				2333D8B12B944AD1A27D0E0A /* SetEntityClasses.swift in Sources */,
 				80SE00112F70CC0100SE0011 /* SetEntryFieldsRow.swift in Sources */,
 				80SE00012F70CC0100SE0001 /* SetMeasurementType.swift in Sources */,
+				80DG00012F70CC0100DG0001 /* ExerciseDurationGoal.swift in Sources */,
 				80SE00032F70CC0100SE0003 /* SetEntry+.swift in Sources */,
 				80SE00052F70CC0100SE0005 /* TemplateSetEntry+.swift in Sources */,
 				80SE00072F70CC0100SE0007 /* Database+SetEntryBackfill.swift in Sources */,

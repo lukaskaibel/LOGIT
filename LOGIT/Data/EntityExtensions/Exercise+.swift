@@ -67,6 +67,19 @@ extension Exercise {
         set { distanceStyleOverride = newValue }
     }
 
+    /// Which way this exercise's clock improves — `.longer` for a hold, `.faster` for a timed
+    /// effort. Nil-backed to `.longer`, the assumption every duration comparison made before
+    /// model v11, so no existing exercise changes meaning.
+    ///
+    /// Duration is the only ambiguous field in the app: a plank improves by lasting, a sprint by
+    /// ending sooner. Weight needs no such setting — machine assistance is recorded as a negative
+    /// load (see `WorkoutSet.isAssisted`), which already sorts the right way — and neither
+    /// repetitions nor distance has a version where less is the goal.
+    var durationGoal: ExerciseDurationGoal {
+        get { ExerciseDurationGoal(rawValue: durationGoalString ?? "") ?? .longer }
+        set { durationGoalString = newValue == .longer ? nil : newValue.rawValue }
+    }
+
     var setGroups: [WorkoutSetGroup] {
         resolvedOrder(of: setGroups_, by: setGroupOrder)
     }
@@ -98,6 +111,35 @@ extension SetMeasurementType {
     func distanceStyle(for exercise: Exercise?) -> DistanceStyle? {
         guard usesDistance else { return nil }
         return exercise?.distanceStyleOverride ?? distanceStyle
+    }
+}
+
+// MARK: - Which Way Is Better
+
+extension Exercise {
+    /// Whether `lhs` beats `rhs` for `metric` on this exercise — the one place in the app that
+    /// knows a sprint's best time is its smallest. Every "best", baseline and record comparison
+    /// goes through here or through `best(of:for:)`, so no two surfaces can disagree.
+    ///
+    /// Only duration can point down, and only when the exercise says so; weight sorts upward even
+    /// for an assisted machine, because assistance is stored as a negative load.
+    func isBetter(_ lhs: Int, than rhs: Int, for metric: ExercisePrimaryMetric) -> Bool {
+        metric == .duration && durationGoal == .faster ? lhs < rhs : lhs > rhs
+    }
+
+    /// The best of `values` for `metric`, or nil when none of them holds a value.
+    ///
+    /// Zeroes are dropped *before* the comparison, and that is the whole point of this function:
+    /// zero doubles as "nothing recorded" throughout the model, and `.max()` used to discard it
+    /// for free. The moment a comparison can prefer the smaller number, a stray zero would win
+    /// every time — as would an empty field sitting beside a negative, assisted weight.
+    func best(of values: some Sequence<Int>, for metric: ExercisePrimaryMetric) -> Int? {
+        var best: Int?
+        for value in values where value != 0 {
+            if let current = best, !isBetter(value, than: current, for: metric) { continue }
+            best = value
+        }
+        return best
     }
 }
 
@@ -148,8 +190,10 @@ extension Exercise {
             }
         }
 
-        guard let best = candidates.max(by: { value($0) < value($1) }), value(best) > 0 else { return nil }
-        return best
+        // `best(of:for:)` decides the direction and drops the zeroes; the set is then found by
+        // the winning value, so the paired entry (e.g. the reps at the heaviest weight) survives.
+        guard let bestValue = best(of: candidates.map(value), for: metric) else { return nil }
+        return candidates.first { value($0) == bestValue }
     }
 
     /// The set holding this exercise's current best single-set volume (see
@@ -169,7 +213,7 @@ extension Exercise {
     /// current-best window is empty (untrained for over a month), so a lapsed metric reads as the real
     /// value it last reached, dated, instead of a "––". Nil when no set has a usable value.
     func lastBestSet(for metric: ExercisePrimaryMetric, in sets: [WorkoutSet]? = nil) -> WorkoutSet? {
-        Self.bestOnMostRecentDay(in: sets ?? self.sets) { workoutSet in
+        bestOnMostRecentDay(in: sets ?? self.sets, metric: metric) { workoutSet in
             switch metric {
             case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: self)
             case .weight: return workoutSet.maximum(.weight, for: self)
@@ -183,19 +227,23 @@ extension Exercise {
     /// The set holding this exercise's best single-set volume on the most recent day it was trained —
     /// the set-volume sibling of `lastBestSet(for:)` (set volume isn't an `ExercisePrimaryMetric`).
     func lastBestSetVolumeSet(in sets: [WorkoutSet]? = nil) -> WorkoutSet? {
-        Self.bestOnMostRecentDay(in: sets ?? self.sets) { $0.volume(for: self) }
+        // Set volume is always more-is-better, so it asks for the weight direction explicitly.
+        bestOnMostRecentDay(in: sets ?? self.sets, metric: .weight) { $0.volume(for: self) }
     }
 
     /// The set with the highest `value` on the most recent day any set has a positive value — the
     /// shared core of the "last best" lookups. Nil when no set has a positive value for the metric.
-    private static func bestOnMostRecentDay(in sets: [WorkoutSet], value: (WorkoutSet) -> Int) -> WorkoutSet? {
-        let withValue = sets.filter { value($0) > 0 }
+    private func bestOnMostRecentDay(
+        in sets: [WorkoutSet], metric: ExercisePrimaryMetric, value: (WorkoutSet) -> Int
+    ) -> WorkoutSet? {
+        let withValue = sets.filter { value($0) != 0 }
         guard let lastDate = withValue.compactMap({ $0.workout?.date }).max() else { return nil }
         let calendar = Calendar.current
         let lastDay = calendar.startOfDay(for: lastDate)
-        return withValue
+        let onLastDay = withValue
             .filter { calendar.isDate($0.workout?.date ?? .distantPast, inSameDayAs: lastDay) }
-            .max(by: { value($0) < value($1) })
+        guard let bestValue = best(of: onLastDay.map(value), for: metric) else { return nil }
+        return onLastDay.first { value($0) == bestValue }
     }
 }
 

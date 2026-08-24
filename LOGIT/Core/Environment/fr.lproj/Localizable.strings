@@ -1166,3 +1166,15 @@
 "lastTime" = "La dernière fois";
 "previewWorkoutNote" = "Le développé couché passait facile à 80 — 82,5 la prochaine fois. Garder les coudes serrés au développé militaire.";
 "setsIncompleteWillNotBeSaved" = "%d séries incomplètes — elles ne seront pas enregistrées.";
+
+// MARK: - Assisted Sets & Time Goals
+
+"assisted" = "Assisté";
+"assistedSetDescription" = "Le poids de cette série est une aide";
+"assistedGroupDescription" = "Le poids compte comme aide reçue";
+"durationGoal" = "Objectif de temps";
+"durationGoalCaption" = "Le sens dans lequel le temps de cet exercice progresse.";
+"durationGoalLonger" = "Plus long";
+"durationGoalLongerDescription" = "Un record, c'est ton temps le plus long.";
+"durationGoalFaster" = "Plus rapide";
+"durationGoalFasterDescription" = "Un record, c'est ton temps le plus rapide.";

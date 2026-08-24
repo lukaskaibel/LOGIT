@@ -77,3 +77,23 @@ private func personalRecordValueView(
     let display = personalRecordDisplay(record.value, metric: record.metric, exercise: record.exercise)
     return UnitView(value: display.value, unit: display.unit, configuration: configuration)
 }
+
+// MARK: - Assisted Tag
+
+/// The word beside an exercise whose weights are assistance rather than added load. The minus sign
+/// in the set rows carries the value; this carries the meaning, so nobody has to infer "negative
+/// weight" from a number. Sized to sit inside the muscle-group row of a set group header.
+struct AssistedTag: View {
+    var color: Color = .accentColor
+
+    var body: some View {
+        Text(NSLocalizedString("assisted", comment: ""))
+            .font(.system(size: 10, weight: .bold, design: .rounded))
+            .textCase(.uppercase)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 5))
+            .foregroundStyle(color)
+            .accessibilityLabel(NSLocalizedString("assisted", comment: ""))
+    }
+}

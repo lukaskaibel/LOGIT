@@ -48,6 +48,9 @@ struct MetricComparisonView: View {
     var valueConfiguration: UnitViewConfiguration = .large
     /// Percent of trailing over leading. Nil omits the pill — nothing to compare.
     let percentChange: Double?
+    /// Whether that change is an improvement, when it isn't simply "the number went up" — a
+    /// duration on a faster-is-better exercise. Nil keeps the pill's default reading.
+    var isImprovement: Bool? = nil
     var positiveColor: Color = .accentColor
     var positiveStyle: AnyShapeStyle? = nil
     var isRecord: Bool = false
@@ -96,7 +99,8 @@ struct MetricComparisonView: View {
                 percentChange: percentChange,
                 positiveColor: positiveColor,
                 positiveStyle: positiveStyle,
-                isRecord: isRecord
+                isRecord: isRecord,
+                isImprovement: isImprovement
             )
             .animation(.snappy, value: percentChange)
             if let explanation {

@@ -21,7 +21,8 @@ struct ExerciseDistanceTile: View {
             title: ExercisePrimaryMetric.distance.shortTitle,
             unit: distanceUnitTitle(for: style),
             showsExerciseName: showsExerciseName,
-            metricValue: { $0.maximum(.distance, for: exercise) },
+            metric: .distance,
+            metricValue: { $0.metricValue(.distance, for: exercise) },
             formattedValue: { formatDistanceForDisplay(Int64($0), style: style) },
             chartValue: { distanceChartValue($0, style: style) }
         )

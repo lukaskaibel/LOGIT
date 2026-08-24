@@ -42,24 +42,36 @@ struct ExerciseTileTrend {
     /// empty (untrained for over a month). Nil when no set has a usable value for this metric.
     let allTimeBest: Int?
 
-    init(sets: [WorkoutSet], window: TrendWindow = .fourWeeks, value: (WorkoutSet) -> Int) {
+    /// Whether the current best beats the previous one in the exercise's own direction — what the
+    /// pill tints on, since the sign of `percentChange` alone would call a quicker sprint a decline.
+    let isImprovement: Bool
+
+    init(
+        sets: [WorkoutSet], window: TrendWindow = .fourWeeks,
+        exercise: Exercise, metric: ExercisePrimaryMetric, value: (WorkoutSet) -> Int
+    ) {
         let windowStart = window.windowStart()
         let calendar = Calendar.current
 
-        var currentMax = 0
-        var allTimeMax = 0
+        var currentMax: Int?
+        var allTimeMax: Int?
         var hasValueBeforeWindow = false
         // The day the current best was first reached — the anchor the previous-best window sits
         // before. Tracked as the earliest day at the peak so a later equal day can't hide the climb.
         var currentBestDate: Date?
         for workoutSet in sets {
             let setValue = value(workoutSet)
-            guard setValue > 0 else { continue }
-            allTimeMax = max(allTimeMax, setValue)
+            // Zero means "not recorded", and it has to be skipped before any comparison: on a
+            // faster-is-better exercise it would win every one, and beside an assisted weight it
+            // outranks the negative load that was actually lifted.
+            guard setValue != 0 else { continue }
+            if allTimeMax == nil || exercise.isBetter(setValue, than: allTimeMax!, for: metric) {
+                allTimeMax = setValue
+            }
             let date = workoutSet.workout?.date ?? .distantPast
             if date >= windowStart {
                 let day = calendar.startOfDay(for: date)
-                if setValue > currentMax {
+                if currentMax == nil || exercise.isBetter(setValue, than: currentMax!, for: metric) {
                     currentMax = setValue
                     currentBestDate = day
                 } else if setValue == currentMax, let best = currentBestDate, day < best {
@@ -70,18 +82,25 @@ struct ExerciseTileTrend {
             }
         }
 
-        currentBest = currentMax > 0 ? currentMax : nil
-        allTimeBest = allTimeMax > 0 ? allTimeMax : nil
-        isAtAllTimeBest = currentMax > 0 && hasValueBeforeWindow && currentMax == allTimeMax
+        currentBest = currentMax
+        allTimeBest = allTimeMax
+        isAtAllTimeBest = currentMax != nil && hasValueBeforeWindow && currentMax == allTimeMax
 
         // Trend pill: the best versus the previous one — the best in the window before it was
         // reached. A lapsed exercise (no best in the window) keeps its "time since" pill instead; a
         // first-ever best with nothing before it has nothing to compare and shows none.
-        if currentMax > 0, let anchor = currentBestDate,
-           let previousBest = Self.previousBest(before: anchor, window: window, sets: sets, value: value) {
-            percentChange = (Double(currentMax) - Double(previousBest)) / Double(previousBest) * 100
+        if let currentMax, let anchor = currentBestDate,
+           let previousBest = Self.previousBest(
+               before: anchor, window: window, sets: sets,
+               exercise: exercise, metric: metric, value: value
+           ) {
+            // Magnitude in the denominator: an assisted baseline is negative, and dividing by it
+            // would invert every comparison it takes part in.
+            percentChange = (Double(currentMax) - Double(previousBest)) / abs(Double(previousBest)) * 100
+            isImprovement = exercise.isBetter(currentMax, than: previousBest, for: metric)
         } else {
             percentChange = nil
+            isImprovement = false
         }
     }
 
@@ -95,14 +114,15 @@ struct ExerciseTileTrend {
     /// year before it rather than against the month before it — otherwise widening the scope would
     /// leave the value and its pill measuring different spans.
     private static func previousBest(
-        before anchor: Date, window: TrendWindow, sets: [WorkoutSet], value: (WorkoutSet) -> Int
+        before anchor: Date, window: TrendWindow, sets: [WorkoutSet],
+        exercise: Exercise, metric: ExercisePrimaryMetric, value: (WorkoutSet) -> Int
     ) -> Int? {
         let windowStart = window.windowStart(from: anchor)
         let inWindow = sets.filter {
             let date = $0.workout?.date ?? .distantPast
             return date >= windowStart && date < anchor
         }
-        if let best = inWindow.map(value).filter({ $0 > 0 }).max() { return best }
+        if let best = exercise.best(of: inWindow.map(value), for: metric) { return best }
         // The window before the best was empty: slide back to the most recent earlier session and
         // take the window ending at it.
         guard let lastPrior = sets.compactMap({ $0.workout?.date }).filter({ $0 < windowStart }).max() else {
@@ -113,7 +133,7 @@ struct ExerciseTileTrend {
             let date = $0.workout?.date ?? .distantPast
             return date >= slideStart && date <= lastPrior
         }
-        return slid.map(value).filter { $0 > 0 }.max()
+        return exercise.best(of: slid.map(value), for: metric)
     }
 }
 
@@ -357,6 +377,10 @@ struct ExerciseBestMetricTile: View {
     /// — on the exercise detail screen; the Summary's pinned grid passes the screen's selected
     /// window, so a pinned tile reports over the same timeframe as everything around it.
     var window: TrendWindow = .fourWeeks
+    /// Which metric the tile reports. Only the direction depends on it — a duration tile on a
+    /// "faster" exercise ranks its bests the other way — so it defaults to a metric that is
+    /// always more-is-better (set volume and e1RM tiles pass nothing).
+    var metric: ExercisePrimaryMetric = .weight
     /// The metric's base value of a single set, in raw storage units (grams for weights).
     let metricValue: (WorkoutSet) -> Int
     /// Display string for a base value (handles unit conversion).
@@ -366,7 +390,9 @@ struct ExerciseBestMetricTile: View {
 
     var body: some View {
         let sets = workoutSets.filter { $0.workout?.isCurrentWorkout != true }
-        let trend = ExerciseTileTrend(sets: sets, window: window, value: metricValue)
+        let trend = ExerciseTileTrend(
+            sets: sets, window: window, exercise: exercise, metric: metric, value: metricValue
+        )
         let color = exercise.muscleGroup?.color ?? .accentColor
         // Untrained for the whole window, but the history isn't empty. Show the "last best" — the
         // best from the most recent session, with that session's date in the pill slot and no chart
@@ -391,6 +417,7 @@ struct ExerciseBestMetricTile: View {
             accentColor: color,
             percentChange: isLapsed ? nil : trend.percentChange,
             isRecord: isLapsed ? false : trend.isAtAllTimeBest,
+            isImprovement: trend.isImprovement,
             requiresPro: requiresPro,
             lastBestDate: lastBest?.date,
             showsEmptyPlaceholder: trend.allTimeBest == nil
@@ -416,8 +443,8 @@ struct ExerciseBestMetricTile: View {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }
         return grouped.compactMap { day, daySets -> ExerciseTileSparkline.Point? in
-            let best = daySets.map(metricValue).max() ?? 0
-            guard best > 0 else { return nil }
+            let best = exercise.best(of: daySets.map(metricValue), for: metric) ?? 0
+            guard best != 0 else { return nil }
             return ExerciseTileSparkline.Point(date: day, value: chartValue(best))
         }
         .sorted { $0.date < $1.date }
@@ -426,13 +453,16 @@ struct ExerciseBestMetricTile: View {
     /// The best value of this tile's metric on the most recent day it was trained, with that day —
     /// the "last best" shown when the current-best window is empty. Nil when no set has a value.
     private func lastSessionBest(in sets: [WorkoutSet]) -> (value: Int, date: Date)? {
-        let withValue = sets.filter { metricValue($0) > 0 }
+        let withValue = sets.filter { metricValue($0) != 0 }
         guard let lastDate = withValue.compactMap({ $0.workout?.date }).max() else { return nil }
         let day = Calendar.current.startOfDay(for: lastDate)
-        let best = withValue
-            .filter { Calendar.current.isDate($0.workout?.date ?? .distantPast, inSameDayAs: day) }
-            .map(metricValue).max() ?? 0
-        guard best > 0 else { return nil }
+        let best = exercise.best(
+            of: withValue
+                .filter { Calendar.current.isDate($0.workout?.date ?? .distantPast, inSameDayAs: day) }
+                .map(metricValue),
+            for: metric
+        ) ?? 0
+        guard best != 0 else { return nil }
         return (best, day)
     }
 }

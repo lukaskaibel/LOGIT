@@ -1166,3 +1166,15 @@
 "lastTime" = "L'ultima volta";
 "previewWorkoutNote" = "La panca era facile a 80: la prossima volta 82,5. Tieni i gomiti stretti nel lento avanti.";
 "setsIncompleteWillNotBeSaved" = "%d serie incomplete: non verranno salvate.";
+
+// MARK: - Assisted Sets & Time Goals
+
+"assisted" = "Assistito";
+"assistedSetDescription" = "Il peso di questa serie è aiuto";
+"assistedGroupDescription" = "Il peso conta come aiuto ricevuto";
+"durationGoal" = "Obiettivo di tempo";
+"durationGoalCaption" = "In che direzione migliora il tempo di questo esercizio.";
+"durationGoalLonger" = "Più lungo";
+"durationGoalLongerDescription" = "Un record è il tuo tempo più lungo.";
+"durationGoalFaster" = "Più veloce";
+"durationGoalFasterDescription" = "Un record è il tuo tempo più veloce.";

@@ -22,6 +22,7 @@ struct ExerciseEditScreen: View {
     @State private var trackedFields: Set<SetTrackedField>
     @State private var distanceStyle: SetMeasurementType.DistanceStyle
     @State private var primaryMetric: ExercisePrimaryMetric
+    @State private var durationGoal: ExerciseDurationGoal
     @State private var showingExerciseExistsAlert: Bool = false
     @State private var showingExerciseNameEmptyAlert: Bool = false
     @State private var showingInvalidNameAlert: Bool = false
@@ -54,6 +55,7 @@ struct ExerciseEditScreen: View {
             initialValue: exerciseToEdit?.distanceStyle ?? initialType.distanceStyle ?? .long
         )
         _primaryMetric = State(initialValue: exerciseToEdit?.primaryMetric ?? .defaultMetric)
+        _durationGoal = State(initialValue: exerciseToEdit?.durationGoal ?? .longer)
     }
 
     // MARK: - Body
@@ -118,6 +120,12 @@ struct ExerciseEditScreen: View {
                         }
 
                         metricSection(for: measurementType)
+
+                        // Only an exercise that records a clock can be asked which way it should
+                        // run; everything else has one obvious direction and shows nothing here.
+                        if measurementType.usesDuration {
+                            durationGoalSection
+                        }
                     }
                 }
                 .padding(.horizontal)
@@ -439,6 +447,57 @@ struct ExerciseEditScreen: View {
 
     // MARK: - Progress Metric
 
+    /// Which way this exercise's clock improves. Built from the same radio rows as the metric
+    /// picker above it — a segmented `Picker`'s options are awkward to reach from a UI test, and
+    /// the rows have room for the one line that says what a record becomes.
+    private var durationGoalSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(NSLocalizedString("durationGoal", comment: ""))
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+            Text(NSLocalizedString("durationGoalCaption", comment: ""))
+                .font(.footnote)
+                .foregroundStyle(.tertiary)
+            VStack(spacing: 0) {
+                ForEach(ExerciseDurationGoal.allCases) { goal in
+                    Button {
+                        UISelectionFeedbackGenerator().selectionChanged()
+                        durationGoal = goal
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: durationGoal == goal ? "circle.inset.filled" : "circle")
+                                .font(.title3)
+                                .foregroundStyle(
+                                    durationGoal == goal ? selectionColor : Color.secondaryLabel
+                                )
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(goal.title)
+                                    .font(.body.weight(.medium))
+                                    .foregroundStyle(Color.label)
+                                Text(goal.caption)
+                                    .font(.footnote)
+                                    .foregroundStyle(Color.secondaryLabel)
+                                    .multilineTextAlignment(.leading)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                        .padding(CELL_PADDING)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("durationGoalOption_\(goal.rawValue)")
+                    .accessibilityAddTraits(durationGoal == goal ? .isSelected : [])
+                    if goal != ExerciseDurationGoal.allCases.last {
+                        Divider()
+                            .padding(.leading, CELL_PADDING + 32)
+                    }
+                }
+            }
+            .tileStyle()
+            .padding(.top, 6)
+            .animation(.easeInOut(duration: 0.2), value: muscleGroup)
+        }
+    }
+
     private func metricSection(for measurementType: SetMeasurementType) -> some View {
         // Only metrics that fit the chosen measurement — a plank never offers e1RM.
         let allowedMetrics = ExercisePrimaryMetric.allowed(for: measurementType)
@@ -519,6 +578,8 @@ struct ExerciseEditScreen: View {
         if measurementType.usesDistance {
             exercise.distanceStyle = distanceStyle
         }
+        // An exercise that no longer records a clock keeps no opinion about which way it runs.
+        exercise.durationGoal = measurementType.usesDuration ? durationGoal : .longer
         database.save()
         exercise.primaryMetric = primaryMetric
         dismiss()

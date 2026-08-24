@@ -23,6 +23,10 @@ struct TrendIndicatorView: View {
     /// "PR", and the pill keeps the positive tint regardless of direction — a record is always a win,
     /// and a percentage beside a record has no baseline to be a percentage *of*.
     var isRecord: Bool = false
+    /// Whether the change shown is an improvement. Defaults to "a rising number is better",
+    /// which is true of every metric except a duration on an exercise whose goal is to be
+    /// quicker — there the pill keeps pointing down while wearing the positive tint.
+    var isImprovement: Bool? = nil
     /// Pill size. `.regular` everywhere the trend is a headline beside a value; `.compact` in the
     /// metric tiles' title row, where the pill annotates a 15pt title rather than a 28pt number and
     /// shares its slot with the lapsed / last-best pills, which are compact for the same reason.
@@ -48,7 +52,10 @@ struct TrendIndicatorView: View {
     }
 
     /// Only a genuine improvement (or a record) is tinted; decline and no change stay muted gray.
-    private var isPositive: Bool { isRecord || direction == .up }
+    private var isPositive: Bool {
+        guard magnitude > 0 else { return isRecord }
+        return isRecord || (isImprovement ?? (direction == .up))
+    }
 
     /// The pill's tint for text and capsule — the supplied positive style (else color) while
     /// positive, muted gray otherwise. An `AnyShapeStyle` so a gradient can stand in for the color.

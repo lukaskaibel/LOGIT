@@ -153,6 +153,22 @@ public extension WorkoutSetGroup {
         sets.forEach { $0.overrideMeasurementType(type) }
     }
 
+    /// Whether this exercise is being trained with assistance — true when at least one set
+    /// records it and none of them records added load, so a group mid-transition (three assisted
+    /// sets, then the first unassisted one) stops claiming to be assisted as a whole.
+    var isAssisted: Bool {
+        let setsWithWeight = sets.filter { set in
+            set.entryValues.contains { $0.type.usesWeight && $0.weight != 0 }
+        }
+        return !setsWithWeight.isEmpty && setsWithWeight.allSatisfy(\.isAssisted)
+    }
+
+    /// Records every set in this group as assisted (or as added load again). The recorder's
+    /// common case: you get on the machine and do all your sets there.
+    internal func setAssisted(_ isAssisted: Bool) {
+        sets.forEach { $0.setAssisted(isAssisted) }
+    }
+
     subscript(index: Int) -> WorkoutSet { sets[index] }
 
     func index(of set: WorkoutSet) -> Int? {

@@ -30,6 +30,139 @@ final class EntityExtensionTests: XCTestCase {
         super.tearDown()
     }
     
+    // MARK: - Time Goals
+
+    func testBestPicksLargestWhenLongerIsTheGoal() {
+        let exercise = builder.createExercise(name: "Plank")
+        XCTAssertEqual(exercise.durationGoal, .longer, "Longer is the default")
+        XCTAssertEqual(exercise.best(of: [30, 90, 60], for: .duration), 90)
+    }
+
+    func testBestPicksSmallestWhenFasterIsTheGoal() {
+        let exercise = builder.createExercise(name: "Sprints")
+        exercise.durationGoal = .faster
+        XCTAssertEqual(exercise.best(of: [16, 12, 14], for: .duration), 12)
+    }
+
+    /// Zero means "not recorded". `.max()` used to drop it for free; `min` would crown it.
+    func testBestIgnoresUnrecordedValuesInBothDirections() {
+        let exercise = builder.createExercise(name: "Sprints")
+        exercise.durationGoal = .faster
+        XCTAssertEqual(exercise.best(of: [0, 14, 0], for: .duration), 14)
+        XCTAssertNil(exercise.best(of: [0, 0], for: .duration))
+        exercise.durationGoal = .longer
+        XCTAssertEqual(exercise.best(of: [0, 14, 0], for: .duration), 14)
+    }
+
+    func testTimeGoalOnlyAffectsDuration() {
+        let exercise = builder.createExercise(name: "Sprints")
+        exercise.durationGoal = .faster
+        XCTAssertEqual(exercise.best(of: [100, 400], for: .distance), 400, "Farther still wins")
+        XCTAssertTrue(exercise.isBetter(60000, than: 50000, for: .weight))
+        XCTAssertTrue(exercise.isBetter(12, than: 14, for: .duration))
+    }
+
+    func testTimeGoalDefaultsToLongerAndStoresNothing() {
+        let exercise = builder.createExercise(name: "Plank")
+        exercise.durationGoal = .faster
+        XCTAssertEqual(exercise.durationGoalString, "faster")
+        exercise.durationGoal = .longer
+        XCTAssertNil(exercise.durationGoalString, "The default is stored as absence")
+    }
+
+    /// A drop set's value for a faster-is-better exercise is its quickest drop, not its longest.
+    func testSetMetricValueTakesTheQuickestDurationWhenFasterIsTheGoal() {
+        let exercise = builder.createExercise(name: "Sprints")
+        exercise.measurementType = .duration
+        exercise.durationGoal = .faster
+        let setGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: exercise)
+        let dropSet = database.newDropSet(repetitions: [0, 0], weights: [0, 0], setGroup: setGroup)
+        dropSet.entries.forEach { $0.type = .duration }
+        // Durations are milliseconds since v11; `durationMs` is what the entry derivation reads.
+        dropSet.entries[0].durationMs = 16_000
+        dropSet.entries[1].durationMs = 12_000
+        XCTAssertEqual(dropSet.metricValue(.duration, for: exercise), 12_000)
+        exercise.durationGoal = .longer
+        XCTAssertEqual(dropSet.metricValue(.duration, for: exercise), 16_000)
+    }
+
+    // MARK: - Assisted Sets
+
+    func testAssistedSetIsRecordedAsNegativeWeight() {
+        let exercise = builder.createExercise(name: "Pull-Ups")
+        let set = builder.createStandardSet(repetitions: 8, weight: 20000, exercise: exercise)
+        XCTAssertFalse(set.isAssisted)
+        set.setAssisted(true)
+        XCTAssertEqual(set.maximum(.weight, for: exercise), -20000)
+        XCTAssertTrue(set.isAssisted)
+        set.setAssisted(false)
+        XCTAssertEqual(set.maximum(.weight, for: exercise), 20000)
+        XCTAssertFalse(set.isAssisted)
+    }
+
+    func testAssistedNeverTurnsAnEmptyWeightIntoAssistance() {
+        let exercise = builder.createExercise(name: "Pull-Ups")
+        let set = builder.createStandardSet(repetitions: 8, weight: 0, exercise: exercise)
+        set.setAssisted(true)
+        XCTAssertEqual(set.maximum(.weight, for: exercise), 0, "0 is bodyweight, not assistance")
+        XCTAssertFalse(set.isAssisted, "A bodyweight set isn't assisted")
+    }
+
+    /// The case that breaks every zero-as-sentinel assumption at once: a drop set running
+    /// belt → bodyweight → machine. The blank-looking 0 must not outrank the −20 kg drop.
+    func testHeaviestLoadOfADropSetThroughZeroIsTheBeltDrop() {
+        let exercise = builder.createExercise(name: "Pull-Ups")
+        let setGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: exercise)
+        let dropSet = database.newDropSet(
+            repetitions: [6, 4, 8], weights: [10000, 0, 20000], setGroup: setGroup
+        )
+        dropSet.entries[2].weight = -20000
+        XCTAssertEqual(dropSet.maximum(.weight, for: exercise), 10000)
+        XCTAssertEqual(dropSet.maxWeightEntry(for: exercise).repetitions, 6)
+        XCTAssertFalse(dropSet.isAssisted, "It spans the sign, so it is neither")
+    }
+
+    func testAllAssistedDropSetReportsItsLightestAssistance() {
+        let exercise = builder.createExercise(name: "Pull-Ups")
+        let setGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: exercise)
+        let dropSet = database.newDropSet(
+            repetitions: [8, 6], weights: [14000, 20000], setGroup: setGroup
+        )
+        dropSet.setAssisted(true)
+        XCTAssertTrue(dropSet.isAssisted)
+        XCTAssertEqual(dropSet.maximum(.weight, for: exercise), -14000, "Least help is the best")
+    }
+
+    func testAssistanceCountsAsNoVolumeRatherThanNegativeVolume() {
+        let exercise = builder.createExercise(name: "Pull-Ups")
+        let set = builder.createStandardSet(repetitions: 8, weight: 20000, exercise: exercise)
+        XCTAssertEqual(set.volume(for: exercise), 160000)
+        set.setAssisted(true)
+        XCTAssertEqual(set.volume(for: exercise), 0, "Assistance isn't work, but it isn't anti-work")
+    }
+
+    func testSetGroupAssistedFlipsEverySet() {
+        let exercise = builder.createExercise(name: "Pull-Ups")
+        let setGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: exercise)
+        database.newStandardSet(repetitions: 8, weight: 14000, setGroup: setGroup)
+        database.newStandardSet(repetitions: 7, weight: 14000, setGroup: setGroup)
+        XCTAssertFalse(setGroup.isAssisted)
+        setGroup.setAssisted(true)
+        XCTAssertTrue(setGroup.isAssisted)
+        XCTAssertTrue(setGroup.sets.allSatisfy { $0.maximum(.weight, for: exercise) == -14000 })
+    }
+
+    func testSetGroupMidTransitionIsNotAssistedAsAWhole() {
+        let exercise = builder.createExercise(name: "Pull-Ups")
+        let setGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: exercise)
+        let assisted = database.newStandardSet(repetitions: 8, weight: 14000, setGroup: setGroup)
+        assisted.setAssisted(true)
+        database.newStandardSet(repetitions: 1, weight: 0, setGroup: setGroup)
+        XCTAssertTrue(setGroup.isAssisted, "A bodyweight set records no load, so it doesn't count")
+        database.newStandardSet(repetitions: 1, weight: 5000, setGroup: setGroup)
+        XCTAssertFalse(setGroup.isAssisted, "Added weight in the group ends the assisted reading")
+    }
+
     // MARK: - StandardSet Tests
     
     func testStandardSetHasEntryWithValues() {

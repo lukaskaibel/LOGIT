@@ -1162,3 +1162,15 @@
 "lastTime" = "Letztes Mal";
 "previewWorkoutNote" = "Bankdrücken lief locker mit 80 – nächstes Mal 82,5. Bei Überkopfdrücken die Ellbogen enger führen.";
 "setsIncompleteWillNotBeSaved" = "%d Sätze unvollständig – sie werden nicht gespeichert.";
+
+// MARK: - Assisted Sets & Time Goals
+
+"assisted" = "Assistiert";
+"assistedSetDescription" = "Gewicht dieses Satzes ist Unterstützung";
+"assistedGroupDescription" = "Gewicht zählt als Unterstützung";
+"durationGoal" = "Zeitziel";
+"durationGoalCaption" = "In welche Richtung sich die Zeit dieser Übung verbessert.";
+"durationGoalLonger" = "Länger";
+"durationGoalLongerDescription" = "Ein Rekord ist deine längste Zeit.";
+"durationGoalFaster" = "Schneller";
+"durationGoalFasterDescription" = "Ein Rekord ist deine schnellste Zeit.";

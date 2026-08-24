@@ -20,7 +20,8 @@ struct ExerciseDurationTile: View {
             title: ExercisePrimaryMetric.duration.shortTitle,
             unit: "",
             showsExerciseName: showsExerciseName,
-            metricValue: { $0.maximum(.duration, for: exercise) },
+            metric: .duration,
+            metricValue: { $0.metricValue(.duration, for: exercise) },
             formattedValue: { formatDurationForDisplay(milliseconds: Int64($0)) },
             chartValue: { Double($0) }
         )

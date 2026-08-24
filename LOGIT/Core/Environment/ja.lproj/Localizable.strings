@@ -1166,3 +1166,15 @@
 "lastTime" = "前回";
 "previewWorkoutNote" = "ベンチは80で余裕だった。次は82.5へ。ショルダープレスは肘を締める。";
 "setsIncompleteWillNotBeSaved" = "未入力のセットが%d件 — 保存されません。";
+
+// MARK: - Assisted Sets & Time Goals
+
+"assisted" = "アシスト";
+"assistedSetDescription" = "このセットの重量は補助です";
+"assistedGroupDescription" = "重量は補助として記録されます";
+"durationGoal" = "タイムの目標";
+"durationGoalCaption" = "この種目のタイムが伸びる方向。";
+"durationGoalLonger" = "長く";
+"durationGoalLongerDescription" = "記録は最も長いタイムです。";
+"durationGoalFaster" = "速く";
+"durationGoalFasterDescription" = "記録は最も速いタイムです。";

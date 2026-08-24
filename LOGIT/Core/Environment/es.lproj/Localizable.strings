@@ -1166,3 +1166,15 @@
 "lastTime" = "La última vez";
 "previewWorkoutNote" = "El press de banca fue fácil con 80: la próxima vez, 82,5. Mantén los codos pegados en el press militar.";
 "setsIncompleteWillNotBeSaved" = "%d series incompletas: no se guardarán.";
+
+// MARK: - Assisted Sets & Time Goals
+
+"assisted" = "Asistido";
+"assistedSetDescription" = "El peso de esta serie es ayuda";
+"assistedGroupDescription" = "El peso cuenta como ayuda recibida";
+"durationGoal" = "Objetivo de tiempo";
+"durationGoalCaption" = "En qué dirección mejora el tiempo de este ejercicio.";
+"durationGoalLonger" = "Más largo";
+"durationGoalLongerDescription" = "Un récord es tu tiempo más largo.";
+"durationGoalFaster" = "Más rápido";
+"durationGoalFasterDescription" = "Un récord es tu tiempo más rápido.";

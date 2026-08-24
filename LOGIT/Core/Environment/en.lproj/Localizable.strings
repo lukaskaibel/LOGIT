@@ -1166,3 +1166,15 @@
 "lastTime" = "Last time";
 "previewWorkoutNote" = "Bench felt easy at 80 — go 82.5 next time. Keep the elbows tucked on overhead press.";
 "setsIncompleteWillNotBeSaved" = "%d sets incomplete — they won’t be saved.";
+
+// MARK: - Assisted Sets & Time Goals
+
+"assisted" = "Assisted";
+"assistedSetDescription" = "This set's weight is help received";
+"assistedGroupDescription" = "Weight counts as help received";
+"durationGoal" = "Time Goal";
+"durationGoalCaption" = "Which way this exercise's time improves.";
+"durationGoalLonger" = "Longer";
+"durationGoalLongerDescription" = "A record is your longest time.";
+"durationGoalFaster" = "Faster";
+"durationGoalFasterDescription" = "A record is your fastest time.";

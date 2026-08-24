@@ -1166,3 +1166,15 @@
 "lastTime" = "지난번";
 "previewWorkoutNote" = "벤치 80은 가벼웠음 — 다음엔 82.5로. 오버헤드 프레스는 팔꿈치를 붙일 것.";
 "setsIncompleteWillNotBeSaved" = "미완료 세트 %d개 — 저장되지 않습니다.";
+
+// MARK: - Assisted Sets & Time Goals
+
+"assisted" = "보조";
+"assistedSetDescription" = "이 세트의 무게는 보조입니다";
+"assistedGroupDescription" = "무게를 받은 보조로 기록";
+"durationGoal" = "시간 목표";
+"durationGoalCaption" = "이 운동의 시간이 향상되는 방향입니다.";
+"durationGoalLonger" = "길게";
+"durationGoalLongerDescription" = "기록은 가장 긴 시간입니다.";
+"durationGoalFaster" = "빠르게";
+"durationGoalFasterDescription" = "기록은 가장 빠른 시간입니다.";

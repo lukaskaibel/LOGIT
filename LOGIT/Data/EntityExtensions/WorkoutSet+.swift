@@ -219,8 +219,13 @@ public extension WorkoutSet {
 
     // MARK: - Metrics
 
-    /// The best value of `attribute` among this set's entries for the given exercise.
-    /// Legacy-shaped sets read through the same derivation, so `.duration` is simply 0 there.
+    /// The largest recorded value of `attribute` among this set's entries for the given exercise,
+    /// or 0 when none of them recorded one. Legacy-shaped sets read through the same derivation,
+    /// so `.duration` is simply 0 there.
+    ///
+    /// Entries without a value are skipped rather than compared, because a missing value is
+    /// stored as 0 and an assisted weight is negative: a drop set holding −20 kg and one blank
+    /// field would otherwise report the blank as its heaviest load.
     internal func maximum(_ attribute: WorkoutSet.Attribute, for exercise: Exercise) -> Int {
         entryValues
             .filter { $0.exercise == exercise }
@@ -232,7 +237,34 @@ public extension WorkoutSet {
                 case .distance: return Int(value.distanceMm)
                 }
             }
+            .filter { $0 != 0 }
             .max() ?? 0
+    }
+
+    /// What this set achieved for `metric`, judged by `exercise`'s own idea of better — the one
+    /// value function every record, badge, tile and chart shares, so none of them can disagree
+    /// about a sprint's best drop or an assisted set's heaviest load.
+    ///
+    /// Only duration can differ from "the largest number": on a `.faster` exercise the set's
+    /// value is its quickest entry. Returns 0 when the set recorded nothing for the metric.
+    internal func metricValue(_ metric: ExercisePrimaryMetric, for exercise: Exercise) -> Int {
+        switch metric {
+        case .estimatedOneRepMax:
+            return estimatedOneRepMax(for: exercise)
+        case .weight:
+            return maximum(.weight, for: exercise)
+        case .repetitions:
+            return maximum(.repetitions, for: exercise)
+        case .distance:
+            return maximum(.distance, for: exercise)
+        case .duration:
+            guard exercise.durationGoal == .faster else { return maximum(.duration, for: exercise) }
+            return entryValues
+                .filter { $0.exercise == exercise }
+                .map { Int($0.durationMs) }
+                .filter { $0 != 0 }
+                .min() ?? 0
+        }
     }
 
     /// Best estimated one-rep max achievable from this set's entries for the given exercise,
@@ -271,11 +303,13 @@ public extension WorkoutSet {
     /// performed at that weight. The `weight` returned equals `maximum(.weight, for:)`.
     /// Returns (0, 0) when the exercise isn't part of this set or recorded no weight.
     internal func maxWeightEntry(for exercise: Exercise) -> (weight: Int64, repetitions: Int64) {
-        var best = (weight: Int64(0), repetitions: Int64(0))
-        for value in entryValues where value.exercise == exercise && value.weight > best.weight {
+        var best: (weight: Int64, repetitions: Int64)?
+        for value in entryValues
+        where value.exercise == exercise && value.weight != 0
+            && value.weight > (best?.weight ?? Int64.min) {
             best = (value.weight, value.repetitions)
         }
-        return best
+        return best ?? (weight: 0, repetitions: 0)
     }
 
     /// The entry with the highest *repetitions* for `exercise`, together with the weight used
@@ -304,6 +338,29 @@ public extension WorkoutSet {
     internal func overrideMeasurementType(_ type: SetMeasurementType) {
         ensureEntries()
         entries.forEach { $0.type = type }
+    }
+
+    // MARK: - Assisted
+
+    /// Whether this set records assistance rather than added load — true when it has weight
+    /// entries and every one of them is negative.
+    ///
+    /// Assistance is not a flag: a machine or band that takes 20 kg off you is stored as
+    /// −20 kg, which puts "less help" and "more weight" on one scale that already sorts the
+    /// right way. A drop set that runs belt → bodyweight → machine is deliberately *not*
+    /// assisted by this definition — it spans the sign, and only its own entries know where.
+    var isAssisted: Bool {
+        let weights = entryValues.filter { $0.type.usesWeight }.map(\.weight).filter { $0 != 0 }
+        return !weights.isEmpty && weights.allSatisfy { $0 < 0 }
+    }
+
+    /// Records this set's weights as assistance (or as added load again), by flipping the sign of
+    /// every weight it holds. Empty fields stay empty: 0 is bodyweight, never "assisted by zero".
+    internal func setAssisted(_ isAssisted: Bool) {
+        ensureEntries()
+        for entry in entries where entry.type.usesWeight && entry.weight != 0 {
+            entry.weight = isAssisted ? -abs(entry.weight) : abs(entry.weight)
+        }
     }
 
     // MARK: - Matching

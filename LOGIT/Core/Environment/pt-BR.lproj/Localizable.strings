@@ -1166,3 +1166,15 @@
 "lastTime" = "Da última vez";
 "previewWorkoutNote" = "O supino ficou fácil com 80 — na próxima, 82,5. Manter os cotovelos fechados no desenvolvimento.";
 "setsIncompleteWillNotBeSaved" = "%d séries incompletas — não serão salvas.";
+
+// MARK: - Assisted Sets & Time Goals
+
+"assisted" = "Assistido";
+"assistedSetDescription" = "O peso desta série é ajuda";
+"assistedGroupDescription" = "O peso conta como ajuda recebida";
+"durationGoal" = "Meta de tempo";
+"durationGoalCaption" = "Em que direção o tempo deste exercício melhora.";
+"durationGoalLonger" = "Mais longo";
+"durationGoalLongerDescription" = "Um recorde é o seu tempo mais longo.";
+"durationGoalFaster" = "Mais rápido";
+"durationGoalFasterDescription" = "Um recorde é o seu tempo mais rápido.";

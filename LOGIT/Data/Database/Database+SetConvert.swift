@@ -54,7 +54,7 @@ extension Database {
             newValues = Array(carriedValues.prefix(1)) + [
                 SetEntryValues(
                     type: .repsAndWeight, order: 1,
-                    repetitions: 0, weight: 0, duration: 0, exercise: nil
+                    repetitions: 0, weight: 0, durationMs: 0, exercise: nil
                 )
             ]
         }
@@ -102,7 +102,7 @@ extension Database {
             newValues = Array(carriedValues.prefix(1)) + [
                 SetEntryValues(
                     type: .repsAndWeight, order: 1,
-                    repetitions: 0, weight: 0, duration: 0, exercise: nil
+                    repetitions: 0, weight: 0, durationMs: 0, exercise: nil
                 )
             ]
         }

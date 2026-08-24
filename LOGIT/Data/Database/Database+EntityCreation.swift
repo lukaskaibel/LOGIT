@@ -73,7 +73,7 @@ extension Database {
                 order: 0,
                 repetitions: Int64(repetitions),
                 weight: Int64(weight),
-                duration: 0,
+                durationMs: 0,
                 exercise: setGroup?.exercise
             )
         )
@@ -104,7 +104,7 @@ extension Database {
                     order: Int64(index),
                     repetitions: Int64(dropRepetitions),
                     weight: Int64(dropWeight),
-                    duration: 0,
+                    durationMs: 0,
                     exercise: setGroup?.exercise
                 )
             )
@@ -130,7 +130,7 @@ extension Database {
                     order: value.order,
                     repetitions: 0,
                     weight: 0,
-                    duration: 0,
+                    durationMs: 0,
                     exercise: setGroup?.exercise
                 )
             )
@@ -160,7 +160,7 @@ extension Database {
                 order: 0,
                 repetitions: Int64(repetitionsFirstExercise),
                 weight: Int64(weightFirstExercise),
-                duration: 0,
+                durationMs: 0,
                 exercise: setGroup?.exercise
             )
         )
@@ -173,7 +173,7 @@ extension Database {
                 order: 1,
                 repetitions: Int64(repetitionsSecondExercise),
                 weight: Int64(weightSecondExercise),
-                duration: 0,
+                durationMs: 0,
                 exercise: setGroup?.secondaryExercise
             )
         )
@@ -309,7 +309,7 @@ extension Database {
                 order: 0,
                 repetitions: Int64(repetitions),
                 weight: Int64(weight),
-                duration: 0,
+                durationMs: 0,
                 exercise: setGroup?.exercise
             )
         )
@@ -340,7 +340,7 @@ extension Database {
                     order: Int64(index),
                     repetitions: Int64(dropRepetitions),
                     weight: Int64(dropWeight),
-                    duration: 0,
+                    durationMs: 0,
                     exercise: templateSetGroup?.exercise
                 )
             )
@@ -370,7 +370,7 @@ extension Database {
                 order: 0,
                 repetitions: Int64(repetitionsFirstExercise),
                 weight: Int64(weightFirstExercise),
-                duration: 0,
+                durationMs: 0,
                 exercise: setGroup?.exercise
             )
         )
@@ -383,7 +383,7 @@ extension Database {
                 order: 1,
                 repetitions: Int64(repetitionsSecondExercise),
                 weight: Int64(weightSecondExercise),
-                duration: 0,
+                durationMs: 0,
                 exercise: setGroup?.secondaryExercise
             )
         )

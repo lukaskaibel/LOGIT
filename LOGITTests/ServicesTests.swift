@@ -1297,11 +1297,17 @@ final class CalorieEstimatorTests: XCTestCase {
         // Duration wins when logged; reps convert at 3.5 s; distance-only converts at
         // 1 m/s capped at 3 min; unperformed entries contribute nothing.
         let values: [SetEntryValues] = [
-            SetEntryValues(type: .repsAndWeight, order: 0, repetitions: 10, weight: 80_000, duration: 0),
-            SetEntryValues(type: .duration, order: 1, repetitions: 0, weight: 0, duration: 60),
-            SetEntryValues(type: .weightAndDistance, order: 2, repetitions: 0, weight: 20_000, duration: 0, distance: 40),
-            SetEntryValues(type: .weightAndDistance, order: 3, repetitions: 0, weight: 20_000, duration: 0, distance: 4000),
-            SetEntryValues(type: .repsAndWeight, order: 4, repetitions: 0, weight: 80_000, duration: 0),
+            SetEntryValues(type: .repsAndWeight, order: 0, repetitions: 10, weight: 80_000, durationMs: 0),
+            SetEntryValues(type: .duration, order: 1, repetitions: 0, weight: 0, durationMs: 60_000),
+            SetEntryValues(
+                type: .weightAndDistance, order: 2, repetitions: 0, weight: 20_000,
+                durationMs: 0, distanceMm: 40_000
+            ),
+            SetEntryValues(
+                type: .weightAndDistance, order: 3, repetitions: 0, weight: 20_000,
+                durationMs: 0, distanceMm: 4_000_000
+            ),
+            SetEntryValues(type: .repsAndWeight, order: 4, repetitions: 0, weight: 80_000, durationMs: 0),
         ]
         let seconds = CalorieEstimator.workingSeconds(for: values)
         // 10×3.5 + 60 + 40 + capped 180 + 0

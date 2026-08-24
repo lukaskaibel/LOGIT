@@ -1448,7 +1448,7 @@ private struct MetricBadgeView: View {
         case .repetitions:
             return UnitView(value: "\(value)", unit: NSLocalizedString("reps", comment: ""), configuration: .extraSmall)
         case .duration:
-            return UnitView(value: formatDurationForDisplay(value), unit: "", configuration: .extraSmall)
+            return UnitView(value: formatDurationForDisplay(milliseconds: Int64(value)), unit: "", configuration: .extraSmall)
         case .distance:
             return UnitView(
                 value: formatDistanceForDisplay(Int64(value), style: distanceStyle),
@@ -1522,7 +1522,7 @@ private struct MetricBadgeView: View {
         case .duration:
             // Spoken in words ("1 minute, 30 seconds") — the digital reading would be read out as
             // a pair of bare numbers.
-            return accessibleDurationForDisplay(value)
+            return accessibleDurationForDisplay(milliseconds: Int64(value))
         case .distance:
             return "\(formatDistanceForDisplay(Int64(value), style: distanceStyle)) \(distanceUnitTitle(for: distanceStyle))"
         }
@@ -1871,7 +1871,7 @@ struct MetricInfoPanel: View {
         case .estimatedOneRepMax: return formatEstimatedOneRepMax(value)
         case .weight: return formatWeightForDisplay(value)
         case .repetitions: return String(value)
-        case .duration: return formatDurationForDisplay(value)
+        case .duration: return formatDurationForDisplay(milliseconds: Int64(value))
         case .distance: return formatDistanceForDisplay(Int64(value), style: distanceStyle)
         }
     }
@@ -1909,7 +1909,7 @@ struct MetricInfoPanel: View {
         case .distance:
             switch distanceStyle {
             case .long: return convertDistanceForDisplayingDecimal(Int64(base))
-            case .short: return Double(convertShortDistanceForDisplaying(Int64(base)))
+            case .short: return convertShortDistanceForDisplayingDecimal(Int64(base))
             }
         }
     }

@@ -27,7 +27,9 @@
     </entity>
     <entity name="SetEntry" representedClassName="SetEntry" syncable="YES" codeGenerationType="class">
         <attribute name="distance" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="distanceMillimeters" optional="YES" attributeType="Integer 64" usesScalarValueType="NO"/>
         <attribute name="duration" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="durationMillis" optional="YES" attributeType="Integer 64" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="order" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="repetitions" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -67,7 +69,9 @@
     </entity>
     <entity name="TemplateSetEntry" representedClassName="TemplateSetEntry" syncable="YES" codeGenerationType="class">
         <attribute name="distance" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="distanceMillimeters" optional="YES" attributeType="Integer 64" usesScalarValueType="NO"/>
         <attribute name="duration" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="durationMillis" optional="YES" attributeType="Integer 64" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="order" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="repetitions" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>

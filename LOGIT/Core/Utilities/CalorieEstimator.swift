@@ -88,15 +88,15 @@ enum CalorieEstimator {
     static func workingSeconds(for entryValues: [SetEntryValues]) -> Double {
         entryValues.reduce(0) { total, values in
             guard values.hasPerformanceValue else { return total }
-            if values.type.usesDuration && values.duration > 0 {
-                return total + Double(values.duration)
+            if values.type.usesDuration && values.durationMs > 0 {
+                return total + Double(values.durationMs) / 1000
             }
             if values.type.usesRepetitions && values.repetitions > 0 {
                 return total + Double(values.repetitions) * secondsPerRepetition
             }
-            if values.type.usesDistance && values.distance > 0 {
+            if values.type.usesDistance && values.distanceMm > 0 {
                 return total + min(
-                    Double(values.distance) / distanceMetersPerSecond,
+                    Double(values.distanceMm) / 1000 / distanceMetersPerSecond,
                     maxSecondsPerDistanceEntry
                 )
             }

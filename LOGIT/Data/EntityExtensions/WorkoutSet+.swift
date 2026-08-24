@@ -19,17 +19,17 @@ struct SetEntryValues: Equatable {
     var order: Int64
     var repetitions: Int64
     var weight: Int64
-    var duration: Int64
+    var durationMs: Int64
     /// Defaulted because only distance-tracking types ever set it — legacy derivations and
     /// reps/weight factories have no distance to pass.
-    var distance: Int64 = 0
+    var distanceMm: Int64 = 0
     var exercise: Exercise?
 
     /// Mirror of `SetEntry.hasPerformanceValue` for value-level reads.
     var hasPerformanceValue: Bool {
         if type.usesRepetitions { return repetitions > 0 }
-        if type.usesDuration && duration > 0 { return true }
-        if type.usesDistance && distance > 0 { return true }
+        if type.usesDuration && durationMs > 0 { return true }
+        if type.usesDistance && distanceMm > 0 { return true }
         return false
     }
 }
@@ -87,8 +87,8 @@ public extension WorkoutSet {
                     order: $0.order,
                     repetitions: $0.repetitions,
                     weight: $0.weight,
-                    duration: $0.duration,
-                    distance: $0.distance,
+                    durationMs: $0.durationMs,
+                    distanceMm: $0.distanceMm,
                     exercise: owningExercise(of: $0)
                 )
             }
@@ -108,7 +108,7 @@ public extension WorkoutSet {
                 order: order,
                 repetitions: repetitions,
                 weight: weight,
-                duration: 0,
+                durationMs: 0,
                 exercise: exercise
             )
         }
@@ -186,8 +186,8 @@ public extension WorkoutSet {
         entry.type = values.type
         entry.repetitions = values.repetitions
         entry.weight = values.weight
-        entry.duration = values.duration
-        entry.distance = values.distance
+        entry.durationMs = values.durationMs
+        entry.distanceMm = values.distanceMm
         entry.exercise = values.exercise
         entry.workoutSet = self
         return entry
@@ -228,8 +228,8 @@ public extension WorkoutSet {
                 switch attribute {
                 case .repetitions: return Int(value.repetitions)
                 case .weight: return Int(value.weight)
-                case .duration: return Int(value.duration)
-                case .distance: return Int(value.distance)
+                case .duration: return Int(value.durationMs)
+                case .distance: return Int(value.distanceMm)
                 }
             }
             .max() ?? 0
@@ -344,8 +344,8 @@ public extension WorkoutSet {
                     order: value.order,
                     repetitions: 0,
                     weight: 0,
-                    duration: 0,
-                    distance: 0,
+                    durationMs: 0,
+                    distanceMm: 0,
                     exercise: positionalExercise(forOrder: value.order) ?? value.exercise
                 )
             )

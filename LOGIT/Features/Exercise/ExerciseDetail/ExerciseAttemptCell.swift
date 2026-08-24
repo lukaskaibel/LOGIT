@@ -179,7 +179,7 @@ private struct EntryValueColumns: View {
             }
             if let distanceStyle = value.type.distanceStyle(for: value.exercise) {
                 UnitView(
-                    value: formatDistanceForDisplay(value.distance, style: distanceStyle),
+                    value: formatDistanceForDisplay(value.distanceMm, style: distanceStyle),
                     unit: distanceUnitTitle(for: distanceStyle),
                     configuration: .normal,
                     unitColor: .secondaryLabel
@@ -188,7 +188,7 @@ private struct EntryValueColumns: View {
             }
             if value.type.usesDuration {
                 UnitView(
-                    value: formatDurationForDisplay(Int(value.duration)),
+                    value: formatDurationForDisplay(milliseconds: value.durationMs),
                     unit: "",
                     configuration: .normal,
                     unitColor: .secondaryLabel

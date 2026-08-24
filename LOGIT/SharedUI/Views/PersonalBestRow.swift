@@ -62,7 +62,7 @@ func personalRecordDisplay(
     case .repetitions: return (String(base), NSLocalizedString("reps", comment: ""))
     // The digital reading carries its own separators, so it takes no unit (see
     // `formatDurationForDisplay`).
-    case .duration: return (formatDurationForDisplay(base), "")
+    case .duration: return (formatDurationForDisplay(milliseconds: Int64(base)), "")
     case .distance:
         let style = exercise?.distanceStyle ?? .long
         return (formatDistanceForDisplay(Int64(base), style: style), distanceUnitTitle(for: style))

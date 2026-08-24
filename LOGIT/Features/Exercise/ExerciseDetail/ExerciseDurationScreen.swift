@@ -38,7 +38,7 @@ struct ExerciseDurationScreen: View {
                 raw: raw,
                 // The selection tooltip renders this string beside the (now empty) unit, so it
                 // has to carry the same digital reading as the header.
-                formatted: formatDurationForDisplay(raw)
+                formatted: formatDurationForDisplay(milliseconds: Int64(raw))
             )
         }
         let pr = daily.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
@@ -57,10 +57,10 @@ struct ExerciseDurationScreen: View {
                     color: exerciseMuscleGroupColor,
                     unit: "",
                     valueLabel: NSLocalizedString("measurementType.duration", comment: ""),
-                    formatValue: { formatDurationForDisplay($0) },
+                    formatValue: { formatDurationForDisplay(milliseconds: Int64($0)) },
                     // Durations are stored and plotted in the same unit (seconds), so the axis
                     // takes the same reading as the header.
-                    formatAxisValue: { formatDurationForDisplay($0) }
+                    formatAxisValue: { formatDurationForDisplay(milliseconds: Int64($0)) }
                 )
             }
             .padding(.top)

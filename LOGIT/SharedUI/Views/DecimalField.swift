@@ -168,17 +168,19 @@ struct DecimalField: View {
             }
         }
         
-        // Limit integer part to 4 digits (before decimal point) - do this BEFORE checking value
+        // Limit the integer part (before the decimal point) - do this BEFORE checking value.
+        // `maxDigits` counts those integer digits: four for a weight, five for a distance in
+        // meters, where a 10 km run is a five-digit entry.
+        let integerDigitLimit = maxDigits ?? 4
         if let dotIndex = filtered.firstIndex(of: ".") {
             let integerPart = filtered[..<dotIndex]
-            if integerPart.count > 4 {
+            if integerPart.count > integerDigitLimit {
                 let decimalPart = filtered[dotIndex...]
-                filtered = String(integerPart.prefix(4)) + decimalPart
+                filtered = String(integerPart.prefix(integerDigitLimit)) + decimalPart
             }
         } else {
-            // No decimal point, limit to 4 digits
-            if filtered.count > 4 {
-                filtered = String(filtered.prefix(4))
+            if filtered.count > integerDigitLimit {
+                filtered = String(filtered.prefix(integerDigitLimit))
             }
         }
         
@@ -191,8 +193,10 @@ struct DecimalField: View {
             }
         }
         
-        // Check if value exceeds maximum (9999.999) after all formatting
-        if let value = Double(filtered), value > 9999.999 {
+        // Check if the value exceeds what those digits can spell (9999.999, 99999.99, …) after
+        // all formatting
+        let ceiling = pow(10.0, Double(integerDigitLimit)) - pow(10.0, -Double(decimalPlaces))
+        if let value = Double(filtered), value > ceiling {
             // Keep the previous valid value
             return valueString
         }

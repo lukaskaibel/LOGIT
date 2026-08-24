@@ -33,7 +33,7 @@ struct ExerciseDistanceTile: View {
 func distanceChartValue(_ meters: Int, style: SetMeasurementType.DistanceStyle) -> Double {
     switch style {
     case .long: return convertDistanceForDisplayingDecimal(Int64(meters))
-    case .short: return Double(convertShortDistanceForDisplaying(Int64(meters)))
+    case .short: return convertShortDistanceForDisplayingDecimal(Int64(meters))
     }
 }
 

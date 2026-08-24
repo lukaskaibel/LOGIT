@@ -299,8 +299,8 @@ final class WorkoutSharingService {
                     order: Int64(index),
                     repetitions: Int64(entryDTO.repetitions ?? 0),
                     weight: Int64(entryDTO.weight ?? 0),
-                    duration: Int64(entryDTO.duration ?? 0),
-                    distance: Int64(entryDTO.distance ?? 0),
+                    durationMs: entryDTO.resolvedDurationMs,
+                    distanceMm: entryDTO.resolvedDistanceMm,
                     exercise: workoutSet.positionalExercise(
                         forOrder: Int64(entryDTO.exerciseIndex ?? index)
                     )
@@ -319,8 +319,8 @@ final class WorkoutSharingService {
                     order: Int64(index),
                     repetitions: Int64(entryDTO.repetitions ?? 0),
                     weight: Int64(entryDTO.weight ?? 0),
-                    duration: Int64(entryDTO.duration ?? 0),
-                    distance: Int64(entryDTO.distance ?? 0),
+                    durationMs: entryDTO.resolvedDurationMs,
+                    distanceMm: entryDTO.resolvedDistanceMm,
                     exercise: templateSet.positionalExercise(
                         forOrder: Int64(entryDTO.exerciseIndex ?? index)
                     )

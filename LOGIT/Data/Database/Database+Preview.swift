@@ -71,6 +71,8 @@ extension Database {
         func seedPushDay(on day: Date, benchWeight: Int, minutes: Int) {
             let push = database.newWorkout(name: NSLocalizedString("previewPushDay", comment: ""), date: day)
             push.endDate = calendar.date(byAdding: .minute, value: minutes, to: day)
+            push.effortScore = 7
+            push.note = NSLocalizedString("previewWorkoutNote", comment: "")
             let benchGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: benchpress, workout: push)
             for _ in 0 ..< 5 { database.newStandardSet(repetitions: 5, weight: benchWeight, setGroup: benchGroup) }
             let ohpGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: overheadPress, workout: push)
@@ -89,6 +91,7 @@ extension Database {
         func seedPullDay(on day: Date, deadliftWeight: Int, minutes: Int) {
             let pull = database.newWorkout(name: NSLocalizedString("previewPullDay", comment: ""), date: day)
             pull.endDate = calendar.date(byAdding: .minute, value: minutes, to: day)
+            pull.effortScore = 9
             let deadliftGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: deadlift, workout: pull)
             for _ in 0 ..< 4 { database.newStandardSet(repetitions: 5, weight: deadliftWeight, setGroup: deadliftGroup) }
             let latGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: latPulldown, workout: pull)

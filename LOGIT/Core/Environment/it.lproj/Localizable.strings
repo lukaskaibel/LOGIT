@@ -1152,3 +1152,17 @@
 "exportResult" = "Esportati %d allenamenti e %d serie.";
 "exportFailedTitle" = "Esportazione non riuscita";
 "exportFailedMessage" = "Non è stato possibile scrivere i tuoi dati su un file. Riprova.";
+
+"note" = "Nota";
+"howHardWasIt" = "Quanto è stato duro?";
+"workoutNotePrompt" = "Cosa è andato bene? Cosa cambiare?";
+"effort" = "Sforzo";
+"effortEasy" = "Facile";
+"effortModerate" = "Moderato";
+"effortHard" = "Difficile";
+"effortAllOut" = "Al massimo";
+"notRated" = "Non valutato";
+"effortOptional" = "Facoltativo: contribuisce al carico di allenamento in Fitness.";
+"lastTime" = "L'ultima volta";
+"previewWorkoutNote" = "La panca era facile a 80: la prossima volta 82,5. Tieni i gomiti stretti nel lento avanti.";
+"setsIncompleteWillNotBeSaved" = "%d serie incomplete: non verranno salvate.";

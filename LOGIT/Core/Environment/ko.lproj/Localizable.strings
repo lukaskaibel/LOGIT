@@ -1152,3 +1152,17 @@
 "exportResult" = "운동 %d개와 세트 %d개를 내보냈습니다.";
 "exportFailedTitle" = "내보내기 실패";
 "exportFailedMessage" = "데이터를 파일로 저장하지 못했습니다. 다시 시도해 주십시오.";
+
+"note" = "메모";
+"howHardWasIt" = "얼마나 힘들었나요?";
+"workoutNotePrompt" = "무엇이 좋았나요? 무엇을 바꿀까요?";
+"effort" = "운동 강도";
+"effortEasy" = "쉬움";
+"effortModerate" = "보통";
+"effortHard" = "힘듦";
+"effortAllOut" = "최대";
+"notRated" = "평가 안 함";
+"effortOptional" = "선택 사항 — 피트니스의 훈련 부하에 반영됩니다.";
+"lastTime" = "지난번";
+"previewWorkoutNote" = "벤치 80은 가벼웠음 — 다음엔 82.5로. 오버헤드 프레스는 팔꿈치를 붙일 것.";
+"setsIncompleteWillNotBeSaved" = "미완료 세트 %d개 — 저장되지 않습니다.";

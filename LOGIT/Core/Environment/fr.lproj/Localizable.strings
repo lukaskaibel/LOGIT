@@ -1152,3 +1152,17 @@
 "exportResult" = "%d séances et %d séries exportées.";
 "exportFailedTitle" = "Échec de l'exportation";
 "exportFailedMessage" = "Tes données n'ont pas pu être écrites dans un fichier. Réessaie.";
+
+"note" = "Note";
+"howHardWasIt" = "C'était difficile ?";
+"workoutNotePrompt" = "Qu'est-ce qui a marché ? Que changer ?";
+"effort" = "Effort";
+"effortEasy" = "Facile";
+"effortModerate" = "Modéré";
+"effortHard" = "Difficile";
+"effortAllOut" = "Maximal";
+"notRated" = "Non évalué";
+"effortOptional" = "Facultatif — alimente la charge d'entraînement dans Fitness.";
+"lastTime" = "La dernière fois";
+"previewWorkoutNote" = "Le développé couché passait facile à 80 — 82,5 la prochaine fois. Garder les coudes serrés au développé militaire.";
+"setsIncompleteWillNotBeSaved" = "%d séries incomplètes — elles ne seront pas enregistrées.";

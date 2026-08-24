@@ -70,6 +70,23 @@ struct WorkoutDetailScreen: View {
                         )
                     }
                     progressAndVolumeRow
+                    // Effort and note only appear once they exist — an old workout that was never
+                    // rated shouldn't grow two empty slots on a screen that is otherwise all
+                    // things that happened. Both are filled in from the editor.
+                    if workout.effortScore != nil {
+                        WorkoutEffortRow(
+                            score: workout.effortScore,
+                            tint: workout.sets.muscleGroupGradientStyle(
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                            .padding(CELL_PADDING)
+                            .tileStyle()
+                    }
+                    if let note = workout.note, workout.hasNote {
+                        WorkoutNoteCard(note: note)
+                    }
                 }
 
                 VStack(spacing: SECTION_HEADER_SPACING) {

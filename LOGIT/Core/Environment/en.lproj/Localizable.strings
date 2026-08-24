@@ -1152,3 +1152,17 @@
 "exportResult" = "Exported %d workouts and %d sets.";
 "exportFailedTitle" = "Export Failed";
 "exportFailedMessage" = "Your data could not be written to a file. Please try again.";
+
+"note" = "Note";
+"howHardWasIt" = "How hard was it?";
+"workoutNotePrompt" = "What went well? What to change?";
+"effort" = "Effort";
+"effortEasy" = "Easy";
+"effortModerate" = "Moderate";
+"effortHard" = "Hard";
+"effortAllOut" = "All Out";
+"notRated" = "Not rated";
+"effortOptional" = "Optional — feeds Training Load in Fitness.";
+"lastTime" = "Last time";
+"previewWorkoutNote" = "Bench felt easy at 80 — go 82.5 next time. Keep the elbows tucked on overhead press.";
+"setsIncompleteWillNotBeSaved" = "%d sets incomplete — they won’t be saved.";

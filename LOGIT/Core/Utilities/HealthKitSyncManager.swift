@@ -30,6 +30,9 @@ final class HealthKitSyncManager: ObservableObject {
         /// The workout's estimated active energy (see `CalorieEstimator`), or `nil` when
         /// estimates are disabled or impossible — the Health entry then has no energy sample.
         var activeKilocalories: Int? = nil
+        /// The 1…10 effort rating, or `nil` when the workout was never rated — an unrated
+        /// workout writes no effort sample at all rather than a zero.
+        var effortScore: Int? = nil
     }
 
     enum BackfillState: Equatable {
@@ -78,13 +81,24 @@ final class HealthKitSyncManager: ObservableObject {
         healthStore.authorizationStatus(for: HKQuantityType(.activeEnergyBurned)) == .sharingAuthorized
     }
 
+    /// Same story as the energy type: users who authorised before effort ratings existed sync
+    /// without them until any settings toggle-on re-runs the request.
+    var isAuthorizedForEffortScore: Bool {
+        healthStore.authorizationStatus(for: HKQuantityType(.workoutEffortScore)) == .sharingAuthorized
+    }
+
     /// Presents the system Health access sheet (only for so-far-undetermined types; later
     /// calls are no-ops) and reports whether workout write access ended up granted.
     func requestAuthorization() async -> Bool {
         guard isHealthDataAvailable else { return false }
         do {
             try await healthStore.requestAuthorization(
-                toShare: [.workoutType(), HKQuantityType(.activeEnergyBurned)], read: []
+                toShare: [
+                    .workoutType(),
+                    HKQuantityType(.activeEnergyBurned),
+                    HKQuantityType(.workoutEffortScore),
+                ],
+                read: []
             )
         } catch {
             Self.logger.error(
@@ -206,7 +220,10 @@ final class HealthKitSyncManager: ObservableObject {
             }
             try await builder.addMetadata(metadata)
             try await builder.endCollection(at: payload.end)
-            _ = try await builder.finishWorkout()
+            let workout = try await builder.finishWorkout()
+            if let workout {
+                try await exportEffortScore(payload.effortScore, for: workout, id: payload.id)
+            }
         } catch {
             builder.discardWorkout()
             throw error
@@ -223,7 +240,42 @@ final class HealthKitSyncManager: ObservableObject {
         }
     }
 
+    /// Writes (or retires) the effort rating attached to a just-exported workout.
+    ///
+    /// Effort samples are the one thing here that cannot go through `healthStore.save` —
+    /// `relateWorkoutEffortSample` is the only way in, and it performs the save itself. The
+    /// previous sample has to be deleted first: re-exporting builds a NEW `HKWorkout`, and the
+    /// old rating would otherwise be left dangling against the workout it replaced.
+    private func exportEffortScore(_ score: Int?, for workout: HKWorkout, id: UUID) async throws {
+        guard isAuthorizedForEffortScore else { return }
+
+        // Ours only — `predicateForObjects(from: .default())` inside `deleteObjects` scopes the
+        // deletion to this app, so a rating the user made in Apple Fitness is never touched.
+        try? await deleteObjects(
+            of: HKQuantityType(.workoutEffortScore),
+            syncIdentifier: Self.effortSyncIdentifier(for: id)
+        )
+
+        guard let score, WorkoutEffort.scoreRange.contains(score) else { return }
+
+        let sample = HKQuantitySample(
+            type: HKQuantityType(.workoutEffortScore),
+            quantity: HKQuantity(unit: .appleEffortScore(), doubleValue: Double(score)),
+            start: workout.startDate,
+            end: workout.endDate,
+            metadata: [
+                HKMetadataKeySyncIdentifier: Self.effortSyncIdentifier(for: id),
+                HKMetadataKeySyncVersion: Int(Date.now.timeIntervalSince1970 * 1000),
+            ]
+        )
+        try await healthStore.relateWorkoutEffortSample(sample, with: workout, activity: nil)
+    }
+
     private func deleteExportedWorkout(id: UUID) async throws {
+        try? await deleteObjects(
+            of: HKQuantityType(.workoutEffortScore),
+            syncIdentifier: Self.effortSyncIdentifier(for: id)
+        )
         // The energy sample first, and tolerantly — most workouts have one workout object
         // but not necessarily an energy sample, and a missing sample must not keep the
         // workout itself from being deleted.
@@ -238,11 +290,21 @@ final class HealthKitSyncManager: ObservableObject {
         id.uuidString + "-energy"
     }
 
+    private static func effortSyncIdentifier(for id: UUID) -> String {
+        id.uuidString + "-effort"
+    }
+
     private func deleteObjects(of type: HKObjectType, syncIdentifier: String) async throws {
-        let predicate = HKQuery.predicateForObjects(
-            withMetadataKey: HKMetadataKeySyncIdentifier,
-            allowedValues: [syncIdentifier]
-        )
+        // Scoped to this app's own samples as well as the sync identifier: an effort rating the
+        // user made in Apple Fitness carries no LOGIT identifier, but the belt-and-braces source
+        // predicate makes it impossible for a future identifier collision to reach it.
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            HKQuery.predicateForObjects(
+                withMetadataKey: HKMetadataKeySyncIdentifier,
+                allowedValues: [syncIdentifier]
+            ),
+            HKQuery.predicateForObjects(from: .default()),
+        ])
         _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Int, Error>) in
             healthStore.deleteObjects(of: type, predicate: predicate) { _, deletedCount, error in
                 if let error {
@@ -272,7 +334,8 @@ extension Workout {
             end: endDate,
             activeKilocalories: estimatesEnabled
                 ? CalorieEstimator.estimate(for: self)?.activeKilocalories
-                : nil
+                : nil,
+            effortScore: effortScore
         )
     }
 }

@@ -23,6 +23,11 @@ struct WorkoutDTO: Codable {
     /// App Store URL for users who don't have the app installed
     let appStoreURL: String
     
+    // NOTE: the workout's `note` and `effortScore` are deliberately NOT shared. A shared file is
+    // handed to another person, and the note is a private training journal ("shoulder twinged",
+    // "go 82.5 next time") — it belongs in the personal archive (`DataArchiveService`) and in
+    // iCloud, not in an invite. Please don't add them here without a reason to.
+    
     init(from workout: Workout) {
         self.formatVersion = Self.formatVersion
         self.name = workout.name

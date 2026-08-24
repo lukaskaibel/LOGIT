@@ -113,7 +113,9 @@
         <attribute name="endDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="isCurrentWorkout" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="effortScore_" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String" defaultValueString=""/>
+        <attribute name="note" optional="YES" attributeType="String"/>
         <attribute name="setGroupOrder" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[UUID]"/>
         <relationship name="setGroups_" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="WorkoutSetGroup" inverseName="workout" inverseEntity="WorkoutSetGroup"/>
         <relationship name="template" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Template" inverseName="workouts_" inverseEntity="Template"/>

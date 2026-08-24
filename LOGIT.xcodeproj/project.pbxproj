@@ -13,6 +13,7 @@
 		10F53DA7818380C706F42B20 /* WorkoutLiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */; };
 		18F8886F2E06B3DCB04A2002 /* LOGITWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 79D10973BCE1A0618D3256CD /* LOGITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1E7CF1C1E77503BD192ECE23 /* WorkoutGoalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA376FF1C58639B7542A334 /* WorkoutGoalScreen.swift */; };
+		1FD98260A32A93CBA0FD8B0D /* WorkoutNoteField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A24220ABAB2BDAEBAB63B05 /* WorkoutNoteField.swift */; };
 		2333D8B12B944AD1A27D0E0A /* SetEntityClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD50531C168D4EDFB527D76A /* SetEntityClasses.swift */; };
 		23A5FD0EA5AC115CC0EC34E6 /* SummaryRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADFEC5772AE8932AA1089603 /* SummaryRecords.swift */; };
 		268525E87C3944BA9208D129 /* TrendIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D5D5995AEAE4AA8849AAF28 /* TrendIndicatorView.swift */; };
@@ -23,6 +24,7 @@
 		34ED649B10150341352AE3D1 /* StatPeriodTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8CD271000D75928FAE0887 /* StatPeriodTests.swift */; };
 		37D658746432D205B9A100B7 /* DurationFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E5AE5DB723E798F9B5C1B84 /* DurationFormatting.swift */; };
 		396ADE67CD8C1D14F7A8D82A /* LOGITWidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BDDD14FE5BF0C275AF30C5 /* LOGITWidgetExtension.swift */; };
+		3CED68D291556A3279A1B560 /* TrendWindowHistoryChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAFB1FBB846E1E6F66BCFFBC /* TrendWindowHistoryChart.swift */; };
 		435F070826CC8D1F8D7239B8 /* WorkoutDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4845CEF582EB23AB447C90B2 /* WorkoutDTO.swift */; };
 		53B547C48713887B1E5542EE /* MuscleBalanceCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0258213863A5C9812190A44D /* MuscleBalanceCalculator.swift */; };
 		56CF8C66C4EC04B11F062DCB /* StrengthBarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3180455FAE7D46D1FABB8B /* StrengthBarChart.swift */; };
@@ -30,11 +32,11 @@
 		57A9ABF55683DB0071E02FE6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A72B470FE19DAE1E42233F7F /* Foundation.framework */; };
 		5EB4C2E402AFA8F141A51F77 /* StrengthTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B23FB52CA7FD72BF528A720 /* StrengthTile.swift */; };
 		5F6C92E180BAAEC435086790 /* PeriodHistoryChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C48765200C9745764F2EAA /* PeriodHistoryChart.swift */; };
-		3CED68D291556A3279A1B560 /* TrendWindowHistoryChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAFB1FBB846E1E6F66BCFFBC /* TrendWindowHistoryChart.swift */; };
 		5FA589471AAA718BF29F5E04 /* BodyWeightSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC1A1AB3B397E77717694AF /* BodyWeightSyncManager.swift */; };
 		6A45A79A5D89B951F7726DBD /* WorkoutLiveActivitySnapshotBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */; };
 		71DC3DEF356C2667D7C796F8 /* TrendPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72351631D9DB7A20F527F839 /* TrendPlaceholder.swift */; };
 		73A9CED8C934FDF36F9C4061 /* BodyMapFigure.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBF6087BB65A5971FB5F866 /* BodyMapFigure.swift */; };
+		7603D853B0E03542EBA8EB9C /* WorkoutEffort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E07EEA9C351302823234DE /* WorkoutEffort.swift */; };
 		773128213DE6E6FA1506597C /* WorkoutLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */; };
 		77B7E6990E4C00B75D9BC6ED /* PeriodPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEA597E1519E8F6D2CBC8F9E /* PeriodPicker.swift */; };
 		781060648530454E63B22EB3 /* WorkoutSharingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB3B92BF7A5E9FE9E442716 /* WorkoutSharingService.swift */; };
@@ -68,7 +70,6 @@
 		801BBD6E2DF7338A00CDB1FB /* MeasurementEntryType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCA12DF7338A00CDB1FB /* MeasurementEntryType.swift */; };
 		801BBD6F2DF7338A00CDB1FB /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD512DF7338A00CDB1FB /* InfoView.swift */; };
 		801BBD702DF7338A00CDB1FB /* TimerStopwatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD1E2DF7338A00CDB1FB /* TimerStopwatchView.swift */; };
-		801BBD712DF7338A00CDB1FB /* FinishConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBD1F2DF7338A00CDB1FB /* FinishConfirmationSheet.swift */; };
 		801BBD722DF7338A00CDB1FB /* TemplatePredicateFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCE32DF7338A00CDB1FB /* TemplatePredicateFactory.swift */; };
 		801BBD732DF7338A00CDB1FB /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCC22DF7338A00CDB1FB /* Database.swift */; };
 		801BBD752DF7338A00CDB1FB /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801BBCBA2DF7338A00CDB1FB /* NetworkMonitor.swift */; };
@@ -220,6 +221,7 @@
 		80CBE1D52ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */; };
 		80CBE1D62ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */; };
 		80CBE1D72ED7AFD500DDE1C5 /* MeasurementTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D42ED7AFD500DDE1C5 /* MeasurementTile.swift */; };
+		80DA00012F90BB0100DA0001 /* DataArchiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DA00022F90BB0100DA0002 /* DataArchiveService.swift */; };
 		80DI00022F84DD0100DI0002 /* DistanceUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DI00012F84DD0100DI0001 /* DistanceUnit.swift */; };
 		80DI00042F84DD0100DI0004 /* DistanceConverting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DI00032F84DD0100DI0003 /* DistanceConverting.swift */; };
 		80DI00062F84DD0100DI0006 /* ExerciseDistanceTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DI00052F84DD0100DI0005 /* ExerciseDistanceTile.swift */; };
@@ -233,11 +235,11 @@
 		80NEWTEST007 /* EntityExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST008 /* EntityExtensionTests.swift */; };
 		80NEWTEST009 /* ServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00A /* ServicesTests.swift */; };
 		80NEWTEST00B /* WorkoutSharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00C /* WorkoutSharingTests.swift */; };
+		80RR00012F80AA0100RR0001 /* Database+RelationshipRepair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */; };
 		80SE00012F70CC0100SE0001 /* SetMeasurementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00022F70CC0100SE0002 /* SetMeasurementType.swift */; };
 		80SE00032F70CC0100SE0003 /* SetEntry+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00042F70CC0100SE0004 /* SetEntry+.swift */; };
 		80SE00052F70CC0100SE0005 /* TemplateSetEntry+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00062F70CC0100SE0006 /* TemplateSetEntry+.swift */; };
 		80SE00072F70CC0100SE0007 /* Database+SetEntryBackfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00082F70CC0100SE0008 /* Database+SetEntryBackfill.swift */; };
-		80RR00012F80AA0100RR0001 /* Database+RelationshipRepair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */; };
 		80SE000C2F70CC0100SE000C /* SetEntryMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00092F70CC0100SE0009 /* SetEntryMigrationTests.swift */; };
 		80SE000D2F70CC0100SE000D /* LOGIT-v7-legacy.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 80SE000A2F70CC0100SE000A /* LOGIT-v7-legacy.sqlite */; };
 		80SE00112F70CC0100SE0011 /* SetEntryFieldsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00122F70CC0100SE0012 /* SetEntryFieldsRow.swift */; };
@@ -250,7 +252,6 @@
 		8C2580F9D7A5C52A72312A9A /* StatPeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8571CBB4B50589F1F8F36F44 /* StatPeriod.swift */; };
 		8C6BE79BA086E3876A56C1D7 /* SharedWithYouBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */; };
 		8E306606440725A568FE5F1A /* ExerciseMergeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */; };
-		80DA00012F90BB0100DA0001 /* DataArchiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DA00022F90BB0100DA0002 /* DataArchiveService.swift */; };
 		8F4A3C022E5A9B0100D4E5F2 /* SetVolumeBarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4A3C012E5A9B0100D4E5F1 /* SetVolumeBarChart.swift */; };
 		9392C43C9501E6676A02488A /* WorkoutLiveActivitySnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6F634C95B552C305EA0055 /* WorkoutLiveActivitySnapshotBuilder.swift */; };
 		94B930251BE222630CF21349 /* CalorieEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6430636F05E66F518AE5872 /* CalorieEstimator.swift */; };
@@ -279,6 +280,7 @@
 		A1C7F2E409AB4D11AA01FE10 /* WorkoutProgressSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C7F2E309AB4D11AA01FE10 /* WorkoutProgressSection.swift */; };
 		AA976DD8C23A04BD91CEB858 /* MuscleTargetSplit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62318B964175E7D02FE83914 /* MuscleTargetSplit.swift */; };
 		ACC49C37E1B74DFAC016299F /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BDE77C44D210E79936D216 /* ShareSheet.swift */; };
+		AF035C9766A47EC3F5664F26 /* WorkoutEffortScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F15F1FFB910F4064DBF3874 /* WorkoutEffortScale.swift */; };
 		B3DC6B7D9EF58D3A51C28227 /* LOGITScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDACB5BDD447438F8D60BAE /* LOGITScreenshots.swift */; };
 		B57097634BC79614715AE3EF /* SummaryStatTiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 336772BB4E860E3894BA7355 /* SummaryStatTiles.swift */; };
 		BACD36D82914BE00C27FE040 /* MuscleTargetSplitScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C7068F531DB65831E8FA8F /* MuscleTargetSplitScreen.swift */; };
@@ -394,6 +396,7 @@
 		5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivitySnapshotBuilderTests.swift; sourceTree = "<group>"; };
 		62318B964175E7D02FE83914 /* MuscleTargetSplit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleTargetSplit.swift; sourceTree = "<group>"; };
 		6923C33A92504E5287236332 /* OneRepMaxCalculating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneRepMaxCalculating.swift; sourceTree = "<group>"; };
+		6A24220ABAB2BDAEBAB63B05 /* WorkoutNoteField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutNoteField.swift; sourceTree = "<group>"; };
 		6EC26E447A22B0B31E11DF31 /* StrengthProgress.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StrengthProgress.swift; sourceTree = "<group>"; };
 		72351631D9DB7A20F527F839 /* TrendPlaceholder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrendPlaceholder.swift; sourceTree = "<group>"; };
 		7907FDE9289E99B1006AF271 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
@@ -505,7 +508,6 @@
 		801BBD1B2DF7338A00CDB1FB /* WorkoutCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCell.swift; sourceTree = "<group>"; };
 		801BBD1C2DF7338A00CDB1FB /* WorkoutSetGroupCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetGroupCell.swift; sourceTree = "<group>"; };
 		801BBD1E2DF7338A00CDB1FB /* TimerStopwatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerStopwatchView.swift; sourceTree = "<group>"; };
-		801BBD1F2DF7338A00CDB1FB /* FinishConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishConfirmationSheet.swift; sourceTree = "<group>"; };
 		801BBD202DF7338A00CDB1FB /* StopwatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopwatchView.swift; sourceTree = "<group>"; };
 		801BBD212DF7338A00CDB1FB /* WorkoutDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailSheet.swift; sourceTree = "<group>"; };
 		801BBD232DF7338A00CDB1FB /* WorkoutRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorder.swift; sourceTree = "<group>"; };
@@ -576,6 +578,7 @@
 		80AA00082F70CC0100AA0008 /* LOGIT 8.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 8.0.xcdatamodel"; sourceTree = "<group>"; };
 		80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingTimerButton.swift; sourceTree = "<group>"; };
 		80AA00092F84DD0100AA0009 /* LOGIT 9.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 9.0.xcdatamodel"; sourceTree = "<group>"; };
+		80AA000A2F98EE0100AA000A /* LOGIT 11.0.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 11.0.xcdatamodel"; sourceTree = "<group>"; };
 		80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingStopwatchStopButton.swift; sourceTree = "<group>"; };
 		80AA10022F5CAA0200AA1002 /* DeterministicUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicUUID.swift; sourceTree = "<group>"; };
 		80AA10042F5CAA0200AA1004 /* DefaultTemplateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultTemplateService.swift; sourceTree = "<group>"; };
@@ -587,6 +590,7 @@
 		80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementDetailScreen.swift; sourceTree = "<group>"; };
 		80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementsEditSheet.swift; sourceTree = "<group>"; };
 		80CBE1D42ED7AFD500DDE1C5 /* MeasurementTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementTile.swift; sourceTree = "<group>"; };
+		80DA00022F90BB0100DA0002 /* DataArchiveService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataArchiveService.swift; sourceTree = "<group>"; };
 		80DI00012F84DD0100DI0001 /* DistanceUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceUnit.swift; sourceTree = "<group>"; };
 		80DI00032F84DD0100DI0003 /* DistanceConverting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceConverting.swift; sourceTree = "<group>"; };
 		80DI00052F84DD0100DI0005 /* ExerciseDistanceTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDistanceTile.swift; sourceTree = "<group>"; };
@@ -600,11 +604,11 @@
 		80NEWTEST008 /* EntityExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityExtensionTests.swift; sourceTree = "<group>"; };
 		80NEWTEST00A /* ServicesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesTests.swift; sourceTree = "<group>"; };
 		80NEWTEST00C /* WorkoutSharingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSharingTests.swift; sourceTree = "<group>"; };
+		80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+RelationshipRepair.swift"; sourceTree = "<group>"; };
 		80SE00022F70CC0100SE0002 /* SetMeasurementType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMeasurementType.swift; sourceTree = "<group>"; };
 		80SE00042F70CC0100SE0004 /* SetEntry+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetEntry+.swift"; sourceTree = "<group>"; };
 		80SE00062F70CC0100SE0006 /* TemplateSetEntry+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TemplateSetEntry+.swift"; sourceTree = "<group>"; };
 		80SE00082F70CC0100SE0008 /* Database+SetEntryBackfill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+SetEntryBackfill.swift"; sourceTree = "<group>"; };
-		80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+RelationshipRepair.swift"; sourceTree = "<group>"; };
 		80SE00092F70CC0100SE0009 /* SetEntryMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetEntryMigrationTests.swift; sourceTree = "<group>"; };
 		80SE000A2F70CC0100SE000A /* LOGIT-v7-legacy.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LOGIT-v7-legacy.sqlite"; sourceTree = "<group>"; };
 		80SE000B2F70CC0100SE000B /* make_v7_fixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = make_v7_fixture.swift; sourceTree = "<group>"; };
@@ -612,12 +616,14 @@
 		80TH00012F80AA0100TH0001 /* SetGroupThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetGroupThread.swift; sourceTree = "<group>"; };
 		829F12D41C231764936B6B83 /* WorkoutLiveActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityAttributes.swift; sourceTree = "<group>"; };
 		8571CBB4B50589F1F8F36F44 /* StatPeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatPeriod.swift; sourceTree = "<group>"; };
+		86E07EEA9C351302823234DE /* WorkoutEffort.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutEffort.swift; sourceTree = "<group>"; };
 		8BA376FF1C58639B7542A334 /* WorkoutGoalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutGoalScreen.swift; sourceTree = "<group>"; };
 		8E740E99321E2590B08B80A0 /* HealthKitSyncManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HealthKitSyncManager.swift; sourceTree = "<group>"; };
 		8F4A3C012E5A9B0100D4E5F1 /* SetVolumeBarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetVolumeBarChart.swift; sourceTree = "<group>"; };
 		919AE56C70A5A00C302C7D8A /* MuscleBalanceGoalTile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MuscleBalanceGoalTile.swift; sourceTree = "<group>"; };
 		95BD1BA8A1474C3D38694723 /* StrengthScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StrengthScreen.swift; sourceTree = "<group>"; };
 		9D2E7A012F30AA0100C1D2E1 /* DemoWorkoutSeeder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DemoWorkoutSeeder.swift; sourceTree = "<group>"; };
+		9F15F1FFB910F4064DBF3874 /* WorkoutEffortScale.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutEffortScale.swift; sourceTree = "<group>"; };
 		A10000000000000000000002 /* LocalizedMarkdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedMarkdown.swift; sourceTree = "<group>"; };
 		A10000000000000000000050 /* logit_privacy_policy_de.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy_de.md; sourceTree = "<group>"; };
 		A10000000000000000000051 /* logit_privacy_policy_es.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = logit_privacy_policy_es.md; sourceTree = "<group>"; };
@@ -644,7 +650,6 @@
 		A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityShowcaseView.swift; sourceTree = "<group>"; };
 		ADFEC5772AE8932AA1089603 /* SummaryRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryRecords.swift; sourceTree = "<group>"; };
 		AF0CFD6EDA94DA1792A2CA82 /* ExerciseMergeService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeService.swift; sourceTree = "<group>"; };
-		80DA00022F90BB0100DA0002 /* DataArchiveService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataArchiveService.swift; sourceTree = "<group>"; };
 		B5BEA94B4E4E01D1D9185359 /* CapabilityChartView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapabilityChartView.swift; sourceTree = "<group>"; };
 		BA2F6D7984C9394E060503E7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BBBF6087BB65A5971FB5F866 /* BodyMapFigure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyMapFigure.swift; sourceTree = "<group>"; };
@@ -679,11 +684,10 @@
 		E9071DE852500F5E9CEA5CC7 /* TestScenarios.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TestScenarios.swift; sourceTree = "<group>"; };
 		E9D74FEE84319795BA6879FE /* MuscleBalanceTrackChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MuscleBalanceTrackChart.swift; sourceTree = "<group>"; };
 		EA3180455FAE7D46D1FABB8B /* StrengthBarChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StrengthBarChart.swift; sourceTree = "<group>"; };
+		EAFB1FBB846E1E6F66BCFFBC /* TrendWindowHistoryChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrendWindowHistoryChart.swift; sourceTree = "<group>"; };
 		EF956F5D14BBB78133BD528A /* ExerciseMergeServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseMergeServiceTests.swift; sourceTree = "<group>"; };
 		F3C48765200C9745764F2EAA /* PeriodHistoryChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PeriodHistoryChart.swift; sourceTree = "<group>"; };
-		EAFB1FBB846E1E6F66BCFFBC /* TrendWindowHistoryChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrendWindowHistoryChart.swift; sourceTree = "<group>"; };
 		FB2659B3B29420E28C58F4B1 /* LOGIT 10.0.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 10.0.xcdatamodel"; sourceTree = "<group>"; };
-		FB2659B3B29420E28C58F4B2 /* LOGIT 11.0.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 11.0.xcdatamodel"; sourceTree = "<group>"; };
 		FE01CA11AB1E5077AE000001 /* SummaryTrendSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryTrendSection.swift; sourceTree = "<group>"; };
 		FE91C0394869857C0E932723 /* MeasurementWatchlistRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementWatchlistRow.swift; sourceTree = "<group>"; };
 		FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupDetailScreen.swift; sourceTree = "<group>"; };
@@ -880,6 +884,7 @@
 				801BBCA32DF7338A00CDB1FB /* WeightUnit.swift */,
 				80DI00012F84DD0100DI0001 /* DistanceUnit.swift */,
 				C82BC4F48812B4D49D4E38E2 /* ChartRange.swift */,
+				86E07EEA9C351302823234DE /* WorkoutEffort.swift */,
 			);
 			path = Enums;
 			sourceTree = "<group>";
@@ -1174,7 +1179,6 @@
 			isa = PBXGroup;
 			children = (
 				801BBD1E2DF7338A00CDB1FB /* TimerStopwatchView.swift */,
-				801BBD1F2DF7338A00CDB1FB /* FinishConfirmationSheet.swift */,
 				801BBD202DF7338A00CDB1FB /* StopwatchView.swift */,
 				801BBD212DF7338A00CDB1FB /* WorkoutDetailSheet.swift */,
 				80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */,
@@ -1334,6 +1338,8 @@
 				3184F4CAAB24791B6F5AC79A /* SharedWithYouBanner.swift */,
 				1F685CCE0EE8FE86E8E0135C /* RangePicker.swift */,
 				72351631D9DB7A20F527F839 /* TrendPlaceholder.swift */,
+				9F15F1FFB910F4064DBF3874 /* WorkoutEffortScale.swift */,
+				6A24220ABAB2BDAEBAB63B05 /* WorkoutNoteField.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1680,7 +1686,6 @@
 				801BBD6F2DF7338A00CDB1FB /* InfoView.swift in Sources */,
 				E1E1E1000000000000000B07 /* AboutSection.swift in Sources */,
 				801BBD702DF7338A00CDB1FB /* TimerStopwatchView.swift in Sources */,
-				801BBD712DF7338A00CDB1FB /* FinishConfirmationSheet.swift in Sources */,
 				801BBD722DF7338A00CDB1FB /* TemplatePredicateFactory.swift in Sources */,
 				801BBD732DF7338A00CDB1FB /* Database.swift in Sources */,
 				801BBD752DF7338A00CDB1FB /* NetworkMonitor.swift in Sources */,
@@ -1916,6 +1921,9 @@
 				56CF8C66C4EC04B11F062DCB /* StrengthBarChart.swift in Sources */,
 				9FDB8913ABD29B737A173E69 /* MuscleBalanceTrackChart.swift in Sources */,
 				85A5686D4D81DE28549B45E0 /* MuscleBalanceGoalTile.swift in Sources */,
+				7603D853B0E03542EBA8EB9C /* WorkoutEffort.swift in Sources */,
+				AF035C9766A47EC3F5664F26 /* WorkoutEffortScale.swift in Sources */,
+				1FD98260A32A93CBA0FD8B0D /* WorkoutNoteField.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2422,7 +2430,7 @@
 		801BBCC92DF7338A00CDB1FB /* LOGIT.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				FB2659B3B29420E28C58F4B2 /* LOGIT 11.0.xcdatamodel */,
+				80AA000A2F98EE0100AA000A /* LOGIT 11.0.xcdatamodel */,
 				FB2659B3B29420E28C58F4B1 /* LOGIT 10.0.xcdatamodel */,
 				80AA00092F84DD0100AA0009 /* LOGIT 9.0.xcdatamodel */,
 				80AA00082F70CC0100AA0008 /* LOGIT 8.0.xcdatamodel */,
@@ -2434,7 +2442,7 @@
 				801BBD602DF7338A00CDB1FB /* LOGIT 3.0.xcdatamodel */,
 				801BBD612DF7338A00CDB1FB /* WorkoutDiary.xcdatamodel */,
 			);
-			currentVersion = FB2659B3B29420E28C58F4B2 /* LOGIT 11.0.xcdatamodel */;
+			currentVersion = 80AA000A2F98EE0100AA000A /* LOGIT 11.0.xcdatamodel */;
 			path = LOGIT.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

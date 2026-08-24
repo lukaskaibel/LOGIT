@@ -58,6 +58,11 @@ struct ArchivedWorkout: Codable {
     let date: Date?
     let endDate: Date?
     let templateId: UUID?
+    /// The session note and effort rating. Optional, so an archive written before they existed
+    /// still decodes — and unlike a shared workout, a personal archive keeps them: this file is
+    /// the user's own backup, not something handed to another person.
+    let note: String?
+    let effortScore: Int?
     let setGroups: [ArchivedSetGroup]
 }
 
@@ -197,6 +202,8 @@ final class DataArchiveService {
                         date: workout.date,
                         endDate: workout.endDate,
                         templateId: workout.template?.id,
+                        note: workout.note,
+                        effortScore: workout.effortScore,
                         setGroups: completeMembers(
                             ordered: workout.setGroups, relationship: workout.setGroups_
                         )

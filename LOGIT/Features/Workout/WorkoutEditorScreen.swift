@@ -43,6 +43,14 @@ struct WorkoutEditorScreen: View {
     /// when its owning state lives outside the recycled tray content
     /// (see TemplateEditorScreen).
     @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
+    /// The effort scale is folded away behind its own row until asked for — the editor is mostly
+    /// about sets, and ten permanent bars at the top would out-shout them.
+    @State private var isEditingEffort = false
+    @FocusState private var isNoteFieldFocused: Bool
+
+    private var effortTint: AnyShapeStyle {
+        workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom)
+    }
 
     // MARK: - Parameters
 
@@ -106,6 +114,43 @@ struct WorkoutEditorScreen: View {
                             )
                         }
                         
+                        VStack(spacing: CELL_SPACING) {
+                            Button {
+                                withAnimation(.snappy(duration: 0.3)) {
+                                    isEditingEffort.toggle()
+                                }
+                            } label: {
+                                WorkoutEffortRow(
+                                    score: workout.effortScore,
+                                    tint: effortTint
+                                )
+                                    .padding(CELL_PADDING)
+                                    .tileStyle()
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("editorEffortRow")
+                            if isEditingEffort {
+                                WorkoutEffortScale(
+                                    score: Binding(
+                                        get: { workout.effortScore },
+                                        set: { workout.effortScore = $0 }
+                                    ),
+                                    tint: effortTint,
+                                    barHeight: 72
+                                )
+                                .padding(CELL_PADDING)
+                                .tileStyle()
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                            }
+                            WorkoutNoteField(
+                                workout: workout,
+                                isFocused: $isNoteFieldFocused,
+                                style: .tile,
+                                // The session is over — there is nothing left to prompt.
+                                showsPreviousNote: false
+                            )
+                        }
+
                         VStack(spacing: CELL_SPACING) {
                             WorkoutSetGroupList(
                                 workout: workout,

@@ -1148,3 +1148,17 @@
 "exportResult" = "%d Workouts und %d Sätze exportiert.";
 "exportFailedTitle" = "Export fehlgeschlagen";
 "exportFailedMessage" = "Deine Daten konnten nicht in eine Datei geschrieben werden. Bitte versuche es erneut.";
+
+"note" = "Notiz";
+"howHardWasIt" = "Wie hart war es?";
+"workoutNotePrompt" = "Was lief gut? Was ändern?";
+"effort" = "Anstrengung";
+"effortEasy" = "Leicht";
+"effortModerate" = "Mittel";
+"effortHard" = "Hart";
+"effortAllOut" = "Maximal";
+"notRated" = "Nicht bewertet";
+"effortOptional" = "Optional – fließt in Fitness in die Trainingsbelastung ein.";
+"lastTime" = "Letztes Mal";
+"previewWorkoutNote" = "Bankdrücken lief locker mit 80 – nächstes Mal 82,5. Bei Überkopfdrücken die Ellbogen enger führen.";
+"setsIncompleteWillNotBeSaved" = "%d Sätze unvollständig – sie werden nicht gespeichert.";

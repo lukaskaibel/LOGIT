@@ -125,6 +125,45 @@ public class Database: ObservableObject {
         }
     }
 
+    // MARK: - CloudKit Development Schema
+
+    #if DEBUG
+    /// Pushes the **entire** model into the container's development CloudKit schema — every
+    /// entity, attribute and relationship, including the ones no record on this device happens
+    /// to fill in — then deletes the dummy records it used to do it. Data is untouched.
+    ///
+    /// This exists because the alternative is hoping: the schema otherwise grows only as real
+    /// records sync, so a field nobody has exercised yet simply never appears in the console,
+    /// and it is missing from the production deploy that follows. Apple intends this call for
+    /// exactly this moment — a debug build, run once, before deploying a model change.
+    ///
+    /// Requires an iCloud account signed in on the device; without one it throws
+    /// `CKAccountStatusNoAccount` and changes nothing. Never runs outside DEBUG, and never on
+    /// an in-memory store (those have no CloudKit mirror at all).
+    ///
+    /// - Returns: `true` when the schema was initialized.
+    @discardableResult
+    func initializeCloudKitDevelopmentSchema() -> Bool {
+        guard let cloudKitContainer = container as? NSPersistentCloudKitContainer else {
+            os_log("Database: not a CloudKit container, schema initialization skipped", type: .error)
+            return false
+        }
+        do {
+            // .printSchema dumps the resulting CKRecord types to stdout, which is the artifact
+            // to diff against the CloudKit console before hitting Deploy.
+            try cloudKitContainer.initializeCloudKitSchema(options: [.printSchema])
+            os_log("Database: CloudKit development schema initialized", type: .info)
+            return true
+        } catch {
+            os_log(
+                "Database: CloudKit schema initialization failed: %{public}@",
+                type: .error, String(describing: error)
+            )
+            return false
+        }
+    }
+    #endif
+
     // MARK: - Set Entry Reconciliation Trigger
 
     /// Re-runs the set-entry backfill (debounced) whenever the store changes remotely — the

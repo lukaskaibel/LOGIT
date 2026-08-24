@@ -113,7 +113,7 @@ public extension WorkoutSet {
             )
         }
         if let dropSet = self as? DropSet {
-            let repetitions = dropSet.repetitions ?? []
+            let repetitions = dropSet.resolvedRepetitions ?? []
             let weights = dropSet.weights ?? []
             // Pad to the longer array so a malformed drop set (desynced lengths) keeps every
             // recorded value; a drop set with no arrays still reads as one placeholder entry.

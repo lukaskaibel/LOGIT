@@ -260,6 +260,17 @@ struct LOGIT: App {
                     }
                     #endif
                     #if DEBUG
+                    // Release hook: materialize the whole model in the CloudKit *development*
+                    // schema so every field of a new model version shows up in the console and
+                    // can be deployed to production. Needs an iCloud account on the device;
+                    // prints the resulting record types to the console.
+                    if ProcessInfo.processInfo.arguments.contains("-INITIALIZE_CLOUDKIT_SCHEMA") {
+                        print("LOGIT: initializing CloudKit development schema…")
+                        let initialized = database.initializeCloudKitDevelopmentSchema()
+                        print("LOGIT: CloudKit schema initialization \(initialized ? "SUCCEEDED" : "FAILED")")
+                    }
+                    #endif
+                    #if DEBUG
                     // Live Activity verification hook: deterministically start a rest timer so the
                     // running-chrono Dynamic Island (compact/minimal) can be reproduced from the CLI.
                     // Lives here (not in the recorder view) so it fires regardless of what is on screen.

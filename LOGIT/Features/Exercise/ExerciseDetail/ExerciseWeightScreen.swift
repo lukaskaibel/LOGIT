@@ -28,6 +28,9 @@ struct ExerciseWeightScreen: View {
     private let bestAnchor: (value: Int, date: Date?, isLapsed: Bool)?
     /// The y-axis cap in display units — the next weight ladder step above the all-time PR.
     private let yScaleMax: Int
+    /// The y-axis floor in display units. Zero unless the exercise has assisted history, which is
+    /// recorded as a negative load and belongs below the line.
+    private let yScaleMin: Int
 
     init(exercise: Exercise, workoutSets: [WorkoutSet]) {
         self.exercise = exercise
@@ -44,8 +47,12 @@ struct ExerciseWeightScreen: View {
                 formatted: formatWeightForDisplay(raw)
             )
         }
-        let pr = convertWeightForDisplaying(daily.map { $0.maximum(.weight, for: exercise) }.max() ?? 0)
-        self.yScaleMax = Self.chartYScaleMax(maxYValue: pr)
+        let displayValues = daily.map { convertWeightForDisplaying($0.maximum(.weight, for: exercise)) }
+        self.yScaleMax = Self.chartYScaleMax(maxYValue: max(displayValues.max() ?? 0, 0))
+        // Assisted work sits below zero, so the axis floor is the ladder step under the deepest
+        // assistance — mirrored from the positive ladder so both halves step in the same units.
+        let deepestAssist = displayValues.min() ?? 0
+        self.yScaleMin = deepestAssist < 0 ? -Self.chartYScaleMax(maxYValue: abs(deepestAssist)) : 0
         self.bestAnchor = Self.bestAnchor(for: exercise, in: workoutSets)
     }
 
@@ -60,7 +67,11 @@ struct ExerciseWeightScreen: View {
                     color: exerciseMuscleGroupColor,
                     unit: WeightUnit.used.rawValue,
                     valueLabel: NSLocalizedString("weight", comment: ""),
-                    formatValue: { formatWeightForDisplay($0) }
+                    formatValue: { formatWeightForDisplay($0) },
+                    yScaleMin: yScaleMin,
+                    belowZeroLabel: yScaleMin < 0 ? NSLocalizedString("assisted", comment: "") : nil,
+                    exercise: exercise,
+                    metric: .weight
                 )
 
                 // MARK: - About Section
@@ -104,7 +115,9 @@ struct ExerciseWeightScreen: View {
             .compactMap { setsPerDay -> WorkoutSet? in
                 setsPerDay.max(by: { $0.maximum(.weight, for: exercise) < $1.maximum(.weight, for: exercise) })
             }
-            .filter { $0.maximum(.weight, for: exercise) > 0 }
+            // Days with no weight recorded drop out; assisted days (a negative load) stay, so the
+            // line runs through the machine work rather than starting at the first unassisted rep.
+            .filter { $0.maximum(.weight, for: exercise) != 0 }
     }
 
     private static func chartYScaleMax(maxYValue: Int) -> Int {

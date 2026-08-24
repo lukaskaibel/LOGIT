@@ -25,7 +25,8 @@ struct ExerciseWeightTile: View {
             requiresPro: true,
             showsExerciseName: showsExerciseName,
             window: window,
-            metricValue: { $0.maximum(.weight, for: exercise) },
+            metric: .weight,
+            metricValue: { $0.metricValue(.weight, for: exercise) },
             formattedValue: { formatWeightForDisplay($0) },
             chartValue: { convertWeightForDisplayingDecimal($0) }
         )

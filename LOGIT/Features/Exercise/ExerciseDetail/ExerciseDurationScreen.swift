@@ -30,7 +30,7 @@ struct ExerciseDurationScreen: View {
         let daily = Self.dailyMaxDurationSets(in: workoutSets, for: exercise)
         self.firstDataDate = daily.first?.workout?.date
         self.points = daily.enumerated().map { index, set in
-            let raw = set.maximum(.duration, for: exercise)
+            let raw = set.metricValue(.duration, for: exercise)
             return CapabilityChartView.Point(
                 id: index,
                 date: set.workout?.date ?? .now,
@@ -41,8 +41,10 @@ struct ExerciseDurationScreen: View {
                 formatted: formatDurationForDisplay(milliseconds: Int64(raw))
             )
         }
-        let pr = daily.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
-        self.yScaleMax = Self.chartYScaleMax(maxYValue: pr)
+        // The axis has to cover the slowest day too, so it scales on the largest value in the
+        // series rather than on the record — which, on a faster-is-better exercise, is the smallest.
+        let axisTop = daily.map { $0.metricValue(.duration, for: exercise) }.max() ?? 0
+        self.yScaleMax = Self.chartYScaleMax(maxYValue: axisTop)
         self.bestAnchor = Self.bestAnchor(for: exercise, in: workoutSets)
     }
 
@@ -58,9 +60,13 @@ struct ExerciseDurationScreen: View {
                     unit: "",
                     valueLabel: NSLocalizedString("measurementType.duration", comment: ""),
                     formatValue: { formatDurationForDisplay(milliseconds: Int64($0)) },
-                    // Durations are stored and plotted in the same unit (seconds), so the axis
-                    // takes the same reading as the header.
-                    formatAxisValue: { formatDurationForDisplay(milliseconds: Int64($0)) }
+                    // Durations are stored and plotted in the same unit (milliseconds), so the
+                    // axis takes the same reading as the header.
+                    formatAxisValue: { formatDurationForDisplay(milliseconds: Int64($0)) },
+                    // The chart's own baseline is picked in this exercise's direction: on a
+                    // faster-is-better exercise the best in the window is its smallest value.
+                    exercise: exercise,
+                    metric: .duration
                 )
             }
             .padding(.top)
@@ -93,9 +99,12 @@ struct ExerciseDurationScreen: View {
             .map { $0.1 }
         return groupedSets
             .compactMap { setsPerDay -> WorkoutSet? in
-                setsPerDay.max(by: { $0.maximum(.duration, for: exercise) < $1.maximum(.duration, for: exercise) })
+                // The day's best is its quickest set when the exercise is trained for time.
+                guard let best = exercise.best(
+                    of: setsPerDay.map { $0.metricValue(.duration, for: exercise) }, for: .duration
+                ) else { return nil }
+                return setsPerDay.first { $0.metricValue(.duration, for: exercise) == best }
             }
-            .filter { $0.maximum(.duration, for: exercise) > 0 }
     }
 
     private static func chartYScaleMax(maxYValue: Int) -> Int {
@@ -109,10 +118,10 @@ struct ExerciseDurationScreen: View {
     /// most recent session — which flips the label to "Last Best" and drops the comparison pill.
     private static func bestAnchor(for exercise: Exercise, in workoutSets: [WorkoutSet]) -> (value: Int, date: Date?, isLapsed: Bool)? {
         if let best = exercise.currentBestSet(for: .duration, in: workoutSets) {
-            return (best.maximum(.duration, for: exercise), best.workout?.date, false)
+            return (best.metricValue(.duration, for: exercise), best.workout?.date, false)
         }
         if let last = exercise.lastBestSet(for: .duration, in: workoutSets) {
-            return (last.maximum(.duration, for: exercise), last.workout?.date, true)
+            return (last.metricValue(.duration, for: exercise), last.workout?.date, true)
         }
         return nil
     }

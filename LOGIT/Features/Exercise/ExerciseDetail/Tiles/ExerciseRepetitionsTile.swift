@@ -24,7 +24,8 @@ struct ExerciseRepetitionsTile: View {
             unit: NSLocalizedString("rps", comment: ""),
             showsExerciseName: showsExerciseName,
             window: window,
-            metricValue: { $0.maximum(.repetitions, for: exercise) },
+            metric: .repetitions,
+            metricValue: { $0.metricValue(.repetitions, for: exercise) },
             formattedValue: { String($0) },
             chartValue: { Double($0) }
         )

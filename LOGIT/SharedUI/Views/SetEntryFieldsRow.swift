@@ -45,6 +45,10 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
     var reference: SetEntryValues? = nil
     /// The planned entry from the workout's template, shown as field placeholders.
     var placeholder: SetEntryValues? = nil
+    /// Whether the set group this row belongs to is being trained with assistance. Last resort
+    /// for the sign of a typed weight, after the entry's own value, the template's plan and last
+    /// session's — it is what carries the sign into a set added *after* the group was marked.
+    var entersAssistance: Bool = false
     var trendColor: Color = .accentColor
     var onTapPreviousValue: (() -> Void)? = nil
 
@@ -94,6 +98,15 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
         IntegerField.Index(setID: setID, secondary: secondaryIndex, tertiary: tertiary)
     }
 
+    /// Whether a weight typed into this row should be recorded as assistance: what this entry
+    /// already holds, else what the template planned, else what the same field held last session.
+    private var assistanceSignHint: Bool {
+        if entry.weight != 0 { return entry.weight < 0 }
+        if let planned = placeholder?.weight, planned != 0 { return planned < 0 }
+        if let previous = reference?.weight, previous != 0 { return previous < 0 }
+        return entersAssistance
+    }
+
     private func repetitionsField(tertiary: Int) -> some View {
         let delta = repsDelta(current: entry.repetitions, previous: reference?.repetitions)
         return IntegerField(
@@ -114,11 +127,20 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
 
     private func weightField(tertiary: Int) -> some View {
         let delta = weightDelta(currentGrams: entry.weight, previousGrams: reference?.weight)
+        // A number pad can't type a minus, and assistance is a negative weight — so a field
+        // whose own value, planned value or last-session value was assistance keeps entering
+        // assistance. Three sets on the machine are one toggle, not three; and because the
+        // hint is per field, a drop set that runs belt → bodyweight → machine still enters
+        // each of its drops with the right sign. The menus flip it deliberately.
+        let recordsAssistance = assistanceSignHint
         return DecimalField(
             placeholder: placeholder.map { convertWeightForDisplayingDecimal($0.weight) } ?? 0,
             value: Binding(
                 get: { convertWeightForDisplayingDecimal(entry.weight) },
-                set: { entry.weight = convertWeightForStoring($0) }
+                set: {
+                    let stored = convertWeightForStoring(abs($0))
+                    entry.weight = recordsAssistance ? -stored : stored
+                }
             ),
             maxDigits: 4,
             // Match the input precision to what integer-gram storage can round-trip:
@@ -130,7 +152,7 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
             trend: delta.comparison,
             trendText: delta.text,
             trendColor: trendColor,
-            previousValueText: (reference?.weight ?? 0) > 0
+            previousValueText: (reference?.weight ?? 0) != 0
                 ? formatWeightForDisplay(reference!.weight) : nil,
             onTapPreviousValue: onTapPreviousValue
         )
@@ -139,8 +161,14 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
     /// Seconds, entered to hundredths. The stored value is milliseconds, so a sprint keeps the
     /// 12.34 it was timed at; whole-second holds still type as plainly as they did before.
     private func durationField(tertiary: Int, showsTrend: Bool = true) -> some View {
-        let delta = showsTrend
-            ? durationDelta(currentMs: entry.durationMs, previousMs: reference?.durationMs)
+        // A duration beside a distance normally carries no trend (see `fields`) — but an
+        // exercise that says its clock improves downward has just told us how to read it, so
+        // a sprint gets its trend back.
+        let goal = entry.exercise?.durationGoal ?? .longer
+        let delta = showsTrend || goal == .faster
+            ? durationDelta(
+                currentMs: entry.durationMs, previousMs: reference?.durationMs, goal: goal
+            )
             : (comparison: nil, text: "")
         return DecimalField(
             placeholder: Double(placeholder?.durationMs ?? 0) / 1000,
@@ -209,19 +237,26 @@ private struct ExerciseObservingFields<Entry: SetEntryFieldsEditable>: View {
 
 // MARK: - Duration Helpers
 
-/// Compares an entered duration (milliseconds) against the previous workout's value — longer is
-/// improved, matching how holds are trained. Direction and text are computed on the value the
-/// user sees, so a change too small to show as hundredths shows no arrow at all. Returns
-/// `(nil, "")` when there is nothing meaningful to show.
+/// Compares an entered duration (milliseconds) against the previous workout's value, judged by the
+/// exercise's own goal: a hold improves by lasting longer, a timed effort by ending sooner.
+///
+/// The arrow always points the way the number moved; only the tint follows the goal — negating the
+/// number to make a quicker sprint point up would put a rising arrow beside a falling time.
+/// Direction and text are computed on the value the user sees, so a change too small to show as
+/// hundredths shows no arrow at all. Returns `(nil, "")` when there is nothing meaningful to show.
 func durationDelta(
-    currentMs: Int64, previousMs: Int64?
+    currentMs: Int64, previousMs: Int64?, goal: ExerciseDurationGoal = .longer
 ) -> (comparison: SetValueComparison?, text: String) {
     guard let previousMs, previousMs > 0, currentMs > 0 else { return (nil, "") }
     let current = formatDurationSecondsForEntry(milliseconds: currentMs)
     let previous = formatDurationSecondsForEntry(milliseconds: previousMs)
     guard current != previous else { return (nil, "") }
+    let rose = currentMs > previousMs
     return (
-        currentMs > previousMs ? .improved : .declined,
+        SetValueComparison(
+            direction: rose ? .up : .down,
+            isImprovement: goal == .faster ? !rose : rose
+        ),
         formatDurationSecondsForEntry(milliseconds: abs(currentMs - previousMs))
     )
 }

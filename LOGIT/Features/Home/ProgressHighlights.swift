@@ -98,10 +98,13 @@ struct ProgressYearCrossing {
 enum MilestoneLadder {
     /// Weight / e1RM steps in display units: kg every 10 to 100, then 20s to 200, then 25s;
     /// lbs plate math, then 50s.
-    private static let kgSteps: [Int] = Array(stride(from: 10, through: 100, by: 10))
+    ///
+    /// Zero leads both ladders: on an exercise trained with assistance the weight climbs from
+    /// below, and the rung it crosses first is the day the machine stopped helping.
+    private static let kgSteps: [Int] = [0] + Array(stride(from: 10, through: 100, by: 10))
         + Array(stride(from: 120, through: 200, by: 20))
         + Array(stride(from: 225, through: 500, by: 25))
-    private static let lbsSteps: [Int] = [45, 95, 135, 185, 225, 275, 315, 365, 405, 455, 495]
+    private static let lbsSteps: [Int] = [0, 45, 95, 135, 185, 225, 275, 315, 365, 405, 455, 495]
         + Array(stride(from: 545, through: 1000, by: 50))
 
     private static let repsSteps = [10, 15, 20, 25, 30, 40, 50, 75, 100]
@@ -206,8 +209,14 @@ enum ProgressHighlights {
             // 100 kg on the estimated 1RM is the story even when the lifted weight leads the card.
             // `records` is already in lead priority, so the first crossing found is the most
             // tangible one.
-            let crossing = group.records.lazy.compactMap { record in
-                MilestoneLadder
+            let crossing = group.records.lazy.compactMap { record -> (WorkoutProgressReport.PRRecord, Int)? in
+                // Ladders climb, and their rungs are the numbers people care about crossing —
+                // 100 kg, a 5 k, a five-minute plank. An exercise trained to get quicker crosses
+                // none of them going down (its lowest duration rung is already 30 s, above every
+                // sprint), so it keeps its record card and skips the milestone one.
+                guard !(record.metric == .duration && record.exercise.durationGoal == .faster)
+                else { return nil }
+                return MilestoneLadder
                     .highestStep(crossedFrom: record.previousBest, to: record.value, metric: record.metric)
                     .map { (record, $0) }
             }.first

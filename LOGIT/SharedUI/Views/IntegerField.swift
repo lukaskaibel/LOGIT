@@ -146,14 +146,30 @@ struct IntegerField: View {
 
 // MARK: - Set Value Trend Indicator
 
-enum SetValueComparison: Equatable {
-    case improved
-    case declined
+/// How a set's value compares with the previous workout's: which way the number moved, and
+/// whether that direction is the goal.
+///
+/// The two are separate on purpose. A sprinter who runs 12 s instead of 13 has a *smaller*
+/// number and a *better* one; negating the number to make the arrow point up would put a rising
+/// arrow next to a falling time. The arrow follows the number, the colour follows the goal.
+struct SetValueComparison: Equatable {
+    enum Direction { case up, down }
+    let direction: Direction
+    let isImprovement: Bool
+
+    /// The number rose, and rising is the goal — every field except a `.faster` duration.
+    static let improved = SetValueComparison(direction: .up, isImprovement: true)
+    /// The number fell, and falling is not the goal.
+    static let declined = SetValueComparison(direction: .down, isImprovement: false)
+    /// The number fell, and falling *is* the goal: a quicker sprint.
+    static let improvedDownward = SetValueComparison(direction: .down, isImprovement: true)
+    /// The number rose on an exercise where less is better: a slower sprint.
+    static let declinedUpward = SetValueComparison(direction: .up, isImprovement: false)
 }
 
 /// A small up/down arrow plus the absolute difference versus the previous workout's
-/// value for a single set field. Positive (improved) uses the exercise's muscle-group
-/// color; negative (declined) is muted gray.
+/// value for a single set field. An improvement uses the exercise's muscle-group
+/// color; anything else is muted gray. The arrow always points the way the number moved.
 struct SetValueDeltaLabel: View {
     let comparison: SetValueComparison
     let text: String
@@ -162,7 +178,7 @@ struct SetValueDeltaLabel: View {
     var body: some View {
         HStack(spacing: 1) {
             Image(
-                systemName: comparison == .improved
+                systemName: comparison.direction == .up
                     ? "arrow.up"
                     : "arrow.down"
             )
@@ -171,7 +187,7 @@ struct SetValueDeltaLabel: View {
         }
         .font(.system(.caption2, design: .rounded, weight: .bold))
         .monospacedDigit()
-        .foregroundStyle(comparison == .improved ? positiveColor : Color.secondary)
+        .foregroundStyle(comparison.isImprovement ? positiveColor : Color.secondary)
         .lineLimit(1)
         .fixedSize()
         .allowsHitTesting(false)

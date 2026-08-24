@@ -21,6 +21,9 @@ struct DefaultExercise: Codable {
     /// `SetMeasurementType` raw value for exercises that aren't tracked as reps + weight
     /// (planks, cardio, loaded carries). Absent = reps + weight.
     let measurementType: String?
+    /// `"faster"` for the timed efforts in the library — a sprint improves by ending sooner,
+    /// unlike a hold. Absent = longer, which is right for every other exercise that tracks time.
+    let durationGoal: String?
     let instructions: [String]?
     let localizedInstructions: [String: [String]]?
 
@@ -126,6 +129,14 @@ class DefaultExerciseService: ObservableObject {
                    existingExercise.templateSetGroups.isEmpty {
                     existingExercise.measurementType = libraryMeasurementType
                 }
+                // The time goal is adopted whenever the user has never set one. Unlike the
+                // measurement type this can't disturb an established habit — it changes which
+                // recorded time counts as the best, not what gets recorded — and leaving a
+                // sprinter's records upside down is the worse outcome.
+                if existingExercise.durationGoalString == nil, let goal = exerciseData.durationGoal {
+                    existingExercise.durationGoal =
+                        ExerciseDurationGoal(rawValue: goal) ?? .longer
+                }
             } else {
                 let exercise = Exercise(context: database.context)
                 exercise.id = generateUUID(from: exerciseData.id)
@@ -135,6 +146,9 @@ class DefaultExerciseService: ObservableObject {
                 }
                 exercise.instructions = instructions
                 exercise.measurementType = libraryMeasurementType
+                if let goal = exerciseData.durationGoal {
+                    exercise.durationGoal = ExerciseDurationGoal(rawValue: goal) ?? .longer
+                }
             }
         }
     }

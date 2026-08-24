@@ -437,6 +437,12 @@ struct WorkoutSetGroupCell: View {
                             Text(setGroup.secondaryExercise?.muscleGroup?.description ?? "")
                                 .foregroundColor(setGroup.secondaryExercise?.muscleGroup?.color ?? .accentColor)
                         }
+                        // The minus in the weight column says what the number is; this says what
+                        // it means. Shown only while the whole exercise is on the machine — a drop
+                        // set that crosses zero is neither assisted nor unassisted as a whole.
+                        if setGroup.isAssisted {
+                            AssistedTag(color: setGroup.exercise?.muscleGroup?.color ?? .accentColor)
+                        }
                         Spacer()
                         if !isReordering, let supplementaryText = supplementaryText {
                             Text(supplementaryText)
@@ -636,6 +642,28 @@ struct WorkoutSetGroupCell: View {
                 }
             } header: {
                 Text(NSLocalizedString("setType", comment: ""))
+            }
+            // Assistance is a negative weight, not a fourth set type — a drop set can be
+            // assisted too — so it gets its own section rather than a fourth radio option.
+            if setGroup.measurementType.usesWeight {
+                Section {
+                    Button {
+                        withAnimation(.interactiveSpring()) {
+                            setGroup.setAssisted(!setGroup.isAssisted)
+                            setGroup.objectWillChange.send()
+                        }
+                    } label: {
+                        Label(
+                            NSLocalizedString("assisted", comment: ""),
+                            systemImage: setGroup.isAssisted ? "checkmark" : "plusminus.circle"
+                        )
+                    }
+                } header: {
+                    // The explanation rides in the section header: a menu row renders only its
+                    // title (a `Label`'s second `Text` is dropped), while the header is the one
+                    // slot iOS draws in small gray type.
+                    Text(NSLocalizedString("assistedGroupDescription", comment: ""))
+                }
             }
             // Per-group measurement override on top of the exercise default. Hidden for super
             // sets: their two exercises each bring their own measurement type.
@@ -873,6 +901,9 @@ private struct SupersetExerciseLane: View {
                     HStack {
                         Text(exercise.muscleGroup?.description ?? "")
                             .foregroundColor(exercise.muscleGroup?.color ?? .accentColor)
+                        if setGroup.isAssisted {
+                            AssistedTag(color: exercise.muscleGroup?.color ?? .accentColor)
+                        }
                         Spacer()
                         if isPrimaryLane, let supplementaryText {
                             Text(supplementaryText)
@@ -1066,13 +1097,9 @@ private struct SetGroupMetricComparison {
     /// This set group's best for `metric` — what the *session* achieved.
     func sessionBest(_ metric: ExercisePrimaryMetric) -> Int {
         guard let exercise else { return 0 }
-        switch metric {
-        case .estimatedOneRepMax: return setGroup.sets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
-        case .weight: return setGroup.sets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
-        case .repetitions: return setGroup.sets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
-        case .duration: return setGroup.sets.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
-        case .distance: return setGroup.sets.map { $0.maximum(.distance, for: exercise) }.max() ?? 0
-        }
+        return exercise.best(
+            of: setGroup.sets.map { $0.metricValue(metric, for: exercise) }, for: metric
+        ) ?? 0
     }
 
     /// The comparison bar: the exercise's current best (see `Exercise.currentBestWindowStart`) —
@@ -1106,37 +1133,35 @@ private struct SetGroupMetricComparison {
             priorSets = priorSets.filter { ($0.workout?.date ?? .distantFuture) < anchor }
         }
         if let best = exercise.currentBestSet(for: metric, in: priorSets, endingAt: anchor) {
-            switch metric {
-            case .estimatedOneRepMax: return best.estimatedOneRepMax(for: exercise)
-            case .weight: return best.maximum(.weight, for: exercise)
-            case .repetitions: return best.maximum(.repetitions, for: exercise)
-            case .duration: return best.maximum(.duration, for: exercise)
-            case .distance: return best.maximum(.distance, for: exercise)
-            }
+            return best.metricValue(metric, for: exercise)
         }
         // Untrained for over a month → the window is empty. Fall back to the all-time best so there
         // is still a bar to compare against, instead of a flat 0% whatever the entered value is
         // (the trophy fires against all-time anyway, so the two stay consistent).
-        func value(_ workoutSet: WorkoutSet) -> Int {
-            switch metric {
-            case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: exercise)
-            case .weight: return workoutSet.maximum(.weight, for: exercise)
-            case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
-            case .duration: return workoutSet.maximum(.duration, for: exercise)
-            case .distance: return workoutSet.maximum(.distance, for: exercise)
-            }
-        }
-        let allTimeBest = priorSets.map(value).max() ?? 0
-        return allTimeBest > 0 ? allTimeBest : nil
+        return exercise.best(
+            of: priorSets.map { $0.metricValue(metric, for: exercise) }, for: metric
+        )
     }
 
     /// Percent change of this set group's best over the exercise's current best for `metric`, or
     /// nil when either side has nothing to compare — before the session's first entry, or with no
     /// prior history at all.
+    /// Percent of this group's best over the exercise's current best. Divided by the baseline's
+    /// magnitude so an assisted baseline (−20 kg) doesn't invert the sign of every comparison.
     func percentChange(_ metric: ExercisePrimaryMetric) -> Double? {
         let current = sessionBest(metric)
-        guard current > 0, let baseline = currentBest(metric), baseline > 0 else { return nil }
-        return (Double(current) - Double(baseline)) / Double(baseline) * 100
+        guard current != 0, let baseline = currentBest(metric), baseline != 0 else { return nil }
+        return (Double(current) - Double(baseline)) / abs(Double(baseline)) * 100
+    }
+
+    /// Whether this group's best beats its baseline in the exercise's own direction — the badge
+    /// tints on this, not on the sign of `percentChange`, so a quicker sprint reads as the win it
+    /// is while its number falls.
+    func isImprovement(_ metric: ExercisePrimaryMetric) -> Bool {
+        guard let exercise else { return false }
+        let current = sessionBest(metric)
+        guard current != 0, let baseline = currentBest(metric), baseline != 0 else { return false }
+        return exercise.isBetter(current, than: baseline, for: metric)
     }
 
     /// Best value for `metric` across all *previous* sessions for this exercise — the bar a new
@@ -1158,23 +1183,20 @@ private struct SetGroupMetricComparison {
     private func previousAllTimeBestImpl(_ metric: ExercisePrimaryMetric) -> Int {
         guard let exercise else { return 0 }
         let priorSets = exercise.sets.filter { $0.workout != setGroup.workout }
-        switch metric {
-        case .estimatedOneRepMax: return priorSets.map { $0.estimatedOneRepMax(for: exercise) }.max() ?? 0
-        case .weight: return priorSets.map { $0.maximum(.weight, for: exercise) }.max() ?? 0
-        case .repetitions: return priorSets.map { $0.maximum(.repetitions, for: exercise) }.max() ?? 0
-        case .duration: return priorSets.map { $0.maximum(.duration, for: exercise) }.max() ?? 0
-        case .distance: return priorSets.map { $0.maximum(.distance, for: exercise) }.max() ?? 0
-        }
+        return exercise.best(
+            of: priorSets.map { $0.metricValue(metric, for: exercise) }, for: metric
+        ) ?? 0
     }
 
     /// True only while recording, when this set group beats every previous session on `metric`.
     /// Ties don't count — you have to exceed it. Neither do first-ever entries — with no earlier
     /// value there is no record to beat (and everything would be a PR on day one).
     func isPersonalRecord(_ metric: ExercisePrimaryMetric) -> Bool {
-        guard setGroup.workout?.isCurrentWorkout == true else { return false }
+        guard setGroup.workout?.isCurrentWorkout == true, let exercise else { return false }
         let current = sessionBest(metric)
         let priorBest = previousAllTimeBest(metric)
-        return current > 0 && priorBest > 0 && current > priorBest
+        return current != 0 && priorBest != 0
+            && exercise.isBetter(current, than: priorBest, for: metric)
     }
 }
 
@@ -1395,9 +1417,12 @@ private struct MetricBadgeView: View {
         let metric = displayedMetric
         let isRecord = displayedIsRecord
         let change = comparison.percentChange(metric) ?? 0
+        // The arrow follows the number, the tint follows the goal: a sprint that got quicker
+        // shows a falling arrow in the muscle-group colour, not a grey one.
         let direction = trendDirection(for: change)
-        let trendColor = direction == .up ? accent : Color.secondary
-        let isColorful = isRecord || direction == .up
+        let isImprovement = comparison.isImprovement(metric)
+        let trendColor = isImprovement ? accent : Color.secondary
+        let isColorful = isRecord || isImprovement
         // The icon sits beside the whole value+label stack so it centres on the badge, not the value.
         // A flat trend has no icon (nil) — the muted percent says "no change" without a minus that
         // would read like a decline; a record still shows the trophy.

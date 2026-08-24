@@ -12,10 +12,20 @@ import Foundation
 /// never invents conversions. All reads go through `entryValues`, so legacy-shaped sets that
 /// the backfill hasn't reached yet compute identically.
 
+/// One entry's contribution to volume: reps × weight, with assistance counting as nothing.
+///
+/// A negative weight is help received, not work undone — an assisted set is a real set. Letting it
+/// subtract would drain the workout, muscle-group and Summary totals that sum this, so it clamps at
+/// zero instead. (The load the lifter actually moved is their bodyweight, which the app doesn't
+/// know, so counting it as zero is the honest floor rather than an estimate.)
+private func entryVolume(of value: SetEntryValues) -> Int {
+    max(0, Int(value.repetitions * value.weight))
+}
+
 public func getVolume(of workoutSets: [WorkoutSet]) -> Int {
     workoutSets
         .map { workoutSet in
-            workoutSet.entryValues.reduce(0) { $0 + Int($1.repetitions * $1.weight) }
+            workoutSet.entryValues.reduce(0) { $0 + entryVolume(of: $1) }
         }
         .reduce(0, +)
 }
@@ -25,7 +35,7 @@ public func getVolume(of workoutSets: [WorkoutSet], for exercise: Exercise) -> I
         .map { workoutSet in
             workoutSet.entryValues
                 .filter { $0.exercise == exercise }
-                .reduce(0) { $0 + Int($1.repetitions * $1.weight) }
+                .reduce(0) { $0 + entryVolume(of: $1) }
         }
         .reduce(0, +)
 }
@@ -35,7 +45,7 @@ public func getVolume(of workoutSets: [WorkoutSet], for muscleGroup: MuscleGroup
         .map { workoutSet in
             workoutSet.entryValues
                 .filter { $0.exercise?.muscleGroup == muscleGroup }
-                .reduce(0) { $0 + Int($1.repetitions * $1.weight) }
+                .reduce(0) { $0 + entryVolume(of: $1) }
         }
         .reduce(0, +)
 }

@@ -137,6 +137,9 @@ struct WorkoutSetCell: View {
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         reference: reference(for: entry, at: entryIndex, in: referenceValues),
                         placeholder: placeholder(for: entry, at: entryIndex, in: placeholderValues),
+                        // Sets added after the group was marked assisted have no value and no
+                        // history to take the sign from — the group they sit in is the answer.
+                        entersAssistance: workoutSet.setGroup?.isAssisted ?? false,
                         trendColor: entryExercise?.muscleGroup?.color ?? .accentColor,
                         onTapPreviousValue: previousValueTapHandler(for: entryExercise)
                     )
@@ -253,6 +256,31 @@ struct WorkoutSetCell: View {
                         systemImage: "slider.horizontal.3"
                     )
                 }
+            }
+        }
+
+        // Assistance is stored as a negative weight, so this toggle is a sign flip — offered
+        // wherever the measurement override is, because both say how to read this set's numbers.
+        if workoutSet.measurementType.usesWeight {
+            Section {
+                Button {
+                    withAnimation(.interactiveSpring()) {
+                        workoutSet.setAssisted(!workoutSet.isAssisted)
+                        // The entries changed, not the set, so the cell needs telling.
+                        workoutSet.objectWillChange.send()
+                        workoutSet.setGroup?.objectWillChange.send()
+                    }
+                } label: {
+                    Label(
+                        NSLocalizedString("assisted", comment: ""),
+                        systemImage: workoutSet.isAssisted ? "checkmark" : "plusminus.circle"
+                    )
+                }
+            } header: {
+                // "Assisted" alone doesn't say the weight is help you received rather than load
+                // you added, and a menu row renders only its title — so the sentence goes in the
+                // section header, the one slot iOS draws in small gray type.
+                Text(NSLocalizedString("assistedSetDescription", comment: ""))
             }
         }
 

@@ -59,6 +59,9 @@ struct MetricTile<ChartContent: View>: View {
     let accentColor: Color
     let percentChange: Double?
     var isRecord: Bool = false
+    /// Whether the change is an improvement, when that isn't simply "the number went up" — a
+    /// duration on a faster-is-better exercise. Nil keeps the pill's default reading.
+    var isImprovement: Bool? = nil
     /// Gates the tile's data — pill, subtitle, value, and chart — behind Pro (blur + compact crown).
     /// The title and chevron stay readable so a locked tile still says what it is.
     var requiresPro: Bool = false
@@ -258,6 +261,7 @@ struct MetricTile<ChartContent: View>: View {
                 positiveColor: accentColor,
                 positiveStyle: accent,
                 isRecord: isRecord,
+                isImprovement: isImprovement,
                 size: .compact
             )
         } else if let lapsedSince {

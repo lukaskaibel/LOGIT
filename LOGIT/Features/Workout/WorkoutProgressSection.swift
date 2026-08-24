@@ -93,16 +93,22 @@ struct WorkoutProgressReport {
         /// it. Nil when this workout is the exercise's first session.
         let baseline: Int?
 
+        /// Change against the baseline, as a percentage of its *magnitude*. The magnitude matters
+        /// for assisted work: a baseline of −20 kg would otherwise flip the sign of every
+        /// comparison, reporting six kilos less help as −30%.
         var percentChange: Double? {
-            guard let baseline, baseline > 0, current > 0 else { return nil }
-            return (Double(current) - Double(baseline)) / Double(baseline) * 100
+            guard let baseline, baseline != 0, current != 0 else { return nil }
+            return (Double(current) - Double(baseline)) / abs(Double(baseline)) * 100
         }
 
         /// Matches `TrendIndicatorView`'s rounding so the "n of m improved" headline can never
         /// disagree with the pills below it: a change only counts once it displays as at least 1%.
+        /// Whether the change is an improvement is the exercise's call, not the sign's — a sprint
+        /// improves downward.
         var isImprovement: Bool {
-            guard let change = percentChange else { return false }
-            return change > 0 && Int(min(abs(change), 999).rounded()) > 0
+            guard let change = percentChange, let baseline else { return false }
+            guard exercise.isBetter(current, than: baseline, for: metric) else { return false }
+            return Int(min(abs(change), 999).rounded()) > 0
         }
 
         var id: NSManagedObjectID { exercise.objectID }
@@ -134,26 +140,21 @@ struct WorkoutProgressReport {
             }
 
             func value(_ workoutSet: WorkoutSet, _ metric: ExercisePrimaryMetric) -> Int {
-                switch metric {
-                case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: exercise)
-                case .weight: return workoutSet.maximum(.weight, for: exercise)
-                case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
-                case .duration: return workoutSet.maximum(.duration, for: exercise)
-                case .distance: return workoutSet.maximum(.distance, for: exercise)
-                }
+                workoutSet.metricValue(metric, for: exercise)
             }
 
             func sessionBest(_ metric: ExercisePrimaryMetric) -> Int {
-                workout.sets.map { value($0, metric) }.max() ?? 0
+                exercise.best(of: workout.sets.map { value($0, metric) }, for: metric) ?? 0
             }
 
             var records = [PRRecord]()
             for metric in ExercisePrimaryMetric.allCases {
                 let current = sessionBest(metric)
-                let priorBest = priorSets.map { value($0, metric) }.max() ?? 0
+                let priorBest = exercise.best(of: priorSets.map { value($0, metric) }, for: metric) ?? 0
                 // Ties don't count, and neither do first-ever entries — with no earlier value
-                // there is no record to beat.
-                if current > 0, priorBest > 0, current > priorBest {
+                // there is no record to beat. "Beat" is the exercise's own direction: a faster
+                // sprint, a heavier lift, or less help from the machine.
+                if current != 0, priorBest != 0, exercise.isBetter(current, than: priorBest, for: metric) {
                     // When the beaten record was first set: the earliest prior session that reached
                     // it, so the card can date the previous best beside the new one.
                     let previousBestDate = priorSets
@@ -183,18 +184,22 @@ struct WorkoutProgressReport {
             // back to the all-time best before it — so the "n improved" pill beside the exercises
             // title can never disagree with the badges it summarizes.
             let windowStart = Exercise.currentBestWindowStart(endingAt: workoutDate)
-            let windowBest = priorSets
-                .filter { ($0.workout?.date ?? .distantPast) >= windowStart }
-                .map { value($0, trendMetric) }
-                .max() ?? 0
-            let priorBestForTrend = priorSets.map { value($0, trendMetric) }.max() ?? 0
-            let baseline = windowBest > 0 ? windowBest : priorBestForTrend
-            if current > 0 {
+            let windowBest = exercise.best(
+                of: priorSets
+                    .filter { ($0.workout?.date ?? .distantPast) >= windowStart }
+                    .map { value($0, trendMetric) },
+                for: trendMetric
+            ) ?? 0
+            let priorBestForTrend = exercise.best(
+                of: priorSets.map { value($0, trendMetric) }, for: trendMetric
+            ) ?? 0
+            let baseline = windowBest != 0 ? windowBest : priorBestForTrend
+            if current != 0 {
                 trends.append(ExerciseTrend(
                     exercise: exercise,
                     metric: trendMetric,
                     current: current,
-                    baseline: baseline > 0 ? baseline : nil
+                    baseline: baseline != 0 ? baseline : nil
                 ))
             }
         }
@@ -224,13 +229,7 @@ private func personalRecordsHeadline(count: Int) -> String {
 /// The metric's base value of a single set for `exercise` — the per-day series behind the records
 /// screen's sparkline, matching the detection in `WorkoutProgressReport.compute`.
 private func personalRecordSetValue(_ workoutSet: WorkoutSet, exercise: Exercise, metric: ExercisePrimaryMetric) -> Int {
-    switch metric {
-    case .estimatedOneRepMax: return workoutSet.estimatedOneRepMax(for: exercise)
-    case .weight: return workoutSet.maximum(.weight, for: exercise)
-    case .repetitions: return workoutSet.maximum(.repetitions, for: exercise)
-    case .duration: return workoutSet.maximum(.duration, for: exercise)
-    case .distance: return workoutSet.maximum(.distance, for: exercise)
-    }
+    workoutSet.metricValue(metric, for: exercise)
 }
 
 // MARK: - Records tile
@@ -447,8 +446,10 @@ struct WorkoutPersonalRecordCard: View {
     private func comparison(color: Color) -> some View {
         let previous = personalRecordDisplay(record.previousBest, metric: record.metric, exercise: record.exercise)
         let current = personalRecordDisplay(record.value, metric: record.metric, exercise: record.exercise)
-        let percentChange = record.previousBest > 0
-            ? (Double(record.value) - Double(record.previousBest)) / Double(record.previousBest) * 100
+        // Magnitude in the denominator, so a record set against assistance (−20 kg → −14 kg)
+        // reads as a gain rather than a 30% loss.
+        let percentChange = record.previousBest != 0
+            ? (Double(record.value) - Double(record.previousBest)) / abs(Double(record.previousBest)) * 100
             : nil
         return MetricComparisonView(
             leading: .init(
@@ -466,7 +467,10 @@ struct WorkoutPersonalRecordCard: View {
             trailingValueStyle: AnyShapeStyle(color.gradient),
             percentChange: percentChange,
             positiveColor: color,
-            positiveStyle: AnyShapeStyle(color.gradient)
+            positiveStyle: AnyShapeStyle(color.gradient),
+            // This card exists because the value IS a record — so the pill wears the trophy
+            // rather than a percentage whose sign would read backwards on a faster sprint.
+            isRecord: true
         )
     }
 

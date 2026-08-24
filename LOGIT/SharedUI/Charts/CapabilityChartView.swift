@@ -63,6 +63,17 @@ struct CapabilityChartView: View {
     /// raw one. Nil renders the plain number, right for kg / reps / volume. The duration screen
     /// passes its digital reading so the axis can't disagree with the header above it.
     var formatAxisValue: ((Int) -> String)? = nil
+    /// Bottom of the y-axis, normally zero. Assisted work is recorded as a negative load, so the
+    /// weight screen passes a negative floor and the chart grows a labelled zero line: assistance
+    /// below it, added weight above, one continuous history across the day you needed neither.
+    var yScaleMin: Int = 0
+    /// Label for the region below zero ("Assisted"). Nil while the axis starts at zero.
+    var belowZeroLabel: String? = nil
+    /// The exercise and metric the points belong to, so the header baseline can be picked in the
+    /// exercise's own direction (a sprint's best in the window is its quickest). Nil keeps the
+    /// more-is-better reading, which is right for every screen that doesn't chart a duration.
+    var exercise: Exercise? = nil
+    var metric: ExercisePrimaryMetric = .weight
 
     @State private var chartRange: ChartRange = .threeMonths
     @State private var chartScrollPosition: Date = .now
@@ -92,6 +103,7 @@ struct CapabilityChartView: View {
                 ),
                 trailingValueStyle: AnyShapeStyle(color.gradient),
                 percentChange: bestAnchor?.isLapsed == true ? nil : headerTrendPercentage(visibleBest: baselineRaw),
+                isImprovement: bestAnchor?.isLapsed == true ? nil : headerTrendIsImprovement(visibleBest: baselineRaw),
                 positiveColor: color,
                 explanation: NSLocalizedString("currentBestComparisonInfo", comment: "")
             )
@@ -193,9 +205,23 @@ struct CapabilityChartView: View {
                         )
                     )
                 }
+                // The line between help received and load added. Only drawn when the history
+                // actually crosses into assistance — otherwise the axis floor already is zero.
+                if yScaleMin < 0 {
+                    RuleMark(y: .value(valueLabel, 0))
+                        .foregroundStyle(Color.secondaryLabel)
+                        .lineStyle(StrokeStyle(lineWidth: 1))
+                        .annotation(position: .bottom, alignment: .leading, spacing: 2) {
+                            if let belowZeroLabel {
+                                Text(belowZeroLabel)
+                                    .font(.caption2.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                }
             }
             .chartXScale(domain: chartRange.xDomain(firstDataDate: firstDataDate))
-            .chartYScale(domain: 0 ... yScaleMax)
+            .chartYScale(domain: yScaleMin ... yScaleMax)
             .chartScrollableAxes(.horizontal)
             .chartScrollPosition(x: $chartScrollPosition)
             .chartScrollTargetBehavior(
@@ -271,24 +297,32 @@ struct CapabilityChartView: View {
         let otherInWindow = points.filter { point in
             guard point.date >= windowStart, point.date <= windowEnd else { return false }
             if let currentBestDay, calendar.isDate(point.date, inSameDayAs: currentBestDay) { return false }
-            return point.raw > 0
+            return point.raw != 0
         }
-        if let best = otherInWindow.map(\.raw).max(), best > 0 { return best }
+        // "Best" is the subject exercise's own direction — the quickest sprint, the least help.
+        if let best = exercise?.best(of: otherInWindow.map(\.raw), for: metric) { return best }
         // No other value in the shown window: the most recent day's best before it.
-        let prior = points.filter { $0.date < windowStart && $0.raw > 0 }
+        let prior = points.filter { $0.date < windowStart && $0.raw != 0 }
         guard let lastDate = prior.map(\.date).max() else { return nil }
-        return prior
-            .filter { calendar.isDate($0.date, inSameDayAs: lastDate) }
-            .map(\.raw)
-            .max()
+        let onLastDay = prior.filter { calendar.isDate($0.date, inSameDayAs: lastDate) }.map(\.raw)
+        return exercise?.best(of: onLastDay, for: metric) ?? onLastDay.max()
     }
 
     /// The header pill: the current best measured against the best in the shown window. Nil when
     /// either side is empty, so the pill drops out only when there's genuinely nothing to compare.
     private func headerTrendPercentage(visibleBest: Int?) -> Double? {
-        guard let current = bestAnchor?.value, current > 0,
-              let visible = visibleBest, visible > 0 else { return nil }
-        return (Double(current) - Double(visible)) / Double(visible) * 100
+        guard let current = bestAnchor?.value, current != 0,
+              let visible = visibleBest, visible != 0 else { return nil }
+        // Magnitude in the denominator so an assisted baseline can't invert the comparison.
+        return (Double(current) - Double(visible)) / abs(Double(visible)) * 100
+    }
+
+    /// Whether the anchor beats the window's other best in the exercise's own direction — the pill
+    /// tints on this rather than on the sign, so a quicker sprint reads as the win it is.
+    private func headerTrendIsImprovement(visibleBest: Int?) -> Bool? {
+        guard let exercise, let current = bestAnchor?.value, let visible = visibleBest,
+              current != 0, visible != 0 else { return nil }
+        return exercise.isBetter(current, than: visible, for: metric)
     }
 }
 

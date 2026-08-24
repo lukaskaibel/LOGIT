@@ -1,5 +1,5 @@
 {
- "version": 7,
+ "version": 8,
  "exercises": [
   {
    "id": "default_001",
@@ -11343,7 +11343,8 @@
      "Rinfrescati con una corsetta leggera o una camminata successiva."
     ]
    },
-   "measurementType": "distanceAndDuration"
+   "measurementType": "distanceAndDuration",
+   "durationGoal": "faster"
   },
   {
    "id": "default_166",

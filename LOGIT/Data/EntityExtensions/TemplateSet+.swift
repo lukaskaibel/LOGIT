@@ -65,7 +65,7 @@ public extension TemplateSet {
             )
         }
         if let dropSet = self as? TemplateDropSet {
-            let repetitions = dropSet.repetitions ?? []
+            let repetitions = dropSet.resolvedRepetitions ?? []
             let weights = dropSet.weights ?? []
             let dropCount = max(repetitions.count, weights.count, 1)
             return (0..<dropCount).map { index in

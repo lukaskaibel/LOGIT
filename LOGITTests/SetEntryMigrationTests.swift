@@ -148,20 +148,20 @@ final class SetEntryMigrationTests: XCTestCase {
 
         // G2 — drop sets, including malformed shapes
         let drop1: DropSet = try fetch("DropSet", fixtureId: 31, in: context)
-        XCTAssertEqual(drop1.repetitions, [10, 8, 6], file: file, line: line)
+        XCTAssertEqual(drop1.resolvedRepetitions, [10, 8, 6], file: file, line: line)
         XCTAssertEqual(drop1.weights, [140_000, 120_000, 100_000], file: file, line: line)
         XCTAssertEqual(drop1.restDuration, 120, file: file, line: line)
         let drop2: DropSet = try fetch("DropSet", fixtureId: 32, in: context)
-        XCTAssertEqual(drop2.repetitions, [10, 8], file: file, line: line)
+        XCTAssertEqual(drop2.resolvedRepetitions, [10, 8], file: file, line: line)
         XCTAssertEqual(drop2.weights, [60000], file: file, line: line)
         let drop3: DropSet = try fetch("DropSet", fixtureId: 33, in: context)
-        XCTAssertEqual(drop3.repetitions, [12], file: file, line: line)
+        XCTAssertEqual(drop3.resolvedRepetitions, [12], file: file, line: line)
         XCTAssertEqual(drop3.weights, [50000, 40000], file: file, line: line)
         let drop4: DropSet = try fetch("DropSet", fixtureId: 34, in: context)
-        XCTAssertNil(drop4.repetitions, file: file, line: line)
+        XCTAssertNil(drop4.resolvedRepetitions, file: file, line: line)
         XCTAssertNil(drop4.weights, file: file, line: line)
         let drop5: DropSet = try fetch("DropSet", fixtureId: 35, in: context)
-        XCTAssertEqual(drop5.repetitions, [], file: file, line: line)
+        XCTAssertEqual(drop5.resolvedRepetitions, [], file: file, line: line)
         XCTAssertEqual(drop5.weights, [], file: file, line: line)
 
         // G3/G4 — super sets
@@ -188,7 +188,7 @@ final class SetEntryMigrationTests: XCTestCase {
         XCTAssertEqual(orphanStandard.weight, 200_000, file: file, line: line)
         let orphanDrop: DropSet = try fetch("DropSet", fixtureId: 52, in: context)
         XCTAssertNil(orphanDrop.setGroup, file: file, line: line)
-        XCTAssertEqual(orphanDrop.repetitions, [3, 2], file: file, line: line)
+        XCTAssertEqual(orphanDrop.resolvedRepetitions, [3, 2], file: file, line: line)
         XCTAssertEqual(orphanDrop.weights, [180_000, 190_000], file: file, line: line)
 
         // Template mirrors
@@ -202,7 +202,7 @@ final class SetEntryMigrationTests: XCTestCase {
         XCTAssertEqual(templateStandard.restDuration, 60, file: file, line: line)
         let templateDrop: TemplateDropSet =
             try fetch("TemplateDropSet", fixtureId: 72, in: context)
-        XCTAssertEqual(templateDrop.repetitions, [9, 7], file: file, line: line)
+        XCTAssertEqual(templateDrop.resolvedRepetitions, [9, 7], file: file, line: line)
         XCTAssertEqual(templateDrop.weights, [130_000], file: file, line: line)
         let templateSuper: TemplateSuperSet =
             try fetch("TemplateSuperSet", fixtureId: 73, in: context)
@@ -341,6 +341,28 @@ final class SetEntryMigrationTests: XCTestCase {
         // The backfill is copy-only: after it ran, every legacy value must still read exactly
         // as it did before.
         try assertLegacyValuesIntact(in: container.viewContext)
+    }
+
+    /// The drop-set arrays must end up on the field CloudKit can actually accept, with the old
+    /// one cleared — that clearing is what unblocks syncing — and without losing a single value.
+    func testBackfillMovesDropRepetitionsOntoTheCloudKitSafeField() throws {
+        let container = try openMigratedStore()
+        let context = container.viewContext
+        Database.performSetEntryBackfill(in: context)
+
+        let drop1: DropSet = try fetch("DropSet", fixtureId: 31, in: context)
+        XCTAssertNil(drop1.repetitions, "The colliding field must be cleared")
+        XCTAssertEqual(drop1.dropRepetitions, [10, 8, 6], "…with the values moved, not dropped")
+        XCTAssertEqual(drop1.resolvedRepetitions, [10, 8, 6])
+
+        let templateDrop: TemplateDropSet = try fetch("TemplateDropSet", fixtureId: 72, in: context)
+        XCTAssertNil(templateDrop.repetitions)
+        XCTAssertEqual(templateDrop.dropRepetitions, [9, 7])
+
+        // Idempotent: a second sweep finds nothing to move and changes nothing.
+        Database.performSetEntryBackfill(in: context)
+        XCTAssertNil(drop1.repetitions)
+        XCTAssertEqual(drop1.dropRepetitions, [10, 8, 6])
     }
 
     func testBackfillIsIdempotent() throws {

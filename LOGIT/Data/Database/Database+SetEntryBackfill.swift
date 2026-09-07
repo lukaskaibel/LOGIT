@@ -49,6 +49,7 @@ extension Database {
     /// Must run on `context`'s queue.
     static func performSetEntryBackfill(in context: NSManagedObjectContext) {
         do {
+            migrateDropSetRepetitions(in: context)
             let legacySets = try fetchSetsWithoutEntries(
                 entityName: "WorkoutSet", as: WorkoutSet.self, in: context
             )
@@ -79,6 +80,56 @@ extension Database {
             context.rollback()
             os_log(
                 "Database: Set entry backfill failed, will retry on next sweep: %{public}@",
+                type: .error, String(describing: error)
+            )
+        }
+    }
+
+    /// Moves every drop set's repetition array off the pre-v11 `repetitions` field and onto
+    /// `dropRepetitions`, clearing the old one.
+    ///
+    /// This is not cosmetic: CloudKit flattens Core Data inheritance, so `DropSet` and
+    /// `StandardSet` share the `CD_WorkoutSet` record type, where `CD_repetitions` is defined as
+    /// `NUMBER_INT64` because `StandardSet` claimed it. A drop set's array is `BYTES`, the server
+    /// rejects it ("invalid attempt to set value type BYTES for field 'CD_repetitions'"), and
+    /// because the mirroring delegate treats that as fatal, one such record stalls syncing for
+    /// everything behind it. Clearing the old field is what lets those records export at all.
+    ///
+    /// Invariants, mirroring the entry backfill above:
+    /// - **Entries first.** `ensureEntries()` runs before the move, so the values exist as
+    ///   `SetEntry` rows — the representation everything reads — before either field changes.
+    /// - **Idempotent.** Only sets whose old field is non-nil are touched, and each is left with
+    ///   the old field nil, so a second pass finds nothing. Re-running is always safe.
+    /// - **Re-runnable forever.** Devices on older app versions keep syncing drop sets shaped the
+    ///   old way, so this rides the same remote-change sweep as the entry backfill.
+    static func migrateDropSetRepetitions(in context: NSManagedObjectContext) {
+        do {
+            let dropSets = try context.fetch(NSFetchRequest<DropSet>(entityName: "DropSet"))
+                .filter { $0.repetitions != nil }
+            let templateDropSets = try context
+                .fetch(NSFetchRequest<TemplateDropSet>(entityName: "TemplateDropSet"))
+                .filter { $0.repetitions != nil }
+            guard !dropSets.isEmpty || !templateDropSets.isEmpty else { return }
+
+            for dropSet in dropSets {
+                dropSet.ensureEntries()
+                dropSet.dropRepetitions = dropSet.repetitions
+                dropSet.repetitions = nil
+            }
+            for templateDropSet in templateDropSets {
+                templateDropSet.ensureEntries()
+                templateDropSet.dropRepetitions = templateDropSet.repetitions
+                templateDropSet.repetitions = nil
+            }
+            if context.hasChanges { try context.save() }
+            os_log(
+                "Database: moved %d drop sets onto the CloudKit-safe repetitions field",
+                type: .info, dropSets.count + templateDropSets.count
+            )
+        } catch {
+            context.rollback()
+            os_log(
+                "Database: drop-set repetition migration failed, will retry on next sweep: %{public}@",
                 type: .error, String(describing: error)
             )
         }

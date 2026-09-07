@@ -38,18 +38,36 @@ public extension DropSet {
         managedObjectContext?.delete(last)
     }
 
+    // MARK: Legacy repetition arrays
+
+    /// The per-drop repetitions, wherever they currently live.
+    ///
+    /// `dropRepetitions` is the field this app writes; `repetitions` is the pre-v11 one it is
+    /// being moved off. The two never hold a value at the same time — `Database.migrateDropSetRepetitions`
+    /// moves each set across exactly once and clears the old field — so reading the new one first
+    /// is unambiguous rather than a merge.
+    ///
+    /// The move exists because CloudKit flattens Core Data inheritance: `DropSet` and
+    /// `StandardSet` share one record type, where `CD_repetitions` was already claimed as
+    /// `NUMBER_INT64` by `StandardSet`. A drop set's array of reps could never be written to it,
+    /// so drop sets could not sync at all. The differently-named field is the fix.
+    var resolvedRepetitions: [Int64]? {
+        dropRepetitions ?? repetitions
+    }
+
     // MARK: Legacy-field fallbacks (see WorkoutSet.hasEntry & friends)
 
     internal override var legacyHasEntry: Bool {
-        (repetitions?.reduce(0, +) ?? 0) > 0 || (weights?.reduce(0, +) ?? 0) > 0
+        (resolvedRepetitions?.reduce(0, +) ?? 0) > 0 || (weights?.reduce(0, +) ?? 0) > 0
     }
 
     internal override var legacyHasRepetitionEntry: Bool {
-        (repetitions?.reduce(0, +) ?? 0) > 0
+        (resolvedRepetitions?.reduce(0, +) ?? 0) > 0
     }
 
     internal override func legacyClearEntries() {
-        repetitions = Array(repeating: 0, count: repetitions?.count ?? 0)
+        dropRepetitions = Array(repeating: 0, count: resolvedRepetitions?.count ?? 0)
+        repetitions = nil
         weights = Array(repeating: 0, count: weights?.count ?? 0)
     }
 }

@@ -33,9 +33,15 @@ public extension TemplateDropSet {
         managedObjectContext?.delete(last)
     }
 
+    /// The per-drop repetitions, wherever they currently live — see `DropSet.resolvedRepetitions`
+    /// for why there are two fields.
+    var resolvedRepetitions: [Int64]? {
+        dropRepetitions ?? repetitions
+    }
+
     // MARK: Legacy-field fallbacks (see TemplateSet.hasEntry)
 
     internal override var legacyHasEntry: Bool {
-        (repetitions?.reduce(0, +) ?? 0) + (weights?.reduce(0, +) ?? 0) > 0
+        (resolvedRepetitions?.reduce(0, +) ?? 0) + (weights?.reduce(0, +) ?? 0) > 0
     }
 }

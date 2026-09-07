@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24299" systemVersion="25B78" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
     <entity name="DropSet" representedClassName="DropSet" parentEntity="WorkoutSet" syncable="YES" codeGenerationType="category">
+        <attribute name="dropRepetitions" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
         <attribute name="repetitions" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
         <attribute name="weights" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
     </entity>
@@ -59,6 +60,7 @@
         <relationship name="workouts_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Workout" inverseName="template" inverseEntity="Workout"/>
     </entity>
     <entity name="TemplateDropSet" representedClassName="TemplateDropSet" parentEntity="TemplateSet" syncable="YES" codeGenerationType="category">
+        <attribute name="dropRepetitions" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
         <attribute name="repetitions" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
         <attribute name="weights" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Int64]"/>
     </entity>

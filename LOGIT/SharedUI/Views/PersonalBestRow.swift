@@ -38,8 +38,9 @@ struct PersonalBestRow: View {
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
+            // One continuous gradient across value + unit, not one restarting in each.
             personalRecordValueView(for: record, configuration: .normal)
-                .foregroundStyle(color.gradient)
+                .continuousForegroundStyle(color.gradient)
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)

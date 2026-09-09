@@ -19,6 +19,11 @@ enum WorkoutEffort: CaseIterable, Identifiable {
     /// (see `Workout.effortScore`).
     static let scoreRange = 1...10
 
+    /// Where the finish panel's scale starts, the way Apple's effort screen does: in the middle,
+    /// so rating is a nudge from a neutral position rather than a pick from nothing. The centre of
+    /// the range and of the Moderate band both land on 5.
+    static let defaultScore = 5
+
     init?(score: Int) {
         switch score {
         case 1...3: self = .easy

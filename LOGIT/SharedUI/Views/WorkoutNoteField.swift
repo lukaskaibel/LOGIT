@@ -36,7 +36,30 @@ struct WorkoutNoteField: View {
     /// `false`: there is nothing to prompt once the session is over.
     var showsPreviousNote: Bool = true
 
+    @ViewBuilder
     var body: some View {
+        switch style {
+        case .glass:
+            // The same modifier the header's stat tiles wear, written the same way: applied to the
+            // view, at `tileStyle()`'s radius. This card used to apply it to a `Color.clear` inside
+            // `.background` at radius 24 — cosmetically out of step with the tiles beside it.
+            //
+            // NB the card can still LOOK less lit than those tiles, and that is the backdrop, not
+            // the material: clear glass refracts what is behind it, the muscle wash spends most of
+            // its colour in the top of the header, and this card sits below that. Measured rim
+            // contrast against an adjacent record card and a plain-Text control card was the same
+            // to within a few levels. Don't go hunting a rendering bug here.
+            card
+                .glassEffect(.clear, in: .rect(cornerRadius: 30))
+                .animation(.snappy(duration: 0.28), value: showsRecall)
+        case .tile:
+            card
+                .tileStyle()
+                .animation(.snappy(duration: 0.28), value: showsRecall)
+        }
+    }
+
+    private var card: some View {
         VStack(alignment: .leading, spacing: 0) {
             if showsPreviousNote, showsRecall, let previous = workout.previousTemplateNote {
                 previousNote(previous.note, date: previous.date)
@@ -46,18 +69,8 @@ struct WorkoutNoteField: View {
             }
             noteField
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(CELL_PADDING)
-        .background {
-            switch style {
-            case .glass:
-                // Matches the header's stat tiles: clear glass so the workout's colours come
-                // through from the wash behind it rather than a solid slab sitting on top.
-                Color.clear.glassEffect(.clear, in: .rect(cornerRadius: 24))
-            case .tile:
-                RoundedRectangle(cornerRadius: 20).fill(Color.secondaryBackground)
-            }
-        }
-        .animation(.snappy(duration: 0.28), value: showsRecall)
     }
 
     /// Last session's note stays up while this one is still blank **and** while you are actually

@@ -833,10 +833,12 @@ final class ScenarioScreenshots: XCTestCase {
     }
 
     /// The finish flow on top of the Transmission presentation: expand the header,
-    /// tap Finish → finish-confirmation sheet (it chains off the tray content, so
-    /// the tray must be up), End Workout → back into the "Start Workout" pill. The
-    /// header's expand-tap and Finish button sit behind the tray sheet for
-    /// accessibility, hence the coordinate taps.
+    /// tap Finish → the header's third stop, End Workout → back into the "Start
+    /// Workout" pill. Since #143 finishing is a stop in the header rather than a
+    /// sheet chained off the tray content, and the tray leaves on the way in — the
+    /// panel runs to the floor the tray was covering — so the tray going away is
+    /// part of what this asserts. The header's expand-tap sits behind the tray for
+    /// accessibility, hence the coordinate tap.
     func testRecorderFinishFlow() {
         let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
 
@@ -846,14 +848,20 @@ final class ScenarioScreenshots: XCTestCase {
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 20), "Recorder/tray never presented")
         waitABit(2)
 
-        // Expand the header (caption tap), then Finish (bottom-right of the panel)
-        // → finish confirmation sheet.
+        // Expand the header (caption tap), then Finish → the third stop.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
         waitABit(2)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.27)).tap()
-        let endWorkoutButton = app.buttons["End Workout"].firstMatch
-        XCTAssertTrue(endWorkoutButton.waitForExistence(timeout: 5), "Finish confirmation sheet did not appear")
-        attach(app, "recorder_14_finish_confirmation")
+        let finish = app.buttons["Finish"].firstMatch
+        XCTAssertTrue(finish.waitForExistence(timeout: 5), "Finish button missing from the expanded header")
+        finish.tap()
+
+        let endWorkoutButton = app.buttons["finishPanelEndWorkout"].firstMatch
+        XCTAssertTrue(endWorkoutButton.waitForExistence(timeout: 5), "Finish panel did not open")
+        XCTAssertTrue(
+            traySearchField.waitForNonExistence(timeout: 5),
+            "Tray still up behind the finish panel"
+        )
+        attach(app, "recorder_14_finish_panel")
 
         endWorkoutButton.tap()
         let startPill = app.staticTexts["Start Workout"].firstMatch
@@ -864,8 +872,10 @@ final class ScenarioScreenshots: XCTestCase {
     /// Start pill → WorkoutStartSheet → blank workout: the recorder presentation
     /// has to wait for the start sheet's dismissal (Transmission dismisses it
     /// automatically before presenting). The empty workout auto-expands the header,
-    /// so Finish discards the entry-less workout with no confirmation and restores
-    /// the start pill.
+    /// so the trailing action is on screen — and since #137 it reads "Cancel" until
+    /// the workout has its first logged value, because it discards rather than
+    /// finishes. Nothing logged means no confirmation: it goes straight back to the
+    /// start pill.
     func testStartWorkoutFlowAndDiscard() {
         let app = launchApp(scenario: "many", extraArguments: ["-UITEST_NO_SHEET"])
 
@@ -882,16 +892,21 @@ final class ScenarioScreenshots: XCTestCase {
 
         newWorkoutButton.tap()
         // Start sheet dismisses, recorder presents empty → header auto-expanded, so
-        // the Finish button is on screen.
-        let finish = app.buttons["Finish"]
-        XCTAssertTrue(finish.waitForExistence(timeout: 10), "Recorder did not present from the start sheet")
+        // the trailing action is on screen. It says Cancel, not Finish: nothing is
+        // logged yet, so there is no session to finish.
+        let cancel = app.buttons["Cancel"]
+        XCTAssertTrue(cancel.waitForExistence(timeout: 10), "Recorder did not present from the start sheet")
+        XCTAssertFalse(
+            app.buttons["Finish"].exists,
+            "Entry-less workout must not offer Finish — it saves nothing"
+        )
         waitABit(2)
         attach(app, "recorder_12_new_workout_open")
 
-        // Finishing an entry-less workout discards it immediately (no confirmation).
-        finish.tap()
+        // Discarding an entry-less workout leaves immediately (no confirmation).
+        cancel.tap()
         waitABit(2)
-        XCTAssertFalse(finish.exists, "Recorder still on screen after discarding the empty workout")
+        XCTAssertFalse(cancel.exists, "Recorder still on screen after discarding the empty workout")
         XCTAssertTrue(startPill.waitForExistence(timeout: 5), "Start pill did not return after discarding")
         attach(app, "recorder_13_discarded_back_to_pill")
     }
@@ -1505,9 +1520,14 @@ final class ScenarioScreenshots: XCTestCase {
         XCTAssertTrue(addSet1.waitForExistence(timeout: 5))
 
         // Long-press a set row in group 1 → context menu → "Add Set After" (the one
-        // insertion path that doesn't fire workout.objectWillChange).
+        // insertion path that doesn't fire workout.objectWillChange). The header's
+        // note field (#143) is a text field in this same band and sorts ahead of the
+        // set rows, so it has to be skipped by identifier — long-pressing it opens
+        // no set menu at all.
         let firstField = app.textFields.allElementsBoundByIndex.first {
-            $0.frame.minY > 100 && $0.frame.maxY < addSet1.frame.minY
+            $0.identifier != "workoutNoteField"
+                && $0.frame.minY > 100
+                && $0.frame.maxY < addSet1.frame.minY
         }
         guard let groupOneField = firstField else {
             XCTFail("No group 1 field found")
@@ -1520,11 +1540,20 @@ final class ScenarioScreenshots: XCTestCase {
         addAfter.tap()
         waitABit(2)
 
-        // Tap the first field of group 2 and type — the digit must land there.
-        let addSet1Frame = addSet1.frame
+        // Tap the first field of group 2 and type — the digit must land there. Group 2 is
+        // below the fold at rest: the header panel (#143) pushed the list down far enough
+        // that its first row lands ~40pt past the screen edge, so it has to be scrolled up
+        // first. The cells are already built — they report real frames from down there —
+        // so this surfaces the stale ones rather than rebuilding them, and -UITEST_MINIMAL
+        // still holds off the re-render heal.
+        XCTAssertTrue(
+            scrollRecorder(app, toGroup: "Overhead Press"),
+            "Could not bring group 2 (Overhead Press) on screen"
+        )
+        let groupTwoHeaderMaxY = app.staticTexts["Overhead Press"].firstMatch.frame.maxY
         let fields = app.textFields.allElementsBoundByIndex
-        guard let target = fields.first(where: { $0.frame.minY > addSet1Frame.maxY + 10 && $0.isHittable }) else {
-            XCTFail("No target field below group 1 found")
+        guard let target = fields.first(where: { $0.frame.minY > groupTwoHeaderMaxY && $0.isHittable }) else {
+            XCTFail("No target field below group 2's header found")
             return
         }
         let targetFrame = target.frame

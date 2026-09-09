@@ -119,8 +119,11 @@ struct CapabilityChartView: View {
                         .lineStyle(StrokeStyle(lineWidth: 2))
                         .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                             VStack(alignment: .leading) {
+                                // One continuous gradient across value + unit. (Sites that pass an
+                                // explicit `unitColor` colour the unit separately on purpose and
+                                // must NOT use this — it would override that.)
                                 UnitView(value: selectedPoint.formatted, unit: unit)
-                                    .foregroundStyle(color.gradient)
+                                    .continuousForegroundStyle(color.gradient)
                                 Text(snapped.formatted(.dateTime.day().month()))
                                     .fontWeight(.bold)
                                     .fontDesign(.rounded)

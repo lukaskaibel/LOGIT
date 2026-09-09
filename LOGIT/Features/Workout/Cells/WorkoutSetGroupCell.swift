@@ -518,7 +518,8 @@ struct WorkoutSetGroupCell: View {
                 }
             } label: {
                 Image(systemName: "plus.square.on.square")
-                    .foregroundStyle((exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                    // One ramp across the plus and the word, not one sweep in each.
+                    .continuousForegroundStyle((exercise?.muscleGroup?.color ?? .accentColor).gradient)
                     .font(.system(.body, design: .rounded, weight: .bold))
                     .padding(15)
                     .background(Color.accentColor.secondaryTranslucentBackground)

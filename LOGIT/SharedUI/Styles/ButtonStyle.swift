@@ -39,7 +39,9 @@ struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.body, design: .rounded, weight: .bold))
-            .foregroundStyle(tint)
+            // One ramp across icon AND text: `foregroundStyle` resolves a gradient inside each
+            // child, so a Label's symbol and its word came out as two different gradients.
+            .continuousForegroundStyle(tint)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             // The same 0.2 as `Color.secondaryTranslucentBackground`, which only exists for

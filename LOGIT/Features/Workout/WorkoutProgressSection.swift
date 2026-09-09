@@ -220,7 +220,7 @@ struct WorkoutProgressReport {
 
 /// "Personal record" for one, "%d Personal Records" otherwise — shared by the records tile and the
 /// records screen so their headlines can never disagree.
-private func personalRecordsHeadline(count: Int) -> String {
+func personalRecordsHeadline(count: Int) -> String {
     count == 1
         ? NSLocalizedString("personalRecord", comment: "")
         : String(format: NSLocalizedString("personalRecordsCount", comment: ""), count)
@@ -270,6 +270,63 @@ struct WorkoutPersonalBestsTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+}
+
+/// The records this session set, as one line — the recorder's finish panel.
+///
+/// Deliberately a *line*, not the detail screen's tile of `PersonalBestRow`s: at the moment you
+/// finish, the reward is the recognition ("you got stronger on two things"), and the numbers are
+/// still fresh in your hands. The full cards, the value each record beat and its history chart all
+/// live on the workout detail, one tap away once the workout is saved.
+///
+/// Renders nothing when the session set no records — a finish screen should never announce a zero.
+struct PersonalRecordsHighlight: View {
+    let workout: Workout
+    let records: [WorkoutProgressReport.ExerciseRecords]
+
+    var body: some View {
+        if !records.isEmpty {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            workout.sets
+                                .muscleGroupGradient(startPoint: .bottomLeading, endPoint: .topTrailing)
+                                .opacity(0.18)
+                        )
+                        .frame(width: 38, height: 38)
+                    Image(systemName: "trophy.fill")
+                        .font(.footnote)
+                        .foregroundStyle(
+                            workout.sets.muscleGroupGradientStyle(
+                                startPoint: .bottomLeading,
+                                endPoint: .topTrailing
+                            )
+                        )
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(personalRecordsHeadline(count: records.count))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.label)
+                    // The exercises, not the values: which lifts moved is the part worth naming
+                    // here, and it stays one line however many there are.
+                    Text(records.map { $0.exercise.displayName }.joined(separator: " · "))
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(CELL_PADDING)
+            // Applied directly, at the tile radius, so it is the same material as the Volume and
+            // Repetitions tiles above it rather than a flat slab beside them.
+            .glassEffect(.clear, in: .rect(cornerRadius: 30))
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("finishPersonalRecords")
+        }
+    }
 }
 
 // MARK: - Records screen

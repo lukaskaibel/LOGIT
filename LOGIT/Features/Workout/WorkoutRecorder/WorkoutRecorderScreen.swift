@@ -16,6 +16,11 @@ import UIKit
 /// the exercise tray instead of coming to rest right on its edge.
 private let RECORDER_LIST_SCROLL_SLACK: CGFloat = 120
 
+/// Breathing room above the header's Minimize / Finish row, separating the actions from the
+/// summary above them. Part of the panel's first stop, so it also spaces the buttons off the
+/// title while the summary is still folded away.
+private let RECORDER_HEADER_ACTIONS_SPACING: CGFloat = 14
+
 /// How far a downward pull has to travel before it hands the recorder over to the dismissal
 /// driver. Engaging is not a free look: it tears the exercise tray down (UIKit forwards the
 /// recorder's `dismiss` to a presented child, so the tray has to go first) and that teardown
@@ -86,6 +91,10 @@ struct WorkoutRecorderScreen: View {
     /// re-created there, and its `onAppear` would scroll it to the bottom — folding the panel the
     /// user was just standing on and making them pull it open again to finish.
     @State private var isRestoringFromFinish = false
+    /// The records this session set, for the finish panel's highlight line. Computed once when the
+    /// panel opens rather than per render: the walk over every exercise's history is real work and
+    /// the recorder must never do it on a redraw.
+    @State private var finishReport: WorkoutProgressReport?
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isShowingDetailsSheet = false
     @State private var isShowingExerciseSelectionSheet = false
@@ -132,6 +141,11 @@ struct WorkoutRecorderScreen: View {
     /// Natural (fully-revealed) height of the stats panel, measured the first time it is laid
     /// out and cached, so the fold always knows what it is working against.
     @State private var headerPanelHeight: CGFloat = 0
+    /// The Minimize / Finish row's own height, including the breathing room above it. This is the
+    /// panel's FIRST stop: pulling the header down shows the actions and nothing else, and the
+    /// summary above them costs a further pull. Entering a set therefore no longer grows the
+    /// header on its own — the tiles appear inside the panel, above the part being shown.
+    @State private var headerActionsHeight: CGFloat = 0
     /// How far the list is scrolled past the panel, 0…`headerPanelHeight` — the scroll offset,
     /// clamped. This is what the scroll content compensates for, and it never takes a drag or a
     /// pull-open into account: the content has to stay put when the header changes because of
@@ -174,12 +188,45 @@ struct WorkoutRecorderScreen: View {
         return min(max(base + translation, 0), headerPanelHeight)
     }
 
-    /// 0 folded … 1 fully unfolded — drives everything that has to move *with* the contraction
-    /// (the title size) rather than snap at the ends.
+    /// 0 folded … 1 fully unfolded — the whole panel, used where the *entire* travel matters.
     private var headerRevealFraction: CGFloat {
         if isFinishing { return 1 }
         guard headerPanelHeight > 0 else { return 1 }
         return min(max(headerPanelRevealHeight / headerPanelHeight, 0), 1)
+    }
+
+    /// How far the panel has come out of its FIRST stop, 0 … 1. The title's growth and the panel's
+    /// fade ride this rather than the full travel: by the time the actions are out the header has
+    /// arrived, and the summary above them is extra rather than unfinished business.
+    private var headerPrimaryRevealFraction: CGFloat {
+        if isFinishing { return 1 }
+        guard headerCompactReveal > 0 else { return 1 }
+        return min(max(headerPanelRevealHeight / headerCompactReveal, 0), 1)
+    }
+
+    /// The reveal the panel rests at when it is simply "open": the actions, nothing above them.
+    /// Falls back to the whole panel until the actions have been measured.
+    private var headerCompactReveal: CGFloat {
+        guard headerPanelHeight > 0 else { return 0 }
+        guard headerActionsHeight > 0 else { return headerPanelHeight }
+        return min(headerActionsHeight, headerPanelHeight)
+    }
+
+    /// Every reveal height the panel comes to rest at, ascending: folded, actions only, all of it.
+    private var headerPanelStops: [CGFloat] {
+        guard headerPanelHeight > 0 else { return [0] }
+        let compact = headerCompactReveal
+        guard compact > 0, compact < headerPanelHeight - 1 else { return [0, headerPanelHeight] }
+        return [0, compact, headerPanelHeight]
+    }
+
+    /// Where a release lands: the next stop in the direction of a fling, otherwise the nearest.
+    private func headerStop(nearestTo reveal: CGFloat, velocity: CGFloat) -> CGFloat {
+        let stops = headerPanelStops
+        let nearest = stops.min(by: { abs($0 - reveal) < abs($1 - reveal) }) ?? 0
+        if velocity > 400 { return stops.first(where: { $0 > reveal + 1 }) ?? stops.last ?? nearest }
+        if velocity < -400 { return stops.last(where: { $0 < reveal - 1 }) ?? stops.first ?? nearest }
+        return nearest
     }
 
     /// Whether the panel accepts touches.
@@ -189,8 +236,8 @@ struct WorkoutRecorderScreen: View {
     /// silently swallows every tap on a panel the user can plainly see fully extended. (That is
     /// exactly what the note row's extra height provoked: the panel looked open and neither the
     /// note nor Finish responded.) Finishing is always live: there the panel IS the screen.
-    private var headerIsFullyRevealed: Bool {
-        isFinishing || (headerPanelHeight > 0 && headerRevealFraction >= 0.9)
+    private var headerPanelIsInteractive: Bool {
+        isFinishing || (headerCompactReveal > 0 && headerPanelRevealHeight >= headerCompactReveal * 0.9)
     }
 
     /// Whether the panel is in the view tree at all. Kept out once it is fully folded so its
@@ -203,9 +250,9 @@ struct WorkoutRecorderScreen: View {
 
     /// Unfolds the panel where the list currently rests: the fold is measured from here on, so
     /// scrolling down from this point contracts it exactly as it does from the top.
-    private func openHeaderPanel() {
+    private func openHeaderPanel(to reveal: CGFloat? = nil) {
         headerFoldOrigin = scrollTracker.offset
-        headerOriginFold = 0
+        headerOriginFold = max(headerPanelHeight - (reveal ?? headerCompactReveal), 0)
     }
 
     /// Folds the panel away by handing the fold back to the list's real scroll position. At the
@@ -223,7 +270,13 @@ struct WorkoutRecorderScreen: View {
     /// Tapping the caption, the handle or the donut folds or unfolds the panel in place.
     private func toggleHeaderExpansion() {
         withAnimation(headerExpansionAnimation) {
-            if headerRevealFraction > 0.5 { foldHeaderPanel() } else { openHeaderPanel() }
+            // Tapping toggles the first stop only. Reaching the summary above the actions is
+            // deliberately a drag: it is the "further" in "pull down further".
+            if headerPanelRevealHeight > headerCompactReveal * 0.5 {
+                foldHeaderPanel()
+            } else {
+                openHeaderPanel()
+            }
         }
     }
 
@@ -586,7 +639,9 @@ struct WorkoutRecorderScreen: View {
                 guard isNoteFieldFocused, !isFinishing else { return }
                 withAnimation(headerExpansionAnimation) {
                     scrollPosition.scrollTo(y: 0)
-                    openHeaderPanel()
+                    // All the way: the note lives above the actions, so the first stop would put
+                    // the field the finger just tapped behind the fold.
+                    openHeaderPanel(to: headerPanelHeight)
                 }
             }
             .onChange(of: workoutRecorderIsDragging) {
@@ -696,24 +751,39 @@ struct WorkoutRecorderScreen: View {
                         .background(
                             GeometryReader { geometry in
                                 Color.clear
-                                    .onChange(of: geometry.size.height, initial: true) { _, height in
+                                    .onChange(of: geometry.size.height, initial: true) { oldHeight, height in
                                         guard height > 0, height != headerPanelHeight else { return }
+                                        // Logging the first set makes the tiles appear, so the
+                                        // panel's natural height jumps. Hold the CURRENT reveal
+                                        // across that: the fold is stored as an absolute amount,
+                                        // so leaving it alone would push the panel open by exactly
+                                        // the tiles' height — the header growing on its own, which
+                                        // is what it must not do.
+                                        let previousReveal = oldHeight > 0
+                                            ? max(oldHeight - headerOriginFold, 0)
+                                            : 0
                                         headerPanelHeight = height
-                                        // Both folds are clamped to the panel's height, so they
-                                        // were pinned at 0 until this first measurement —
-                                        // re-derive them from wherever the list already sits, or
-                                        // a recorder that opened scrolled into the list would
-                                        // show the panel it has long since scrolled past.
-                                        let fold = min(max(scrollTracker.offset - headerFoldOrigin, 0), height)
                                         headerScrollFold = min(max(scrollTracker.offset, 0), height)
-                                        headerOriginFold = fold
+                                        if previousReveal > 0 {
+                                            headerOriginFold = max(height - previousReveal, 0)
+                                        } else {
+                                            // First measurement: both folds were pinned at 0 until
+                                            // now, so derive them from wherever the list sits, or
+                                            // a recorder that opened scrolled into the list would
+                                            // show the panel it has long since scrolled past.
+                                            headerOriginFold = min(max(scrollTracker.offset - headerFoldOrigin, 0), height)
+                                        }
                                     }
                             }
                         )
-                        .frame(height: headerPanelRevealHeight, alignment: .top)
+                        // Bottom-anchored: a short pull shows the panel's LAST rows (the actions)
+                        // and pulling further brings the note and the tiles down into view above
+                        // them. Top-anchored, the summary came first and the actions last, which
+                        // is the wrong way round for a control you reach for constantly.
+                        .frame(height: headerPanelRevealHeight, alignment: .bottom)
                         .clipped()
-                        .opacity(headerPanelHeight > 0 ? headerRevealFraction : 1)
-                        .allowsHitTesting(headerIsFullyRevealed)
+                        .opacity(headerPanelHeight > 0 ? headerPrimaryRevealFraction : 1)
+                        .allowsHitTesting(headerPanelIsInteractive)
                 }
                 // The grab handle sits at the header's BOTTOM edge — the seam the panel unfolds
                 // from — and reads as "pull here": drag the header (or tap the handle / caption)
@@ -786,18 +856,10 @@ struct WorkoutRecorderScreen: View {
                     }
                     let base = max(headerPanelHeight - headerOriginFold, 0)
                     let revealed = min(max(base + value.translation.height, 0), headerPanelHeight)
-                    let fraction = headerPanelHeight > 0 ? revealed / headerPanelHeight : 0
-                    let open: Bool
-                    if value.velocity.height > 400 {
-                        open = true
-                    } else if value.velocity.height < -400 {
-                        open = false
-                    } else {
-                        open = fraction >= 0.5
-                    }
+                    let target = headerStop(nearestTo: revealed, velocity: value.velocity.height)
                     withAnimation(headerExpansionAnimation) {
                         headerDragTranslation = nil
-                        if open { openHeaderPanel() } else { foldHeaderPanel() }
+                        if target <= 0 { foldHeaderPanel() } else { openHeaderPanel(to: target) }
                     }
                 }
         )
@@ -838,7 +900,7 @@ struct WorkoutRecorderScreen: View {
                 // drag-settle springs on top).
                 .modifier(
                     AnimatableTitleFont(
-                        size: collapsedTitleSize + (expandedTitleSize - collapsedTitleSize) * headerRevealFraction
+                        size: collapsedTitleSize + (expandedTitleSize - collapsedTitleSize) * headerPrimaryRevealFraction
                     )
                 )
             }
@@ -879,7 +941,10 @@ struct WorkoutRecorderScreen: View {
     /// the two buttons, so the panel stays small. The actions use the app's shared secondary/primary button styles, so they
     /// match the Add Set button's capsule height and read as the standard action hierarchy.
     private func headerExpandedPanel(for workout: Workout) -> some View {
-        VStack(spacing: 8) {
+        // Roomier than the 8pt the cards elsewhere sit at: these are three different KINDS of
+        // thing (a summary, a note, the actions), not a list of like rows, so they want air
+        // between them rather than the tight rhythm of a set list.
+        VStack(spacing: 13) {
             RecorderHeaderStatTiles(workout: workout)
             RecorderHeaderNoteSection(workout: workout, isNoteFieldFocused: $isNoteFieldFocused)
             HStack(spacing: 8) {
@@ -917,6 +982,20 @@ struct WorkoutRecorderScreen: View {
                     )
                 )
             }
+            // Room above the actions so they read as their own group rather than one more row of
+            // the summary. Deliberately INSIDE the measured height: this padding is what the
+            // panel's first stop reveals along with the buttons, and it is what keeps them off
+            // the title when the summary above is still folded away.
+            .padding(.top, RECORDER_HEADER_ACTIONS_SPACING)
+            .background {
+                GeometryReader { geometry in
+                    Color.clear
+                        .onChange(of: geometry.size.height, initial: true) { _, height in
+                            guard height > 0, height != headerActionsHeight else { return }
+                            headerActionsHeight = height
+                        }
+                }
+            }
         }
     }
 
@@ -928,6 +1007,13 @@ struct WorkoutRecorderScreen: View {
     private func beginFinishing() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        // Start the scale in the middle, like Apple's effort screen: a nudge from neutral reads as
+        // rating, where an empty scale reads as a form to fill in. Only ever seeds a workout that
+        // has never been rated, so re-opening the panel can't overwrite a real answer — and only
+        // here, never in the editor, where seeding would silently rate an old workout on open.
+        if let workout = workoutRecorder.workout, workout.effortScore == nil {
+            workout.effortScore = WorkoutEffort.defaultScore
+        }
         withAnimation(headerExpansionAnimation) {
             isFinishing = true
         }
@@ -940,6 +1026,7 @@ struct WorkoutRecorderScreen: View {
     private func endFinishing() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         isRestoringFromFinish = true
+        finishReport = nil
         withAnimation(headerExpansionAnimation) {
             isFinishing = false
             finishDragTranslation = 0
@@ -956,6 +1043,7 @@ struct WorkoutRecorderScreen: View {
             ScrollView {
                 RecorderFinishPanelContent(
                     workout: workout,
+                    records: finishReport?.exerciseRecords ?? [],
                     isNoteFieldFocused: $isNoteFieldFocused
                 )
                 .padding(.top, 4)
@@ -967,6 +1055,16 @@ struct WorkoutRecorderScreen: View {
             finishActionBar(for: workout)
         }
         .frame(maxHeight: .infinity, alignment: .top)
+        // Records are computed off the back of the fold, not into it. `compute` walks every
+        // exercise's whole history on the view context's queue; running it inline stutters the
+        // panel's expansion, so it waits for the spring to land and the line fades in after.
+        .task {
+            guard finishReport == nil else { return }
+            try? await Task.sleep(for: .milliseconds(400))
+            guard !Task.isCancelled, isFinishing else { return }
+            let report = WorkoutProgressReport.compute(for: workout, database: database)
+            withAnimation(.snappy(duration: 0.3)) { finishReport = report }
+        }
     }
 
     /// Continue and End Workout, pinned. The incomplete-set warning lives here rather than in the
@@ -1417,11 +1515,16 @@ private struct RecorderHeaderNoteSection: View {
 /// scale owns that state) while the verdict beside it silently kept saying "not rated".
 private struct RecorderFinishPanelContent: View {
     @ObservedObject var workout: Workout
+    let records: [WorkoutProgressReport.ExerciseRecords]
     var isNoteFieldFocused: FocusState<Bool>.Binding
 
     var body: some View {
         VStack(spacing: SECTION_SPACING) {
             RecorderHeaderStatTiles(workout: workout)
+
+            // With the facts, above the rating: what you just did, and the best of it.
+            PersonalRecordsHighlight(workout: workout, records: records)
+                .transition(.opacity.combined(with: .move(edge: .top)))
 
             VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
                 Text(NSLocalizedString("howHardWasIt", comment: ""))

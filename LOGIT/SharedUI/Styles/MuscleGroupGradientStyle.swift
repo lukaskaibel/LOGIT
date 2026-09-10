@@ -84,6 +84,27 @@ extension Sequence where Element == WorkoutSet {
     }
 }
 
+extension Sequence where Element == MuscleGroup {
+    /// The tint a *button* that acts on these muscle groups wears: its label at full strength
+    /// and, at `opacity(0.2)`, the capsule behind it — the pairing `SecondaryButtonStyle` is
+    /// built on. Several muscle groups get the weighted spectrum gradient on the same diagonal
+    /// every other tinted control in the app runs it on, so a superset's action bar blends its
+    /// two exercises exactly the way the workout detail's Finish button blends a whole session's.
+    /// A single muscle group keeps SwiftUI's own sheen on its colour instead — a one-stop
+    /// gradient is flat, and every standard set group's bar has always had that sheen.
+    func buttonTintStyle() -> AnyShapeStyle {
+        let muscleGroups = Array(self)
+        let distinct = Set(muscleGroups)
+        guard distinct.count > 1 else {
+            return AnyShapeStyle((distinct.first?.color ?? .accentColor).gradient)
+        }
+        return muscleGroups.weightedSpectrumGradientStyle(
+            startPoint: .bottomLeading,
+            endPoint: .topTrailing
+        )
+    }
+}
+
 private extension MuscleGroup {
     /// The hue (0...1) of the muscle group's colour, used to order colours around the spectrum so a
     /// multi-colour gradient transitions smoothly. Derived from `color` itself, so the ordering

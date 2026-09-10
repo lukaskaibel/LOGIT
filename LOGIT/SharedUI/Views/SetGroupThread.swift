@@ -25,16 +25,31 @@ enum SetGroupThread {
     /// How far a segment draws past its own bounds into the neighbouring fill. Joins are
     /// sealed by overlap, never by exact edge-kissing — antialiasing opens hairlines there.
     static let jointOverlap: CGFloat = 2
-    /// Horizontal inset of a snapped superset lane, per side: lanes are this much narrower
-    /// than the card they page inside, so the neighbouring lane peeks and the group always
-    /// shows there is more to swipe to. The first lane still sits flush with the card's
-    /// leading edge, the last (clamped at the scroll bound) flush with the trailing one.
-    static let laneInset: CGFloat = 24
-    static let laneSpacing: CGFloat = 12
+    /// How far a superset card grows past a standard card's edge — exactly the horizontal
+    /// padding every set-group list puts around its rows, so the card runs flush to the screen
+    /// edge. It is that much wider than a standard card and slides across by this much as the
+    /// lanes page: the lane on screen always sits exactly where a standard card's content sits,
+    /// and the overhang says which way the group continues. Must match the lists'
+    /// `.padding(.horizontal)`.
+    static let cardBleed: CGFloat = 16
+    /// Gutter between two lanes. Zero on purpose: each lane already insets its set rows by
+    /// `CELL_PADDING / 2`, so touching lanes still read as `CELL_PADDING` apart mid-swipe —
+    /// and every point saved here is a point of the next lane peeking out of the overhang.
+    static let laneSpacing: CGFloat = 0
 
-    /// Width of one superset lane inside a card of `containerWidth`.
-    static func laneWidth(in containerWidth: CGFloat) -> CGFloat {
-        max(containerWidth - laneInset * 2, 100)
+    /// How far the lanes have paged, 0 (first lane) to 1 (last) — the fraction of its bleed the
+    /// card has travelled from overhanging trailing to overhanging leading.
+    ///
+    /// `containerSize` is the viewport the lanes actually snap in: the content margins are
+    /// already taken out of it, so they must not be added to the travel a second time. What
+    /// they do move is the origin — like a `UIScrollView`'s content inset, the offset starts at
+    /// minus the leading margin rather than at zero. Clamped, so rubber-banding past either end
+    /// doesn't drag the card off with it.
+    static func laneProgress(in geometry: ScrollGeometry) -> CGFloat {
+        let travel = geometry.contentSize.width - geometry.containerSize.width
+        guard travel > 1 else { return 0 }
+        let scrolled = geometry.contentOffset.x + geometry.contentInsets.leading
+        return min(max(scrolled / travel, 0), 1)
     }
 
     /// "2 of 5" — a group's place in its workout/template, shown in the bulge socket.
@@ -174,6 +189,104 @@ struct SetGroupBulgeShape: Shape {
         path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
         path.closeSubpath()
         return path
+    }
+}
+
+// MARK: - Superset card surface
+
+/// Where a superset card's lanes have paged to, kept in a reference type the cell holds in a
+/// plain `@State`: it changes on every scroll frame, and the only things that may follow a
+/// finger are the card's surface and its clip. Writing it therefore invalidates the one small
+/// view that draws them — never the lanes, their set rows, badges, menus or the action bar.
+final class SupersetCardBleed: ObservableObject {
+    /// 0 = the first lane is on screen and the card overhangs the trailing edge; 1 = the last
+    /// lane, overhanging leading.
+    @Published private(set) var progress: CGFloat = 0
+
+    /// Sub-point moves are float noise the eye can't see, and dropping them keeps the surface
+    /// still once the lanes have settled.
+    func update(progress newValue: CGFloat) {
+        guard abs(newValue - progress) > 0.002 else { return }
+        progress = newValue
+    }
+}
+
+/// A superset card's outline: a standard card's rounded rect grown by `cardBleed` and sliding
+/// across by that much as the lanes page — flush to the screen edge on the side the group
+/// continues towards, flush with every other card on the side it doesn't. Drawn in the card
+/// content's coordinate space, so it deliberately reaches outside those bounds.
+///
+/// The side that has run out to the screen edge loses its corners: a squared-off edge reads as
+/// a card the screen cuts short — it carries on out there — where a rounded one would read as a
+/// card that simply happens to be wider. Since the card slides rather than jumps, each side's
+/// radius rides along with it: exactly square the moment that edge reaches the screen, back to
+/// the standard corner by the time it has pulled in to where every other card ends.
+struct SupersetCardShape: Shape {
+    var progress: CGFloat
+    var cornerRadius: CGFloat = 30
+
+    func path(in rect: CGRect) -> Path {
+        let bleed = SetGroupThread.cardBleed
+        let card = CGRect(
+            x: rect.minX - bleed * progress,
+            y: rect.minY,
+            width: rect.width + bleed,
+            height: rect.height
+        )
+        let leading = cornerRadius * (1 - progress)
+        let trailing = cornerRadius * progress
+        return UnevenRoundedRectangle(
+            topLeadingRadius: leading,
+            bottomLeadingRadius: leading,
+            bottomTrailingRadius: trailing,
+            topTrailingRadius: trailing
+        ).path(in: card)
+    }
+}
+
+/// Fills and clips a superset card with its sliding surface. The card's *contents* keep the
+/// standard card's frame — the action bar, the lane dots, the note and the index bulge stay
+/// exactly where a standard card puts them, because they belong to the group and not to either
+/// exercise; only the surface underneath them travels. Reading the progress here, one modifier
+/// away from the content, is what keeps that travel off the lanes' render path.
+private struct SupersetCardSurface<Content: View>: View {
+    @ObservedObject var bleed: SupersetCardBleed
+    let content: Content
+
+    var body: some View {
+        let shape = SupersetCardShape(progress: bleed.progress)
+        content
+            .background {
+                shape
+                    .fill(.shadow(.inner(color: .white.opacity(0.04), radius: 3)))
+                    .foregroundStyle(Color.secondaryBackground)
+            }
+            // Cuts the lanes off at whichever edge the card currently ends at — the card is the
+            // window onto them, so the next lane is revealed by the overhang and nothing spills
+            // into the list's margins.
+            .clipShape(shape)
+    }
+}
+
+extension View {
+    /// Dresses a superset card in the surface that slides with its lanes.
+    func supersetCardSurface(bleed: SupersetCardBleed) -> some View {
+        SupersetCardSurface(bleed: bleed, content: self)
+    }
+
+    /// The lanes' viewport: full-bleed across *both* of the card's extremes, so wherever the
+    /// card currently ends there is lane to show there, with `cardBleed` content margins so a
+    /// snapped lane lands exactly where a standard card's content sits. The negative padding is
+    /// what lets it overhang the row it is laid out in without widening it, and the geometry
+    /// observer hands the paging position to the surface.
+    func supersetLaneViewport(bleed: SupersetCardBleed) -> some View {
+        contentMargins(.horizontal, SetGroupThread.cardBleed, for: .scrollContent)
+            .onScrollGeometryChange(for: CGFloat.self) { geometry in
+                SetGroupThread.laneProgress(in: geometry)
+            } action: { _, progress in
+                bleed.update(progress: progress)
+            }
+            .padding(.horizontal, -SetGroupThread.cardBleed)
     }
 }
 

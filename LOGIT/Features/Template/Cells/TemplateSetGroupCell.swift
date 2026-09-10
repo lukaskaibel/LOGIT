@@ -44,8 +44,10 @@ struct TemplateSetGroupCell: View {
     /// programmatically when keyboard focus lands on the partner's fields.
     @State private var pagedExerciseID: NSManagedObjectID?
     /// Which lane is actually on screen — see `WorkoutSetGroupCell.visibleExerciseID` for why
-    /// `scrollPosition(id:)` can't answer that when lanes are narrower than the card.
+    /// `scrollPosition(id:)` can't answer that when the viewport is wider than a lane.
     @State private var visibleExerciseID: NSManagedObjectID?
+    /// Live paging position of the lanes, driving the card's overhang — see `SupersetCardBleed`.
+    @State private var laneBleed = SupersetCardBleed()
 
     // MARK: - Body
 
@@ -175,7 +177,7 @@ struct TemplateSetGroupCell: View {
                     .padding(.horizontal, CELL_PADDING / 2)
                     .animation(.interactiveSpring(), value: setGroup.sets)
                     if canEdit {
-                        controls(for: setGroup.exercise)
+                        controls
                             .padding(.horizontal, CELL_PADDING)
                     }
                 }
@@ -188,7 +190,9 @@ struct TemplateSetGroupCell: View {
     /// The superset: ONE card for the group — one index bulge, one action bar — with the
     /// exercises paged horizontally inside it. Only what belongs to a single exercise rides in
     /// the pager (its header and its entry of every set); the bar below acts on the set group,
-    /// so one copy serves both lanes. Mirrors `WorkoutSetGroupCell.supersetCard`.
+    /// so one copy serves both lanes. The card is wider than a standard one and slides across as
+    /// the lanes page, running off the screen edge on the side the group continues towards.
+    /// Mirrors `WorkoutSetGroupCell.supersetCard`.
     private var supersetCard: some View {
         let exercises = [setGroup.exercise, setGroup.secondaryExercise].compactMap { $0 }
         return VStack(spacing: CELL_PADDING) {
@@ -198,23 +202,18 @@ struct TemplateSetGroupCell: View {
                 selectedIndex: laneIndex(in: exercises)
             )
             if canEdit {
-                controls(for: setGroup.exercise)
+                controls
                     .padding(.horizontal, CELL_PADDING)
             }
         }
         .padding(.bottom, canEdit ? CELL_PADDING : CELL_PADDING / 2)
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(.shadow(.inner(color: .white.opacity(0.04), radius: 3)))
-                .foregroundStyle(Color.secondaryBackground)
-        )
-        .cornerRadius(30)
+        .supersetCardSurface(bleed: laneBleed)
         .bulgeSocket(label: bulgeLabel)
     }
 
-    /// No content margins: the snapped first lane sits flush with the card's leading edge (and
-    /// the last, clamped at the scroll bound, flush with the trailing edge), so a lane's header
-    /// lines up with a standard card's exactly.
+    /// Each lane is a standard card's width, so the lane on screen lines up with every other
+    /// group's exactly; the viewport around them spans both of the card's extremes and the
+    /// card's own shape clips them (see `supersetLaneViewport`).
     private func supersetLanes(exercises: [Exercise]) -> some View {
         ScrollView(.horizontal) {
             HStack(alignment: .top, spacing: SetGroupThread.laneSpacing) {
@@ -228,9 +227,9 @@ struct TemplateSetGroupCell: View {
                         showDetailAsSheet: showDetailAsSheet,
                         onTapRestDuration: onTapRestDuration
                     )
-                    .containerRelativeFrame(.horizontal) { length, _ in
-                        SetGroupThread.laneWidth(in: length)
-                    }
+                    // One lane per viewport width — a standard card's, see
+                    // `WorkoutSetGroupCell.supersetLanes`.
+                    .containerRelativeFrame(.horizontal)
                 }
             }
             .scrollTargetLayout()
@@ -247,6 +246,7 @@ struct TemplateSetGroupCell: View {
         .onChange(of: focusedIntegerFieldIndex) { _, newValue in
             autopageIfNeeded(for: newValue, exercises: exercises)
         }
+        .supersetLaneViewport(bleed: laneBleed)
     }
 
     /// Which lane fills the card, for the dot indicator — nothing reported yet is the first.
@@ -326,10 +326,17 @@ struct TemplateSetGroupCell: View {
         setGroup.sets.last == templateSet
     }
 
+    /// The tint the group's controls wear — every muscle its exercises train, blended by the
+    /// app's shared muscle-group gradient. Mirrors `WorkoutSetGroupCell.controlsTint`.
+    private var controlsTint: AnyShapeStyle {
+        setGroup.muscleGroups.buttonTintStyle()
+    }
+
     /// Duplicate-last-set, add-set and the group menu — the set group's controls, drawn once per
     /// card. All three act on the group, so a superset's two lanes share this one bar.
-    fileprivate func controls(for exercise: Exercise?) -> some View {
-        HStack(spacing: 8) {
+    fileprivate var controls: some View {
+        let tint = controlsTint
+        return HStack(spacing: 8) {
             Button {
                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                 withAnimation(.interactiveSpring()) {
@@ -338,10 +345,10 @@ struct TemplateSetGroupCell: View {
             } label: {
                 Image(systemName: "plus.square.on.square")
                     // One ramp across the plus and the word, not one sweep in each.
-                    .continuousForegroundStyle((exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                    .continuousForegroundStyle(tint)
                     .font(.system(.body, design: .rounded, weight: .bold))
                     .padding(15)
-                    .background(Color.accentColor.secondaryTranslucentBackground)
+                    .background(tint.opacity(0.2))
                     .clipShape(Capsule())
             }
             Button {
@@ -354,11 +361,13 @@ struct TemplateSetGroupCell: View {
                     NSLocalizedString("addSet", comment: ""),
                     systemImage: "plus.circle.fill"
                 )
-                .foregroundStyle((exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                // Continuous, so a superset's two muscle colours ramp once across the plus and
+                // the word rather than restarting in each of them.
+                .continuousForegroundStyle(tint)
                 .font(.system(.body, design: .rounded, weight: .bold))
                 .padding(.vertical, 15)
                 .frame(maxWidth: .infinity)
-                .background(Color.accentColor.secondaryTranslucentBackground)
+                .background(tint.opacity(0.2))
                 .clipShape(Capsule())
             }
             menu
@@ -519,11 +528,11 @@ struct TemplateSetGroupCell: View {
             }
         } label: {
             Image(systemName: "ellipsis")
-                .foregroundStyle((setGroup.exercise?.muscleGroup?.color ?? .accentColor).gradient)
+                .continuousForegroundStyle(controlsTint)
                 .font(.system(.body, design: .rounded, weight: .bold))
                 .frame(width: 20, height: 20)
                 .padding(15)
-                .background(Color.accentColor.secondaryTranslucentBackground)
+                .background(controlsTint.opacity(0.2))
                 .clipShape(Circle())
         }
     }

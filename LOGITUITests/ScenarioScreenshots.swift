@@ -486,9 +486,10 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "template_04_editor_superset")
     }
 
-    /// The containerless superset pager at the end of the stress current workout: page 1
-    /// (Incline Bench Press) with its bulge socket and the thread's fork/merge rails, then a
-    /// horizontal swipe to the partner page (Barbell Rows) with its own metric badge.
+    /// The superset card at the end of the stress current workout: lane 1 (Barbell Rows) with
+    /// the card overhanging the trailing screen edge, then a horizontal swipe to the partner
+    /// lane (Biceps Curls) — which slides the card across to overhang the leading edge instead,
+    /// while the bulge, the dots and the action bar stay put.
     func testRecorderSupersetPager() {
         let app = launchApp(
             scenario: "stress",

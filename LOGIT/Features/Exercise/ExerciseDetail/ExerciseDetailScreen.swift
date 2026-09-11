@@ -76,7 +76,7 @@ struct ExerciseDetailScreen: View {
                         .id("recentAttempts")
                         VStack(spacing: CELL_SPACING + 5) {
                             ForEach(recentWorkoutSetGroups) { setGroup in
-                                ExerciseAttemptCell(setGroup: setGroup)
+                                ExerciseAttemptCell(setGroup: setGroup, exercise: exercise)
                             }
                             .emptyPlaceholder(recentWorkoutSetGroups) {
                                 Text(NSLocalizedString("noAttempts", comment: ""))

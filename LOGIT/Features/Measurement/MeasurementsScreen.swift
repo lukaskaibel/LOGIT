@@ -15,11 +15,17 @@ struct MeasurementsScreen: View {
 
     // MARK: - Properties
 
-    private let allMeasurements: [MeasurementEntryType] = {
-        var measurements: [MeasurementEntryType] = [.bodyweight, .bodyFatPercentage, .muscleMass]
+    /// BMI sits next to body weight because that is what it is made of, and only appears once it
+    /// can be computed — a height in Settings and at least one logged weight.
+    private var allMeasurements: [MeasurementEntryType] {
+        var measurements: [MeasurementEntryType] = [.bodyweight]
+        if measurementController.isAvailable(.bmi) {
+            measurements.append(.bmi)
+        }
+        measurements.append(contentsOf: [.bodyFatPercentage, .muscleMass])
         measurements.append(contentsOf: LengthMeasurementEntryType.allCases.map { .length($0) })
         return measurements
-    }()
+    }
 
     var body: some View {
         ScrollView {

@@ -13,11 +13,11 @@ struct MeasurementTile: View {
 
     let measurementType: MeasurementEntryType
 
-    private var entries: [MeasurementEntry] {
-        measurementController.getMeasurementEntries(ofType: measurementType)
+    private var entries: [MeasurementSeriesPoint] {
+        measurementController.series(ofType: measurementType)
     }
 
-    private var latestEntry: MeasurementEntry? {
+    private var latestEntry: MeasurementSeriesPoint? {
         entries.first
     }
 
@@ -47,7 +47,7 @@ struct MeasurementTile: View {
                             .font(.footnote)
                             .fontWeight(.semibold)
                         UnitView(
-                            value: formatDecimal(latestEntry!.decimalValue),
+                            value: formatDecimal(latestEntry!.value),
                             unit: measurementType.unit,
                             configuration: .large
                         )
@@ -69,13 +69,13 @@ struct MeasurementTile: View {
         Chart {
             tileSparklineMarks(
                 points: chartEntries.map {
-                    TileSparklinePoint(date: $0.date ?? .now, value: $0.decimalValue)
+                    TileSparklinePoint(date: $0.date, value: $0.value)
                 },
                 color: .accentColor
             )
         }
         .chartXScale(domain: xDomain)
-        .chartYScale(domain: 0 ... (entries.map { $0.decimalValue }.max() ?? 1) * 1.1)
+        .chartYScale(domain: 0 ... (entries.map(\.value).max() ?? 1) * 1.1)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
         .tileSparklineChartStyle()

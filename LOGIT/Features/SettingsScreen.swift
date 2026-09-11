@@ -12,17 +12,19 @@ struct SettingsScreen: View {
     @EnvironmentObject private var purchaseManager: PurchaseManager
     @EnvironmentObject private var database: Database
     @EnvironmentObject private var healthKitSyncManager: HealthKitSyncManager
-    @EnvironmentObject private var bodyWeightSyncManager: BodyWeightSyncManager
+    @EnvironmentObject private var bodyMeasurementSyncManager: BodyMeasurementSyncManager
 
     // MARK: - UserDefaults
 
     @AppStorage("weightUnit") var weightUnit: WeightUnit = .kg
     @AppStorage("distanceUnit") var distanceUnit: DistanceUnit = .km
     @AppStorage("preventAutoLock") var preventAutoLock: Bool = true
+    /// 0 means unset — `UserHeight` is the one that decides what counts as a real height.
+    @AppStorage(UserHeight.storageKey) var heightCentimeters: Double = 0
     @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
     @AppStorage(CalorieEstimator.enabledKey) var calorieEstimatesEnabled: Bool = true
     @AppStorage(HealthKitSyncManager.syncEnabledKey) var appleHealthSyncEnabled: Bool = false
-    @AppStorage(BodyWeightSyncManager.syncEnabledKey) var bodyWeightSyncEnabled: Bool = false
+    @AppStorage(BodyMeasurementSyncManager.syncEnabledKey) var bodyMeasurementSyncEnabled: Bool = false
 
     // MARK: - State
 
@@ -147,8 +149,43 @@ struct SettingsScreen: View {
                 }
                 .padding(CELL_PADDING)
                 .tileStyle()
+                heightTile
             }
         }
+    }
+
+    /// Height lives here rather than among the measurements: it barely moves, nobody wants a chart
+    /// of it, and the only thing LOGIT does with it is derive BMI — which is what the caption says,
+    /// so the field has a reason to exist rather than being one more thing to fill in.
+    private var heightTile: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(NSLocalizedString("height", comment: ""))
+                Spacer()
+                TextField(
+                    "––",
+                    value: Binding(
+                        get: { heightCentimeters > 0 ? heightCentimeters : nil },
+                        set: { heightCentimeters = $0 ?? 0 }
+                    ),
+                    format: .number.precision(.fractionLength(0...1))
+                )
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .fontWeight(.semibold)
+                .frame(maxWidth: 80)
+                .accessibilityIdentifier("heightField")
+                Text("cm")
+                    .font(.footnote)
+                    .textCase(.uppercase)
+                    .foregroundStyle(Color.secondaryLabel)
+            }
+            Text(NSLocalizedString("heightDescription", comment: ""))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(CELL_PADDING)
+        .tileStyle()
     }
 
     private var workoutSection: some View {
@@ -196,28 +233,28 @@ struct SettingsScreen: View {
                 if appleHealthSyncEnabled {
                     exportPastWorkoutsTile
                 }
-                bodyWeightSyncTile
+                bodyMeasurementSyncTile
             }
         }
     }
 
-    /// Body weight is the one two-way sync: it needs read access as well, so it gets its own
-    /// opt-in rather than riding along with the write-only workout sync.
-    private var bodyWeightSyncTile: some View {
+    /// Body measurements are the one two-way sync: they need read access as well, so they get
+    /// their own opt-in rather than riding along with the write-only workout sync.
+    private var bodyMeasurementSyncTile: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Toggle(NSLocalizedString("syncBodyWeight", comment: ""), isOn: bodyWeightSyncBinding)
-            Text(NSLocalizedString("syncBodyWeightDescription", comment: ""))
+            Toggle(NSLocalizedString("syncBodyMeasurements", comment: ""), isOn: bodyMeasurementSyncBinding)
+            Text(NSLocalizedString("syncBodyMeasurementsDescription", comment: ""))
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            if bodyWeightSyncEnabled {
-                if !bodyWeightSyncManager.isAuthorizedToWrite {
+            if bodyMeasurementSyncEnabled {
+                if !bodyMeasurementSyncManager.isAuthorizedToWrite {
                     Text(NSLocalizedString("appleHealthAccessMissing", comment: ""))
                         .font(.caption)
                         .foregroundStyle(.orange)
                 }
                 Divider()
                 Button {
-                    Task { await bodyWeightSyncManager.syncAll() }
+                    Task { await bodyMeasurementSyncManager.syncAll() }
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
@@ -226,7 +263,7 @@ struct SettingsScreen: View {
                         Text(NSLocalizedString("syncNow", comment: ""))
                             .foregroundStyle(Color.label)
                         Spacer()
-                        switch bodyWeightSyncManager.syncState {
+                        switch bodyMeasurementSyncManager.syncState {
                         case .idle:
                             EmptyView()
                         case .running:
@@ -237,11 +274,11 @@ struct SettingsScreen: View {
                         }
                     }
                 }
-                .disabled(bodyWeightSyncManager.syncState == .running)
-                if case let .finished(imported, exported) = bodyWeightSyncManager.syncState {
+                .disabled(bodyMeasurementSyncManager.syncState == .running)
+                if case let .finished(imported, exported) = bodyMeasurementSyncManager.syncState {
                     Text(
                         String(
-                            format: NSLocalizedString("bodyWeightSyncResult", comment: ""),
+                            format: NSLocalizedString("bodyMeasurementSyncResult", comment: ""),
                             imported, exported
                         )
                     )
@@ -318,20 +355,20 @@ struct SettingsScreen: View {
 
     /// Enabling asks for read **and** write access to body weight, then reconciles both sides
     /// once so the user immediately sees the merged history.
-    private var bodyWeightSyncBinding: Binding<Bool> {
+    private var bodyMeasurementSyncBinding: Binding<Bool> {
         Binding(
-            get: { bodyWeightSyncEnabled },
+            get: { bodyMeasurementSyncEnabled },
             set: { newValue in
                 guard newValue else {
-                    bodyWeightSyncEnabled = false
+                    bodyMeasurementSyncEnabled = false
                     return
                 }
                 Task {
-                    if await bodyWeightSyncManager.requestAuthorization() {
-                        bodyWeightSyncEnabled = true
-                        await bodyWeightSyncManager.syncAll()
+                    if await bodyMeasurementSyncManager.requestAuthorization() {
+                        bodyMeasurementSyncEnabled = true
+                        await bodyMeasurementSyncManager.syncAll()
                     } else {
-                        bodyWeightSyncEnabled = false
+                        bodyMeasurementSyncEnabled = false
                         isShowingHealthAccessDeniedAlert = true
                     }
                 }

@@ -1343,6 +1343,70 @@ final class ScenarioScreenshots: XCTestCase {
 
     // MARK: - Helpers
 
+    /// The body-measurement work from #151: body fat syncing with Health, a height in Settings,
+    /// and the BMI derived from the two. Four captures, each from its own launch because the
+    /// screenshot deep link is applied once per process.
+    ///
+    /// Deep links rather than tapping labelled cells: the suite runs in English but the app ships
+    /// eight locales, and label-tapping is what silently broke every non-English capture before.
+    func testBodyMeasurementsAndBMIScreens() {
+        // 1. The measurements list — BMI sits under Body Weight, because that is what it is made of.
+        var app = launchFixtures(deepLink: "measurements")
+        let bmiTitle = app.staticTexts["BMI"].firstMatch
+        XCTAssertTrue(bmiTitle.waitForExistence(timeout: 20), "BMI tile missing from the measurements list")
+        attach(app, "bodymeasurements_01_list_with_bmi")
+
+        // 2. The BMI detail — the same chart, header and entry list every other measurement gets,
+        //    minus the add button, because there is nothing to add to a derived value.
+        app = launchFixtures(deepLink: "bmi")
+        XCTAssertTrue(
+            app.staticTexts["allEntriesHeader"].firstMatch.waitForExistence(timeout: 20)
+                || app.navigationBars.firstMatch.waitForExistence(timeout: 5),
+            "BMI detail never presented"
+        )
+        waitABit(2)
+        attach(app, "bodymeasurements_02_bmi_detail")
+
+        // 3. Body fat, the series that now round-trips through Health.
+        app = launchFixtures(deepLink: "measurement")
+        waitABit(3)
+        attach(app, "bodymeasurements_03_bodyfat_detail")
+
+        // 4. Settings: the height that BMI is derived from, and the broadened sync toggle.
+        app = launchFixtures(deepLink: nil)
+        tapTab(app, at: 3)
+        let heightField = app.textFields["heightField"].firstMatch
+        XCTAssertTrue(heightField.waitForExistence(timeout: 20), "Height field missing from Settings")
+        attach(app, "bodymeasurements_04_settings_height")
+
+        // Down to the Apple Health section. Three plain swipes on the *app* element: starting the
+        // swipe on the height field instead focuses it and raises the number pad, and
+        // `scrollViews.firstMatch` resolves to something that scrolls nothing at all.
+        app.swipeUp()
+        waitABit(2)
+        XCTAssertTrue(
+            app.switches["Sync Body Measurements"].firstMatch.waitForExistence(timeout: 5),
+            "Body-measurement sync toggle missing from Settings"
+        )
+        attach(app, "bodymeasurements_05_settings_health_sync")
+    }
+
+    /// A fixture launch for the screenshot deep links — the curated preview dataset plus, when
+    /// given, the screen to open straight to.
+    private func launchFixtures(deepLink: String?) -> XCUIApplication {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments = [
+            "-UITEST_FIXTURES", "1",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        if let deepLink {
+            app.launchArguments += ["-UITEST_DEEPLINK", deepLink]
+        }
+        app.launch()
+        return app
+    }
+
     private func launchApp(scenario: String, extraArguments: [String] = []) -> XCUIApplication {
         // Explicit bundle ID because the UI test target has no "Target
         // Application" wiring in the scheme (see LOGITScreenshots.swift).

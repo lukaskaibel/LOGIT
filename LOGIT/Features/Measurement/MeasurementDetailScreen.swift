@@ -25,8 +25,8 @@ struct MeasurementDetailScreen: View {
     /// state to `.id(index)` re-identification).
     private static let newEntryFieldIndex = IntegerField.Index(setID: UUID())
 
-    private var entries: [MeasurementEntry] {
-        measurementController.getMeasurementEntries(ofType: measurementType)
+    private var entries: [MeasurementSeriesPoint] {
+        measurementController.series(ofType: measurementType)
     }
 
     var body: some View {
@@ -50,11 +50,15 @@ struct MeasurementDetailScreen: View {
                         .font(.footnote)
                 }
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isAddingEntry = true
-                } label: {
-                    Image(systemName: "plus")
+            // A derived measurement has nothing to add: BMI follows body weight, and the way to
+            // move it is to log a weight or correct the height in Settings.
+            if !measurementType.isDerived {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isAddingEntry = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
                 }
             }
         }
@@ -85,8 +89,8 @@ struct MeasurementDetailScreen: View {
         // The highest value in the window on screen — moves as you scroll; the reference the current
         // measurement is read against in the header.
         let highestVisible = entries
-            .filter { ($0.date).map { $0 >= chartScrollPosition && $0 <= visibleEnd } ?? false }
-            .map(\.decimalValue)
+            .filter { $0.date >= chartScrollPosition && $0.date <= visibleEnd }
+            .map(\.value)
             .max()
         let yMax = chartYScaleMax(in: entries)
 
@@ -97,15 +101,15 @@ struct MeasurementDetailScreen: View {
             comparisonHeader(latest: latestEntry, highestVisible: highestVisible, firstDataDate: firstDataDate)
 
             Chart {
-                if selectedDate != nil, let selectedEntry = snappedSelectedEntry, let sDate = selectedEntry.date {
-                    let snapped = Calendar.current.startOfDay(for: sDate)
+                if selectedDate != nil, let selectedEntry = snappedSelectedEntry {
+                    let snapped = Calendar.current.startOfDay(for: selectedEntry.date)
                     RuleMark(x: .value("Selected", snapped, unit: .day))
                         .foregroundStyle(Color.accentColor.opacity(0.35))
                         .lineStyle(StrokeStyle(lineWidth: 2))
                         .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                             VStack(alignment: .leading) {
                                 UnitView(
-                                    value: formatDecimal(selectedEntry.decimalValue),
+                                    value: formatDecimal(selectedEntry.value),
                                     unit: measurementType.unit
                                 )
                                 .foregroundStyle(Color.accentColor.gradient)
@@ -123,7 +127,7 @@ struct MeasurementDetailScreen: View {
                 if let firstEntry = entries.last {
                     LineMark(
                         x: .value("Date", Date.distantPast, unit: .day),
-                        y: .value("Value", firstEntry.decimalValue)
+                        y: .value("Value", firstEntry.value)
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(Color.accentColor.gradient)
@@ -131,7 +135,7 @@ struct MeasurementDetailScreen: View {
                     .opacity(snappedSelectedEntry == nil ? 1.0 : 0.3)
                     AreaMark(
                         x: .value("Date", Date.distantPast, unit: .day),
-                        y: .value("Value", firstEntry.decimalValue)
+                        y: .value("Value", firstEntry.value)
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(Gradient(colors: [
@@ -144,8 +148,8 @@ struct MeasurementDetailScreen: View {
 
                 ForEach(entries.reversed()) { entry in
                     LineMark(
-                        x: .value("Date", entry.date ?? .now, unit: .day),
-                        y: .value("Value", entry.decimalValue)
+                        x: .value("Date", entry.date, unit: .day),
+                        y: .value("Value", entry.value)
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(Color.accentColor.gradient)
@@ -157,7 +161,7 @@ struct MeasurementDetailScreen: View {
                                 Color.accentColor.gradient
                                     .opacity({
                                         guard let s = snappedSelectedEntry?.date else { return 1.0 }
-                                        return Calendar.current.isDate(entry.date ?? .distantPast, inSameDayAs: s) ? 1.0 : 0.3
+                                        return Calendar.current.isDate(entry.date, inSameDayAs: s) ? 1.0 : 0.3
                                     }())
                             )
                             .overlay {
@@ -169,11 +173,11 @@ struct MeasurementDetailScreen: View {
                     }
                     .opacity({
                         guard let s = snappedSelectedEntry?.date else { return 1.0 }
-                        return Calendar.current.isDate(entry.date ?? .distantPast, inSameDayAs: s) ? 1.0 : 0.3
+                        return Calendar.current.isDate(entry.date, inSameDayAs: s) ? 1.0 : 0.3
                     }())
                     AreaMark(
-                        x: .value("Date", entry.date ?? .now, unit: .day),
-                        y: .value("Value", entry.decimalValue)
+                        x: .value("Date", entry.date, unit: .day),
+                        y: .value("Value", entry.value)
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(Gradient(colors: [
@@ -184,11 +188,11 @@ struct MeasurementDetailScreen: View {
                     .opacity(selectedDate == nil ? 1.0 : 0.0)
                 }
 
-                if selectedDate == nil, let lastEntry = entries.first, let lastDate = lastEntry.date, !Calendar.current.isDateInToday(lastDate) {
+                if selectedDate == nil, let lastEntry = entries.first, !Calendar.current.isDateInToday(lastEntry.date) {
                     RuleMark(
-                        xStart: .value("Start", lastDate),
+                        xStart: .value("Start", lastEntry.date),
                         xEnd: .value("End", Date()),
-                        y: .value("Value", lastEntry.decimalValue)
+                        y: .value("Value", lastEntry.value)
                     )
                     .foregroundStyle(Color.accentColor.opacity(0.45))
                     .lineStyle(
@@ -232,12 +236,12 @@ struct MeasurementDetailScreen: View {
             Text(NSLocalizedString("allEntries", comment: "All Entries"))
                 .tileHeaderStyle()
             VStack(spacing: CELL_SPACING) {
-                ForEach(entries) { entry in
-                    HStack {
-                        Text(entry.date?.description(.short) ?? NSLocalizedString("noDate", comment: ""))
+                ForEach(entries) { point in
+                    let row = HStack {
+                        Text(point.date.description(.short))
                         Spacer()
                         HStack(alignment: .lastTextBaseline, spacing: 0) {
-                            Text(formatDecimal(entry.decimalValue))
+                            Text(formatDecimal(point.value))
                                 .font(.title3)
                             Text(measurementType.unit)
                                 .font(.footnote)
@@ -246,12 +250,20 @@ struct MeasurementDetailScreen: View {
                         .fontWeight(.semibold)
                     }
                     .padding(CELL_PADDING)
-                    .onDeleteView {
-                        withAnimation {
-                            measurementController.deleteMeasurementEntry(entry)
-                        }
+                    // Swipe-to-delete only where there is a row in the store to delete. A derived
+                    // point has no entry of its own — deleting the weight it came from is what
+                    // removes it.
+                    if let entry = point.entry {
+                        row
+                            .onDeleteView {
+                                withAnimation {
+                                    measurementController.deleteMeasurementEntry(entry)
+                                }
+                            }
+                            .tileStyle()
+                    } else {
+                        row.tileStyle()
                     }
-                    .tileStyle()
                 }
             }
             .emptyPlaceholder(entries) {
@@ -336,23 +348,18 @@ struct MeasurementDetailScreen: View {
         entries.last?.date
     }
 
-    private func chartYScaleMax(in entries: [MeasurementEntry]) -> Double {
-        let maxValue = entries.map { $0.decimalValue }.max() ?? 100
+    private func chartYScaleMax(in entries: [MeasurementSeriesPoint]) -> Double {
+        let maxValue = entries.map(\.value).max() ?? 100
         let yAxisMaxValues: [Double] = [10, 25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000]
         return yAxisMaxValues.filter { $0 > maxValue }.min() ?? maxValue
     }
 
-    private func nearestEntry(to date: Date?, in entries: [MeasurementEntry], visibleEnd: Date) -> MeasurementEntry? {
-        let visibleEntries = entries.filter {
-            guard let d = $0.date else { return false }
-            return d >= chartScrollPosition && d <= visibleEnd
-        }
+    private func nearestEntry(to date: Date?, in entries: [MeasurementSeriesPoint], visibleEnd: Date) -> MeasurementSeriesPoint? {
+        let visibleEntries = entries.filter { $0.date >= chartScrollPosition && $0.date <= visibleEnd }
         let candidates = visibleEntries.isEmpty ? entries : visibleEntries
         guard !candidates.isEmpty, let target = date else { return nil }
         return candidates.min { a, b in
-            let ad = a.date ?? .distantPast
-            let bd = b.date ?? .distantPast
-            return abs(ad.timeIntervalSince(target)) < abs(bd.timeIntervalSince(target))
+            abs(a.date.timeIntervalSince(target)) < abs(b.date.timeIntervalSince(target))
         }
     }
 
@@ -362,10 +369,10 @@ struct MeasurementDetailScreen: View {
     /// value in the visible window on the leading side (the reference — it moves as you scroll), and
     /// the badge reading one against the other. Neutral, like Duration: a measurement sitting higher or
     /// lower isn't better or worse on its own.
-    private func comparisonHeader(latest: MeasurementEntry?, highestVisible: Double?, firstDataDate: Date?) -> some View {
+    private func comparisonHeader(latest: MeasurementSeriesPoint?, highestVisible: Double?, firstDataDate: Date?) -> some View {
         let percentChange: Double? = {
             guard let latest, let highest = highestVisible, highest > 0 else { return nil }
-            return (latest.decimalValue - highest) / highest * 100
+            return (latest.value - highest) / highest * 100
         }()
         return MetricComparisonView(
             leading: .init(
@@ -376,9 +383,9 @@ struct MeasurementDetailScreen: View {
             ),
             trailing: .init(
                 label: NSLocalizedString("current", comment: ""),
-                value: latest.map { formatDecimal($0.decimalValue) } ?? "––",
+                value: latest.map { formatDecimal($0.value) } ?? "––",
                 unit: measurementType.unit,
-                caption: latest?.date.map { $0.formatted(.dateTime.day().month()) }
+                caption: latest?.date.formatted(.dateTime.day().month())
             ),
             trailingValueStyle: AnyShapeStyle(Color.accentColor.gradient),
             percentChange: percentChange,

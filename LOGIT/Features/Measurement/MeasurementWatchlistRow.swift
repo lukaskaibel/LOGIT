@@ -41,15 +41,15 @@ struct MeasurementWatchlistRow: View {
     let measurementType: MeasurementEntryType
 
     /// Newest-first.
-    private var entries: [MeasurementEntry] {
-        measurementController.getMeasurementEntries(ofType: measurementType)
+    private var entries: [MeasurementSeriesPoint] {
+        measurementController.series(ofType: measurementType)
     }
 
     var body: some View {
         MeasurementWatchlistRowContent(
             measurementType: measurementType,
             points: Array(entries.prefix(12)).reversed().map {
-                TileSparklinePoint(date: $0.date ?? .now, value: $0.decimalValue)
+                TileSparklinePoint(date: $0.date, value: $0.value)
             }
         )
     }

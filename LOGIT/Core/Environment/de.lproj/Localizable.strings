@@ -1099,10 +1099,13 @@
 
 // MARK: - Body Weight Sync
 
-"syncBodyWeight" = "Körpergewicht synchronisieren";
-"syncBodyWeightDescription" = "Das Körpergewicht wird in beide Richtungen synchronisiert: In LOGIT erfasstes Gewicht landet in Apple Health, anderswo erfasstes Gewicht erscheint in LOGIT.";
+"syncBodyMeasurements" = "Körpermaße synchronisieren";
+"height" = "Körpergröße";
+"heightDescription" = "Wird für den BMI gebraucht. Aus Apple Health übernommen, wenn die Synchronisierung an ist.";
+"bmi" = "BMI";
+"syncBodyMeasurementsDescription" = "Gewicht und Körperfettanteil werden in beide Richtungen synchronisiert: In LOGIT erfasste Werte landen in Apple Health, anderswo erfasste erscheinen in LOGIT. Die Körpergröße wird aus Apple Health übernommen.";
 "syncNow" = "Jetzt synchronisieren";
-"bodyWeightSyncResult" = "%d importiert, %d exportiert.";
+"bodyMeasurementSyncResult" = "%d importiert, %d exportiert.";
 
 // Exercise editor — measurement builder
 "trackPerSet" = "Was trackst du pro Satz?";

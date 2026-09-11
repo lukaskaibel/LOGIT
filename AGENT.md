@@ -78,6 +78,64 @@ For manual testing there are shared schemes with the arguments preconfigured:
 disabled `-UITEST_FORCE_FREE` toggle — tick it in Edit Scheme for the free
 tier). The plain LOGIT scheme keeps using the real on-disk store.
 
+# CloudKit schema: always tell Lukas when a deploy is needed
+
+**The production CloudKit schema never updates itself.** The Development
+environment picks up model changes from a debug run, so sync keeps working on
+your simulator and hides the problem completely. Production only changes when a
+human opens the CloudKit console and presses **Deploy Schema Changes** — and
+until they do, every new field writes locally and silently never syncs. Nothing
+errors, nothing warns, and the feature simply doesn't work across devices.
+
+This is the one release step no agent can perform. Lukas will not remember it on
+his own, so **surfacing it is your job, every single time.**
+
+## The rule
+
+If a change adds or alters anything in `LOGIT/Data/Database/LOGIT.xcdatamodeld`
+— a new model version, entity, attribute or relationship — then **the final
+response for that change must end with a CloudKit deploy notice.** Not a footnote
+mid-answer, not "worth noting at some point": the last thing Lukas reads. Repeat
+it in the PR description too.
+
+Name the record types and fields exactly as CloudKit shows them — Core Data
+prefixes both with `CD_`, so `dropRepetitions` on `DropSet` appears as
+`CD_dropRepetitions` on `CD_DropSet`. Say which feature stops working without
+the deploy, in user terms.
+
+```
+⚠️ CloudKit deploy needed before this ships
+Console → Development → Private DB → Record Types → Deploy Schema Changes
+  CD_Workout   → CD_effortScore_     (effort ratings won't sync without it)
+  CD_DropSet   → CD_dropRepetitions  (drop sets won't sync at all)
+```
+
+At release time, do this for **every model change since the last released
+version**, not just the newest one — deploys are easy to do once and then
+forget, and a field added after the last deploy is indistinguishable from one
+added before it unless you check the dates.
+
+## Schema rules that are not negotiable
+
+- **Additive only.** Never remove a field, never rename one, and never
+  reinterpret an existing field's meaning or unit. CloudKit keeps deployed
+  fields forever; changing what one means corrupts every record already synced.
+  Add a new field and dual-write instead (see `durationMillis` alongside the
+  legacy seconds).
+- **Never fix a collision with `renamingIdentifier`.** Inheritance is flattened
+  into one record type, so two entities in the same hierarchy cannot both own a
+  field of the same name — that is what kept drop sets from ever syncing. Move
+  the field to its own name instead (`dropRepetitions`).
+- **Every new attribute must be optional or carry a default.** CloudKit
+  mirroring rejects a required attribute with no default.
+
+## Verifying a deploy
+
+`-INITIALIZE_CLOUDKIT_SCHEMA` (see `LOGITApp.swift`) runs
+`initializeCloudKitSchema(options: [.printSchema])`, which prints the schema the
+app *expects*. Diff that against the console's Record Types to see what is
+actually deployed — the print alone proves nothing about production.
+
 # App Store automation (Fastlane)
 
 LOGIT ships to the App Store via [fastlane](https://fastlane.tools). All store
@@ -265,10 +323,14 @@ scenario matrix already captures Templates (`*_04_templates`), and
   Do not "fix" this without also re-registering the App IDs on
   developer.apple.com and updating the Xcode project in lock-step - it
   would invalidate the existing provisioning profiles and break uploads.
-- **Widget version must match app version.** The widget's
-  `CFBundleShortVersionString` must equal the main app's (e.g. both
-  `4.1.1`). If you bump the app version, bump the widget too or Apple
-  rejects the build at submission.
+- **Widget version must match app version.** Both Info.plists resolve
+  `CFBundleShortVersionString` to `$(MARKETING_VERSION)` and `CFBundleVersion`
+  to `$(CURRENT_PROJECT_VERSION)`, so the pbxproj is the single source for both
+  — but the app and widget targets each carry their own `MARKETING_VERSION`.
+  Bump both together or Apple rejects the build at submission. Never hardcode a
+  version back into either plist: it silently outranks the build setting, so
+  `increment_build_number` writes a number nothing reads and the lane uploads a
+  binary still claiming the old build.
 - **`LOGITScreenshots` is a separate scheme.** `LOGIT.xcscheme` still
   includes `LOGITTests` (the unit test bundle) in its test action, but
   fastlane snapshot uses a dedicated `LOGITScreenshots.xcscheme` so a

@@ -299,7 +299,12 @@ enum ExercisePrimaryMetric: String, CaseIterable {
 
     /// One-line explanation for the exercise editor's metric picker — "e1RM" alone doesn't
     /// introduce itself.
-    var caption: String {
+    ///
+    /// Duration takes the exercise's time goal, because "longest" and "fastest" are opposite
+    /// claims and only one of them is a record for any given exercise. The goal is a parameter
+    /// rather than a defaulted one: a default would silently re-introduce the mismatch this
+    /// caption exists to avoid, and there is only one caller to tell.
+    func caption(durationGoal: ExerciseDurationGoal) -> String {
         switch self {
         case .estimatedOneRepMax:
             return NSLocalizedString("progressMetricE1RMDescription", comment: "")
@@ -308,7 +313,12 @@ enum ExercisePrimaryMetric: String, CaseIterable {
         case .repetitions:
             return NSLocalizedString("progressMetricRepetitionsDescription", comment: "")
         case .duration:
-            return NSLocalizedString("progressMetricDurationDescription", comment: "")
+            switch durationGoal {
+            case .longer:
+                return NSLocalizedString("progressMetricDurationDescription", comment: "")
+            case .faster:
+                return NSLocalizedString("progressMetricDurationFasterDescription", comment: "")
+            }
         case .distance:
             return NSLocalizedString("progressMetricDistanceDescription", comment: "")
         }

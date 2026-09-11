@@ -1103,10 +1103,13 @@
 
 // MARK: - Body Weight Sync
 
-"syncBodyWeight" = "Sincronizar peso corporal";
-"syncBodyWeightDescription" = "El peso corporal se sincroniza en ambos sentidos: el peso que registras en LOGIT se guarda en Apple Salud, y el registrado en otro lugar aparece en LOGIT.";
+"syncBodyMeasurements" = "Sincronizar medidas corporales";
+"height" = "Altura";
+"heightDescription" = "Se usa para calcular tu IMC. Se rellena desde Apple Salud si la sincronización está activada.";
+"bmi" = "IMC";
+"syncBodyMeasurementsDescription" = "El peso y el porcentaje de grasa corporal se sincronizan en ambos sentidos: los valores que registras en LOGIT se guardan en Apple Salud, y los registrados en otro lugar aparecen en LOGIT. Tu altura se lee desde Apple Salud.";
 "syncNow" = "Sincronizar ahora";
-"bodyWeightSyncResult" = "%d importados, %d exportados.";
+"bodyMeasurementSyncResult" = "%d importados, %d exportados.";
 
 // Exercise editor — measurement builder
 "trackPerSet" = "¿Qué registras por serie?";

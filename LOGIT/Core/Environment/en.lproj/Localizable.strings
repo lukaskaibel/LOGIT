@@ -1103,10 +1103,13 @@
 
 // MARK: - Body Weight Sync
 
-"syncBodyWeight" = "Sync Body Weight";
-"syncBodyWeightDescription" = "Body weight is kept in sync both ways: weight you log in LOGIT is saved to Apple Health, and weight logged elsewhere appears in LOGIT.";
+"syncBodyMeasurements" = "Sync Body Measurements";
+"height" = "Height";
+"heightDescription" = "Used to work out your BMI. Filled in from Apple Health when syncing is on.";
+"bmi" = "BMI";
+"syncBodyMeasurementsDescription" = "Body weight and body fat are kept in sync both ways: values you log in LOGIT are saved to Apple Health, and values logged elsewhere appear in LOGIT. Your height is read from Apple Health.";
 "syncNow" = "Sync Now";
-"bodyWeightSyncResult" = "%d imported, %d exported.";
+"bodyMeasurementSyncResult" = "%d imported, %d exported.";
 
 // Exercise editor — measurement builder
 "trackPerSet" = "What do you track per set?";

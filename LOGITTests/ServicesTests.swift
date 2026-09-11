@@ -1345,11 +1345,14 @@ final class CalorieEstimatorTests: XCTestCase {
     }
 }
 
-// MARK: - BodyWeightSyncTests
+// MARK: - BodyMeasurementSyncTests
 
-final class BodyWeightSyncTests: XCTestCase {
+final class BodyMeasurementSyncTests: XCTestCase {
 
-    private typealias Existing = BodyWeightSyncManager.ExistingEntry
+    private typealias Existing = BodyMeasurementSyncManager.ExistingEntry
+
+    /// The weight tolerance, named so the import assertions read as what they are.
+    private let weightTolerance = BodyMeasurementSyncManager.SyncedQuantity.bodyWeight.duplicateTolerance
 
     private func date(_ daysAgo: Int, hour: Int = 8) -> Date {
         let day = Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now)!
@@ -1358,8 +1361,9 @@ final class BodyWeightSyncTests: XCTestCase {
 
     func testImportsNewSample() {
         XCTAssertTrue(
-            BodyWeightSyncManager.shouldImport(
-                uuid: "A", grams: 76_000, date: date(1), existing: []
+            BodyMeasurementSyncManager.shouldImport(
+                uuid: "A", value: 76_000, date: date(1),
+                tolerance: weightTolerance, existing: []
             )
         )
     }
@@ -1367,10 +1371,11 @@ final class BodyWeightSyncTests: XCTestCase {
     func testSkipsAlreadyImportedSample() {
         // The same Health sample arriving twice (a re-run, or an entry that reached this
         // device through CloudKit before the anchored query saw it).
-        let existing = [Existing(grams: 76_000, date: date(1), healthKitUUID: "A")]
+        let existing = [Existing(value: 76_000, date: date(1), healthKitUUID: "A")]
         XCTAssertFalse(
-            BodyWeightSyncManager.shouldImport(
-                uuid: "A", grams: 76_000, date: date(1), existing: existing
+            BodyMeasurementSyncManager.shouldImport(
+                uuid: "A", value: 76_000, date: date(1),
+                tolerance: weightTolerance, existing: existing
             )
         )
     }
@@ -1378,10 +1383,11 @@ final class BodyWeightSyncTests: XCTestCase {
     func testSkipsSameDaySameWeightFromAnotherSource() {
         // Logged in LOGIT, then the same value comes back around through Health's own
         // iCloud sync as a foreign-sourced sample: it is the same measurement.
-        let existing = [Existing(grams: 76_000, date: date(1, hour: 7), healthKitUUID: nil)]
+        let existing = [Existing(value: 76_000, date: date(1, hour: 7), healthKitUUID: nil)]
         XCTAssertFalse(
-            BodyWeightSyncManager.shouldImport(
-                uuid: "B", grams: 76_020, date: date(1, hour: 21), existing: existing
+            BodyMeasurementSyncManager.shouldImport(
+                uuid: "B", value: 76_020, date: date(1, hour: 21),
+                tolerance: weightTolerance, existing: existing
             ),
             "Same day, within tolerance — must not double-log"
         )
@@ -1389,26 +1395,31 @@ final class BodyWeightSyncTests: XCTestCase {
 
     func testImportsDifferentWeightOnSameDay() {
         // Morning and evening weigh-ins are genuinely two measurements.
-        let existing = [Existing(grams: 76_000, date: date(1, hour: 7), healthKitUUID: nil)]
+        let existing = [Existing(value: 76_000, date: date(1, hour: 7), healthKitUUID: nil)]
         XCTAssertTrue(
-            BodyWeightSyncManager.shouldImport(
-                uuid: "B", grams: 77_400, date: date(1, hour: 21), existing: existing
+            BodyMeasurementSyncManager.shouldImport(
+                uuid: "B", value: 77_400, date: date(1, hour: 21),
+                tolerance: weightTolerance, existing: existing
             )
         )
     }
 
     func testImportsSameWeightOnDifferentDay() {
-        let existing = [Existing(grams: 76_000, date: date(2), healthKitUUID: nil)]
+        let existing = [Existing(value: 76_000, date: date(2), healthKitUUID: nil)]
         XCTAssertTrue(
-            BodyWeightSyncManager.shouldImport(
-                uuid: "B", grams: 76_000, date: date(1), existing: existing
+            BodyMeasurementSyncManager.shouldImport(
+                uuid: "B", value: 76_000, date: date(1),
+                tolerance: weightTolerance, existing: existing
             )
         )
     }
 
     func testIgnoresEmptySamples() {
         XCTAssertFalse(
-            BodyWeightSyncManager.shouldImport(uuid: "A", grams: 0, date: date(1), existing: [])
+            BodyMeasurementSyncManager.shouldImport(
+                uuid: "A", value: 0, date: date(1),
+                tolerance: weightTolerance, existing: []
+            )
         )
     }
 
@@ -1431,6 +1442,88 @@ final class BodyWeightSyncTests: XCTestCase {
 
         let exportable = [imported, native].filter { $0.healthKitUUID == nil }
         XCTAssertEqual(exportable, [native])
+    }
+
+    // MARK: - Body fat
+
+    /// HealthKit carries body fat as a *fraction* (0.224) while LOGIT stores percent × 1000
+    /// (22_400). That factor of 100 is the whole trap in this conversion, so it is pinned in
+    /// both directions.
+    func testBodyFatConvertsBetweenHealthFractionAndStoredPercent() {
+        let bodyFat = BodyMeasurementSyncManager.SyncedQuantity.bodyFat
+        XCTAssertEqual(bodyFat.toStored(0.224), 22_400)
+        XCTAssertEqual(bodyFat.fromStored(22_400), 0.224, accuracy: 0.000_001)
+        // Round-trips without drifting.
+        XCTAssertEqual(bodyFat.toStored(bodyFat.fromStored(15_750)), 15_750)
+    }
+
+    func testBodyWeightConvertsBetweenHealthKilogramsAndStoredGrams() {
+        let bodyWeight = BodyMeasurementSyncManager.SyncedQuantity.bodyWeight
+        XCTAssertEqual(bodyWeight.toStored(76.4), 76_400)
+        XCTAssertEqual(bodyWeight.fromStored(76_400), 76.4, accuracy: 0.000_001)
+    }
+
+    /// Weight and body fat must never share a sync identifier or an anchor: one would overwrite
+    /// the other's Health samples, the other would consume its import position.
+    func testSyncedQuantitiesAreNamespacedApart() {
+        let id = UUID()
+        let suffixes = BodyMeasurementSyncManager.SyncedQuantity.all.map { $0.syncIdentifier(for: id) }
+        XCTAssertEqual(Set(suffixes).count, suffixes.count)
+        let anchors = BodyMeasurementSyncManager.SyncedQuantity.all.map(\.anchorKey)
+        XCTAssertEqual(Set(anchors).count, anchors.count)
+    }
+
+    /// The body-fat tolerance is read in stored units too — 0.05 of a percentage point.
+    func testSameDayBodyFatWithinToleranceIsNotDoubleLogged() {
+        let bodyFat = BodyMeasurementSyncManager.SyncedQuantity.bodyFat
+        let existing = [Existing(value: 22_400, date: date(1, hour: 7), healthKitUUID: nil)]
+        XCTAssertFalse(
+            BodyMeasurementSyncManager.shouldImport(
+                uuid: "B", value: 22_430, date: date(1, hour: 21),
+                tolerance: bodyFat.duplicateTolerance, existing: existing
+            )
+        )
+        XCTAssertTrue(
+            BodyMeasurementSyncManager.shouldImport(
+                uuid: "B", value: 24_100, date: date(1, hour: 21),
+                tolerance: bodyFat.duplicateTolerance, existing: existing
+            )
+        )
+    }
+}
+
+// MARK: - UserHeight / BMI Tests
+
+final class UserHeightTests: XCTestCase {
+
+    override func tearDown() {
+        UserHeight.set(centimeters: nil)
+        super.tearDown()
+    }
+
+    func testBMIIsWeightOverHeightSquared() {
+        UserHeight.set(centimeters: 180)
+        // 81 kg at 1.80 m → 25.0
+        XCTAssertEqual(UserHeight.bmi(forKilograms: 81)!, 25.0, accuracy: 0.001)
+    }
+
+    func testNoHeightMeansNoBMI() {
+        UserHeight.set(centimeters: nil)
+        XCTAssertNil(UserHeight.bmi(forKilograms: 81))
+    }
+
+    func testImplausibleHeightsAreRejectedRatherThanStored() {
+        UserHeight.set(centimeters: 180)
+        // A stray import or a typo must not replace a good value.
+        UserHeight.set(centimeters: 3)
+        XCTAssertEqual(UserHeight.centimeters, 180)
+        UserHeight.set(centimeters: 900)
+        XCTAssertEqual(UserHeight.centimeters, 180)
+    }
+
+    func testZeroWeightHasNoBMI() {
+        UserHeight.set(centimeters: 180)
+        XCTAssertNil(UserHeight.bmi(forKilograms: 0))
     }
 }
 

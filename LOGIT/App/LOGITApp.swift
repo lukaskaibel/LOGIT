@@ -37,7 +37,7 @@ struct LOGIT: App {
     @StateObject private var defaultTemplateService: DefaultTemplateService
     @StateObject private var exerciseSuggestionService: ExerciseSuggestionService
     @StateObject private var healthKitSyncManager: HealthKitSyncManager
-    @StateObject private var bodyWeightSyncManager: BodyWeightSyncManager
+    @StateObject private var bodyMeasurementSyncManager: BodyMeasurementSyncManager
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingWelcome = false
@@ -84,10 +84,10 @@ struct LOGIT: App {
             database = Database()
         }
 
-        let bodyWeightSyncManager = BodyWeightSyncManager(database: database)
-        _bodyWeightSyncManager = StateObject(wrappedValue: bodyWeightSyncManager)
+        let bodyMeasurementSyncManager = BodyMeasurementSyncManager(database: database)
+        _bodyMeasurementSyncManager = StateObject(wrappedValue: bodyMeasurementSyncManager)
         let measurementController = MeasurementEntryController(
-            database: database, bodyWeightSync: bodyWeightSyncManager
+            database: database, bodyMeasurementSync: bodyMeasurementSyncManager
         )
         TestScenario.active?.seedMeasurements(using: measurementController)
 
@@ -198,7 +198,7 @@ struct LOGIT: App {
                 .environmentObject(chronograph)
                 .environmentObject(exerciseSuggestionService)
                 .environmentObject(healthKitSyncManager)
-                .environmentObject(bodyWeightSyncManager)
+                .environmentObject(bodyMeasurementSyncManager)
                 .environment(\.goHome) { selectedTab = .home }
                 .environment(\.presentWorkoutRecorder, showWorkoutRecorder)
                 .sheet(isPresented: $isShowingWelcome) {
@@ -210,14 +210,14 @@ struct LOGIT: App {
                     // user comes back to LOGIT. The anchored query only fetches what changed,
                     // so this stays cheap on every foreground.
                     guard phase == .active, shouldImportBodyWeight else { return }
-                    Task { await bodyWeightSyncManager.importFromHealth() }
+                    Task { await bodyMeasurementSyncManager.importFromHealth() }
                 }
                 .task {
                     if !setupDone {
                         isShowingWelcome = true
                     }
                     if shouldImportBodyWeight {
-                        await bodyWeightSyncManager.importFromHealth()
+                        await bodyMeasurementSyncManager.importFromHealth()
                     }
                     // Scenario launches already imported default content in init.
                     if TestScenario.active == nil {
@@ -325,7 +325,7 @@ struct LOGIT: App {
                     .environmentObject(chronograph)
                     .environmentObject(exerciseSuggestionService)
                     .environmentObject(healthKitSyncManager)
-                    .environmentObject(bodyWeightSyncManager)
+                    .environmentObject(bodyMeasurementSyncManager)
                     .interactiveDismissDisabled()
                     .onDisappear {
                         // Clean up if dismissed without saving
@@ -531,7 +531,7 @@ struct LOGIT: App {
             .environmentObject(chronograph)
             .environmentObject(exerciseSuggestionService)
             .environmentObject(healthKitSyncManager)
-            .environmentObject(bodyWeightSyncManager)
+            .environmentObject(bodyMeasurementSyncManager)
             .environment(\.managedObjectContext, database.context)
             .environment(\.goHome) { selectedTab = .home }
             .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }

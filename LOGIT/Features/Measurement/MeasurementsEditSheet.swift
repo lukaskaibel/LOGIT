@@ -11,14 +11,20 @@ struct MeasurementsEditSheet: View {
     @Binding var pinnedMeasurements: [MeasurementEntryType]
     @Environment(\.dismiss) private var dismiss
 
-    private let allMeasurements: [MeasurementEntryType] = {
+    @EnvironmentObject private var measurementController: MeasurementEntryController
+
+    private var allMeasurements: [MeasurementEntryType] {
         var measurements: [MeasurementEntryType] = [.bodyweight, .bodyFatPercentage, .muscleMass]
+        // Offered for pinning on the same terms as it is listed: only once it can be computed.
+        if measurementController.isAvailable(.bmi) {
+            measurements.insert(.bmi, at: 1)
+        }
         let sortedLengthMeasurements = LengthMeasurementEntryType.allCases
             .map { MeasurementEntryType.length($0) }
             .sorted { $0.title < $1.title }
         measurements.append(contentsOf: sortedLengthMeasurements)
         return measurements
-    }()
+    }
 
     @State private var editMode: EditMode = .active
 

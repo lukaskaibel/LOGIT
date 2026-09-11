@@ -1103,10 +1103,13 @@
 
 // MARK: - Body Weight Sync
 
-"syncBodyWeight" = "체중 동기화";
-"syncBodyWeightDescription" = "체중은 양방향으로 동기화됩니다. LOGIT에 기록한 체중은 건강 앱에 저장되고, 다른 곳에서 기록한 체중은 LOGIT에 표시됩니다.";
+"syncBodyMeasurements" = "신체 측정값 동기화";
+"height" = "키";
+"heightDescription" = "BMI 계산에 사용됩니다. 동기화가 켜져 있으면 건강 앱에서 채워집니다.";
+"bmi" = "BMI";
+"syncBodyMeasurementsDescription" = "체중과 체지방률은 양방향으로 동기화됩니다. LOGIT에 기록한 값은 건강 앱에 저장되고, 다른 곳에서 기록한 값은 LOGIT에 표시됩니다. 키는 건강 앱에서 가져옵니다.";
 "syncNow" = "지금 동기화";
-"bodyWeightSyncResult" = "%d개 가져옴, %d개 내보냄.";
+"bodyMeasurementSyncResult" = "%d개 가져옴, %d개 내보냄.";
 
 // Exercise editor — measurement builder
 "trackPerSet" = "세트마다 무엇을 기록하나요?";

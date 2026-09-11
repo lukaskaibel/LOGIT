@@ -90,5 +90,8 @@ enum ScreenshotFixtures {
         // fixtures', only the window is chosen.
         let window: TrendWindow = deepLinkTarget == "strength" ? .threeMonths : .default
         defaults.set(window.rawValue, forKey: "summaryTrendWindow")
+
+        // A height, so the derived BMI measurement has its second input and appears at all.
+        defaults.set(180.0, forKey: UserHeight.storageKey)
     }
 }

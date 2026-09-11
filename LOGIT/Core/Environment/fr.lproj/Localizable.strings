@@ -1062,6 +1062,7 @@
 "measurementTypeChangeInfo" = "Les séries existantes conservent leurs valeurs enregistrées. Seules les nouvelles séries utilisent la nouvelle mesure.";
 
 "metricInfoDuration" = "Ta plus longue durée enregistrée pour cet exercice.";
+"metricInfoDurationFaster" = "Ton temps le plus rapide enregistré pour cet exercice.";
 "metricInfoDistance" = "Ta plus longue distance enregistrée pour cet exercice.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "par séance";
@@ -1117,6 +1118,7 @@
 "progressMetricWeightDescription" = "Poids le plus lourd soulevé dans une série";
 "progressMetricRepetitionsDescription" = "Le plus de répétitions en une série";
 "progressMetricDurationDescription" = "La plus longue durée en une série";
+"progressMetricDurationFasterDescription" = "Le temps le plus rapide en une série";
 "progressMetricDistanceDescription" = "La plus grande distance en une série";
 
 // Strength (Progress tab tile + detail)

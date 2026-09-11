@@ -1062,6 +1062,7 @@
 "measurementTypeChangeInfo" = "Existing sets keep the values they were recorded with. Only new sets use the new measurement.";
 
 "metricInfoDuration" = "Your longest recorded duration for this exercise.";
+"metricInfoDurationFaster" = "Your fastest recorded time for this exercise.";
 "metricInfoDistance" = "Your longest recorded distance for this exercise.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "per workout";
@@ -1117,6 +1118,7 @@
 "progressMetricWeightDescription" = "Heaviest weight lifted in a set";
 "progressMetricRepetitionsDescription" = "Most reps in a single set";
 "progressMetricDurationDescription" = "Longest duration in a single set";
+"progressMetricDurationFasterDescription" = "Fastest time in a single set";
 "progressMetricDistanceDescription" = "Farthest distance in a single set";
 
 // Strength (Progress tab tile + detail)

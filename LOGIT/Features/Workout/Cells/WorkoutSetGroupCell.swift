@@ -1889,12 +1889,20 @@ struct MetricInfoPanel: View {
         exercise?.primaryMetric = metric
     }
 
+    /// Duration follows the exercise's time goal: the scoreboard above this line already ranks a
+    /// sprint by its fastest time (through `Exercise.isBetter(_:than:for:)`), so fixed "longest"
+    /// copy contradicted the number it was explaining. Distance has no such axis — `ExerciseDurationGoal`
+    /// is deliberately duration-only — so it keeps one string.
     private func explanation(for metric: ExercisePrimaryMetric) -> String {
         switch metric {
         case .estimatedOneRepMax: return NSLocalizedString("e1RMInfo", comment: "")
         case .weight: return NSLocalizedString("metricInfoWeight", comment: "")
         case .repetitions: return NSLocalizedString("metricInfoReps", comment: "")
-        case .duration: return NSLocalizedString("metricInfoDuration", comment: "")
+        case .duration:
+            switch exercise?.durationGoal ?? .longer {
+            case .longer: return NSLocalizedString("metricInfoDuration", comment: "")
+            case .faster: return NSLocalizedString("metricInfoDurationFaster", comment: "")
+            }
         case .distance: return NSLocalizedString("metricInfoDistance", comment: "")
         }
     }

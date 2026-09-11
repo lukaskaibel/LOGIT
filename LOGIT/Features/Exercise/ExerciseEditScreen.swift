@@ -524,7 +524,7 @@ struct ExerciseEditScreen: View {
                                 Text(metric.title)
                                     .font(.body.weight(.medium))
                                     .foregroundStyle(Color.label)
-                                Text(metric.caption)
+                                Text(metric.caption(durationGoal: durationGoal))
                                     .font(.footnote)
                                     .foregroundStyle(Color.secondaryLabel)
                                     .multilineTextAlignment(.leading)

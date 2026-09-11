@@ -1062,6 +1062,7 @@
 "measurementTypeChangeInfo" = "既存のセットは記録された値を保持します。新しいセットのみ新しい測定方法を使用します。";
 
 "metricInfoDuration" = "この種目で記録された最長時間です。";
+"metricInfoDurationFaster" = "この種目で記録された最速タイムです。";
 "metricInfoDistance" = "この種目で記録された最長距離です。";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "ワークアウトあたり";
@@ -1117,6 +1118,7 @@
 "progressMetricWeightDescription" = "1セットで挙げた最大重量";
 "progressMetricRepetitionsDescription" = "1セットの最多レップ数";
 "progressMetricDurationDescription" = "1セットの最長時間";
+"progressMetricDurationFasterDescription" = "1セットの最速タイム";
 "progressMetricDistanceDescription" = "1セットの最長距離";
 
 // Strength (Progress tab tile + detail)

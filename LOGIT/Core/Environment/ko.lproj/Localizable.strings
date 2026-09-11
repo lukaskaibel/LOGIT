@@ -1062,6 +1062,7 @@
 "measurementTypeChangeInfo" = "기존 세트는 기록된 값을 유지합니다. 새 세트만 새 측정 방식을 사용합니다.";
 
 "metricInfoDuration" = "이 운동에서 기록된 가장 긴 시간입니다.";
+"metricInfoDurationFaster" = "이 운동에서 기록된 가장 빠른 시간입니다.";
 "metricInfoDistance" = "이 운동에서 기록된 가장 긴 거리입니다.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "운동당";
@@ -1117,6 +1118,7 @@
 "progressMetricWeightDescription" = "한 세트에서 든 최대 무게";
 "progressMetricRepetitionsDescription" = "한 세트 최다 횟수";
 "progressMetricDurationDescription" = "한 세트 최장 시간";
+"progressMetricDurationFasterDescription" = "한 세트 최단 시간";
 "progressMetricDistanceDescription" = "한 세트 최장 거리";
 
 // Strength (Progress tab tile + detail)

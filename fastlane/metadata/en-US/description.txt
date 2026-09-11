@@ -7,11 +7,13 @@ Log & plan
 · Build your own exercise library
 · Save templates — or start from ready-made ones
 · Record supersets and dropsets to push your limits
+· Log weight, reps, duration or distance — whatever the exercise needs
 · Reorder exercises on the fly while you train
 · Sync across all your devices with iCloud
+· Share workouts and body weight with Apple Health
 
 See your progress
-· A dedicated Progress tab with your overall strength trend
+· A single Summary that leads with your overall strength trend
 · Personal records and recent highlights for every exercise
 · Weekly goals with streaks to keep your momentum going
 · Muscle balance that shows what you train — and what you neglect

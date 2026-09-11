@@ -49,8 +49,9 @@ final class LOGITScreenshots: XCTestCase {
 
     // MARK: - Screens (ordered by screenshot filename)
 
-    /// The Summary hero: weekly-goal strip, effort tiles and the muscle-balance
-    /// tile — the redesigned home for 5.0.
+    /// The top of the merged Summary: the title row's weekly-goal arc, the
+    /// timeframe picker, then the Strength and Balance pair over the 2×2 core
+    /// stat tiles — one screen since This Week and Progress merged in #113.
     func test01Summary() {
         launch()
         waitForTabBar()
@@ -78,7 +79,12 @@ final class LOGITScreenshots: XCTestCase {
         snapshot("03_Streak")
     }
 
-    /// The Muscle Groups overview: occurrence donut + diverging balance bars.
+    /// The Muscle Groups overview: the "groups at target" hero over the
+    /// `MuscleBalanceTrackChart`, then the eight groups as a two-column grid
+    /// split by verdict (below target first, then at target, then overshoot),
+    /// each section under a circled chevron/check header. (The donut and the
+    /// diverging balance bars this comment used to describe were both removed
+    /// in #124.)
     func test04MuscleBalance() {
         launch(["-UITEST_DEEPLINK", "muscleOverview"])
         waitForPushedScreen()
@@ -123,6 +129,14 @@ final class LOGITScreenshots: XCTestCase {
         launch(["-UITEST_DEEPLINK", "measurement"])
         waitForPushedScreen()
         snapshot("09_BodyMeasurements")
+    }
+
+    /// The Strength detail screen — 5.1's headline addition: the strength trend
+    /// over the selected window, the About section and the strongest-lifts list.
+    func test10Strength() {
+        launch(["-UITEST_DEEPLINK", "strength"])
+        waitForPushedScreen()
+        snapshot("10_Strength")
     }
 
     // MARK: - Helpers

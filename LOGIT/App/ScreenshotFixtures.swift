@@ -72,5 +72,23 @@ enum ScreenshotFixtures {
         // seeded week counts as complete, so the goal ring fills and the
         // Streak screen shows a real multi-week run instead of "0 weeks".
         defaults.set(3, forKey: "workoutPerWeekTarget")
+
+        // The Summary's timeframe is @AppStorage-backed, and the simulator keeps
+        // UserDefaults between launches — so without writing it on every launch
+        // one capture's window would leak into the next shot in the run. Set it
+        // explicitly each time.
+        //
+        // The Strength screen is the exception: over four weeks the seeded data
+        // yields three bars against an empty plot and five groups reading 0% or
+        // "No Data", which undersells the screen. Three months spans enough of
+        // the seeded history to fill the chart while still leaving a prior three
+        // months to measure against. Not a year: the trend compares a window to
+        // the window before it, the fixtures only reach ~20 weeks back, so a
+        // one-year window has no preceding year and the hero collapses to the
+        // "Building your strength trend" placeholder. Same kind of staging as
+        // pinning the exercises for the `progress` capture — the data is the
+        // fixtures', only the window is chosen.
+        let window: TrendWindow = deepLinkTarget == "strength" ? .threeMonths : .default
+        defaults.set(window.rawValue, forKey: "summaryTrendWindow")
     }
 }

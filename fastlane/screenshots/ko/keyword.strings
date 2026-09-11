@@ -1,5 +1,5 @@
 "01_Summary" = "운동";
-"02_Progress" = "성장";
+"02_Progress" = "기록";
 "03_Streak" = "연속";
 "04_MuscleBalance" = "균형";
 "05_ExerciseDetail" = "기록";
@@ -7,3 +7,4 @@
 "07_SuperDropSet" = "강도";
 "08_LiveActivity" = "LIVE";
 "09_BodyMeasurements" = "측정";
+"10_Strength" = "근력";

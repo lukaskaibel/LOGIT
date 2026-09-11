@@ -12,6 +12,10 @@ struct ExerciseAttemptCell: View {
     // MARK: - Parameters
     
     let setGroup: WorkoutSetGroup
+    /// The exercise whose history this cell is a row of. A super set's set holds an entry for
+    /// each of its two exercises, and only this one's is this cell's to show — see
+    /// `displayedValues(of:)`.
+    let exercise: Exercise
     
     // MARK: - Body
     
@@ -42,14 +46,12 @@ struct ExerciseAttemptCell: View {
             // Set entries
             VStack(spacing: CELL_SPACING) {
                 ForEach(Array(setGroup.sets.enumerated()), id: \.element.id) { index, workoutSet in
+                    let values = displayedValues(of: workoutSet)
                     if workoutSet is DropSet {
                         // For dropsets, show each drop as a separate row
-                        DropSetEntryRows(setNumber: index + 1, values: workoutSet.entryValues)
+                        DropSetEntryRows(setNumber: index + 1, values: values)
                     } else {
-                        SetEntryRow(
-                            setNumber: index + 1,
-                            value: displayedValue(of: workoutSet)
-                        )
+                        SetEntryRow(setNumber: index + 1, value: values.first)
                     }
                 }
             }
@@ -60,15 +62,16 @@ struct ExerciseAttemptCell: View {
     
     // MARK: - Helper Methods
 
-    /// The entry shown for a non-drop set: for compound sets the one belonging to the viewed
-    /// exercise, otherwise the set's single entry.
-    private func displayedValue(of workoutSet: WorkoutSet) -> SetEntryValues? {
-        let values = workoutSet.entryValues
-        if workoutSet is SuperSet {
-            return values.first { $0.exercise != nil && $0.exercise == setGroup.exercise }
-                ?? values.first
-        }
-        return values.first
+    /// What this set contributed to the exercise being viewed: its own entries. A super set
+    /// pairs two exercises in one set, so this is the difference between an exercise's history
+    /// showing its own reps and weights and showing its partner's — matching the set GROUP's
+    /// primary exercise instead is how the second exercise of every superset came to report the
+    /// first one's numbers. A drop set returns all of its drops, a standard set its one entry.
+    private func displayedValues(of workoutSet: WorkoutSet) -> [SetEntryValues] {
+        let values = workoutSet.entryValues(for: exercise)
+        // Sets old enough to name no exercise at all can't be attributed — show them rather
+        // than leaving the row blank.
+        return values.isEmpty ? workoutSet.entryValues.filter { $0.exercise == nil } : values
     }
 
     private func formattedDate(_ date: Date) -> String {
@@ -212,7 +215,7 @@ private struct EntryValueColumns: View {
 
 struct ExerciseAttemptCell_Previews: PreviewProvider {
     static var previews: some View {
-        ExerciseAttemptCell(setGroup: WorkoutSetGroup())
+        ExerciseAttemptCell(setGroup: WorkoutSetGroup(), exercise: Exercise())
             .padding()
             .background(Color.background)
     }

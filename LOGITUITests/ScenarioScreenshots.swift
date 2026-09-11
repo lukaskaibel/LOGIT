@@ -658,6 +658,58 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "running_distance_chart_screen")
     }
 
+    /// An exercise's history must show *its own* numbers, even when it was trained as the
+    /// second exercise of a superset. A superset's set carries one entry per exercise, and the
+    /// attempt cell used to pick the entry belonging to the set group's primary exercise —
+    /// so every exercise that was somebody's superset partner reported the partner's reps and
+    /// weights, both here and on the full history screen.
+    ///
+    /// The preview data pins both roles on one exercise: Triceps Extensions leads Push Day's
+    /// superset at 25 kg, and rides along in Arm Day's behind Biceps Curls at 22 kg while the
+    /// curls do 18 kg. So 22 must be on this screen three times (Arm Day's three sets) and 18 —
+    /// the partner's weight — must not appear at all.
+    func testExerciseHistoryShowsItsOwnSupersetEntries() {
+        let app = launchApp(scenario: "many")
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 4)
+        waitABit(1)
+
+        let exercisesRow = app.staticTexts["Exercises"].firstMatch
+        XCTAssertTrue(exercisesRow.waitForExistence(timeout: 5), "Exercises row missing on the Search tab")
+        exercisesRow.tap()
+        waitABit(2)
+
+        let tricepsRow = app.staticTexts["Triceps Extensions"].firstMatch
+        let listSearchField = app.textFields.firstMatch
+        if listSearchField.waitForExistence(timeout: 2) {
+            listSearchField.tap()
+            app.typeText("Triceps Extensions")
+            waitABit(2)
+        } else {
+            for _ in 0 ..< 30 where !tricepsRow.isHittable { app.swipeUp() }
+        }
+        XCTAssertTrue(tricepsRow.waitForExistence(timeout: 5), "Triceps Extensions not reachable in the exercise list")
+        tricepsRow.tap()
+        waitABit(3)
+
+        // Down to the attempts — the metric tiles fill the first screen.
+        for _ in 0 ..< 4 { app.swipeUp(); waitABit() }
+        attach(app, "exercise_history_superset_partner")
+
+        let weights = { (value: String) in
+            app.staticTexts.matching(NSPredicate(format: "label == %@", value)).count
+        }
+        XCTAssertGreaterThanOrEqual(
+            weights("22"), 3,
+            "Arm Day's three superset sets should report Triceps Extensions' own 22 kg"
+        )
+        XCTAssertEqual(
+            weights("18"), 0,
+            "18 kg is the Biceps Curls partner's weight — it must not appear in Triceps Extensions' history"
+        )
+    }
+
     // MARK: - Workout recorder (Transmission presentation)
     //
     // Note on element queries: while the persistent exercise tray sheet is

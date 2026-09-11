@@ -226,6 +226,16 @@ public extension WorkoutSet {
     /// Entries without a value are skipped rather than compared, because a missing value is
     /// stored as 0 and an assisted weight is negative: a drop set holding −20 kg and one blank
     /// field would otherwise report the blank as its heaviest load.
+    /// The entries `exercise` performed in this set — what any per-exercise surface must read.
+    /// A super set carries one entry per exercise, so taking the set's first entry shows
+    /// whichever exercise its GROUP leads with rather than the one being asked about; a drop set
+    /// belongs to one exercise and returns all of its drops. Empty when the exercise isn't part
+    /// of this set. Every other per-exercise reading here — `maximum(_:for:)`, `volume(for:)`,
+    /// `estimatedOneRepMaxEntry(for:)` — filters exactly this way.
+    internal func entryValues(for exercise: Exercise) -> [SetEntryValues] {
+        entryValues.filter { $0.exercise == exercise }
+    }
+
     internal func maximum(_ attribute: WorkoutSet.Attribute, for exercise: Exercise) -> Int {
         entryValues
             .filter { $0.exercise == exercise }

@@ -28,7 +28,7 @@ struct ExerciseHistoryScreen: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             VStack(spacing: CELL_SPACING + 5) {
                                 ForEach(workoutSetGroups) { setGroup in
-                                    ExerciseAttemptCell(setGroup: setGroup)
+                                    ExerciseAttemptCell(setGroup: setGroup, exercise: exercise)
                                 }
                             }
                         }

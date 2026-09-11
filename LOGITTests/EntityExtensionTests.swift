@@ -316,6 +316,60 @@ final class EntityExtensionTests: XCTestCase {
         XCTAssertFalse(superSet.hasEntry, "Empty super set should not have entry")
     }
     
+    /// A super set's set holds one entry per exercise, and every per-exercise surface — an
+    /// exercise's history, a superset lane, a volume total — has to be able to ask for its own.
+    /// Reading the set's first entry instead reports whichever exercise the GROUP leads with:
+    /// that is what made an exercise trained as somebody's superset partner show the partner's
+    /// reps and weights in its history.
+    func testSuperSetEntryValuesAreReadPerExercise() {
+        let curls = builder.createExercise(name: "Hammer Curls", muscleGroup: .biceps)
+        let pushdowns = builder.createExercise(name: "Tricep Push Downs", muscleGroup: .triceps)
+        let superSet = builder.createSuperSet(
+            repsFirst: 10,
+            repsSecond: 9,
+            weightFirst: 20000,
+            weightSecond: 15000,
+            firstExercise: curls,
+            secondExercise: pushdowns
+        )
+
+        let curlValues = superSet.entryValues(for: curls)
+        XCTAssertEqual(curlValues.map(\.repetitions), [10], "The leading exercise's own reps")
+        XCTAssertEqual(curlValues.map(\.weight), [20000], "The leading exercise's own weight")
+
+        let pushdownValues = superSet.entryValues(for: pushdowns)
+        XCTAssertEqual(pushdownValues.map(\.repetitions), [9], "The partner's own reps, not the leader's")
+        XCTAssertEqual(pushdownValues.map(\.weight), [15000], "The partner's own weight, not the leader's")
+    }
+
+    /// An exercise that took no part in the set gets nothing back — never the set's first entry.
+    func testSuperSetEntryValuesAreEmptyForAnUninvolvedExercise() {
+        let curls = builder.createExercise(name: "Hammer Curls", muscleGroup: .biceps)
+        let pushdowns = builder.createExercise(name: "Tricep Push Downs", muscleGroup: .triceps)
+        let squats = builder.createExercise(name: "Squats", muscleGroup: .legs)
+        let superSet = builder.createSuperSet(
+            firstExercise: curls,
+            secondExercise: pushdowns
+        )
+        XCTAssertTrue(superSet.entryValues(for: squats).isEmpty)
+    }
+
+    /// A drop set belongs to one exercise, so asking for that exercise returns every drop.
+    func testDropSetEntryValuesReturnAllDropsForItsExercise() {
+        let exercise = builder.createExercise(name: "Lat Pulldown", muscleGroup: .back)
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: exercise
+        )
+        let dropSet = database.newDropSet(
+            repetitions: [8, 5],
+            weights: [60000, 45000],
+            setGroup: setGroup
+        )
+        XCTAssertEqual(dropSet.entryValues(for: exercise).map(\.repetitions), [8, 5])
+        XCTAssertEqual(dropSet.entryValues(for: exercise).map(\.weight), [60000, 45000])
+    }
+
     func testSuperSetClearEntries() {
         let superSet = builder.createSuperSet(
             repsFirst: 10,

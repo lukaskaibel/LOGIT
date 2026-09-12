@@ -251,6 +251,14 @@ final class ScenarioScreenshots: XCTestCase {
             "-AppleLocale", "en_US",
         ]
         app.launch()
+        // Wait for the recorder itself, not for a stopwatch: until it has presented, the Summary
+        // behind it offers "Sets" labels of its own for the caption query below to settle on, and
+        // the test then drives the wrong screen. The sleep after it is the header's own settling
+        // — the panel is in the tree until the first measurement folds it away.
+        XCTAssertTrue(
+            app.buttons["Add Set"].firstMatch.waitForExistence(timeout: 25),
+            "Recorder never presented"
+        )
         sleep(4)
         let finishButton = app.buttons["Finish"]
         XCTAssertFalse(finishButton.exists, "Header should start collapsed mid-workout (Finish hidden)")
@@ -279,6 +287,11 @@ final class ScenarioScreenshots: XCTestCase {
             "-AppleLocale", "en_US",
         ]
         app.launch()
+        // As above: the caption query needs the recorder on screen to be aiming at the recorder.
+        XCTAssertTrue(
+            app.buttons["Add Set"].firstMatch.waitForExistence(timeout: 25),
+            "Recorder never presented"
+        )
         sleep(4)
         let caption = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] 'Sets'")).firstMatch
         XCTAssertTrue(caption.waitForExistence(timeout: 5), "Header caption not found")

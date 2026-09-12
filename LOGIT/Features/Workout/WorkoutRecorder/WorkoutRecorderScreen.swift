@@ -212,6 +212,18 @@ struct WorkoutRecorderScreen: View {
         return min(headerActionsHeight, headerPanelHeight)
     }
 
+    /// Whether the summary above the actions has actually come out from behind the fold.
+    ///
+    /// The panel is bottom-anchored in a frame only as tall as the reveal, so at the first stop
+    /// its upper rows are laid out ABOVE that frame — on top of the caption and the title.
+    /// `.clipped()` stops them being drawn and nothing else: they keep those coordinates in the
+    /// accessibility tree and in hit testing, so the note field ends up an invisible lid over the
+    /// header, swallowing the tap that should fold the panel back up. Everything above the
+    /// actions therefore stands down until the pull that reveals it.
+    private var headerSummaryIsRevealed: Bool {
+        headerPanelRevealHeight > headerCompactReveal + 1
+    }
+
     /// Every reveal height the panel comes to rest at, ascending: folded, actions only, all of it.
     private var headerPanelStops: [CGFloat] {
         guard headerPanelHeight > 0 else { return [0] }
@@ -945,8 +957,7 @@ struct WorkoutRecorderScreen: View {
         // thing (a summary, a note, the actions), not a list of like rows, so they want air
         // between them rather than the tight rhythm of a set list.
         VStack(spacing: 13) {
-            RecorderHeaderStatTiles(workout: workout)
-            RecorderHeaderNoteSection(workout: workout, isNoteFieldFocused: $isNoteFieldFocused)
+            headerPanelSummary(for: workout)
             HStack(spacing: 8) {
                 Button {
                     dismissWorkoutRecorder()
@@ -996,6 +1007,27 @@ struct WorkoutRecorderScreen: View {
                         }
                 }
             }
+        }
+    }
+
+    /// The panel's summary: the tiles and the note, everything that lives ABOVE the actions.
+    ///
+    /// Hidden rather than removed while it is still behind the fold. `.hidden()` keeps the rows
+    /// in the layout — the panel's natural height is what the second stop is made of, so they
+    /// have to go on taking up room — while dropping them from hit testing and the accessibility
+    /// tree, which is the part that matters: parked above a bottom-anchored frame, their layout
+    /// position is on top of the caption and the title. (`.accessibilityHidden` alone leaves them
+    /// in the tree here, the same way it fails to hide the panel's buttons.)
+    @ViewBuilder
+    private func headerPanelSummary(for workout: Workout) -> some View {
+        let summary = VStack(spacing: 13) {
+            RecorderHeaderStatTiles(workout: workout)
+            RecorderHeaderNoteSection(workout: workout, isNoteFieldFocused: $isNoteFieldFocused)
+        }
+        if headerSummaryIsRevealed {
+            summary
+        } else {
+            summary.hidden()
         }
     }
 

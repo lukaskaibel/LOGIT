@@ -693,15 +693,20 @@ final class ScenarioScreenshots: XCTestCase {
         exercisesRow.tap()
         waitABit(2)
 
+        // Reach the exercise through search, the same way testExerciseBuilderEditExistingFlow
+        // does: the list has no text field at rest, so the old `app.textFields` probe never
+        // matched and this always fell through to swiping the whole alphabetical library —
+        // 140 seconds of repeated full-tree snapshots to reach a name starting with T, which
+        // made this the slowest test in the suite and timed its queries out on a slow runner.
         let tricepsRow = app.staticTexts["Triceps Extensions"].firstMatch
-        let listSearchField = app.textFields.firstMatch
-        if listSearchField.waitForExistence(timeout: 2) {
-            listSearchField.tap()
-            app.typeText("Triceps Extensions")
-            waitABit(2)
-        } else {
-            for _ in 0 ..< 30 where !tricepsRow.isHittable { app.swipeUp() }
+        let searchField = app.searchFields.firstMatch
+        if !searchField.waitForExistence(timeout: 3) {
+            app.buttons["Search"].firstMatch.tap()
+            XCTAssertTrue(searchField.waitForExistence(timeout: 5), "Exercise list search never opened")
         }
+        searchField.tap()
+        app.typeText("Triceps Extensions")
+        waitABit(2)
         XCTAssertTrue(tricepsRow.waitForExistence(timeout: 5), "Triceps Extensions not reachable in the exercise list")
         tricepsRow.tap()
         waitABit(3)

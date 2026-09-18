@@ -90,8 +90,6 @@ struct WorkoutRecorderScreen: View {
     @State private var finishReport: WorkoutProgressReport?
     /// The finish bar's height, so the finish content can scroll clear of it.
     @State private var finishBarHeight: CGFloat = 0
-    /// Skipping the rating is a decision; re-opening the finish panel must not quietly re-seed it.
-    @State private var effortWasSkipped = false
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isShowingDetailsSheet = false
     @State private var isShowingExerciseSelectionSheet = false
@@ -843,14 +841,9 @@ struct WorkoutRecorderScreen: View {
     private func beginFinishing() {
         dismissKeyboard()
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        // Start the scale in the middle, like Apple's effort screen: a nudge from neutral reads as
-        // rating, where an empty scale reads as a form to fill in. Only ever seeds a workout that
-        // has never been rated and wasn't skipped, so re-opening the panel can't overwrite a real
-        // answer — and only here, never in the editor, where seeding would silently rate an old
-        // workout on open.
-        if let workout = workoutRecorder.workout, workout.effortScore == nil, !effortWasSkipped {
-            workout.effortScore = WorkoutEffort.defaultScore
-        }
+        // Nothing is seeded: the panel opens on the unrated scale, exactly as Apple's effort
+        // screen does. A pre-filled 5 would be a rating nobody gave, and it would be exported to
+        // Health as one.
         topSheet.revealBeforeFinishing = max(topSheet.reveal, topSheet.compactStop)
         topSheet.isReturningFromFinish = false
         topSheet.isDragging = false
@@ -882,8 +875,7 @@ struct WorkoutRecorderScreen: View {
             RecorderFinishPanelContent(
                 workout: workout,
                 records: finishReport?.exerciseRecords ?? [],
-                isNoteFieldFocused: $isNoteFieldFocused,
-                onSkipEffort: { effortWasSkipped = true }
+                isNoteFieldFocused: $isNoteFieldFocused
             )
             .padding(.horizontal)
             .padding(.top, 10)
@@ -1307,7 +1299,6 @@ private struct RecorderFinishPanelContent: View {
     @ObservedObject var workout: Workout
     let records: [WorkoutProgressReport.ExerciseRecords]
     var isNoteFieldFocused: FocusState<Bool>.Binding
-    let onSkipEffort: () -> Void
 
     var body: some View {
         VStack(spacing: SECTION_SPACING) {
@@ -1318,21 +1309,17 @@ private struct RecorderFinishPanelContent: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
 
             VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-                Text(NSLocalizedString("howHardWasIt", comment: ""))
+                Text(NSLocalizedString("rateYourEffort", comment: ""))
                     .sectionHeaderStyle2()
-                WorkoutEffortTile(
+                // The rating happens in place here rather than behind a tap: finishing *is* the
+                // moment the question is asked. Same bars, same capsule, same description list
+                // as the sheet the editor and the detail screen open.
+                WorkoutEffortRatingCard(
                     score: Binding(
                         get: { workout.effortScore },
-                        set: { newValue in
-                            workout.effortScore = newValue
-                            // Skipping is a decision; re-opening the panel must not re-seed the 5.
-                            if newValue == nil { onSkipEffort() }
-                        }
+                        set: { workout.effortScore = $0 }
                     ),
-                    // Top-to-bottom, not leading-to-trailing: one selected bar is narrow and
-                    // tall, so a horizontal sweep would squeeze the whole gradient into 30pt.
-                    tint: workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom),
-                    style: .translucent
+                    muscleGroups: workout.muscleGroups
                 )
             }
             .frame(maxWidth: .infinity, alignment: .leading)

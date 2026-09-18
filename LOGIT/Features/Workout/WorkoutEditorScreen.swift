@@ -44,10 +44,7 @@ struct WorkoutEditorScreen: View {
     /// (see TemplateEditorScreen).
     @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
     @FocusState private var isNoteFieldFocused: Bool
-
-    private var effortTint: AnyShapeStyle {
-        workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom)
-    }
+    @State private var isRatingEffort = false
 
     // MARK: - Parameters
 
@@ -112,17 +109,13 @@ struct WorkoutEditorScreen: View {
                         }
                         
                         VStack(spacing: CELL_SPACING) {
-                            // The same tile as the recorder's finish panel. It drafts the rating
-                            // while the finger is down and writes once on release — every write
-                            // here republishes the whole editor, set list included.
-                            WorkoutEffortTile(
-                                score: Binding(
-                                    get: { workout.effortScore },
-                                    set: { workout.effortScore = $0 }
-                                ),
-                                tint: effortTint,
-                                style: .tile
-                            )
+                            // The same tile the workout detail shows, opening the same rating
+                            // screen. It reads the score and nothing more: the sheet drafts the
+                            // rating and writes once on ✓, because every write here republishes
+                            // the whole editor, set list included.
+                            WorkoutEffortTile(score: workout.effortScore, style: .tile) {
+                                isRatingEffort = true
+                            }
                             WorkoutNoteField(
                                 workout: workout,
                                 isFocused: $isNoteFieldFocused,
@@ -275,6 +268,14 @@ struct WorkoutEditorScreen: View {
                             isPresented: $isEditingStartEndDate
                         )
                     }
+                    .workoutEffortRatingSheet(
+                        isPresented: $isRatingEffort,
+                        score: Binding(
+                            get: { workout.effortScore },
+                            set: { workout.effortScore = $0 }
+                        ),
+                        muscleGroups: workout.muscleGroups
+                    )
                 }
                 // Asymmetric switch for the tray's pass-through: off the moment a nested
                 // sheet presents, back on only after the nested sheet's dismissal transition
@@ -450,6 +451,7 @@ struct WorkoutEditorScreen: View {
             || exerciseForDetailSheet != nil
             || isShowingReorderSheet
             || isEditingStartEndDate
+            || isRatingEffort
             || createExerciseRequest != nil
     }
 

@@ -128,9 +128,8 @@ struct MuscleFocusScreen: View {
 
 // MARK: - Target control
 
-/// A group's weekly set target as a number between a round minus and plus — the control the focus
-/// editor's tiles and the muscle detail's target row share, so a target reads and changes the same
-/// way on both. Buttons wear the muscle's colour on a tinted disc, repeat while held, and give a
+/// A group's weekly set target as a number between a round minus and plus, on the focus editor's
+/// tiles. Buttons wear the muscle's colour on a tinted disc, repeat while held, and give a
 /// selection tick per step (held repeats included); each end greys out at its bound (0, or 1 for the last group with a target,
 /// and `MuscleFocus.targetRange`'s top).
 ///

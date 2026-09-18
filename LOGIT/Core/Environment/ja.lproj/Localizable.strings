@@ -946,9 +946,6 @@
 "muscleBalance" = "筋肉バランス";
 "balance" = "バランス";
 "muscleBalanceGoalBasis" = "目標以上";
-"muscleBalanceBelowTargetSection" = "目標未満";
-"muscleBalanceAtTargetSection" = "目標達成";
-"muscleBalanceAboveTargetSection" = "目標超過";
 "muscleBalanceGoalHeroCaption" = "部位が目標以上";
 "muscleBalanceGoalAccessibility" = "%d/%d の筋肉部位が目標以上";
 "muscleBalanceEmpty" = "トレーニングを続けると筋肉の配分が表示されます";
@@ -967,12 +964,10 @@
 "setsPerWeekTitle" = "週あたりのセット数";
 "setsPerWeekCaption" = "セット/週";
 "muscleFocusWeeklyTotal" = "合計 %d セット";
-"muscleDetailWeeklyAverage" = "週平均";
 "muscleFocusTargetsFooter" = "各筋肉グループに週何セット行うかを設定します。0にするとバランスの対象から外れます。";
 "muscleFocusEditTargets" = "目標を編集";
 "muscleBalanceSetsOfTarget" = "週 %2$d セット中 %1$d セット";
 "muscleFocusDefaultCaption" = "デフォルト · タップして重点を選択";
-"muscleDetailNotInFocus" = "重点に含まれていません";
 "muscleFocusTipTitle" = "トレーニングの重点を設定";
 "muscleFocusTipMessage" = "自分の重点を選ぶまで、バランスは「%@」を基準に測定されます。";
 "muscleFocusTipAction" = "重点を選ぶ";
@@ -995,7 +990,6 @@
 "sessions" = "セッション";
 "rank" = "順位";
 "share" = "シェア";
-"topExercises" = "トップ種目";
 "weekStreakSuffix" = "週連続";
 "weeklyGoalAccessibility" = "週間目標、%d/%d ワークアウト";
 "weeklyGoalSubtitle" = "週%d回の目標のうち";
@@ -1021,7 +1015,6 @@
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "目標 %d%%";
-"muscleDetailEmptySubtitle" = "選択した期間にこの部位はトレーニングしていません。";
 
 /* Muscle Balance — tile "+N more" hint */
 

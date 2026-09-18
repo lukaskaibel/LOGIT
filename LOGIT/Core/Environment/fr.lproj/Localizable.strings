@@ -946,9 +946,6 @@
 "muscleBalance" = "Équilibre musculaire";
 "balance" = "Équilibre";
 "muscleBalanceGoalBasis" = "à l'objectif ou plus";
-"muscleBalanceBelowTargetSection" = "Sous l'objectif";
-"muscleBalanceAtTargetSection" = "À l'objectif";
-"muscleBalanceAboveTargetSection" = "Au-dessus de l'objectif";
 "muscleBalanceGoalHeroCaption" = "groupes à l'objectif ou au-delà";
 "muscleBalanceGoalAccessibility" = "%d groupes musculaires sur %d à l'objectif ou au-delà";
 "muscleBalanceEmpty" = "Continue à t'entraîner pour voir ta répartition";
@@ -967,12 +964,10 @@
 "setsPerWeekTitle" = "Séries par semaine";
 "setsPerWeekCaption" = "séries par semaine";
 "muscleFocusWeeklyTotal" = "%d séries au total";
-"muscleDetailWeeklyAverage" = "Moyenne hebdo";
 "muscleFocusTargetsFooter" = "Combien de séries chaque groupe musculaire doit recevoir par semaine. Mets un groupe à 0 pour l'exclure de ton équilibre.";
 "muscleFocusEditTargets" = "Modifier les objectifs";
 "muscleBalanceSetsOfTarget" = "%1$d sur %2$d séries par semaine";
 "muscleFocusDefaultCaption" = "Par défaut · touche pour choisir ton orientation";
-"muscleDetailNotInFocus" = "Ne fait pas partie de ton orientation";
 "muscleFocusTipTitle" = "Définis l'orientation de ton entraînement";
 "muscleFocusTipMessage" = "L'équilibre mesure ton entraînement par rapport à %@ jusqu'à ce que tu choisisses ta propre orientation.";
 "muscleFocusTipAction" = "Choisir l'orientation";
@@ -995,7 +990,6 @@
 "sessions" = "Séances";
 "rank" = "Rang";
 "share" = "Part";
-"topExercises" = "Meilleurs exercices";
 "weekStreakSuffix" = "semaines d'affilée";
 "weeklyGoalAccessibility" = "Objectif hebdo, %d séances sur %d";
 "weeklyGoalSubtitle" = "sur ton objectif de %d séances";
@@ -1021,7 +1015,6 @@
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "Objectif %d%%";
-"muscleDetailEmptySubtitle" = "Tu n'as pas entraîné ce muscle sur la période sélectionnée.";
 
 /* Muscle Balance — tile "+N more" hint */
 

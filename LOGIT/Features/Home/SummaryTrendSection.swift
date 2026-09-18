@@ -86,7 +86,7 @@ struct SummaryTrendPair: View {
             }
             .buttonStyle(TileButtonStyle())
             Button {
-                homeNavigationCoordinator.path.append(.muscleGroupsOverview)
+                homeNavigationCoordinator.path.append(.muscleGroupsOverview(nil))
             } label: {
                 MuscleBalanceGoalTile(
                     workouts: currentWindowWorkouts,

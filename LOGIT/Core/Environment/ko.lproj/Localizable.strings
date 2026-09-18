@@ -946,9 +946,6 @@
 "muscleBalance" = "근육 균형";
 "balance" = "밸런스";
 "muscleBalanceGoalBasis" = "목표 이상";
-"muscleBalanceBelowTargetSection" = "목표 미만";
-"muscleBalanceAtTargetSection" = "목표 달성";
-"muscleBalanceAboveTargetSection" = "목표 초과";
 "muscleBalanceGoalHeroCaption" = "부위가 목표 이상";
 "muscleBalanceGoalAccessibility" = "%d/%d 근육 부위가 목표 이상";
 "muscleBalanceEmpty" = "계속 운동하면 근육 분배가 표시됩니다";
@@ -967,12 +964,10 @@
 "setsPerWeekTitle" = "주당 세트 수";
 "setsPerWeekCaption" = "세트/주";
 "muscleFocusWeeklyTotal" = "총 %d세트";
-"muscleDetailWeeklyAverage" = "주간 평균";
 "muscleFocusTargetsFooter" = "각 근육 그룹에 주당 몇 세트를 할지 정합니다. 0으로 설정하면 균형에서 제외됩니다.";
 "muscleFocusEditTargets" = "목표 편집";
 "muscleBalanceSetsOfTarget" = "주당 %2$d세트 중 %1$d세트";
 "muscleFocusDefaultCaption" = "기본값 · 탭하여 초점 선택";
-"muscleDetailNotInFocus" = "초점에 포함되지 않음";
 "muscleFocusTipTitle" = "트레이닝 초점 설정";
 "muscleFocusTipMessage" = "직접 초점을 선택하기 전까지 균형은 %@ 기준으로 측정됩니다.";
 "muscleFocusTipAction" = "초점 선택";
@@ -995,7 +990,6 @@
 "sessions" = "세션";
 "rank" = "순위";
 "share" = "비중";
-"topExercises" = "주요 운동";
 "weekStreakSuffix" = "주 연속";
 "weeklyGoalAccessibility" = "주간 목표, %d/%d 운동";
 "weeklyGoalSubtitle" = "주 %d회 목표 중";
@@ -1021,7 +1015,6 @@
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "목표 %d%%";
-"muscleDetailEmptySubtitle" = "선택한 기간에 이 부위를 운동하지 않았습니다.";
 
 /* Muscle Balance — tile "+N more" hint */
 

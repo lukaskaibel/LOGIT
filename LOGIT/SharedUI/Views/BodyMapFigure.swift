@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-/// A body region that can be highlighted on the shared `BodyMapFigure`. Maps onto a `MuscleGroup`
-/// (muscle detail) and — as a fast-follow for the measurement screens — onto a
+/// A body region that can be highlighted on the shared `BodyMapFigure`. Maps onto a `MuscleGroup` and — as a fast-follow for the measurement screens — onto a
 /// `LengthMeasurementEntryType`.
 enum BodyRegion {
     case chest, back, shoulders, abs, arms, legs, cardio

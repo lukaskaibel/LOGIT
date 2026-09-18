@@ -98,7 +98,9 @@ struct ProgressHighlightCardView: View {
             return .exercise(records.exercise)
         case let .trend(trend):
             switch trend.kind {
-            case .muscleGroupSets: return .muscleGroupDetail(trend.muscleGroup ?? .chest, trend.window)
+            // The muscle's own page is gone; its tile on Muscle Groups reads the same sets, over the
+            // same window the card compares.
+            case .muscleGroupSets: return .muscleGroupsOverview(trend.window)
             case .exerciseVolume:
                 if let exercise = trend.exercise { return .exercise(exercise) }
                 // Pinned to the window the card itself compares over, which is now nameable exactly

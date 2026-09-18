@@ -49,6 +49,10 @@ struct SummaryStatScreen: View {
                         valueLabel: metric.title,
                         unit: metric.unit,
                         barStyle: AnyShapeStyle(isDuration ? Color.secondary : Color.accentColor),
+                        // Duration's bars are deliberately colourless — longer is neither better nor
+                        // worse — so the bar being inspected borrows the accent rather than keeping a
+                        // gray that would vanish into the gray strip around it.
+                        selectionStyle: isDuration ? AnyShapeStyle(Color.accentColor) : nil,
                         value: { indices in windowValue(over: indices, aggregates: history.aggregates) },
                         trailingValueStyle: isDuration ? AnyShapeStyle(Color.label) : AnyShapeStyle(Color.accentColor.gradient),
                         positiveColor: isDuration ? .secondary : .accentColor,

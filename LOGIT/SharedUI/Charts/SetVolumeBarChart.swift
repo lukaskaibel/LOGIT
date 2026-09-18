@@ -76,44 +76,58 @@ struct SetVolumeBarChart: View {
         let selectedSegments = selectedSetIndex.map { index in segments.filter { $0.setIndex == index } } ?? []
         Chart {
             ForEach(segments) { segment in
-                BarMark(
-                    x: .value("Set", String(segment.setIndex)),
-                    y: .value("Volume", convertWeightForDisplayingDecimal(segment.volume)),
-                    width: .ratio(0.35)
-                )
-                .foregroundStyle(segment.color.gradient)
-                .opacity(selectedSetIndex == nil || selectedSetIndex == segment.setIndex ? 1.0 : 0.3)
-                .clipShape(Capsule())
-            }
-            if let selectedSetIndex, let firstSegment = selectedSegments.first {
-                RuleMark(x: .value("Selected", String(selectedSetIndex)))
-                    .foregroundStyle(firstSegment.color.gradient.opacity(0.35))
-                    .lineStyle(StrokeStyle(lineWidth: 2))
-                    .annotation(
-                        position: .top,
-                        overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
-                    ) {
-                        VStack(alignment: .leading) {
-                            UnitView(
-                                value: formatWeightForDisplay(selectedSegments.map { $0.volume }.reduce(0, +)),
-                                unit: WeightUnit.used.rawValue
-                            )
-                            .foregroundStyle(firstSegment.color.gradient)
-                            Text(selectionDescription(for: selectedSegments))
-                                .fontWeight(.bold)
-                                .fontDesign(.rounded)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.tertiaryBackground))
-                    }
+                bar(for: segment, selectedSegments: selectedSegments)
             }
         }
         .chartXScale(domain: (1 ... max(setCount, 1)).map { String($0) })
         .chartXSelection(value: $rawSelection)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
+    }
+
+    // MARK: - Marks
+
+    /// One segment of one set's bar, with the value card hung off the topmost segment of the
+    /// inspected set.
+    ///
+    /// The coloured bar is the selection indicator: the inspected set keeps its exercise's muscle
+    /// gradient, every other set drops to the quiet gray fill, and the card rides on the bar rather
+    /// than on a rule mark drawn through it — the same idiom as the rest of the app's bar charts.
+    @ChartContentBuilder
+    private func bar(for segment: Segment, selectedSegments: [Segment]) -> some ChartContent {
+        let isInspected = selectedSetIndex == nil || selectedSetIndex == segment.setIndex
+        let mark = BarMark(
+            x: .value("Set", String(segment.setIndex)),
+            y: .value("Volume", convertWeightForDisplayingDecimal(segment.volume)),
+            width: .ratio(0.35)
+        )
+        .foregroundStyle(isInspected ? AnyShapeStyle(segment.color.gradient) : AnyShapeStyle(Color.fill))
+        .clipShape(Capsule())
+        // The card goes on the last segment of the set — the top of the stack, so a super set's
+        // card clears both colors rather than sitting inside the bar.
+        if segment.id == selectedSegments.last?.id, let firstSegment = selectedSegments.first {
+            mark.annotation(
+                position: .top,
+                overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
+            ) {
+                VStack(alignment: .leading) {
+                    UnitView(
+                        value: formatWeightForDisplay(selectedSegments.map { $0.volume }.reduce(0, +)),
+                        unit: WeightUnit.used.rawValue
+                    )
+                    .foregroundStyle(firstSegment.color.gradient)
+                    Text(selectionDescription(for: selectedSegments))
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.tertiaryBackground))
+            }
+        } else {
+            mark
+        }
     }
 
     // MARK: - Computed Properties

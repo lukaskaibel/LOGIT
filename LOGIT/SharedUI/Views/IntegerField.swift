@@ -226,10 +226,21 @@ struct PreviousSetValueLabel: View {
     }
 }
 
+/// Whether the set fields draw their previous-workout indicators at all.
+///
+/// Off for now: a delta and a last-session value beside *every* field of *every* set read as
+/// clutter rather than information, and the two labels sharing one slot — swapping as you type —
+/// make the row hard to read. Everything behind them is deliberately left standing (the
+/// reference set the cells resolve, the delta helpers, both labels below), so a later set-cell
+/// design can bring the comparison back by flipping this one flag.
+private let showsSetValueIndicators = false
+
 extension View {
     /// Places one indicator immediately to the left of (and baseline-aligned with) the number
     /// it is attached to: the previous workout's value while the field is still empty, or
     /// the trend delta once a value is entered. Fades between states.
+    ///
+    /// Currently a no-op — see `showsSetValueIndicators`.
     ///
     /// The indicator participates in layout (it used to be an overlay overflowing into the
     /// field frame's empty leading space, which let a long previous value draw over the
@@ -245,9 +256,11 @@ extension View {
         onTapPreviousValue: (() -> Void)?,
         isVisible: Bool
     ) -> some View {
-        let showTrend = isVisible && trend != nil
-        let showPrevious = !showTrend && showPreviousValue && previousValueText != nil
-        let reservesSlot = isVisible && (trend != nil || previousValueText != nil)
+        let showTrend = showsSetValueIndicators && isVisible && trend != nil
+        let showPrevious = showsSetValueIndicators && !showTrend && showPreviousValue
+            && previousValueText != nil
+        let reservesSlot = showsSetValueIndicators && isVisible
+            && (trend != nil || previousValueText != nil)
         return HStack(alignment: .lastTextBaseline, spacing: 0) {
             if reservesSlot {
                 ZStack(alignment: Alignment(horizontal: .trailing, vertical: .lastTextBaseline)) {

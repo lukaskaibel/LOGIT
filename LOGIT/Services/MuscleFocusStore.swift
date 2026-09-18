@@ -11,7 +11,7 @@ import Foundation
 /// Persists the user's `MuscleFocus` — a weekly set target per muscle group — as JSON in
 /// `UserDefaults` (mirrors the pinned-exercise tile pattern — no Core Data, since CloudKit is
 /// additive-only). An `ObservableObject` so the focus editor's steppers live-update the Muscle Groups
-/// overview, the muscle detail and the Summary Balance tile that read off it. Injected from
+/// overview and the Summary Balance tile that read off it. Injected from
 /// `LOGITApp`/`PreviewEnvironmentObjects`.
 final class MuscleFocusStore: ObservableObject {
     static let storageKey = "muscleFocus"

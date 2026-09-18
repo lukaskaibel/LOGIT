@@ -946,9 +946,6 @@
 "muscleBalance" = "Muscle Balance";
 "balance" = "Balance";
 "muscleBalanceGoalBasis" = "at or above target";
-"muscleBalanceBelowTargetSection" = "Below target";
-"muscleBalanceAtTargetSection" = "At target";
-"muscleBalanceAboveTargetSection" = "Above target";
 "muscleBalanceGoalHeroCaption" = "groups at or above target";
 "muscleBalanceGoalAccessibility" = "%d of %d muscle groups at or above target";
 "muscleBalanceEmpty" = "Keep training to see your muscle split";
@@ -967,12 +964,10 @@
 "setsPerWeekTitle" = "Sets per week";
 "setsPerWeekCaption" = "sets per week";
 "muscleFocusWeeklyTotal" = "%d sets in total";
-"muscleDetailWeeklyAverage" = "Weekly average";
 "muscleFocusTargetsFooter" = "How many sets each muscle group should get per week. Set a group to 0 to leave it out of your balance.";
 "muscleFocusEditTargets" = "Edit Targets";
 "muscleBalanceSetsOfTarget" = "%1$d of %2$d sets per week";
 "muscleFocusDefaultCaption" = "Default · tap to choose what you train for";
-"muscleDetailNotInFocus" = "Not part of your focus";
 "muscleFocusTipTitle" = "Set your training focus";
 "muscleFocusTipMessage" = "Balance measures your training against %@ until you choose your own focus.";
 "muscleFocusTipAction" = "Choose focus";
@@ -995,7 +990,6 @@
 "sessions" = "Sessions";
 "rank" = "Rank";
 "share" = "Share";
-"topExercises" = "Top Exercises";
 "weekStreakSuffix" = "week streak";
 "weeklyGoalAccessibility" = "Weekly goal, %d of %d workouts";
 "weeklyGoalSubtitle" = "of your %d-workout goal";
@@ -1021,7 +1015,6 @@
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "Target %d%%";
-"muscleDetailEmptySubtitle" = "You haven't trained this muscle in the selected period.";
 
 /* Muscle Balance — tile "+N more" hint */
 

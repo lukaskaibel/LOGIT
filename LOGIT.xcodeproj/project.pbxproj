@@ -297,7 +297,6 @@
 		D1D1D1000000000000000B01 /* MetricTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D1D1000000000000000F01 /* MetricTile.swift */; };
 		E01F0F57C3115A2C00EB638E /* ScenarioScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6EBE9FCA104B46ACA995DE /* ScenarioScreenshots.swift */; };
 		E1E1E1000000000000000B17 /* LiveActivityScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F17 /* LiveActivityScreenshots.swift */; };
-		E18E0521AED5762B30E5FA1F /* MuscleGroupDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */; };
 		E1E1E1000000000000000B01 /* ExerciseE1RMTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F01 /* ExerciseE1RMTile.swift */; };
 		E1E1E1000000000000000B02 /* ExerciseE1RMScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F02 /* ExerciseE1RMScreen.swift */; };
 		E1E1E1000000000000000B05 /* ExerciseSetVolumeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F05 /* ExerciseSetVolumeTile.swift */; };
@@ -702,7 +701,6 @@
 		FB2659B3B29420E28C58F4B1 /* LOGIT 10.0.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 10.0.xcdatamodel"; sourceTree = "<group>"; };
 		FE01CA11AB1E5077AE000001 /* SummaryTrendSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryTrendSection.swift; sourceTree = "<group>"; };
 		FE91C0394869857C0E932723 /* MeasurementWatchlistRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementWatchlistRow.swift; sourceTree = "<group>"; };
-		FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupDetailScreen.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1112,7 +1110,6 @@
 				801BBD002DF7338A00CDB1FB /* HomeScreen.swift */,
 				DC42311A655A248061E11238 /* SummaryEmptyStates.swift */,
 				8BA376FF1C58639B7542A334 /* WorkoutGoalScreen.swift */,
-				FFD9E1A9B2D266CBA7AE5F18 /* MuscleGroupDetailScreen.swift */,
 				E62F41D02C28CB089872E955 /* SummaryWelcomeView.swift */,
 				ADFEC5772AE8932AA1089603 /* SummaryRecords.swift */,
 				FE01CA11AB1E5077AE000001 /* SummaryTrendSection.swift */,
@@ -1885,7 +1882,6 @@
 				801BBE012DF7338A00CDB1FB /* Database+EntityCreation.swift in Sources */,
 				79BB043F7BA96F3DE3739FB7 /* SummaryEmptyStates.swift in Sources */,
 				1E7CF1C1E77503BD192ECE23 /* WorkoutGoalScreen.swift in Sources */,
-				E18E0521AED5762B30E5FA1F /* MuscleGroupDetailScreen.swift in Sources */,
 				D0AF3C855D8D73E72DA7AF92 /* SummaryWelcomeView.swift in Sources */,
 				23A5FD0EA5AC115CC0EC34E6 /* SummaryRecords.swift in Sources */,
 				FE01CA11AB1E5077AE000002 /* SummaryTrendSection.swift in Sources */,

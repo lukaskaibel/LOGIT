@@ -12,8 +12,7 @@ import Foundation
 /// visibly full while the verdict says "not there yet" is a tile arguing with itself. Overshoot still
 /// counts; it just says so.
 ///
-/// The one verdict in the app, read by the Summary tile, the Muscle Groups screen and the muscle
-/// detail alike.
+/// The one verdict in the app, read by the Summary tile and the Muscle Groups screen alike.
 enum MuscleBalanceGoalState {
     /// Short of target — the track is partly filled and the remainder shows.
     case under
@@ -26,7 +25,7 @@ enum MuscleBalanceGoalState {
 
 /// One muscle group's standing against its weekly set target for a given window: how many sets
 /// trained it, what that works out to per week, and the target it is read against. The filling
-/// `MuscleBalanceTrack` (Summary tile, overview hero and tiles, single-muscle detail) renders off these.
+/// `MuscleBalanceTrack` (Summary tile, overview hero and tiles) renders off these.
 struct MuscleBalanceEntry: Identifiable {
     let muscleGroup: MuscleGroup
     /// Set occurrences training this group in the window (a super set counts toward both its groups,
@@ -98,106 +97,5 @@ struct MuscleBalanceCalculator {
     /// Numerator for the Balance tile: groups at least at their target.
     func atLeastTargetCount() -> Int {
         goalEntries.filter { $0.goalState != .under }.count
-    }
-}
-
-// MARK: - Weekly sets history
-
-/// The muscle detail's history, in the page's own unit: sets per week, one bar per rolling week of the
-/// selected window — 4 for four weeks, 13 for three months — and, for a year, one bar per calendar month
-/// showing that month's average sets per week, because 52 week bars are too thin to read in a tile.
-///
-/// Weeks roll back from now, like `TrendWindow` itself, so four weekly bars tile exactly the window the
-/// hero's weekly average is taken over, and the newest bar is a whole week rather than a part-elapsed
-/// calendar one that would read misleadingly short. Months can be calendar months, which label exactly
-/// ("Sep" is September): a month bar is an average, and the current month's is taken over its days so
-/// far, so being part-elapsed doesn't shorten it.
-///
-/// Sets are counted the way `MuscleGroupService` counts them for the hero — once per set for its
-/// exercise's group and once more for a superset partner's.
-enum MuscleWeeklySets {
-    struct Bin: Identifiable, Equatable {
-        /// Half-open at the lower edge, like every rolling range in the app.
-        let range: ClosedRange<Date>
-        /// Sets in the range, averaged per week over the part of it that has history, rounded.
-        let setsPerWeek: Int
-
-        var id: Date { range.upperBound }
-    }
-
-    /// The bars' ranges for `window`, oldest first, the newest ending at `now`. Week boundaries are
-    /// each stepped back from `now` directly; month boundaries are calendar month starts, the newest
-    /// running from the current month's first instant to `now`.
-    static func ranges(for window: TrendWindow, now: Date = .now, calendar: Calendar = .current) -> [ClosedRange<Date>] {
-        switch window {
-        case .fourWeeks, .threeMonths:
-            let count = window == .fourWeeks ? 4 : 13
-            func boundary(_ weeksBack: Int) -> Date {
-                calendar.date(byAdding: .day, value: -7 * weeksBack, to: now) ?? now
-            }
-            return (0 ..< count).reversed().map { boundary($0 + 1) ... boundary($0) }
-        case .oneYear:
-            guard let currentMonth = calendar.dateInterval(of: .month, for: now) else { return [] }
-            var ranges = [currentMonth.start ... now]
-            var cursor = currentMonth.start
-            for _ in 0 ..< 11 {
-                guard let previous = calendar.date(byAdding: .month, value: -1, to: cursor) else { break }
-                ranges.append(previous ... cursor)
-                cursor = previous
-            }
-            return ranges.reversed()
-        }
-    }
-
-    /// Drops the bars that end before the first workout: weeks nobody could have trained aren't missed
-    /// targets, and a year of history-less gaps would push the real bars into a corner. Always keeps
-    /// the newest bar.
-    static func trimmed(_ ranges: [ClosedRange<Date>], firstDataDate: Date?) -> [ClosedRange<Date>] {
-        guard let firstDataDate else { return ranges }
-        let kept = ranges.filter { $0.upperBound > firstDataDate }
-        return kept.isEmpty ? Array(ranges.suffix(1)) : kept
-    }
-
-    /// A bar's value: `count` sets averaged per week over the part of `range` that has history, never
-    /// dividing by less than a week — so a week bar is simply its set count, and a month bar is its
-    /// weekly average without a first, part-trained month reading low.
-    static func setsPerWeek(count: Int, in range: ClosedRange<Date>, firstDataDate: Date?, now: Date = .now) -> Int {
-        let week: TimeInterval = 7 * 24 * 60 * 60
-        let start = max(range.lowerBound, firstDataDate ?? range.lowerBound)
-        let end = min(range.upperBound, now)
-        let weeks = max(end.timeIntervalSince(start) / week, 1)
-        return Int((Double(count) / weeks).rounded())
-    }
-
-    /// The bars for `muscleGroup` over `window`, from every logged workout.
-    static func bins(
-        window: TrendWindow,
-        workouts: [Workout],
-        muscleGroup: MuscleGroup,
-        now: Date = .now
-    ) -> [Bin] {
-        let firstDataDate = workouts.compactMap(\.date).min()
-        let ranges = trimmed(ranges(for: window, now: now), firstDataDate: firstDataDate)
-        var counts = [Int](repeating: 0, count: ranges.count)
-        for workout in workouts {
-            guard let date = workout.date, let index = TrendWindow.binIndex(of: date, in: ranges) else { continue }
-            for set in workout.sets {
-                if set.setGroup?.exercise?.muscleGroup == muscleGroup { counts[index] += 1 }
-                if set.setGroup?.secondaryExercise?.muscleGroup == muscleGroup { counts[index] += 1 }
-            }
-        }
-        return zip(ranges, counts).map { range, count in
-            Bin(range: range, setsPerWeek: setsPerWeek(count: count, in: range, firstDataDate: firstDataDate, now: now))
-        }
-    }
-
-    /// The label under a bar: a week's first day ("Aug 16"), or a month's name ("Sep").
-    static func label(for range: ClosedRange<Date>, window: TrendWindow) -> String {
-        switch window {
-        case .fourWeeks, .threeMonths:
-            return range.lowerBound.formatted(.dateTime.day().month(.abbreviated))
-        case .oneYear:
-            return range.lowerBound.formatted(.dateTime.month(.abbreviated))
-        }
     }
 }

@@ -946,9 +946,6 @@
 "muscleBalance" = "Equilibrio muscolare";
 "balance" = "Equilibrio";
 "muscleBalanceGoalBasis" = "al target o oltre";
-"muscleBalanceBelowTargetSection" = "Sotto il target";
-"muscleBalanceAtTargetSection" = "Al target";
-"muscleBalanceAboveTargetSection" = "Sopra il target";
 "muscleBalanceGoalHeroCaption" = "gruppi al target o oltre";
 "muscleBalanceGoalAccessibility" = "%d di %d gruppi muscolari al target o oltre";
 "muscleBalanceEmpty" = "Continua ad allenarti per vedere la tua distribuzione";
@@ -967,12 +964,10 @@
 "setsPerWeekTitle" = "Serie a settimana";
 "setsPerWeekCaption" = "serie a settimana";
 "muscleFocusWeeklyTotal" = "%d serie in totale";
-"muscleDetailWeeklyAverage" = "Media settimanale";
 "muscleFocusTargetsFooter" = "Quante serie deve ricevere ogni gruppo muscolare a settimana. Imposta un gruppo a 0 per lasciarlo fuori dal tuo equilibrio.";
 "muscleFocusEditTargets" = "Modifica obiettivi";
 "muscleBalanceSetsOfTarget" = "%1$d su %2$d serie a settimana";
 "muscleFocusDefaultCaption" = "Predefinito · tocca per scegliere su cosa ti alleni";
-"muscleDetailNotInFocus" = "Non fa parte del tuo focus";
 "muscleFocusTipTitle" = "Imposta il focus dell'allenamento";
 "muscleFocusTipMessage" = "L'equilibrio misura il tuo allenamento rispetto a %@ finché non scegli il tuo focus.";
 "muscleFocusTipAction" = "Scegli focus";
@@ -995,7 +990,6 @@
 "sessions" = "Sessioni";
 "rank" = "Posizione";
 "share" = "Quota";
-"topExercises" = "Esercizi principali";
 "weekStreakSuffix" = "settimane di fila";
 "weeklyGoalAccessibility" = "Obiettivo settimanale, %d di %d allenamenti";
 "weeklyGoalSubtitle" = "del tuo obiettivo di %d allenamenti";
@@ -1021,7 +1015,6 @@
 
 /* Muscle detail — ring hero + empty state */
 "muscleDetailTargetCaption" = "Obiettivo %d%%";
-"muscleDetailEmptySubtitle" = "Non hai allenato questo muscolo nel periodo selezionato.";
 
 /* Muscle Balance — tile "+N more" hint */
 

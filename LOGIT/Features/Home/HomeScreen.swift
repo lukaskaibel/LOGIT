@@ -153,12 +153,10 @@ struct HomeScreen: View {
                         case let .measurementDetail(measurementType):
                             MeasurementDetailScreen(measurementType: measurementType)
                         case .measurements: MeasurementsScreen()
-                        case .muscleGroupsOverview:
-                            MuscleGroupsOverviewScreen(initialWindow: trendWindow.wrappedValue)
+                        case let .muscleGroupsOverview(window):
+                            MuscleGroupsOverviewScreen(initialWindow: window ?? trendWindow.wrappedValue)
                         case .muscleFocus:
                             MuscleFocusScreen()
-                        case let .muscleGroupDetail(group, initialWindow):
-                            MuscleGroupDetailScreen(muscleGroup: group, initialWindow: initialWindow)
                         case let .summaryStat(metric, window):
                             SummaryStatScreen(
                                 metric: metric,
@@ -313,7 +311,7 @@ struct HomeScreen: View {
         case "strength":
             homeNavigationCoordinator.path = [.strength]
         case "muscleOverview":
-            homeNavigationCoordinator.path = [.muscleGroupsOverview]
+            homeNavigationCoordinator.path = [.muscleGroupsOverview(nil)]
         case "measurement":
             homeNavigationCoordinator.path = [.measurementDetail(.bodyFatPercentage)]
         case "bodyWeight":

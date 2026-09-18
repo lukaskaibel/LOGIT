@@ -22,8 +22,7 @@ struct MuscleBalanceTrackChart: View {
     let entries: [MuscleBalanceEntry]
     var spacing: CGFloat = 5
     var badgeDiameter: CGFloat = 13
-    /// Fullest last, so the gaps read first — matching the Strength chart beside it. Off for the
-    /// detail screen's fixed-order variants.
+    /// Fullest last, so the gaps read first — matching the Strength chart beside it.
     var sortsByFill: Bool = true
 
     private var ordered: [MuscleBalanceEntry] {
@@ -113,9 +112,7 @@ struct MuscleBalanceTrack: View {
 /// all: a cell and its bar in the hero say the same thing in the same shape, and the verdict glyph
 /// lives in one place instead of being repeated beside the name.
 ///
-/// The cell does not name the group's priority. The grid reads results; priorities are set on the
-/// focus editor and on the muscle's own page, and a third place to read them would turn every tile
-/// into a comparison between two scales.
+/// A reading only: the cell opens nothing, so it wears no chevron.
 struct MuscleBalanceGoalCell: View {
     let entry: MuscleBalanceEntry
     /// A group the user turned off. It keeps its place in the grid — the editor keeps it in place as
@@ -142,17 +139,11 @@ struct MuscleBalanceGoalCell: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 12) {
             VStack(alignment: .leading, spacing: 0) {
-                // The chevron says the tile opens the muscle's page, the way "Volume >" does on the
-                // Summary's tiles.
-                HStack(spacing: 4) {
-                    Text(entry.muscleGroup.description)
-                        .font(.system(.subheadline, design: .rounded, weight: .bold))
-                        .foregroundStyle(isExcluded ? Color.secondaryLabel : entry.muscleGroup.color)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                    NavigationChevron()
-                        .foregroundStyle(Color.secondaryLabel)
-                }
+                Text(entry.muscleGroup.description)
+                    .font(.system(.subheadline, design: .rounded, weight: .bold))
+                    .foregroundStyle(isExcluded ? Color.secondaryLabel : entry.muscleGroup.color)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
                 Spacer(minLength: 10)
                 if isExcluded {
                     Text(NSLocalizedString("musclePriorityOff", comment: ""))
@@ -189,13 +180,12 @@ struct MuscleBalanceGoalCell: View {
                         + String(format: NSLocalizedString("muscleBalanceSetsOfTarget", comment: ""), entry.setsPerWeek, entry.target)
             )
         )
-        .accessibilityAddTraits(.isButton)
     }
 
     /// "7/10" over "sets per week": the group's weekly sets over its weekly target, in the goal shape
-    /// every other count on these screens uses — 4/8 groups above it, the same pair at hero size on
-    /// the muscle's own page. Neutral like every other value in the app: the name and the track
-    /// already carry the group's colour, and a coloured number would read as a verdict of its own.
+    /// every other count on these screens uses — 4/8 groups above it. Neutral like every other value in
+    /// the app: the name and the track already carry the group's colour, and a coloured number would
+    /// read as a verdict of its own.
     private var share: some View {
         VStack(alignment: .leading, spacing: 1) {
             HStack(alignment: .lastTextBaseline, spacing: 0) {
@@ -231,133 +221,6 @@ struct MuscleBalanceGoalCell: View {
             MuscleBalanceTrack(entry: entry, badgeDiameter: Self.badgeDiameter)
                 .frame(width: Self.trackWidth, height: Self.accessibilityTrackHeight)
         }
-    }
-}
-
-// MARK: - Weekly sets chart
-
-/// The muscle detail's history: one bar per week (or per month, averaged per week, across a year),
-/// each drawn against the target in the same shape the balance tracks use. Behind every bar stands a
-/// faint capsule as tall as the weekly target; the bar fills it. A week that met its target fills its
-/// capsule, a short one leaves the rest showing, and a week past it rises out of the top — so "three
-/// of four weeks on target" reads off the chart without a reference line or an axis.
-///
-/// Each bar carries its number above it instead of a y-axis, and only the first and last bars are
-/// dated once there are more than a handful: the picker above already names the window.
-struct MuscleWeeklySetsChart: View {
-    let bins: [MuscleWeeklySets.Bin]
-    /// One per bin, in order (`MuscleWeeklySets.label(for:window:)`).
-    let labels: [String]
-    /// The weekly set target; 0 draws bars with no capsules behind them.
-    let target: Int
-    let color: Color
-
-    private static let plotHeight: CGFloat = 132
-    /// Room reserved above the tallest bar for its number.
-    private static let valueRoom: CGFloat = 20
-    /// Wide bars stop here, so four weeks read as four capsules rather than four slabs.
-    private static let maxBarWidth: CGFloat = 40
-
-    private var labelsEveryBar: Bool { bins.count <= 6 }
-    private var spacing: CGFloat { bins.count > 6 ? 6 : 12 }
-
-    var body: some View {
-        let top = CGFloat(max(target, bins.map(\.setsPerWeek).max() ?? 0, 1))
-        return VStack(spacing: 8) {
-            HStack(alignment: .bottom, spacing: spacing) {
-                ForEach(bins) { bin in
-                    column(bin, top: top)
-                }
-            }
-            .frame(height: Self.plotHeight)
-            axisLabels
-        }
-        .animation(.snappy(duration: 0.3), value: bins)
-        .animation(.snappy(duration: 0.25), value: target)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(NSLocalizedString("setsPerWeekTitle", comment: "")))
-        .accessibilityValue(Text(accessibilityValue))
-    }
-
-    /// A bar and its number. The capsule clip is as tall as whichever is taller — the target or the
-    /// week — so a short week fills the bottom of its target capsule with a flat top, and a week past
-    /// target is itself a capsule standing out of it. The part past the target is drawn lighter, so
-    /// the target stays readable inside a bar that exceeds it.
-    ///
-    /// With no target there is no capsule to fill, so the clip is the whole plot height, drawn
-    /// invisibly: bars keep flat tops and round bottoms instead of shrinking into ovals.
-    private func column(_ bin: MuscleWeeklySets.Bin, top: CGFloat) -> some View {
-        let unit = (Self.plotHeight - Self.valueRoom) / top
-        let targetHeight = CGFloat(target) * unit
-        let barHeight = CGFloat(bin.setsPerWeek) * unit
-        let exceeds = target > 0 && barHeight > targetHeight
-        let clipHeight = target > 0 ? max(targetHeight, barHeight) : top * unit
-        return ZStack(alignment: .bottom) {
-            if target > 0 {
-                // The same neutral remainder the balance tracks draw.
-                Rectangle()
-                    .fill(Color.label.opacity(0.07))
-                    .frame(height: targetHeight)
-            }
-            RoundedRectangle(cornerRadius: 3, style: .continuous)
-                .fill(color.opacity(exceeds ? 0.45 : 1))
-                .frame(height: barHeight)
-            if exceeds {
-                Rectangle()
-                    .fill(color)
-                    .frame(height: targetHeight)
-            }
-        }
-        .frame(height: clipHeight, alignment: .bottom)
-        .frame(maxWidth: Self.maxBarWidth)
-        .clipShape(Capsule(style: .continuous))
-        // The number rides just above the bar — or above the target capsule when the week is short —
-        // wherever that is, rather than at the top of the clip.
-        .overlay(alignment: .bottom) {
-            Text(bin.setsPerWeek > 0 ? "\(bin.setsPerWeek)" : "")
-                .font((labelsEveryBar ? Font.caption : Font.caption2).weight(.semibold))
-                .monospacedDigit()
-                .foregroundStyle(Color.secondaryLabel)
-                .lineLimit(1)
-                .fixedSize()
-                .offset(y: -(max(barHeight, targetHeight) + 4))
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-    }
-
-    @ViewBuilder
-    private var axisLabels: some View {
-        if labelsEveryBar {
-            HStack(spacing: spacing) {
-                ForEach(Array(labels.enumerated()), id: \.offset) { _, label in
-                    axisLabel(label)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-        } else {
-            HStack {
-                axisLabel(labels.first ?? "")
-                Spacer(minLength: 8)
-                axisLabel(labels.last ?? "")
-            }
-        }
-    }
-
-    private func axisLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(Color.secondaryLabel)
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
-    }
-
-    /// "Aug 16: 4, Aug 23: 3, …, Target 6".
-    private var accessibilityValue: String {
-        var parts = zip(labels, bins).map { "\($0): \($1.setsPerWeek)" }
-        if target > 0 {
-            parts.append(NSLocalizedString("target", comment: "") + " \(target)")
-        }
-        return parts.joined(separator: ", ")
     }
 }
 

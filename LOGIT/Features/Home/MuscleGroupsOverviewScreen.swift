@@ -10,8 +10,7 @@ import SwiftUI
 /// The Muscle Groups overview: the training focus every number here is measured against, the goal
 /// hero — how many groups reached their target share, over the same filling tracks the Balance tile
 /// draws — then the eight groups as a two-column grid of tiles. The 4 weeks / 3 months / 1 year picker
-/// sets the window. Tiles tap through to the muscle's own page. Pro; the Summary's Balance tile is the
-/// free hook into it.
+/// sets the window. Pro; the Summary's Balance tile is the free hook into it.
 ///
 /// It is the focus editor's twin. The editor sets priorities in a fixed two-column grid; this screen
 /// reads results in the identical grid, in the same order, so a group sits in the same place on both
@@ -151,6 +150,9 @@ struct MuscleGroupsOverviewScreen: View {
     /// place as an Off tile, the way it does on the editor — dropping it would slide every later
     /// group into a different slot and break the one promise the shared order makes. It stays out of
     /// the hero and the count, where there is no target for it to be read against.
+    ///
+    /// The tiles don't open anything. Each used to push the muscle's own page, which repeated the
+    /// tile's reading at a larger size over a weekly chart.
     private func groupGrid(_ calculator: MuscleBalanceCalculator) -> some View {
         let byGroup = Dictionary(uniqueKeysWithValues: calculator.goalEntries.map { ($0.muscleGroup, $0) })
         return LazyVGrid(
@@ -158,9 +160,7 @@ struct MuscleGroupsOverviewScreen: View {
             spacing: 8
         ) {
             ForEach(MuscleFocus.displayOrder, id: \.self) { group in
-                Button {
-                    homeNavigationCoordinator.path.append(.muscleGroupDetail(group, window))
-                } label: {
+                Group {
                     // The goal entries are exactly the groups with a target, so a group missing
                     // from them is one the user set to 0.
                     if let entry = byGroup[group] {
@@ -172,7 +172,6 @@ struct MuscleGroupsOverviewScreen: View {
                         )
                     }
                 }
-                .buttonStyle(TileButtonStyle())
                 .accessibilityIdentifier("muscleBalanceCell_\(group.rawValue)")
             }
         }

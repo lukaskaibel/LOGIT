@@ -341,54 +341,6 @@ final class MuscleFocusTests: XCTestCase {
         XCTAssertEqual(TrendWindow.fourWeeks.weeksCovered(firstDataDate: now.addingTimeInterval(-14 * day), from: now), 2, accuracy: 0.01)
         XCTAssertEqual(TrendWindow.fourWeeks.weeksCovered(firstDataDate: now.addingTimeInterval(-2 * day), from: now), 1, accuracy: 0.01)
     }
-
-    // MARK: Weekly sets chart
-
-    func testWeeklySetRangesTileTheWindowEndingNow() {
-        let now = Date(timeIntervalSince1970: 1_780_000_000)
-        let calendar = Calendar.current
-        for (window, count) in [(TrendWindow.fourWeeks, 4), (.threeMonths, 13), (.oneYear, 12)] {
-            let ranges = MuscleWeeklySets.ranges(for: window, now: now)
-            XCTAssertEqual(ranges.count, count, "\(window)")
-            XCTAssertEqual(ranges.last?.upperBound, now, "The newest bar ends now")
-            for (older, newer) in zip(ranges, ranges.dropFirst()) {
-                XCTAssertEqual(older.upperBound, newer.lowerBound, "Bars tile without gaps")
-            }
-        }
-        let fourWeeks = MuscleWeeklySets.ranges(for: .fourWeeks, now: now)
-        XCTAssertEqual(fourWeeks.first?.lowerBound, TrendWindow.fourWeeks.range(windowsAgo: 0, from: now).lowerBound,
-                       "Four weekly bars cover exactly the four-week window")
-        let year = MuscleWeeklySets.ranges(for: .oneYear, now: now)
-        let currentMonth = calendar.dateInterval(of: .month, for: now)!.start
-        XCTAssertEqual(year.last?.lowerBound, currentMonth, "The newest month bar is the current calendar month")
-        XCTAssertEqual(year.first?.lowerBound, calendar.date(byAdding: .month, value: -11, to: currentMonth))
-    }
-
-    func testWeeklySetRangesDropBarsBeforeTheFirstWorkout() {
-        let now = Date(timeIntervalSince1970: 1_780_000_000)
-        let day: TimeInterval = 24 * 60 * 60
-        let ranges = MuscleWeeklySets.ranges(for: .fourWeeks, now: now)
-        XCTAssertEqual(MuscleWeeklySets.trimmed(ranges, firstDataDate: nil).count, 4)
-        XCTAssertEqual(MuscleWeeklySets.trimmed(ranges, firstDataDate: now.addingTimeInterval(-10 * day)).count, 2)
-        XCTAssertEqual(MuscleWeeklySets.trimmed(ranges, firstDataDate: now.addingTimeInterval(-60 * day)).count, 4)
-        XCTAssertEqual(MuscleWeeklySets.trimmed(ranges, firstDataDate: now.addingTimeInterval(day)).count, 1,
-                       "Always keeps the newest bar")
-    }
-
-    func testSetsPerWeekIsTheCountForAWeekAndAnAverageForAMonth() {
-        let now = Date(timeIntervalSince1970: 1_780_000_000)
-        let day: TimeInterval = 24 * 60 * 60
-        let week = now.addingTimeInterval(-7 * day) ... now
-        XCTAssertEqual(MuscleWeeklySets.setsPerWeek(count: 9, in: week, firstDataDate: nil, now: now), 9)
-        let fourWeeks = now.addingTimeInterval(-28 * day) ... now
-        XCTAssertEqual(MuscleWeeklySets.setsPerWeek(count: 20, in: fourWeeks, firstDataDate: nil, now: now), 5)
-        // History began a week before the range ends: that month's sets aren't spread over weeks
-        // nobody had trained yet.
-        XCTAssertEqual(
-            MuscleWeeklySets.setsPerWeek(count: 20, in: fourWeeks, firstDataDate: now.addingTimeInterval(-7 * day), now: now),
-            20
-        )
-    }
 }
 
 // MARK: - Weekly streak

@@ -18,7 +18,7 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
         case let .exercise(exercise): return "exercise\(String(describing: exercise.id))"
         case let .measurementDetail(type): return "measurementDetail\(type.rawValue)"
         case let .summaryStat(metric, window): return "summaryStat\(metric.rawValue)\(window?.rawValue ?? "")"
-        case let .muscleGroupDetail(group, window): return "muscleGroupDetail\(group.rawValue)\(window.rawValue)"
+        case let .muscleGroupsOverview(window): return "muscleGroupsOverview\(window?.rawValue ?? "")"
         case let .template(template): return "template\(String(describing: template.id))"
         case let .workout(workout): return "workout\(String(describing: workout.id))"
         default: return String(describing: self)
@@ -29,10 +29,9 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
          exerciseList,
          measurementDetail(MeasurementEntryType),
          measurements,
-         muscleGroupsOverview,
-         // Carries the window down from Muscle Groups, which carried it from the Summary — the whole
-         // chain reports over one timeframe.
-         muscleGroupDetail(MuscleGroup, TrendWindow),
+         // Like `summaryStat`: nil — the Balance tile — inherits the Summary's window; a highlight card
+         // pins the window it compares over.
+         muscleGroupsOverview(TrendWindow?),
          muscleFocus,
          progressHighlights,
          strength,

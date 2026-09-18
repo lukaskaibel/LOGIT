@@ -54,6 +54,9 @@ struct TemplateEditorScreen: View {
     @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
     /// "Show Details" from the tray's context menus — host-owned for the same reason.
     @State private var exerciseDetailFromTray: Exercise?
+    /// The set groups the template had when this editor opened. Cancel restores exactly this
+    /// composition for an existing template — see `discardChangesThatSurvivedRollback()`.
+    @State private var setGroupOrderOnOpen: [UUID] = []
 
     // MARK: - Parameters
 
@@ -284,6 +287,7 @@ struct TemplateEditorScreen: View {
                 if !isEditingExistingTemplate {
                     database.flagAsTemporary(template)
                 }
+                setGroupOrderOnOpen = template.setGroups.compactMap { $0.id }
                 exerciseSelectionPresentationDetent = template.setGroups.isEmpty ? .medium : .height(BOTTOM_SHEET_SMALL)
             }
             .toolbar {
@@ -325,7 +329,13 @@ struct TemplateEditorScreen: View {
                     }
                     ToolbarItem(placement: .topBarLeading) {
                         Button(NSLocalizedString("cancel", comment: "")) {
-                            database.discardUnsavedChanges()
+                            // Rolls back and then deletes whatever the rollback could not reach —
+                            // see the workout editor's Cancel for the full story.
+                            database.discardEditorChanges(
+                                to: template,
+                                wasAddedInEditor: !isEditingExistingTemplate,
+                                setGroupOrderOnOpen: setGroupOrderOnOpen
+                            )
                             dismiss()
                         }
                     }

@@ -44,6 +44,9 @@ struct WorkoutEditorScreen: View {
     /// (see TemplateEditorScreen).
     @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
     @FocusState private var isNoteFieldFocused: Bool
+    /// The set groups the workout had when this editor opened. Cancel restores exactly this
+    /// composition for an existing workout — see `discardChangesThatSurvivedRollback()`.
+    @State private var setGroupOrderOnOpen: [UUID] = []
 
     private var effortTint: AnyShapeStyle {
         workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom)
@@ -369,7 +372,14 @@ struct WorkoutEditorScreen: View {
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     Button(NSLocalizedString("cancel", comment: "")) {
-                        database.discardUnsavedChanges()
+                        // Rolls back and then deletes whatever the rollback could not reach —
+                        // an exercise created from the tray saves the context, this workout
+                        // included, and a plain rollback would leave it in the user's history.
+                        database.discardEditorChanges(
+                            to: workout,
+                            wasAddedInEditor: isAddingNewWorkout,
+                            setGroupOrderOnOpen: setGroupOrderOnOpen
+                        )
                         dismiss()
                     }
                 }
@@ -382,6 +392,7 @@ struct WorkoutEditorScreen: View {
                 if workout.date == nil {
                     workout.date = .now
                 }
+                setGroupOrderOnOpen = workout.setGroups.compactMap { $0.id }
                 refreshOnChange()
                 exerciseSelectionPresentationDetent = workout.isEmpty ? .medium : .height(BOTTOM_SHEET_SMALL)
             }

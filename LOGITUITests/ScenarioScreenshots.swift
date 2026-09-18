@@ -1859,6 +1859,80 @@ final class ScenarioScreenshots: XCTestCase {
         attachScreen("template_keyboard_04_rest_editor")
     }
 
+    // MARK: - History: Cancel really cancels
+
+    /// History → + → pick an exercise → Cancel. The plain case, where nothing saved the shared
+    /// context in between and the rollback in `discardEditorChanges` does the whole job.
+    func testCancellingANewWorkoutLeavesHistoryEmpty() {
+        let app = launchApp(scenario: "empty")
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 1)
+        waitABit(1)
+
+        let add = app.buttons["addWorkout"]
+        XCTAssertTrue(add.waitForExistence(timeout: 10), "History's + is not reachable")
+        add.tap()
+
+        let exerciseRow = app.staticTexts["Ab Wheel Rollout"].firstMatch
+        XCTAssertTrue(exerciseRow.waitForExistence(timeout: 10), "The exercise tray never listed the library")
+        exerciseRow.tap()
+
+        let cancel = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 5), "The editor has no Cancel")
+        cancel.tap()
+
+        waitABit(2)
+        XCTAssertEqual(app.state, .runningForeground, "The app went away on Cancel")
+        XCTAssertTrue(
+            app.staticTexts["No Workouts"].waitForExistence(timeout: 5),
+            "The cancelled workout was written to history anyway"
+        )
+    }
+
+    /// The same flow, but the exercise is *created* from the tray first — and that is what used to
+    /// break Cancel. `ExerciseEditScreen` saves so the new exercise outlives its own sheet, and that
+    /// save commits the half-built workout with it; the rollback then had nothing left to undo and
+    /// the discarded workout stayed in History, untitled, holding the new exercise.
+    ///
+    /// The new exercise is the user's and must survive; the workout must not.
+    func testCancellingANewWorkoutAfterCreatingAnExerciseLeavesHistoryEmpty() {
+        let app = launchApp(scenario: "empty")
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 1)
+        waitABit(1)
+
+        let add = app.buttons["addWorkout"]
+        XCTAssertTrue(add.waitForExistence(timeout: 10), "History's + is not reachable")
+        add.tap()
+        waitABit(1)
+
+        // The tray's + — Create Exercise, delegated up to the editor.
+        let createExercise = app.buttons["Add"].firstMatch
+        XCTAssertTrue(createExercise.waitForExistence(timeout: 5), "The tray's + is not reachable")
+        createExercise.tap()
+
+        let nameField = app.textFields.firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5), "No name field on the exercise editor")
+        waitABit(1)
+        // The field takes focus on appear — type into the app rather than tapping it, a tap lands
+        // while the sheet is still animating and XCTest calls it unhittable.
+        app.typeText("Cancel Regression Lift")
+        waitABit(1)
+        app.buttons["Save"].firstMatch.tap()
+
+        let cancel = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 5), "The editor has no Cancel")
+        cancel.tap()
+
+        waitABit(2)
+        attachScreen("cancel_after_creating_exercise")
+        XCTAssertEqual(app.state, .runningForeground, "The app went away on Cancel")
+        XCTAssertTrue(
+            app.staticTexts["No Workouts"].waitForExistence(timeout: 5),
+            "The cancelled workout was written to history anyway"
+        )
+    }
+
     /// Captures the whole screen rather than the app's window, keyboard and accessory included.
     private func attachScreen(_ name: String) {
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())

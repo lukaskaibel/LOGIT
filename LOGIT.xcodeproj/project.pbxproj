@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		37660580D342C9B6C82F3C0D /* SearchQueryParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74D43E3AB9B4FC63E39EA400 /* SearchQueryParserTests.swift */; };
+		858BB99EE3614398BEEA57BE /* SearchQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677D1338119F0A7A8CC20432 /* SearchQuery.swift */; };
+		8BA8215D4D0D5BF3B3C4A903 /* SearchQueryParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C3D2D79C951425FBCABA7DB /* SearchQueryParser.swift */; };
+		7EB4DE0E08F89E68D055C583 /* SearchEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D640F148F86600AE0CE77D2 /* SearchEngine.swift */; };
 		005F171320873376FAB84824 /* WeeklyGoalCountPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C105B53B1BD975FE2A396B /* WeeklyGoalCountPill.swift */; };
 		07A5D2C54CA81141164E3D9D /* MuscleGroupsOverviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54FB7DD2DDA0DE70BD366F9C /* MuscleGroupsOverviewScreen.swift */; };
 		09A688DA944843286D5190DB /* HealthKitSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E740E99321E2590B08B80A0 /* HealthKitSyncManager.swift */; };
@@ -372,6 +376,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		74D43E3AB9B4FC63E39EA400 /* SearchQueryParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchQueryParserTests.swift; sourceTree = "<group>"; };
+		677D1338119F0A7A8CC20432 /* SearchQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchQuery.swift; sourceTree = "<group>"; };
+		5C3D2D79C951425FBCABA7DB /* SearchQueryParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchQueryParser.swift; sourceTree = "<group>"; };
+		3D640F148F86600AE0CE77D2 /* SearchEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchEngine.swift; sourceTree = "<group>"; };
 		0258213863A5C9812190A44D /* MuscleBalanceCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleBalanceCalculator.swift; sourceTree = "<group>"; };
 		0400C2E827A4AEAF03BACDC6 /* SnapshotHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SnapshotHelper.swift; sourceTree = "<group>"; };
 		06A7CD832F8CF2FDAB33579C /* WorkoutLiveActivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityManager.swift; sourceTree = "<group>"; };
@@ -796,6 +804,7 @@
 		79E849082A7EA28000C0DF95 /* LOGITTests */ = {
 			isa = PBXGroup;
 			children = (
+				74D43E3AB9B4FC63E39EA400 /* SearchQueryParserTests.swift */,
 				794A8E5E2ACC2162006087EA /* WorkoutImages */,
 				80SE000E2F70CC0100SE000E /* Fixtures */,
 				80SE00092F70CC0100SE0009 /* SetEntryMigrationTests.swift */,
@@ -1259,6 +1268,9 @@
 		801BBD342DF7338A00CDB1FB /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				677D1338119F0A7A8CC20432 /* SearchQuery.swift */,
+				5C3D2D79C951425FBCABA7DB /* SearchQueryParser.swift */,
+				3D640F148F86600AE0CE77D2 /* SearchEngine.swift */,
 				80036CDD2EFEF9CE00B7C7B4 /* FuzzySearchService.swift */,
 				8085497A2EE9A34400761706 /* DefaultExerciseService.swift */,
 				80AA10042F5CAA0200AA1004 /* DefaultTemplateService.swift */,
@@ -1671,6 +1683,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				37660580D342C9B6C82F3C0D /* SearchQueryParserTests.swift in Sources */,
 				79C07B302ABA566E000BF879 /* MeasurementEntryControllerTests.swift in Sources */,
 				794A8E5D2ACC211D006087EA /* TemplateServiceTests.swift in Sources */,
 				792A3FF32AB478F000C6A097 /* DatabaseTests.swift in Sources */,
@@ -1693,6 +1706,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				858BB99EE3614398BEEA57BE /* SearchQuery.swift in Sources */,
+				8BA8215D4D0D5BF3B3C4A903 /* SearchQueryParser.swift in Sources */,
+				7EB4DE0E08F89E68D055C583 /* SearchEngine.swift in Sources */,
 				801BBD692DF7338A00CDB1FB /* Constants.swift in Sources */,
 				801BBD6A2DF7338A00CDB1FB /* MuscleGroupGradientStyle.swift in Sources */,
 				801BBD6B2DF7338A00CDB1FB /* ExerciseVolumeScreen.swift in Sources */,

@@ -794,7 +794,7 @@ final class ScenarioScreenshots: XCTestCase {
         let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
 
         let tray = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(tray.waitForExistence(timeout: 20), "Recorder/tray never presented")
         waitABit(2)
@@ -843,7 +843,7 @@ final class ScenarioScreenshots: XCTestCase {
 
         // Settle-gated tray presentation after the auto-present morph.
         let traySearchField = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 20), "Exercise tray sheet missing after presentation settled")
         waitABit(2)
@@ -914,7 +914,7 @@ final class ScenarioScreenshots: XCTestCase {
         let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
 
         let traySearchField = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 20), "Recorder/tray never presented")
         waitABit(2)
@@ -1030,7 +1030,7 @@ final class ScenarioScreenshots: XCTestCase {
         newTemplateItem.tap()
 
         let traySearchField = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 10), "Template editor tray missing")
         waitABit(2)
@@ -1098,7 +1098,7 @@ final class ScenarioScreenshots: XCTestCase {
         plusButton.tap()
 
         let traySearchField = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 10), "Workout editor tray missing")
         waitABit(2)
@@ -1803,7 +1803,7 @@ final class ScenarioScreenshots: XCTestCase {
         // Only the first few fields are read: every frame is a query of its own, and walking all
         // thirty of the template's fields costs half a minute.
         let setFields = app.textFields.matching(
-            NSPredicate(format: "placeholderValue != %@", "Search in Exercises")
+            NSPredicate(format: "identifier != %@", "exerciseSelectionSearchField")
         )
         let bandBottom = app.frame.height * 0.5
         var fields: [(element: XCUIElement, frame: CGRect)] = []

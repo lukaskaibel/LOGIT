@@ -187,15 +187,28 @@ struct ExerciseSelectionScreen: View {
 
     @ViewBuilder
     private func searchRow(isSmallDetent: Bool) -> some View {
+        // Collapsed, this row IS the tray: the hosts that can collapse it (recorder,
+        // workout editor, template editor) all hide the nav bar, so nothing else on
+        // screen says that this is how an exercise gets into the workout. At rest the
+        // row therefore names the job it performs; expanded, it becomes what it
+        // actually is — a filter over the list below. The hosts that reuse this screen
+        // for Replace / Select Secondary pass a constant `.large` detent, so they never
+        // see the collapsed wording.
+        let fieldTitle = isSmallDetent
+            ? NSLocalizedString("addExercise", comment: "")
+            : NSLocalizedString("searchExercises", comment: "")
         HStack(spacing: 12) {
             HStack(spacing: 5) {
-                Image(systemName: "magnifyingglass")
+                Image(systemName: isSmallDetent ? "plus" : "magnifyingglass")
                     .foregroundStyle(Color.placeholder)
                 TextField(
-                    "Add Exercise",
+                    fieldTitle,
                     text: $searchedText,
-                    prompt: Text(NSLocalizedString("searchExercises", comment: ""))
+                    prompt: Text(fieldTitle)
                 )
+                // The tray's own field. UI tests used to find it by its placeholder,
+                // which now changes with the detent — match this instead.
+                .accessibilityIdentifier("exerciseSelectionSearchField")
                 .focused($textFieldIsFocused)
                 if !searchedText.isEmpty {
                     Button {

@@ -1139,6 +1139,50 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "workout_tray_create_reopened")
     }
 
+    // MARK: - Search
+
+    /// The Search tab reads dates, not just names: typing a month lists the
+    /// workouts from that month and says which month it understood. Also the
+    /// standing guard that the search field is on screen the moment the tab
+    /// opens — it used to stay hidden until the first scroll.
+    func testSearchTabUnderstandsADateQuery() {
+        let app = launchApp(scenario: "many")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 4)
+        waitABit(1)
+
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(
+            searchField.waitForExistence(timeout: 10),
+            "Search tab opened without a search field"
+        )
+        attach(app, "search_01_tab")
+
+        // The seeded history runs to today, so the current month always has
+        // workouts in it — whatever day the suite happens to run.
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate("MMMM")
+        let month = formatter.string(from: Date())
+
+        searchField.tap()
+        searchField.typeText(month)
+        waitABit(2)
+        attach(app, "search_02_month_query")
+
+        XCTAssertTrue(
+            app.staticTexts[month].waitForExistence(timeout: 5),
+            "No chip naming \(month) — the month was searched as text instead of as a date"
+        )
+        // The date chip is plain content, so every button left in the results
+        // list is a workout cell — no reliance on the seeded English names.
+        XCTAssertGreaterThan(
+            app.scrollViews.buttons.count, 0,
+            "A month query returned no workouts"
+        )
+    }
+
     // MARK: - Walkthrough
 
     private func captureMainScreens(

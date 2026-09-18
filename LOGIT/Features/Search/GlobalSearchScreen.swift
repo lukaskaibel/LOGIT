@@ -46,13 +46,23 @@ struct GlobalSearchScreen: View {
     var body: some View {
         NavigationStack {
             Group {
-                if searchText.isEmpty {
+                // Whitespace alone is still an empty search — it used to fall
+                // through and score every exercise against a space.
+                if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     emptySearchView
                 } else {
                     searchResultsView
                 }
             }
-            .searchable(text: $searchText, prompt: NSLocalizedString("searchEverything", comment: ""))
+            // `.always` keeps the field under the title instead of hiding it
+            // until the first scroll. On iOS 26 the search-role tab lifts the
+            // field into the tab bar and ignores the placement; where it does
+            // not, this is the difference between a visible field and none.
+            .searchable(
+                text: $searchText,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: NSLocalizedString("searchEverything", comment: "")
+            )
             .navigationTitle(NSLocalizedString("search", comment: ""))
             .navigationBarTitleDisplayMode(.large)
             .navigationDestination(item: $selectedExercise) { exercise in
@@ -162,7 +172,9 @@ struct GlobalSearchScreen: View {
     }
     
     private var searchResultsView: some View {
-        FetchRequestWrapper(
+        let query = SearchQueryParser().parse(searchText)
+
+        return FetchRequestWrapper(
             Exercise.self,
             sortDescriptors: [SortDescriptor(\.name)]
         ) { allExercises in
@@ -174,43 +186,69 @@ struct GlobalSearchScreen: View {
                     Template.self,
                     sortDescriptors: [SortDescriptor(\.name)]
                 ) { allTemplates in
-                    let filteredExercises = FuzzySearchService.shared.searchExercises(searchText, in: allExercises)
-                    let filteredWorkouts = FuzzySearchService.shared.searchWorkouts(searchText, in: allWorkouts)
-                    let filteredTemplates = FuzzySearchService.shared.searchTemplates(searchText, in: allTemplates)
-                    
+                    let results = SearchEngine.shared.results(
+                        for: query,
+                        exercises: allExercises,
+                        workouts: allWorkouts,
+                        templates: allTemplates
+                    )
+
                     ScrollView {
                         LazyVStack(spacing: SECTION_SPACING) {
-                            // Result type filter
-                            resultTypeSelector
-                            
+                            // What the query was understood to mean. A date
+                            // query can only match workouts, so the type filter
+                            // has nothing left to choose between.
+                            if query.hasDateConstraint {
+                                dateTokenRow(tokens: query.dateTokens)
+                            } else {
+                                resultTypeSelector
+                            }
+
                             // Exercises Section
-                            if shouldShowSection(.exercises) && !filteredExercises.isEmpty {
-                                exercisesSection(exercises: filteredExercises)
+                            if shouldShowSection(.exercises, in: query) && !results.exercises.isEmpty {
+                                exercisesSection(exercises: results.exercises)
                             }
-                            
+
                             // Workouts Section
-                            if shouldShowSection(.workouts) && !filteredWorkouts.isEmpty {
-                                workoutsSection(workouts: filteredWorkouts)
+                            if shouldShowSection(.workouts, in: query) && !results.workouts.isEmpty {
+                                workoutsSection(workouts: results.workouts)
                             }
-                            
+
                             // Templates Section
-                            if shouldShowSection(.templates) && !filteredTemplates.isEmpty {
-                                templatesSection(templates: filteredTemplates)
+                            if shouldShowSection(.templates, in: query) && !results.templates.isEmpty {
+                                templatesSection(templates: results.templates)
                             }
-                            
+
                             // No Results
-                            if noResults(
-                                exercises: filteredExercises,
-                                workouts: filteredWorkouts,
-                                templates: filteredTemplates
-                            ) {
-                                noResultsView
+                            if noResults(results, in: query) {
+                                noResultsView(for: query)
                             }
                         }
                         .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
                     }
                 }
             }
+        }
+    }
+
+    private func dateTokenRow(tokens: [SearchDateToken]) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                ForEach(tokens) { token in
+                    HStack(spacing: 6) {
+                        Image(systemName: "calendar")
+                        Text(token.label())
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .clipShape(Capsule())
+                }
+            }
+            .padding(.horizontal)
         }
     }
     
@@ -365,7 +403,7 @@ struct GlobalSearchScreen: View {
         .buttonStyle(.plain)
     }
     
-    private var noResultsView: some View {
+    private func noResultsView(for query: SearchQuery) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 40))
@@ -373,30 +411,37 @@ struct GlobalSearchScreen: View {
             Text(NSLocalizedString("noSearchResults", comment: ""))
                 .font(.headline)
                 .foregroundStyle(.secondary)
-            Text(String(format: NSLocalizedString("noSearchResultsFor", comment: ""), searchText))
+            Text(String(format: NSLocalizedString("noSearchResultsFor", comment: ""), description(of: query)))
                 .font(.subheadline)
                 .foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 60)
     }
-    
+
     // MARK: - Helper Methods
-    
-    private func shouldShowSection(_ type: SearchResultType) -> Bool {
-        selectedResultType == .all || selectedResultType == type
+
+    /// A date query can only ever match workouts, so the remembered result type
+    /// must not be allowed to hide the one section that has something to show.
+    private func shouldShowSection(_ type: SearchResultType, in query: SearchQuery) -> Bool {
+        guard !query.hasDateConstraint else { return type == .workouts }
+        return selectedResultType == .all || selectedResultType == type
     }
-    
-    private func noResults(
-        exercises: [Exercise],
-        workouts: [Workout],
-        templates: [Template]
-    ) -> Bool {
-        let showingExercises = shouldShowSection(.exercises) && !exercises.isEmpty
-        let showingWorkouts = shouldShowSection(.workouts) && !workouts.isEmpty
-        let showingTemplates = shouldShowSection(.templates) && !templates.isEmpty
-        
+
+    private func noResults(_ results: SearchResults, in query: SearchQuery) -> Bool {
+        let showingExercises = shouldShowSection(.exercises, in: query) && !results.exercises.isEmpty
+        let showingWorkouts = shouldShowSection(.workouts, in: query) && !results.workouts.isEmpty
+        let showingTemplates = shouldShowSection(.templates, in: query) && !results.templates.isEmpty
+
         return !showingExercises && !showingWorkouts && !showingTemplates
+    }
+
+    /// What to quote back in "No results for …" — the date the query resolved to
+    /// rather than the raw words, so "dez 24" reads back as "December 2024".
+    private func description(of query: SearchQuery) -> String {
+        guard query.hasDateConstraint else { return searchText }
+        let dates = query.dateTokens.map { $0.label() }.joined(separator: ", ")
+        return query.text.isEmpty ? dates : "\(query.text) · \(dates)"
     }
 }
 

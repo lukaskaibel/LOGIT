@@ -238,6 +238,7 @@
 		80NEWTEST007 /* EntityExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST008 /* EntityExtensionTests.swift */; };
 		80NEWTEST009 /* ServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00A /* ServicesTests.swift */; };
 		80NEWTEST00B /* WorkoutSharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80NEWTEST00C /* WorkoutSharingTests.swift */; };
+		4D64C42EF340CD6F716D9BA1 /* DatabaseRollbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6028125239E8A2C0B4529320 /* DatabaseRollbackTests.swift */; };
 		80RR00012F80AA0100RR0001 /* Database+RelationshipRepair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */; };
 		80SE00012F70CC0100SE0001 /* SetMeasurementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80SE00022F70CC0100SE0002 /* SetMeasurementType.swift */; };
 		80DG00012F70CC0100DG0001 /* ExerciseDurationGoal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DG00022F70CC0100DG0002 /* ExerciseDurationGoal.swift */; };
@@ -613,6 +614,7 @@
 		80NEWTEST008 /* EntityExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityExtensionTests.swift; sourceTree = "<group>"; };
 		80NEWTEST00A /* ServicesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesTests.swift; sourceTree = "<group>"; };
 		80NEWTEST00C /* WorkoutSharingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSharingTests.swift; sourceTree = "<group>"; };
+		6028125239E8A2C0B4529320 /* DatabaseRollbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseRollbackTests.swift; sourceTree = "<group>"; };
 		80RR00022F80AA0100RR0002 /* Database+RelationshipRepair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Database+RelationshipRepair.swift"; sourceTree = "<group>"; };
 		80SE00022F70CC0100SE0002 /* SetMeasurementType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetMeasurementType.swift; sourceTree = "<group>"; };
 		80DG00022F70CC0100DG0002 /* ExerciseDurationGoal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDurationGoal.swift; sourceTree = "<group>"; };
@@ -813,6 +815,7 @@
 				7F8CD271000D75928FAE0887 /* StatPeriodTests.swift */,
 				80AB10092F15AA0100AB1009 /* RecorderTopSheetModelTests.swift */,
 				80NEWTEST00C /* WorkoutSharingTests.swift */,
+				6028125239E8A2C0B4529320 /* DatabaseRollbackTests.swift */,
 				7959F4CE2ACD8F5B0038B222 /* WorkoutImages.xcassets */,
 				5F7B218CB83CEAEB494355C8 /* WorkoutLiveActivitySnapshotBuilderTests.swift */,
 				EF956F5D14BBB78133BD528A /* ExerciseMergeServiceTests.swift */,
@@ -1687,6 +1690,7 @@
 				80NEWTEST007 /* EntityExtensionTests.swift in Sources */,
 				80NEWTEST009 /* ServicesTests.swift in Sources */,
 				80NEWTEST00B /* WorkoutSharingTests.swift in Sources */,
+				4D64C42EF340CD6F716D9BA1 /* DatabaseRollbackTests.swift in Sources */,
 				6A45A79A5D89B951F7726DBD /* WorkoutLiveActivitySnapshotBuilderTests.swift in Sources */,
 				85709CDA5A20D6B7D9C23487 /* ExerciseMergeServiceTests.swift in Sources */,
 			);

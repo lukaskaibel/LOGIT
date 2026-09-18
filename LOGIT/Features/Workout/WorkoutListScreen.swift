@@ -122,6 +122,7 @@ struct WorkoutListScreen: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityIdentifier("addWorkout")
                 }
             }
             .sheet(isPresented: $isShowingFilters) {

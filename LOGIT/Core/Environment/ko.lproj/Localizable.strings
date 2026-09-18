@@ -72,11 +72,13 @@
 "groupIndexOfTotal" = "%1$d / %2$d";
 "previousBest" = "이전 최고";
 "lastBest" = "최근 최고";
-"lastBestInfo" = "이 운동을 4주 이상 기록하지 않았을 때 표시됩니다. 가장 최근 세션에서의 최고 기록입니다.";
+"lastBestInfo" = "이 운동을 4주 넘게 기록하지 않았을 때 표시됩니다. 아무리 오래전이더라도, 마지막으로 기록한 세션에서의 최고 기록입니다.";
 "newRecord" = "새 기록";
-"currentBestInfo" = "현재 최고는 최근 4주 동안의 최고 값입니다. 추세는 그 값을 달성하기 전 4주 동안의 최고보다 얼마나 높은지 보여줍니다.";
-"currentBestComparisonInfo" = "현재 최고(오른쪽)는 최근 4주 동안의 최고 값입니다. 배지는 왼쪽에 표시된 기간의 최고와 어떻게 비교되는지 보여줍니다. 스크롤하여 원하는 기간과 비교하세요.";
-"averageComparisonInfo" = "왼쪽은 화면에 표시된 기간 바로 앞의 같은 길이의 기간입니다. 배지는 표시된 기간(오른쪽)이 이와 어떻게 비교되는지 보여줍니다.";
+"currentBestInfo" = "현재 최고는 최근 4주 동안의 가장 높은 값입니다. 옆의 추세는 그 값을, 기록을 세운 날 직전 4주 동안의 최고와 비교합니다.";
+"currentBestComparisonInfo" = "오른쪽은 현재 최고, 즉 최근 4주 동안의 가장 높은 값입니다. 왼쪽은 차트에 보이는 기간의 최고이며, 그 사이의 배지가 둘을 비교해 보여줍니다. 차트를 스크롤하면 다른 어떤 기간과도 비교할 수 있습니다.";
+/* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
+"averageComparisonInfo" = "오른쪽은 지금 차트에 보이는 기간입니다. 왼쪽은 그 바로 앞의 같은 길이의 기간이며, 그 사이의 배지가 둘을 비교해 보여줍니다.";
+"periodAverageComparisonInfo" = "오른쪽은 현재 기간입니다. 왼쪽은 차트에 보이는 기간 중 이미 끝난 기간들의 평균(점선)이며, 그 사이의 배지가 둘을 비교해 보여줍니다.";
 "currentWorkout" = "현재 운동";
 
 // MARK: - D
@@ -867,7 +869,7 @@
 /* Estimated 1RM (e1RM) */
 "e1RM" = "e1RM";
 "estimatedOneRepMax" = "예상 1RM";
-"e1RMInfo" = "예상 1RM: 중량과 반복 횟수로 계산한, 한 번에 들 수 있을 것으로 추정되는 최대 중량입니다(Epley 공식). 이 공식은 낮은 반복 횟수에서만 정확하므로 12회를 초과하는 세트는 집계되지 않습니다.";
+"e1RMInfo" = "1RM(1회 최대 중량)은 딱 한 번만 들 수 있는 가장 무거운 중량을 뜻합니다. 직접 도전하지 않아도, LOGIT이 세트의 중량과 반복 횟수를 Epley 공식에 넣어 추정합니다. 이 추정값을 e1RM이라고 합니다. 반복 횟수가 적을 때만 정확하기 때문에 12회를 넘는 세트는 계산에서 제외됩니다.";
 "higherMaxE1RMThisMonthThanLastMonth" = "이번 달 예상 1RM이 지난달보다 높습니다.";
 "lowerMaxE1RMThisMonthThanLastMonth" = "이번 달 예상 1RM이 지난달보다 낮습니다.";
 "higherMaxE1RMThisYearThanLastYear" = "올해 예상 1RM이 작년보다 높습니다.";
@@ -875,7 +877,7 @@
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "세트 볼륨";
-"setVolumeInfo" = "세트 볼륨: 한 세트의 중량 × 반복 횟수입니다. 단일 세트 최고 기록을 추적하며, 총 볼륨과 달리 한 세트에서 더 무거운 중량을 들거나 반복 횟수를 늘릴 때만 증가합니다.";
+"setVolumeInfo" = "세트 볼륨은 한 세트의 중량에 그 세트의 반복 횟수를 곱한 값입니다. 각 점은 그날의 최고 단일 세트입니다. 총 볼륨과 달리 한 세트 안에서 더 무거운 중량을 들거나 반복을 늘릴 때만 올라가며, 세트 수를 늘리는 것만으로는 오르지 않습니다.";
 "higherMaxSetVolumeThisMonthThanLastMonth" = "이번 달 최고 세트 볼륨이 지난달보다 높습니다.";
 "lowerMaxSetVolumeThisMonthThanLastMonth" = "이번 달 최고 세트 볼륨이 지난달보다 낮습니다.";
 "higherMaxSetVolumeThisYearThanLastYear" = "올해 최고 세트 볼륨이 작년보다 높습니다.";
@@ -883,18 +885,18 @@
 
 /* Metric detail "About" sections */
 "aboutMetric" = "%@ 정보";
-"weightInfo" = "하루 중 한 세트에서 들어 올린 가장 무거운 무게입니다. 시간이 지나며 더 무거운 무게를 드는 것은 근력 향상의 가장 직접적인 신호입니다.";
-"repetitionsInfo" = "하루 중 한 세트에서 수행한 최다 반복 횟수입니다. 같은 무게로 더 많이 반복하면 근지구력이 향상되며, 이는 또 다른 발전 방법입니다.";
-"volumeInfo" = "볼륨은 움직인 총 무게로, 무게 × 반복 횟수를 기간 내 모든 세트에 걸쳐 합산한 값입니다. 볼륨이 많을수록 총 운동량이 많다는 뜻이며, 근육 성장의 핵심 요소입니다. 배지는 이 기간을 표시된 기간의 평균(점선)과 비교합니다.";
-"setsInfo" = "세트는 이 운동에서 기록한 작업 세트 수로, 실제로 완료한 세트만 계산합니다. 충분한 세트를 수행하는 것이 근력과 근육 성장의 핵심 요소입니다. 차트는 최근 기간별 세트 수를 보여주며, 배지는 이 기간을 그 평균(점선)과 비교합니다.";
+"weightInfo" = "각 점은 그날 한 세트에서 들어 올린 가장 무거운 중량입니다. 시간이 지나며 더 무거운 중량을 드는 것은 근력이 늘고 있다는 가장 직접적인 신호입니다.";
+"repetitionsInfo" = "각 점은 그날 한 세트에서 수행한 가장 많은 반복 횟수입니다. 같은 중량으로 더 많이 반복하면 근지구력이 좋아지며, 이 또한 발전하는 한 가지 방법입니다.";
+"volumeInfo" = "볼륨은 움직인 중량의 총합입니다. LOGIT은 세트마다 중량에 반복 횟수를 곱한 뒤, 해당 기간의 모든 세트를 더합니다. 볼륨이 많을수록 더 많은 운동을 했다는 뜻이며, 이는 근육 성장의 주요 요인 중 하나입니다. 점선은 차트에 보이는 기간 중 이미 끝난 기간들의 평균이고, 배지는 이 기간이 그 평균과 어떻게 비교되는지 보여줍니다.";
+"setsInfo" = "세트는 연달아 수행하는 한 묶음의 반복을 말합니다. 여기서는 이 운동에서 실제로 완료한 세트만 계산하며, 비워 둔 세트는 포함되지 않습니다. 제대로 힘든 세트를 충분한 수만큼 하는 것은 근력과 근육 성장의 주요 요인 중 하나입니다. 점선은 차트에 보이는 기간 중 이미 끝난 기간들의 평균이고, 배지는 이 기간이 그 평균과 어떻게 비교되는지 보여줍니다.";
 
 "progressMetric" = "진행 지표";
 
 "maxWeight" = "최대 중량";
 "maxReps" = "최대 횟수";
 
-"metricInfoWeight" = "한 세트에서 들어 올린 가장 무거운 중량 — 횟수는 반영되지 않습니다.";
-"metricInfoReps" = "한 세트에서 수행한 가장 많은 횟수 — 중량은 반영되지 않습니다.";
+"metricInfoWeight" = "한 세트에서 들어 올린 가장 무거운 중량입니다. 반복 횟수는 따지지 않습니다.";
+"metricInfoReps" = "한 세트에서 수행한 가장 많은 반복 횟수입니다. 중량은 따지지 않습니다.";
 "tapForMetricInfo" = "탭하여 세부 정보를 확인하고 지표를 전환하세요.";
 "personalRecord" = "개인 기록";
 "personalRecordShort" = "신기록";
@@ -912,9 +914,9 @@
 "volumeVsLastTime" = "볼륨 비교(지난번)";
 "thisWorkout" = "이번 워크아웃";
 "firstTimeForThisWorkout" = "이 워크아웃은 이번이 처음입니다. 앞으로의 세션은 이번 기록과 비교됩니다.";
-"workoutPRInfo" = "개인 기록은 이번 워크아웃의 세트가 그 이전 모든 워크아웃의 최고 중량, 최다 횟수 또는 추정 1RM을 넘어섰다는 뜻입니다. 이후에 경신되더라도 그날의 기록으로 남습니다. 여러 지표가 동시에 경신되면 하나의 기록으로 집계되며, 가장 구체적인 지표가 카드를 대표하고 나머지는 함께 표시됩니다.";
+"workoutPRInfo" = "개인 기록은 이번 워크아웃의 어떤 세트가 이전 모든 워크아웃에서의 최고 중량, 최다 반복 횟수, 또는 최고 e1RM(한 번에 들 수 있는 최대 중량의 추정값)을 넘어섰다는 뜻입니다. 나중에 경신하더라도 그날의 기록으로 남습니다. 여러 항목이 한꺼번에 좋아지면 묶어서 하나의 기록으로 셉니다. 가장 확실한 항목이 카드를 대표합니다. 실제로 든 중량이 추정값보다 앞서고, 추정값이 반복 횟수보다 앞섭니다. 나머지는 함께 표시됩니다.";
 "alsoARecord" = "또 하나의 기록 · %@";
-"workoutTrendInfo" = "각 운동의 추세는 이번 워크아웃에서 진전 지표의 최고 값을 그 이전 4주간의 최고 기록과 비교합니다 — 아래 운동 배지와 같은 비교입니다.";
+"workoutTrendInfo" = "운동마다 진전 지표가 있습니다. 중량이나 e1RM처럼 그 운동을 평가하는 값입니다. 추세는 이번 워크아웃에서 도달한 최고 값을 직전 4주간의 최고 기록과 비교합니다. 아래 운동 옆에 붙은 배지와 같은 비교입니다.";
 "workoutVolumeCompareInfo" = "총 볼륨(각 세트의 중량 × 횟수)을 지난번 같은 워크아웃과 비교합니다.";
 "improvedCount" = "%d개 향상";
 
@@ -932,11 +934,11 @@
 "rps" = "회";
 "average" = "평균";
 "volumePerSet" = "세트당 볼륨";
-"workoutStatCompareRecentInfo" = "트렌드는 이번 워크아웃을 최근 워크아웃 %d회의 평균과 비교합니다. 막대는 그 워크아웃들을 보여주며, 오른쪽의 강조된 막대가 이번 워크아웃입니다.";
-"workoutVolumeAboutInfo" = "볼륨은 워크아웃에서 움직인 총 무게입니다 — 무게 × 반복 횟수를 모든 세트에 걸쳐 합한 값. 워크아웃 간 비교하면 세션에 담긴 운동량을 알 수 있습니다.";
-"workoutDurationAboutInfo" = "지속 시간은 워크아웃 시작부터 종료까지의 시간입니다. 길거나 짧다고 그 자체로 좋거나 나쁜 것은 아닙니다 — 볼륨과 함께 보면 훈련 밀도를 알 수 있습니다.";
-"workoutSetsAboutInfo" = "워크아웃에 기록된 세트 수 — 바벨 무게와 무관하게 세션에서 얼마나 했는지 보여주는 간단한 지표입니다.";
-"workoutRepsAboutInfo" = "워크아웃에 기록된 모든 반복 횟수를 모든 세트에 걸쳐 합한 값입니다. 세트 수, 볼륨과 함께 세션의 운동량을 설명합니다.";
+"workoutStatCompareRecentInfo" = "추세는 이번 워크아웃을 최근 워크아웃 %d회의 평균과 비교합니다. 각 막대가 그 워크아웃들이며, 오른쪽의 강조된 막대가 이번 워크아웃입니다.";
+"workoutVolumeAboutInfo" = "볼륨은 한 번의 워크아웃에서 움직인 중량의 총합입니다. LOGIT은 세트마다 중량에 반복 횟수를 곱한 뒤 모든 세트를 더합니다. 워크아웃끼리 비교하면 각 세션에 담긴 운동량을 알 수 있습니다.";
+"workoutDurationAboutInfo" = "지속 시간은 워크아웃을 시작해서 마칠 때까지의 시간입니다. 길거나 짧다는 것만으로 좋고 나쁨이 정해지지는 않습니다. 볼륨과 함께 보면 그 시간 동안 얼마나 많은 운동을 했는지 알 수 있습니다.";
+"workoutSetsAboutInfo" = "워크아웃에 기록한 세트의 수입니다. 세트는 연달아 수행하는 한 묶음의 반복이므로, 중량이 얼마나 무거웠는지와 관계없이 그 세션에서 얼마나 했는지를 보여주는 간단한 지표입니다.";
+"workoutRepsAboutInfo" = "워크아웃에 기록한 모든 반복 횟수를 전체 세트에 걸쳐 더한 값입니다. 세트 수, 볼륨과 함께 그 세션의 운동량을 설명합니다.";
 "period" = "기간";
 "weeklyGoal" = "주간 목표";
 "weeklyGoalReached" = "목표 달성";
@@ -1035,7 +1037,7 @@
 "yearCrossingHeadline" = "%@년이 벌써 %@년을 넘어섰어요";
 "monthsToSpare" = "%d개월 남기고";
 "monthToSpare" = "1개월 남기고";
-"highlightsInfo" = "마일스톤과 기록은 선택한 기간을 다룹니다. 추세는 그 기간을 직전 기간과 비교합니다.";
+"highlightsInfo" = "마일스톤과 기록은 선택한 기간에서 가져옵니다. 추세는 그 기간을 바로 앞 기간과 비교합니다.";
 "streak" = "연속 기록";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
@@ -1060,9 +1062,9 @@
 "measurementType.weightAndDistance" = "무게와 거리";
 "measurementTypeChangeInfo" = "기존 세트는 기록된 값을 유지합니다. 새 세트만 새 측정 방식을 사용합니다.";
 
-"metricInfoDuration" = "이 운동에서 기록된 가장 긴 시간입니다.";
-"metricInfoDurationFaster" = "이 운동에서 기록된 가장 빠른 시간입니다.";
-"metricInfoDistance" = "이 운동에서 기록된 가장 긴 거리입니다.";
+"metricInfoDuration" = "이 운동의 한 세트에서 기록한 가장 긴 시간입니다.";
+"metricInfoDurationFaster" = "이 운동의 한 세트에서 기록한 가장 빠른 시간입니다.";
+"metricInfoDistance" = "이 운동의 한 세트에서 기록한 가장 긴 거리입니다.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "운동당";
 "perWorkoutBasis" = "운동당";
@@ -1085,7 +1087,7 @@
 
 // MARK: - Calorie Estimates
 
-"calorieEstimateExplanation" = "LOGIT은 운동 밀도와 체중으로 활동 칼로리를 추정합니다. 항상 같은 방식으로 계산하므로 운동 간 비교가 의미 있게 유지됩니다. 소모량은 개인차가 있으니 절대값은 참고용으로 보세요.";
+"calorieEstimateExplanation" = "LOGIT은 체중과 운동 밀도(워크아웃 시간 중 실제로 운동한 비율)로 활동 칼로리를 추정합니다. 계산 방식이 항상 같기 때문에 워크아웃끼리 비교하는 것은 의미가 있습니다. 실제 소모량은 사람마다 다르므로 숫자 자체는 대략적인 기준으로 봐 주세요.";
 "calorieEstimateHealthNote" = "활동 칼로리로 건강 앱에 동기화됩니다. 추정은 설정에서 끌 수 있습니다.";
 "calorieEstimates" = "칼로리 추정";
 "calorieEstimatesDescription" = "기록한 세트와 체중으로 활동 칼로리를 추정합니다. 운동 상세에 표시되고 건강 앱 동기화에 포함됩니다.";
@@ -1145,7 +1147,7 @@
 "strengthShowAllLifts" = "%d개 종목 모두 보기";
 "strengthAxisLeastDeclined" = "가장 작은 감소";
 "showLess" = "간단히 보기";
-"strengthInfo" = "선택한 기간 동안 각 운동의 최고 예상 1RM을 그 이전 기간과 비교해 세트 수로 가중 평균한 값입니다. 유산소와 맨몸 세트는 1RM이 없어 포함되지 않습니다.";
+"strengthInfo" = "근력은 이 추정값들을 하나의 숫자로 묶은 것입니다. 운동마다 선택한 기간의 최고 e1RM을 직전 기간의 최고 e1RM과 비교한 뒤, 그 변화들을 모두 평균합니다. 세트를 많이 한 운동일수록 결과에 더 크게 반영됩니다. 유산소와 맨몸 세트는 e1RM이 없으므로 포함되지 않습니다.";
 
 
 // MARK: - Data Export

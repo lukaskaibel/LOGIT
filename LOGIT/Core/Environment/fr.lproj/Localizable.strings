@@ -1158,7 +1158,6 @@
 "exportFailedMessage" = "Tes données n'ont pas pu être écrites dans un fichier. Réessaie.";
 
 "note" = "Note";
-"howHardWasIt" = "C'était difficile ?";
 "workoutNotePrompt" = "Qu'est-ce qui a marché ? Que changer ?";
 "effort" = "Effort";
 "effortEasy" = "Facile";
@@ -1166,7 +1165,19 @@
 "effortHard" = "Difficile";
 "effortAllOut" = "Maximal";
 "notRated" = "Non évalué";
-"effortOptional" = "Facultatif — alimente la charge d'entraînement dans Fitness.";
+"rateYourEffort" = "Évaluez votre effort";
+"addEffort" = "Ajouter l'effort";
+"effortDescriptions" = "Descriptions de l'effort";
+"effortSelectDescription" = "Sélectionne la description qui correspond le mieux à l'ensemble de la séance.";
+"effortSkipFootnote" = "Ignorer cette séance la retire de ta charge d'entraînement dans Fitness.";
+"effortEasyFeel" = "Pas exigeant";
+"effortEasyEndurance" = "Tu pourrais continuer longtemps";
+"effortModerateFeel" = "Tu travailles, mais confortablement";
+"effortModerateEndurance" = "Tu pourrais continuer un moment";
+"effortHardFeel" = "Exigeant et inconfortable";
+"effortHardEndurance" = "Tu ne tiendrais pas longtemps";
+"effortAllOutFeel" = "Extrêmement inconfortable";
+"effortAllOutEndurance" = "Tu pourrais à peine continuer";
 "lastTime" = "La dernière fois";
 "previewWorkoutNote" = "Le développé couché passait facile à 80 — 82,5 la prochaine fois. Garder les coudes serrés au développé militaire.";
 "setsIncompleteWillNotBeSaved" = "%d séries incomplètes — elles ne seront pas enregistrées.";

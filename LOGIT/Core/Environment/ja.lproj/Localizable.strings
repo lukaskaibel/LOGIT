@@ -1158,7 +1158,6 @@
 "exportFailedMessage" = "データをファイルに書き込めませんでした。もう一度お試しください。";
 
 "note" = "メモ";
-"howHardWasIt" = "きつさはどれくらい？";
 "workoutNotePrompt" = "良かった点は？次に変える点は？";
 "effort" = "運動強度";
 "effortEasy" = "楽";
@@ -1166,7 +1165,19 @@
 "effortHard" = "きつい";
 "effortAllOut" = "全力";
 "notRated" = "未評価";
-"effortOptional" = "任意 — フィットネスのトレーニング負荷に反映されます。";
+"rateYourEffort" = "運動強度を評価";
+"addEffort" = "運動強度を追加";
+"effortDescriptions" = "運動強度の説明";
+"effortSelectDescription" = "ワークアウト全体に最も当てはまる説明を選択してください。";
+"effortSkipFootnote" = "このワークアウトをスキップすると、フィットネスのトレーニング負荷から除外されます。";
+"effortEasyFeel" = "きつくない";
+"effortEasyEndurance" = "長く続けられる";
+"effortModerateFeel" = "動いているが余裕がある";
+"effortModerateEndurance" = "しばらく続けられる";
+"effortHardFeel" = "きつくて苦しい";
+"effortHardEndurance" = "長くは続けられない";
+"effortAllOutFeel" = "非常に苦しい";
+"effortAllOutEndurance" = "ほとんど続けられない";
 "lastTime" = "前回";
 "previewWorkoutNote" = "ベンチは80で余裕だった。次は82.5へ。ショルダープレスは肘を締める。";
 "setsIncompleteWillNotBeSaved" = "未入力のセットが%d件 — 保存されません。";

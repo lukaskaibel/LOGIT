@@ -1659,3 +1659,59 @@ final class DataArchiveServiceTests: XCTestCase {
         XCTAssertEqual(DataArchiveService.filename(for: date), "LOGIT-Backup-2026-08-12.json")
     }
 }
+
+// MARK: - PersonalRecordCountIndex Tests
+
+/// The History list reads its "n PR" counts from `PersonalRecordCountIndex`, which walks the whole
+/// history once, while a workout's own detail screen reads them from
+/// `WorkoutProgressReport.compute`, which rescans one workout's exercises. Two ways to the same
+/// number is one way to drift, so this pins them together over the preview history — which has
+/// repeated sessions of the same exercises, a superset, and workouts sharing a day.
+@MainActor
+final class PersonalRecordCountIndexTests: XCTestCase {
+
+    func testIndexAgreesWithThePerWorkoutReport() async {
+        let database = Database(isPreview: true)
+        let workouts = database.fetch(Workout.self) as! [Workout]
+        XCTAssertFalse(workouts.isEmpty, "The preview database should carry a history to compare over")
+
+        let counts = await PersonalRecordCountIndex.build(database: database)
+
+        var totalRecords = 0
+        for workout in workouts {
+            let expected = WorkoutProgressReport.compute(for: workout, database: database)
+                .exerciseRecords.count
+            totalRecords += expected
+            XCTAssertEqual(
+                counts[workout.objectID] ?? 0,
+                expected,
+                "Record count disagrees for \(workout.name ?? "unnamed") on \(workout.date?.description ?? "no date")"
+            )
+        }
+        XCTAssertGreaterThan(totalRecords, 0, "A history with no records at all would prove nothing")
+    }
+
+    /// Repeats the comparison over fresh preview databases: the seeded values are randomised, so
+    /// one run only samples one history — and the object-ID churn this pins down (a save turning a
+    /// workout's temporary ID permanent halfway through the walk) only bites some of the time.
+    func testIndexAgreesAcrossRepeatedSeeds() async {
+        for attempt in 0 ..< 8 {
+            let database = Database(isPreview: true)
+            let workouts = database.fetch(Workout.self) as! [Workout]
+            let counts = await PersonalRecordCountIndex.build(database: database)
+            for workout in workouts {
+                XCTAssertEqual(
+                    counts[workout.objectID] ?? 0,
+                    WorkoutProgressReport.compute(for: workout, database: database).exerciseRecords.count,
+                    "Seed \(attempt): record count disagrees for \(workout.name ?? "unnamed")"
+                )
+            }
+        }
+    }
+
+    func testWorkoutsWithoutRecordsAreAbsentRatherThanZero() async {
+        let database = Database(isPreview: true)
+        let counts = await PersonalRecordCountIndex.build(database: database)
+        XCTAssertFalse(counts.values.contains(0), "Only workouts that set a record belong in the index")
+    }
+}

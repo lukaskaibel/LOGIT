@@ -76,27 +76,8 @@ struct PeriodHistoryChart: View {
         let selectedBucket = selectedDate.flatMap { nearestBucket(to: $0) }
         scrollableIfNeeded(
             Chart {
-                if let selectedBucket {
-                    RuleMark(x: .value("Selected", selectedBucket.date, unit: period.calendarComponent))
-                        .foregroundStyle(Color.label.opacity(0.35))
-                        .lineStyle(StrokeStyle(lineWidth: 2))
-                        .annotation(
-                            position: annotationPosition(for: selectedBucket),
-                            overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
-                        ) {
-                            annotationCard(for: selectedBucket)
-                        }
-                }
                 ForEach(buckets) { bucket in
-                    BarMark(
-                        x: .value("Period", bucket.date, unit: period.calendarComponent),
-                        y: .value(valueLabel, bucket.value),
-                        width: .ratio(0.6)
-                    )
-                    .foregroundStyle(barStyle(for: bucket, selected: selectedBucket))
-                    .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-                    // A tapped bar stays lit; every other bar goes quiet while one is inspected.
-                    .opacity(selectedBucket == nil || selectedBucket?.id == bucket.id ? 1.0 : 0.4)
+                    bar(for: bucket, selected: selectedBucket)
                 }
                 // The visible window's average, as a dashed reference the current bar reads against —
                 // moving with the header as the chart scrolls. Drawn last so it sits above the bars.
@@ -166,6 +147,35 @@ struct PeriodHistoryChart: View {
         }
     }
 
+    // MARK: - Marks
+
+    /// One bucket's bar, and — for the inspected one — the card that names it.
+    ///
+    /// The coloured bar *is* the selection indicator, and it carries the card itself. A rule mark
+    /// used to stand in for it, which left a grey stalk sticking up out of the bar and hung the card
+    /// at the top of the plot rather than over the thing it described. Colour against gray already
+    /// says which bar is being read, and this is the same idiom as every other bar chart in the app.
+    @ChartContentBuilder
+    private func bar(for bucket: Bucket, selected: Bucket?) -> some ChartContent {
+        let mark = BarMark(
+            x: .value("Period", bucket.date, unit: period.calendarComponent),
+            y: .value(valueLabel, bucket.value),
+            width: .ratio(0.6)
+        )
+        .foregroundStyle(barStyle(for: bucket, selected: selected))
+        .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+        if selected?.id == bucket.id {
+            mark.annotation(
+                position: annotationPosition(for: bucket),
+                overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
+            ) {
+                annotationCard(for: bucket)
+            }
+        } else {
+            mark
+        }
+    }
+
     // MARK: - Selection
 
     /// The bucket whose bar sits nearest the raw selection point — snaps the tap/drag onto a bar.
@@ -173,13 +183,15 @@ struct PeriodHistoryChart: View {
         buckets.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }
     }
 
-    /// The current bar keeps its highlight; the inspected past bar lights up white, the rest stay the
-    /// quiet fill — the opacity dim (applied on the mark) does the rest. Matches the workout stat
-    /// screen's bars so the inspect gesture reads the same everywhere.
+    /// At rest the current period wears the chart's colour and the completed periods stay the quiet
+    /// gray fill. Inspecting moves that colour onto the bar being read — including off the current
+    /// bar, so exactly one bar is ever coloured and the rest of the chart is gray. Matches the
+    /// workout stat screen's bars so the inspect gesture reads the same everywhere.
     private func barStyle(for bucket: Bucket, selected: Bucket?) -> AnyShapeStyle {
-        if bucket.isCurrent { return currentBarStyle }
-        if selected?.id == bucket.id { return AnyShapeStyle(Color.label) }
-        return AnyShapeStyle(Color.fill)
+        if let selected {
+            return selected.id == bucket.id ? currentBarStyle : AnyShapeStyle(Color.fill)
+        }
+        return bucket.isCurrent ? currentBarStyle : AnyShapeStyle(Color.fill)
     }
 
     /// Hang the card leading when the inspected bar sits in the right third, trailing in the left

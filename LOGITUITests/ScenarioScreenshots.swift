@@ -794,7 +794,7 @@ final class ScenarioScreenshots: XCTestCase {
         let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
 
         let tray = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(tray.waitForExistence(timeout: 20), "Recorder/tray never presented")
         waitABit(2)
@@ -843,7 +843,7 @@ final class ScenarioScreenshots: XCTestCase {
 
         // Settle-gated tray presentation after the auto-present morph.
         let traySearchField = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 20), "Exercise tray sheet missing after presentation settled")
         waitABit(2)
@@ -914,7 +914,7 @@ final class ScenarioScreenshots: XCTestCase {
         let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
 
         let traySearchField = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 20), "Recorder/tray never presented")
         waitABit(2)
@@ -1030,7 +1030,7 @@ final class ScenarioScreenshots: XCTestCase {
         newTemplateItem.tap()
 
         let traySearchField = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 10), "Template editor tray missing")
         waitABit(2)
@@ -1098,7 +1098,7 @@ final class ScenarioScreenshots: XCTestCase {
         plusButton.tap()
 
         let traySearchField = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 10), "Workout editor tray missing")
         waitABit(2)
@@ -1137,6 +1137,50 @@ final class ScenarioScreenshots: XCTestCase {
             "Create Exercise sheet could not be reopened — stuck sheet binding"
         )
         attach(app, "workout_tray_create_reopened")
+    }
+
+    // MARK: - Search
+
+    /// The Search tab reads dates, not just names: typing a month lists the
+    /// workouts from that month and says which month it understood. Also the
+    /// standing guard that the search field is on screen the moment the tab
+    /// opens — it used to stay hidden until the first scroll.
+    func testSearchTabUnderstandsADateQuery() {
+        let app = launchApp(scenario: "many")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 4)
+        waitABit(1)
+
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(
+            searchField.waitForExistence(timeout: 10),
+            "Search tab opened without a search field"
+        )
+        attach(app, "search_01_tab")
+
+        // The seeded history runs to today, so the current month always has
+        // workouts in it — whatever day the suite happens to run.
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate("MMMM")
+        let month = formatter.string(from: Date())
+
+        searchField.tap()
+        searchField.typeText(month)
+        waitABit(2)
+        attach(app, "search_02_month_query")
+
+        XCTAssertTrue(
+            app.staticTexts[month].waitForExistence(timeout: 5),
+            "No chip naming \(month) — the month was searched as text instead of as a date"
+        )
+        // The date chip is plain content, so every button left in the results
+        // list is a workout cell — no reliance on the seeded English names.
+        XCTAssertGreaterThan(
+            app.scrollViews.buttons.count, 0,
+            "A month query returned no workouts"
+        )
     }
 
     // MARK: - Walkthrough
@@ -1961,7 +2005,7 @@ final class ScenarioScreenshots: XCTestCase {
         // Only the first few fields are read: every frame is a query of its own, and walking all
         // thirty of the template's fields costs half a minute.
         let setFields = app.textFields.matching(
-            NSPredicate(format: "placeholderValue != %@", "Search in Exercises")
+            NSPredicate(format: "identifier != %@", "exerciseSelectionSearchField")
         )
         let bandBottom = app.frame.height * 0.5
         var fields: [(element: XCUIElement, frame: CGRect)] = []
@@ -2015,6 +2059,80 @@ final class ScenarioScreenshots: XCTestCase {
         XCTAssertTrue(restEditorCaption.waitForExistence(timeout: 5), "⏱ didn't open the rest editor")
         waitABit(1)
         attachScreen("template_keyboard_04_rest_editor")
+    }
+
+    // MARK: - History: Cancel really cancels
+
+    /// History → + → pick an exercise → Cancel. The plain case, where nothing saved the shared
+    /// context in between and the rollback in `discardEditorChanges` does the whole job.
+    func testCancellingANewWorkoutLeavesHistoryEmpty() {
+        let app = launchApp(scenario: "empty")
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 1)
+        waitABit(1)
+
+        let add = app.buttons["addWorkout"]
+        XCTAssertTrue(add.waitForExistence(timeout: 10), "History's + is not reachable")
+        add.tap()
+
+        let exerciseRow = app.staticTexts["Ab Wheel Rollout"].firstMatch
+        XCTAssertTrue(exerciseRow.waitForExistence(timeout: 10), "The exercise tray never listed the library")
+        exerciseRow.tap()
+
+        let cancel = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 5), "The editor has no Cancel")
+        cancel.tap()
+
+        waitABit(2)
+        XCTAssertEqual(app.state, .runningForeground, "The app went away on Cancel")
+        XCTAssertTrue(
+            app.staticTexts["No Workouts"].waitForExistence(timeout: 5),
+            "The cancelled workout was written to history anyway"
+        )
+    }
+
+    /// The same flow, but the exercise is *created* from the tray first — and that is what used to
+    /// break Cancel. `ExerciseEditScreen` saves so the new exercise outlives its own sheet, and that
+    /// save commits the half-built workout with it; the rollback then had nothing left to undo and
+    /// the discarded workout stayed in History, untitled, holding the new exercise.
+    ///
+    /// The new exercise is the user's and must survive; the workout must not.
+    func testCancellingANewWorkoutAfterCreatingAnExerciseLeavesHistoryEmpty() {
+        let app = launchApp(scenario: "empty")
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 30), "Tab bar never appeared")
+        tapTab(app, at: 1)
+        waitABit(1)
+
+        let add = app.buttons["addWorkout"]
+        XCTAssertTrue(add.waitForExistence(timeout: 10), "History's + is not reachable")
+        add.tap()
+        waitABit(1)
+
+        // The tray's + — Create Exercise, delegated up to the editor.
+        let createExercise = app.buttons["Add"].firstMatch
+        XCTAssertTrue(createExercise.waitForExistence(timeout: 5), "The tray's + is not reachable")
+        createExercise.tap()
+
+        let nameField = app.textFields.firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5), "No name field on the exercise editor")
+        waitABit(1)
+        // The field takes focus on appear — type into the app rather than tapping it, a tap lands
+        // while the sheet is still animating and XCTest calls it unhittable.
+        app.typeText("Cancel Regression Lift")
+        waitABit(1)
+        app.buttons["Save"].firstMatch.tap()
+
+        let cancel = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 5), "The editor has no Cancel")
+        cancel.tap()
+
+        waitABit(2)
+        attachScreen("cancel_after_creating_exercise")
+        XCTAssertEqual(app.state, .runningForeground, "The app went away on Cancel")
+        XCTAssertTrue(
+            app.staticTexts["No Workouts"].waitForExistence(timeout: 5),
+            "The cancelled workout was written to history anyway"
+        )
     }
 
     /// Captures the whole screen rather than the app's window, keyboard and accessory included.

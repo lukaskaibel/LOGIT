@@ -198,26 +198,8 @@ struct WorkoutStatScreen: View {
         let yScaleMax = chartYScaleMax(for: runs)
         let windowStart = windowStartIndex(runs: runs)
         return Chart {
-            if let selectedRun {
-                RuleMark(x: .value("Selected", slotCenter(of: selectedRun.index), unit: .hour))
-                    .foregroundStyle(Color.label.opacity(0.35))
-                    .lineStyle(StrokeStyle(lineWidth: 2))
-                    .annotation(
-                        position: annotationPosition(for: selectedRun, windowStart: windowStart),
-                        overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
-                    ) {
-                        annotationCard(for: selectedRun)
-                    }
-            }
             ForEach(runs) { run in
-                BarMark(
-                    x: .value("Workout", slotCenter(of: run.index), unit: .hour),
-                    y: .value("Value", run.value),
-                    width: .ratio(0.6)
-                )
-                .foregroundStyle(barStyle(for: run, selectedRun: selectedRun))
-                .tileBarStyle()
-                .opacity(selectedRun == nil || selectedRun?.id == run.id ? 1.0 : 0.4)
+                bar(for: run, selectedRun: selectedRun, windowStart: windowStart)
             }
         }
         .chartXScale(domain: xDomain(runCount: runs.count))
@@ -255,7 +237,34 @@ struct WorkoutStatScreen: View {
         }
     }
 
-    /// Where the tooltip hangs off the rule mark: bars in the right third of the window get a
+    /// One workout's bar, and — for the inspected one — the card that names it.
+    ///
+    /// The coloured bar carries the card itself rather than a rule mark standing in for it: the rule
+    /// left a grey stalk poking out of the top of the bar and anchored the card to the top of the
+    /// plot instead of to the bar. Colour against gray is the whole selection idiom, the same as on
+    /// every other bar chart in the app.
+    @ChartContentBuilder
+    private func bar(for run: Run, selectedRun: Run?, windowStart: Int) -> some ChartContent {
+        let mark = BarMark(
+            x: .value("Workout", slotCenter(of: run.index), unit: .hour),
+            y: .value("Value", run.value),
+            width: .ratio(0.6)
+        )
+        .foregroundStyle(barStyle(for: run, selectedRun: selectedRun))
+        .tileBarStyle()
+        if selectedRun?.id == run.id {
+            mark.annotation(
+                position: annotationPosition(for: run, windowStart: windowStart),
+                overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
+            ) {
+                annotationCard(for: run)
+            }
+        } else {
+            mark
+        }
+    }
+
+    /// Where the tooltip hangs off the inspected bar: bars in the right third of the window get a
     /// leading card, the left third a trailing one. `fit(to: .chart)` alone can't keep the card on
     /// screen here — the plot scrolls, so "the chart" includes off-viewport bars and an edge bar's
     /// card happily lays out into them, clipped by the viewport.
@@ -422,10 +431,20 @@ struct WorkoutStatScreen: View {
     /// gradient — its identity color, the screen's accent. A bar tapped to inspect lights up white
     /// ("now showing this"); every other bar stays a quiet gray. `isCurrent` wins when the current
     /// bar is itself the tapped one — its gradient already stands out.
+    /// At rest this workout's own bar wears its muscle gradient and every earlier run stays the quiet
+    /// gray fill. Inspecting colours the run being read and grays the rest of the axis — this
+    /// workout's bar included, so exactly one bar is ever coloured.
+    ///
+    /// An inspected *earlier* run takes the accent rather than the gradient: that gradient is the
+    /// muscle split of **this** workout, and painting another session's bar with it would claim
+    /// something about that session that isn't true.
     private func barStyle(for run: Run, selectedRun: Run?) -> AnyShapeStyle {
-        if run.isCurrent { return workout.sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top) }
-        if selectedRun?.id == run.id { return AnyShapeStyle(Color.label) }
-        return AnyShapeStyle(Color.fill)
+        let identity = workout.sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top)
+        if let selectedRun {
+            guard selectedRun.id == run.id else { return AnyShapeStyle(Color.fill) }
+            return run.isCurrent ? identity : AnyShapeStyle(Color.accentColor)
+        }
+        return run.isCurrent ? identity : AnyShapeStyle(Color.fill)
     }
 
     private var dominantMuscleGroupColor: Color {

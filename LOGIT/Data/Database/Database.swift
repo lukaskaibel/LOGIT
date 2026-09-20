@@ -283,6 +283,9 @@ public class Database: ObservableObject {
         //
         // `performAndWait` is safe for the viewContext (main-queue) when called on the main thread,
         // and ensures rollback completes before we return.
+        //
+        // A rollback only reaches changes that are still *pending*, so it is never the whole story
+        // for a Cancel — see `survivedRollback(_:)`.
         context.performAndWait {
             guard self.context.hasChanges else { return }
             self.context.rollback()
@@ -291,6 +294,84 @@ public class Database: ObservableObject {
         DispatchQueue.main.async {
             self.objectWillChange.send()
         }
+    }
+
+    /// Cancel, completed: rolls the context back, then removes what the rollback could not.
+    ///
+    /// A rollback only reaches changes that are still *pending*, and every editor shares one
+    /// `viewContext` whose `save()` commits all of its pending changes, not just the caller's. So
+    /// anything that saves while an editor sheet is open — creating an exercise from its tray
+    /// (`ExerciseEditScreen` saves so the new exercise outlives the sheet), a body measurement
+    /// arriving from Health, the recorder autosaving a set — writes the half-built workout to disk
+    /// as a side effect. Cancel's rollback is then a no-op, and the workout the user explicitly
+    /// discarded stays in their history, unnamed, holding whatever exercise they had just picked.
+    ///
+    /// So: a workout added in the editor is deleted outright. Cascade takes its set groups and sets
+    /// with it; exercises are only nullified, so one created along the way stays in the library where
+    /// the user put it. An existing workout keeps its rows and only gives back the set groups added
+    /// in this session — `setGroupOrderOnOpen` is the composition the editor opened with.
+    func discardEditorChanges(
+        to workout: Workout,
+        wasAddedInEditor: Bool,
+        setGroupOrderOnOpen: [UUID]
+    ) {
+        discardUnsavedChanges()
+        guard survivedRollback(workout) else { return }
+        if wasAddedInEditor {
+            delete(workout, saveContext: true)
+            return
+        }
+        let idsOnOpen = Set(setGroupOrderOnOpen)
+        let addedHere = workout.setGroups.filter { setGroup in
+            guard let id = setGroup.id else { return false }
+            return !idsOnOpen.contains(id)
+        }
+        guard !addedHere.isEmpty else { return }
+        // Order first: it is a plain attribute, written synchronously, while the deletes below go
+        // through the context's queue. `resolvedOrder` ignores ids it cannot resolve, so the list
+        // never reads as broken in between.
+        workout.setGroupOrder = setGroupOrderOnOpen
+        addedHere.forEach { delete($0) }
+        save()
+    }
+
+    /// The template editor's Cancel — see `discardEditorChanges(to:wasAddedInEditor:setGroupOrderOnOpen:)`,
+    /// which this mirrors exactly; the same hazard applies, and a cancelled new template would
+    /// otherwise sit untitled in the template list.
+    func discardEditorChanges(
+        to template: Template,
+        wasAddedInEditor: Bool,
+        setGroupOrderOnOpen: [UUID]
+    ) {
+        discardUnsavedChanges()
+        if wasAddedInEditor {
+            // A template built here is flagged temporary from the moment it is created, and an
+            // imported or scanned one flags its exercises alongside it — so this is the cleanup
+            // that reaches all of them, and it is the same one the import sheets run on dismiss.
+            // Rows the rollback already took back simply aren't found and are skipped; either way
+            // the flag list is cleared, which matters because it lives in UserDefaults and would
+            // otherwise keep the ids for the life of the install.
+            deleteAllTemporaryObjects()
+            save()
+            return
+        }
+        guard survivedRollback(template) else { return }
+        let idsOnOpen = Set(setGroupOrderOnOpen)
+        let addedHere = template.setGroups.filter { setGroup in
+            guard let id = setGroup.id else { return false }
+            return !idsOnOpen.contains(id)
+        }
+        guard !addedHere.isEmpty else { return }
+        template.templateSetGroupOrder = setGroupOrderOnOpen
+        addedHere.forEach { delete($0) }
+        save()
+    }
+
+    /// Whether `object` is still a live row after a rollback — i.e. something saved the context
+    /// while it was being built, so the rollback could not take it back. An object the rollback
+    /// *did* take back is detached from the context, which is what this checks.
+    func survivedRollback(_ object: NSManagedObject) -> Bool {
+        object.managedObjectContext != nil && !object.isDeleted
     }
 
     // MARK: - Object Access / Manipulation

@@ -867,13 +867,13 @@
 "previewBarbellCurl" = "バーベルカール";
 
 /* Estimated 1RM (e1RM) */
-"e1RM" = "e1RM";
-"estimatedOneRepMax" = "推定1RM";
-"e1RMInfo" = "1RM（ワンレップマックス）とは、1回だけなら挙げられる最大の重量のことです。実際に挑戦しなくても、LOGITがセットの重量と回数からEpley（エプリー）式で推定します。この推定値がe1RMです。回数が少ないときだけ正確なため、12回を超えるセットは計算に含まれません。";
-"higherMaxE1RMThisMonthThanLastMonth" = "今月の推定1RMは先月より高くなっています。";
-"lowerMaxE1RMThisMonthThanLastMonth" = "今月の推定1RMは先月より低くなっています。";
-"higherMaxE1RMThisYearThanLastYear" = "今年の推定1RMは昨年より高くなっています。";
-"lowerMaxE1RMThisYearThanLastYear" = "今年の推定1RMは昨年より低くなっています。";
+"e1RM" = "推定最大";
+"estimatedOneRepMax" = "推定最大重量";
+"e1RMInfo" = "1回だけなら挙げられる最大の重量が、あなたの最大挙上重量です。実際に挑戦しなくても、LOGITがセットの重量と回数からEpley（エプリー）式で計算します。この計算結果が推定最大重量です（ほかではe1RMと呼ばれることもあります）。回数が少ないときだけ正確なため、12回を超えるセットは計算に含まれません。";
+"higherMaxE1RMThisMonthThanLastMonth" = "今月の推定最大重量は先月より高くなっています。";
+"lowerMaxE1RMThisMonthThanLastMonth" = "今月の推定最大重量は先月より低くなっています。";
+"higherMaxE1RMThisYearThanLastYear" = "今年の推定最大重量は昨年より高くなっています。";
+"lowerMaxE1RMThisYearThanLastYear" = "今年の推定最大重量は昨年より低くなっています。";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "セットボリューム";
@@ -914,9 +914,9 @@
 "volumeVsLastTime" = "ボリューム比較（前回）";
 "thisWorkout" = "今回のワークアウト";
 "firstTimeForThisWorkout" = "このワークアウトは今回が初めてです。今後のセッションはこれと比較されます。";
-"workoutPRInfo" = "自己ベストとは、このワークアウトのあるセットが、それ以前のすべてのワークアウトでの最高重量・最多回数・e1RM（1回だけ挙げられる最大重量の推定値）のいずれかを上回ったことを意味します。あとで更新しても、その日の記録として残ります。複数が同時に更新された場合は、まとめてひとつの記録として数えます。最も確かなものがカードの主役になります。実際に挙げた重量が推定値より優先され、推定値が回数より優先されます。残りはあわせて表示されます。";
+"workoutPRInfo" = "自己ベストとは、このワークアウトのあるセットが、それ以前のすべてのワークアウトでの最高重量・最多回数・推定最大重量のいずれかを上回ったことを意味します。あとで更新しても、その日の記録として残ります。複数が同時に更新された場合は、まとめてひとつの記録として数えます。最も確かなものがカードの主役になります。実際に挙げた重量が推定値より優先され、推定値が回数より優先されます。残りはあわせて表示されます。";
 "alsoARecord" = "こちらも新記録 · %@";
-"workoutTrendInfo" = "種目にはそれぞれ進捗指標があります。重量やe1RMなど、その種目を評価する値のことです。トレンドは、このワークアウトで達した最高値を、その前の4週間のベストと比べます。下にある各種目のバッジと同じ比較です。";
+"workoutTrendInfo" = "種目にはそれぞれ進捗指標があります。重量や推定最大重量など、その種目を評価する値のことです。トレンドは、このワークアウトで達した最高値を、その前の4週間のベストと比べます。下にある各種目のバッジと同じ比較です。";
 "workoutVolumeCompareInfo" = "総ボリューム（各セットの重量×回数）を、前回同じワークアウトを行ったときと比較します。";
 "improvedCount" = "%d種目向上";
 
@@ -1118,7 +1118,7 @@
 "trackingWeightAloneHint" = "重量に加えてレップ数・時間・距離のいずれかを選んでください。";
 "setPreviewCaption" = "セットはこのように表示されます";
 "progressMetricCaption" = "トレーニング中に種目のバッジに表示されます。";
-"progressMetricE1RMDescription" = "重量とレップ数から推定した1RM";
+"progressMetricE1RMDescription" = "重量とレップ数から推定した最大挙上重量";
 "progressMetricWeightDescription" = "1セットで挙げた最大重量";
 "progressMetricRepetitionsDescription" = "1セットの最多レップ数";
 "progressMetricDurationDescription" = "1セットの最長時間";
@@ -1127,8 +1127,8 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "筋力";
-"strengthBasis" = "全体のe1RM";
-"strengthExerciseBasis" = "%@のe1RM";
+"strengthBasis" = "推定最大重量の変化";
+"strengthExerciseBasis" = "%@・推定最大重量";
 "strengthEmpty" = "筋力トレンドを作成中";
 "nWeeks" = "%d週間";
 "nMonths" = "%dか月";
@@ -1147,7 +1147,7 @@
 "strengthShowAllLifts" = "%d 種目をすべて表示";
 "strengthAxisLeastDeclined" = "最小の低下";
 "showLess" = "表示を減らす";
-"strengthInfo" = "筋力は、この推定値をひとつの数字にまとめたものです。種目ごとに、選択した期間の最高e1RMをその前の期間の最高e1RMと比べ、それらの変化をすべて平均します。セット数の多い種目ほど、結果に大きく反映されます。有酸素運動と自重のセットにはe1RMがないため、含まれません。";
+"strengthInfo" = "筋力は、この推定値をひとつの数字にまとめたものです。種目ごとに、選択した期間の最高の推定最大重量をその前の期間の最高値と比べ、それらの変化をすべて平均します。セット数の多い種目ほど、結果に大きく反映されます。有酸素運動と自重のセットには推定最大重量がないため、含まれません。";
 
 
 // MARK: - Data Export

@@ -867,13 +867,13 @@
 "previewBarbellCurl" = "Curl barre";
 
 /* Estimated 1RM (e1RM) */
-"e1RM" = "e1RM";
-"estimatedOneRepMax" = "1RM estimé";
-"e1RMInfo" = "Ton maximum sur une répétition (1RM) est la charge la plus lourde que tu pourrais soulever pour une seule répétition. Plutôt que de te le faire tenter, LOGIT l'estime à partir du poids et des répétitions d'une série avec la formule d'Epley ; c'est cette estimation que désigne le sigle e1RM. Elle n'est fiable qu'avec peu de répétitions : les séries de plus de 12 répétitions ne sont donc pas prises en compte.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Ton 1RM estimé ce mois-ci est plus élevé que le mois dernier.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Ton 1RM estimé ce mois-ci est plus bas que le mois dernier.";
-"higherMaxE1RMThisYearThanLastYear" = "Ton 1RM estimé cette année est plus élevé que l'an dernier.";
-"lowerMaxE1RMThisYearThanLastYear" = "Ton 1RM estimé cette année est plus bas que l'an dernier.";
+"e1RM" = "Max est.";
+"estimatedOneRepMax" = "Maximum estimé";
+"e1RMInfo" = "Ton maximum sur une répétition est la charge la plus lourde que tu pourrais soulever pour une seule répétition. Plutôt que de te le faire tenter, LOGIT le calcule à partir du poids et des répétitions d'une série avec la formule d'Epley ; ce résultat calculé, c'est le maximum estimé (ailleurs tu le verras appelé e1RM). Il n'est fiable qu'avec peu de répétitions : les séries de plus de 12 répétitions ne sont donc pas prises en compte.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Ton maximum estimé est plus élevé ce mois-ci que le mois dernier.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Ton maximum estimé est plus bas ce mois-ci que le mois dernier.";
+"higherMaxE1RMThisYearThanLastYear" = "Ton maximum estimé est plus élevé cette année que l'année dernière.";
+"lowerMaxE1RMThisYearThanLastYear" = "Ton maximum estimé est plus bas cette année que l'année dernière.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Volume par série";
@@ -914,9 +914,9 @@
 "volumeVsLastTime" = "Volume vs la dernière fois";
 "thisWorkout" = "Cette séance";
 "firstTimeForThisWorkout" = "Première fois pour cette séance — les prochaines séances y seront comparées.";
-"workoutPRInfo" = "Un record personnel signifie qu'une série de cette séance a dépassé ta meilleure charge, ton plus grand nombre de répétitions ou ton meilleur maximum estimé sur une répétition (e1RM) de toutes les séances précédentes. Il reste le record de ce jour-là même si tu l'as battu depuis. Si plusieurs d'entre eux progressent en même temps, ils comptent ensemble comme un seul record. Le plus concret mène la carte : une charge réellement soulevée passe avant une estimation, et une estimation avant un nombre de répétitions. Les autres y sont listés.";
+"workoutPRInfo" = "Un record personnel signifie qu'une série de cette séance a dépassé ta meilleure charge, ton plus grand nombre de répétitions ou ton meilleur maximum estimé de toutes les séances précédentes. Il reste le record de ce jour-là même si tu l'as battu depuis. Si plusieurs d'entre eux progressent en même temps, ils comptent ensemble comme un seul record. Le plus concret mène la carte : une charge réellement soulevée passe avant une estimation, et une estimation avant un nombre de répétitions. Les autres y sont listés.";
 "alsoARecord" = "Également un record · %@";
-"workoutTrendInfo" = "Chaque exercice a une métrique de progression : la valeur qui sert à le mesurer, comme le poids ou l'e1RM. La tendance compare la meilleure valeur atteinte lors de cette séance à ton meilleur des quatre semaines précédentes — la même comparaison que les badges à côté des exercices ci-dessous.";
+"workoutTrendInfo" = "Chaque exercice a une métrique de progression : la valeur qui sert à le mesurer, comme le poids ou le maximum estimé. La tendance compare la meilleure valeur atteinte lors de cette séance à ton meilleur des quatre semaines précédentes — la même comparaison que les badges à côté des exercices ci-dessous.";
 "workoutVolumeCompareInfo" = "Volume total (charge × répétitions de chaque série) comparé à la dernière fois que tu as fait cette séance.";
 "improvedCount" = "%d en progression";
 
@@ -1118,7 +1118,7 @@
 "trackingWeightAloneHint" = "Ajoute des répétitions, une durée ou une distance au poids.";
 "setPreviewCaption" = "Voici à quoi ressemblera une série";
 "progressMetricCaption" = "Affiché sur le badge de l'exercice pendant l'entraînement.";
-"progressMetricE1RMDescription" = "1RM estimé, à partir du poids et des répétitions";
+"progressMetricE1RMDescription" = "Maximum estimé, à partir du poids et des répétitions";
 "progressMetricWeightDescription" = "Poids le plus lourd soulevé dans une série";
 "progressMetricRepetitionsDescription" = "Le plus de répétitions en une série";
 "progressMetricDurationDescription" = "La plus longue durée en une série";
@@ -1127,8 +1127,8 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "Force";
-"strengthBasis" = "e1RM global";
-"strengthExerciseBasis" = "e1RM %@";
+"strengthBasis" = "Évolution du maximum estimé";
+"strengthExerciseBasis" = "%@ · maximum estimé";
 "strengthEmpty" = "Tendance de force en cours";
 "nWeeks" = "%d semaines";
 "nMonths" = "%d mois";
@@ -1147,7 +1147,7 @@
 "strengthShowAllLifts" = "Voir les %d exercices";
 "strengthAxisLeastDeclined" = "Plus faible baisse";
 "showLess" = "Voir moins";
-"strengthInfo" = "La force résume ces estimations en un seul chiffre. Pour chaque exercice, LOGIT compare ton meilleur e1RM sur la période sélectionnée à ton meilleur sur la période précédente, puis fait la moyenne de tous ces écarts. Plus tu as fait de séries d'un exercice, plus il pèse dans le résultat. Les séries de cardio et au poids du corps n'ont pas d'e1RM et ne sont pas prises en compte.";
+"strengthInfo" = "La force résume ces estimations en un seul chiffre. Pour chaque exercice, LOGIT compare ton meilleur maximum estimé sur la période sélectionnée à ton meilleur sur la période précédente, puis fait la moyenne de tous ces écarts. Plus tu as fait de séries d'un exercice, plus il pèse dans le résultat. Les séries de cardio et au poids du corps n'ont pas de maximum estimé et ne sont pas prises en compte.";
 
 
 // MARK: - Data Export

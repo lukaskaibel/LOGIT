@@ -867,13 +867,13 @@
 "previewBarbellCurl" = "바벨 컬";
 
 /* Estimated 1RM (e1RM) */
-"e1RM" = "e1RM";
-"estimatedOneRepMax" = "예상 1RM";
-"e1RMInfo" = "1RM(1회 최대 중량)은 딱 한 번만 들 수 있는 가장 무거운 중량을 뜻합니다. 직접 도전하지 않아도, LOGIT이 세트의 중량과 반복 횟수를 Epley 공식에 넣어 추정합니다. 이 추정값을 e1RM이라고 합니다. 반복 횟수가 적을 때만 정확하기 때문에 12회를 넘는 세트는 계산에서 제외됩니다.";
-"higherMaxE1RMThisMonthThanLastMonth" = "이번 달 예상 1RM이 지난달보다 높습니다.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "이번 달 예상 1RM이 지난달보다 낮습니다.";
-"higherMaxE1RMThisYearThanLastYear" = "올해 예상 1RM이 작년보다 높습니다.";
-"lowerMaxE1RMThisYearThanLastYear" = "올해 예상 1RM이 작년보다 낮습니다.";
+"e1RM" = "예상 최대";
+"estimatedOneRepMax" = "예상 최대 중량";
+"e1RMInfo" = "딱 한 번만 들 수 있는 가장 무거운 중량이 최대 중량입니다. 직접 도전하지 않아도, LOGIT이 세트의 중량과 반복 횟수를 Epley 공식에 넣어 계산합니다. 이렇게 계산한 값이 예상 최대 중량입니다(다른 곳에서는 e1RM이라고 부르기도 합니다). 반복 횟수가 적을 때만 정확하기 때문에 12회를 넘는 세트는 계산에서 제외됩니다.";
+"higherMaxE1RMThisMonthThanLastMonth" = "이번 달 예상 최대 중량이 지난달보다 높습니다.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "이번 달 예상 최대 중량이 지난달보다 낮습니다.";
+"higherMaxE1RMThisYearThanLastYear" = "올해 예상 최대 중량이 작년보다 높습니다.";
+"lowerMaxE1RMThisYearThanLastYear" = "올해 예상 최대 중량이 작년보다 낮습니다.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "세트 볼륨";
@@ -914,9 +914,9 @@
 "volumeVsLastTime" = "볼륨 비교(지난번)";
 "thisWorkout" = "이번 워크아웃";
 "firstTimeForThisWorkout" = "이 워크아웃은 이번이 처음입니다. 앞으로의 세션은 이번 기록과 비교됩니다.";
-"workoutPRInfo" = "개인 기록은 이번 워크아웃의 어떤 세트가 이전 모든 워크아웃에서의 최고 중량, 최다 반복 횟수, 또는 최고 e1RM(한 번에 들 수 있는 최대 중량의 추정값)을 넘어섰다는 뜻입니다. 나중에 경신하더라도 그날의 기록으로 남습니다. 여러 항목이 한꺼번에 좋아지면 묶어서 하나의 기록으로 셉니다. 가장 확실한 항목이 카드를 대표합니다. 실제로 든 중량이 추정값보다 앞서고, 추정값이 반복 횟수보다 앞섭니다. 나머지는 함께 표시됩니다.";
+"workoutPRInfo" = "개인 기록은 이번 워크아웃의 어떤 세트가 이전 모든 워크아웃에서의 최고 중량, 최다 반복 횟수, 또는 최고 예상 최대 중량을 넘어섰다는 뜻입니다. 나중에 경신하더라도 그날의 기록으로 남습니다. 여러 항목이 한꺼번에 좋아지면 묶어서 하나의 기록으로 셉니다. 가장 확실한 항목이 카드를 대표합니다. 실제로 든 중량이 추정값보다 앞서고, 추정값이 반복 횟수보다 앞섭니다. 나머지는 함께 표시됩니다.";
 "alsoARecord" = "또 하나의 기록 · %@";
-"workoutTrendInfo" = "운동마다 진전 지표가 있습니다. 중량이나 e1RM처럼 그 운동을 평가하는 값입니다. 추세는 이번 워크아웃에서 도달한 최고 값을 직전 4주간의 최고 기록과 비교합니다. 아래 운동 옆에 붙은 배지와 같은 비교입니다.";
+"workoutTrendInfo" = "운동마다 진전 지표가 있습니다. 중량이나 예상 최대 중량처럼 그 운동을 평가하는 값입니다. 추세는 이번 워크아웃에서 도달한 최고 값을 직전 4주간의 최고 기록과 비교합니다. 아래 운동 옆에 붙은 배지와 같은 비교입니다.";
 "workoutVolumeCompareInfo" = "총 볼륨(각 세트의 중량 × 횟수)을 지난번 같은 워크아웃과 비교합니다.";
 "improvedCount" = "%d개 향상";
 
@@ -1118,7 +1118,7 @@
 "trackingWeightAloneHint" = "무게에 횟수, 시간 또는 거리를 추가하세요.";
 "setPreviewCaption" = "세트는 이렇게 표시됩니다";
 "progressMetricCaption" = "운동 중 배지에 표시됩니다.";
-"progressMetricE1RMDescription" = "무게와 횟수로 추정한 1RM";
+"progressMetricE1RMDescription" = "무게와 횟수로 추정한 최대 중량";
 "progressMetricWeightDescription" = "한 세트에서 든 최대 무게";
 "progressMetricRepetitionsDescription" = "한 세트 최다 횟수";
 "progressMetricDurationDescription" = "한 세트 최장 시간";
@@ -1127,8 +1127,8 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "근력";
-"strengthBasis" = "전체 e1RM";
-"strengthExerciseBasis" = "%@ e1RM";
+"strengthBasis" = "예상 최대 중량의 변화";
+"strengthExerciseBasis" = "%@ · 예상 최대 중량";
 "strengthEmpty" = "근력 추세 만드는 중";
 "nWeeks" = "%d주";
 "nMonths" = "%d개월";
@@ -1147,7 +1147,7 @@
 "strengthShowAllLifts" = "%d개 종목 모두 보기";
 "strengthAxisLeastDeclined" = "가장 작은 감소";
 "showLess" = "간단히 보기";
-"strengthInfo" = "근력은 이 추정값들을 하나의 숫자로 묶은 것입니다. 운동마다 선택한 기간의 최고 e1RM을 직전 기간의 최고 e1RM과 비교한 뒤, 그 변화들을 모두 평균합니다. 세트를 많이 한 운동일수록 결과에 더 크게 반영됩니다. 유산소와 맨몸 세트는 e1RM이 없으므로 포함되지 않습니다.";
+"strengthInfo" = "근력은 이 추정값들을 하나의 숫자로 묶은 것입니다. 운동마다 선택한 기간의 최고 예상 최대 중량을 직전 기간의 최고값과 비교한 뒤, 그 변화들을 모두 평균합니다. 세트를 많이 한 운동일수록 결과에 더 크게 반영됩니다. 유산소와 맨몸 세트는 예상 최대 중량이 없으므로 포함되지 않습니다.";
 
 
 // MARK: - Data Export

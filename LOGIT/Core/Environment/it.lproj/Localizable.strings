@@ -867,13 +867,13 @@
 "previewBarbellCurl" = "Curl bilanciere";
 
 /* Estimated 1RM (e1RM) */
-"e1RM" = "e1RM";
-"estimatedOneRepMax" = "1RM stimato";
-"e1RMInfo" = "Il tuo massimale su una ripetizione (1RM) è il peso più pesante che riusciresti a sollevare per una singola ripetizione. Invece di fartelo tentare, LOGIT lo stima dal peso e dalle ripetizioni di una serie con la formula di Epley; questa stima è ciò che indica la sigla e1RM. È affidabile solo con poche ripetizioni, quindi le serie oltre le 12 ripetizioni non vengono considerate.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Il tuo 1RM stimato questo mese è più alto del mese scorso.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Il tuo 1RM stimato questo mese è più basso del mese scorso.";
-"higherMaxE1RMThisYearThanLastYear" = "Il tuo 1RM stimato quest'anno è più alto dell'anno scorso.";
-"lowerMaxE1RMThisYearThanLastYear" = "Il tuo 1RM stimato quest'anno è più basso dell'anno scorso.";
+"e1RM" = "Max stim.";
+"estimatedOneRepMax" = "Massimale stimato";
+"e1RMInfo" = "Il tuo massimale su una ripetizione è il peso più pesante che riusciresti a sollevare per una singola ripetizione. Invece di fartelo tentare, LOGIT lo calcola dal peso e dalle ripetizioni di una serie con la formula di Epley; quel risultato è il massimale stimato (altrove lo trovi indicato come e1RM). È affidabile solo con poche ripetizioni, quindi le serie oltre le 12 ripetizioni non vengono considerate.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Il tuo massimale stimato è più alto questo mese rispetto al mese scorso.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Il tuo massimale stimato è più basso questo mese rispetto al mese scorso.";
+"higherMaxE1RMThisYearThanLastYear" = "Il tuo massimale stimato è più alto quest'anno rispetto all'anno scorso.";
+"lowerMaxE1RMThisYearThanLastYear" = "Il tuo massimale stimato è più basso quest'anno rispetto all'anno scorso.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Volume per serie";
@@ -914,9 +914,9 @@
 "volumeVsLastTime" = "Volume vs l'ultima volta";
 "thisWorkout" = "Questo allenamento";
 "firstTimeForThisWorkout" = "Prima volta con questo allenamento: le prossime sessioni verranno confrontate con questa.";
-"workoutPRInfo" = "Un record personale significa che una serie di questo allenamento ha superato il tuo miglior peso, il tuo maggior numero di ripetizioni o il tuo miglior massimale stimato su una ripetizione (e1RM) di tutti gli allenamenti precedenti. Resta il record di quel giorno anche se nel frattempo lo hai battuto. Se più di questi migliorano insieme, contano come un unico record. Il più concreto guida la scheda: un peso davvero sollevato viene prima di una stima, e una stima prima di un numero di ripetizioni. Gli altri sono elencati insieme.";
+"workoutPRInfo" = "Un record personale significa che una serie di questo allenamento ha superato il tuo miglior peso, il tuo maggior numero di ripetizioni o il tuo miglior massimale stimato di tutti gli allenamenti precedenti. Resta il record di quel giorno anche se nel frattempo lo hai battuto. Se più di questi migliorano insieme, contano come un unico record. Il più concreto guida la scheda: un peso davvero sollevato viene prima di una stima, e una stima prima di un numero di ripetizioni. Gli altri sono elencati insieme.";
 "alsoARecord" = "Anche un record · %@";
-"workoutTrendInfo" = "Ogni esercizio ha una metrica di progresso: il valore con cui viene misurato, come il peso o l'e1RM. Il trend confronta il valore migliore raggiunto in questo allenamento con il tuo migliore delle quattro settimane precedenti — lo stesso confronto mostrato dai badge accanto agli esercizi qui sotto.";
+"workoutTrendInfo" = "Ogni esercizio ha una metrica di progresso: il valore con cui viene misurato, come il peso o il massimale stimato. Il trend confronta il valore migliore raggiunto in questo allenamento con il tuo migliore delle quattro settimane precedenti — lo stesso confronto mostrato dai badge accanto agli esercizi qui sotto.";
 "workoutVolumeCompareInfo" = "Volume totale (peso × ripetizioni di ogni serie) confrontato con l'ultima volta che hai fatto questo allenamento.";
 "improvedCount" = "%d migliorati";
 
@@ -1118,7 +1118,7 @@
 "trackingWeightAloneHint" = "Aggiungi ripetizioni, durata o distanza al peso.";
 "setPreviewCaption" = "Ecco come apparirà una serie";
 "progressMetricCaption" = "Mostrato sul badge dell'esercizio durante l'allenamento.";
-"progressMetricE1RMDescription" = "Massimale stimato (1RM) da peso e ripetizioni";
+"progressMetricE1RMDescription" = "Massimale stimato, da peso e ripetizioni";
 "progressMetricWeightDescription" = "Peso più alto sollevato in una serie";
 "progressMetricRepetitionsDescription" = "Più ripetizioni in una singola serie";
 "progressMetricDurationDescription" = "Durata più lunga in una singola serie";
@@ -1127,8 +1127,8 @@
 
 // Strength (Progress tab tile + detail)
 "strength" = "Forza";
-"strengthBasis" = "e1RM complessivo";
-"strengthExerciseBasis" = "e1RM %@";
+"strengthBasis" = "Variazione del massimale stimato";
+"strengthExerciseBasis" = "%@ · massimale stimato";
 "strengthEmpty" = "Creazione del trend di forza";
 "nWeeks" = "%d settimane";
 "nMonths" = "%d mesi";
@@ -1147,7 +1147,7 @@
 "strengthShowAllLifts" = "Mostra tutti i %d esercizi";
 "strengthAxisLeastDeclined" = "Calo minore";
 "showLess" = "Mostra meno";
-"strengthInfo" = "La forza riassume queste stime in un unico numero. Per ogni esercizio, LOGIT confronta il tuo miglior e1RM nel periodo selezionato con il tuo migliore nel periodo precedente, poi fa la media di tutte queste variazioni. Più serie hai fatto di un esercizio, più esso pesa sul risultato. Le serie di cardio e a corpo libero non hanno un e1RM e non vengono considerate.";
+"strengthInfo" = "La forza riassume queste stime in un unico numero. Per ogni esercizio, LOGIT confronta il tuo miglior massimale stimato nel periodo selezionato con il tuo migliore nel periodo precedente, poi fa la media di tutte queste variazioni. Più serie hai fatto di un esercizio, più esso pesa sul risultato. Le serie di cardio e a corpo libero non hanno un massimale stimato e non vengono considerate.";
 
 
 // MARK: - Data Export

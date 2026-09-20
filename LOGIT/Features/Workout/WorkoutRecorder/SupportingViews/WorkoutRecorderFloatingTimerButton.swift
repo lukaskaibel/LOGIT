@@ -11,8 +11,7 @@ struct WorkoutRecorderFloatingTimerButton: View {
     @ObservedObject var chronograph: Chronograph
     @ObservedObject var workoutRecorder: WorkoutRecorder
     @AppStorage("lastTimerDuration") private var lastTimerDuration: Int = 30
-    @AppStorage("autoTimerEnabled") private var autoTimerEnabled: Bool = false
-    @AppStorage("autoStopwatchEnabled") private var autoStopwatchEnabled: Bool = false
+    @AppStorage(AutoRestSettings.enabledKey) private var autoRestEnabled: Bool = false
 
     let action: () -> Void
 
@@ -111,12 +110,8 @@ struct WorkoutRecorderFloatingTimerButton: View {
             return .activeStopwatch(roundedSeconds)
         }
 
-        if chronograph.mode == .timer, autoTimerEnabled {
-            return .idleAutoTimer(lastTimerDuration)
-        }
-
-        if chronograph.mode == .stopwatch, autoStopwatchEnabled {
-            return .idleAutoStopwatch
+        if autoRestEnabled {
+            return chronograph.mode == .timer ? .idleAutoTimer(lastTimerDuration) : .idleAutoStopwatch
         }
 
         return .idleManual(chronograph.mode)
@@ -200,16 +195,13 @@ private struct WorkoutRecorderFloatingTimerButtonPreviewWrapper: View {
 
         switch scenario {
         case .activeTimer:
-            UserDefaults.standard.set(false, forKey: "autoTimerEnabled")
-            UserDefaults.standard.set(false, forKey: "autoStopwatchEnabled")
+            UserDefaults.standard.set(false, forKey: AutoRestSettings.enabledKey)
             UserDefaults.standard.set(90, forKey: "lastTimerDuration")
         case .activeStopwatch:
-            UserDefaults.standard.set(false, forKey: "autoTimerEnabled")
-            UserDefaults.standard.set(false, forKey: "autoStopwatchEnabled")
+            UserDefaults.standard.set(false, forKey: AutoRestSettings.enabledKey)
             UserDefaults.standard.set(30, forKey: "lastTimerDuration")
         case .idleAutoTimer:
-            UserDefaults.standard.set(true, forKey: "autoTimerEnabled")
-            UserDefaults.standard.set(false, forKey: "autoStopwatchEnabled")
+            UserDefaults.standard.set(true, forKey: AutoRestSettings.enabledKey)
             UserDefaults.standard.set(45, forKey: "lastTimerDuration")
         }
     }

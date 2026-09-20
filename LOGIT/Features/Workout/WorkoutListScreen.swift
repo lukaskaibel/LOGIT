@@ -274,10 +274,11 @@ private struct WorkoutHistorySectionHeader: View {
     let title: String
     let workouts: [Workout]
 
-    /// Personal records across the whole section, summed from the same per-workout report the cells
-    /// use so the header can never disagree with the "n PR" on the rows. Filled in `.task` rather
-    /// than `body`, because the report scans each exercise's full history — running it for every
-    /// section on every scroll would be far too heavy — and only for sections that actually appear.
+    /// Personal records across the whole section, summed from `PersonalRecordCountIndex` — the same
+    /// numbers the cells show, so the header can never disagree with the "n PR" on the rows. One
+    /// lookup per workout: the index walks the history once for the whole app, where this used to
+    /// run a full report per workout in the section every time a header scrolled into view, which
+    /// stalled the scroll for about a tenth of a second on every month it passed.
     @State private var personalRecordCount: Int = 0
 
     var body: some View {
@@ -291,9 +292,8 @@ private struct WorkoutHistorySectionHeader: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task(id: workouts.map { $0.objectID }) {
-            personalRecordCount = workouts.reduce(0) { partial, workout in
-                partial + WorkoutProgressReport.compute(for: workout, database: database).exerciseRecords.count
-            }
+            let counts = await PersonalRecordCountIndex.shared.counts(database: database)
+            personalRecordCount = workouts.reduce(0) { $0 + (counts[$1.objectID] ?? 0) }
         }
     }
 

@@ -428,14 +428,14 @@ struct StrengthScreen: View {
     }
 
     /// The same "About <metric>" tile every other metric detail screen ends on. Two paragraphs,
-    /// because this screen depends on two things a reader has no reason to know: what an estimated
-    /// 1RM even is — the unit every figure and the whole strongest list are quoted in, and which was
-    /// never explained anywhere on the way here — and how the percentage is built from it.
+    /// because this screen depends on two things a reader has no reason to know: what the Strength
+    /// figure actually measures — the unit the whole strongest-lifts list is quoted in — and how the
+    /// headline percentage is built from it.
     ///
-    /// The definition comes **first** and the two are not interchangeable: `e1RMInfo` spells the term
-    /// out and ties it to the bare "e1RM" label the hero and the lift rows above are quoted in, and
-    /// `strengthInfo` then leans on that and says only "e1RM". Swapping them leaves the abbreviation
-    /// used a paragraph before it is introduced.
+    /// The definition comes **first** and the two are not interchangeable: `e1RMInfo` says what a
+    /// single exercise's Strength is (and which exercises have one at all), and `strengthInfo` then
+    /// leans on that to explain Overall Strength. Swapping them leaves the aggregate explained
+    /// before the thing it aggregates.
     private var about: some View {
         AboutSection(
             metricTitle: NSLocalizedString("strength", comment: ""),

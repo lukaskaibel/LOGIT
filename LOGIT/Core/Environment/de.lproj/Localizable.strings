@@ -862,14 +862,16 @@
 "previewSquats" = "Kniebeugen";
 "previewBarbellCurl" = "Langhantelcurl";
 
-/* Estimated 1RM (e1RM) */
-"e1RM" = "Gesch. Max";
-"estimatedOneRepMax" = "Geschätztes Maximum";
-"e1RMInfo" = "Dein Ein-Wiederholungs-Maximum ist das schwerste Gewicht, das du für eine einzige Wiederholung bewegen könntest. Statt dass du es versuchst, errechnet LOGIT es mit der Epley-Formel aus dem Gewicht und den Wiederholungen eines Satzes; dieser errechnete Wert ist das geschätzte Maximum (anderswo begegnet er dir als e1RM). Er ist nur bei wenigen Wiederholungen verlässlich, deshalb bleiben Sätze über 12 Wiederholungen außen vor.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Dein geschätztes Maximum ist diesen Monat höher als letzten Monat.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Dein geschätztes Maximum ist diesen Monat niedriger als letzten Monat.";
-"higherMaxE1RMThisYearThanLastYear" = "Dein geschätztes Maximum ist dieses Jahr höher als letztes Jahr.";
-"lowerMaxE1RMThisYearThanLastYear" = "Dein geschätztes Maximum ist dieses Jahr niedriger als letztes Jahr.";
+/* The per-exercise strength metric. Key and value diverge on purpose: the value is
+   an estimated one-rep max, shown to the reader as "Strength". The aggregate on the
+   Summary is "strength" below, shown as "Overall Strength". */
+"e1RM" = "Kraft";
+"estimatedOneRepMax" = "Kraft";
+"e1RMInfo" = "Kraft ist das schwerste Gewicht, das du für eine einzige Wiederholung bewegen könntest. Statt dass du es versuchst, errechnet LOGIT es mit der Epley-Formel aus dem Gewicht und den Wiederholungen deiner Sätze (anderswo begegnet dir das als geschätztes 1RM). Erfasst wird sie für Übungen, bei denen du Gewicht und Wiederholungen protokollierst, und es zählen nur Sätze mit höchstens 12 Wiederholungen — darüber wird die Schätzung unzuverlässig.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Deine Kraft ist diesen Monat höher als letzten Monat.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Deine Kraft ist diesen Monat niedriger als letzten Monat.";
+"higherMaxE1RMThisYearThanLastYear" = "Deine Kraft ist dieses Jahr höher als letztes Jahr.";
+"lowerMaxE1RMThisYearThanLastYear" = "Deine Kraft ist dieses Jahr niedriger als letztes Jahr.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Satzvolumen";
@@ -910,9 +912,9 @@
 "volumeVsLastTime" = "Volumen vs. letztes Mal";
 "thisWorkout" = "Dieses Workout";
 "firstTimeForThisWorkout" = "Erstes Mal bei diesem Workout — künftige Einheiten werden damit verglichen.";
-"workoutPRInfo" = "Ein persönlicher Rekord bedeutet: Ein Satz in diesem Workout hat dein bestes Gewicht, deine meisten Wiederholungen oder dein bestes geschätztes Maximum aus allen früheren Workouts übertroffen. Er bleibt der Rekord dieses Tages, auch wenn du ihn inzwischen überboten hast. Verbessern sich mehrere davon auf einmal, zählen sie zusammen als ein Rekord. Das Konkreteste führt die Karte an: Ein wirklich bewegtes Gewicht kommt vor einer Schätzung und eine Schätzung vor einer Wiederholungszahl. Der Rest steht mit dabei.";
+"workoutPRInfo" = "Ein persönlicher Rekord bedeutet: Ein Satz in diesem Workout hat dein bestes Gewicht, deine meisten Wiederholungen oder deine beste Kraft aus allen früheren Workouts übertroffen. Er bleibt der Rekord dieses Tages, auch wenn du ihn inzwischen überboten hast. Verbessern sich mehrere davon auf einmal, zählen sie zusammen als ein Rekord. Das Konkreteste führt die Karte an: zuerst ein wirklich bewegtes Gewicht, dann die Kraft, dann eine Wiederholungszahl. Der Rest steht mit dabei.";
 "alsoARecord" = "Ebenfalls Rekord · %@";
-"workoutTrendInfo" = "Jede Übung hat eine Fortschrittsmetrik: den Wert, an dem sie gemessen wird, etwa Gewicht oder das geschätzte Maximum. Der Trend vergleicht den besten Wert dieses Workouts mit deinem besten aus den vier Wochen davor — derselbe Vergleich, den die Abzeichen neben den Übungen unten zeigen.";
+"workoutTrendInfo" = "Jede Übung hat eine Fortschrittsmetrik: den Wert, an dem sie gemessen wird, etwa Gewicht oder Kraft. Der Trend vergleicht den besten Wert dieses Workouts mit deinem besten aus den vier Wochen davor — derselbe Vergleich, den die Abzeichen neben den Übungen unten zeigen.";
 "workoutVolumeCompareInfo" = "Gesamtvolumen (Gewicht × Wiederholungen aller Sätze) im Vergleich zum letzten Mal, als du dieses Workout gemacht hast.";
 "improvedCount" = "%d verbessert";
 
@@ -1114,7 +1116,7 @@
 "trackingWeightAloneHint" = "Ergänze das Gewicht um Wiederholungen, Dauer oder Distanz.";
 "setPreviewCaption" = "So wird ein Satz aussehen";
 "progressMetricCaption" = "Wird beim Training auf dem Übungs-Badge angezeigt.";
-"progressMetricE1RMDescription" = "Geschätztes One-Rep-Max aus Gewicht und Wiederholungen";
+"progressMetricE1RMDescription" = "Das Maximum für eine Wiederholung";
 "progressMetricWeightDescription" = "Schwerstes Gewicht in einem Satz";
 "progressMetricRepetitionsDescription" = "Meiste Wiederholungen in einem Satz";
 "progressMetricDurationDescription" = "Längste Dauer in einem Satz";
@@ -1122,9 +1124,12 @@
 "progressMetricDistanceDescription" = "Weiteste Distanz in einem Satz";
 
 // Strength (Progress tab tile + detail)
-"strength" = "Kraft";
-"strengthBasis" = "Änderung des gesch. Maximums";
-"strengthExerciseBasis" = "%@ · gesch. Maximum";
+/* The Summary aggregate — a set-weighted mean of every exercise's strength change,
+   shown as a percentage. Labelled "Overall Strength" so it cannot be mistaken for the
+   per-exercise "e1RM" metric above, which the reader knows as plain "Strength". */
+"strength" = "Gesamtkraft";
+"strengthBasis" = "vs. vorherigem Zeitraum";
+"strengthExerciseBasis" = "%@ · Kraft";
 "strengthEmpty" = "Dein Krafttrend entsteht";
 "nWeeks" = "%d Wochen";
 "nMonths" = "%d Monate";
@@ -1143,7 +1148,7 @@
 "strengthShowAllLifts" = "Alle %d Übungen zeigen";
 "strengthAxisLeastDeclined" = "Geringster Rückgang";
 "showLess" = "Weniger anzeigen";
-"strengthInfo" = "Kraft fasst diese Schätzungen zu einer einzigen Zahl zusammen. Für jede Übung vergleicht LOGIT dein bestes geschätztes Maximum im gewählten Zeitraum mit deinem besten im Zeitraum davor und mittelt all diese Veränderungen. Je mehr Sätze du von einer Übung gemacht hast, desto stärker zählt sie für das Ergebnis. Cardio- und Körpergewichtssätze haben kein geschätztes Maximum und bleiben außen vor.";
+"strengthInfo" = "Die Gesamtkraft fasst das zu einer einzigen Zahl zusammen. Für jede Übung nimmt LOGIT deinen besten Wert im gewählten Zeitraum und vergleicht ihn mit deinem besten im Zeitraum davor, dann werden all diese Veränderungen gemittelt. Je mehr Sätze du von einer Übung gemacht hast, desto stärker zählt sie für das Ergebnis. Cardio- und Körpergewichtssätze haben keinen Kraftwert und bleiben außen vor.";
 
 
 // MARK: - Data Export

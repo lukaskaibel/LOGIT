@@ -866,14 +866,16 @@
 "previewSquats" = "Squats";
 "previewBarbellCurl" = "Barbell Curl";
 
-/* Estimated 1RM (e1RM) */
-"e1RM" = "Est. Max";
-"estimatedOneRepMax" = "Estimated Max";
-"e1RMInfo" = "Your one-rep max is the heaviest weight you could lift for a single repetition. Rather than have you attempt one, LOGIT works it out from the weight and repetitions of a set using the Epley formula; that worked-out figure is what Estimated Max means (elsewhere you may see it called e1RM). It is only reliable at low repetitions, so sets above 12 repetitions are left out.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Your estimated max this month is higher than last month.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Your estimated max this month is lower than last month.";
-"higherMaxE1RMThisYearThanLastYear" = "Your estimated max this year is higher than last year.";
-"lowerMaxE1RMThisYearThanLastYear" = "Your estimated max this year is lower than last year.";
+/* The per-exercise strength metric. Key and value diverge on purpose: the value is
+   an estimated one-rep max, shown to the reader as "Strength". The aggregate on the
+   Summary is "strength" below, shown as "Overall Strength". */
+"e1RM" = "Strength";
+"estimatedOneRepMax" = "Strength";
+"e1RMInfo" = "Strength is the heaviest weight you could lift for a single repetition. Rather than have you attempt one, LOGIT works it out from the weight and repetitions of your sets using the Epley formula (elsewhere you may see this called an estimated 1RM). It is tracked for exercises where you log both a weight and repetitions, and only sets of 12 repetitions or fewer count — above that the estimate stops being reliable.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Your strength this month is higher than last month.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Your strength this month is lower than last month.";
+"higherMaxE1RMThisYearThanLastYear" = "Your strength this year is higher than last year.";
+"lowerMaxE1RMThisYearThanLastYear" = "Your strength this year is lower than last year.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Set Volume";
@@ -914,9 +916,9 @@
 "volumeVsLastTime" = "Volume vs. Last Time";
 "thisWorkout" = "This Workout";
 "firstTimeForThisWorkout" = "First time doing this workout — future sessions will be compared against it.";
-"workoutPRInfo" = "A personal record means a set in this workout beat your best weight, your most repetitions, or your best estimated max from every workout before it. It stays this day's record even if you have beaten it since. When several of these improve at once, they count as one record together. The most concrete one leads the card: a weight you really lifted comes before an estimate, and an estimate before a number of repetitions. The rest are listed with it.";
+"workoutPRInfo" = "A personal record means a set in this workout beat your best weight, your most repetitions, or your best strength from every workout before it. It stays this day's record even if you have beaten it since. When several of these improve at once, they count as one record together. The most concrete one leads the card: first a weight you really lifted, then strength, then a number of repetitions. The rest are listed with it.";
 "alsoARecord" = "Also a record · %@";
-"workoutTrendInfo" = "Every exercise has a progress metric: the value it is measured by, such as weight or estimated max. The trend compares the best value this workout reached with your best from the four weeks before it — the same comparison the badges next to the exercises below show.";
+"workoutTrendInfo" = "Every exercise has a progress metric: the value it is measured by, such as weight or strength. The trend compares the best value this workout reached with your best from the four weeks before it — the same comparison the badges next to the exercises below show.";
 "workoutVolumeCompareInfo" = "Total volume (weight × reps of every set) compared with the last time you did this workout.";
 "improvedCount" = "%d improved";
 
@@ -1118,7 +1120,7 @@
 "trackingWeightAloneHint" = "Add reps, a duration, or a distance to go with the weight.";
 "setPreviewCaption" = "One set will look like this";
 "progressMetricCaption" = "Shown on the exercise badge while you train.";
-"progressMetricE1RMDescription" = "Estimated one-rep max, from weight and reps";
+"progressMetricE1RMDescription" = "The most you could lift for one rep";
 "progressMetricWeightDescription" = "Heaviest weight lifted in a set";
 "progressMetricRepetitionsDescription" = "Most reps in a single set";
 "progressMetricDurationDescription" = "Longest duration in a single set";
@@ -1126,9 +1128,12 @@
 "progressMetricDistanceDescription" = "Farthest distance in a single set";
 
 // Strength (Progress tab tile + detail)
-"strength" = "Strength";
-"strengthBasis" = "Change in estimated max";
-"strengthExerciseBasis" = "%@ · estimated max";
+/* The Summary aggregate — a set-weighted mean of every exercise's strength change,
+   shown as a percentage. Labelled "Overall Strength" so it cannot be mistaken for the
+   per-exercise "e1RM" metric above, which the reader knows as plain "Strength". */
+"strength" = "Overall Strength";
+"strengthBasis" = "vs. previous timeframe";
+"strengthExerciseBasis" = "%@ · strength";
 "strengthEmpty" = "Building your strength trend";
 "nWeeks" = "%d weeks";
 "nMonths" = "%d months";
@@ -1147,7 +1152,7 @@
 "strengthShowAllLifts" = "Show all %d lifts";
 "strengthAxisLeastDeclined" = "Least declined";
 "showLess" = "Show less";
-"strengthInfo" = "Strength combines those estimates into a single number. For every exercise, LOGIT compares your best estimated max in the selected timeframe with your best in the timeframe before it, then averages all of those changes. The more sets you did of an exercise, the more it counts towards the result. Cardio and bodyweight sets have no estimated max, so they are left out.";
+"strengthInfo" = "Overall Strength combines that into a single number. For every exercise, LOGIT takes your best in the selected timeframe and compares it with your best in the timeframe before, then averages all of those changes. The more sets you did of an exercise, the more it counts towards the result. Cardio and bodyweight sets carry no strength figure, so they are left out.";
 
 
 // MARK: - Data Export

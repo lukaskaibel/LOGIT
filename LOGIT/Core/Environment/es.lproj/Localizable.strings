@@ -866,14 +866,16 @@
 "previewSquats" = "Sentadillas";
 "previewBarbellCurl" = "Curl con barra";
 
-/* Estimated 1RM (e1RM) */
-"e1RM" = "Máx. est.";
-"estimatedOneRepMax" = "Máximo estimado";
-"e1RMInfo" = "Tu máximo a una repetición es el peso más pesado que podrías levantar en una sola repetición. En lugar de pedirte que lo intentes, LOGIT lo calcula a partir del peso y las repeticiones de una serie con la fórmula de Epley; ese resultado es el máximo estimado (en otros sitios lo verás como e1RM). Solo es fiable con pocas repeticiones, por eso las series de más de 12 repeticiones no se tienen en cuenta.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Tu máximo estimado es más alto este mes que el mes pasado.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Tu máximo estimado es más bajo este mes que el mes pasado.";
-"higherMaxE1RMThisYearThanLastYear" = "Tu máximo estimado es más alto este año que el año pasado.";
-"lowerMaxE1RMThisYearThanLastYear" = "Tu máximo estimado es más bajo este año que el año pasado.";
+/* The per-exercise strength metric. Key and value diverge on purpose: the value is
+   an estimated one-rep max, shown to the reader as "Strength". The aggregate on the
+   Summary is "strength" below, shown as "Overall Strength". */
+"e1RM" = "Fuerza";
+"estimatedOneRepMax" = "Fuerza";
+"e1RMInfo" = "La fuerza es el peso más pesado que podrías levantar en una sola repetición. En lugar de pedirte que lo intentes, LOGIT lo calcula a partir del peso y las repeticiones de tus series con la fórmula de Epley (en otros sitios lo verás como 1RM estimado). Se registra en los ejercicios en los que anotas peso y repeticiones, y solo cuentan las series de 12 repeticiones o menos: por encima, la estimación deja de ser fiable.";
+"higherMaxE1RMThisMonthThanLastMonth" = "Tu fuerza es mayor este mes que el mes pasado.";
+"lowerMaxE1RMThisMonthThanLastMonth" = "Tu fuerza es menor este mes que el mes pasado.";
+"higherMaxE1RMThisYearThanLastYear" = "Tu fuerza es mayor este año que el año pasado.";
+"lowerMaxE1RMThisYearThanLastYear" = "Tu fuerza es menor este año que el año pasado.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Volumen por serie";
@@ -914,9 +916,9 @@
 "volumeVsLastTime" = "Volumen vs. la última vez";
 "thisWorkout" = "Este entrenamiento";
 "firstTimeForThisWorkout" = "Primera vez con este entrenamiento: las próximas sesiones se compararán con esta.";
-"workoutPRInfo" = "Un récord personal significa que una serie de este entrenamiento superó tu mejor peso, tu mayor número de repeticiones o tu mejor máximo estimado de todos los entrenamientos anteriores. Sigue siendo el récord de ese día aunque lo hayas superado después. Si varios mejoran a la vez, cuentan juntos como un solo récord. El más concreto encabeza la tarjeta: un peso que levantaste de verdad va antes que una estimación, y una estimación antes que un número de repeticiones. Los demás se listan con él.";
+"workoutPRInfo" = "Un récord personal significa que una serie de este entrenamiento superó tu mejor peso, tu mayor número de repeticiones o tu mejor fuerza de todos los entrenamientos anteriores. Sigue siendo el récord de ese día aunque lo hayas superado después. Si varios mejoran a la vez, cuentan juntos como un solo récord. El más concreto encabeza la tarjeta: primero un peso que levantaste de verdad, después la fuerza y después un número de repeticiones. Los demás se listan con él.";
 "alsoARecord" = "También récord · %@";
-"workoutTrendInfo" = "Cada ejercicio tiene una métrica de progreso: el valor con el que se mide, como el peso o el máximo estimado. La tendencia compara el mejor valor alcanzado en este entrenamiento con tu mejor marca de las cuatro semanas anteriores, la misma comparación que muestran las insignias junto a los ejercicios de abajo.";
+"workoutTrendInfo" = "Cada ejercicio tiene una métrica de progreso: el valor con el que se mide, como el peso o la fuerza. La tendencia compara el mejor valor alcanzado en este entrenamiento con tu mejor marca de las cuatro semanas anteriores, la misma comparación que muestran las insignias junto a los ejercicios de abajo.";
 "workoutVolumeCompareInfo" = "Volumen total (peso × repeticiones de cada serie) comparado con la última vez que hiciste este entrenamiento.";
 "improvedCount" = "%d mejorados";
 
@@ -1118,7 +1120,7 @@
 "trackingWeightAloneHint" = "Añade repeticiones, duración o distancia al peso.";
 "setPreviewCaption" = "Así se verá una serie";
 "progressMetricCaption" = "Se muestra en la insignia del ejercicio mientras entrenas.";
-"progressMetricE1RMDescription" = "Máximo estimado, a partir del peso y las repeticiones";
+"progressMetricE1RMDescription" = "Lo máximo que podrías levantar en una repetición";
 "progressMetricWeightDescription" = "Mayor peso levantado en una serie";
 "progressMetricRepetitionsDescription" = "Más repeticiones en una sola serie";
 "progressMetricDurationDescription" = "Mayor duración en una sola serie";
@@ -1126,9 +1128,12 @@
 "progressMetricDistanceDescription" = "Mayor distancia en una sola serie";
 
 // Strength (Progress tab tile + detail)
-"strength" = "Fuerza";
-"strengthBasis" = "Cambio del máximo estimado";
-"strengthExerciseBasis" = "%@ · máximo estimado";
+/* The Summary aggregate — a set-weighted mean of every exercise's strength change,
+   shown as a percentage. Labelled "Overall Strength" so it cannot be mistaken for the
+   per-exercise "e1RM" metric above, which the reader knows as plain "Strength". */
+"strength" = "Fuerza general";
+"strengthBasis" = "vs. periodo anterior";
+"strengthExerciseBasis" = "%@ · fuerza";
 "strengthEmpty" = "Creando tu tendencia de fuerza";
 "nWeeks" = "%d semanas";
 "nMonths" = "%d meses";
@@ -1147,7 +1152,7 @@
 "strengthShowAllLifts" = "Ver los %d levantamientos";
 "strengthAxisLeastDeclined" = "Menor descenso";
 "showLess" = "Ver menos";
-"strengthInfo" = "La fuerza resume esas estimaciones en un solo número. Para cada ejercicio, LOGIT compara tu mejor máximo estimado del periodo seleccionado con tu mejor máximo estimado del periodo anterior y promedia todos esos cambios. Cuantas más series hiciste de un ejercicio, más peso tiene en el resultado. Las series de cardio y de peso corporal no tienen máximo estimado, así que no se tienen en cuenta.";
+"strengthInfo" = "La fuerza general resume todo eso en un solo número. Para cada ejercicio, LOGIT toma tu mejor marca del periodo seleccionado y la compara con tu mejor marca del periodo anterior, y luego promedia todos esos cambios. Cuantas más series hiciste de un ejercicio, más peso tiene en el resultado. Las series de cardio y de peso corporal no tienen valor de fuerza, así que no se tienen en cuenta.";
 
 
 // MARK: - Data Export

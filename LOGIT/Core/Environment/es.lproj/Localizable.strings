@@ -1182,3 +1182,9 @@
 "durationGoalLongerDescription" = "Un récord es tu tiempo más largo.";
 "durationGoalFaster" = "Más rápido";
 "durationGoalFasterDescription" = "Un récord es tu tiempo más rápido.";
+
+"autoRest" = "Descanso automático";
+"recordedRest" = "Descanso registrado";
+"recordedRestElapsed" = "Tiempo descansado";
+"recordedRestFullDuration" = "Duración completa";
+"recordedRestDescription" = "Al detener un descanso antes de tiempo, registra el tiempo que realmente descansaste o la duración completa configurada.";

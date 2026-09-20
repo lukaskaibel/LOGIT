@@ -37,8 +37,8 @@ struct WorkoutCell: View {
         .padding(CELL_PADDING)
         .background(backgroundGradient)
         .clipShape(RoundedRectangle(cornerRadius: 30))
-        .onAppear {
-            personalRecordCount = WorkoutProgressReport.compute(for: workout, database: database).exerciseRecords.count
+        .task(id: workout.objectID) {
+            personalRecordCount = await PersonalRecordCountIndex.shared.count(for: workout, database: database)
         }
     }
     
@@ -149,8 +149,10 @@ struct WorkoutCell: View {
         }
     }
 
-    /// "n PR(s)" for the personal records set in this workout, or nil when there are none. Uses the
-    /// same `WorkoutProgressReport` detection as the detail screen, so the two counts always agree.
+    /// "n PR(s)" for the personal records set in this workout, or nil when there are none. Read from
+    /// `PersonalRecordCountIndex`, which applies the same `WorkoutProgressReport` rule to the whole
+    /// history at once, so the cell, the History recap and the detail screen always agree — and a
+    /// list of cells scrolling past costs one history walk, not one per cell.
     private var personalRecordsString: String? {
         guard personalRecordCount > 0 else { return nil }
         let format = personalRecordCount == 1

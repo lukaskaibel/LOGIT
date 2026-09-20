@@ -20,6 +20,8 @@ import SwiftUI
 /// the scale feel laggy there — and it also meant closing with ✗ left the rating behind.
 struct WorkoutEffortRatingSheet: View {
     @Binding var score: Int?
+    /// The marker's fill, top to bottom — the workout's muscle-group gradient.
+    let tint: AnyShapeStyle
     let muscleGroups: [MuscleGroup]
 
     @Environment(\.dismiss) private var dismiss
@@ -74,7 +76,7 @@ struct WorkoutEffortRatingSheet: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.label)
             Spacer(minLength: 24)
-            WorkoutEffortPicker(score: $draft) { isShowingDescriptions = true }
+            WorkoutEffortPicker(score: $draft, tint: tint) { isShowingDescriptions = true }
             // Two spacers below against one above each of the title and the picker: the rating
             // sits in the upper two thirds of the sheet, where a thumb reaches it, rather than
             // floating in the middle of an empty screen.
@@ -134,6 +136,10 @@ struct WorkoutEffortDescriptionList: View {
             .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // Picking a row and skipping are both selections, and the only ways the rating changes
+        // while this list is up. SwiftUI keeps this generator prepared; a throwaway one fired
+        // inside the button action drops the tick (see `MuscleFocusScreen`).
+        .sensoryFeedback(.selection, trigger: score)
     }
 
     private func section(_ effort: WorkoutEffort) -> some View {
@@ -160,7 +166,6 @@ struct WorkoutEffortDescriptionList: View {
 
     private func row(value: Int, effort: WorkoutEffort) -> some View {
         Button {
-            UISelectionFeedbackGenerator().selectionChanged()
             score = value
             onBack()
         } label: {
@@ -187,7 +192,7 @@ struct WorkoutEffortDescriptionList: View {
     private var skipRow: some View {
         card {
             Button {
-                UISelectionFeedbackGenerator().selectionChanged()
+                score = nil
                 onSkip()
             } label: {
                 HStack(spacing: 14) {
@@ -216,7 +221,8 @@ struct WorkoutEffortDescriptionList: View {
 /// symbol that merely resembles them, so Skip reads as "no rating on *this* scale".
 private struct WorkoutEffortSkipIcon: View {
     var body: some View {
-        WorkoutEffortBars(score: nil, size: .mini)
+        // Unrated, so the tint is never drawn — the icon is the empty scale, crossed out.
+        WorkoutEffortBars(score: nil, tint: AnyShapeStyle(Color.secondaryFill), size: .mini)
             .frame(width: 28)
             .overlay {
                 Capsule()
@@ -313,10 +319,11 @@ extension View {
     func workoutEffortRatingSheet(
         isPresented: Binding<Bool>,
         score: Binding<Int?>,
+        tint: AnyShapeStyle,
         muscleGroups: [MuscleGroup]
     ) -> some View {
         sheet(isPresented: isPresented) {
-            WorkoutEffortRatingSheet(score: score, muscleGroups: muscleGroups)
+            WorkoutEffortRatingSheet(score: score, tint: tint, muscleGroups: muscleGroups)
         }
     }
 }
@@ -328,12 +335,14 @@ extension View {
 /// the same capsule and the same description list as the sheet.
 struct WorkoutEffortRatingCard: View {
     @Binding var score: Int?
+    /// The marker's fill, top to bottom — the workout's muscle-group gradient.
+    let tint: AnyShapeStyle
     let muscleGroups: [MuscleGroup]
 
     @State private var isShowingDescriptions = false
 
     var body: some View {
-        WorkoutEffortPicker(score: $score, size: .compact) {
+        WorkoutEffortPicker(score: $score, tint: tint, size: .compact) {
             isShowingDescriptions = true
         }
         .padding(.horizontal, CELL_PADDING)
@@ -359,7 +368,12 @@ struct WorkoutEffortRatingCard: View {
     struct Wrapper: View {
         @State private var score: Int? = 5
         var body: some View {
-            WorkoutEffortRatingSheet(score: $score, muscleGroups: [.chest, .shoulders])
+            WorkoutEffortRatingSheet(
+                score: $score,
+                tint: [MuscleGroup.chest, .shoulders]
+                    .weightedSpectrumGradientStyle(startPoint: .top, endPoint: .bottom),
+                muscleGroups: [.chest, .shoulders]
+            )
         }
     }
     return Wrapper()

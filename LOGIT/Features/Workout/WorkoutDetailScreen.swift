@@ -45,6 +45,12 @@ struct WorkoutDetailScreen: View {
 
     @StateObject var workout: Workout
     let canNavigateToTemplate: Bool
+
+    /// Top to bottom, not leading to trailing: the effort marker is a narrow, tall capsule, and a
+    /// horizontal sweep would squeeze the whole spectrum into ~25pt.
+    private var effortTint: AnyShapeStyle {
+        workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom)
+    }
     
     // MARK: - Sharing Service
     
@@ -76,7 +82,7 @@ struct WorkoutDetailScreen: View {
                     // recorder and the editor open. The note has no such invitation: an old
                     // workout that was never annotated shouldn't grow an empty slot on a screen
                     // that is otherwise all things that happened.
-                    WorkoutEffortTile(score: workout.effortScore, style: .tile) {
+                    WorkoutEffortTile(score: workout.effortScore, tint: effortTint, style: .tile) {
                         isRatingEffort = true
                     }
                     if let note = workout.note, workout.hasNote {
@@ -117,6 +123,7 @@ struct WorkoutDetailScreen: View {
                     healthKitSyncManager.syncWorkout(workout.healthKitPayload)
                 }
             ),
+            tint: effortTint,
             muscleGroups: workout.muscleGroups
         )
         .onAppear {

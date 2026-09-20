@@ -46,6 +46,12 @@ struct WorkoutEditorScreen: View {
     @FocusState private var isNoteFieldFocused: Bool
     @State private var isRatingEffort = false
 
+    /// Top to bottom, not leading to trailing: the effort marker is a narrow, tall capsule, and a
+    /// horizontal sweep would squeeze the whole spectrum into ~25pt.
+    private var effortTint: AnyShapeStyle {
+        workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom)
+    }
+
     // MARK: - Parameters
 
     @StateObject var workout: Workout
@@ -113,7 +119,7 @@ struct WorkoutEditorScreen: View {
                             // screen. It reads the score and nothing more: the sheet drafts the
                             // rating and writes once on ✓, because every write here republishes
                             // the whole editor, set list included.
-                            WorkoutEffortTile(score: workout.effortScore, style: .tile) {
+                            WorkoutEffortTile(score: workout.effortScore, tint: effortTint, style: .tile) {
                                 isRatingEffort = true
                             }
                             WorkoutNoteField(
@@ -274,6 +280,7 @@ struct WorkoutEditorScreen: View {
                             get: { workout.effortScore },
                             set: { workout.effortScore = $0 }
                         ),
+                        tint: effortTint,
                         muscleGroups: workout.muscleGroups
                     )
                 }

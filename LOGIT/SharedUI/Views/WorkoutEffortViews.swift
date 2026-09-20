@@ -25,7 +25,7 @@ import SwiftUI
 /// recognised by.
 struct WorkoutEffortBars: View {
     /// How big the bars are drawn, and with it how much of the anatomy survives: the mini size
-    /// drops the dots and the capsule (there is no room to aim at 26pt) and shows the level by
+    /// drops the dots and the marker (there is no room to aim at 26pt) and shows the level by
     /// filling whole bands instead.
     struct Size {
         var height: CGFloat
@@ -33,11 +33,11 @@ struct WorkoutEffortBars: View {
         var cornerRadius: CGFloat
         var dotDiameter: CGFloat
         var dotBottomInset: CGFloat
-        /// How far the selected capsule pokes out above its bar's top edge.
-        var markerOvershoot: CGFloat
-        var markerInset: CGFloat
-        /// Whether the dots and the selected capsule are drawn. The mini size has no room for
-        /// them, which is why its bars carry the rating in their fill instead.
+        /// How far inside its bar the marker sits, on every side. The marker never crosses the
+        /// bar's silhouette — not over the slanted top, not past a rounded corner — so the bar
+        /// always frames it.
+        var markerPadding: CGFloat
+        /// Whether the dots and the marker are drawn.
         var showsMarkers: Bool
 
         /// The rating screen's size: full height, aimable slots.
@@ -47,8 +47,7 @@ struct WorkoutEffortBars: View {
             cornerRadius: 22,
             dotDiameter: 7,
             dotBottomInset: 13,
-            markerOvershoot: 9,
-            markerInset: 5,
+            markerPadding: 7,
             showsMarkers: true
         )
 
@@ -60,8 +59,7 @@ struct WorkoutEffortBars: View {
             cornerRadius: 18,
             dotDiameter: 6,
             dotBottomInset: 11,
-            markerOvershoot: 7,
-            markerInset: 4,
+            markerPadding: 6,
             showsMarkers: true
         )
 
@@ -72,13 +70,16 @@ struct WorkoutEffortBars: View {
             cornerRadius: 3,
             dotDiameter: 0,
             dotBottomInset: 0,
-            markerOvershoot: 0,
-            markerInset: 0,
+            markerPadding: 0,
             showsMarkers: false
         )
     }
 
     let score: Int?
+    /// The marker's fill. The workout's muscle-group gradient at every call site — run **top to
+    /// bottom**: the marker is a narrow, tall capsule, and a leading-to-trailing sweep squeezes a
+    /// whole spectrum into ~25pt and reads as mud.
+    let tint: AnyShapeStyle
     var size: Size = .rating
     /// Whether a finger can move the rating. Read-only everywhere but the picker.
     var isInteractive: Bool = false
@@ -87,8 +88,11 @@ struct WorkoutEffortBars: View {
     /// a drafted rating back to its model once instead of on every slot the drag crosses.
     var onEnded: (() -> Void)? = nil
 
-    /// Set while a finger is down so the haptic only fires when the value actually changes.
-    @State private var lastHapticScore: Int?
+    /// Bumped on every selection a finger makes. `sensoryFeedback` fires off it rather than off
+    /// `score`, so opening a sheet on an already-rated workout doesn't tick.
+    @State private var selections = 0
+    /// Set while a finger is down so a tick only fires when the value actually changes.
+    @State private var lastSelectedScore: Int?
 
     /// How tall the shortest point of the ramp is, as a fraction of the tallest. The ramp is one
     /// straight line across all four bars; the generous corner radius is what makes the narrow
@@ -97,9 +101,8 @@ struct WorkoutEffortBars: View {
 
     private static let slotCount = CGFloat(WorkoutEffort.scoreRange.count)
 
-    /// How much narrower than its slot the selected capsule is, on each side — enough that two
-    /// neighbouring slots never look joined, little enough that the capsule still reads as
-    /// "this one".
+    /// How much narrower than its slot the marker is, on each side — enough that two neighbouring
+    /// slots never look joined, little enough that the marker still reads as "this one".
     private static let markerSlotInset: CGFloat = 4
 
     var body: some View {
@@ -109,11 +112,25 @@ struct WorkoutEffortBars: View {
                 (geometry.size.width - size.spacing * CGFloat(WorkoutEffort.allCases.count - 1))
                     / Self.slotCount
             )
-            HStack(spacing: size.spacing) {
-                ForEach(WorkoutEffort.allCases) { effort in
-                    band(effort, slotWidth: slotWidth)
+            ZStack(alignment: .bottomLeading) {
+                HStack(spacing: size.spacing) {
+                    ForEach(WorkoutEffort.allCases) { effort in
+                        band(effort, slotWidth: slotWidth)
+                    }
+                }
+                .frame(maxHeight: .infinity, alignment: .bottom)
+                if size.showsMarkers, let score, let geometry = marker(for: score, slotWidth: slotWidth) {
+                    Capsule()
+                        .fill(tint)
+                        .frame(width: geometry.width, height: geometry.height)
+                        .offset(x: geometry.x, y: -size.markerPadding)
+                        .transition(.scale(scale: 0.4, anchor: .bottom).combined(with: .opacity))
                 }
             }
+            // One marker that slides and grows between slots, rather than one appearing where
+            // another vanished: the rating is a value moving along a scale, and it should look
+            // like one wherever it is changed from — a drag, a row in the description list, Skip.
+            .animation(.snappy(duration: 0.3, extraBounce: 0.1), value: score)
             .frame(maxHeight: .infinity, alignment: .bottom)
             .contentShape(Rectangle())
             .gesture(
@@ -124,13 +141,17 @@ struct WorkoutEffortBars: View {
                     }
                     .onEnded { _ in
                         guard isInteractive else { return }
-                        lastHapticScore = nil
+                        lastSelectedScore = nil
                         onEnded?()
                     },
                 isEnabled: isInteractive
             )
         }
         .frame(height: size.height)
+        // The system's own selection feedback, which SwiftUI keeps prepared. A throwaway
+        // `UISelectionFeedbackGenerator` fired and released inside the gesture drops the tick or
+        // lands it late (see `MuscleFocusScreen`).
+        .sensoryFeedback(.selection, trigger: selections)
         .accessibilityElement(children: .ignore)
         // Read-only copies (the tile's echo, the Skip icon) carry no identifier and no element of
         // their own: they are a picture of a rating, and a second `effortScale` in the tree is
@@ -147,6 +168,7 @@ struct WorkoutEffortBars: View {
             case .decrement: onSelect?(max(current - 1, WorkoutEffort.scoreRange.lowerBound))
             default: break
             }
+            selections += 1
             onEnded?()
         }
     }
@@ -154,61 +176,115 @@ struct WorkoutEffortBars: View {
     // MARK: - One band
 
     private func band(_ effort: WorkoutEffort, slotWidth: CGFloat) -> some View {
-        let slots = CGFloat(effort.scores.count)
-        let width = slotWidth * slots
         let leadingSlot = CGFloat(effort.scores.lowerBound - 1)
+        let slots = CGFloat(effort.scores.count)
         return RampBar(
             leadingHeight: rampHeight(atSlot: leadingSlot),
             trailingHeight: rampHeight(atSlot: leadingSlot + slots),
             cornerRadius: size.cornerRadius
         )
         .fill(fill(for: effort))
-        .frame(width: width)
+        .frame(width: slotWidth * slots)
         .overlay(alignment: .bottom) {
             if size.showsMarkers {
-                slotMarks(effort, slotWidth: slotWidth)
+                dots(effort, slotWidth: slotWidth)
             }
         }
     }
 
-    /// The dots, and — where the rating landed — the capsule standing in that dot's place.
-    private func slotMarks(_ effort: WorkoutEffort, slotWidth: CGFloat) -> some View {
-        // Bottom-aligned, or the slot holding the tall marker would set the row's height and
-        // centre every other slot's dot against it — the dots have to sit on one line.
-        HStack(alignment: .bottom, spacing: 0) {
+    /// One dot per slot, on one line across all four bars. The slot holding the rating shows none:
+    /// the marker is standing in its place.
+    private func dots(_ effort: WorkoutEffort, slotWidth: CGFloat) -> some View {
+        HStack(spacing: 0) {
             ForEach(Array(effort.scores), id: \.self) { value in
-                ZStack(alignment: .bottom) {
-                    Circle()
-                        .fill(Color.label.opacity(0.35))
-                        .frame(width: size.dotDiameter, height: size.dotDiameter)
-                        .padding(.bottom, size.dotBottomInset)
-                        .opacity(value == score ? 0 : 1)
-                    if value == score {
-                        Capsule()
-                            .fill(Color.label)
-                            .frame(
-                                width: max(0, slotWidth - Self.markerSlotInset * 2),
-                                height: rampHeight(atSlot: CGFloat(value) - 0.5)
-                                    - size.markerInset + size.markerOvershoot
-                            )
-                            .padding(.bottom, size.markerInset)
-                            .transition(.scale(scale: 0.6).combined(with: .opacity))
-                    }
-                }
-                .frame(width: slotWidth, alignment: .bottom)
+                Circle()
+                    .fill(Color.label.opacity(0.35))
+                    .frame(width: size.dotDiameter, height: size.dotDiameter)
+                    .opacity(value == score ? 0 : 1)
+                    .frame(width: slotWidth)
             }
         }
-        .frame(maxHeight: .infinity, alignment: .bottom)
+        .padding(.bottom, size.dotBottomInset)
     }
 
-    /// Every bar wears the same neutral track — only the white capsule says where the rating is,
-    /// exactly as on Apple's screen. The mini size has no capsule, so there it falls back to
-    /// filling the bands up to the rating: at 26pt the level has to come from somewhere.
+    // MARK: - The marker
+
+    private struct MarkerGeometry {
+        var x: CGFloat
+        var width: CGFloat
+        var height: CGFloat
+    }
+
+    /// Where the marker stands, and how much of its bar it is allowed to fill. Its height comes
+    /// from the bar's own silhouette at its two edges — the slanted top *and* the rounded corners
+    /// — less the padding, so it can never break out of the bar it belongs to.
+    private func marker(for score: Int, slotWidth: CGFloat) -> MarkerGeometry? {
+        guard slotWidth > 0, let effort = WorkoutEffort(score: score) else { return nil }
+        let bandIndex = CGFloat(WorkoutEffort.allCases.firstIndex(of: effort) ?? 0)
+        let leadingSlot = CGFloat(effort.scores.lowerBound - 1)
+        let bandWidth = slotWidth * CGFloat(effort.scores.count)
+        let bandX = leadingSlot * slotWidth + bandIndex * size.spacing
+
+        let slotCentre = (CGFloat(score - effort.scores.lowerBound) + 0.5) * slotWidth
+        let fullWidth = max(2, slotWidth - Self.markerSlotInset * 2)
+        // Centred on its slot, then nudged in if that would put it against the band's side wall:
+        // at 2pt the nudge is invisible, and it keeps the padding even all the way round.
+        let localX = min(
+            max(slotCentre - fullWidth / 2, size.markerPadding),
+            bandWidth - size.markerPadding - fullWidth
+        )
+        let ceiling = min(
+            topSurface(atX: localX, in: effort, bandWidth: bandWidth),
+            topSurface(atX: localX + fullWidth, in: effort, bandWidth: bandWidth)
+        )
+        let height = max(2, ceiling - size.markerPadding * 2)
+        // The lowest ratings sit in a bar barely taller than a slot is wide, and a capsule as wide
+        // as it is tall reads as a blob rather than a marker. Those taper instead — narrowing can
+        // only raise the ceiling the width was measured against, so containment still holds.
+        let width = min(fullWidth, height / 1.5)
+        return MarkerGeometry(
+            x: bandX + localX + (fullWidth - width) / 2,
+            width: width,
+            height: height
+        )
+    }
+
+    /// The height of a bar's top surface at one x inside it, arcs included. The straight top edge
+    /// is the ceiling everywhere except under the two top corners, where the rounded silhouette
+    /// dips below it — and the corner is exactly where a naive line would let the marker escape.
+    private func topSurface(atX x: CGFloat, in effort: WorkoutEffort, bandWidth: CGFloat) -> CGFloat {
+        let leadingSlot = CGFloat(effort.scores.lowerBound - 1)
+        let leading = rampHeight(atSlot: leadingSlot)
+        let trailing = rampHeight(atSlot: leadingSlot + CGFloat(effort.scores.count))
+        let radius = RampBar.resolvedRadius(
+            cornerRadius: size.cornerRadius,
+            width: bandWidth,
+            leadingHeight: leading,
+            trailingHeight: trailing
+        )
+        let slope = (trailing - leading) / max(bandWidth, 1)
+        var height = leading + slope * x
+        guard radius > 0 else { return max(0, height) }
+        // Each corner's arc is tangent to the top edge from below, so its circle never rises above
+        // the line: taking the lower of line and circle gives the silhouette without case analysis.
+        let normal = (slope * slope + 1).squareRoot()
+        for centreX in [radius, bandWidth - radius] {
+            let dx = x - centreX
+            guard abs(dx) <= radius else { continue }
+            let centreY = leading + slope * centreX - radius * normal
+            height = min(height, centreY + (radius * radius - dx * dx).squareRoot())
+        }
+        return max(0, height)
+    }
+
+    /// Every bar wears the same neutral track — only the marker says where the rating is, exactly
+    /// as on Apple's screen. The mini size has no marker, so there it falls back to filling the
+    /// bands up to the rating: at 26pt the level has to come from somewhere.
     private func fill(for effort: WorkoutEffort) -> AnyShapeStyle {
         guard !size.showsMarkers, let score, let rated = WorkoutEffort(score: score) else {
             return AnyShapeStyle(Color.secondaryFill)
         }
-        if effort == rated { return AnyShapeStyle(Color.label) }
+        if effort == rated { return tint }
         return AnyShapeStyle(
             effort.scores.upperBound < rated.scores.lowerBound
                 ? Color.label.opacity(0.35)
@@ -232,12 +308,10 @@ struct WorkoutEffortBars: View {
             max(raw, WorkoutEffort.scoreRange.lowerBound),
             WorkoutEffort.scoreRange.upperBound
         )
-        guard clamped != lastHapticScore else { return }
-        lastHapticScore = clamped
-        UISelectionFeedbackGenerator().selectionChanged()
-        withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.8)) {
-            onSelect?(clamped)
-        }
+        guard clamped != lastSelectedScore else { return }
+        lastSelectedScore = clamped
+        selections += 1
+        onSelect?(clamped)
     }
 }
 
@@ -249,6 +323,18 @@ private struct RampBar: Shape {
     var trailingHeight: CGFloat
     var cornerRadius: CGFloat
 
+    /// The radius actually drawn. It can't exceed half the shortest side, or the arcs overrun each
+    /// other and the shape folds in on itself — a mini bar is 3pt tall at its left edge. The
+    /// marker's containment maths reads this too, so both agree on where the corner is.
+    static func resolvedRadius(
+        cornerRadius: CGFloat,
+        width: CGFloat,
+        leadingHeight: CGFloat,
+        trailingHeight: CGFloat
+    ) -> CGFloat {
+        min(cornerRadius, width / 2, max(1, min(leadingHeight, trailingHeight) / 2))
+    }
+
     func path(in rect: CGRect) -> Path {
         let corners = [
             CGPoint(x: rect.minX, y: rect.maxY - leadingHeight),
@@ -256,12 +342,11 @@ private struct RampBar: Shape {
             CGPoint(x: rect.maxX, y: rect.maxY),
             CGPoint(x: rect.minX, y: rect.maxY),
         ]
-        // The radius can't exceed half the shortest side, or the arcs overrun each other and the
-        // shape folds in on itself — a mini bar is 3pt tall at its left edge.
-        let radius = min(
-            cornerRadius,
-            rect.width / 2,
-            max(1, min(leadingHeight, trailingHeight) / 2)
+        let radius = Self.resolvedRadius(
+            cornerRadius: cornerRadius,
+            width: rect.width,
+            leadingHeight: leadingHeight,
+            trailingHeight: trailingHeight
         )
         var path = Path()
         path.move(to: midpoint(corners[3], corners[0]))
@@ -365,6 +450,8 @@ struct WorkoutEffortScoreBadge: View {
 /// rating a workout the same act wherever it happens.
 struct WorkoutEffortPicker: View {
     @Binding var score: Int?
+    /// The marker's fill — the workout's muscle-group gradient, top to bottom.
+    let tint: AnyShapeStyle
     var size: WorkoutEffortBars.Size = .rating
     /// What the capsule's ⓘ does: the sheet pushes the description list, the finish panel
     /// presents it. Passing `nil` drops the button.
@@ -380,6 +467,7 @@ struct WorkoutEffortPicker: View {
         VStack(spacing: 22) {
             WorkoutEffortBars(
                 score: draft,
+                tint: tint,
                 size: size,
                 isInteractive: true,
                 onSelect: { draft = $0 },
@@ -411,6 +499,9 @@ struct WorkoutEffortTile: View {
     }
 
     let score: Int?
+    /// The rated band's fill in the echo at the trailing edge — the workout's muscle-group
+    /// gradient, so the tile carries the same colour the marker did on the rating screen.
+    let tint: AnyShapeStyle
     var style: Style = .tile
     let action: () -> Void
 
@@ -440,7 +531,7 @@ struct WorkoutEffortTile: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 Spacer(minLength: 8)
-                WorkoutEffortBars(score: score, size: .mini)
+                WorkoutEffortBars(score: score, tint: tint, size: .mini)
                     .frame(width: 58)
             }
             .padding(CELL_PADDING)
@@ -480,11 +571,13 @@ private struct EffortTileSurface: ViewModifier {
 #Preview {
     struct Wrapper: View {
         @State private var score: Int? = 5
+        private let tint = [MuscleGroup.chest, .shoulders, .triceps]
+            .weightedSpectrumGradientStyle(startPoint: .top, endPoint: .bottom)
         var body: some View {
             VStack(spacing: 30) {
-                WorkoutEffortPicker(score: $score, showDescriptions: {})
-                WorkoutEffortTile(score: score, action: {})
-                WorkoutEffortTile(score: nil, action: {})
+                WorkoutEffortPicker(score: $score, tint: tint, showDescriptions: {})
+                WorkoutEffortTile(score: score, tint: tint, action: {})
+                WorkoutEffortTile(score: nil, tint: tint, action: {})
             }
             .padding()
             .frame(maxHeight: .infinity)

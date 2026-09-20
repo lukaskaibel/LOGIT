@@ -1319,6 +1319,9 @@ private struct RecorderFinishPanelContent: View {
                         get: { workout.effortScore },
                         set: { workout.effortScore = $0 }
                     ),
+                    // Top to bottom, not leading to trailing: the marker is a narrow, tall
+                    // capsule, and a horizontal sweep squeezes the whole spectrum into ~25pt.
+                    tint: workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom),
                     muscleGroups: workout.muscleGroups
                 )
             }

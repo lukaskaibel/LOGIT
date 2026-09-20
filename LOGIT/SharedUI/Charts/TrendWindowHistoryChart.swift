@@ -186,6 +186,11 @@ struct TrendWindowHistoryChart: View {
     /// Fill of every bar. One style, not a current-vs-past split: the whole strip is the timeframe the
     /// picker names, so there is no "rest" to grey out.
     let barStyle: AnyShapeStyle
+    /// Fill of the inspected bar while the rest of the strip is gray. Defaults to `barStyle`, which is
+    /// what a coloured strip wants — the bar being read keeps the colour the others give up. Duration
+    /// needs the override: its bars are deliberately gray (longer is neither better nor worse), so
+    /// "the bar keeps its colour" would leave gray on gray and nothing to see.
+    var selectionStyle: AnyShapeStyle? = nil
     /// Unit shown after the value in the inspect card ("kg", "sets", "" for a bare count).
     var unit: String = ""
     var height: CGFloat = 260
@@ -211,6 +216,7 @@ struct TrendWindowHistoryChart: View {
         bins: [TrendWindowBin],
         valueLabel: String,
         barStyle: AnyShapeStyle,
+        selectionStyle: AnyShapeStyle? = nil,
         unit: String = "",
         height: CGFloat = 260,
         averageLine: Double? = nil,
@@ -220,6 +226,7 @@ struct TrendWindowHistoryChart: View {
         self.bins = bins
         self.valueLabel = valueLabel
         self.barStyle = barStyle
+        self.selectionStyle = selectionStyle
         self.unit = unit
         self.height = height
         self.averageLine = averageLine
@@ -278,9 +285,9 @@ struct TrendWindowHistoryChart: View {
             ForEach(bins) { bin in
                 bar(for: bin, dimmed: selected != nil)
             }
-            // The inspected bar, redrawn lit on top of its dimmed self, and the one mark in the strip
-            // carrying an annotation. Hanging the card off every bar and showing it for one meant
-            // several hundred annotations laid out per pass.
+            // The inspected bar, redrawn in colour over its grayed self, and the one mark in the
+            // strip carrying an annotation. Hanging the card off every bar and showing it for one
+            // meant several hundred annotations laid out per pass.
             if let selected {
                 inspectedBar(for: selected)
             }
@@ -350,28 +357,42 @@ struct TrendWindowHistoryChart: View {
     /// chew through in reasonable time.
     ///
     /// `dimmed` is a plain Bool rather than "is this the selected bin" so that moving the selection
-    /// from one bar to the next leaves every other bar's mark unchanged — the lit bar is drawn over the
-    /// top by `inspectedBar`.
+    /// from one bar to the next leaves every other bar's mark unchanged — the inspected bar is drawn
+    /// over the top by `inspectedBar`.
+    ///
+    /// Inspecting turns the strip gray and leaves the tapped bar in the chart's own colour, rather
+    /// than tinting the strip down and painting the tapped bar white: the colour is the strip's
+    /// identity (the accent on the stat screens, the muscle's colour on a muscle tile), so the bar
+    /// being read should be the one that still *has* it. `Color.fill` is the same quiet gray the
+    /// calendar-period charts give a bar that isn't the current one.
+    ///
+    /// `stacking: .unstacked` is what makes "over the top" true. Bar marks that share an x value are
+    /// stacked by default, so the inspected copy used to be planted *on the shoulders of* its twin:
+    /// tapping a bar grew it to twice its height, with a second block floating above the bar it was
+    /// meant to highlight. Unstacked, both marks run from the baseline and the top one simply covers
+    /// the other.
     private func bar(for bin: TrendWindowBin, dimmed: Bool) -> some ChartContent {
         BarMark(
             x: .value("Bin", bin.stripDate, unit: .day),
             y: .value(valueLabel, bin.value),
-            width: .ratio(0.6)
+            width: .ratio(0.6),
+            stacking: .unstacked
         )
-        .foregroundStyle(barStyle)
+        .foregroundStyle(dimmed ? AnyShapeStyle(Color.fill) : barStyle)
         .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-        // A tapped bar stays lit; every other bar goes quiet while one is inspected.
-        .opacity(dimmed ? 0.4 : 1.0)
     }
 
-    /// The inspected bar and its value card, drawn opaque over the dimmed strip.
+    /// The inspected bar and its value card, drawn over the grayed strip in the chart's own colour —
+    /// unstacked, so it covers the bar it repeats instead of sitting on top of it (see
+    /// `bar(for:dimmed:)`).
     private func inspectedBar(for bin: TrendWindowBin) -> some ChartContent {
         BarMark(
             x: .value("Bin", bin.stripDate, unit: .day),
             y: .value(valueLabel, bin.value),
-            width: .ratio(0.6)
+            width: .ratio(0.6),
+            stacking: .unstacked
         )
-        .foregroundStyle(Color.label)
+        .foregroundStyle(selectionStyle ?? barStyle)
         .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
         .annotation(
             position: annotationPosition(for: bin),
@@ -484,6 +505,9 @@ struct TrendWindowStatChartView: View {
     let valueLabel: String
     let unit: String
     let barStyle: AnyShapeStyle
+    /// Colour of the inspected bar, for a strip whose own bars are gray (Duration). Nil lets the bar
+    /// being read keep `barStyle`, which is what every coloured strip wants.
+    var selectionStyle: AnyShapeStyle? = nil
     /// Collapses a run of bins into the number the header shows. Called for the visible window and for
     /// the one before it, so both sides are computed the same way by construction.
     let value: (Range<Int>) -> TrendWindowValue
@@ -504,6 +528,7 @@ struct TrendWindowStatChartView: View {
         valueLabel: String,
         unit: String,
         barStyle: AnyShapeStyle,
+        selectionStyle: AnyShapeStyle? = nil,
         value: @escaping (Range<Int>) -> TrendWindowValue,
         trailingValueStyle: AnyShapeStyle,
         positiveColor: Color,
@@ -515,6 +540,7 @@ struct TrendWindowStatChartView: View {
         self.valueLabel = valueLabel
         self.unit = unit
         self.barStyle = barStyle
+        self.selectionStyle = selectionStyle
         self.value = value
         self.trailingValueStyle = trailingValueStyle
         self.positiveColor = positiveColor
@@ -561,6 +587,7 @@ struct TrendWindowStatChartView: View {
                 bins: bins,
                 valueLabel: valueLabel,
                 barStyle: barStyle,
+                selectionStyle: selectionStyle,
                 unit: unit,
                 averageLine: stats.trainedMean,
                 leadingBin: $leadingBin

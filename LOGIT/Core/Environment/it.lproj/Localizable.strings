@@ -866,16 +866,10 @@
 "previewSquats" = "Squat";
 "previewBarbellCurl" = "Curl bilanciere";
 
-/* The per-exercise strength metric. Key and value diverge on purpose: the value is
-   an estimated one-rep max, shown to the reader as "Strength". The aggregate on the
-   Summary is "strength" below, shown as "Overall Strength". */
-"e1RM" = "Forza";
-"estimatedOneRepMax" = "Forza";
-"e1RMInfo" = "La forza è il peso più pesante che riusciresti a sollevare per una singola ripetizione. Invece di fartelo tentare, LOGIT la calcola dal peso e dalle ripetizioni delle tue serie con la formula di Epley (altrove la trovi indicata come 1RM stimato). Viene registrata per gli esercizi in cui annoti peso e ripetizioni, e contano solo le serie fino a 12 ripetizioni: oltre, la stima non è più affidabile.";
-"higherMaxE1RMThisMonthThanLastMonth" = "La tua forza è più alta questo mese rispetto al mese scorso.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "La tua forza è più bassa questo mese rispetto al mese scorso.";
-"higherMaxE1RMThisYearThanLastYear" = "La tua forza è più alta quest'anno rispetto all'anno scorso.";
-"lowerMaxE1RMThisYearThanLastYear" = "La tua forza è più bassa quest'anno rispetto all'anno scorso.";
+/* The per-exercise strength metric: an estimated one-rep max, shown as "Strength".
+   The Summary aggregate is the overallStrength family below. */
+"strengthMetric" = "Forza";
+"strengthMetricInfo" = "La forza è il peso più pesante che riusciresti a sollevare per una singola ripetizione. Invece di fartelo tentare, LOGIT la calcola dal peso e dalle ripetizioni delle tue serie con la formula di Epley (altrove la trovi indicata come 1RM stimato). Viene registrata per gli esercizi in cui annoti peso e ripetizioni, e contano solo le serie fino a 12 ripetizioni: oltre, la stima non è più affidabile.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Volume per serie";
@@ -1120,7 +1114,7 @@
 "trackingWeightAloneHint" = "Aggiungi ripetizioni, durata o distanza al peso.";
 "setPreviewCaption" = "Ecco come apparirà una serie";
 "progressMetricCaption" = "Mostrato sul badge dell'esercizio durante l'allenamento.";
-"progressMetricE1RMDescription" = "Il massimo per una singola ripetizione";
+"progressMetricStrengthDescription" = "Il massimo per una singola ripetizione";
 "progressMetricWeightDescription" = "Peso più alto sollevato in una serie";
 "progressMetricRepetitionsDescription" = "Più ripetizioni in una singola serie";
 "progressMetricDurationDescription" = "Durata più lunga in una singola serie";
@@ -1129,12 +1123,11 @@
 
 // Strength (Progress tab tile + detail)
 /* The Summary aggregate — a set-weighted mean of every exercise's strength change,
-   shown as a percentage. Labelled "Overall Strength" so it cannot be mistaken for the
-   per-exercise "e1RM" metric above, which the reader knows as plain "Strength". */
-"strength" = "Forza complessiva";
-"strengthBasis" = "vs. periodo precedente";
-"strengthExerciseBasis" = "%@ · forza";
-"strengthEmpty" = "Creazione del trend di forza";
+   shown as a percentage and labelled "Overall Strength". */
+"overallStrength" = "Forza complessiva";
+"overallStrengthBasis" = "vs. periodo precedente";
+"overallStrengthExerciseBasis" = "%@ · forza";
+"overallStrengthEmpty" = "Creazione del trend di forza";
 "nWeeks" = "%d settimane";
 "nMonths" = "%d mesi";
 "oneYear" = "1 anno";
@@ -1145,14 +1138,14 @@
 "previousYear" = "Anno precedente";
 "nSets" = "%d serie";
 "allExercises" = "Tutti gli esercizi";
-"strengthAxisMostDeclined" = "Calo maggiore";
-"strengthAxisLeastImproved" = "Progresso minore";
-"strengthAxisMostImproved" = "Progresso maggiore";
-"strengthStrongestLifts" = "Sollevamenti più pesanti";
-"strengthShowAllLifts" = "Mostra tutti i %d esercizi";
-"strengthAxisLeastDeclined" = "Calo minore";
+"overallStrengthAxisMostDeclined" = "Calo maggiore";
+"overallStrengthAxisLeastImproved" = "Progresso minore";
+"overallStrengthAxisMostImproved" = "Progresso maggiore";
+"overallStrengthStrongestLifts" = "Sollevamenti più pesanti";
+"overallStrengthShowAllLifts" = "Mostra tutti i %d esercizi";
+"overallStrengthAxisLeastDeclined" = "Calo minore";
 "showLess" = "Mostra meno";
-"strengthInfo" = "La forza complessiva riassume tutto questo in un unico numero. Per ogni esercizio, LOGIT prende il tuo valore migliore nel periodo selezionato e lo confronta con il migliore del periodo precedente, poi fa la media di tutte queste variazioni. Più serie hai fatto di un esercizio, più esso pesa sul risultato. Le serie di cardio e a corpo libero non hanno un valore di forza e non vengono considerate.";
+"overallStrengthInfo" = "La forza complessiva riassume tutto questo in un unico numero. Per ogni esercizio, LOGIT prende il tuo valore migliore nel periodo selezionato e lo confronta con il migliore del periodo precedente, poi fa la media di tutte queste variazioni. Più serie hai fatto di un esercizio, più esso pesa sul risultato. Le serie di cardio e a corpo libero non hanno un valore di forza e non vengono considerate.";
 
 
 // MARK: - Data Export

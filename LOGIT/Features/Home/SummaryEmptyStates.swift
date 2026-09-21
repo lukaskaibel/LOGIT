@@ -144,7 +144,7 @@ private struct SampleExerciseTile: View {
             title: name,
             // The metric name the real E1RM pinned tile shows in its subtitle — kept in step so this
             // teaser matches a real pinned tile rather than drifting to a different label.
-            label: .plain(NSLocalizedString("e1RM", comment: "")),
+            label: .plain(NSLocalizedString("strengthMetric", comment: "")),
             value: value,
             unit: WeightUnit.used.rawValue,
             accent: AnyShapeStyle(color),

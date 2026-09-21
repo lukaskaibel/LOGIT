@@ -97,7 +97,7 @@ struct StrengthTile: View {
 
     private var header: some View {
         HStack(spacing: 6) {
-            Text(NSLocalizedString("strength", comment: ""))
+            Text(NSLocalizedString("overallStrength", comment: ""))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.label)
                 .lineLimit(1)
@@ -109,7 +109,7 @@ struct StrengthTile: View {
     }
 
     private var subtitle: some View {
-        Text(NSLocalizedString("strengthBasis", comment: ""))
+        Text(NSLocalizedString("overallStrengthBasis", comment: ""))
             .font(.caption.weight(.medium))
             .tracking(0.3)
             .foregroundStyle(.tertiary)
@@ -156,7 +156,7 @@ struct StrengthTile: View {
     private var emptyState: some View {
         TrendPlaceholder(
             progress: progress.historyFraction,
-            text: NSLocalizedString("strengthEmpty", comment: ""),
+            text: NSLocalizedString("overallStrengthEmpty", comment: ""),
             systemImage: "chart.line.uptrend.xyaxis"
         )
     }

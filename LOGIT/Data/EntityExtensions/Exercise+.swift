@@ -267,7 +267,7 @@ enum ExercisePrimaryMetric: String, CaseIterable {
     /// Short, localized label for the picker and accessibility.
     var title: String {
         switch self {
-        case .estimatedOneRepMax: return NSLocalizedString("e1RM", comment: "")
+        case .estimatedOneRepMax: return NSLocalizedString("strengthMetric", comment: "")
         case .weight: return NSLocalizedString("weight", comment: "")
         case .repetitions: return NSLocalizedString("repetitions", comment: "")
         case .duration: return NSLocalizedString("measurementType.duration", comment: "")
@@ -297,8 +297,8 @@ enum ExercisePrimaryMetric: String, CaseIterable {
         }
     }
 
-    /// One-line explanation for the exercise editor's metric picker — "e1RM" alone doesn't
-    /// introduce itself.
+    /// One-line explanation for the exercise editor's metric picker — "Strength" alone doesn't
+    /// say it is a one-rep figure.
     ///
     /// Duration takes the exercise's time goal, because "longest" and "fastest" are opposite
     /// claims and only one of them is a record for any given exercise. The goal is a parameter
@@ -307,7 +307,7 @@ enum ExercisePrimaryMetric: String, CaseIterable {
     func caption(durationGoal: ExerciseDurationGoal) -> String {
         switch self {
         case .estimatedOneRepMax:
-            return NSLocalizedString("progressMetricE1RMDescription", comment: "")
+            return NSLocalizedString("progressMetricStrengthDescription", comment: "")
         case .weight:
             return NSLocalizedString("progressMetricWeightDescription", comment: "")
         case .repetitions:

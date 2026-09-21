@@ -862,16 +862,10 @@
 "previewSquats" = "Kniebeugen";
 "previewBarbellCurl" = "Langhantelcurl";
 
-/* The per-exercise strength metric. Key and value diverge on purpose: the value is
-   an estimated one-rep max, shown to the reader as "Strength". The aggregate on the
-   Summary is "strength" below, shown as "Overall Strength". */
-"e1RM" = "Kraft";
-"estimatedOneRepMax" = "Kraft";
-"e1RMInfo" = "Kraft ist das schwerste Gewicht, das du für eine einzige Wiederholung bewegen könntest. Statt dass du es versuchst, errechnet LOGIT es mit der Epley-Formel aus dem Gewicht und den Wiederholungen deiner Sätze (anderswo begegnet dir das als geschätztes 1RM). Erfasst wird sie für Übungen, bei denen du Gewicht und Wiederholungen protokollierst, und es zählen nur Sätze mit höchstens 12 Wiederholungen — darüber wird die Schätzung unzuverlässig.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Deine Kraft ist diesen Monat höher als letzten Monat.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Deine Kraft ist diesen Monat niedriger als letzten Monat.";
-"higherMaxE1RMThisYearThanLastYear" = "Deine Kraft ist dieses Jahr höher als letztes Jahr.";
-"lowerMaxE1RMThisYearThanLastYear" = "Deine Kraft ist dieses Jahr niedriger als letztes Jahr.";
+/* The per-exercise strength metric: an estimated one-rep max, shown as "Strength".
+   The Summary aggregate is the overallStrength family below. */
+"strengthMetric" = "Kraft";
+"strengthMetricInfo" = "Kraft ist das schwerste Gewicht, das du für eine einzige Wiederholung bewegen könntest. Statt dass du es versuchst, errechnet LOGIT es mit der Epley-Formel aus dem Gewicht und den Wiederholungen deiner Sätze (anderswo begegnet dir das als geschätztes 1RM). Erfasst wird sie für Übungen, bei denen du Gewicht und Wiederholungen protokollierst, und es zählen nur Sätze mit höchstens 12 Wiederholungen — darüber wird die Schätzung unzuverlässig.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Satzvolumen";
@@ -1116,7 +1110,7 @@
 "trackingWeightAloneHint" = "Ergänze das Gewicht um Wiederholungen, Dauer oder Distanz.";
 "setPreviewCaption" = "So wird ein Satz aussehen";
 "progressMetricCaption" = "Wird beim Training auf dem Übungs-Badge angezeigt.";
-"progressMetricE1RMDescription" = "Das Maximum für eine Wiederholung";
+"progressMetricStrengthDescription" = "Das Maximum für eine Wiederholung";
 "progressMetricWeightDescription" = "Schwerstes Gewicht in einem Satz";
 "progressMetricRepetitionsDescription" = "Meiste Wiederholungen in einem Satz";
 "progressMetricDurationDescription" = "Längste Dauer in einem Satz";
@@ -1125,12 +1119,11 @@
 
 // Strength (Progress tab tile + detail)
 /* The Summary aggregate — a set-weighted mean of every exercise's strength change,
-   shown as a percentage. Labelled "Overall Strength" so it cannot be mistaken for the
-   per-exercise "e1RM" metric above, which the reader knows as plain "Strength". */
-"strength" = "Gesamtkraft";
-"strengthBasis" = "vs. vorherigem Zeitraum";
-"strengthExerciseBasis" = "%@ · Kraft";
-"strengthEmpty" = "Dein Krafttrend entsteht";
+   shown as a percentage and labelled "Overall Strength". */
+"overallStrength" = "Gesamtkraft";
+"overallStrengthBasis" = "vs. vorherigem Zeitraum";
+"overallStrengthExerciseBasis" = "%@ · Kraft";
+"overallStrengthEmpty" = "Dein Krafttrend entsteht";
 "nWeeks" = "%d Wochen";
 "nMonths" = "%d Monate";
 "oneYear" = "1 Jahr";
@@ -1141,14 +1134,14 @@
 "previousYear" = "Vorheriges Jahr";
 "nSets" = "%d Sätze";
 "allExercises" = "Alle Übungen";
-"strengthAxisMostDeclined" = "Stärkster Rückgang";
-"strengthAxisLeastImproved" = "Geringster Zuwachs";
-"strengthAxisMostImproved" = "Größter Zuwachs";
-"strengthStrongestLifts" = "Stärkste Übungen";
-"strengthShowAllLifts" = "Alle %d Übungen zeigen";
-"strengthAxisLeastDeclined" = "Geringster Rückgang";
+"overallStrengthAxisMostDeclined" = "Stärkster Rückgang";
+"overallStrengthAxisLeastImproved" = "Geringster Zuwachs";
+"overallStrengthAxisMostImproved" = "Größter Zuwachs";
+"overallStrengthStrongestLifts" = "Stärkste Übungen";
+"overallStrengthShowAllLifts" = "Alle %d Übungen zeigen";
+"overallStrengthAxisLeastDeclined" = "Geringster Rückgang";
 "showLess" = "Weniger anzeigen";
-"strengthInfo" = "Die Gesamtkraft fasst das zu einer einzigen Zahl zusammen. Für jede Übung nimmt LOGIT deinen besten Wert im gewählten Zeitraum und vergleicht ihn mit deinem besten im Zeitraum davor, dann werden all diese Veränderungen gemittelt. Je mehr Sätze du von einer Übung gemacht hast, desto stärker zählt sie für das Ergebnis. Cardio- und Körpergewichtssätze haben keinen Kraftwert und bleiben außen vor.";
+"overallStrengthInfo" = "Die Gesamtkraft fasst das zu einer einzigen Zahl zusammen. Für jede Übung nimmt LOGIT deinen besten Wert im gewählten Zeitraum und vergleicht ihn mit deinem besten im Zeitraum davor, dann werden all diese Veränderungen gemittelt. Je mehr Sätze du von einer Übung gemacht hast, desto stärker zählt sie für das Ergebnis. Cardio- und Körpergewichtssätze haben keinen Kraftwert und bleiben außen vor.";
 
 
 // MARK: - Data Export

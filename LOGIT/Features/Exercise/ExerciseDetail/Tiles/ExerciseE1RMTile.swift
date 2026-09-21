@@ -20,7 +20,7 @@ struct ExerciseE1RMTile: View {
         ExerciseBestMetricTile(
             exercise: exercise,
             workoutSets: workoutSets,
-            title: NSLocalizedString("e1RM", comment: ""),
+            title: NSLocalizedString("strengthMetric", comment: ""),
             unit: WeightUnit.used.rawValue,
             requiresPro: true,
             showsExerciseName: showsExerciseName,

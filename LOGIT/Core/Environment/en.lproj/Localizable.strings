@@ -866,16 +866,10 @@
 "previewSquats" = "Squats";
 "previewBarbellCurl" = "Barbell Curl";
 
-/* The per-exercise strength metric. Key and value diverge on purpose: the value is
-   an estimated one-rep max, shown to the reader as "Strength". The aggregate on the
-   Summary is "strength" below, shown as "Overall Strength". */
-"e1RM" = "Strength";
-"estimatedOneRepMax" = "Strength";
-"e1RMInfo" = "Strength is the heaviest weight you could lift for a single repetition. Rather than have you attempt one, LOGIT works it out from the weight and repetitions of your sets using the Epley formula (elsewhere you may see this called an estimated 1RM). It is tracked for exercises where you log both a weight and repetitions, and only sets of 12 repetitions or fewer count — above that the estimate stops being reliable.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Your strength this month is higher than last month.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Your strength this month is lower than last month.";
-"higherMaxE1RMThisYearThanLastYear" = "Your strength this year is higher than last year.";
-"lowerMaxE1RMThisYearThanLastYear" = "Your strength this year is lower than last year.";
+/* The per-exercise strength metric: an estimated one-rep max, shown as "Strength".
+   The Summary aggregate is the overallStrength family below. */
+"strengthMetric" = "Strength";
+"strengthMetricInfo" = "Strength is the heaviest weight you could lift for a single repetition. Rather than have you attempt one, LOGIT works it out from the weight and repetitions of your sets using the Epley formula (elsewhere you may see this called an estimated 1RM). It is tracked for exercises where you log both a weight and repetitions, and only sets of 12 repetitions or fewer count — above that the estimate stops being reliable.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Set Volume";
@@ -1120,7 +1114,7 @@
 "trackingWeightAloneHint" = "Add reps, a duration, or a distance to go with the weight.";
 "setPreviewCaption" = "One set will look like this";
 "progressMetricCaption" = "Shown on the exercise badge while you train.";
-"progressMetricE1RMDescription" = "The most you could lift for one rep";
+"progressMetricStrengthDescription" = "The most you could lift for one rep";
 "progressMetricWeightDescription" = "Heaviest weight lifted in a set";
 "progressMetricRepetitionsDescription" = "Most reps in a single set";
 "progressMetricDurationDescription" = "Longest duration in a single set";
@@ -1129,12 +1123,11 @@
 
 // Strength (Progress tab tile + detail)
 /* The Summary aggregate — a set-weighted mean of every exercise's strength change,
-   shown as a percentage. Labelled "Overall Strength" so it cannot be mistaken for the
-   per-exercise "e1RM" metric above, which the reader knows as plain "Strength". */
-"strength" = "Overall Strength";
-"strengthBasis" = "vs. previous timeframe";
-"strengthExerciseBasis" = "%@ · strength";
-"strengthEmpty" = "Building your strength trend";
+   shown as a percentage and labelled "Overall Strength". */
+"overallStrength" = "Overall Strength";
+"overallStrengthBasis" = "vs. previous timeframe";
+"overallStrengthExerciseBasis" = "%@ · strength";
+"overallStrengthEmpty" = "Building your strength trend";
 "nWeeks" = "%d weeks";
 "nMonths" = "%d months";
 "oneYear" = "1 year";
@@ -1145,14 +1138,14 @@
 "previousYear" = "Previous year";
 "nSets" = "%d sets";
 "allExercises" = "All exercises";
-"strengthAxisMostDeclined" = "Most declined";
-"strengthAxisLeastImproved" = "Least improved";
-"strengthAxisMostImproved" = "Most improved";
-"strengthStrongestLifts" = "Strongest lifts";
-"strengthShowAllLifts" = "Show all %d lifts";
-"strengthAxisLeastDeclined" = "Least declined";
+"overallStrengthAxisMostDeclined" = "Most declined";
+"overallStrengthAxisLeastImproved" = "Least improved";
+"overallStrengthAxisMostImproved" = "Most improved";
+"overallStrengthStrongestLifts" = "Strongest lifts";
+"overallStrengthShowAllLifts" = "Show all %d lifts";
+"overallStrengthAxisLeastDeclined" = "Least declined";
 "showLess" = "Show less";
-"strengthInfo" = "Overall Strength combines that into a single number. For every exercise, LOGIT takes your best in the selected timeframe and compares it with your best in the timeframe before, then averages all of those changes. The more sets you did of an exercise, the more it counts towards the result. Cardio and bodyweight sets carry no strength figure, so they are left out.";
+"overallStrengthInfo" = "Overall Strength combines that into a single number. For every exercise, LOGIT takes your best in the selected timeframe and compares it with your best in the timeframe before, then averages all of those changes. The more sets you did of an exercise, the more it counts towards the result. Cardio and bodyweight sets carry no strength figure, so they are left out.";
 
 
 // MARK: - Data Export

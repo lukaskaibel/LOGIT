@@ -72,11 +72,13 @@
 "groupIndexOfTotal" = "%1$d / %2$d";
 "previousBest" = "以前のベスト";
 "lastBest" = "前回のベスト";
-"lastBestInfo" = "このエクササイズを4週間以上記録していないときに表示されます。直近のセッションでのベスト値です。";
+"lastBestInfo" = "この種目を4週間以上記録していないときに表示されます。どれだけ前であっても、最後に記録したセッションでのベスト値です。";
 "newRecord" = "新記録";
-"currentBestInfo" = "現在のベストは、直近4週間の最高値です。トレンドは、その値に達する前の4週間のベストよりどれだけ高いかを示します。";
-"currentBestComparisonInfo" = "現在のベスト（右）は直近4週間の最高値です。バッジは、左に表示された期間のベストと比べてどうかを示します。スクロールして任意の期間と比較できます。";
-"averageComparisonInfo" = "左は、表示中の期間の直前にある同じ長さの期間です。バッジは、表示中の期間（右）がそれと比べてどうかを示します。";
+"currentBestInfo" = "現在のベストは、直近4週間の最高値です。隣のトレンドは、その値を、達成した日までの4週間のベストと比べたものです。";
+"currentBestComparisonInfo" = "右は現在のベスト、つまり直近4週間の最高値です。左はグラフに表示中の期間でのベストで、その間のバッジが両者の比較を示します。グラフをスクロールすれば、どの期間とでも比べられます。";
+/* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
+"averageComparisonInfo" = "右はグラフに表示中の期間です。左はその直前にある同じ長さの期間で、その間のバッジが両者の比較を示します。";
+"periodAverageComparisonInfo" = "右は現在の期間です。左はグラフに表示中の、すでに終了した期間の平均（破線）で、その間のバッジが両者の比較を示します。";
 "currentWorkout" = "現在のトレーニング";
 
 // MARK: - D
@@ -864,18 +866,14 @@
 "previewSquats" = "スクワット";
 "previewBarbellCurl" = "バーベルカール";
 
-/* Estimated 1RM (e1RM) */
-"e1RM" = "e1RM";
-"estimatedOneRepMax" = "推定1RM";
-"e1RMInfo" = "推定1RM：重量とレップ数から算出した、1回だけ挙げられると推定される最大重量です（Epley式）。この式は低レップ数でのみ正確なため、12レップを超えるセットはカウントされません。";
-"higherMaxE1RMThisMonthThanLastMonth" = "今月の推定1RMは先月より高くなっています。";
-"lowerMaxE1RMThisMonthThanLastMonth" = "今月の推定1RMは先月より低くなっています。";
-"higherMaxE1RMThisYearThanLastYear" = "今年の推定1RMは昨年より高くなっています。";
-"lowerMaxE1RMThisYearThanLastYear" = "今年の推定1RMは昨年より低くなっています。";
+/* The per-exercise strength metric: an estimated one-rep max, shown as "Strength".
+   The Summary aggregate is the overallStrength family below. */
+"strengthMetric" = "筋力";
+"strengthMetricInfo" = "筋力とは、1回だけなら挙げられる最大の重量のことです。実際に挑戦しなくても、LOGITがセットの重量と回数からEpley（エプリー）式で計算します（ほかでは推定1RMと呼ばれることもあります）。重量と回数を記録する種目で計測され、12回以下のセットだけが対象です。それを超えると推定が正確でなくなるためです。";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "セットボリューム";
-"setVolumeInfo" = "セットボリューム：1セットの重量×レップ数です。1セットあたりのベスト記録を追跡します。合計ボリュームと異なり、1セットでより重い重量を扱うかレップ数を増やした場合にのみ伸びます。";
+"setVolumeInfo" = "セットボリュームは、1セットの重量にその回数を掛けた値です。各点はその日のベストの1セットです。合計ボリュームとは違い、1セットの中でより重い重量を扱うか回数を増やしたときだけ伸び、セットを増やしただけでは伸びません。";
 "higherMaxSetVolumeThisMonthThanLastMonth" = "今月のベストセットボリュームは先月より高くなっています。";
 "lowerMaxSetVolumeThisMonthThanLastMonth" = "今月のベストセットボリュームは先月より低くなっています。";
 "higherMaxSetVolumeThisYearThanLastYear" = "今年のベストセットボリュームは昨年より高くなっています。";
@@ -883,18 +881,18 @@
 
 /* Metric detail "About" sections */
 "aboutMetric" = "「%@」について";
-"weightInfo" = "1セットで挙げた最も重い重量を日ごとに表示します。扱う重量が時間とともに増えることは、筋力向上の最も直接的なサインです。";
-"repetitionsInfo" = "1セットで行った最多レップ数を日ごとに表示します。同じ重量でより多くのレップをこなすと筋持久力が高まり、進歩のもう一つの形になります。";
-"volumeInfo" = "ボリュームは動かした総重量です。重量 × レップ数を期間内の全セットで合計します。ボリュームが多いほど総仕事量が多く、筋肥大の重要な要因になります。バッジは、この期間を表示中の期間の平均（破線）と比較します。";
-"setsInfo" = "セット数は、この種目で記録した有効なセットの数です（実際に完了したセットのみをカウントします）。十分なセットをこなすことが筋力と筋肉の成長の重要な要因になります。グラフは直近の期間ごとのセット数を示し、バッジは、この期間をそれらの平均（破線）と比較します。";
+"weightInfo" = "各点は、その日に1セットで挙げた最も重い重量です。扱う重量が時間とともに増えていくことは、筋力が伸びている最も直接的なサインです。";
+"repetitionsInfo" = "各点は、その日に1セットで行った最も多い回数です。同じ重量でより多く挙げられるようになると筋持久力が高まります。これも進歩のひとつの形です。";
+"volumeInfo" = "ボリュームは、動かした重量の合計です。LOGITは各セットの重量にその回数を掛け、期間内のすべてのセットを合計します。ボリュームが多いほど多くの仕事をしたことになり、筋肥大の主な要因のひとつです。破線はグラフに表示中の、すでに終了した期間の平均で、バッジはこの期間がそれと比べてどうかを示します。";
+"setsInfo" = "セットとは、続けて行う1組の回数のことです。ここでは、この種目で実際に完了したセットだけを数えます。空のままのセットは数えません。しっかり追い込めるセットを十分な数こなすことは、筋力と筋肉の成長の主な要因のひとつです。破線はグラフに表示中の、すでに終了した期間の平均で、バッジはこの期間がそれと比べてどうかを示します。";
 
 "progressMetric" = "進捗指標";
 
 "maxWeight" = "最大重量";
 "maxReps" = "最大回数";
 
-"metricInfoWeight" = "1セットで挙げた最も重い重量。回数は考慮されません。";
-"metricInfoReps" = "1セットで行った最多回数。重量は考慮されません。";
+"metricInfoWeight" = "1セットで挙げた最も重い重量です。回数は問いません。";
+"metricInfoReps" = "1セットで行った最も多い回数です。重量は問いません。";
 "tapForMetricInfo" = "タップすると詳細の表示と指標の切り替えができます。";
 "personalRecord" = "自己ベスト";
 "personalRecordShort" = "自己ベスト";
@@ -912,9 +910,9 @@
 "volumeVsLastTime" = "ボリューム比較（前回）";
 "thisWorkout" = "今回のワークアウト";
 "firstTimeForThisWorkout" = "このワークアウトは今回が初めてです。今後のセッションはこれと比較されます。";
-"workoutPRInfo" = "自己ベストとは、このワークアウトのセットが、それ以前のすべてのワークアウトでの最高重量・最多回数・推定1RMを上回ったことを意味します。後で更新されても、この日の記録として残ります。複数の指標が同時に更新された場合は1つの記録として数え、最も具体的な指標がカードの主役になり、残りはあわせて表示されます。";
+"workoutPRInfo" = "自己ベストとは、このワークアウトのあるセットが、それ以前のすべてのワークアウトでの最高重量・最多回数・最高筋力のいずれかを上回ったことを意味します。あとで更新しても、その日の記録として残ります。複数が同時に更新された場合は、まとめてひとつの記録として数えます。最も確かなものがカードの主役になります。実際に挙げた重量が最優先で、次に筋力、次に回数です。残りはあわせて表示されます。";
 "alsoARecord" = "こちらも新記録 · %@";
-"workoutTrendInfo" = "各種目のトレンドは、このワークアウトでの進捗指標のベスト値を、その前の4週間のベストと比較します — 下の種目バッジと同じ比較です。";
+"workoutTrendInfo" = "種目にはそれぞれ進捗指標があります。重量や筋力など、その種目を評価する値のことです。トレンドは、このワークアウトで達した最高値を、その前の4週間のベストと比べます。下にある各種目のバッジと同じ比較です。";
 "workoutVolumeCompareInfo" = "総ボリューム（各セットの重量×回数）を、前回同じワークアウトを行ったときと比較します。";
 "improvedCount" = "%d種目向上";
 
@@ -932,11 +930,11 @@
 "rps" = "回";
 "average" = "平均";
 "volumePerSet" = "セットごとのボリューム";
-"workoutStatCompareRecentInfo" = "トレンドは、このワークアウトを直近%d回のワークアウトの平均と比較します。バーはそれらを示し、右端の強調されたバーがこのワークアウトです。";
-"workoutVolumeAboutInfo" = "ボリュームはワークアウトで動かした総重量です — 重量 × 回数を全セットで合計したもの。ワークアウト間で比較すると、セッションに含まれる仕事量がわかります。";
-"workoutDurationAboutInfo" = "時間はワークアウトの開始から終了までの長さです。長くても短くてもそれ自体は良し悪しではありません — ボリュームと合わせて、トレーニングの密度を見ましょう。";
-"workoutSetsAboutInfo" = "ワークアウトで記録したセット数 — バーの重量に関係なく、セッションでどれだけ行ったかを示すシンプルな指標です。";
-"workoutRepsAboutInfo" = "ワークアウトで記録したすべての回数を全セットで合計したものです。セット数とボリュームと合わせて、セッションの仕事量を表します。";
+"workoutStatCompareRecentInfo" = "トレンドは、このワークアウトを直近%d回のワークアウトの平均と比べます。各バーがそのワークアウトで、右端の強調されたバーがこのワークアウトです。";
+"workoutVolumeAboutInfo" = "ボリュームは、ワークアウトで動かした重量の合計です。LOGITは各セットの重量にその回数を掛け、すべてのセットを合計します。ワークアウト同士を比べると、セッションにどれだけの仕事量が含まれていたかがわかります。";
+"workoutDurationAboutInfo" = "時間は、ワークアウトを始めてから終えるまでの長さです。長い・短いだけで良し悪しは決まりません。ボリュームと合わせて見ると、その時間にどれだけの仕事を詰め込んだかがわかります。";
+"workoutSetsAboutInfo" = "ワークアウトで記録したセットの数です。セットとは続けて行う1組の回数のことなので、重量の重さに関係なく、そのセッションでどれだけ行ったかを示すシンプルな指標になります。";
+"workoutRepsAboutInfo" = "ワークアウトで記録したすべての回数を、全セット分合計した値です。セット数やボリュームと合わせて、そのセッションの仕事量を表します。";
 "period" = "期間";
 "weeklyGoal" = "週間目標";
 "weeklyGoalReached" = "目標達成";
@@ -1035,7 +1033,7 @@
 "yearCrossingHeadline" = "%@年が%@年をすでに上回りました";
 "monthsToSpare" = "%dか月を残して";
 "monthToSpare" = "1か月を残して";
-"highlightsInfo" = "マイルストーンと記録は選択した期間が対象です。トレンドはその期間と直前の同じ長さの期間を比較します。";
+"highlightsInfo" = "マイルストーンと記録は、選択した期間のものです。トレンドは、その期間を直前の期間と比べます。";
 "streak" = "連続記録";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
@@ -1060,9 +1058,9 @@
 "measurementType.weightAndDistance" = "重量と距離";
 "measurementTypeChangeInfo" = "既存のセットは記録された値を保持します。新しいセットのみ新しい測定方法を使用します。";
 
-"metricInfoDuration" = "この種目で記録された最長時間です。";
-"metricInfoDurationFaster" = "この種目で記録された最速タイムです。";
-"metricInfoDistance" = "この種目で記録された最長距離です。";
+"metricInfoDuration" = "この種目の1セットで記録した最も長い時間です。";
+"metricInfoDurationFaster" = "この種目の1セットで記録した最も速いタイムです。";
+"metricInfoDistance" = "この種目の1セットで記録した最も長い距離です。";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "ワークアウトあたり";
 "perWorkoutBasis" = "ワークアウトあたり";
@@ -1085,7 +1083,7 @@
 
 // MARK: - Calorie Estimates
 
-"calorieEstimateExplanation" = "LOGITはトレーニング密度と体重からアクティブカロリーを推定します。毎回同じ方法で計算するため、ワークアウト同士の比較に意味があります。消費量には個人差があるため、絶対値は目安としてください。";
+"calorieEstimateExplanation" = "LOGITは、あなたの体重とトレーニングの密度（ワークアウトのうち実際に動いていた割合）からアクティブカロリーを推定します。計算方法は常に同じなので、ワークアウト同士の比較には意味があります。実際の消費量には個人差があるため、数値そのものはおおよその目安として見てください。";
 "calorieEstimateHealthNote" = "アクティブカロリーとしてヘルスケアに同期されます。推定は設定でオフにできます。";
 "calorieEstimates" = "カロリー推定";
 "calorieEstimatesDescription" = "記録したセットと体重からアクティブカロリーを推定します。ワークアウト詳細に表示され、ヘルスケア同期に含まれます。";
@@ -1116,7 +1114,7 @@
 "trackingWeightAloneHint" = "重量に加えてレップ数・時間・距離のいずれかを選んでください。";
 "setPreviewCaption" = "セットはこのように表示されます";
 "progressMetricCaption" = "トレーニング中に種目のバッジに表示されます。";
-"progressMetricE1RMDescription" = "重量とレップ数から推定した1RM";
+"progressMetricStrengthDescription" = "1回だけ挙げられる最大重量";
 "progressMetricWeightDescription" = "1セットで挙げた最大重量";
 "progressMetricRepetitionsDescription" = "1セットの最多レップ数";
 "progressMetricDurationDescription" = "1セットの最長時間";
@@ -1124,10 +1122,11 @@
 "progressMetricDistanceDescription" = "1セットの最長距離";
 
 // Strength (Progress tab tile + detail)
-"strength" = "筋力";
-"strengthBasis" = "全体のe1RM";
-"strengthExerciseBasis" = "%@のe1RM";
-"strengthEmpty" = "筋力トレンドを作成中";
+/* The Summary aggregate — a set-weighted mean of every exercise's strength change,
+   shown as a percentage and labelled "Overall Strength". */
+"overallStrength" = "総合筋力";
+"overallStrengthExerciseBasis" = "%@・筋力";
+"overallStrengthEmpty" = "筋力トレンドを作成中";
 "nWeeks" = "%d週間";
 "nMonths" = "%dか月";
 "oneYear" = "1年";
@@ -1138,14 +1137,14 @@
 "previousYear" = "前の1年";
 "nSets" = "%dセット";
 "allExercises" = "すべての種目";
-"strengthAxisMostDeclined" = "最大の低下";
-"strengthAxisLeastImproved" = "最小の伸び";
-"strengthAxisMostImproved" = "最大の伸び";
-"strengthStrongestLifts" = "最も重い種目";
-"strengthShowAllLifts" = "%d 種目をすべて表示";
-"strengthAxisLeastDeclined" = "最小の低下";
+"overallStrengthAxisMostDeclined" = "最大の低下";
+"overallStrengthAxisLeastImproved" = "最小の伸び";
+"overallStrengthAxisMostImproved" = "最大の伸び";
+"overallStrengthStrongestLifts" = "最も重い種目";
+"overallStrengthShowAllLifts" = "%d 種目をすべて表示";
+"overallStrengthAxisLeastDeclined" = "最小の低下";
 "showLess" = "表示を減らす";
-"strengthInfo" = "選択した期間における各種目の推定1RMの最高値を、その前の期間と比較し、セット数で重み付けして平均したものです。有酸素運動と自重のセットは1RMがないためカウントされません。";
+"overallStrengthInfo" = "総合筋力は、それをひとつの数字にまとめたものです。種目ごとに、選択した期間のベスト値をその前の期間のベスト値と比べ、それらの変化をすべて平均します。セット数の多い種目ほど、結果に大きく反映されます。有酸素運動と自重のセットには筋力の値がないため、含まれません。";
 
 
 // MARK: - Data Export

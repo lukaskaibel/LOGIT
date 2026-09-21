@@ -39,7 +39,7 @@ struct ExerciseVolumeScreen: View {
                         // decimals only wrap the large header number onto a second line.
                         formatAverage: { "\(Int(convertWeightForDisplayingDecimal(Int($0.rounded())).rounded()))" },
                         displayAverage: { Double(Int(convertWeightForDisplayingDecimal(Int($0.rounded())).rounded())) },
-                        explanation: NSLocalizedString("averageComparisonInfo", comment: "")
+                        explanation: NSLocalizedString("periodAverageComparisonInfo", comment: "")
                     )
                 }
                 .padding(.horizontal)

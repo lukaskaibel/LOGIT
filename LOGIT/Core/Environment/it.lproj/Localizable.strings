@@ -72,11 +72,13 @@
 "groupIndexOfTotal" = "%1$d di %2$d";
 "previousBest" = "Migliore precedente";
 "lastBest" = "Ultima migliore";
-"lastBestInfo" = "Mostrato quando non alleni questo esercizio da più di 4 settimane: il tuo risultato migliore dall'ultima sessione.";
+"lastBestInfo" = "Mostrato quando non alleni questo esercizio da più di 4 settimane: il tuo valore migliore dell'ultima sessione registrata, per quanto lontana nel tempo.";
 "newRecord" = "Nuovo record";
-"currentBestInfo" = "Il tuo migliore attuale è il valore più alto delle ultime 4 settimane. L'andamento mostra quanto è più alto rispetto al tuo migliore nelle 4 settimane precedenti.";
-"currentBestComparisonInfo" = "Il tuo migliore attuale (a destra) è il valore più alto delle ultime 4 settimane. Il distintivo mostra come si confronta con il tuo migliore nel periodo mostrato a sinistra; scorri per confrontare con qualsiasi periodo.";
-"averageComparisonInfo" = "A sinistra c'è lo stesso intervallo di tempo immediatamente precedente a quello mostrato. Il distintivo mostra come il periodo mostrato (a destra) si confronta con esso.";
+"currentBestInfo" = "Il tuo migliore attuale è il valore più alto delle ultime 4 settimane. L'andamento accanto lo confronta con il tuo migliore delle 4 settimane precedenti al giorno in cui lo hai raggiunto.";
+"currentBestComparisonInfo" = "A destra c'è il tuo migliore attuale: il valore più alto delle ultime 4 settimane. A sinistra c'è il tuo migliore nel periodo mostrato nel grafico, e il distintivo tra i due mostra come si confrontano. Scorri il grafico per confrontarlo con qualsiasi altro periodo.";
+/* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
+"averageComparisonInfo" = "A destra c'è il periodo attualmente mostrato nel grafico. A sinistra c'è lo stesso intervallo di tempo immediatamente precedente, e il distintivo tra i due mostra come si confrontano.";
+"periodAverageComparisonInfo" = "A destra c'è il periodo in corso. A sinistra c'è la media dei periodi già conclusi mostrati nel grafico — la linea tratteggiata — e il distintivo tra i due mostra come si confrontano.";
 "currentWorkout" = "Allenamento attuale";
 
 // MARK: - D
@@ -864,18 +866,14 @@
 "previewSquats" = "Squat";
 "previewBarbellCurl" = "Curl bilanciere";
 
-/* Estimated 1RM (e1RM) */
-"e1RM" = "e1RM";
-"estimatedOneRepMax" = "1RM stimato";
-"e1RMInfo" = "1RM stimato: il peso massimo che potresti probabilmente sollevare per una singola ripetizione, calcolato da peso e ripetizioni (formula di Epley). È precisa solo a basse ripetizioni, quindi le serie oltre le 12 ripetizioni non vengono conteggiate.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Il tuo 1RM stimato questo mese è più alto del mese scorso.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Il tuo 1RM stimato questo mese è più basso del mese scorso.";
-"higherMaxE1RMThisYearThanLastYear" = "Il tuo 1RM stimato quest'anno è più alto dell'anno scorso.";
-"lowerMaxE1RMThisYearThanLastYear" = "Il tuo 1RM stimato quest'anno è più basso dell'anno scorso.";
+/* The per-exercise strength metric: an estimated one-rep max, shown as "Strength".
+   The Summary aggregate is the overallStrength family below. */
+"strengthMetric" = "Forza";
+"strengthMetricInfo" = "La forza è il peso più pesante che riusciresti a sollevare per una singola ripetizione. Invece di fartelo tentare, LOGIT la calcola dal peso e dalle ripetizioni delle tue serie con la formula di Epley (altrove la trovi indicata come 1RM stimato). Viene registrata per gli esercizi in cui annoti peso e ripetizioni, e contano solo le serie fino a 12 ripetizioni: oltre, la stima non è più affidabile.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Volume per serie";
-"setVolumeInfo" = "Volume per serie: il peso × ripetizioni di una singola serie. Registra la tua migliore serie singola: a differenza del volume totale, aumenta solo quando sollevi più peso o fai più ripetizioni in una serie.";
+"setVolumeInfo" = "Il volume per serie è il peso di una singola serie moltiplicato per le sue ripetizioni. Ogni punto è la tua migliore serie di quel giorno: a differenza del volume totale, aumenta solo se sollevi più peso o fai più ripetizioni all'interno di una serie, non semplicemente aggiungendo altre serie.";
 "higherMaxSetVolumeThisMonthThanLastMonth" = "Il tuo miglior volume per serie questo mese è più alto del mese scorso.";
 "lowerMaxSetVolumeThisMonthThanLastMonth" = "Il tuo miglior volume per serie questo mese è più basso del mese scorso.";
 "higherMaxSetVolumeThisYearThanLastYear" = "Il tuo miglior volume per serie quest'anno è più alto dell'anno scorso.";
@@ -883,18 +881,18 @@
 
 /* Metric detail "About" sections */
 "aboutMetric" = "Informazioni su “%@”";
-"weightInfo" = "Il peso più alto sollevato in una singola serie, mostrato per giorno. Sollevare più peso nel tempo è il segnale più diretto di un aumento della forza.";
-"repetitionsInfo" = "Il numero più alto di ripetizioni completate in una singola serie, mostrato per giorno. Più ripetizioni con lo stesso peso sviluppano la resistenza muscolare: un altro modo per progredire.";
-"volumeInfo" = "Il volume è il peso totale spostato: peso × ripetizioni, sommato su tutte le serie del periodo. Più volume significa più lavoro totale: un fattore chiave per la crescita muscolare. Il distintivo confronta questo periodo con la media dei periodi mostrati: la linea tratteggiata.";
-"setsInfo" = "Le serie indicano quante serie di lavoro hai registrato per questo esercizio, contando solo quelle effettivamente completate. Farne abbastanza è un fattore chiave per aumentare forza e massa muscolare. Il grafico mostra le serie dei periodi recenti; il distintivo confronta questo periodo con la loro media: la linea tratteggiata.";
+"weightInfo" = "Ogni punto è il peso più pesante che hai sollevato in una singola serie quel giorno. Sollevare più peso nel tempo è il segnale più diretto che stai diventando più forte.";
+"repetitionsInfo" = "Ogni punto è il numero più alto di ripetizioni che hai completato in una singola serie quel giorno. Fare più ripetizioni con lo stesso peso sviluppa la resistenza muscolare: un altro modo per continuare a progredire.";
+"volumeInfo" = "Il volume è il peso totale che hai spostato. LOGIT moltiplica il peso di ogni serie per le sue ripetizioni e somma tutte le serie del periodo. Più volume significa più lavoro svolto, uno dei principali motori della crescita muscolare. La linea tratteggiata è la media dei periodi già conclusi mostrati nel grafico, e il distintivo mostra come si colloca questo periodo rispetto a essa.";
+"setsInfo" = "Una serie è un ciclo di ripetizioni. Qui viene contata ogni serie che hai davvero completato per questo esercizio; le serie lasciate vuote non contano. Fare abbastanza serie che ti mettono davvero alla prova è uno dei principali motori di forza e massa muscolare. La linea tratteggiata è la media dei periodi già conclusi mostrati nel grafico, e il distintivo mostra come si colloca questo periodo rispetto a essa.";
 
 "progressMetric" = "Metrica di progresso";
 
 "maxWeight" = "Peso max";
 "maxReps" = "Rip. max";
 
-"metricInfoWeight" = "Il peso più alto che hai sollevato in una singola serie, indipendentemente dalle ripetizioni.";
-"metricInfoReps" = "Il maggior numero di ripetizioni eseguite in una singola serie, indipendentemente dal peso.";
+"metricInfoWeight" = "Il peso più pesante che hai sollevato in una singola serie, indipendentemente dal numero di ripetizioni.";
+"metricInfoReps" = "Il maggior numero di ripetizioni che hai eseguito in una singola serie, indipendentemente dal peso.";
 "tapForMetricInfo" = "Tocca per i dettagli e per cambiare metrica.";
 "personalRecord" = "Record personale";
 "personalRecordShort" = "PR";
@@ -912,9 +910,9 @@
 "volumeVsLastTime" = "Volume vs l'ultima volta";
 "thisWorkout" = "Questo allenamento";
 "firstTimeForThisWorkout" = "Prima volta con questo allenamento: le prossime sessioni verranno confrontate con questa.";
-"workoutPRInfo" = "Un record personale significa che una serie di questo allenamento ha superato il tuo miglior peso, le tue migliori ripetizioni o il tuo 1RM stimato di tutti gli allenamenti precedenti — anche se nel frattempo lo hai superato. Se più metriche migliorano insieme, contano come un unico record: la più tangibile guida la scheda e le altre vi sono elencate.";
+"workoutPRInfo" = "Un record personale significa che una serie di questo allenamento ha superato il tuo miglior peso, il tuo maggior numero di ripetizioni o la tua forza migliore di tutti gli allenamenti precedenti. Resta il record di quel giorno anche se nel frattempo lo hai battuto. Se più di questi migliorano insieme, contano come un unico record. Il più concreto guida la scheda: prima un peso davvero sollevato, poi la forza, poi un numero di ripetizioni. Gli altri sono elencati insieme.";
 "alsoARecord" = "Anche un record · %@";
-"workoutTrendInfo" = "Il trend di ogni esercizio confronta il miglior valore di questo allenamento nella sua metrica di progresso con il tuo migliore delle quattro settimane precedenti — lo stesso confronto mostrato dai badge degli esercizi qui sotto.";
+"workoutTrendInfo" = "Ogni esercizio ha una metrica di progresso: il valore con cui viene misurato, come il peso o la forza. Il trend confronta il valore migliore raggiunto in questo allenamento con il tuo migliore delle quattro settimane precedenti — lo stesso confronto mostrato dai badge accanto agli esercizi qui sotto.";
 "workoutVolumeCompareInfo" = "Volume totale (peso × ripetizioni di ogni serie) confrontato con l'ultima volta che hai fatto questo allenamento.";
 "improvedCount" = "%d migliorati";
 
@@ -932,11 +930,11 @@
 "rps" = "rip";
 "average" = "Media";
 "volumePerSet" = "Volume per serie";
-"workoutStatCompareRecentInfo" = "Il trend confronta questo allenamento con la media dei tuoi ultimi %d allenamenti. Le barre li mostrano — questo è la barra evidenziata a destra.";
-"workoutVolumeAboutInfo" = "Il volume è il peso totale sollevato in un allenamento — peso × ripetizioni, sommato su tutte le serie. Confrontato tra gli allenamenti, mostra quanto lavoro contengono le tue sessioni.";
-"workoutDurationAboutInfo" = "La durata è il tempo dall'inizio alla fine di un allenamento. Né più lunga né più corta è di per sé meglio — leggila insieme al volume per capire quanto è denso il tuo allenamento.";
-"workoutSetsAboutInfo" = "Il numero di serie registrate in un allenamento — una misura semplice di quanto hai fatto in una sessione, indipendente dal peso sul bilanciere.";
-"workoutRepsAboutInfo" = "Tutte le ripetizioni registrate in un allenamento, sommate su tutte le serie. Insieme a serie e volume, descrivono quanto lavoro conteneva una sessione.";
+"workoutStatCompareRecentInfo" = "Il trend confronta questo allenamento con la media dei tuoi ultimi %d allenamenti. Ogni barra è uno di quegli allenamenti; questo è la barra evidenziata a destra.";
+"workoutVolumeAboutInfo" = "Il volume è il peso totale sollevato in un allenamento. LOGIT moltiplica il peso di ogni serie per le sue ripetizioni e somma tutte le serie. Confrontato tra gli allenamenti, mostra quanto lavoro contengono le tue sessioni.";
+"workoutDurationAboutInfo" = "La durata è il tempo dall'inizio alla fine di un allenamento. Di per sé, più lunga non è né meglio né peggio di più corta: leggila insieme al volume per capire quanto lavoro hai messo in quel tempo.";
+"workoutSetsAboutInfo" = "Il numero di serie che hai registrato in un allenamento. Una serie è un ciclo di ripetizioni, quindi è una misura semplice di quanto hai fatto nella sessione, indipendentemente da quanto era pesante il carico.";
+"workoutRepsAboutInfo" = "Tutte le ripetizioni che hai registrato in un allenamento, sommate su tutte le serie. Insieme a serie e volume, descrivono quanto lavoro conteneva una sessione.";
 "period" = "Periodo";
 "weeklyGoal" = "Obiettivo settimanale";
 "weeklyGoalReached" = "Obiettivo raggiunto";
@@ -1035,7 +1033,7 @@
 "yearCrossingHeadline" = "%@ ha già superato %@";
 "monthsToSpare" = "con %d mesi di anticipo";
 "monthToSpare" = "con 1 mese di anticipo";
-"highlightsInfo" = "Traguardi e record coprono il periodo selezionato. Le tendenze lo confrontano con il periodo precedente.";
+"highlightsInfo" = "Traguardi e record provengono dal periodo selezionato. Le tendenze confrontano quel periodo con quello immediatamente precedente.";
 "streak" = "Serie";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
@@ -1060,9 +1058,9 @@
 "measurementType.weightAndDistance" = "Peso e distanza";
 "measurementTypeChangeInfo" = "Le serie esistenti mantengono i valori registrati. Solo le nuove serie usano la nuova misurazione.";
 
-"metricInfoDuration" = "La durata più lunga registrata per questo esercizio.";
-"metricInfoDurationFaster" = "Il tempo più veloce registrato per questo esercizio.";
-"metricInfoDistance" = "La distanza più lunga registrata per questo esercizio.";
+"metricInfoDuration" = "La durata più lunga che hai registrato in una singola serie di questo esercizio.";
+"metricInfoDurationFaster" = "Il tempo più veloce che hai registrato in una singola serie di questo esercizio.";
+"metricInfoDistance" = "La distanza più lunga che hai registrato in una singola serie di questo esercizio.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "per allenamento";
 "perWorkoutBasis" = "Per allenamento";
@@ -1085,7 +1083,7 @@
 
 // MARK: - Calorie Estimates
 
-"calorieEstimateExplanation" = "LOGIT stima le calorie attive dalla densità dell'allenamento e dal peso corporeo — sempre allo stesso modo, così i confronti tra i tuoi allenamenti restano significativi. Il consumo individuale varia; considera il valore assoluto come approssimativo.";
+"calorieEstimateExplanation" = "LOGIT stima le calorie attive dal tuo peso corporeo e dalla densità dell'allenamento: quanta parte del tempo hai passato davvero a lavorare. Il calcolo è sempre lo stesso, quindi confrontare i tuoi allenamenti tra loro resta significativo. Quanto bruci davvero varia da persona a persona, perciò considera il numero come un'indicazione di massima.";
 "calorieEstimateHealthNote" = "Sincronizzato con Apple Salute come calorie attive. Puoi disattivare la stima nelle Impostazioni.";
 "calorieEstimates" = "Stima delle calorie";
 "calorieEstimatesDescription" = "Stima le calorie attive dalle tue serie e dal tuo peso corporeo. Mostrata negli allenamenti e inclusa nella sincronizzazione con Apple Salute.";
@@ -1116,7 +1114,7 @@
 "trackingWeightAloneHint" = "Aggiungi ripetizioni, durata o distanza al peso.";
 "setPreviewCaption" = "Ecco come apparirà una serie";
 "progressMetricCaption" = "Mostrato sul badge dell'esercizio durante l'allenamento.";
-"progressMetricE1RMDescription" = "Massimale stimato (1RM) da peso e ripetizioni";
+"progressMetricStrengthDescription" = "Il massimo per una singola ripetizione";
 "progressMetricWeightDescription" = "Peso più alto sollevato in una serie";
 "progressMetricRepetitionsDescription" = "Più ripetizioni in una singola serie";
 "progressMetricDurationDescription" = "Durata più lunga in una singola serie";
@@ -1124,10 +1122,11 @@
 "progressMetricDistanceDescription" = "Distanza più lunga in una singola serie";
 
 // Strength (Progress tab tile + detail)
-"strength" = "Forza";
-"strengthBasis" = "e1RM complessivo";
-"strengthExerciseBasis" = "e1RM %@";
-"strengthEmpty" = "Creazione del trend di forza";
+/* The Summary aggregate — a set-weighted mean of every exercise's strength change,
+   shown as a percentage and labelled "Overall Strength". */
+"overallStrength" = "Forza complessiva";
+"overallStrengthExerciseBasis" = "%@ · forza";
+"overallStrengthEmpty" = "Creazione del trend di forza";
 "nWeeks" = "%d settimane";
 "nMonths" = "%d mesi";
 "oneYear" = "1 anno";
@@ -1138,14 +1137,14 @@
 "previousYear" = "Anno precedente";
 "nSets" = "%d serie";
 "allExercises" = "Tutti gli esercizi";
-"strengthAxisMostDeclined" = "Calo maggiore";
-"strengthAxisLeastImproved" = "Progresso minore";
-"strengthAxisMostImproved" = "Progresso maggiore";
-"strengthStrongestLifts" = "Sollevamenti più pesanti";
-"strengthShowAllLifts" = "Mostra tutti i %d esercizi";
-"strengthAxisLeastDeclined" = "Calo minore";
+"overallStrengthAxisMostDeclined" = "Calo maggiore";
+"overallStrengthAxisLeastImproved" = "Progresso minore";
+"overallStrengthAxisMostImproved" = "Progresso maggiore";
+"overallStrengthStrongestLifts" = "Sollevamenti più pesanti";
+"overallStrengthShowAllLifts" = "Mostra tutti i %d esercizi";
+"overallStrengthAxisLeastDeclined" = "Calo minore";
 "showLess" = "Mostra meno";
-"strengthInfo" = "Il miglior 1RM stimato di ogni esercizio nel periodo selezionato rispetto al periodo precedente, mediato e ponderato in base a quante serie hai fatto. Le serie di cardio e a corpo libero non hanno un 1RM e non contano.";
+"overallStrengthInfo" = "La forza complessiva riassume tutto questo in un unico numero. Per ogni esercizio, LOGIT prende il tuo valore migliore nel periodo selezionato e lo confronta con il migliore del periodo precedente, poi fa la media di tutte queste variazioni. Più serie hai fatto di un esercizio, più esso pesa sul risultato. Le serie di cardio e a corpo libero non hanno un valore di forza e non vengono considerate.";
 
 
 // MARK: - Data Export

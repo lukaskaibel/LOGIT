@@ -53,14 +53,14 @@ struct ExerciseE1RMScreen: View {
                     yScaleMax: yScaleMax,
                     color: exerciseMuscleGroupColor,
                     unit: WeightUnit.used.rawValue,
-                    valueLabel: NSLocalizedString("estimatedOneRepMax", comment: ""),
+                    valueLabel: NSLocalizedString("strengthMetric", comment: ""),
                     formatValue: { formatEstimatedOneRepMax($0) }
                 )
 
                 // MARK: - About Section
                 AboutSection(
-                    metricTitle: NSLocalizedString("estimatedOneRepMax", comment: ""),
-                    text: NSLocalizedString("e1RMInfo", comment: "")
+                    metricTitle: NSLocalizedString("strengthMetric", comment: ""),
+                    text: NSLocalizedString("strengthMetricInfo", comment: "")
                 )
                 .padding(.horizontal)
             }
@@ -72,7 +72,7 @@ struct ExerciseE1RMScreen: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 VStack {
-                    Text("\(NSLocalizedString("estimatedOneRepMax", comment: ""))")
+                    Text("\(NSLocalizedString("strengthMetric", comment: ""))")
                         .font(.headline)
                     Text(exercise.displayName)
                         .foregroundStyle(.secondary)

@@ -97,7 +97,7 @@ struct StrengthTile: View {
 
     private var header: some View {
         HStack(spacing: 6) {
-            Text(NSLocalizedString("strength", comment: ""))
+            Text(NSLocalizedString("overallStrength", comment: ""))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.label)
                 .lineLimit(1)
@@ -109,7 +109,9 @@ struct StrengthTile: View {
     }
 
     private var subtitle: some View {
-        Text(NSLocalizedString("strengthBasis", comment: ""))
+        // The window the figure was computed for, not the picker's current value: the two differ
+        // for a moment after a switch, until the recompute lands.
+        Text(progress.window.currentWindowLabel)
             .font(.caption.weight(.medium))
             .tracking(0.3)
             .foregroundStyle(.tertiary)
@@ -156,7 +158,7 @@ struct StrengthTile: View {
     private var emptyState: some View {
         TrendPlaceholder(
             progress: progress.historyFraction,
-            text: NSLocalizedString("strengthEmpty", comment: ""),
+            text: NSLocalizedString("overallStrengthEmpty", comment: ""),
             systemImage: "chart.line.uptrend.xyaxis"
         )
     }

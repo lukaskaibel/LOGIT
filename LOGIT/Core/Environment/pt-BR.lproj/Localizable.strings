@@ -1125,7 +1125,6 @@
 /* The Summary aggregate — a set-weighted mean of every exercise's strength change,
    shown as a percentage and labelled "Overall Strength". */
 "overallStrength" = "Força geral";
-"overallStrengthBasis" = "vs. período anterior";
 "overallStrengthExerciseBasis" = "%@ · força";
 "overallStrengthEmpty" = "Criando sua tendência de força";
 "nWeeks" = "%d semanas";

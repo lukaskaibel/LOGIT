@@ -1125,7 +1125,6 @@
 /* The Summary aggregate — a set-weighted mean of every exercise's strength change,
    shown as a percentage and labelled "Overall Strength". */
 "overallStrength" = "전체 근력";
-"overallStrengthBasis" = "직전 기간과 비교";
 "overallStrengthExerciseBasis" = "%@ · 근력";
 "overallStrengthEmpty" = "근력 추세 만드는 중";
 "nWeeks" = "%d주";

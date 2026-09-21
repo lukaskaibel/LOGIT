@@ -109,7 +109,9 @@ struct StrengthTile: View {
     }
 
     private var subtitle: some View {
-        Text(NSLocalizedString("overallStrengthBasis", comment: ""))
+        // The window the figure was computed for, not the picker's current value: the two differ
+        // for a moment after a switch, until the recompute lands.
+        Text(progress.window.currentWindowLabel)
             .font(.caption.weight(.medium))
             .tracking(0.3)
             .foregroundStyle(.tertiary)

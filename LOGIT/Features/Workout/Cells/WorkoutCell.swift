@@ -82,15 +82,26 @@ struct WorkoutCell: View {
             .lineLimit(1)
     }
     
+    /// Never animated, and gone rather than empty when the workout holds no sets. A sector animating
+    /// down to nothing passes through arcs thinner than its `angularInset`, where Charts' corner
+    /// geometry takes the square root of a negative number and traps converting the NaN to Int —
+    /// which is what Cancel in the History editor did: the discarded workout is deleted while its
+    /// cell is still on screen, and its last sector shrank away inside the sheet's dismissal.
     private var muscleGroupChart: some View {
-        Chart {
-            ForEach(muscleGroupService.getMuscleGroupOccurances(in: workout), id: \.0) { muscleGroupOccurance in
-                SectorMark(
-                    angle: .value("Value", muscleGroupOccurance.1),
-                    innerRadius: .ratio(0.6),
-                    angularInset: 1.5
-                )
-                .foregroundStyle(muscleGroupOccurance.0.color.gradient)
+        let occurrences = muscleGroupService.getMuscleGroupOccurances(in: workout)
+        return ZStack {
+            if !occurrences.isEmpty {
+                Chart {
+                    ForEach(occurrences, id: \.0) { muscleGroupOccurance in
+                        SectorMark(
+                            angle: .value("Value", muscleGroupOccurance.1),
+                            innerRadius: .ratio(0.6),
+                            angularInset: 1.5
+                        )
+                        .foregroundStyle(muscleGroupOccurance.0.color.gradient)
+                    }
+                }
+                .transaction { $0.animation = nil }
             }
         }
         .frame(width: 40, height: 40)

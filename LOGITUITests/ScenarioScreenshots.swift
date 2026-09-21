@@ -1348,8 +1348,10 @@ final class ScenarioScreenshots: XCTestCase {
     func testEffortFinishPanelCard() {
         let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
 
+        // By identifier, never by placeholder: the tray's resting row is a button since #177, and
+        // probing `app.textFields` by placeholder falls back to swiping the whole library.
         let traySearchField = app.textFields.matching(
-            NSPredicate(format: "placeholderValue == 'Search in Exercises'")
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
         ).firstMatch
         XCTAssertTrue(traySearchField.waitForExistence(timeout: 20), "Recorder/tray never presented")
         waitABit(2)

@@ -15,8 +15,8 @@ struct TimerStopwatchView: View {
 
     @AppStorage("lastTimerDuration") private var lastTimerDuration: Int = 30
     @AppStorage("hasRequestedNotificationPermission") private var hasRequestedNotificationPermission: Bool = false
-    @AppStorage("autoTimerEnabled") private var autoTimerEnabled: Bool = false
-    @AppStorage("autoStopwatchEnabled") private var autoStopwatchEnabled: Bool = false
+    @AppStorage(AutoRestSettings.enabledKey) private var autoRestEnabled: Bool = false
+    @AppStorage(AutoRestSettings.recordingModeKey) private var restRecordingMode: RestRecordingMode = .elapsed
     @AppStorage("timerIsMuted") private var timerIsMuted: Bool = false
 
     // MARK: - Constants
@@ -39,9 +39,12 @@ struct TimerStopwatchView: View {
         VStack(spacing: 0) {
             HStack {
                 Button {
-                    if chronograph.mode != .timer {
-                        UISelectionFeedbackGenerator().selectionChanged()
-                    }
+                    guard chronograph.mode != .timer else { return }
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    // Written down while the chronograph is still a stopwatch: elapsed time
+                    // means different things in the two modes, and reading it after the flip
+                    // used to record a number from the wrong one.
+                    endActiveRest()
                     chronograph.mode = .timer
                 } label: {
                     Text(NSLocalizedString("timer", comment: ""))
@@ -51,9 +54,9 @@ struct TimerStopwatchView: View {
                 }
                 Spacer()
                 Button {
-                    if chronograph.mode != .stopwatch {
-                        UISelectionFeedbackGenerator().selectionChanged()
-                    }
+                    guard chronograph.mode != .stopwatch else { return }
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    endActiveRest()
                     chronograph.mode = .stopwatch
                 } label: {
                     Text(NSLocalizedString("stopwatch", comment: ""))
@@ -134,7 +137,7 @@ struct TimerStopwatchView: View {
 
             Spacer(minLength: 20)
 
-            autoTimerSection
+            autoRestSection
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.horizontal)
@@ -147,11 +150,7 @@ struct TimerStopwatchView: View {
                 chronograph.setSeconds(Double(lastTimerDuration) + 0.99)
             }
         }
-        .onChange(of: chronograph.mode) { oldMode, newMode in
-            finishActiveRestIfNeeded(
-                shouldPersistElapsed: oldMode == .stopwatch,
-                mode: oldMode
-            )
+        .onChange(of: chronograph.mode) { _, newMode in
             chronograph.cancel()
             chronograph.setSeconds(newMode == .timer ? Double(lastTimerDuration) + 0.99 : 0)
             checkPermissionRequirement()
@@ -196,9 +195,9 @@ struct TimerStopwatchView: View {
 
     // MARK: - Subviews
 
-    private var autoTimerSection: some View {
+    private var autoRestSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Toggle(isOn: autoRestBinding) {
+            Toggle(isOn: $autoRestEnabled) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Image(systemName: "repeat")
@@ -426,20 +425,13 @@ struct TimerStopwatchView: View {
 
     @ViewBuilder
     private var leadingTransportButton: some View {
-        if isRunningStopwatch {
+        if isRunningStopwatch || isPausedStopwatch {
             stopwatchTransportButton(symbolName: "stop.fill") {
-                workoutRecorder.endStopwatch(using: chronograph)
-            }
-        } else if isPausedStopwatch {
-            stopwatchTransportButton(symbolName: "stop.fill") {
-                finishActiveRestIfNeeded(shouldPersistElapsed: false)
-                chronograph.cancel()
+                endActiveRest()
             }
         } else if chronograph.mode == .timer, chronograph.status != .idle {
             stopwatchTransportButton(symbolName: "stop.fill") {
-                // For an auto-rest timer, keep the elapsed rest time so far when cancelling.
-                finishActiveRestIfNeeded(shouldPersistElapsed: true)
-                chronograph.cancel()
+                endActiveRest()
             }
             .disabled(Int(chronograph.seconds) == 0)
         }
@@ -464,7 +456,11 @@ struct TimerStopwatchView: View {
 
     private func updateTimerDuration(to remainingDuration: Int) {
         let updatedTotalDuration = currentElapsedTimerDuration + remainingDuration
-        lastTimerDuration = updatedTotalDuration
+        // Nudging a rest that is already counting down adjusts that rest only. It used to
+        // also rewrite the default every future auto rest starts from.
+        if workoutRecorder.activeRestTimerSet == nil {
+            lastTimerDuration = updatedTotalDuration
+        }
         chronograph.setSeconds(
             Double(remainingDuration) + 0.99,
             timerTotalSecondsOverride: Double(updatedTotalDuration) + 0.99
@@ -556,23 +552,8 @@ struct TimerStopwatchView: View {
         workoutRecorder.activeRestTimerSet?.exercise?.displayName
     }
 
-    private var autoRestBinding: Binding<Bool> {
-        Binding(
-            get: { chronograph.mode == .timer ? autoTimerEnabled : autoStopwatchEnabled },
-            set: {
-                if chronograph.mode == .timer {
-                    autoTimerEnabled = $0
-                } else {
-                    autoStopwatchEnabled = $0
-                }
-            }
-        )
-    }
-
     private var autoRestTitle: String {
-        chronograph.mode == .timer
-            ? NSLocalizedString("autoRestTimer", comment: "")
-            : NSLocalizedString("autoRestStopwatch", comment: "")
+        NSLocalizedString("autoRest", comment: "")
     }
 
     private var autoRestDescription: String {
@@ -592,21 +573,14 @@ struct TimerStopwatchView: View {
         return "\(sign)\(adjustment)s"
     }
 
-    private func finishActiveRestIfNeeded(
-        shouldPersistElapsed: Bool,
-        mode: Chronograph.Mode? = nil
-    ) {
-        guard let activeRestSet = workoutRecorder.activeRestTimerSet else { return }
-
-        let activeMode = mode ?? chronograph.mode
-        if shouldPersistElapsed, activeMode == .stopwatch || activeMode == .timer {
-            let elapsed = chronograph.elapsedSeconds
-            if elapsed > 0 {
-                workoutRecorder.recordRestDuration(elapsed, for: activeRestSet)
-            }
-        }
-
-        workoutRecorder.activeRestTimerSet = nil
+    /// Ends whatever is on the clock through the recorder, so this sheet's stop button and
+    /// the one beside the set list write down exactly the same thing.
+    private func endActiveRest() {
+        workoutRecorder.endRest(
+            using: chronograph,
+            reason: .stopped,
+            recordingMode: restRecordingMode
+        )
     }
 
     private var permissionDisabledTitle: String {

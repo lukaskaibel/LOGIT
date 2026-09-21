@@ -1158,7 +1158,6 @@
 "exportFailedMessage" = "Your data could not be written to a file. Please try again.";
 
 "note" = "Note";
-"howHardWasIt" = "How hard was it?";
 "workoutNotePrompt" = "What went well? What to change?";
 "effort" = "Effort";
 "effortEasy" = "Easy";
@@ -1166,7 +1165,19 @@
 "effortHard" = "Hard";
 "effortAllOut" = "All Out";
 "notRated" = "Not rated";
-"effortOptional" = "Optional — feeds Training Load in Fitness.";
+"rateYourEffort" = "Rate Your Effort";
+"addEffort" = "Add Effort";
+"effortDescriptions" = "Effort Descriptions";
+"effortSelectDescription" = "Select the description that best matches the workout overall.";
+"effortSkipFootnote" = "Skipping this workout removes it from your Training Load in Fitness.";
+"effortEasyFeel" = "Not challenging";
+"effortEasyEndurance" = "Could go a long time";
+"effortModerateFeel" = "Working but comfortable";
+"effortModerateEndurance" = "Could go for a while";
+"effortHardFeel" = "Challenging and uncomfortable";
+"effortHardEndurance" = "Could not go long at all";
+"effortAllOutFeel" = "Extremely uncomfortable";
+"effortAllOutEndurance" = "Could barely continue";
 "lastTime" = "Last time";
 "previewWorkoutNote" = "Bench felt easy at 80 — go 82.5 next time. Keep the elbows tucked on overhead press.";
 "setsIncompleteWillNotBeSaved" = "%d sets incomplete — they won’t be saved.";
@@ -1182,6 +1193,12 @@
 "durationGoalLongerDescription" = "A record is your longest time.";
 "durationGoalFaster" = "Faster";
 "durationGoalFasterDescription" = "A record is your fastest time.";
+
+"autoRest" = "Auto Rest";
+"recordedRest" = "Recorded Rest";
+"recordedRestElapsed" = "Time Rested";
+"recordedRestFullDuration" = "Full Duration";
+"recordedRestDescription" = "When you stop a rest early, record the time you actually rested, or the full duration the timer was set to.";
 
 // MARK: - Duration Entry Format
 "durationFormat" = "Time Format";

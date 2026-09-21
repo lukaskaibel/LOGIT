@@ -210,6 +210,7 @@ struct WorkoutStatScreen: View {
             .valueAligned(matching: DateComponents(minute: 0), majorAlignment: .matching(DateComponents(minute: 0)))
         )
         .chartXSelection(value: $selectedX)
+        .chartTapSelection($selectedX)
         .chartXVisibleDomain(length: Self.slotDuration * Double(Self.visibleRunCount))
         // No x-axis labels: see the note on `windowDescription`.
         .chartXAxis(.hidden)

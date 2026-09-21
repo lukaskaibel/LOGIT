@@ -1158,7 +1158,6 @@
 "exportFailedMessage" = "Não foi possível gravar seus dados em um arquivo. Tente novamente.";
 
 "note" = "Nota";
-"howHardWasIt" = "Quão difícil foi?";
 "workoutNotePrompt" = "O que foi bem? O que mudar?";
 "effort" = "Esforço";
 "effortEasy" = "Fácil";
@@ -1166,7 +1165,19 @@
 "effortHard" = "Difícil";
 "effortAllOut" = "Máximo";
 "notRated" = "Não avaliado";
-"effortOptional" = "Opcional — alimenta a carga de treino no Fitness.";
+"rateYourEffort" = "Avalie seu esforço";
+"addEffort" = "Adicionar esforço";
+"effortDescriptions" = "Descrições do esforço";
+"effortSelectDescription" = "Selecione a descrição que melhor corresponde ao treino como um todo.";
+"effortSkipFootnote" = "Pular este treino o remove da sua carga de treino no Fitness.";
+"effortEasyFeel" = "Nada desafiador";
+"effortEasyEndurance" = "Poderia continuar por muito tempo";
+"effortModerateFeel" = "Exigente, mas confortável";
+"effortModerateEndurance" = "Poderia continuar por um tempo";
+"effortHardFeel" = "Desafiador e desconfortável";
+"effortHardEndurance" = "Não conseguiria continuar por muito tempo";
+"effortAllOutFeel" = "Extremamente desconfortável";
+"effortAllOutEndurance" = "Mal conseguiria continuar";
 "lastTime" = "Da última vez";
 "previewWorkoutNote" = "O supino ficou fácil com 80 — na próxima, 82,5. Manter os cotovelos fechados no desenvolvimento.";
 "setsIncompleteWillNotBeSaved" = "%d séries incompletas — não serão salvas.";
@@ -1182,6 +1193,12 @@
 "durationGoalLongerDescription" = "Um recorde é o seu tempo mais longo.";
 "durationGoalFaster" = "Mais rápido";
 "durationGoalFasterDescription" = "Um recorde é o seu tempo mais rápido.";
+
+"autoRest" = "Descanso automático";
+"recordedRest" = "Descanso registrado";
+"recordedRestElapsed" = "Tempo descansado";
+"recordedRestFullDuration" = "Duração completa";
+"recordedRestDescription" = "Ao parar um descanso antes do fim, registra o tempo realmente descansado ou a duração completa configurada.";
 
 // MARK: - Duration Entry Format
 "durationFormat" = "Formato de tempo";

@@ -1154,7 +1154,6 @@
 "exportFailedMessage" = "Deine Daten konnten nicht in eine Datei geschrieben werden. Bitte versuche es erneut.";
 
 "note" = "Notiz";
-"howHardWasIt" = "Wie hart war es?";
 "workoutNotePrompt" = "Was lief gut? Was ändern?";
 "effort" = "Anstrengung";
 "effortEasy" = "Leicht";
@@ -1162,7 +1161,19 @@
 "effortHard" = "Hart";
 "effortAllOut" = "Maximal";
 "notRated" = "Nicht bewertet";
-"effortOptional" = "Optional – fließt in Fitness in die Trainingsbelastung ein.";
+"rateYourEffort" = "Anstrengung bewerten";
+"addEffort" = "Anstrengung hinzufügen";
+"effortDescriptions" = "Beschreibungen der Anstrengung";
+"effortSelectDescription" = "Wähle die Beschreibung, die am besten zum gesamten Training passt.";
+"effortSkipFootnote" = "Wenn du dieses Training überspringst, wird es in Fitness nicht zur Trainingsbelastung gezählt.";
+"effortEasyFeel" = "Nicht fordernd";
+"effortEasyEndurance" = "Könntest lange weitermachen";
+"effortModerateFeel" = "Anstrengend, aber angenehm";
+"effortModerateEndurance" = "Könntest eine Weile weitermachen";
+"effortHardFeel" = "Fordernd und unangenehm";
+"effortHardEndurance" = "Könntest nicht lange durchhalten";
+"effortAllOutFeel" = "Extrem unangenehm";
+"effortAllOutEndurance" = "Könntest kaum weitermachen";
 "lastTime" = "Letztes Mal";
 "previewWorkoutNote" = "Bankdrücken lief locker mit 80 – nächstes Mal 82,5. Bei Überkopfdrücken die Ellbogen enger führen.";
 "setsIncompleteWillNotBeSaved" = "%d Sätze unvollständig – sie werden nicht gespeichert.";
@@ -1178,6 +1189,12 @@
 "durationGoalLongerDescription" = "Ein Rekord ist deine längste Zeit.";
 "durationGoalFaster" = "Schneller";
 "durationGoalFasterDescription" = "Ein Rekord ist deine schnellste Zeit.";
+
+"autoRest" = "Auto-Pause";
+"recordedRest" = "Gespeicherte Pause";
+"recordedRestElapsed" = "Pausierte Zeit";
+"recordedRestFullDuration" = "Volle Dauer";
+"recordedRestDescription" = "Wenn du eine Pause vorzeitig beendest: die tatsächlich pausierte Zeit speichern oder die volle eingestellte Dauer.";
 
 // MARK: - Duration Entry Format
 "durationFormat" = "Zeitformat";

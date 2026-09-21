@@ -216,6 +216,194 @@ struct WorkoutProgressReport {
     }
 }
 
+// MARK: - Record counts for every workout
+
+/// How many exercises set a personal record in each workout — the "n PR" on every workout cell and
+/// in every History recap — for the whole history in one pass.
+///
+/// `WorkoutProgressReport.compute` answers that for a *single* workout by rescanning each of its
+/// exercises' entire set history. On a detail screen that is exactly right. In a list it is not:
+/// History asked it once per cell that scrolled into view, and then once more per workout for every
+/// section recap, all on the main thread — dragging the scroll indicator through a couple of years
+/// of workouts stalled for about a tenth of a second per section it passed.
+///
+/// The same answer for *every* workout costs one walk over the history instead: take each
+/// exercise's sessions oldest first, carry the running best per metric, and a session that beats it
+/// set a record. That is `compute`'s own rule, expressed with `compute`'s own primitives
+/// (`best(of:for:)`, `isBetter(_:than:for:)`, `metricValue(_:for:)`), one exercise at a time rather
+/// than one workout at a time — linear in sets instead of quadratic. `PersonalRecordCountIndexTests`
+/// pins the two to the same numbers so they can never drift apart.
+final class PersonalRecordCountIndex: @unchecked Sendable {
+    static let shared = PersonalRecordCountIndex()
+
+    /// Workout object ID → the number of exercises that set at least one record in it. Workouts
+    /// with no record at all are simply absent. Nil until the first build. Main-actor state, like
+    /// every view-context read behind it.
+    @MainActor private var counts: [NSManagedObjectID: Int]?
+    @MainActor private var buildTask: Task<[NSManagedObjectID: Int], Never>?
+    /// Bumped by every invalidation, so a build that finishes after the history changed under it
+    /// throws its result away instead of caching a stale one.
+    @MainActor private var generation = 0
+
+    private init() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(contextObjectsDidChange),
+            name: .NSManagedObjectContextObjectsDidChange,
+            object: nil
+        )
+    }
+
+    /// The records `workout` set, building the index on first use. Free after that.
+    @MainActor
+    func count(for workout: Workout, database: Database) async -> Int {
+        await counts(database: database)[workout.objectID] ?? 0
+    }
+
+    /// The whole index — what a section recap wants, so summing a month costs one lookup per
+    /// workout instead of one history scan per workout.
+    @MainActor
+    func counts(database: Database) async -> [NSManagedObjectID: Int] {
+        if let counts { return counts }
+        if let buildTask { return await buildTask.value }
+
+        let startedAt = generation
+        let task = Task { @MainActor in await Self.build(database: database) }
+        buildTask = task
+        let result = await task.value
+        buildTask = nil
+        // Only cache what the current history actually says: an edit or a CloudKit import while
+        // this ran invalidated it mid-flight, and the next caller rebuilds.
+        if generation == startedAt { counts = result }
+        return result
+    }
+
+    /// The walk itself, without the cache in front of it — also what the tests compare against
+    /// `WorkoutProgressReport.compute`.
+    @MainActor
+    static func build(database: Database) async -> [NSManagedObjectID: Int] {
+        var counts = [NSManagedObjectID: Int]()
+        // Settle the keys before recording any. A workout inserted but not yet saved carries a
+        // *temporary* object ID, and the next save swaps it for a permanent one — so a walk that
+        // spans a save (this one yields, and the recorder autosaves) would file half its counts
+        // under IDs that no longer name anything, and those workouts would read "no records".
+        let workouts = database.fetch(Workout.self) as? [Workout] ?? []
+        try? database.context.obtainPermanentIDs(for: workouts)
+
+        let exercises = database.fetch(Exercise.self) as? [Exercise] ?? []
+        for (index, exercise) in exercises.enumerated() {
+            accumulate(exercise, into: &counts)
+            // The walk runs on the main queue, because view-context objects may only be touched
+            // there — so it hands the queue back regularly rather than blocking a scroll that is
+            // already under way behind the whole history.
+            if index.isMultiple(of: 8) { await Task.yield() }
+        }
+        return counts
+    }
+
+    /// Adds `exercise`'s records to `counts`: one per workout in which this exercise beat its own
+    /// best on any metric.
+    @MainActor
+    private static func accumulate(_ exercise: Exercise, into counts: inout [NSManagedObjectID: Int]) {
+        // The exercise's sets, gathered into the sessions that hold them. Sets in an undated
+        // workout can't be placed in the history, and `compute` leaves them out too.
+        var sessions = [(workout: Workout, date: Date, sets: [WorkoutSet])]()
+        var sessionIndex = [NSManagedObjectID: Int]()
+        for workoutSet in exercise.sets {
+            guard let workout = workoutSet.workout, let date = workout.date else { continue }
+            if let index = sessionIndex[workout.objectID] {
+                sessions[index].sets.append(workoutSet)
+            } else {
+                sessionIndex[workout.objectID] = sessions.count
+                sessions.append((workout, date, [workoutSet]))
+            }
+        }
+        sessions.sort { $0.date < $1.date }
+
+        var runningBest = [ExercisePrimaryMetric: Int]()
+        var batchStart = sessions.startIndex
+        while batchStart < sessions.endIndex {
+            // Sessions sharing an instant are judged against the same history and only then folded
+            // into it: `compute` compares against sets recorded *strictly* earlier, so a twin
+            // workout can never be its own baseline.
+            var batchEnd = batchStart
+            while batchEnd < sessions.endIndex, sessions[batchEnd].date == sessions[batchStart].date {
+                batchEnd += 1
+            }
+
+            var batchBest = [ExercisePrimaryMetric: Int]()
+            for session in sessions[batchStart ..< batchEnd] {
+                var setARecord = false
+                for metric in ExercisePrimaryMetric.allCases {
+                    let current = exercise.best(
+                        of: session.sets.map { $0.metricValue(metric, for: exercise) },
+                        for: metric
+                    ) ?? 0
+                    guard current != 0 else { continue }
+                    // Ties don't count, and neither does a first-ever entry — with no earlier
+                    // value there is no record to beat.
+                    let previous = runningBest[metric] ?? 0
+                    if previous != 0, exercise.isBetter(current, than: previous, for: metric) {
+                        setARecord = true
+                    }
+                    batchBest[metric] = exercise.best(of: [batchBest[metric] ?? 0, current], for: metric) ?? 0
+                }
+                if setARecord { counts[session.workout.objectID, default: 0] += 1 }
+            }
+
+            for (metric, value) in batchBest {
+                runningBest[metric] = exercise.best(of: [runningBest[metric] ?? 0, value], for: metric) ?? 0
+            }
+            batchStart = batchEnd
+        }
+    }
+
+    /// Same reasoning as the recorder's `ExerciseHistoryBestsCache`: a background context always
+    /// means imported history, and a main-context change confined to the workout being recorded
+    /// (typing a value, adding a set) touches nothing this index describes — History excludes the
+    /// in-progress workout. Everything else invalidates.
+    @objc private func contextObjectsDidChange(_ notification: Notification) {
+        guard Thread.isMainThread else {
+            Task { @MainActor in self.invalidate() }
+            return
+        }
+        MainActor.assumeIsolated {
+            guard counts != nil || buildTask != nil else { return }
+
+            let changeKeys = [
+                NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey,
+            ]
+            for changeKey in changeKeys {
+                guard let objects = notification.userInfo?[changeKey] as? Set<NSManagedObject> else { continue }
+                for object in objects {
+                    let workout: Workout?
+                    switch object {
+                    case let workoutSet as WorkoutSet: workout = workoutSet.setGroup?.workout
+                    case let setGroup as WorkoutSetGroup: workout = setGroup.workout
+                    case let changedWorkout as Workout: workout = changedWorkout
+                    case is Exercise:
+                        invalidate()
+                        return
+                    default: continue
+                    }
+                    // Anything not clearly confined to the in-progress workout — including
+                    // deletions, whose relationships are already severed — invalidates.
+                    guard let workout, !workout.isDeleted, workout.isCurrentWorkout else {
+                        invalidate()
+                        return
+                    }
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func invalidate() {
+        generation &+= 1
+        counts = nil
+    }
+}
+
 // MARK: - Shared record rendering
 
 /// "Personal record" for one, "%d Personal Records" otherwise — shared by the records tile and the

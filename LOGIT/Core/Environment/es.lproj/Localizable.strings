@@ -1158,7 +1158,6 @@
 "exportFailedMessage" = "No se pudieron escribir tus datos en un archivo. Inténtalo de nuevo.";
 
 "note" = "Nota";
-"howHardWasIt" = "¿Cómo de duro fue?";
 "workoutNotePrompt" = "¿Qué fue bien? ¿Qué cambiar?";
 "effort" = "Esfuerzo";
 "effortEasy" = "Fácil";
@@ -1166,7 +1165,19 @@
 "effortHard" = "Difícil";
 "effortAllOut" = "Al máximo";
 "notRated" = "Sin valorar";
-"effortOptional" = "Opcional: contribuye a la carga de entrenamiento en Fitness.";
+"rateYourEffort" = "Valora tu esfuerzo";
+"addEffort" = "Añadir esfuerzo";
+"effortDescriptions" = "Descripciones del esfuerzo";
+"effortSelectDescription" = "Selecciona la descripción que mejor se ajuste al entrenamiento en general.";
+"effortSkipFootnote" = "Si omites este entrenamiento, se eliminará de tu carga de entrenamiento en Fitness.";
+"effortEasyFeel" = "Nada exigente";
+"effortEasyEndurance" = "Podrías seguir mucho tiempo";
+"effortModerateFeel" = "Trabajas, pero cómodo";
+"effortModerateEndurance" = "Podrías seguir un rato";
+"effortHardFeel" = "Exigente e incómodo";
+"effortHardEndurance" = "No podrías seguir mucho";
+"effortAllOutFeel" = "Extremadamente incómodo";
+"effortAllOutEndurance" = "Apenas podrías continuar";
 "lastTime" = "La última vez";
 "previewWorkoutNote" = "El press de banca fue fácil con 80: la próxima vez, 82,5. Mantén los codos pegados en el press militar.";
 "setsIncompleteWillNotBeSaved" = "%d series incompletas: no se guardarán.";
@@ -1182,6 +1193,12 @@
 "durationGoalLongerDescription" = "Un récord es tu tiempo más largo.";
 "durationGoalFaster" = "Más rápido";
 "durationGoalFasterDescription" = "Un récord es tu tiempo más rápido.";
+
+"autoRest" = "Descanso automático";
+"recordedRest" = "Descanso registrado";
+"recordedRestElapsed" = "Tiempo descansado";
+"recordedRestFullDuration" = "Duración completa";
+"recordedRestDescription" = "Al detener un descanso antes de tiempo, registra el tiempo que realmente descansaste o la duración completa configurada.";
 
 // MARK: - Duration Entry Format
 "durationFormat" = "Formato de tiempo";

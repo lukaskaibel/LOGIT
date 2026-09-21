@@ -357,12 +357,35 @@ final class WorkoutRecorderTests: XCTestCase {
         let restBehavior = workoutRecorder.autoRestBehavior(
             forSet: lastSet,
             usesStopwatch: false,
-            autoTimerEnabled: false,
-            autoStopwatchEnabled: false,
+            autoRestEnabled: true,
             timerDuration: 45
         )
 
-        XCTAssertEqual(restBehavior, .timer(90))
+        XCTAssertEqual(restBehavior, .timer(90), "a rest the set carries beats the sheet's duration")
+    }
+
+    /// The switch is the only gate: off means nothing starts, even for a set that carries a
+    /// rest of its own. This is what made rests fire with auto rest switched off.
+    func testAutoRestBehaviorStartsNothingWhenDisabledEvenWithConfiguredRest() {
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let lastSet = database.newStandardSet(restDuration: 90, setGroup: setGroup)
+
+        XCTAssertNil(workoutRecorder.autoRestBehavior(
+            forSet: lastSet,
+            usesStopwatch: false,
+            autoRestEnabled: false,
+            timerDuration: 45
+        ))
+        XCTAssertNil(workoutRecorder.autoRestBehavior(
+            forSet: lastSet,
+            usesStopwatch: true,
+            autoRestEnabled: false,
+            timerDuration: 45
+        ))
     }
 
     func testAutoRestBehaviorUsesAutoTimerWhenNoConfiguredRestExists() {
@@ -377,8 +400,7 @@ final class WorkoutRecorderTests: XCTestCase {
         let restBehavior = workoutRecorder.autoRestBehavior(
             forSet: lastSet,
             usesStopwatch: false,
-            autoTimerEnabled: true,
-            autoStopwatchEnabled: false,
+            autoRestEnabled: true,
             timerDuration: 45
         )
 
@@ -396,8 +418,7 @@ final class WorkoutRecorderTests: XCTestCase {
         let restBehavior = workoutRecorder.autoRestBehavior(
             forSet: lastSet,
             usesStopwatch: true,
-            autoTimerEnabled: false,
-            autoStopwatchEnabled: true,
+            autoRestEnabled: true,
             timerDuration: 45
         )
 
@@ -415,8 +436,7 @@ final class WorkoutRecorderTests: XCTestCase {
         let restBehavior = workoutRecorder.autoRestBehavior(
             forSet: lastSet,
             usesStopwatch: true,
-            autoTimerEnabled: false,
-            autoStopwatchEnabled: false,
+            autoRestEnabled: false,
             timerDuration: 45
         )
 
@@ -523,7 +543,7 @@ final class WorkoutRecorderTests: XCTestCase {
         chronograph.setSeconds(18)
         chronograph.status = .running
 
-        workoutRecorder.endStopwatch(using: chronograph)
+        workoutRecorder.endRest(using: chronograph, reason: .stopped)
 
         XCTAssertEqual(workoutSet.restDurationSeconds, 18)
         XCTAssertNil(workoutRecorder.activeRestTimerSet)
@@ -531,7 +551,7 @@ final class WorkoutRecorderTests: XCTestCase {
         XCTAssertEqual(chronograph.seconds, 0, accuracy: 0.001)
     }
 
-    func testFinishRestAndStopChronographPersistsElapsedForActiveTimerSetWithoutConfiguredRest() {
+    func testEndRestPersistsElapsedForActiveTimerSetWithoutConfiguredRest() {
         let workout = database.newWorkout(name: "Test")
         let setGroup = database.newWorkoutSetGroup(
             createFirstSetAutomatically: false,
@@ -546,10 +566,7 @@ final class WorkoutRecorderTests: XCTestCase {
         chronograph.seconds = 30.99
         chronograph.status = .running
 
-        workoutRecorder.finishRestAndStopChronograph(
-            using: chronograph,
-            persistTrackedValue: true
-        )
+        workoutRecorder.endRest(using: chronograph, reason: .stopped)
 
         XCTAssertEqual(workoutSet.restDurationSeconds, 15)
         XCTAssertNil(workoutRecorder.activeRestTimerSet)
@@ -557,7 +574,7 @@ final class WorkoutRecorderTests: XCTestCase {
         XCTAssertEqual(chronograph.seconds, 0, accuracy: 0.001)
     }
 
-    func testFinishRestAndStopChronographDoesNotOverrideConfiguredTimerRest() {
+    func testEndRestReplacesAConfiguredTimerRestWithWhatWasActuallyRested() {
         let workout = database.newWorkout(name: "Test")
         let setGroup = database.newWorkoutSetGroup(
             createFirstSetAutomatically: false,
@@ -572,27 +589,24 @@ final class WorkoutRecorderTests: XCTestCase {
         chronograph.seconds = 10.99
         chronograph.status = .running
 
-        workoutRecorder.finishRestAndStopChronograph(
-            using: chronograph,
-            persistTrackedValue: true
-        )
+        workoutRecorder.endRest(using: chronograph, reason: .stopped)
 
-        XCTAssertEqual(workoutSet.restDurationSeconds, 90)
+        XCTAssertEqual(
+            workoutSet.restDurationSeconds, 35,
+            "stopping early records the rest actually taken, not the one that was planned"
+        )
         XCTAssertNil(workoutRecorder.activeRestTimerSet)
         XCTAssertEqual(chronograph.status, .idle)
     }
 
-    func testFinishRestAndStopChronographStopsManualChronographWithoutActiveRestSet() {
+    func testEndRestStopsManualChronographWithoutActiveRestSet() {
         let chronograph = Chronograph()
 
         chronograph.mode = .stopwatch
         chronograph.setSeconds(18)
         chronograph.status = .running
 
-        workoutRecorder.finishRestAndStopChronograph(
-            using: chronograph,
-            persistTrackedValue: true
-        )
+        workoutRecorder.endRest(using: chronograph, reason: .stopped)
 
         XCTAssertNil(workoutRecorder.activeRestTimerSet)
         XCTAssertEqual(chronograph.status, .idle)
@@ -673,8 +687,7 @@ final class WorkoutRecorderTests: XCTestCase {
         let restBehavior = workoutRecorder.autoRestBehavior(
             forSet: workoutSet,
             usesStopwatch: false,
-            autoTimerEnabled: true,
-            autoStopwatchEnabled: false,
+            autoRestEnabled: true,
             timerDuration: 45
         )
 
@@ -1657,5 +1670,346 @@ final class DataArchiveServiceTests: XCTestCase {
         components.year = 2026; components.month = 8; components.day = 12
         let date = Calendar(identifier: .gregorian).date(from: components)!
         XCTAssertEqual(DataArchiveService.filename(for: date), "LOGIT-Backup-2026-08-12.json")
+    }
+}
+
+// MARK: - PersonalRecordCountIndex Tests
+
+/// The History list reads its "n PR" counts from `PersonalRecordCountIndex`, which walks the whole
+/// history once, while a workout's own detail screen reads them from
+/// `WorkoutProgressReport.compute`, which rescans one workout's exercises. Two ways to the same
+/// number is one way to drift, so this pins them together over the preview history — which has
+/// repeated sessions of the same exercises, a superset, and workouts sharing a day.
+@MainActor
+final class PersonalRecordCountIndexTests: XCTestCase {
+
+    func testIndexAgreesWithThePerWorkoutReport() async {
+        let database = Database(isPreview: true)
+        let workouts = database.fetch(Workout.self) as! [Workout]
+        XCTAssertFalse(workouts.isEmpty, "The preview database should carry a history to compare over")
+
+        let counts = await PersonalRecordCountIndex.build(database: database)
+
+        var totalRecords = 0
+        for workout in workouts {
+            let expected = WorkoutProgressReport.compute(for: workout, database: database)
+                .exerciseRecords.count
+            totalRecords += expected
+            XCTAssertEqual(
+                counts[workout.objectID] ?? 0,
+                expected,
+                "Record count disagrees for \(workout.name ?? "unnamed") on \(workout.date?.description ?? "no date")"
+            )
+        }
+        XCTAssertGreaterThan(totalRecords, 0, "A history with no records at all would prove nothing")
+    }
+
+    /// Repeats the comparison over fresh preview databases: the seeded values are randomised, so
+    /// one run only samples one history — and the object-ID churn this pins down (a save turning a
+    /// workout's temporary ID permanent halfway through the walk) only bites some of the time.
+    func testIndexAgreesAcrossRepeatedSeeds() async {
+        for attempt in 0 ..< 8 {
+            let database = Database(isPreview: true)
+            let workouts = database.fetch(Workout.self) as! [Workout]
+            let counts = await PersonalRecordCountIndex.build(database: database)
+            for workout in workouts {
+                XCTAssertEqual(
+                    counts[workout.objectID] ?? 0,
+                    WorkoutProgressReport.compute(for: workout, database: database).exerciseRecords.count,
+                    "Seed \(attempt): record count disagrees for \(workout.name ?? "unnamed")"
+                )
+            }
+        }
+    }
+
+    func testWorkoutsWithoutRecordsAreAbsentRatherThanZero() async {
+        let database = Database(isPreview: true)
+        let counts = await PersonalRecordCountIndex.build(database: database)
+        XCTAssertFalse(counts.values.contains(0), "Only workouts that set a record belong in the index")
+    }
+}
+
+// MARK: - Auto Rest Regression Tests
+
+/// Pins the behaviour of the auto rest timer / auto stopwatch after the September 2026
+/// rework. Each test names the thing that used to go wrong.
+final class AutoRestTests: XCTestCase {
+    private var database: Database!
+    private var recorder: WorkoutRecorder!
+
+    override func setUp() {
+        super.setUp()
+        database = Database(isPreview: true)
+        recorder = WorkoutRecorder(database: database)
+    }
+
+    override func tearDown() {
+        recorder = nil
+        database = nil
+        super.tearDown()
+    }
+
+    private func makeSet(rest: Int = 0) -> WorkoutSet {
+        let workout = database.newWorkout(name: "Auto rest")
+        let group = database.newWorkoutSetGroup(createFirstSetAutomatically: false, workout: workout)
+        return database.newStandardSet(restDuration: rest, setGroup: group)
+    }
+
+    /// A timer counting down from `total`, `elapsed` seconds in.
+    private func runningTimer(total: Int, elapsed: Int) -> Chronograph {
+        let chronograph = Chronograph()
+        chronograph.mode = .timer
+        chronograph.setSeconds(Double(total) + 0.99)
+        chronograph.seconds = Double(total - elapsed) + 0.99
+        chronograph.status = .running
+        return chronograph
+    }
+
+    // MARK: The switch is the only gate
+
+    func testDisabledStartsNothingForASetThatCarriesARest() {
+        // Used to start a timer anyway — a template's planned rest, or one an earlier auto
+        // rest wrote, bypassed the switch entirely.
+        XCTAssertNil(recorder.autoRestBehavior(
+            forSet: makeSet(rest: 90), usesStopwatch: false,
+            autoRestEnabled: false, timerDuration: 30
+        ))
+    }
+
+    func testEnabledPrefersTheSetsOwnRestOverTheSheetsDuration() {
+        XCTAssertEqual(
+            recorder.autoRestBehavior(
+                forSet: makeSet(rest: 90), usesStopwatch: false,
+                autoRestEnabled: true, timerDuration: 30
+            ),
+            .timer(90)
+        )
+    }
+
+    func testEnabledFallsBackToTheSheetsDuration() {
+        XCTAssertEqual(
+            recorder.autoRestBehavior(
+                forSet: makeSet(), usesStopwatch: false,
+                autoRestEnabled: true, timerDuration: 30
+            ),
+            .timer(30)
+        )
+    }
+
+    func testOneSwitchDrivesBothModes() {
+        let set = makeSet(rest: 90)
+        XCTAssertEqual(
+            recorder.autoRestBehavior(forSet: set, usesStopwatch: true, autoRestEnabled: true, timerDuration: 30),
+            .stopwatch
+        )
+        XCTAssertNil(
+            recorder.autoRestBehavior(forSet: set, usesStopwatch: true, autoRestEnabled: false, timerDuration: 30)
+        )
+    }
+
+    // MARK: What a rest is worth when it ends
+
+    func testTimerRunningOutRecordsItsFullValue() {
+        let set = makeSet()
+        let chronograph = runningTimer(total: 90, elapsed: 90)
+        recorder.activeRestTimerSet = set
+
+        recorder.endRest(using: chronograph, reason: .timerCompleted)
+
+        XCTAssertEqual(set.restDurationSeconds, 90)
+        XCTAssertNil(recorder.activeRestTimerSet)
+        XCTAssertEqual(chronograph.status, .idle)
+    }
+
+    func testStoppingEarlyRecordsWhatWasActuallyRested() {
+        let set = makeSet()
+        let chronograph = runningTimer(total: 90, elapsed: 8)
+        recorder.activeRestTimerSet = set
+
+        recorder.endRest(using: chronograph, reason: .stopped, recordingMode: .elapsed)
+
+        XCTAssertEqual(set.restDurationSeconds, 8)
+    }
+
+    func testStoppingEarlyRecordsTheFullDurationWhenThatIsTheSetting() {
+        let set = makeSet()
+        let chronograph = runningTimer(total: 90, elapsed: 8)
+        recorder.activeRestTimerSet = set
+
+        recorder.endRest(using: chronograph, reason: .stopped, recordingMode: .fullDuration)
+
+        XCTAssertEqual(set.restDurationSeconds, 90)
+    }
+
+    func testStoppingInsideTheFirstSecondStillRecordsARest() {
+        // Used to record nothing at all, leaving the set with a blank rest.
+        let set = makeSet()
+        let chronograph = Chronograph()
+        chronograph.mode = .timer
+        chronograph.setSeconds(90.99)
+        chronograph.seconds = 90.49
+        chronograph.status = .running
+        recorder.activeRestTimerSet = set
+
+        recorder.endRest(using: chronograph, reason: .stopped, recordingMode: .elapsed)
+
+        XCTAssertEqual(set.restDurationSeconds, 1)
+    }
+
+    func testLoggingTheNextSetRecordsTheRestItInterrupts() {
+        // Used to throw the value away: only the stopwatch saved anything here.
+        let set = makeSet()
+        let chronograph = runningTimer(total: 90, elapsed: 19)
+        recorder.activeRestTimerSet = set
+
+        recorder.endRest(using: chronograph, reason: .superseded, recordingMode: .elapsed)
+
+        XCTAssertEqual(set.restDurationSeconds, 19)
+        XCTAssertNil(recorder.activeRestTimerSet)
+    }
+
+    func testDiscardingTheWorkoutRecordsNothing() {
+        let set = makeSet()
+        let chronograph = runningTimer(total: 90, elapsed: 19)
+        recorder.activeRestTimerSet = set
+
+        recorder.endRest(using: chronograph, reason: .workoutDiscarded)
+
+        XCTAssertEqual(set.restDurationSeconds, 0)
+        XCTAssertEqual(chronograph.status, .idle)
+    }
+
+    func testStopwatchAlwaysRecordsWhatItMeasured() {
+        // A stopwatch has no prescribed length, so the full-duration setting can't apply.
+        let set = makeSet(rest: 120)
+        let chronograph = Chronograph()
+        chronograph.mode = .stopwatch
+        chronograph.setSeconds(37)
+        chronograph.status = .running
+        recorder.activeRestTimerSet = set
+
+        recorder.endRest(using: chronograph, reason: .stopped, recordingMode: .fullDuration)
+
+        XCTAssertEqual(set.restDurationSeconds, 37)
+    }
+
+    func testEndingAManualChronographRecordsNothingAndStopsIt() {
+        let chronograph = runningTimer(total: 90, elapsed: 30)
+
+        recorder.endRest(using: chronograph, reason: .stopped)
+
+        XCTAssertNil(recorder.activeRestTimerSet)
+        XCTAssertEqual(chronograph.status, .idle)
+    }
+
+    func testEveryExitAgreesOnTheSameNumber() {
+        // The two stop buttons and the next-set interruption used to disagree; they now all
+        // route through endRest and land on the same value.
+        for reason in [RestEndReason.stopped, .superseded] {
+            let set = makeSet(rest: 120)
+            let chronograph = runningTimer(total: 120, elapsed: 44)
+            recorder.activeRestTimerSet = set
+
+            recorder.endRest(using: chronograph, reason: reason, recordingMode: .elapsed)
+
+            XCTAssertEqual(set.restDurationSeconds, 44, "\(reason) disagreed")
+        }
+    }
+
+    // MARK: Re-arming
+
+    func testCorrectingALoggedSetDoesNotRestartItsRest() {
+        let workout = database.newWorkout(name: "Auto rest")
+        let group = database.newWorkoutSetGroup(createFirstSetAutomatically: false, workout: workout)
+        let set = database.newStandardSet(repetitions: 10, setGroup: group)
+
+        let afterFirstEntry = recorder.autoRestTriggerSet(
+            in: workout, previousRepetitionEntrySetIDs: [], preferredSet: set
+        )
+        XCTAssertEqual(afterFirstEntry.triggerSet, set)
+
+        // The reps field is cleared — TextField(value:format:) writes through on every
+        // keystroke, so a correction empties the set for a moment.
+        set.clearEntries()
+        let afterClear = recorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: afterFirstEntry.repetitionEntrySetIDs,
+            preferredSet: set
+        )
+        XCTAssertNil(afterClear.triggerSet)
+
+        // ... and typed again. This used to count as a brand new entry and start the rest
+        // over, which is how a rest appeared with the switch off.
+        set.entries.first?.repetitions = 12
+        let afterRetype = recorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: afterClear.repetitionEntrySetIDs,
+            preferredSet: set
+        )
+        XCTAssertNil(afterRetype.triggerSet, "correcting a logged set must not re-arm its rest")
+    }
+
+    func testANewSetStillArmsItsRestAfterAnEarlierSetWasCorrected() {
+        let workout = database.newWorkout(name: "Auto rest")
+        let group = database.newWorkoutSetGroup(createFirstSetAutomatically: false, workout: workout)
+        let first = database.newStandardSet(repetitions: 10, setGroup: group)
+        let second = database.newStandardSet(setGroup: group)
+
+        let entered = recorder.autoRestTriggerSet(
+            in: workout, previousRepetitionEntrySetIDs: [], preferredSet: first
+        )
+
+        second.entries.first?.repetitions = 8
+        let trigger = recorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: entered.repetitionEntrySetIDs,
+            preferredSet: second
+        )
+
+        XCTAssertEqual(trigger.triggerSet, second)
+    }
+
+    // MARK: Settings
+
+    func testLegacySwitchesFoldIntoTheSingleOne() {
+        for legacyKey in ["autoTimerEnabled", "autoStopwatchEnabled"] {
+            let suite = "AutoRestTests-\(legacyKey)"
+            let defaults = UserDefaults(suiteName: suite)!
+            defaults.removePersistentDomain(forName: suite)
+            defaults.set(true, forKey: legacyKey)
+
+            AutoRestSettings.migrateLegacySwitchesIfNeeded(in: defaults)
+
+            XCTAssertTrue(AutoRestSettings.isEnabled(in: defaults), "\(legacyKey) should carry over")
+            XCTAssertNil(defaults.object(forKey: legacyKey), "the retired key should be cleared")
+            defaults.removePersistentDomain(forName: suite)
+        }
+    }
+
+    func testMigrationDoesNotReviveASwitchTurnedOffAfterwards() {
+        let suite = "AutoRestTests-once"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        defaults.set(true, forKey: "autoTimerEnabled")
+
+        AutoRestSettings.migrateLegacySwitchesIfNeeded(in: defaults)
+        defaults.set(false, forKey: AutoRestSettings.enabledKey)
+        defaults.set(true, forKey: "autoTimerEnabled")
+        AutoRestSettings.migrateLegacySwitchesIfNeeded(in: defaults)
+
+        XCTAssertFalse(AutoRestSettings.isEnabled(in: defaults))
+        defaults.removePersistentDomain(forName: suite)
+    }
+
+    func testRecordingModeDefaultsToElapsed() {
+        let suite = "AutoRestTests-mode"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+
+        XCTAssertEqual(AutoRestSettings.recordingMode(in: defaults), .elapsed)
+
+        defaults.set(RestRecordingMode.fullDuration.rawValue, forKey: AutoRestSettings.recordingModeKey)
+        XCTAssertEqual(AutoRestSettings.recordingMode(in: defaults), .fullDuration)
+        defaults.removePersistentDomain(forName: suite)
     }
 }

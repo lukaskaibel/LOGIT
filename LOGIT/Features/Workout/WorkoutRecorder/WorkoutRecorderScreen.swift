@@ -90,8 +90,6 @@ struct WorkoutRecorderScreen: View {
     @State private var finishReport: WorkoutProgressReport?
     /// The finish bar's height, so the finish content can scroll clear of it.
     @State private var finishBarHeight: CGFloat = 0
-    /// Skipping the rating is a decision; re-opening the finish panel must not quietly re-seed it.
-    @State private var effortWasSkipped = false
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isShowingDetailsSheet = false
     @State private var isShowingExerciseSelectionSheet = false
@@ -843,14 +841,9 @@ struct WorkoutRecorderScreen: View {
     private func beginFinishing() {
         dismissKeyboard()
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        // Start the scale in the middle, like Apple's effort screen: a nudge from neutral reads as
-        // rating, where an empty scale reads as a form to fill in. Only ever seeds a workout that
-        // has never been rated and wasn't skipped, so re-opening the panel can't overwrite a real
-        // answer — and only here, never in the editor, where seeding would silently rate an old
-        // workout on open.
-        if let workout = workoutRecorder.workout, workout.effortScore == nil, !effortWasSkipped {
-            workout.effortScore = WorkoutEffort.defaultScore
-        }
+        // Nothing is seeded: the panel opens on the unrated scale, exactly as Apple's effort
+        // screen does. A pre-filled 5 would be a rating nobody gave, and it would be exported to
+        // Health as one.
         topSheet.revealBeforeFinishing = max(topSheet.reveal, topSheet.compactStop)
         topSheet.isReturningFromFinish = false
         topSheet.isDragging = false
@@ -882,8 +875,7 @@ struct WorkoutRecorderScreen: View {
             RecorderFinishPanelContent(
                 workout: workout,
                 records: finishReport?.exerciseRecords ?? [],
-                isNoteFieldFocused: $isNoteFieldFocused,
-                onSkipEffort: { effortWasSkipped = true }
+                isNoteFieldFocused: $isNoteFieldFocused
             )
             .padding(.horizontal)
             .padding(.top, 10)
@@ -1110,23 +1102,8 @@ struct WorkoutRecorderScreen: View {
     }
 
     private func startRestTimerForSet(_ completedSet: WorkoutSet) {
-        if chronograph.status == .running,
-           let previousTimerSet = workoutRecorder.activeRestTimerSet,
-           previousTimerSet.objectID != completedSet.objectID
-        {
-            if chronograph.mode == .stopwatch {
-                let elapsed = chronograph.elapsedSeconds
-                if elapsed > 0 {
-                    workoutRecorder.recordRestDuration(elapsed, for: previousTimerSet)
-                }
-            }
-            chronograph.cancel()
-            chronograph.onTimerFired = nil
-            workoutRecorder.activeRestTimerSet = nil
-        }
-
+        // This set's own rest is already on the clock.
         guard workoutRecorder.activeRestTimerSet?.objectID != completedSet.objectID else { return }
-        guard chronograph.status != .running else { return }
 
         // Read at call time instead of via `@AppStorage`: these settings are only consumed
         // here, and an `@AppStorage` subscription re-rendered the whole recorder tree on every
@@ -1136,18 +1113,27 @@ struct WorkoutRecorderScreen: View {
             ? 30
             : defaults.integer(forKey: "lastTimerDuration")
 
+        // Decided before anything on the clock is touched: with auto rest off, a timer the
+        // athlete started by hand has to keep running.
         guard let autoRestBehavior = workoutRecorder.autoRestBehavior(
             forSet: completedSet,
             usesStopwatch: chronograph.mode == .stopwatch,
-            autoTimerEnabled: defaults.bool(forKey: "autoTimerEnabled"),
-            autoStopwatchEnabled: defaults.bool(forKey: "autoStopwatchEnabled"),
+            autoRestEnabled: AutoRestSettings.isEnabled(in: defaults),
             timerDuration: lastTimerDuration
         ) else {
             return
         }
 
+        // Now it gives way: a rest for the previous set is written down first, a chronograph
+        // started by hand simply stops. Either way the new rest starts — it never used to
+        // when something was already running, which looked like the feature misfiring.
+        workoutRecorder.endRest(
+            using: chronograph,
+            reason: .superseded,
+            recordingMode: AutoRestSettings.recordingMode(in: defaults)
+        )
+
         workoutRecorder.activeRestTimerSet = completedSet
-        chronograph.cancel()
 
         switch autoRestBehavior {
         case let .timer(restSeconds):
@@ -1156,14 +1142,8 @@ struct WorkoutRecorderScreen: View {
             chronograph.start()
             chronograph.onTimerFired = { [weak chronograph, weak workoutRecorder] in
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
-                if let currentSet = workoutRecorder?.activeRestTimerSet,
-                   currentSet.restDurationSeconds == 0 {
-                    let recordedDuration = chronograph.map {
-                        max(0, Int($0.initialTimerSeconds.rounded(.down)))
-                    } ?? restSeconds
-                    workoutRecorder?.recordRestDuration(recordedDuration, for: currentSet)
-                }
-                workoutRecorder?.activeRestTimerSet = nil
+                guard let chronograph, let workoutRecorder else { return }
+                workoutRecorder.endRest(using: chronograph, reason: .timerCompleted)
             }
 
         case .stopwatch:
@@ -1177,21 +1157,28 @@ struct WorkoutRecorderScreen: View {
     private func stopStopwatch() {
         guard chronograph.mode == .stopwatch else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        workoutRecorder.endStopwatch(using: chronograph)
+        workoutRecorder.endRest(
+            using: chronograph,
+            reason: .stopped,
+            recordingMode: AutoRestSettings.recordingMode()
+        )
     }
 
     private func cancelTimer() {
         guard chronograph.mode == .timer else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        // If this timer is an auto-rest timer (activeRestTimerSet != nil), we want to keep
-        // the elapsed rest time so far when cancelling.
-        workoutRecorder.finishRestAndStopChronograph(using: chronograph, persistTrackedValue: true)
+        workoutRecorder.endRest(
+            using: chronograph,
+            reason: .stopped,
+            recordingMode: AutoRestSettings.recordingMode()
+        )
     }
 
     private func finishWorkout(shouldSave: Bool) {
-        workoutRecorder.finishRestAndStopChronograph(
+        workoutRecorder.endRest(
             using: chronograph,
-            persistTrackedValue: shouldSave
+            reason: shouldSave ? .stopped : .workoutDiscarded,
+            recordingMode: AutoRestSettings.recordingMode()
         )
 
         if shouldSave {
@@ -1307,7 +1294,6 @@ private struct RecorderFinishPanelContent: View {
     @ObservedObject var workout: Workout
     let records: [WorkoutProgressReport.ExerciseRecords]
     var isNoteFieldFocused: FocusState<Bool>.Binding
-    let onSkipEffort: () -> Void
 
     var body: some View {
         VStack(spacing: SECTION_SPACING) {
@@ -1318,21 +1304,20 @@ private struct RecorderFinishPanelContent: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
 
             VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-                Text(NSLocalizedString("howHardWasIt", comment: ""))
+                Text(NSLocalizedString("rateYourEffort", comment: ""))
                     .sectionHeaderStyle2()
-                WorkoutEffortTile(
+                // The rating happens in place here rather than behind a tap: finishing *is* the
+                // moment the question is asked. Same bars, same capsule, same description list
+                // as the sheet the editor and the detail screen open.
+                WorkoutEffortRatingCard(
                     score: Binding(
                         get: { workout.effortScore },
-                        set: { newValue in
-                            workout.effortScore = newValue
-                            // Skipping is a decision; re-opening the panel must not re-seed the 5.
-                            if newValue == nil { onSkipEffort() }
-                        }
+                        set: { workout.effortScore = $0 }
                     ),
-                    // Top-to-bottom, not leading-to-trailing: one selected bar is narrow and
-                    // tall, so a horizontal sweep would squeeze the whole gradient into 30pt.
+                    // Top to bottom, not leading to trailing: the marker is a narrow, tall
+                    // capsule, and a horizontal sweep squeezes the whole spectrum into ~25pt.
                     tint: workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom),
-                    style: .translucent
+                    muscleGroups: workout.muscleGroups
                 )
             }
             .frame(maxWidth: .infinity, alignment: .leading)

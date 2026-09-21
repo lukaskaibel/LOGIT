@@ -451,4 +451,13 @@ final class DistanceConvertingTests: XCTestCase {
             )
         }
     }
+
+    func testDurationStyleExistsExactlyForDurationTypes() {
+        for type in SetMeasurementType.allCases {
+            XCTAssertEqual(
+                type.durationStyle != nil, type.usesDuration,
+                "\(type.rawValue) duration format must accompany a duration field"
+            )
+        }
+    }
 }

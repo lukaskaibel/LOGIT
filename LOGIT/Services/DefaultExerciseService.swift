@@ -24,6 +24,10 @@ struct DefaultExercise: Codable {
     /// `"faster"` for the timed efforts in the library — a sprint improves by ending sooner,
     /// unlike a hold. Absent = longer, which is right for every other exercise that tracks time.
     let durationGoal: String?
+    /// `"clock"` for the timed exercises whose efforts run to minutes — a jump-rope round typed
+    /// as "180" seconds reads worse than "3:00". Absent = the measurement type's own default,
+    /// which already gives every distance+duration exercise the clock.
+    let durationStyle: String?
     let instructions: [String]?
     let localizedInstructions: [String: [String]]?
 
@@ -137,6 +141,13 @@ class DefaultExerciseService: ObservableObject {
                     existingExercise.durationGoal =
                         ExerciseDurationGoal(rawValue: goal) ?? .longer
                 }
+                // The entry format is adopted on the same terms. A non-nil string can only mean
+                // the user chose — `durationStyle`'s setter stores every choice, the default
+                // included — so a library update never flips a format someone picked.
+                if existingExercise.durationStyleString == nil, let style = exerciseData.durationStyle {
+                    existingExercise.durationStyle =
+                        SetMeasurementType.DurationStyle(rawValue: style) ?? .seconds
+                }
             } else {
                 let exercise = Exercise(context: database.context)
                 exercise.id = generateUUID(from: exerciseData.id)
@@ -148,6 +159,10 @@ class DefaultExerciseService: ObservableObject {
                 exercise.measurementType = libraryMeasurementType
                 if let goal = exerciseData.durationGoal {
                     exercise.durationGoal = ExerciseDurationGoal(rawValue: goal) ?? .longer
+                }
+                if let style = exerciseData.durationStyle {
+                    exercise.durationStyle =
+                        SetMeasurementType.DurationStyle(rawValue: style) ?? .seconds
                 }
             }
         }

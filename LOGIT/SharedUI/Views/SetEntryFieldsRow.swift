@@ -14,12 +14,13 @@ protocol SetEntryFieldsEditable: NSManagedObject, ObservableObject {
     var repetitions: Int64 { get set }
     var weight: Int64 { get set }
     /// Milliseconds, and millimeters — the fine-grained units both entry entities store since
-    /// model v11. The fields below enter them as decimal seconds and decimal m/km.
+    /// model v11. The fields below enter them in whichever spelling the exercise asks for:
+    /// decimal seconds or a clock, decimal km or whole m.
     var durationMs: Int64 { get set }
     var distanceMm: Int64 { get set }
     var type: SetMeasurementType { get }
-    /// The exercise the entry trains — decides the distance scale (km vs m) via the user's
-    /// per-exercise choice.
+    /// The exercise the entry trains — decides both per-exercise spellings: the distance scale
+    /// (km vs m) and the duration format (seconds vs clock).
     var exercise: Exercise? { get }
 }
 
@@ -226,36 +227,61 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
         )
     }
 
-    /// Seconds, entered to hundredths. The stored value is milliseconds, so a sprint keeps the
-    /// 12.34 it was timed at; whole-second holds still type as plainly as they did before.
+    /// The duration field in the entry's resolved spelling — the exercise's own choice when the
+    /// user made one, else the measurement type's default. `.seconds` is decimal seconds entered
+    /// to hundredths, so a sprint keeps the 12.34 it was timed at; `.clock` shifts digits in from
+    /// the right, so a 32-minute run types as 32:15 instead of 1935. Stored as milliseconds
+    /// either way, and it stays a single field in both — see `DurationClockField`.
+    @ViewBuilder
     private func durationField(tertiary: Int, showsTrend: Bool = true) -> some View {
+        let style = entry.type.durationStyle(for: entry.exercise) ?? .seconds
         // A duration beside a distance normally carries no trend (see `fields`) — but an
         // exercise that says its clock improves downward has just told us how to read it, so
         // a sprint gets its trend back.
         let goal = entry.exercise?.durationGoal ?? .longer
         let delta = showsTrend || goal == .faster
             ? durationDelta(
-                currentMs: entry.durationMs, previousMs: reference?.durationMs, goal: goal
+                currentMs: entry.durationMs, previousMs: reference?.durationMs, goal: goal,
+                style: style
             )
             : (comparison: nil, text: "")
-        return DecimalField(
-            placeholder: Double(placeholder?.durationMs ?? 0) / 1000,
-            value: Binding(
-                get: { Double(entry.durationMs) / 1000 },
-                set: { entry.durationMs = Int64(($0 * 1000).rounded()) }
-            ),
-            maxDigits: 4,
-            decimalPlaces: DURATION_DECIMAL_PLACES,
-            index: fieldIndex(tertiary),
-            focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-            unit: NSLocalizedString("sec", comment: ""),
-            trend: delta.comparison,
-            trendText: delta.text,
-            trendColor: trendColor,
-            previousValueText: (reference?.durationMs ?? 0) > 0
-                ? formatDurationSecondsForEntry(milliseconds: reference!.durationMs) : nil,
-            onTapPreviousValue: onTapPreviousValue
-        )
+        let previousText = (reference?.durationMs ?? 0) > 0
+            ? formatDurationForEntry(milliseconds: reference!.durationMs, style: style) : nil
+        switch style {
+        case .seconds:
+            DecimalField(
+                placeholder: Double(placeholder?.durationMs ?? 0) / 1000,
+                value: Binding(
+                    get: { Double(entry.durationMs) / 1000 },
+                    set: { entry.durationMs = Int64(($0 * 1000).rounded()) }
+                ),
+                maxDigits: 4,
+                decimalPlaces: DURATION_DECIMAL_PLACES,
+                index: fieldIndex(tertiary),
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                unit: durationUnitTitle(for: .seconds),
+                trend: delta.comparison,
+                trendText: delta.text,
+                trendColor: trendColor,
+                previousValueText: previousText,
+                onTapPreviousValue: onTapPreviousValue
+            )
+        case .clock:
+            DurationClockField(
+                placeholder: placeholder?.durationMs ?? 0,
+                value: Binding(
+                    get: { entry.durationMs },
+                    set: { entry.durationMs = $0 }
+                ),
+                index: fieldIndex(tertiary),
+                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                trend: delta.comparison,
+                trendText: delta.text,
+                trendColor: trendColor,
+                previousValueText: previousText,
+                onTapPreviousValue: onTapPreviousValue
+            )
+        }
     }
 
     /// The distance field in the entry's resolved scale — the exercise's own km/m choice when
@@ -292,8 +318,9 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
 }
 
 /// Re-renders an entry row's fields when its exercise changes. The row itself observes only
-/// the entry; the exercise carries the user's distance scale, and without this hop a unit
-/// switch would leave already-rendered rows in the stale unit until an unrelated re-render.
+/// the entry; the exercise carries the user's per-exercise spellings — the distance scale and
+/// the duration format — and without this hop switching either would leave already-rendered
+/// rows in the stale one until an unrelated re-render.
 private struct ExerciseObservingFields<Entry: SetEntryFieldsEditable>: View {
     let row: SetEntryFieldsRow<Entry>
     @ObservedObject var exercise: Exercise
@@ -310,14 +337,16 @@ private struct ExerciseObservingFields<Entry: SetEntryFieldsEditable>: View {
 ///
 /// The arrow always points the way the number moved; only the tint follows the goal — negating the
 /// number to make a quicker sprint point up would put a rising arrow beside a falling time.
-/// Direction and text are computed on the value the user sees, so a change too small to show as
-/// hundredths shows no arrow at all. Returns `(nil, "")` when there is nothing meaningful to show.
+/// Direction and text are computed on the value the user sees — in the entry's own spelling, so a
+/// change too small to show (hundredths in a seconds field, a fraction of a second in a clock)
+/// shows no arrow at all. Returns `(nil, "")` when there is nothing meaningful to show.
 func durationDelta(
-    currentMs: Int64, previousMs: Int64?, goal: ExerciseDurationGoal = .longer
+    currentMs: Int64, previousMs: Int64?, goal: ExerciseDurationGoal = .longer,
+    style: SetMeasurementType.DurationStyle
 ) -> (comparison: SetValueComparison?, text: String) {
     guard let previousMs, previousMs > 0, currentMs > 0 else { return (nil, "") }
-    let current = formatDurationSecondsForEntry(milliseconds: currentMs)
-    let previous = formatDurationSecondsForEntry(milliseconds: previousMs)
+    let current = formatDurationForEntry(milliseconds: currentMs, style: style)
+    let previous = formatDurationForEntry(milliseconds: previousMs, style: style)
     guard current != previous else { return (nil, "") }
     let rose = currentMs > previousMs
     return (
@@ -325,7 +354,7 @@ func durationDelta(
             direction: rose ? .up : .down,
             isImprovement: goal == .faster ? !rose : rose
         ),
-        formatDurationSecondsForEntry(milliseconds: abs(currentMs - previousMs))
+        formatDurationForEntry(milliseconds: abs(currentMs - previousMs), style: style)
     )
 }
 

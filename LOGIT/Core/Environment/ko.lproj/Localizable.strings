@@ -1182,3 +1182,9 @@
 "durationGoalLongerDescription" = "기록은 가장 긴 시간입니다.";
 "durationGoalFaster" = "빠르게";
 "durationGoalFasterDescription" = "기록은 가장 빠른 시간입니다.";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "시간 형식";
+"durationFormatSeconds" = "초";
+"durationFormatClock" = "분과 초 (m:ss)";
+"durationFormatClock.short" = "m:ss";

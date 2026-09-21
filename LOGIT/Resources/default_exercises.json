@@ -1,5 +1,5 @@
 {
- "version": 8,
+ "version": 9,
  "exercises": [
   {
    "id": "default_001",
@@ -5470,7 +5470,8 @@
      "Trova un ritmo costante e respira in modo costante."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "duration",
+   "durationStyle": "clock"
   },
   {
    "id": "default_080",
@@ -5614,7 +5615,8 @@
      "Mantenere un ritmo costante per tutta la sessione."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "duration",
+   "durationStyle": "clock"
   },
   {
    "id": "default_082",
@@ -5900,7 +5902,8 @@
      "Mantenere l'intensità per la durata desiderata."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "duration",
+   "durationStyle": "clock"
   },
   {
    "id": "default_086",
@@ -11408,7 +11411,8 @@
      "Riposare tra un giro e l'altro e ripetere per il numero di giri desiderato mantenendo la forma corretta."
     ]
    },
-   "measurementType": "duration"
+   "measurementType": "duration",
+   "durationStyle": "clock"
   },
   {
    "id": "default_167",

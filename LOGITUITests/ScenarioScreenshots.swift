@@ -565,6 +565,18 @@ final class ScenarioScreenshots: XCTestCase {
             scrollRecorder(app, toGroup: "Running"),
             "Running group not reachable"
         )
+        // The run's 22 minutes type as the clock every other screen already reads them in —
+        // the reported case was this very field showing "1320 SEC".
+        XCTAssertTrue(
+            app.textFields.matching(NSPredicate(format: "value == '22:00'")).firstMatch
+                .waitForExistence(timeout: 4),
+            "Running's duration is not entered as a 22:00 clock"
+        )
+        XCTAssertFalse(
+            app.textFields.matching(NSPredicate(format: "value == '1320'")).firstMatch.exists,
+            "Running's duration still reads as a bare seconds count"
+        )
+        attach(app, "recorder_running_clock_field")
         app.staticTexts["Running"].firstMatch.tap()
         waitABit(3)
         attach(app, "running_detail_distance_tiles")
@@ -627,6 +639,117 @@ final class ScenarioScreenshots: XCTestCase {
             "Sled distance did not re-render as kilometers after the unit switch"
         )
         attach(app, "sled_row_in_kilometers")
+    }
+
+    /// The clock field, typed for real. Digits shift in from the right (3, 2, 1, 5 → 32:15); a
+    /// buffer typed mid-shift shows exactly what was typed (9, 5 → 0:95); and leaving the field
+    /// reads back what was actually STORED (95 s → 1:35). That last step is the one that proves
+    /// the keystrokes reached the model — the blur re-seeds from the entry, not from the text.
+    func testDurationClockEntry() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET", "-UITEST_NO_SCROLLTO"]
+        )
+
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
+        waitABit(2)
+
+        XCTAssertTrue(scrollRecorder(app, toGroup: "Running"), "Running group not reachable")
+        waitABit(1)
+
+        let runField = app.textFields.matching(NSPredicate(format: "value == '22:00'")).firstMatch
+        XCTAssertTrue(runField.waitForExistence(timeout: 4), "Running's 22:00 clock field missing")
+        runField.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "Number pad never appeared")
+
+        // Type through the app, not `runField`: that query matches on the value being replaced.
+        let clear = String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6)
+        app.typeText(clear + "3215")
+        XCTAssertTrue(
+            app.textFields.matching(NSPredicate(format: "value == '32:15'")).firstMatch
+                .waitForExistence(timeout: 3),
+            "3, 2, 1, 5 did not read 32:15"
+        )
+        attach(app, "clock_field_typed")
+
+        app.typeText(clear + "95")
+        XCTAssertTrue(
+            app.textFields.matching(NSPredicate(format: "value == '0:95'")).firstMatch
+                .waitForExistence(timeout: 3),
+            "A buffer mid-shift must show the digits as typed"
+        )
+        attach(app, "clock_field_mid_shift")
+
+        let next = app.buttons["Next"].firstMatch
+        XCTAssertTrue(next.waitForExistence(timeout: 3), "Keyboard Next button missing")
+        next.tap()
+        XCTAssertTrue(
+            app.textFields.matching(NSPredicate(format: "value == '1:35'")).firstMatch
+                .waitForExistence(timeout: 3),
+            "Leaving the field did not read back 95 s as 1:35 — the keystrokes never reached the entry"
+        )
+        attach(app, "clock_field_normalized_on_blur")
+    }
+
+    /// The per-exercise duration format, end to end: long-press a Plank set → Measurement submenu
+    /// → the Time Format section → switch to the clock → the row re-renders its 75 s as 1:15.
+    /// Durations are stored in milliseconds, so this is purely an entry-spelling flip.
+    ///
+    /// The Plank rather than Running on purpose: a run's submenu also carries the Distance Unit
+    /// section, which pushes Time Format below the fold — and scrolling an open menu from a test
+    /// dismisses it. A hold's submenu fits on screen, and seconds → clock is the direction a
+    /// user with a minutes-long timed exercise actually needs.
+    func testDurationFormatChoiceMenu() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: ["-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET", "-UITEST_NO_SCROLLTO"]
+        )
+
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 15), "Recorder never presented")
+        waitABit(2)
+
+        let plankHeader = app.staticTexts["Plank"].firstMatch
+        XCTAssertTrue(scrollRecorder(app, toGroup: "Plank"), "Plank group not reachable")
+        waitABit(1)
+        XCTAssertTrue(
+            app.textFields.matching(NSPredicate(format: "value == '75'")).firstMatch.exists,
+            "A hold should start out typed in seconds"
+        )
+
+        let measurementItem = app.buttons["Measurement"].firstMatch
+        XCTAssertTrue(
+            openSetContextMenu(underHeader: plankHeader, probe: measurementItem),
+            "Set context menu did not open on the plank set"
+        )
+        measurementItem.tap()
+
+        let clockOption = app.buttons["Minutes & Seconds (m:ss)"].firstMatch
+        XCTAssertTrue(
+            clockOption.waitForExistence(timeout: 4),
+            "Time Format options missing from the Measurement menu"
+        )
+        attach(app, "measurement_menu_duration_format")
+
+        // Same settling loop as the distance menu — never swipe over an open menu, it dismisses.
+        var tappedClock = false
+        for _ in 0 ..< 4 where !tappedClock {
+            if clockOption.exists, clockOption.isHittable {
+                clockOption.tap()
+                tappedClock = true
+            } else {
+                waitABit(1)
+            }
+        }
+        XCTAssertTrue(tappedClock, "Clock option never became tappable in the menu")
+        waitABit(1)
+        XCTAssertTrue(
+            app.textFields.matching(NSPredicate(format: "value == '1:15'")).firstMatch
+                .waitForExistence(timeout: 4),
+            "Plank duration did not re-render as a clock after the format switch"
+        )
+        attach(app, "plank_row_as_clock")
     }
 
     /// The exercise detail's distance adaptation, reached through the Exercises tab (the
@@ -1351,6 +1474,22 @@ final class ScenarioScreenshots: XCTestCase {
         weightChip.tap()
         durationChip.tap()
         waitABit(1)
+
+        // A hold defaults to seconds; choosing the clock re-renders the live preview.
+        let secondsSegment = app.buttons["sec"]
+        let clockSegment = app.buttons["m:ss"]
+        XCTAssertTrue(
+            clockSegment.waitForExistence(timeout: 3) && secondsSegment.exists,
+            "Duration format switch missing for a duration type"
+        )
+        XCTAssertTrue(secondsSegment.isSelected, "A duration-only exercise should default to seconds")
+        clockSegment.tap()
+        XCTAssertTrue(
+            app.staticTexts["0:45"].waitForExistence(timeout: 3),
+            "Set preview did not re-render its 45 s as a clock"
+        )
+        attach(app, "exercise_builder_duration_clock")
+
         app.buttons["Save"].firstMatch.tap()
         waitABit(2)
 
@@ -1383,6 +1522,10 @@ final class ScenarioScreenshots: XCTestCase {
         XCTAssertTrue(durationChip.isSelected, "Duration chip not prefilled from the exercise")
         XCTAssertFalse(repsChip.isEnabled, "Reps chip must not pair with duration")
         XCTAssertTrue(weightChip.isEnabled, "Weight chip must be addable to duration")
+        XCTAssertTrue(
+            app.buttons["m:ss"].isSelected,
+            "The clock chosen before saving did not come back when editing"
+        )
         attach(app, "exercise_builder_edit_prefilled")
 
         // Changing the type shows the history-safety footnote.

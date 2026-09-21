@@ -67,6 +67,26 @@ extension Exercise {
         set { distanceStyleOverride = newValue }
     }
 
+    /// The user's explicit duration spelling for this exercise, or nil while they've never
+    /// chosen one — then the measurement type's default applies (see `durationStyle`).
+    var durationStyleOverride: SetMeasurementType.DurationStyle? {
+        get { SetMeasurementType.DurationStyle(rawValue: durationStyleString ?? "") }
+        set { durationStyleString = newValue?.rawValue }
+    }
+
+    /// How this exercise's durations are typed — the user's choice when they made one, else the
+    /// measurement type's default (a run → "32:15", a plank → "45"). Durations are always stored
+    /// in milliseconds; this only picks the entry spelling.
+    ///
+    /// Unlike `durationGoal` below, the setter stores the value even when it matches the default.
+    /// Nil has to keep meaning "never chose", because that is exactly what the default exercise
+    /// library checks before adopting its own suggestion — collapsing a deliberate `.seconds` to
+    /// nil would let the next library update quietly flip a cardio exercise back to the clock.
+    var durationStyle: SetMeasurementType.DurationStyle {
+        get { durationStyleOverride ?? measurementType.durationStyle ?? .seconds }
+        set { durationStyleOverride = newValue }
+    }
+
     /// Which way this exercise's clock improves — `.longer` for a hold, `.faster` for a timed
     /// effort. Nil-backed to `.longer`, the assumption every duration comparison made before
     /// model v11, so no existing exercise changes meaning.
@@ -111,6 +131,15 @@ extension SetMeasurementType {
     func distanceStyle(for exercise: Exercise?) -> DistanceStyle? {
         guard usesDistance else { return nil }
         return exercise?.distanceStyleOverride ?? distanceStyle
+    }
+
+    /// The duration spelling for an entry of this type trained with `exercise` — the ONE
+    /// resolution every duration entry site goes through: the exercise's explicit choice wins;
+    /// otherwise the entry type's own default decides (so a one-off weight+duration set on a
+    /// cardio exercise still types in seconds). Nil for types without a duration field.
+    func durationStyle(for exercise: Exercise?) -> DurationStyle? {
+        guard usesDuration else { return nil }
+        return exercise?.durationStyleOverride ?? durationStyle
     }
 }
 

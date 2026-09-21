@@ -1182,3 +1182,9 @@
 "durationGoalLongerDescription" = "Um recorde é o seu tempo mais longo.";
 "durationGoalFaster" = "Mais rápido";
 "durationGoalFasterDescription" = "Um recorde é o seu tempo mais rápido.";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "Formato de tempo";
+"durationFormatSeconds" = "Segundos (seg)";
+"durationFormatClock" = "Minutos e segundos (m:ss)";
+"durationFormatClock.short" = "m:ss";

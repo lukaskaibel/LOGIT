@@ -52,6 +52,9 @@ struct ArchivedExercise: Codable {
     /// "faster" on exercises whose clock improves downward; absent otherwise. Optional so archives
     /// written before time goals existed still decode.
     let durationGoal: String?
+    /// "seconds" or "clock" when the user chose how this exercise's durations are typed; absent
+    /// while the measurement type's default applies. Optional so older archives still decode.
+    let durationStyle: String?
     let isDefaultExercise: Bool
 }
 
@@ -194,6 +197,7 @@ final class DataArchiveService {
                     measurementType: exercise.measurementType.rawValue,
                     distanceStyle: exercise.distanceStyleOverride?.rawValue,
                     durationGoal: exercise.durationGoalString,
+                    durationStyle: exercise.durationStyleOverride?.rawValue,
                     isDefaultExercise: exercise.isDefaultExercise
                 )
             },

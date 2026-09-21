@@ -1182,3 +1182,9 @@
 "durationGoalLongerDescription" = "記録は最も長いタイムです。";
 "durationGoalFaster" = "速く";
 "durationGoalFasterDescription" = "記録は最も速いタイムです。";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "時間の表示形式";
+"durationFormatSeconds" = "秒";
+"durationFormatClock" = "分と秒 (m:ss)";
+"durationFormatClock.short" = "m:ss";

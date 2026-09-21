@@ -223,6 +223,7 @@
 		80AB10052F15AA0100AB1005 /* RecorderPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AB10042F15AA0100AB1004 /* RecorderPresentation.swift */; };
 		80AB10082F15AA0100AB1008 /* RecorderTopSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AB10072F15AA0100AB1007 /* RecorderTopSheet.swift */; };
 		80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387BA2EBA187100AD7EFC /* DecimalField.swift */; };
+		80B387DC2EBA187100AD7EFD /* DurationClockField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387DB2EBA187100AD7EFD /* DurationClockField.swift */; };
 		80BEEP012EF0000000000001 /* beep.wav in Resources */ = {isa = PBXBuildFile; fileRef = 80BEEP022EF0000000000001 /* beep.wav */; };
 		80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = 80C2B98E2EC9362A00118FE2 /* ColorfulX */; };
 		80CBE1D52ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CBE1D32ED7AFD500DDE1C5 /* MeasurementsEditSheet.swift */; };
@@ -602,6 +603,7 @@
 		80AB10042F15AA0100AB1004 /* RecorderPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderPresentation.swift; sourceTree = "<group>"; };
 		80AB10072F15AA0100AB1007 /* RecorderTopSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderTopSheet.swift; sourceTree = "<group>"; };
 		80B387BA2EBA187100AD7EFC /* DecimalField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalField.swift; sourceTree = "<group>"; };
+		80B387DB2EBA187100AD7EFD /* DurationClockField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DurationClockField.swift; sourceTree = "<group>"; };
 		80BEEP022EF0000000000001 /* beep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beep.wav; sourceTree = "<group>"; };
 		80C7068F531DB65831E8FA8F /* MuscleFocusScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleFocusScreen.swift; sourceTree = "<group>"; };
 		80CBE1D22ED7AFD500DDE1C5 /* MeasurementDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementDetailScreen.swift; sourceTree = "<group>"; };
@@ -1362,6 +1364,7 @@
 				E1E1E1000000000000000F16 /* PersonalBestRow.swift */,
 				E1E1E1000000000000000F15 /* MetricComparisonView.swift */,
 				80B387BA2EBA187100AD7EFC /* DecimalField.swift */,
+				80B387DB2EBA187100AD7EFD /* DurationClockField.swift */,
 				80AA00012F3A000100AA0001 /* RestDurationPicker.swift */,
 				14BDE77C44D210E79936D216 /* ShareSheet.swift */,
 				80NEWSHAR002 /* WorkoutActivityItemSource.swift */,
@@ -1852,6 +1855,7 @@
 				801BBDD72DF7338A00CDB1FB /* TemplateSetCell.swift in Sources */,
 				801BBDD82DF7338A00CDB1FB /* PurchaseManager.swift in Sources */,
 				80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */,
+				80B387DC2EBA187100AD7EFD /* DurationClockField.swift in Sources */,
 				8031D04C2F29CBAE00B7C4ED /* TermsAndConditionsScreen.swift in Sources */,
 				801BBDD92DF7338A00CDB1FB /* View+.swift in Sources */,
 				8F4A3C022E5A9B0100D4E5F2 /* SetVolumeBarChart.swift in Sources */,

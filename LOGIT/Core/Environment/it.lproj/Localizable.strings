@@ -1193,3 +1193,9 @@
 "durationGoalLongerDescription" = "Un record è il tuo tempo più lungo.";
 "durationGoalFaster" = "Più veloce";
 "durationGoalFasterDescription" = "Un record è il tuo tempo più veloce.";
+
+"autoRest" = "Recupero auto";
+"recordedRest" = "Recupero registrato";
+"recordedRestElapsed" = "Tempo di recupero";
+"recordedRestFullDuration" = "Durata completa";
+"recordedRestDescription" = "Quando interrompi un recupero in anticipo, registra il tempo effettivamente trascorso o la durata completa impostata.";

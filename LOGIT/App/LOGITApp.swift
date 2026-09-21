@@ -86,6 +86,9 @@ struct LOGIT: App {
         DemoWorkoutSeeder.prepareUserDefaultsIfNeeded()
         #endif
         TestScenario.active?.prepareUserDefaults()
+        // Before any view reads the switch: folds the two retired mode-scoped auto-rest
+        // switches into the single one.
+        AutoRestSettings.migrateLegacySwitchesIfNeeded()
         Self.configureTips()
 
         let database: Database

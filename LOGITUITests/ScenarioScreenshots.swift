@@ -1183,6 +1183,70 @@ final class ScenarioScreenshots: XCTestCase {
         )
     }
 
+    // MARK: - Auto Rest
+
+    /// The floating pill reads the auto-rest switch: off means it sits idle, showing only
+    /// the instrument. Rests used to start regardless of the switch whenever the set carried
+    /// a rest duration of its own.
+    func testAutoRestSwitchOffLeavesTheChronographIdle() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: [
+                "-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET", "-UITEST_NO_SCROLLTO",
+                "-autoRestEnabled", "NO",
+                "-lastTimerDuration", "30",
+                "-selectedChronographMode", "timer",
+            ]
+        )
+
+        // 60s: the stress scenario seeds its history at launch, and the first launch after an
+        // install is slow enough to miss the 15s the warm recorder tests get away with.
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 60), "Recorder never presented")
+        waitABit(2)
+        let pill = app.buttons["recorderFloatingTimerButton"]
+        XCTAssertTrue(pill.waitForExistence(timeout: 15), "Floating chronograph pill missing")
+
+        XCTAssertEqual(
+            pill.label, "Timer",
+            "With auto rest off the pill must show a plain idle timer, not an armed one"
+        )
+        attach(app, "autorest_off_idle")
+    }
+
+    /// ... and on means it is armed, showing the duration the next rest will run for.
+    func testAutoRestSwitchOnArmsTheChronograph() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: [
+                "-UITEST_SHOW_RECORDER", "-UITEST_NO_SHEET", "-UITEST_NO_SCROLLTO",
+                "-autoRestEnabled", "YES",
+                "-lastTimerDuration", "30",
+                "-selectedChronographMode", "timer",
+            ]
+        )
+
+        // 60s: the stress scenario seeds its history at launch, and the first launch after an
+        // install is slow enough to miss the 15s the warm recorder tests get away with.
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 60), "Recorder never presented")
+        waitABit(2)
+        let pill = app.buttons["recorderFloatingTimerButton"]
+        XCTAssertTrue(pill.waitForExistence(timeout: 15), "Floating chronograph pill missing")
+
+        XCTAssertTrue(
+            pill.label.hasPrefix("Auto Rest Timer"),
+            "With auto rest on the pill must read as armed, got '\(pill.label)'"
+        )
+        attach(app, "autorest_on_armed")
+    }
+
+    // The "one switch shared by both tabs" guarantee is covered by AutoRestTests
+    // (testLegacySwitchesFoldIntoTheSingleOne) rather than here: reaching the chronograph
+    // sheet needs the exercise tray up, and the floating pill's geometry settles too
+    // unreliably behind it for a test worth keeping in the nightly suite. There is now a
+    // single `autoRestEnabled` key with no mode branch, so the property is structural.
+
     // MARK: - Walkthrough
 
     private func captureMainScreens(

@@ -1193,3 +1193,9 @@
 "durationGoalLongerDescription" = "A record is your longest time.";
 "durationGoalFaster" = "Faster";
 "durationGoalFasterDescription" = "A record is your fastest time.";
+
+"autoRest" = "Auto Rest";
+"recordedRest" = "Recorded Rest";
+"recordedRestElapsed" = "Time Rested";
+"recordedRestFullDuration" = "Full Duration";
+"recordedRestDescription" = "When you stop a rest early, record the time you actually rested, or the full duration the timer was set to.";

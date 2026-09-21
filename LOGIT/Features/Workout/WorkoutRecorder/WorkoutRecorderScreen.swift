@@ -1102,23 +1102,8 @@ struct WorkoutRecorderScreen: View {
     }
 
     private func startRestTimerForSet(_ completedSet: WorkoutSet) {
-        if chronograph.status == .running,
-           let previousTimerSet = workoutRecorder.activeRestTimerSet,
-           previousTimerSet.objectID != completedSet.objectID
-        {
-            if chronograph.mode == .stopwatch {
-                let elapsed = chronograph.elapsedSeconds
-                if elapsed > 0 {
-                    workoutRecorder.recordRestDuration(elapsed, for: previousTimerSet)
-                }
-            }
-            chronograph.cancel()
-            chronograph.onTimerFired = nil
-            workoutRecorder.activeRestTimerSet = nil
-        }
-
+        // This set's own rest is already on the clock.
         guard workoutRecorder.activeRestTimerSet?.objectID != completedSet.objectID else { return }
-        guard chronograph.status != .running else { return }
 
         // Read at call time instead of via `@AppStorage`: these settings are only consumed
         // here, and an `@AppStorage` subscription re-rendered the whole recorder tree on every
@@ -1128,18 +1113,27 @@ struct WorkoutRecorderScreen: View {
             ? 30
             : defaults.integer(forKey: "lastTimerDuration")
 
+        // Decided before anything on the clock is touched: with auto rest off, a timer the
+        // athlete started by hand has to keep running.
         guard let autoRestBehavior = workoutRecorder.autoRestBehavior(
             forSet: completedSet,
             usesStopwatch: chronograph.mode == .stopwatch,
-            autoTimerEnabled: defaults.bool(forKey: "autoTimerEnabled"),
-            autoStopwatchEnabled: defaults.bool(forKey: "autoStopwatchEnabled"),
+            autoRestEnabled: AutoRestSettings.isEnabled(in: defaults),
             timerDuration: lastTimerDuration
         ) else {
             return
         }
 
+        // Now it gives way: a rest for the previous set is written down first, a chronograph
+        // started by hand simply stops. Either way the new rest starts — it never used to
+        // when something was already running, which looked like the feature misfiring.
+        workoutRecorder.endRest(
+            using: chronograph,
+            reason: .superseded,
+            recordingMode: AutoRestSettings.recordingMode(in: defaults)
+        )
+
         workoutRecorder.activeRestTimerSet = completedSet
-        chronograph.cancel()
 
         switch autoRestBehavior {
         case let .timer(restSeconds):
@@ -1148,14 +1142,8 @@ struct WorkoutRecorderScreen: View {
             chronograph.start()
             chronograph.onTimerFired = { [weak chronograph, weak workoutRecorder] in
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
-                if let currentSet = workoutRecorder?.activeRestTimerSet,
-                   currentSet.restDurationSeconds == 0 {
-                    let recordedDuration = chronograph.map {
-                        max(0, Int($0.initialTimerSeconds.rounded(.down)))
-                    } ?? restSeconds
-                    workoutRecorder?.recordRestDuration(recordedDuration, for: currentSet)
-                }
-                workoutRecorder?.activeRestTimerSet = nil
+                guard let chronograph, let workoutRecorder else { return }
+                workoutRecorder.endRest(using: chronograph, reason: .timerCompleted)
             }
 
         case .stopwatch:
@@ -1169,21 +1157,28 @@ struct WorkoutRecorderScreen: View {
     private func stopStopwatch() {
         guard chronograph.mode == .stopwatch else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        workoutRecorder.endStopwatch(using: chronograph)
+        workoutRecorder.endRest(
+            using: chronograph,
+            reason: .stopped,
+            recordingMode: AutoRestSettings.recordingMode()
+        )
     }
 
     private func cancelTimer() {
         guard chronograph.mode == .timer else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        // If this timer is an auto-rest timer (activeRestTimerSet != nil), we want to keep
-        // the elapsed rest time so far when cancelling.
-        workoutRecorder.finishRestAndStopChronograph(using: chronograph, persistTrackedValue: true)
+        workoutRecorder.endRest(
+            using: chronograph,
+            reason: .stopped,
+            recordingMode: AutoRestSettings.recordingMode()
+        )
     }
 
     private func finishWorkout(shouldSave: Bool) {
-        workoutRecorder.finishRestAndStopChronograph(
+        workoutRecorder.endRest(
             using: chronograph,
-            persistTrackedValue: shouldSave
+            reason: shouldSave ? .stopped : .workoutDiscarded,
+            recordingMode: AutoRestSettings.recordingMode()
         )
 
         if shouldSave {

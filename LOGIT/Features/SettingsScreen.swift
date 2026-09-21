@@ -22,6 +22,7 @@ struct SettingsScreen: View {
     /// 0 means unset — `UserHeight` is the one that decides what counts as a real height.
     @AppStorage(UserHeight.storageKey) var heightCentimeters: Double = 0
     @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
+    @AppStorage(AutoRestSettings.recordingModeKey) var restRecordingMode: RestRecordingMode = .elapsed
     @AppStorage(CalorieEstimator.enabledKey) var calorieEstimatesEnabled: Bool = true
     @AppStorage(HealthKitSyncManager.syncEnabledKey) var appleHealthSyncEnabled: Bool = false
     @AppStorage(BodyMeasurementSyncManager.syncEnabledKey) var bodyMeasurementSyncEnabled: Bool = false
@@ -217,6 +218,27 @@ struct SettingsScreen: View {
                 Toggle(NSLocalizedString("timerIsMuted", comment: ""), isOn: $timerIsMuted)
                     .padding(CELL_PADDING)
                     .tileStyle()
+                VStack(alignment: .leading) {
+                    HStack {
+                        Text(NSLocalizedString("recordedRest", comment: ""))
+                        Spacer()
+                        Picker(
+                            NSLocalizedString("recordedRest", comment: ""),
+                            selection: $restRecordingMode
+                        ) {
+                            Text(NSLocalizedString("recordedRestElapsed", comment: ""))
+                                .tag(RestRecordingMode.elapsed)
+                            Text(NSLocalizedString("recordedRestFullDuration", comment: ""))
+                                .tag(RestRecordingMode.fullDuration)
+                        }
+                        .accessibilityIdentifier("recordedRestPicker")
+                    }
+                    Text(NSLocalizedString("recordedRestDescription", comment: ""))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(CELL_PADDING)
+                .tileStyle()
                 VStack(alignment: .leading) {
                     Toggle(NSLocalizedString("calorieEstimates", comment: ""), isOn: $calorieEstimatesEnabled)
                     Text(NSLocalizedString("calorieEstimatesDescription", comment: ""))

@@ -10,6 +10,64 @@ import CoreData
 import Foundation
 import OSLog
 
+/// How a rest that ends before its timer reaches zero is written down.
+enum RestRecordingMode: String, CaseIterable {
+    /// The seconds actually spent resting.
+    case elapsed
+    /// The rest the timer was set to, however early it was stopped.
+    case fullDuration
+}
+
+/// Why a running rest is ending — it decides what gets recorded.
+enum RestEndReason {
+    /// The timer counted down to zero.
+    case timerCompleted
+    /// The athlete stopped it, or finished the workout while it ran.
+    case stopped
+    /// The next set was logged while it was still running.
+    case superseded
+    /// The workout is being thrown away — record nothing.
+    case workoutDiscarded
+}
+
+/// The one place the auto-rest settings are named and read.
+///
+/// `autoRestEnabled` replaced a pair of mode-scoped switches (`autoTimerEnabled` /
+/// `autoStopwatchEnabled`) that could only ever be seen one at a time, so the one you
+/// weren't looking at stayed armed invisibly. `migrateLegacySwitchesIfNeeded` folds the
+/// old pair into it once, so whatever was on stays on.
+enum AutoRestSettings {
+    static let enabledKey = "autoRestEnabled"
+    static let recordingModeKey = "restRecordingMode"
+
+    private static let legacyTimerKey = "autoTimerEnabled"
+    private static let legacyStopwatchKey = "autoStopwatchEnabled"
+    private static let legacyMigrationDoneKey = "autoRestSwitchesMerged"
+
+    static func isEnabled(in defaults: UserDefaults = .standard) -> Bool {
+        defaults.bool(forKey: enabledKey)
+    }
+
+    static func recordingMode(in defaults: UserDefaults = .standard) -> RestRecordingMode {
+        defaults.string(forKey: recordingModeKey)
+            .flatMap(RestRecordingMode.init(rawValue:)) ?? .elapsed
+    }
+
+    /// Folds the two retired switches into the single one, once per install.
+    static func migrateLegacySwitchesIfNeeded(in defaults: UserDefaults = .standard) {
+        guard !defaults.bool(forKey: legacyMigrationDoneKey) else { return }
+        defaults.set(true, forKey: legacyMigrationDoneKey)
+
+        // Either one having been on means the athlete wanted rests to start by themselves.
+        if defaults.bool(forKey: legacyTimerKey) || defaults.bool(forKey: legacyStopwatchKey) {
+            defaults.set(true, forKey: enabledKey)
+        }
+
+        defaults.removeObject(forKey: legacyTimerKey)
+        defaults.removeObject(forKey: legacyStopwatchKey)
+    }
+}
+
 final class WorkoutRecorder: ObservableObject {
     enum AutoRestBehavior: Equatable {
         case timer(Int)
@@ -213,7 +271,10 @@ final class WorkoutRecorder: ObservableObject {
             triggerSet = workout.sets.first(where: { newlyEnteredSetIDs.contains($0.objectID) })
         }
 
-        return (triggerSet, currentRepetitionEntrySetIDs)
+        // The tally only ever grows. A set whose rest has already started stays in it even
+        // while its field is momentarily empty, so correcting a logged set — clearing the
+        // reps and typing them again — doesn't count as a fresh entry and re-arm the rest.
+        return (triggerSet, previousRepetitionEntrySetIDs.union(currentRepetitionEntrySetIDs))
     }
 
     /// Returns the applicable auto-rest behavior for the given set.
@@ -221,43 +282,29 @@ final class WorkoutRecorder: ObservableObject {
     func autoRestBehavior(
         forSet workoutSet: WorkoutSet,
         usesStopwatch: Bool,
-        autoTimerEnabled: Bool,
-        autoStopwatchEnabled: Bool,
+        autoRestEnabled: Bool,
         timerDuration: Int
     ) -> AutoRestBehavior? {
+        // The switch is the only gate. Off means nothing ever starts by itself, whatever
+        // rest the set happens to carry — a rest planned in a template still shows under
+        // the set and still sets the duration, it just doesn't start anything.
+        guard autoRestEnabled else { return nil }
+
         if usesStopwatch {
-            return autoStopwatchEnabled ? .stopwatch : nil
+            return .stopwatch
         }
 
+        // A rest the set already carries is what it rests for; the sheet's duration is
+        // only the fallback for a set that has none.
         if workoutSet.restDurationSeconds > 0 {
             return .timer(workoutSet.restDurationSeconds)
         }
 
-        if autoTimerEnabled && timerDuration > 0 {
+        if timerDuration > 0 {
             return .timer(timerDuration)
         }
 
         return nil
-    }
-
-    /// Compatibility wrapper for call sites that only support automatic timers.
-    func applicableRestDuration(
-        forSet workoutSet: WorkoutSet,
-        autoTimerEnabled: Bool,
-        timerDuration: Int
-    ) -> Int? {
-        switch autoRestBehavior(
-            forSet: workoutSet,
-            usesStopwatch: false,
-            autoTimerEnabled: autoTimerEnabled,
-            autoStopwatchEnabled: false,
-            timerDuration: timerDuration
-        ) {
-        case let .timer(seconds):
-            return seconds
-        case .stopwatch, .none:
-            return nil
-        }
     }
 
     /// Records the actual rest duration for a completed set.
@@ -266,37 +313,54 @@ final class WorkoutRecorder: ObservableObject {
         objectWillChange.send()
     }
 
-    func finishRestAndStopChronograph(
+    /// The one way a rest ends. Every exit — the timer running out, either stop button, the
+    /// next set being logged, switching between timer and stopwatch, finishing the workout —
+    /// comes through here, so they all write the same number down for the same situation.
+    ///
+    /// Stops the chronograph either way. Safe to call with nothing running.
+    func endRest(
         using chronograph: Chronograph,
-        persistTrackedValue: Bool
+        reason: RestEndReason,
+        recordingMode: RestRecordingMode = .elapsed
     ) {
+        // Read before the deferred cancel resets the chronograph.
+        let duration = restDuration(for: chronograph, reason: reason, recordingMode: recordingMode)
+
         defer {
             chronograph.onTimerFired = nil
             chronograph.cancel()
             activeRestTimerSet = nil
         }
 
-        guard persistTrackedValue, let activeRestSet = activeRestTimerSet else { return }
+        // Nothing to write for a chronograph the athlete started by hand, or for a workout
+        // that is being thrown away.
+        guard reason != .workoutDiscarded, let activeRestSet = activeRestTimerSet else { return }
+
+        recordRestDuration(duration, for: activeRestSet)
+    }
+
+    /// What a rest ending for `reason` is worth, in seconds.
+    func restDuration(
+        for chronograph: Chronograph,
+        reason: RestEndReason,
+        recordingMode: RestRecordingMode
+    ) -> Int {
+        // A rest that was interrupted still happened: floor it at a second so the set shows
+        // a rest rather than silently showing none.
+        let elapsed = max(1, chronograph.elapsedSeconds)
 
         switch chronograph.mode {
         case .stopwatch:
-            let elapsed = chronograph.elapsedSeconds
-            if elapsed > 0 {
-                recordRestDuration(elapsed, for: activeRestSet)
-            }
+            // A stopwatch has no prescribed length — measuring is the whole point of it.
+            return elapsed
 
         case .timer:
-            guard activeRestSet.restDurationSeconds == 0 else { return }
-            let elapsed = chronograph.elapsedSeconds
-            if elapsed > 0 {
-                recordRestDuration(elapsed, for: activeRestSet)
+            let fullDuration = max(0, Int(chronograph.initialTimerSeconds.rounded(.down)))
+            if reason == .timerCompleted {
+                return fullDuration
             }
+            return recordingMode == .fullDuration ? fullDuration : elapsed
         }
-    }
-
-    func endStopwatch(using chronograph: Chronograph) {
-        guard chronograph.mode == .stopwatch else { return }
-        finishRestAndStopChronograph(using: chronograph, persistTrackedValue: true)
     }
 
     /// Returns the next workout set to be executed. This is the first workout set, that has no workout set with entries after it.

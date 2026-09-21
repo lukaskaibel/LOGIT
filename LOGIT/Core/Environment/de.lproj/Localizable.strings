@@ -1189,3 +1189,9 @@
 "durationGoalLongerDescription" = "Ein Rekord ist deine längste Zeit.";
 "durationGoalFaster" = "Schneller";
 "durationGoalFasterDescription" = "Ein Rekord ist deine schnellste Zeit.";
+
+"autoRest" = "Auto-Pause";
+"recordedRest" = "Gespeicherte Pause";
+"recordedRestElapsed" = "Pausierte Zeit";
+"recordedRestFullDuration" = "Volle Dauer";
+"recordedRestDescription" = "Wenn du eine Pause vorzeitig beendest: die tatsächlich pausierte Zeit speichern oder die volle eingestellte Dauer.";

@@ -1193,3 +1193,9 @@
 "durationGoalLongerDescription" = "記録は最も長いタイムです。";
 "durationGoalFaster" = "速く";
 "durationGoalFasterDescription" = "記録は最も速いタイムです。";
+
+"autoRest" = "オートレスト";
+"recordedRest" = "記録される休憩";
+"recordedRestElapsed" = "実際の休憩時間";
+"recordedRestFullDuration" = "設定した長さ";
+"recordedRestDescription" = "休憩を途中で止めたとき、実際に休憩した時間を記録するか、タイマーに設定した長さを記録するかを選びます。";

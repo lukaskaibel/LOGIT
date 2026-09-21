@@ -534,8 +534,9 @@ struct WorkoutRecorderScreen: View {
                     sheetGeometry: sheetGeometry,
                     isAtSmallDetent: exerciseSelectionPresentationDetent == .height(BOTTOM_SHEET_SMALL),
                     onOpenChronoSheet: { isShowingChronoSheet = true },
-                    onStopStopwatch: stopStopwatch,
-                    onCancelTimer: cancelTimer
+                    onPauseChronograph: pauseChronograph,
+                    onResumeChronograph: resumeChronograph,
+                    onStopChronograph: stopChronograph
                 )
             }
             .onGeometryChange(for: CGFloat.self) {
@@ -1154,19 +1155,31 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
-    private func stopStopwatch() {
-        guard chronograph.mode == .stopwatch else { return }
+    /// Holds the rest rather than ending it: `activeRestTimerSet` stays, so resuming continues
+    /// the same set's rest and nothing is recorded until it is stopped.
+    private func pauseChronograph() {
+        guard chronograph.status == .running else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        workoutRecorder.endRest(
-            using: chronograph,
-            reason: .stopped,
-            recordingMode: AutoRestSettings.recordingMode()
-        )
+        chronograph.stop()
     }
 
-    private func cancelTimer() {
-        guard chronograph.mode == .timer else { return }
+    private func resumeChronograph() {
+        guard chronograph.status == .paused, chronographCanResume else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        chronograph.start()
+    }
+
+    /// A paused timer with nothing left on the clock has nothing to resume — `start()` would
+    /// fire it on the first tick.
+    private var chronographCanResume: Bool {
+        !(chronograph.mode == .timer && Int(chronograph.seconds) == 0)
+    }
+
+    /// Ends the rest in either mode, running or paused, through the same funnel as every other
+    /// exit. Heavier than pause/resume: this one is final.
+    private func stopChronograph() {
+        guard chronograph.status != .idle else { return }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         workoutRecorder.endRest(
             using: chronograph,
             reason: .stopped,
@@ -1502,7 +1515,7 @@ final class RecorderSheetGeometry: ObservableObject {
     }
 }
 
-/// The floating timer/stopwatch button (with its stop/cancel companion) and the placement math
+/// The floating timer/stopwatch button (with its pause/play and stop companions) and the placement math
 /// that tracks the persistent sheet. Isolated from the recorder screen so the chronograph's
 /// frequent publishes and the per-frame sheet-geometry updates re-render only this small
 /// overlay, never the whole recorder tree.
@@ -1514,8 +1527,9 @@ private struct FloatingChronoControlsOverlay: View {
     @ObservedObject var sheetGeometry: RecorderSheetGeometry
     let isAtSmallDetent: Bool
     let onOpenChronoSheet: () -> Void
-    let onStopStopwatch: () -> Void
-    let onCancelTimer: () -> Void
+    let onPauseChronograph: () -> Void
+    let onResumeChronograph: () -> Void
+    let onStopChronograph: () -> Void
 
     /// Whether a keyboard is on screen. What the slide is keyed on — and what keeps the controls
     /// visible while it happens, since the tray's measured height spikes and re-settles as a
@@ -1570,18 +1584,39 @@ private struct FloatingChronoControlsOverlay: View {
                 workoutRecorder: workoutRecorder,
                 action: onOpenChronoSheet
             )
-            if chronograph.mode == .stopwatch, chronograph.status == .running {
-                WorkoutRecorderFloatingStopwatchStopButton(
+            // Running: pause. Paused: play, and only then stop beside it. The same in both
+            // modes, and one button across pause/play so its glyph morphs in place.
+            if chronograph.status != .idle {
+                let isRunning = chronograph.status == .running
+                WorkoutRecorderFloatingChronoTransportButton(
                     workoutRecorder: workoutRecorder,
-                    action: onStopStopwatch
+                    systemImage: isRunning ? "pause.fill" : "play.fill",
+                    accessibilityLabel: NSLocalizedString(isRunning ? "pause" : "continue", comment: ""),
+                    isEnabled: isRunning || canResume,
+                    action: isRunning ? onPauseChronograph : onResumeChronograph
                 )
-            } else if chronograph.mode == .timer, chronograph.status == .running {
-                WorkoutRecorderFloatingStopwatchStopButton(
+                .accessibilityIdentifier("recorderFloatingChronoPlayPauseButton")
+                .transition(.scale(scale: 0.2).combined(with: .opacity))
+            }
+            if chronograph.status == .paused {
+                WorkoutRecorderFloatingChronoTransportButton(
                     workoutRecorder: workoutRecorder,
-                    action: onCancelTimer
+                    systemImage: "stop.fill",
+                    accessibilityLabel: NSLocalizedString("stop", comment: ""),
+                    action: onStopChronograph
                 )
+                .accessibilityIdentifier("recorderFloatingChronoStopButton")
+                .transition(.scale(scale: 0.2).combined(with: .opacity))
             }
         }
+        // Declarative, so a status flip from anywhere — the sheet, an auto rest starting, the
+        // timer running out — animates the pair, not only a tap here.
+        .animation(.spring(response: 0.34, dampingFraction: 0.84), value: chronograph.status)
+    }
+
+    /// A paused timer with nothing left on the clock has nothing to resume.
+    private var canResume: Bool {
+        !(chronograph.mode == .timer && Int(chronograph.seconds) == 0)
     }
 
     /// Hidden while the recorder is being dragged, and before the tray has been measured — but

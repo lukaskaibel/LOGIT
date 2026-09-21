@@ -433,13 +433,15 @@ struct TimerStopwatchView: View {
             stopwatchTransportButton(symbolName: "stop.fill") {
                 endActiveRest()
             }
-            .disabled(Int(chronograph.seconds) == 0)
+            // Never disabled once paused: play is already disabled at 0, and a paused rest
+            // with both buttons disabled could not be ended at all.
+            .disabled(chronograph.status == .running && Int(chronograph.seconds) == 0)
         }
     }
 
     private func stopwatchTransportButton(symbolName: String, action: @escaping () -> Void) -> some View {
         Button {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             action()
         } label: {
             Image(systemName: symbolName)

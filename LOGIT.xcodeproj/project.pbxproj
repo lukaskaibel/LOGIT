@@ -214,7 +214,7 @@
 		80AA00042F3A000100AA0001 /* RestTimerBetweenSetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */; };
 		80AA00082F3A000100AA0001 /* RestDurationEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */; };
 		80AA000A2F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */; };
-		80AA000C2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */; };
+		80AA000C2F3A000100AA0001 /* WorkoutRecorderFloatingChronoTransportButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingChronoTransportButton.swift */; };
 		80AA00102F3A000100AA0001 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 801BBCAA2DF7338A00CDB1FB /* Localizable.strings */; };
 		80AA10012F5CAA0200AA1001 /* DeterministicUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA10022F5CAA0200AA1002 /* DeterministicUUID.swift */; };
 		80AA10032F5CAA0200AA1003 /* DefaultTemplateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AA10042F5CAA0200AA1004 /* DefaultTemplateService.swift */; };
@@ -598,7 +598,7 @@
 		80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingTimerButton.swift; sourceTree = "<group>"; };
 		80AA00092F84DD0100AA0009 /* LOGIT 9.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 9.0.xcdatamodel"; sourceTree = "<group>"; };
 		80AA000A2F98EE0100AA000A /* LOGIT 11.0.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = "LOGIT 11.0.xcdatamodel"; sourceTree = "<group>"; };
-		80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingStopwatchStopButton.swift; sourceTree = "<group>"; };
+		80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingChronoTransportButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecorderFloatingChronoTransportButton.swift; sourceTree = "<group>"; };
 		80AA10022F5CAA0200AA1002 /* DeterministicUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicUUID.swift; sourceTree = "<group>"; };
 		80AA10042F5CAA0200AA1004 /* DefaultTemplateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultTemplateService.swift; sourceTree = "<group>"; };
 		80AA10062F5CAA0200AA1006 /* default_templates.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = default_templates.json; sourceTree = "<group>"; };
@@ -1216,7 +1216,7 @@
 				80AA00072F3A000100AA0001 /* RestDurationEditorSheet.swift */,
 				80AA00032F3A000100AA0001 /* RestTimerBetweenSetsView.swift */,
 				80AA00092F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift */,
-				80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift */,
+				80AA000B2F3A000100AA0001 /* WorkoutRecorderFloatingChronoTransportButton.swift */,
 			);
 			path = SupportingViews;
 			sourceTree = "<group>";
@@ -1934,7 +1934,7 @@
 				80AA00082F3A000100AA0001 /* RestDurationEditorSheet.swift in Sources */,
 				80AA00042F3A000100AA0001 /* RestTimerBetweenSetsView.swift in Sources */,
 				80AA000A2F3A000100AA0001 /* WorkoutRecorderFloatingTimerButton.swift in Sources */,
-				80AA000C2F3A000100AA0001 /* WorkoutRecorderFloatingStopwatchStopButton.swift in Sources */,
+				80AA000C2F3A000100AA0001 /* WorkoutRecorderFloatingChronoTransportButton.swift in Sources */,
 				435F070826CC8D1F8D7239B8 /* WorkoutDTO.swift in Sources */,
 				781060648530454E63B22EB3 /* WorkoutSharingService.swift in Sources */,
 				ACC49C37E1B74DFAC016299F /* ShareSheet.swift in Sources */,

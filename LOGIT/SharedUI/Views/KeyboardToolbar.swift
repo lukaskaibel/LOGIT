@@ -28,6 +28,16 @@ struct KeyboardToolbar<Content: View>: View {
     /// Reminders keep.
     private static var keyboardSpacing: CGFloat { 10 }
 
+    /// How wide the row says it would like to be — more than any keyboard is wide.
+    ///
+    /// iOS 26 offered a keyboard item the whole bar, which `maxWidth: .infinity` filled. iOS 27
+    /// only asks for the item's ideal width, hands back exactly that and centres it, so a row that
+    /// merely *could* stretch shrank to its capsules and sat in the middle of the keys. Asking for
+    /// more than there is makes the bar clamp the row to its own width instead, which puts the
+    /// trailing capsules back under the thumb. It has to be finite: an infinite ideal width lays
+    /// the row out at x = NaN and the app crashes.
+    private static var idealWidth: CGFloat { 10000 }
+
     /// Reports where the capsules' bottom edge is, so a caller with a control of its own to place
     /// beside them can line it up. Measured rather than derived: the keyboard's reported frame
     /// starts a capsule's height above this row, and that gap is the system's to change.
@@ -38,7 +48,7 @@ struct KeyboardToolbar<Content: View>: View {
         HStack(spacing: 8) {
             content
         }
-        .frame(maxWidth: .infinity, alignment: .trailing)
+        .frame(idealWidth: Self.idealWidth, maxWidth: .infinity, alignment: .trailing)
         .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: { onRowBottom?($0) }
         .padding(.bottom, Self.keyboardSpacing)
     }

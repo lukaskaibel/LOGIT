@@ -55,15 +55,24 @@ struct TemplateCell: View {
         }
     }
 
+    /// Never animated, and gone rather than empty — see `WorkoutCell.muscleGroupChart`: a sector
+    /// shrinking to nothing (a cancelled new template, deleted while its cell is on screen) traps
+    /// inside Charts.
     private var muscleGroupChart: some View {
-        Chart {
-            ForEach(muscleGroupService.getMuscleGroupOccurances(in: template), id: \.0) { muscleGroupOccurance in
-                SectorMark(
-                    angle: .value("Value", muscleGroupOccurance.1),
-                    innerRadius: .ratio(0.6),
-                    angularInset: 1.5
-                )
-                .foregroundStyle(muscleGroupOccurance.0.color.gradient)
+        let occurrences = muscleGroupService.getMuscleGroupOccurances(in: template)
+        return ZStack {
+            if !occurrences.isEmpty {
+                Chart {
+                    ForEach(occurrences, id: \.0) { muscleGroupOccurance in
+                        SectorMark(
+                            angle: .value("Value", muscleGroupOccurance.1),
+                            innerRadius: .ratio(0.6),
+                            angularInset: 1.5
+                        )
+                        .foregroundStyle(muscleGroupOccurance.0.color.gradient)
+                    }
+                }
+                .transaction { $0.animation = nil }
             }
         }
         .frame(width: 40, height: 40)

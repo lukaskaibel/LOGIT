@@ -212,6 +212,7 @@ struct MeasurementDetailScreen: View {
                 .valueAligned(matching: chartRange.scrollSnapComponents)
             )
             .chartXSelection(value: $selectedDate)
+            .chartTapSelection($selectedDate)
             .chartXVisibleDomain(length: visibleDomainSeconds)
             .chartXAxis {
                 chartRange.xAxisMarks(firstDataDate: firstDataDate)

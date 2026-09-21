@@ -97,16 +97,27 @@ extension TrendWindowBin {
         var trainedMean: Double?
     }
 
-    /// The bin a raw selection point on the synthetic timeline inspects: the one whose slot it lands
-    /// in, and only if that bin **holds training**.
+    /// The bin a raw selection point on the synthetic timeline inspects: the **trained** bin nearest
+    /// the slot it lands in, among the bins in view.
     ///
     /// An untrained bin draws no bar, so there is nothing there to inspect — a card reading "0" hung
     /// over a gap said less than the gap itself, and dragging along the strip flickered one up over
-    /// every rest day. A tap or drag onto a gap now leaves the chart alone.
-    static func selectableIndex(at date: Date, in bins: [TrendWindowBin]) -> Int? {
+    /// every rest day. So a gap is never selected; the point snaps to the closest bar instead (ties go
+    /// to the earlier one). Dropping the point instead was fine for a held scrub, whose finger slides
+    /// onto a bar anyway, but it made a *tap* all but useless: a four-week strip is mostly rest days
+    /// between bars a few points wide, so nearly every tap landed in a gap and did nothing. The search
+    /// stays inside `visible` so a tap never reaches for a bar scrolled out of sight. Nil only off the
+    /// ends of the strip, or when nothing in view was trained.
+    static func selectableIndex(at date: Date, in bins: [TrendWindowBin], within visible: Range<Int>) -> Int? {
         let index = TrendWindow.stripIndex(for: date)
-        guard index >= 0, index < bins.count, bins[index].value > 0 else { return nil }
-        return index
+        guard index >= 0, index < bins.count else { return nil }
+        let candidates = visible.clamped(to: 0 ..< bins.count)
+        var nearest: Int?
+        for candidate in candidates where bins[candidate].value > 0 {
+            if let best = nearest, abs(candidate - index) >= abs(best - index) { continue }
+            nearest = candidate
+        }
+        return nearest
     }
 
     static func visibleStats(bins: [TrendWindowBin], indices: Range<Int>) -> VisibleStats {
@@ -261,13 +272,14 @@ struct TrendWindowHistoryChart: View {
 
     /// Reads back Charts' own raw selection point — the gesture is its to interpret — while snapping it
     /// onto a bin **before** it becomes state, so a drag across the strip re-renders once per bar rather
-    /// than once per touch sample, and drops the selection entirely when that bin holds no training.
+    /// than once per touch sample. A point over a rest day snaps to the nearest trained bar in view.
     private var selectionBinding: Binding<Date?> {
         Binding(
             get: { gesture.selection },
             set: { date in
                 gesture.selection = date
-                let resolved = date.flatMap { TrendWindowBin.selectableIndex(at: $0, in: bins) }
+                let visible = window.visibleIndices(leadingBin: ownLeadingBin, binCount: bins.count)
+                let resolved = date.flatMap { TrendWindowBin.selectableIndex(at: $0, in: bins, within: visible) }
                 if resolved != selectedIndex { selectedIndex = resolved }
             }
         )
@@ -303,6 +315,7 @@ struct TrendWindowHistoryChart: View {
         // line instead of open space (see `chartAxisTop`).
         .chartYScale(domain: 0 ... axisTop)
         .chartXSelection(value: selectionBinding)
+        .chartTapSelection(selectionBinding)
         .chartXAxis {
             // Only the labelled bins get a mark — a grid line under all twenty-eight bars of a
             // four-week strip would read as hatching, and their labels would collide outright. The

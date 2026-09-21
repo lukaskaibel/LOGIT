@@ -640,9 +640,10 @@ final class TrendWindowBinTests: XCTestCase {
         XCTAssertEqual(stats.displayMax, 1000)
     }
 
-    /// …and an untrained bin cannot be inspected either. A tap or a drag landing on a gap resolves to
-    /// no selection at all, rather than to a card reading "0" hanging over empty space.
-    func testUntrainedBinsAreNotSelectable() {
+    /// …and an untrained bin cannot be inspected either. A tap or a drag landing on a gap snaps to the
+    /// nearest trained bar in view, never to a card reading "0" hanging over empty space — and a tap
+    /// between thin bars still selects something instead of doing nothing.
+    func testUntrainedBinsSnapToTheNearestTrainedBar() {
         let window = TrendWindow.fourWeeks
         let ranges = window.binRanges(count: 28, now: date(2026, 8, 12))
         let bins = TrendWindowBin.strip(
@@ -652,18 +653,30 @@ final class TrendWindowBinTests: XCTestCase {
             display: { $0 },
             formatted: { String(Int($0)) }
         )
+        let everything = 0 ..< bins.count
         for bin in bins {
             // The point the gesture reports is anywhere in the bin's slot, not its exact start.
             let insideTheSlot = bin.stripDate.addingTimeInterval(3600 * 7)
-            let selected = TrendWindowBin.selectableIndex(at: insideTheSlot, in: bins)
+            let selected = TrendWindowBin.selectableIndex(at: insideTheSlot, in: bins, within: everything)
             if bin.value > 0 {
-                XCTAssertEqual(selected, bin.index, "trained bin \(bin.index) should be selectable")
+                XCTAssertEqual(selected, bin.index, "trained bin \(bin.index) should select itself")
             } else {
-                XCTAssertNil(selected, "untrained bin \(bin.index) should not be selectable")
+                // Rest days sit between two trained neighbours; a tie goes to the earlier one, and the
+                // first bin has only the one after it.
+                let expected = bin.index == 0 ? 1 : bin.index - 1
+                XCTAssertEqual(selected, expected, "untrained bin \(bin.index) should snap to \(expected)")
             }
         }
         // Off either end of the strip there is nothing to select.
-        XCTAssertNil(TrendWindowBin.selectableIndex(at: TrendWindow.stripDate(forIndex: -1), in: bins))
-        XCTAssertNil(TrendWindowBin.selectableIndex(at: TrendWindow.stripDate(forIndex: 28), in: bins))
+        XCTAssertNil(TrendWindowBin.selectableIndex(at: TrendWindow.stripDate(forIndex: -1), in: bins, within: everything))
+        XCTAssertNil(TrendWindowBin.selectableIndex(at: TrendWindow.stripDate(forIndex: 28), in: bins, within: everything))
+        // The snap never reaches past the bins in view: a gap at the edge of the viewport picks the
+        // nearest bar *inside* it, even when a closer one sits just out of sight.
+        XCTAssertEqual(
+            TrendWindowBin.selectableIndex(at: TrendWindow.stripDate(forIndex: 10), in: bins, within: 10 ..< 20),
+            11
+        )
+        // …and a viewport of nothing but rest days selects nothing.
+        XCTAssertNil(TrendWindowBin.selectableIndex(at: TrendWindow.stripDate(forIndex: 4), in: bins, within: 4 ..< 5))
     }
 }

@@ -90,6 +90,7 @@ struct PeriodHistoryChart: View {
             // grid line instead of open space (see `chartAxisTop`).
             .chartYScale(domain: 0 ... axisTop)
             .chartXSelection(value: $selectedDate)
+            .chartTapSelection($selectedDate)
             .chartXAxis {
                 if showsXAxisLabels {
                     AxisMarks(values: period.scrollAxisValues(firstDataDate: firstDataDate)) { value in

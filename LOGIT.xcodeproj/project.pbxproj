@@ -315,6 +315,7 @@
 		E1E1E1000000000000000B11 /* ExerciseSetsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F11 /* ExerciseSetsScreen.swift */; };
 		E1E1E1000000000000000B12 /* ProgressIndicatorPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F12 /* ProgressIndicatorPill.swift */; };
 		E1E1E1000000000000000B13 /* TileBarChartStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F13 /* TileBarChartStyle.swift */; };
+		C7A5E1000000000000000B01 /* ChartTapSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7A5E1000000000000000F01 /* ChartTapSelection.swift */; };
 		E1E1E1000000000000000B14 /* TileSparklineStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F14 /* TileSparklineStyle.swift */; };
 		E1E1E1000000000000000B15 /* MetricComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F15 /* MetricComparisonView.swift */; };
 		E1E1E1000000000000000B16 /* PersonalBestRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F16 /* PersonalBestRow.swift */; };
@@ -699,6 +700,7 @@
 		E1E1E1000000000000000F11 /* ExerciseSetsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSetsScreen.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F12 /* ProgressIndicatorPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressIndicatorPill.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F13 /* TileBarChartStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileBarChartStyle.swift; sourceTree = "<group>"; };
+		C7A5E1000000000000000F01 /* ChartTapSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartTapSelection.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F14 /* TileSparklineStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileSparklineStyle.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F15 /* MetricComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricComparisonView.swift; sourceTree = "<group>"; };
 		E1E1E1000000000000000F16 /* PersonalBestRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalBestRow.swift; sourceTree = "<group>"; };
@@ -1298,6 +1300,7 @@
 				801BBD382DF7338A00CDB1FB /* PieGraph.swift */,
 				8F4A3C012E5A9B0100D4E5F1 /* SetVolumeBarChart.swift */,
 				E1E1E1000000000000000F13 /* TileBarChartStyle.swift */,
+				C7A5E1000000000000000F01 /* ChartTapSelection.swift */,
 				E1E1E1000000000000000F14 /* TileSparklineStyle.swift */,
 				F3C48765200C9745764F2EAA /* PeriodHistoryChart.swift */,
 				EAFB1FBB846E1E6F66BCFFBC /* TrendWindowHistoryChart.swift */,
@@ -1859,6 +1862,7 @@
 				801BBDD92DF7338A00CDB1FB /* View+.swift in Sources */,
 				8F4A3C022E5A9B0100D4E5F2 /* SetVolumeBarChart.swift in Sources */,
 				E1E1E1000000000000000B13 /* TileBarChartStyle.swift in Sources */,
+				C7A5E1000000000000000B01 /* ChartTapSelection.swift in Sources */,
 				E1E1E1000000000000000B14 /* TileSparklineStyle.swift in Sources */,
 				801BBDDB2DF7338A00CDB1FB /* WorkoutCell.swift in Sources */,
 				801BBDDC2DF7338A00CDB1FB /* WorkoutListScreen.swift in Sources */,

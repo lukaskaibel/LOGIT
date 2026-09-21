@@ -81,6 +81,7 @@ struct SetVolumeBarChart: View {
         }
         .chartXScale(domain: (1 ... max(setCount, 1)).map { String($0) })
         .chartXSelection(value: $rawSelection)
+        .chartTapSelection($rawSelection)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
     }

@@ -60,8 +60,37 @@ enum SetMeasurementType: String, CaseIterable, Codable, Identifiable {
         }
     }
 
+    /// How a duration is written into its input field. One spelling can't serve every timed
+    /// exercise: a plank is a seconds count and `45` is the quickest thing to type, while a
+    /// treadmill session is minutes long — typing `1935` for a 32-minute run is unreadable, and
+    /// past `9999` it can't be typed at all. Durations are always STORED in milliseconds; the
+    /// style only decides how the field is typed and read back: `.seconds` is the decimal
+    /// seconds field with hundredths (a sprint keeps the 12.34 it was timed at), `.clock` is
+    /// the digital reading the rest of the app already displays ("32:15"), typed a digit at a
+    /// time from the right. Each measurement type carries a sensible default (`durationStyle`
+    /// below) and the user can override it per exercise (`Exercise.durationStyle`) — resolve
+    /// through `durationStyle(for:)`, never the raw default.
+    enum DurationStyle: String, CaseIterable {
+        case seconds
+        case clock
+    }
+
+    /// The type's *default* spelling — nil for types without a duration field. A duration
+    /// recorded beside a distance is a cardio effort and reads as a clock; a duration on its
+    /// own, or beside a weight, is a hold or a carry and reads as seconds. Display and entry
+    /// sites must use `durationStyle(for:)`, which lets the exercise's own choice win.
+    var durationStyle: DurationStyle? {
+        switch self {
+        case .distanceAndDuration: return .clock
+        case .duration, .weightAndDuration: return .seconds
+        case .repsAndWeight, .repsOnly, .distance, .weightAndDistance: return nil
+        }
+    }
+
     /// How many numeric input fields the recorder shows for one entry of this type — one per
-    /// tracked value (a duration is one field, entered in seconds).
+    /// tracked value. A duration is ONE field whichever spelling it uses — the clock takes its
+    /// digits a place at a time rather than splitting into separate minute and second boxes,
+    /// which is what keeps this count, `weightFieldIndex` and `SetFieldNavigation` untouched.
     var inputFieldCount: Int {
         switch self {
         case .repsAndWeight: return 2

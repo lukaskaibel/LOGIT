@@ -1198,3 +1198,9 @@
 "recordedRestElapsed" = "Tempo di recupero";
 "recordedRestFullDuration" = "Durata completa";
 "recordedRestDescription" = "Quando interrompi un recupero in anticipo, registra il tempo effettivamente trascorso o la durata completa impostata.";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "Formato tempo";
+"durationFormatSeconds" = "Secondi (sec)";
+"durationFormatClock" = "Minuti e secondi (m:ss)";
+"durationFormatClock.short" = "m:ss";

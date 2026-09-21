@@ -1198,3 +1198,9 @@
 "recordedRestElapsed" = "Tempo descansado";
 "recordedRestFullDuration" = "Duração completa";
 "recordedRestDescription" = "Ao parar um descanso antes do fim, registra o tempo realmente descansado ou a duração completa configurada.";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "Formato de tempo";
+"durationFormatSeconds" = "Segundos (seg)";
+"durationFormatClock" = "Minutos e segundos (m:ss)";
+"durationFormatClock.short" = "m:ss";

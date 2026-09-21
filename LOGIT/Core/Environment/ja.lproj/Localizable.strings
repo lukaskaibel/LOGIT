@@ -1198,3 +1198,9 @@
 "recordedRestElapsed" = "実際の休憩時間";
 "recordedRestFullDuration" = "設定した長さ";
 "recordedRestDescription" = "休憩を途中で止めたとき、実際に休憩した時間を記録するか、タイマーに設定した長さを記録するかを選びます。";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "時間の表示形式";
+"durationFormatSeconds" = "秒";
+"durationFormatClock" = "分と秒 (m:ss)";
+"durationFormatClock.short" = "m:ss";

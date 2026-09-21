@@ -1198,3 +1198,9 @@
 "recordedRestElapsed" = "Temps de repos réel";
 "recordedRestFullDuration" = "Durée complète";
 "recordedRestDescription" = "Quand vous arrêtez un repos plus tôt, enregistre le temps réellement passé au repos ou la durée complète réglée.";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "Format de temps";
+"durationFormatSeconds" = "Secondes (s)";
+"durationFormatClock" = "Minutes et secondes (m:ss)";
+"durationFormatClock.short" = "m:ss";

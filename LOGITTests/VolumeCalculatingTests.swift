@@ -554,6 +554,109 @@ final class DurationFormattingTests: XCTestCase {
             "Expected a decimal seconds reading in \(sprint)"
         )
     }
+
+    // MARK: Clock entry
+
+    /// The spec, literally: digits shift in from the right the way a stopwatch is read.
+    func testClockDigitsShiftInFromTheRight() {
+        XCTAssertEqual(formatClockEntryDigits("3"), "0:03")
+        XCTAssertEqual(formatClockEntryDigits("32"), "0:32")
+        XCTAssertEqual(formatClockEntryDigits("321"), "3:21")
+        XCTAssertEqual(formatClockEntryDigits("3215"), "32:15")
+        XCTAssertEqual(formatClockEntryDigits("12345"), "1:23:45")
+        XCTAssertEqual(formatClockEntryDigits(""), "")
+    }
+
+    /// The hour boundary on the entry side, pinned to the display side's `1:00:00`.
+    func testClockDigitsBoundaryAtAnHour() {
+        XCTAssertEqual(durationMilliseconds(fromClockEntryDigits: "5959"), 3_599_000)
+        XCTAssertEqual(durationMilliseconds(fromClockEntryDigits: "10000"), 3_600_000)
+        XCTAssertEqual(formatClockEntryDigits("10000"), formatDurationForDisplay(seconds: 3600))
+        XCTAssertEqual(formatClockEntryDigits("95959"), "9:59:59")
+    }
+
+    /// Stored → digits → stored is lossless for whole seconds, and a well-formed buffer reads
+    /// exactly as the display formatter would print the same value.
+    func testClockDigitsRoundTripThroughMilliseconds() {
+        for digits in ["5", "45", "100", "321", "3215", "5959", "10000", "12345", "995959"] {
+            let ms = durationMilliseconds(fromClockEntryDigits: digits)
+            XCTAssertEqual(clockEntryDigits(forDuration: ms), digits, "\(digits) must round-trip")
+            XCTAssertEqual(
+                formatClockEntryDigits(digits),
+                formatDurationForDisplay(seconds: Int(ms / 1000)),
+                "\(digits) must type the way it is displayed"
+            )
+        }
+        XCTAssertEqual(clockEntryDigits(forDuration: 0), "", "Zero is an empty field, not \"0\"")
+    }
+
+    /// Reaching 9:59 means typing 9, 5, 9 — which passes through 0:95. A group over 59 is a legal
+    /// intermediate state, summed rather than rejected, or the second half of the clock could
+    /// never be typed at all. The canonical reading arrives when the field re-seeds on blur.
+    func testClockDigitsToleratesGroupsOverFiftyNine() {
+        XCTAssertEqual(formatClockEntryDigits("95"), "0:95", "Shown as typed, not normalized")
+        XCTAssertEqual(durationMilliseconds(fromClockEntryDigits: "95"), 95_000)
+        XCTAssertEqual(durationMilliseconds(fromClockEntryDigits: "095"), 95_000)
+        XCTAssertEqual(durationMilliseconds(fromClockEntryDigits: "9999"), 6_039_000)
+        XCTAssertEqual(formatDurationForEntry(milliseconds: 95_000, style: .clock), "1:35")
+    }
+
+    func testClockDigitBufferIsCappedAtSixDigits() {
+        XCTAssertEqual(MAX_CLOCK_ENTRY_DIGITS, 6)
+        XCTAssertEqual(
+            durationMilliseconds(fromClockEntryDigits: "995959"),
+            (99 * 3600 + 59 * 60 + 59) * 1000
+        )
+        XCTAssertEqual(formatClockEntryDigits("995959"), "99:59:59")
+    }
+
+    /// A clock field types whole seconds, so it shows a sprint's 0:12.34 as 0:12 — while every
+    /// display site keeps reading the hundredths the store still holds. And the entry side
+    /// truncates where display rounds: a field must never show more than the stored value.
+    func testClockEntryTruncatesSubSecondValues() {
+        XCTAssertEqual(formatDurationForEntry(milliseconds: 12_340, style: .clock), "0:12")
+        XCTAssertEqual(formatDurationForDisplay(milliseconds: 12_340), "0:12.34")
+        XCTAssertEqual(formatDurationForEntry(milliseconds: 12_996, style: .clock), "0:12")
+        XCTAssertEqual(formatDurationForDisplay(milliseconds: 12_996), "0:13")
+        XCTAssertEqual(clockEntryDigits(forDuration: 12_340), "12")
+    }
+
+    /// The headline bug: a 32-minute run typed into the seconds field is "1935".
+    func testEntryFieldSpellingFollowsStyle() {
+        XCTAssertEqual(formatDurationForEntry(milliseconds: 45_000, style: .seconds), "45")
+        XCTAssertEqual(formatDurationForEntry(milliseconds: 45_000, style: .clock), "0:45")
+        XCTAssertEqual(formatDurationForEntry(milliseconds: 1_935_000, style: .seconds), "1935")
+        XCTAssertEqual(formatDurationForEntry(milliseconds: 1_935_000, style: .clock), "32:15")
+        // Seconds keep their hundredths; that is what the style is for.
+        XCTAssertEqual(formatDurationForEntry(milliseconds: 12_340, style: .seconds), "12.34")
+    }
+
+    /// A colon-separated reading carries its own separators — "1280 SEC" is the reading the
+    /// clock exists to replace, so it must never grow a unit label back.
+    func testClockStyleCarriesNoUnitLabel() {
+        XCTAssertNil(durationUnitTitle(for: .clock))
+        XCTAssertEqual(durationUnitTitle(for: .seconds), NSLocalizedString("sec", comment: ""))
+    }
+
+    /// The delta beside a field is spelled the way the field is, and a change too small for the
+    /// field to show shows no arrow at all.
+    func testDurationDeltaTextFollowsStyle() {
+        let seconds = durationDelta(currentMs: 50_000, previousMs: 45_000, style: .seconds)
+        XCTAssertEqual(seconds.text, "5")
+        XCTAssertEqual(seconds.comparison, .improved)
+
+        let clock = durationDelta(currentMs: 50_000, previousMs: 45_000, style: .clock)
+        XCTAssertEqual(clock.text, "0:05")
+        XCTAssertEqual(clock.comparison, .improved)
+
+        // 300 ms apart: visible as hundredths, invisible on a whole-second clock.
+        XCTAssertNotNil(
+            durationDelta(currentMs: 45_300, previousMs: 45_000, style: .seconds).comparison
+        )
+        let hidden = durationDelta(currentMs: 45_300, previousMs: 45_000, style: .clock)
+        XCTAssertNil(hidden.comparison)
+        XCTAssertEqual(hidden.text, "")
+    }
 }
 
 // MARK: - Strength progress

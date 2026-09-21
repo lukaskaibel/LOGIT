@@ -250,6 +250,27 @@ struct WorkoutSetCell: View {
                             Text(NSLocalizedString("distanceUnit", comment: ""))
                         }
                     }
+                    // The duration format is the user's choice per exercise (seconds vs a
+                    // clock) — durations are stored in milliseconds regardless, so switching
+                    // only changes how they're typed and read, everywhere this exercise appears.
+                    if workoutSet.measurementType.usesDuration, let exercise = workoutSet.exercise {
+                        Section {
+                            ForEach(SetMeasurementType.DurationStyle.allCases, id: \.self) { style in
+                                Button {
+                                    exercise.durationStyle = style
+                                } label: {
+                                    HStack {
+                                        Text(durationStyleTitle(for: style))
+                                        if workoutSet.measurementType.durationStyle(for: exercise) == style {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } header: {
+                            Text(NSLocalizedString("durationFormat", comment: ""))
+                        }
+                    }
                 } label: {
                     Label(
                         NSLocalizedString("measurementType", comment: ""),

@@ -21,6 +21,7 @@ struct ExerciseEditScreen: View {
     /// "what do I type in per set" from four fields instead of decoding seven combined names.
     @State private var trackedFields: Set<SetTrackedField>
     @State private var distanceStyle: SetMeasurementType.DistanceStyle
+    @State private var durationStyle: SetMeasurementType.DurationStyle
     @State private var primaryMetric: ExercisePrimaryMetric
     @State private var durationGoal: ExerciseDurationGoal
     @State private var showingExerciseExistsAlert: Bool = false
@@ -53,6 +54,9 @@ struct ExerciseEditScreen: View {
         _trackedFields = State(initialValue: initialType.trackedFields)
         _distanceStyle = State(
             initialValue: exerciseToEdit?.distanceStyle ?? initialType.distanceStyle ?? .long
+        )
+        _durationStyle = State(
+            initialValue: exerciseToEdit?.durationStyle ?? initialType.durationStyle ?? .seconds
         )
         _primaryMetric = State(initialValue: exerciseToEdit?.primaryMetric ?? .defaultMetric)
         _durationGoal = State(initialValue: exerciseToEdit?.durationGoal ?? .longer)
@@ -137,6 +141,11 @@ struct ExerciseEditScreen: View {
                 // default — the user can still flip it right in the preview.
                 if let defaultStyle = newType.distanceStyle {
                     distanceStyle = defaultStyle
+                }
+                // Same for the clock: a run composed out of distance + duration starts on
+                // "32:15", a plank on "45", and either can be flipped in the preview.
+                if let defaultStyle = newType.durationStyle {
+                    durationStyle = defaultStyle
                 }
                 let allowed = ExercisePrimaryMetric.allowed(for: newType)
                 if !allowed.contains(primaryMetric) {
@@ -288,7 +297,10 @@ struct ExerciseEditScreen: View {
         switch field {
         case .repetitions: return NSLocalizedString("repsShort", comment: "")
         case .weight: return WeightUnit.used.rawValue
-        case .duration: return NSLocalizedString("sec", comment: "")
+        case .duration:
+            let seconds = NSLocalizedString("sec", comment: "")
+            let clock = NSLocalizedString("durationFormatClock.short", comment: "")
+            return "\(seconds) / \(clock)"
         case .distance: return "\(DistanceUnit.used.shortUnit) / \(DistanceUnit.used.rawValue)"
         }
     }
@@ -339,6 +351,25 @@ struct ExerciseEditScreen: View {
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 140)
                     .accessibilityIdentifier("distanceStylePicker")
+                }
+                .font(.callout)
+            }
+            if measurementType.usesDuration {
+                HStack {
+                    Text(NSLocalizedString("durationFormat", comment: ""))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Picker(
+                        NSLocalizedString("durationFormat", comment: ""),
+                        selection: $durationStyle
+                    ) {
+                        ForEach(SetMeasurementType.DurationStyle.allCases, id: \.self) { style in
+                            Text(durationLabel(for: style)).tag(style)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 140)
+                    .accessibilityIdentifier("durationStylePicker")
                 }
                 .font(.callout)
             }
@@ -401,15 +432,26 @@ struct ExerciseEditScreen: View {
         )
     }
 
+    @ViewBuilder
     private func previewDurationField(tertiary: Int) -> some View {
-        IntegerField(
-            placeholder: 0,
-            value: .constant(45),
-            maxDigits: 4,
-            index: previewIndex(tertiary),
-            focusedIntegerFieldIndex: .constant(nil),
-            unit: NSLocalizedString("sec", comment: "")
-        )
+        switch durationStyle {
+        case .seconds:
+            IntegerField(
+                placeholder: 0,
+                value: .constant(45),
+                maxDigits: 4,
+                index: previewIndex(tertiary),
+                focusedIntegerFieldIndex: .constant(nil),
+                unit: durationUnitTitle(for: .seconds)
+            )
+        case .clock:
+            DurationClockField(
+                placeholder: 0,
+                value: .constant(45_000),
+                index: previewIndex(tertiary),
+                focusedIntegerFieldIndex: .constant(nil)
+            )
+        }
     }
 
     @ViewBuilder
@@ -442,6 +484,17 @@ struct ExerciseEditScreen: View {
         switch style {
         case .long: return DistanceUnit.used.rawValue
         case .short: return DistanceUnit.used.shortUnit
+        }
+    }
+
+    /// Compact segment label — "sec" / "m:ss". The shared `durationUnitTitle(for:)` is
+    /// deliberately empty for the clock (its colons are its unit), but a segmented control has
+    /// to name both choices, so the pattern is spelled out here — the same reason `unitLabel`
+    /// exists beside `distanceUnitTitle`.
+    private func durationLabel(for style: SetMeasurementType.DurationStyle) -> String {
+        switch style {
+        case .seconds: return NSLocalizedString("sec", comment: "")
+        case .clock: return NSLocalizedString("durationFormatClock.short", comment: "")
         }
     }
 
@@ -577,6 +630,9 @@ struct ExerciseEditScreen: View {
         }
         if measurementType.usesDistance {
             exercise.distanceStyle = distanceStyle
+        }
+        if measurementType.usesDuration {
+            exercise.durationStyle = durationStyle
         }
         // An exercise that no longer records a clock keeps no opinion about which way it runs.
         exercise.durationGoal = measurementType.usesDuration ? durationGoal : .longer

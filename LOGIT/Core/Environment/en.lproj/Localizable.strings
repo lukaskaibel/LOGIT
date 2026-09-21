@@ -1198,3 +1198,9 @@
 "recordedRestElapsed" = "Time Rested";
 "recordedRestFullDuration" = "Full Duration";
 "recordedRestDescription" = "When you stop a rest early, record the time you actually rested, or the full duration the timer was set to.";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "Time Format";
+"durationFormatSeconds" = "Seconds (sec)";
+"durationFormatClock" = "Minutes & Seconds (m:ss)";
+"durationFormatClock.short" = "m:ss";

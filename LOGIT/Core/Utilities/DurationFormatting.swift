@@ -62,6 +62,98 @@ public func formatDurationSecondsForEntry(milliseconds: Int64) -> String {
 /// shows, what a sprint is timed to, and exactly representable in millisecond storage.
 public let DURATION_DECIMAL_PLACES: Int = 2
 
+// MARK: - Clock Entry
+
+/// How many digits a clock field holds, and so the longest effort it can spell: `99:59:59`.
+/// Six is not a limit anyone reaches — it is the point past which another digit would have to
+/// push the hours off the left edge, which would destroy what was already typed.
+public let MAX_CLOCK_ENTRY_DIGITS: Int = 6
+
+/// The digits a stored duration is typed as in a clock field, leading zeros stripped:
+/// 1_935_000 ms → "3215", 45_000 ms → "45", 0 → "".
+///
+/// Sub-second precision is dropped, because a clock field enters whole seconds — the stored
+/// value keeps its hundredths until the set is actually re-typed (see `DurationClockField`).
+public func clockEntryDigits(forDuration milliseconds: Int64) -> String {
+    let seconds = max(milliseconds, 0) / 1000
+    guard seconds > 0 else { return "" }
+    let hours = seconds / 3600
+    let digits = String(format: "%d%02d%02d", hours, (seconds % 3600) / 60, seconds % 60)
+    return String(digits.drop(while: { $0 == "0" }))
+}
+
+/// The duration a clock-entry digit buffer spells: "3215" → 1_935_000 ms.
+///
+/// The groups are summed WITHOUT being validated — seconds are the last two digits, minutes the
+/// two before them, hours whatever is left, and the total is `h*3600 + m*60 + s`. A group over
+/// 59 is a legal intermediate state, not an error: digits shift in from the right, so reaching
+/// 9:59 (type 9, 5, 9) has to pass through 0:95 on the way, and 95 seconds really is 95 seconds.
+/// Rejecting or clamping it here would make the second half of the clock untypeable.
+public func durationMilliseconds(fromClockEntryDigits digits: String) -> Int64 {
+    let buffer = digits.filter(\.isNumber)
+    guard !buffer.isEmpty else { return 0 }
+    let seconds = Int64(buffer.suffix(2)) ?? 0
+    let minutes = Int64(buffer.dropLast(2).suffix(2)) ?? 0
+    let hours = Int64(buffer.dropLast(4)) ?? 0
+    return (hours * 3600 + minutes * 60 + seconds) * 1000
+}
+
+/// How a clock-entry digit buffer reads while it is being typed: "3" → "0:03", "32" → "0:32",
+/// "321" → "3:21", "3215" → "32:15", "12345" → "1:23:45".
+///
+/// This prints the RAW grouping, so a buffer mid-shift shows exactly the digits that were typed
+/// ("095" reads "0:95", not "1:35"). The canonical reading arrives when the field loses focus
+/// and re-seeds from the stored value — the same round-trip `DecimalField` performs for the
+/// decimal separator. For a well-formed buffer the two spellings are identical.
+public func formatClockEntryDigits(_ digits: String) -> String {
+    let buffer = digits.filter(\.isNumber)
+    guard !buffer.isEmpty else { return "" }
+    let seconds = buffer.suffix(2)
+    let minutes = buffer.dropLast(2).suffix(2)
+    let hours = buffer.dropLast(4)
+    let paddedSeconds = String(repeating: "0", count: 2 - seconds.count) + seconds
+    guard !minutes.isEmpty || !hours.isEmpty else { return "0:" + paddedSeconds }
+    guard !hours.isEmpty else { return String(minutes) + ":" + paddedSeconds }
+    let paddedMinutes = String(repeating: "0", count: 2 - minutes.count) + minutes
+    return String(hours) + ":" + paddedMinutes + ":" + paddedSeconds
+}
+
+// MARK: - Style Dispatch
+
+/// The entry spelling for `style`: the decimal seconds a field prints beside "SEC", or the
+/// whole-second digital reading whose colons carry their own separators.
+///
+/// The clock truncates where `formatDurationForDisplay(milliseconds:)` rounds — 12_996 ms reads
+/// "0:13" in history but "0:12" in a clock field. That is deliberate: a value the user is about
+/// to overwrite must never be shown as more than it is.
+func formatDurationForEntry(
+    milliseconds: Int64, style: SetMeasurementType.DurationStyle
+) -> String {
+    switch style {
+    case .seconds: return formatDurationSecondsForEntry(milliseconds: milliseconds)
+    case .clock: return formatDurationForDisplay(seconds: Int(max(milliseconds, 0) / 1000))
+    }
+}
+
+/// The unit written beside the number — "sec", or *nothing at all* for the clock. See this
+/// file's opening note: a colon-separated reading passes an empty unit, because "1280 SEC" is
+/// precisely the reading this format exists to replace.
+func durationUnitTitle(for style: SetMeasurementType.DurationStyle) -> String? {
+    switch style {
+    case .seconds: return NSLocalizedString("sec", comment: "")
+    case .clock: return nil
+    }
+}
+
+/// The spelled-out menu label — "Seconds (sec)" / "Minutes & Seconds (m:ss)" — the counterpart
+/// to `distanceStyleTitle(for:)`, used where a menu has room to explain itself.
+func durationStyleTitle(for style: SetMeasurementType.DurationStyle) -> String {
+    switch style {
+    case .seconds: return NSLocalizedString("durationFormatSeconds", comment: "")
+    case .clock: return NSLocalizedString("durationFormatClock", comment: "")
+    }
+}
+
 /// The same duration spelled out for VoiceOver — "21 minutes, 20 seconds" — because the digital
 /// reading is spoken as a pair of bare numbers ("twenty-one twenty"). Zero-valued units drop out,
 /// so a sub-minute hold reads simply as "45 seconds".

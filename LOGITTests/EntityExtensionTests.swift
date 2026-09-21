@@ -644,6 +644,60 @@ final class EntityExtensionTests: XCTestCase {
         )
     }
 
+    func testDurationStyleDefaultsFromMeasurementType() {
+        let run = database.newExercise(name: "Run", measurementType: .distanceAndDuration)
+        let plank = database.newExercise(name: "Plank", measurementType: .duration)
+        let carry = database.newExercise(name: "Carry", measurementType: .weightAndDuration)
+
+        XCTAssertEqual(run.durationStyle, .clock, "A run types as 32:15, not 1935")
+        XCTAssertEqual(plank.durationStyle, .seconds, "A hold types as a seconds count")
+        XCTAssertEqual(carry.durationStyle, .seconds, "A timed carry types as a seconds count")
+        // Nil has to keep meaning "never chose" — it is what the default library checks before
+        // adopting its own suggestion.
+        XCTAssertNil(run.durationStyleOverride, "Defaults are not stored as a choice")
+        XCTAssertNil(plank.durationStyleOverride, "Defaults are not stored as a choice")
+    }
+
+    func testDurationStyleUserOverrideWinsEverywhere() {
+        let run = database.newExercise(name: "Run", measurementType: .distanceAndDuration)
+        run.durationStyle = .seconds
+
+        XCTAssertEqual(run.durationStyle, .seconds, "The user's choice replaces the type default")
+        XCTAssertEqual(
+            SetMeasurementType.distanceAndDuration.durationStyle(for: run), .seconds,
+            "Entry-level resolution honors the exercise's choice"
+        )
+        XCTAssertEqual(
+            SetMeasurementType.weightAndDuration.durationStyle(for: run), .seconds,
+            "The choice also applies to per-set type overrides"
+        )
+    }
+
+    func testDurationStyleResolutionWithoutOverrideFollowsEntryType() {
+        let run = database.newExercise(name: "Run", measurementType: .distanceAndDuration)
+
+        // A one-off weight+duration set on a cardio exercise types seconds, not a clock.
+        XCTAssertEqual(SetMeasurementType.weightAndDuration.durationStyle(for: run), .seconds)
+        XCTAssertEqual(SetMeasurementType.distanceAndDuration.durationStyle(for: run), .clock)
+        XCTAssertNil(
+            SetMeasurementType.repsAndWeight.durationStyle(for: run),
+            "Types without a duration have no duration format"
+        )
+    }
+
+    /// Unlike the time goal, choosing the value that happens to be the default still stores it:
+    /// otherwise a deliberate "seconds" on a run would read as "never chose", and the next
+    /// library update would quietly flip it back to the clock.
+    func testDurationStyleStoresAChoiceEvenWhenItMatchesTheDefault() {
+        let plank = database.newExercise(name: "Plank", measurementType: .duration)
+        plank.durationStyle = .seconds
+        XCTAssertEqual(plank.durationStyleString, "seconds")
+
+        plank.durationStyle = .clock
+        XCTAssertEqual(plank.durationStyleString, "clock", "The persisted raw values never change")
+        XCTAssertEqual(plank.durationStyleOverride, .clock)
+    }
+
     func testMatchStructureCarriesDistanceType() {
         let templateSet = database.newTemplateStandardSet()
         templateSet.overrideMeasurementType(.weightAndDistance)

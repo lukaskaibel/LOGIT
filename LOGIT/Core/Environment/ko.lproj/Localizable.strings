@@ -1198,3 +1198,9 @@
 "recordedRestElapsed" = "실제 휴식 시간";
 "recordedRestFullDuration" = "설정한 시간";
 "recordedRestDescription" = "휴식을 일찍 중지했을 때 실제로 쉰 시간을 기록할지, 타이머에 설정한 시간을 기록할지 선택합니다.";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "시간 형식";
+"durationFormatSeconds" = "초";
+"durationFormatClock" = "분과 초 (m:ss)";
+"durationFormatClock.short" = "m:ss";

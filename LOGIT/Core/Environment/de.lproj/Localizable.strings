@@ -1194,3 +1194,9 @@
 "recordedRestElapsed" = "Pausierte Zeit";
 "recordedRestFullDuration" = "Volle Dauer";
 "recordedRestDescription" = "Wenn du eine Pause vorzeitig beendest: die tatsächlich pausierte Zeit speichern oder die volle eingestellte Dauer.";
+
+// MARK: - Duration Entry Format
+"durationFormat" = "Zeitformat";
+"durationFormatSeconds" = "Sekunden (sek)";
+"durationFormatClock" = "Minuten & Sekunden (m:ss)";
+"durationFormatClock.short" = "m:ss";

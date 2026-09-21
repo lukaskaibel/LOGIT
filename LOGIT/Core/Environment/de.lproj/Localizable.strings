@@ -72,11 +72,13 @@
 "groupIndexOfTotal" = "%1$d von %2$d";
 "previousBest" = "Vorheriger Bestwert";
 "lastBest" = "Letzter Bestwert";
-"lastBestInfo" = "Wird angezeigt, wenn du diese Übung seit über 4 Wochen nicht trainiert hast – dein Bestwert aus der letzten Trainingseinheit.";
+"lastBestInfo" = "Wird angezeigt, wenn du diese Übung seit mehr als 4 Wochen nicht trainiert hast: dein bester Wert aus der letzten Einheit, die du protokolliert hast — wie lange sie auch zurückliegt.";
 "newRecord" = "Neuer Rekord";
-"currentBestInfo" = "Dein aktueller Bestwert ist der höchste Wert der letzten 4 Wochen. Der Trend zeigt, wie viel höher er ist als dein Bestwert in den 4 Wochen davor.";
-"currentBestComparisonInfo" = "Dein aktueller Bestwert (rechts) ist der höchste Wert der letzten 4 Wochen. Das Abzeichen zeigt, wie er sich zu deinem Bestwert im angezeigten Zeitraum links verhält – scrolle, um mit beliebigen Zeiträumen zu vergleichen.";
-"averageComparisonInfo" = "Links steht derselbe Zeitraum unmittelbar vor dem angezeigten. Das Abzeichen zeigt, wie sich der angezeigte Zeitraum (rechts) dazu verhält.";
+"currentBestInfo" = "Dein aktueller Bestwert ist der höchste Wert der letzten 4 Wochen. Der Trend daneben vergleicht ihn mit deinem Bestwert aus den 4 Wochen vor dem Tag, an dem du ihn erreicht hast.";
+"currentBestComparisonInfo" = "Rechts steht dein aktueller Bestwert: der höchste Wert der letzten 4 Wochen. Links steht dein Bestwert im Zeitraum, der im Diagramm zu sehen ist, und das Abzeichen dazwischen zeigt, wie beide zueinander stehen. Scrolle im Diagramm, um mit jedem anderen Zeitraum zu vergleichen.";
+/* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
+"averageComparisonInfo" = "Rechts steht der Zeitraum, der gerade im Diagramm zu sehen ist. Links steht der gleich lange Zeitraum direkt davor, und das Abzeichen dazwischen zeigt, wie beide zueinander stehen.";
+"periodAverageComparisonInfo" = "Rechts steht der aktuelle Zeitraum. Links steht der Durchschnitt der abgeschlossenen Zeiträume, die gerade im Diagramm zu sehen sind — die gestrichelte Linie —, und das Abzeichen dazwischen zeigt, wie beide zueinander stehen.";
 "currentWorkout" = "Aktuelles Workout";
 
 // MARK: - D
@@ -860,18 +862,14 @@
 "previewSquats" = "Kniebeugen";
 "previewBarbellCurl" = "Langhantelcurl";
 
-/* Estimated 1RM (e1RM) */
-"e1RM" = "e1RM";
-"estimatedOneRepMax" = "Geschätztes 1RM";
-"e1RMInfo" = "Geschätztes 1RM: das Gewicht, das du wahrscheinlich für eine einzelne Wiederholung bewegen könntest – berechnet aus Gewicht und Wiederholungen (Epley-Formel). Die Schätzung ist nur bei niedrigen Wiederholungszahlen genau, daher werden Sätze über 12 Wiederholungen nicht berücksichtigt.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Dein geschätztes 1RM diesen Monat ist höher als letzten Monat.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Dein geschätztes 1RM diesen Monat ist niedriger als letzten Monat.";
-"higherMaxE1RMThisYearThanLastYear" = "Dein geschätztes 1RM dieses Jahr ist höher als letztes Jahr.";
-"lowerMaxE1RMThisYearThanLastYear" = "Dein geschätztes 1RM dieses Jahr ist niedriger als letztes Jahr.";
+/* The per-exercise strength metric: an estimated one-rep max, shown as "Strength".
+   The Summary aggregate is the overallStrength family below. */
+"strengthMetric" = "Kraft";
+"strengthMetricInfo" = "Kraft ist das schwerste Gewicht, das du für eine einzige Wiederholung bewegen könntest. Statt dass du es versuchst, errechnet LOGIT es mit der Epley-Formel aus dem Gewicht und den Wiederholungen deiner Sätze (anderswo begegnet dir das als geschätztes 1RM). Erfasst wird sie für Übungen, bei denen du Gewicht und Wiederholungen protokollierst, und es zählen nur Sätze mit höchstens 12 Wiederholungen — darüber wird die Schätzung unzuverlässig.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Satzvolumen";
-"setVolumeInfo" = "Satzvolumen: Gewicht × Wiederholungen eines einzelnen Satzes. Erfasst wird dein bester einzelner Satz – anders als das Gesamtvolumen steigt es nur, wenn du in einem Satz mehr Gewicht bewegst oder mehr Wiederholungen schaffst.";
+"setVolumeInfo" = "Das Satzvolumen ist das Gewicht eines einzelnen Satzes multipliziert mit seinen Wiederholungen. Jeder Punkt ist dein bester einzelner Satz an diesem Tag — anders als beim Gesamtvolumen steigt es nur, wenn du in einem Satz mehr Gewicht bewegst oder mehr Wiederholungen schaffst, nicht schon durch zusätzliche Sätze.";
 "higherMaxSetVolumeThisMonthThanLastMonth" = "Dein bestes Satzvolumen diesen Monat ist höher als letzten Monat.";
 "lowerMaxSetVolumeThisMonthThanLastMonth" = "Dein bestes Satzvolumen diesen Monat ist niedriger als letzten Monat.";
 "higherMaxSetVolumeThisYearThanLastYear" = "Dein bestes Satzvolumen dieses Jahr ist höher als letztes Jahr.";
@@ -879,18 +877,18 @@
 
 /* Metric detail "About" sections */
 "aboutMetric" = "Über „%@“";
-"weightInfo" = "Das höchste Gewicht, das du an einem Tag in einem einzelnen Satz bewegt hast. Mehr Gewicht über die Zeit ist das deutlichste Zeichen für wachsende Kraft.";
-"repetitionsInfo" = "Die meisten Wiederholungen, die du an einem Tag in einem einzelnen Satz geschafft hast. Mehr Wiederholungen bei gleichem Gewicht stärken die Kraftausdauer – ein weiterer Weg, Fortschritte zu machen.";
-"volumeInfo" = "Das Volumen ist das insgesamt bewegte Gewicht: Gewicht × Wiederholungen, summiert über alle Sätze des Zeitraums. Mehr Volumen bedeutet mehr Gesamtarbeit – ein wichtiger Treiber für Muskelwachstum. Das Abzeichen vergleicht diesen Zeitraum mit dem Durchschnitt der angezeigten Zeiträume – der gestrichelten Linie.";
-"setsInfo" = "Die Sätze sind die Anzahl der Arbeitssätze, die du für diese Übung protokolliert hast – nur tatsächlich ausgeführte Sätze zählen. Genügend harte Sätze sind ein wichtiger Treiber für Kraft- und Muskelwachstum. Das Diagramm zeigt die Sätze der letzten Zeiträume; das Abzeichen vergleicht diesen Zeitraum mit ihrem Durchschnitt – der gestrichelten Linie.";
+"weightInfo" = "Jeder Punkt ist das schwerste Gewicht, das du an diesem Tag in einem einzelnen Satz bewegt hast. Mit der Zeit mehr Gewicht zu bewegen ist das deutlichste Zeichen dafür, dass du stärker wirst.";
+"repetitionsInfo" = "Jeder Punkt ist die höchste Anzahl Wiederholungen, die du an diesem Tag in einem einzelnen Satz geschafft hast. Mehr Wiederholungen bei gleichem Gewicht bauen Kraftausdauer auf — ein weiterer Weg, Fortschritte zu machen.";
+"volumeInfo" = "Das Volumen ist das insgesamt bewegte Gewicht. LOGIT multipliziert das Gewicht jedes Satzes mit seinen Wiederholungen und addiert alle Sätze des Zeitraums. Mehr Volumen bedeutet mehr geleistete Arbeit — einer der wichtigsten Treiber für Muskelwachstum. Die gestrichelte Linie ist der Durchschnitt der abgeschlossenen Zeiträume, die gerade im Diagramm zu sehen sind, und das Abzeichen zeigt, wie dieser Zeitraum dazu steht.";
+"setsInfo" = "Ein Satz ist ein Durchgang mit Wiederholungen. Gezählt wird jeder Satz, den du für diese Übung wirklich abgeschlossen hast; leer gelassene Sätze zählen nicht. Genügend Sätze, die dich wirklich fordern, sind einer der wichtigsten Treiber für Kraft und Muskelwachstum. Die gestrichelte Linie ist der Durchschnitt der abgeschlossenen Zeiträume, die gerade im Diagramm zu sehen sind, und das Abzeichen zeigt, wie dieser Zeitraum dazu steht.";
 
 "progressMetric" = "Fortschrittsmetrik";
 
 "maxWeight" = "Max. Gewicht";
 "maxReps" = "Max. Wdh.";
 
-"metricInfoWeight" = "Das höchste Gewicht, das du in einem einzelnen Satz bewegt hast — unabhängig von den Wiederholungen.";
-"metricInfoReps" = "Die meisten Wiederholungen, die du in einem einzelnen Satz geschafft hast — unabhängig vom Gewicht.";
+"metricInfoWeight" = "Das schwerste Gewicht, das du in einem einzelnen Satz bewegt hast — egal bei wie vielen Wiederholungen.";
+"metricInfoReps" = "Die höchste Anzahl Wiederholungen, die du in einem einzelnen Satz geschafft hast — egal bei welchem Gewicht.";
 "tapForMetricInfo" = "Tippe für Details und um die Metrik zu wechseln.";
 "personalRecord" = "Persönlicher Rekord";
 "personalRecordShort" = "PR";
@@ -908,9 +906,9 @@
 "volumeVsLastTime" = "Volumen vs. letztes Mal";
 "thisWorkout" = "Dieses Workout";
 "firstTimeForThisWorkout" = "Erstes Mal bei diesem Workout — künftige Einheiten werden damit verglichen.";
-"workoutPRInfo" = "Ein persönlicher Rekord bedeutet: Ein Satz in diesem Workout hat dein bestes Gewicht, deine meisten Wiederholungen oder dein bestes geschätztes 1RM aus allen früheren Workouts übertroffen — auch wenn du ihn inzwischen überboten hast. Verbessern sich mehrere Metriken auf einmal, zählen sie als ein Rekord: Die greifbarste führt die Karte an, die übrigen stehen mit dabei.";
+"workoutPRInfo" = "Ein persönlicher Rekord bedeutet: Ein Satz in diesem Workout hat dein bestes Gewicht, deine meisten Wiederholungen oder deine beste Kraft aus allen früheren Workouts übertroffen. Er bleibt der Rekord dieses Tages, auch wenn du ihn inzwischen überboten hast. Verbessern sich mehrere davon auf einmal, zählen sie zusammen als ein Rekord. Das Konkreteste führt die Karte an: zuerst ein wirklich bewegtes Gewicht, dann die Kraft, dann eine Wiederholungszahl. Der Rest steht mit dabei.";
 "alsoARecord" = "Ebenfalls Rekord · %@";
-"workoutTrendInfo" = "Der Trend jeder Übung vergleicht den Bestwert dieses Workouts in ihrer Fortschrittsmetrik mit deinem Bestwert aus den vier Wochen davor — derselbe Vergleich wie auf den Übungs-Abzeichen unten.";
+"workoutTrendInfo" = "Jede Übung hat eine Fortschrittsmetrik: den Wert, an dem sie gemessen wird, etwa Gewicht oder Kraft. Der Trend vergleicht den besten Wert dieses Workouts mit deinem besten aus den vier Wochen davor — derselbe Vergleich, den die Abzeichen neben den Übungen unten zeigen.";
 "workoutVolumeCompareInfo" = "Gesamtvolumen (Gewicht × Wiederholungen aller Sätze) im Vergleich zum letzten Mal, als du dieses Workout gemacht hast.";
 "improvedCount" = "%d verbessert";
 
@@ -928,11 +926,11 @@
 "rps" = "Wdh";
 "average" = "Durchschnitt";
 "volumePerSet" = "Volumen pro Satz";
-"workoutStatCompareRecentInfo" = "Der Trend vergleicht dieses Workout mit dem Durchschnitt deiner letzten %d Workouts. Die Balken zeigen sie — dieses Workout ist der hervorgehobene Balken rechts.";
-"workoutVolumeAboutInfo" = "Das Volumen ist das insgesamt bewegte Gewicht eines Workouts — Gewicht × Wiederholungen, summiert über alle Sätze. Im Vergleich über Workouts hinweg zeigt es, wie viel Arbeit in deinen Einheiten steckt.";
-"workoutDurationAboutInfo" = "Die Dauer ist die Zeit vom Start eines Workouts bis zum Abschluss. Länger oder kürzer ist für sich genommen weder besser noch schlechter — zusammen mit dem Volumen zeigt sie, wie dicht dein Training ist.";
-"workoutSetsAboutInfo" = "Die Anzahl der in einem Workout erfassten Sätze — ein einfaches Maß dafür, wie viel du in einer Einheit gemacht hast, unabhängig vom Gewicht auf der Stange.";
-"workoutRepsAboutInfo" = "Alle in einem Workout erfassten Wiederholungen, summiert über alle Sätze. Zusammen mit Sätzen und Volumen beschreiben sie, wie viel Arbeit eine Einheit enthielt.";
+"workoutStatCompareRecentInfo" = "Der Trend vergleicht dieses Workout mit dem Durchschnitt deiner letzten %d Workouts. Jeder Balken ist eines davon; dieses Workout ist der hervorgehobene Balken rechts.";
+"workoutVolumeAboutInfo" = "Das Volumen ist das in einem Workout insgesamt bewegte Gewicht. LOGIT multipliziert das Gewicht jedes Satzes mit seinen Wiederholungen und addiert alle Sätze. Im Vergleich über Workouts hinweg zeigt es, wie viel Arbeit in deinen Einheiten steckt.";
+"workoutDurationAboutInfo" = "Die Dauer ist die Zeit vom Start eines Workouts bis zum Abschluss. Für sich genommen ist länger weder besser noch schlechter als kürzer — zusammen mit dem Volumen zeigt sie, wie viel Arbeit du in diese Zeit gepackt hast.";
+"workoutSetsAboutInfo" = "Die Anzahl der Sätze, die du in einem Workout erfasst hast. Ein Satz ist ein Durchgang mit Wiederholungen — ein einfaches Maß dafür, wie viel du in einer Einheit gemacht hast, unabhängig davon, wie schwer das Gewicht war.";
+"workoutRepsAboutInfo" = "Alle Wiederholungen, die du in einem Workout erfasst hast, über alle Sätze addiert. Zusammen mit Sätzen und Volumen beschreiben sie, wie viel Arbeit eine Einheit enthielt.";
 "period" = "Zeitraum";
 "weeklyGoal" = "Wochenziel";
 "weeklyGoalReached" = "Ziel erreicht";
@@ -1031,7 +1029,7 @@
 "yearCrossingHeadline" = "%@ hat %@ schon übertroffen";
 "monthsToSpare" = "mit %d Monaten Vorsprung";
 "monthToSpare" = "mit 1 Monat Vorsprung";
-"highlightsInfo" = "Meilensteine und Rekorde umfassen den gewählten Zeitraum. Trends vergleichen ihn mit dem Zeitraum davor.";
+"highlightsInfo" = "Meilensteine und Rekorde stammen aus dem gewählten Zeitraum. Trends vergleichen diesen Zeitraum mit dem direkt davor.";
 "streak" = "Streak";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
@@ -1056,9 +1054,9 @@
 "measurementType.weightAndDistance" = "Gewicht & Distanz";
 "measurementTypeChangeInfo" = "Bestehende Sätze behalten ihre aufgezeichneten Werte. Nur neue Sätze verwenden die neue Messung.";
 
-"metricInfoDuration" = "Deine längste aufgezeichnete Dauer für diese Übung.";
-"metricInfoDurationFaster" = "Deine schnellste aufgezeichnete Zeit für diese Übung.";
-"metricInfoDistance" = "Deine längste aufgezeichnete Distanz für diese Übung.";
+"metricInfoDuration" = "Die längste Zeit, die du in einem einzelnen Satz dieser Übung aufgezeichnet hast.";
+"metricInfoDurationFaster" = "Die schnellste Zeit, die du in einem einzelnen Satz dieser Übung aufgezeichnet hast.";
+"metricInfoDistance" = "Die längste Distanz, die du in einem einzelnen Satz dieser Übung aufgezeichnet hast.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "pro Workout";
 "perWorkoutBasis" = "Pro Workout";
@@ -1081,7 +1079,7 @@
 
 // MARK: - Calorie Estimates
 
-"calorieEstimateExplanation" = "LOGIT schätzt Aktivkalorien aus Trainingsdichte und Körpergewicht — immer auf dieselbe Weise, damit Vergleiche zwischen deinen Workouts aussagekräftig bleiben. Der individuelle Verbrauch variiert; betrachte den absoluten Wert als Näherung.";
+"calorieEstimateExplanation" = "LOGIT schätzt Aktivkalorien aus deinem Körpergewicht und deiner Trainingsdichte — also daraus, wie viel der Zeit du wirklich gearbeitet hast. Die Berechnung ist immer dieselbe, deshalb bleibt der Vergleich deiner Workouts untereinander aussagekräftig. Wie viel du tatsächlich verbrennst, ist von Mensch zu Mensch verschieden — nimm die Zahl selbst als groben Richtwert.";
 "calorieEstimateHealthNote" = "Wird als Aktivkalorien mit Apple Health synchronisiert. Du kannst die Schätzung in den Einstellungen deaktivieren.";
 "calorieEstimates" = "Kalorienschätzung";
 "calorieEstimatesDescription" = "Schätzt Aktivkalorien aus deinen geloggten Sätzen und deinem Körpergewicht. Erscheint bei Workouts und in der Apple-Health-Synchronisierung.";
@@ -1112,7 +1110,7 @@
 "trackingWeightAloneHint" = "Ergänze das Gewicht um Wiederholungen, Dauer oder Distanz.";
 "setPreviewCaption" = "So wird ein Satz aussehen";
 "progressMetricCaption" = "Wird beim Training auf dem Übungs-Badge angezeigt.";
-"progressMetricE1RMDescription" = "Geschätztes One-Rep-Max aus Gewicht und Wiederholungen";
+"progressMetricStrengthDescription" = "Das Maximum für eine Wiederholung";
 "progressMetricWeightDescription" = "Schwerstes Gewicht in einem Satz";
 "progressMetricRepetitionsDescription" = "Meiste Wiederholungen in einem Satz";
 "progressMetricDurationDescription" = "Längste Dauer in einem Satz";
@@ -1120,10 +1118,11 @@
 "progressMetricDistanceDescription" = "Weiteste Distanz in einem Satz";
 
 // Strength (Progress tab tile + detail)
-"strength" = "Kraft";
-"strengthBasis" = "e1RM gesamt";
-"strengthExerciseBasis" = "e1RM %@";
-"strengthEmpty" = "Dein Krafttrend entsteht";
+/* The Summary aggregate — a set-weighted mean of every exercise's strength change,
+   shown as a percentage and labelled "Overall Strength". */
+"overallStrength" = "Gesamtkraft";
+"overallStrengthExerciseBasis" = "%@ · Kraft";
+"overallStrengthEmpty" = "Dein Krafttrend entsteht";
 "nWeeks" = "%d Wochen";
 "nMonths" = "%d Monate";
 "oneYear" = "1 Jahr";
@@ -1134,14 +1133,14 @@
 "previousYear" = "Vorheriges Jahr";
 "nSets" = "%d Sätze";
 "allExercises" = "Alle Übungen";
-"strengthAxisMostDeclined" = "Stärkster Rückgang";
-"strengthAxisLeastImproved" = "Geringster Zuwachs";
-"strengthAxisMostImproved" = "Größter Zuwachs";
-"strengthStrongestLifts" = "Stärkste Übungen";
-"strengthShowAllLifts" = "Alle %d Übungen zeigen";
-"strengthAxisLeastDeclined" = "Geringster Rückgang";
+"overallStrengthAxisMostDeclined" = "Stärkster Rückgang";
+"overallStrengthAxisLeastImproved" = "Geringster Zuwachs";
+"overallStrengthAxisMostImproved" = "Größter Zuwachs";
+"overallStrengthStrongestLifts" = "Stärkste Übungen";
+"overallStrengthShowAllLifts" = "Alle %d Übungen zeigen";
+"overallStrengthAxisLeastDeclined" = "Geringster Rückgang";
 "showLess" = "Weniger anzeigen";
-"strengthInfo" = "Der beste geschätzte 1RM jeder Übung im gewählten Zeitraum gegenüber dem Zeitraum davor, gemittelt und nach der Anzahl deiner Sätze gewichtet. Cardio- und Körpergewichtssätze haben keinen 1RM und zählen nicht.";
+"overallStrengthInfo" = "Die Gesamtkraft fasst das zu einer einzigen Zahl zusammen. Für jede Übung nimmt LOGIT deinen besten Wert im gewählten Zeitraum und vergleicht ihn mit deinem besten im Zeitraum davor, dann werden all diese Veränderungen gemittelt. Je mehr Sätze du von einer Übung gemacht hast, desto stärker zählt sie für das Ergebnis. Cardio- und Körpergewichtssätze haben keinen Kraftwert und bleiben außen vor.";
 
 
 // MARK: - Data Export

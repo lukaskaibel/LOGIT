@@ -37,7 +37,7 @@ struct ExerciseSetsScreen: View {
                         positiveColor: muscleGroupColor,
                         formatAverage: { "\(Int($0.rounded()))" },
                         displayAverage: { $0.rounded() },
-                        explanation: NSLocalizedString("averageComparisonInfo", comment: "")
+                        explanation: NSLocalizedString("periodAverageComparisonInfo", comment: "")
                     )
                 }
                 .padding(.horizontal)

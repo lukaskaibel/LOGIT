@@ -1922,7 +1922,7 @@ struct MetricInfoPanel: View {
     /// is deliberately duration-only — so it keeps one string.
     private func explanation(for metric: ExercisePrimaryMetric) -> String {
         switch metric {
-        case .estimatedOneRepMax: return NSLocalizedString("e1RMInfo", comment: "")
+        case .estimatedOneRepMax: return NSLocalizedString("strengthMetricInfo", comment: "")
         case .weight: return NSLocalizedString("metricInfoWeight", comment: "")
         case .repetitions: return NSLocalizedString("metricInfoReps", comment: "")
         case .duration:

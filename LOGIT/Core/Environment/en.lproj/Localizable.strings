@@ -72,11 +72,13 @@
 "groupIndexOfTotal" = "%1$d of %2$d";
 "previousBest" = "Previous Best";
 "lastBest" = "Last Best";
-"lastBestInfo" = "Shown when you haven't trained this exercise in over 4 weeks — your best from the most recent session you logged.";
+"lastBestInfo" = "Shown when you haven't trained this exercise for more than 4 weeks: your best value from the last session you logged, however long ago that was.";
 "newRecord" = "New Record";
-"currentBestInfo" = "Your current best is the highest value in the last 4 weeks. The trend shows how much higher it is than your best in the 4 weeks before you reached it.";
-"currentBestComparisonInfo" = "Your current best (right) is the highest value in the last 4 weeks. The badge shows how it compares to your best in the shown period on the left — scroll to compare against any time.";
-"averageComparisonInfo" = "The left side is the same length of time immediately before the one on screen. The badge shows how the period on screen (right) compares to it.";
+"currentBestInfo" = "Your current best is the highest value you reached in the last 4 weeks. The trend next to it compares that value with your best in the 4 weeks leading up to the day you reached it.";
+"currentBestComparisonInfo" = "On the right is your current best: the highest value you reached in the last 4 weeks. On the left is your best in the period shown in the chart, and the badge between them shows how the two compare. Scroll the chart to compare against any other time.";
+/* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
+"averageComparisonInfo" = "On the right is the timeframe currently shown in the chart. On the left is the same length of time directly before it, and the badge between them shows how the two compare.";
+"periodAverageComparisonInfo" = "On the right is the current period. On the left is the average of the finished periods currently shown in the chart — the dashed line — and the badge between them shows how the two compare.";
 "currentWorkout" = "Current Workout";
 
 // MARK: - D
@@ -864,18 +866,14 @@
 "previewSquats" = "Squats";
 "previewBarbellCurl" = "Barbell Curl";
 
-/* Estimated 1RM (e1RM) */
-"e1RM" = "e1RM";
-"estimatedOneRepMax" = "Estimated 1RM";
-"e1RMInfo" = "Estimated 1-rep max: the most weight you could likely lift for a single rep, calculated from your weight and reps (Epley formula). It's only accurate at lower reps, so sets above 12 reps aren't counted.";
-"higherMaxE1RMThisMonthThanLastMonth" = "Your estimated 1RM this month is higher than last month.";
-"lowerMaxE1RMThisMonthThanLastMonth" = "Your estimated 1RM this month is lower than last month.";
-"higherMaxE1RMThisYearThanLastYear" = "Your estimated 1RM this year is higher than last year.";
-"lowerMaxE1RMThisYearThanLastYear" = "Your estimated 1RM this year is lower than last year.";
+/* The per-exercise strength metric: an estimated one-rep max, shown as "Strength".
+   The Summary aggregate is the overallStrength family below. */
+"strengthMetric" = "Strength";
+"strengthMetricInfo" = "Strength is the heaviest weight you could lift for a single repetition. Rather than have you attempt one, LOGIT works it out from the weight and repetitions of your sets using the Epley formula (elsewhere you may see this called an estimated 1RM). It is tracked for exercises where you log both a weight and repetitions, and only sets of 12 repetitions or fewer count — above that the estimate stops being reliable.";
 
 /* Set Volume (best single-set volume) */
 "setVolume" = "Set Volume";
-"setVolumeInfo" = "Set volume: the weight × reps of a single set. This tracks your best single set — unlike total volume, it grows only when you lift more weight or do more reps in one set.";
+"setVolumeInfo" = "Set volume is the weight of a single set multiplied by its repetitions. Each point is your best single set on that day, so unlike total volume it only goes up when you lift more weight or do more repetitions within one set — not when you simply add more sets.";
 "higherMaxSetVolumeThisMonthThanLastMonth" = "Your best set volume this month is higher than last month.";
 "lowerMaxSetVolumeThisMonthThanLastMonth" = "Your best set volume this month is lower than last month.";
 "higherMaxSetVolumeThisYearThanLastYear" = "Your best set volume this year is higher than last year.";
@@ -883,18 +881,18 @@
 
 /* Metric detail "About" sections */
 "aboutMetric" = "About %@";
-"weightInfo" = "The heaviest weight you’ve lifted in a single set, shown for each day. Moving more weight over time is the most direct sign of growing strength.";
-"repetitionsInfo" = "The most reps you’ve done in a single set, shown for each day. More reps at the same weight builds muscular endurance — another way to keep progressing.";
-"volumeInfo" = "Volume is the total weight you’ve moved: weight × reps, summed over every set in the period. More volume means more total work — a key driver of muscle growth. The badge compares this period against the average of the periods shown — the dashed line.";
-"setsInfo" = "Sets count the working sets you logged for this exercise — only sets you actually completed. Doing enough hard sets is a key driver of strength and muscle growth. The chart shows the sets of recent periods; the badge compares this period against their average — the dashed line.";
+"weightInfo" = "Each point is the heaviest weight you lifted in a single set on that day. Lifting more weight over time is the most direct sign that you are getting stronger.";
+"repetitionsInfo" = "Each point is the highest number of repetitions you did in a single set on that day. Doing more repetitions with the same weight builds muscular endurance — another way to keep making progress.";
+"volumeInfo" = "Volume is the total amount of weight you have moved. LOGIT multiplies the weight of every set by its repetitions and adds all the sets in the period together. More volume means more work done, which is one of the main drivers of muscle growth. The dashed line is the average of the finished periods currently shown in the chart, and the badge shows how this period compares with it.";
+"setsInfo" = "A set is one round of repetitions. This counts every set you actually completed for this exercise; sets you left empty don't count. Doing enough sets that really challenge you is one of the main drivers of strength and muscle growth. The dashed line is the average of the finished periods currently shown in the chart, and the badge shows how this period compares with it.";
 
 "progressMetric" = "Progress Metric";
 
 "maxWeight" = "Max Weight";
 "maxReps" = "Max Reps";
 
-"metricInfoWeight" = "The heaviest weight you've lifted in a single set, regardless of reps.";
-"metricInfoReps" = "The most reps you've done in a single set, regardless of weight.";
+"metricInfoWeight" = "The heaviest weight you have lifted in a single set, no matter how many repetitions you did.";
+"metricInfoReps" = "The highest number of repetitions you have done in a single set, no matter how heavy the weight was.";
 "tapForMetricInfo" = "Tap for details and to switch the metric.";
 "personalRecord" = "Personal record";
 "personalRecordShort" = "PR";
@@ -912,9 +910,9 @@
 "volumeVsLastTime" = "Volume vs. Last Time";
 "thisWorkout" = "This Workout";
 "firstTimeForThisWorkout" = "First time doing this workout — future sessions will be compared against it.";
-"workoutPRInfo" = "A personal record means a set in this workout beat your best weight, reps, or estimated 1RM from all workouts before it — even if you've surpassed it since. When several metrics improve at once, they count as one record: the most tangible leads the card and the rest are listed with it.";
+"workoutPRInfo" = "A personal record means a set in this workout beat your best weight, your most repetitions, or your best strength from every workout before it. It stays this day's record even if you have beaten it since. When several of these improve at once, they count as one record together. The most concrete one leads the card: first a weight you really lifted, then strength, then a number of repetitions. The rest are listed with it.";
 "alsoARecord" = "Also a record · %@";
-"workoutTrendInfo" = "Each exercise's trend compares this workout's best value of its progress metric with your best from the four weeks before it — the same comparison the exercise badges below show.";
+"workoutTrendInfo" = "Every exercise has a progress metric: the value it is measured by, such as weight or strength. The trend compares the best value this workout reached with your best from the four weeks before it — the same comparison the badges next to the exercises below show.";
 "workoutVolumeCompareInfo" = "Total volume (weight × reps of every set) compared with the last time you did this workout.";
 "improvedCount" = "%d improved";
 
@@ -932,11 +930,11 @@
 "rps" = "rep";
 "average" = "Average";
 "volumePerSet" = "Volume per Set";
-"workoutStatCompareRecentInfo" = "The trend compares this workout with the average of your last %d workouts. The bars show them — this one is the highlighted bar on the right.";
-"workoutVolumeAboutInfo" = "Volume is the total weight moved in a workout — weight × reps, summed over every set. Compared across workouts, it shows how much overall work your sessions contain.";
-"workoutDurationAboutInfo" = "Duration is the time from starting a workout to finishing it. Neither longer nor shorter is better by itself — read it together with volume to see how dense your training is.";
-"workoutSetsAboutInfo" = "The number of sets logged in a workout — a simple measure of how much you did in a session, independent of the weight on the bar.";
-"workoutRepsAboutInfo" = "All repetitions logged in a workout, summed across every set. Together with sets and volume, it describes how much work a session contained.";
+"workoutStatCompareRecentInfo" = "The trend compares this workout with the average of your last %d workouts. Each bar is one of those workouts; this one is the highlighted bar on the right.";
+"workoutVolumeAboutInfo" = "Volume is the total amount of weight moved in a workout. LOGIT multiplies the weight of every set by its repetitions and adds all the sets together. Compared across workouts, it shows how much work your sessions contain.";
+"workoutDurationAboutInfo" = "Duration is the time from starting a workout to finishing it. On its own, longer is neither better nor worse than shorter — read it together with volume to see how much work you fit into that time.";
+"workoutSetsAboutInfo" = "The number of sets you logged in a workout. A set is one round of repetitions, so this is a simple measure of how much you did in a session, no matter how heavy the weight was.";
+"workoutRepsAboutInfo" = "Every repetition you logged in a workout, added up across all sets. Together with sets and volume, it describes how much work a session contained.";
 "period" = "Period";
 "weeklyGoal" = "Weekly Goal";
 "weeklyGoalReached" = "Goal reached";
@@ -1035,7 +1033,7 @@
 "yearCrossingHeadline" = "%@ already beat %@";
 "monthsToSpare" = "with %d months to spare";
 "monthToSpare" = "with 1 month to spare";
-"highlightsInfo" = "Milestones and records cover the selected window. Trends compare it with the window before it.";
+"highlightsInfo" = "Milestones and records come from the selected timeframe. Trends compare that timeframe with the one directly before it.";
 "streak" = "Streak";
 
 // Timeframe unification: shared chart ranges + per-period muscle history
@@ -1060,9 +1058,9 @@
 "measurementType.weightAndDistance" = "Weight & Distance";
 "measurementTypeChangeInfo" = "Existing sets keep the values they were recorded with. Only new sets use the new measurement.";
 
-"metricInfoDuration" = "Your longest recorded duration for this exercise.";
-"metricInfoDurationFaster" = "Your fastest recorded time for this exercise.";
-"metricInfoDistance" = "Your longest recorded distance for this exercise.";
+"metricInfoDuration" = "The longest time you have recorded in a single set of this exercise.";
+"metricInfoDurationFaster" = "The fastest time you have recorded in a single set of this exercise.";
+"metricInfoDistance" = "The longest distance you have recorded in a single set of this exercise.";
 // Per-workout vs total basis (Summary stat tiles + detail toggle)
 "perWorkout" = "per workout";
 "perWorkoutBasis" = "Per Workout";
@@ -1085,7 +1083,7 @@
 
 // MARK: - Calorie Estimates
 
-"calorieEstimateExplanation" = "LOGIT estimates active calories from your training density and body weight — the same way every time, so comparing your workouts stays meaningful. Individual burn varies; treat the absolute number as approximate.";
+"calorieEstimateExplanation" = "LOGIT estimates active calories from your body weight and how densely you trained — how much of the workout you spent actually working. The calculation is always the same, so comparing your workouts with each other stays meaningful. How much you really burn varies from person to person, so treat the number itself as a rough guide.";
 "calorieEstimateHealthNote" = "Included in Apple Health sync as active calories. You can turn estimates off in Settings.";
 "calorieEstimates" = "Calorie Estimates";
 "calorieEstimatesDescription" = "Estimates active calories from your logged sets and body weight. Shown on workout details and included in Apple Health sync.";
@@ -1116,7 +1114,7 @@
 "trackingWeightAloneHint" = "Add reps, a duration, or a distance to go with the weight.";
 "setPreviewCaption" = "One set will look like this";
 "progressMetricCaption" = "Shown on the exercise badge while you train.";
-"progressMetricE1RMDescription" = "Estimated one-rep max, from weight and reps";
+"progressMetricStrengthDescription" = "The most you could lift for one rep";
 "progressMetricWeightDescription" = "Heaviest weight lifted in a set";
 "progressMetricRepetitionsDescription" = "Most reps in a single set";
 "progressMetricDurationDescription" = "Longest duration in a single set";
@@ -1124,10 +1122,11 @@
 "progressMetricDistanceDescription" = "Farthest distance in a single set";
 
 // Strength (Progress tab tile + detail)
-"strength" = "Strength";
-"strengthBasis" = "Overall e1RM";
-"strengthExerciseBasis" = "e1RM %@";
-"strengthEmpty" = "Building your strength trend";
+/* The Summary aggregate — a set-weighted mean of every exercise's strength change,
+   shown as a percentage and labelled "Overall Strength". */
+"overallStrength" = "Overall Strength";
+"overallStrengthExerciseBasis" = "%@ · strength";
+"overallStrengthEmpty" = "Building your strength trend";
 "nWeeks" = "%d weeks";
 "nMonths" = "%d months";
 "oneYear" = "1 year";
@@ -1138,14 +1137,14 @@
 "previousYear" = "Previous year";
 "nSets" = "%d sets";
 "allExercises" = "All exercises";
-"strengthAxisMostDeclined" = "Most declined";
-"strengthAxisLeastImproved" = "Least improved";
-"strengthAxisMostImproved" = "Most improved";
-"strengthStrongestLifts" = "Strongest lifts";
-"strengthShowAllLifts" = "Show all %d lifts";
-"strengthAxisLeastDeclined" = "Least declined";
+"overallStrengthAxisMostDeclined" = "Most declined";
+"overallStrengthAxisLeastImproved" = "Least improved";
+"overallStrengthAxisMostImproved" = "Most improved";
+"overallStrengthStrongestLifts" = "Strongest lifts";
+"overallStrengthShowAllLifts" = "Show all %d lifts";
+"overallStrengthAxisLeastDeclined" = "Least declined";
 "showLess" = "Show less";
-"strengthInfo" = "Each exercise's best estimated 1RM in the selected timeframe against the timeframe before it, averaged and weighted by how many sets you did. Cardio and bodyweight sets carry no 1RM and don't count.";
+"overallStrengthInfo" = "Overall Strength combines that into a single number. For every exercise, LOGIT takes your best in the selected timeframe and compares it with your best in the timeframe before, then averages all of those changes. The more sets you did of an exercise, the more it counts towards the result. Cardio and bodyweight sets carry no strength figure, so they are left out.";
 
 
 // MARK: - Data Export

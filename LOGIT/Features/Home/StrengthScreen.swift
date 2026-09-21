@@ -73,7 +73,7 @@ struct StrengthScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(NSLocalizedString("strength", comment: ""))
+                Text(NSLocalizedString("overallStrength", comment: ""))
                     .font(.headline)
             }
         }
@@ -101,10 +101,10 @@ struct StrengthScreen: View {
     // MARK: Hero
 
     /// A caption over the figure, matching the tile's anatomy. The caption is the only thing that
-    /// changes with selection: normally it names the basis and its scope ("Overall e1RM"), and while
-    /// a bar is held it names that exercise's e1RM in its muscle colour, with the figure below
-    /// switching to that lift's own change. Basis first, scope second — the same two facts in both
-    /// states, so the line reads as one sentence being re-scoped rather than replaced.
+    /// changes with selection: normally it names the timeframe the figure covers ("Last 4 weeks",
+    /// taken from the computed `progress` so it never runs ahead of the number during a recompute),
+    /// and while a bar is held it names that exercise's strength in its muscle colour, with the
+    /// figure below switching to that lift's own change.
     ///
     /// Nothing sits to the right any more. A second figure beside the headline was read as one
     /// statement about it — "best mover Squat" next to a falling percentage parsed as a verdict on
@@ -120,7 +120,7 @@ struct StrengthScreen: View {
                 // at the same size, which is the point of it being one view.
                 TrendPlaceholder(
                     progress: progress.historyFraction,
-                    text: NSLocalizedString("strengthEmpty", comment: ""),
+                    text: NSLocalizedString("overallStrengthEmpty", comment: ""),
                     systemImage: "chart.line.uptrend.xyaxis"
                 )
                 .padding(.vertical, 12)
@@ -139,7 +139,7 @@ struct StrengthScreen: View {
             // one place the basis line stops saying what the number is.
             Text(
                 String(
-                    format: NSLocalizedString("strengthExerciseBasis", comment: ""),
+                    format: NSLocalizedString("overallStrengthExerciseBasis", comment: ""),
                     selected.exercise.displayName
                 )
             )
@@ -149,7 +149,7 @@ struct StrengthScreen: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         } else {
-            Text(NSLocalizedString("strengthBasis", comment: ""))
+            Text(progress.window.currentWindowLabel)
                 .font(.caption.weight(.medium))
                 .tracking(0.3)
                 .foregroundStyle(.tertiary)
@@ -311,9 +311,9 @@ struct StrengthScreen: View {
         let hasDecline = (ranked.first?.percentChange ?? 0) < 0
         let hasGain = (ranked.last?.percentChange ?? 0) > 0
         return HStack {
-            Text(NSLocalizedString(hasDecline ? "strengthAxisMostDeclined" : "strengthAxisLeastImproved", comment: ""))
+            Text(NSLocalizedString(hasDecline ? "overallStrengthAxisMostDeclined" : "overallStrengthAxisLeastImproved", comment: ""))
             Spacer(minLength: 12)
-            Text(NSLocalizedString(hasGain ? "strengthAxisMostImproved" : "strengthAxisLeastDeclined", comment: ""))
+            Text(NSLocalizedString(hasGain ? "overallStrengthAxisMostImproved" : "overallStrengthAxisLeastDeclined", comment: ""))
         }
         .font(.caption2)
         .foregroundStyle(.tertiary)
@@ -341,7 +341,7 @@ struct StrengthScreen: View {
         if !all.isEmpty {
             let shown = showsAllBests ? all : Array(all.prefix(Self.collapsedBestsCount))
             VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-                Text(NSLocalizedString("strengthStrongestLifts", comment: ""))
+                Text(NSLocalizedString("overallStrengthStrongestLifts", comment: ""))
                     .sectionHeaderStyle2()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 VStack(spacing: CELL_SPACING) {
@@ -362,7 +362,7 @@ struct StrengthScreen: View {
                             Text(
                                 showsAllBests
                                     ? NSLocalizedString("showLess", comment: "")
-                                    : String(format: NSLocalizedString("strengthShowAllLifts", comment: ""), all.count)
+                                    : String(format: NSLocalizedString("overallStrengthShowAllLifts", comment: ""), all.count)
                             )
                             .foregroundStyle(Color.label)
                             Spacer()
@@ -392,7 +392,7 @@ struct StrengthScreen: View {
     /// trailing. The colour lives in the muscle-group line the way it does everywhere else in the
     /// app, so the row needs no separate dot to carry identity.
     ///
-    /// Each row states "e1RM" itself: the section header says which lifts these are, not what the
+    /// Each row states "Strength" itself: the section header says which lifts these are, not what the
     /// number is, and a column of bare weights beside exercise names reads as *lifted* weight.
     private func bestRow(_ best: StrengthProgress.ExerciseBest) -> some View {
         HStack(alignment: .center, spacing: 12) {
@@ -408,7 +408,7 @@ struct StrengthScreen: View {
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 1) {
-                Text(NSLocalizedString("e1RM", comment: ""))
+                Text(NSLocalizedString("strengthMetric", comment: ""))
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.tertiary)
                 // `formatWeightForDisplay` keeps up to three decimals so a logged weight round-trips
@@ -428,15 +428,20 @@ struct StrengthScreen: View {
     }
 
     /// The same "About <metric>" tile every other metric detail screen ends on. Two paragraphs,
-    /// because this screen depends on two things a reader has no reason to know: how the percentage
-    /// is built, and what an estimated 1RM even is — the unit every figure and the whole strongest
-    /// list are quoted in, and which was never explained anywhere on the way here.
+    /// because this screen depends on two things a reader has no reason to know: what the Strength
+    /// figure actually measures — the unit the whole strongest-lifts list is quoted in — and how the
+    /// headline percentage is built from it.
+    ///
+    /// The definition comes **first** and the two are not interchangeable: `strengthMetricInfo` says
+    /// what a single exercise's Strength is (and which exercises have one at all), and
+    /// `overallStrengthInfo` then leans on that to explain Overall Strength. Swapping them leaves
+    /// the aggregate explained before the thing it aggregates.
     private var about: some View {
         AboutSection(
-            metricTitle: NSLocalizedString("strength", comment: ""),
-            text: NSLocalizedString("strengthInfo", comment: "")
+            metricTitle: NSLocalizedString("overallStrength", comment: ""),
+            text: NSLocalizedString("strengthMetricInfo", comment: "")
                 + "\n\n"
-                + NSLocalizedString("e1RMInfo", comment: "")
+                + NSLocalizedString("overallStrengthInfo", comment: "")
         )
     }
 }

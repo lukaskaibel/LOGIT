@@ -20,7 +20,7 @@ enum ExerciseTileType: String, Codable, CaseIterable {
         case .repetitions: return NSLocalizedString("repetitions", comment: "")
         case .volume: return NSLocalizedString("volume", comment: "")
         case .setVolume: return NSLocalizedString("setVolume", comment: "")
-        case .estimatedOneRepMax: return NSLocalizedString("estimatedOneRepMax", comment: "")
+        case .estimatedOneRepMax: return NSLocalizedString("strengthMetric", comment: "")
         }
     }
 }

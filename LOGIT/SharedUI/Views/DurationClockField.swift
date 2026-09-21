@@ -18,10 +18,11 @@ import SwiftUI
 ///
 /// What the keyboard types into is not what the eye reads. The `TextField` holds only the raw
 /// digits ("3215"), invisibly; the clock ("32:15") is a `Text` drawn where the field sits, and
-/// the caret is kept after its last digit — the one place a keystroke ever lands. That split is load-bearing: a field that rewrote its own visible text to move the
-/// colons would push a new string back into UIKit on every keystroke, and a digit typed before
-/// that write landed was overwritten — 3, 2, 1, 5 typed quickly read "0:25". Here a number pad can
-/// only append digits, so ordinary typing needs no write back at all.
+/// the caret is kept after its last digit — the one place a keystroke ever lands. That split is
+/// load-bearing: a field that rewrote its own visible text to move the colons would push a new
+/// string back into UIKit on every keystroke, and a digit typed before that write landed was
+/// overwritten — 3, 2, 1, 5 typed quickly read "0:25". Here a number pad can only append
+/// digits, so ordinary typing needs no write back at all.
 ///
 /// The value is milliseconds, like everywhere else since model v11; only whole seconds are typed
 /// here. `DecimalField` remains the field for holds and sprints, where hundredths matter.

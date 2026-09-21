@@ -298,7 +298,9 @@ struct ExerciseEditScreen: View {
         case .repetitions: return NSLocalizedString("repsShort", comment: "")
         case .weight: return WeightUnit.used.rawValue
         case .duration:
-            return "\(NSLocalizedString("sec", comment: "")) / \(NSLocalizedString("durationFormatClock.short", comment: ""))"
+            let seconds = NSLocalizedString("sec", comment: "")
+            let clock = NSLocalizedString("durationFormatClock.short", comment: "")
+            return "\(seconds) / \(clock)"
         case .distance: return "\(DistanceUnit.used.shortUnit) / \(DistanceUnit.used.rawValue)"
         }
     }

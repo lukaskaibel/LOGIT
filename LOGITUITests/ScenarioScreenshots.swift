@@ -1851,8 +1851,10 @@ final class ScenarioScreenshots: XCTestCase {
             hide.frame.maxY, keyboard.frame.minY,
             "Hide button \(hide.frame) should float above the keys \(keyboard.frame)"
         )
+        // Against the screen's edge, not its middle: on iOS 27 a row that doesn't ask to be wide
+        // shrinks onto its capsules and the bar centres them.
         XCTAssertGreaterThan(
-            hide.frame.midX, app.frame.midX,
+            hide.frame.maxX, app.frame.maxX - 40,
             "Hide button \(hide.frame) should sit on the trailing edge"
         )
         attach(app, "settings_height_01_decimal_pad")
@@ -2248,7 +2250,10 @@ final class ScenarioScreenshots: XCTestCase {
         attachScreen("template_keyboard_01_row")
 
         // Leading: what belongs to the set. Trailing: the keyboard's own controls, hide outermost.
-        XCTAssertLessThan(rest.frame.midX, app.frame.midX, "Rest isn't on the leading edge")
+        // Measured from the screen's edges: a row the bar shrank onto its capsules centres them as
+        // one cluster, and that still puts rest left of the middle and Next right of it.
+        XCTAssertLessThan(rest.frame.minX, app.frame.minX + 40, "Rest \(rest.frame) isn't on the leading edge")
+        XCTAssertGreaterThan(hide.frame.maxX, app.frame.maxX - 40, "Hide \(hide.frame) isn't on the trailing edge")
         XCTAssertGreaterThan(next.frame.midX, app.frame.midX, "Next isn't on the trailing edge")
         XCTAssertLessThan(next.frame.maxX, hide.frame.minX, "Hide isn't outboard of Next")
         XCTAssertTrue(hasKeyboardFocus(setOneReps), "The tapped reps field doesn't hold the keyboard")

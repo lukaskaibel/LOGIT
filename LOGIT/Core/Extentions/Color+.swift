@@ -28,6 +28,7 @@ extension Color {
     static var fill: Color { Color(UIColor.systemFill) }
     static var secondaryFill: Color { Color(UIColor.secondarySystemFill) }
     static var tertiaryFill: Color { Color(UIColor.tertiarySystemFill) }
+    static var quaternaryFill: Color { Color(UIColor.quaternarySystemFill) }
 
     static var shadow: Color { Color.black.opacity(0.2) }
 

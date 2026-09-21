@@ -39,11 +39,18 @@ struct WorkoutDetailScreen: View {
     @State private var isShowingPersonalRecords: Bool = false
     @State private var workoutShareFileURL: URL?
     @State private var templateShareFileURL: URL?
+    @State private var isRatingEffort = false
 
     // MARK: - Variables
 
     @StateObject var workout: Workout
     let canNavigateToTemplate: Bool
+
+    /// Top to bottom, not leading to trailing: the effort marker is a narrow, tall capsule, and a
+    /// horizontal sweep would squeeze the whole spectrum into ~25pt.
+    private var effortTint: AnyShapeStyle {
+        workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom)
+    }
     
     // MARK: - Sharing Service
     
@@ -70,19 +77,13 @@ struct WorkoutDetailScreen: View {
                         )
                     }
                     progressAndVolumeRow
-                    // Effort and note only appear once they exist — an old workout that was never
-                    // rated shouldn't grow two empty slots on a screen that is otherwise all
-                    // things that happened. Both are filled in from the editor.
-                    if workout.effortScore != nil {
-                        WorkoutEffortRow(
-                            score: workout.effortScore,
-                            tint: workout.sets.muscleGroupGradientStyle(
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                            .padding(CELL_PADDING)
-                            .tileStyle()
+                    // Effort is the one thing on this screen that can still be answered, so it
+                    // shows even unrated — as "Add Effort", opening the same rating screen the
+                    // recorder and the editor open. The note has no such invitation: an old
+                    // workout that was never annotated shouldn't grow an empty slot on a screen
+                    // that is otherwise all things that happened.
+                    WorkoutEffortTile(score: workout.effortScore, tint: effortTint, style: .tile) {
+                        isRatingEffort = true
                     }
                     if let note = workout.note, workout.hasNote {
                         WorkoutNoteCard(note: note)
@@ -109,6 +110,22 @@ struct WorkoutDetailScreen: View {
             .padding(.bottom, SCROLLVIEW_BOTTOM_PADDING)
             .padding(.horizontal)
         }
+        .workoutEffortRatingSheet(
+            isPresented: $isRatingEffort,
+            score: Binding(
+                get: { workout.effortScore },
+                // Rated from here there is no Save button to land on, so the rating commits
+                // itself — and re-exports, since Health's copy of the workout carries the score.
+                set: { newValue in
+                    guard workout.effortScore != newValue else { return }
+                    workout.effortScore = newValue
+                    database.save()
+                    healthKitSyncManager.syncWorkout(workout.healthKitPayload)
+                }
+            ),
+            tint: effortTint,
+            muscleGroups: workout.muscleGroups
+        )
         .onAppear {
             progressReport = WorkoutProgressReport.compute(for: workout, database: database)
             refreshCalorieEstimate()

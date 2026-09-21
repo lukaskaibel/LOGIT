@@ -1290,6 +1290,166 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "\(prefix)_02_summary_scrolled")
     }
 
+    // MARK: - Effort rating (shared screens)
+
+    /// The one effort UI, end to end: the tile on the workout detail opens the rating sheet, the
+    /// scale writes a rating, the ⓘ pushes the description list, a row there picks a score and
+    /// pops back, and ✓ commits it to the tile.
+    ///
+    /// Worth a standing test because every control here is reached by identifier, and SwiftUI
+    /// propagates a container's `accessibilityIdentifier` *into* its children: an identifier on
+    /// the value capsule silently renamed the ⓘ inside it, which is exactly the kind of break
+    /// that never shows up in a screenshot.
+    func testEffortRatingFlow() {
+        let app = launchApp(
+            scenario: "many",
+            extraArguments: ["-UITEST_FIXTURES", "1", "-UITEST_DEEPLINK", "workoutDetail"]
+        )
+
+        let tile = app.buttons["effortTile"].firstMatch
+        XCTAssertTrue(tile.waitForExistence(timeout: 30), "Effort tile missing on the workout detail")
+        waitABit(2)
+        // Unrated, the tile is an invitation rather than a hidden row.
+        XCTAssertEqual(tile.label, "Add Effort", "Unrated tile should offer Add Effort")
+        attach(app, "effort_01_detail_tile_unrated")
+
+        tile.tap()
+        waitABit(2)
+        attach(app, "effort_02_rating_sheet_unrated")
+        XCTAssertFalse(
+            app.buttons["effortDescriptionsButton"].exists,
+            "Unrated capsule must not offer the descriptions button"
+        )
+
+        let scale = app.otherElements["effortScale"].firstMatch
+        XCTAssertTrue(scale.waitForExistence(timeout: 5), "Effort scale missing on the rating sheet")
+        scale.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        waitABit(1)
+        attach(app, "effort_03_rating_sheet_rated")
+
+        let info = app.buttons["effortDescriptionsButton"].firstMatch
+        XCTAssertTrue(info.waitForExistence(timeout: 5), "Info button missing on the value capsule")
+        info.tap()
+        waitABit(2)
+        attach(app, "effort_04_descriptions_top")
+        app.swipeUp()
+        app.swipeUp()
+        waitABit(1)
+        attach(app, "effort_05_descriptions_bottom")
+
+        let row = app.buttons["effortDescriptionRow9"].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "Description row for 9 missing")
+        row.tap()
+        waitABit(2)
+        attach(app, "effort_06_rating_sheet_back")
+
+        app.buttons["effortConfirmButton"].firstMatch.tap()
+        waitABit(2)
+        XCTAssertTrue(
+            tile.waitForExistence(timeout: 5) && tile.label.contains("9"),
+            "Confirmed rating did not reach the tile (label: \(tile.label))"
+        )
+        attach(app, "effort_07_detail_tile_rated")
+
+        // The editor shows the same tile and opens the same sheet — and it has to open from
+        // inside the editor's pass-through exercise tray, where a nested sheet is only stable
+        // while the tray stops letting touches through (see `hasNestedTraySheet`).
+        app.navigationBars.buttons.element(boundBy: 1).tap()
+        waitABit(1)
+        let edit = app.buttons["Edit"].firstMatch
+        XCTAssertTrue(edit.waitForExistence(timeout: 5), "Edit missing from the workout detail menu")
+        edit.tap()
+        waitABit(3)
+        let editorTile = app.buttons["effortTile"].firstMatch
+        XCTAssertTrue(editorTile.waitForExistence(timeout: 10), "Effort tile missing in the editor")
+        attach(app, "effort_08_editor_tile")
+        editorTile.tap()
+        waitABit(2)
+        XCTAssertTrue(
+            app.buttons["effortConfirmButton"].waitForExistence(timeout: 5),
+            "Rating sheet did not present over the editor's tray"
+        )
+        attach(app, "effort_09_editor_rating_sheet")
+    }
+
+    /// The same tile on the thinnest real dataset: a brand-new user's first workout, which has
+    /// nothing rated yet and no muscle-group blend behind the sheet to speak of.
+    func testEffortRatingFlowSingleWorkout() {
+        let app = launchApp(scenario: "one")
+
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "Tab bar never appeared")
+        waitABit(2)
+        tapTab(app, at: 1)
+        waitABit(2)
+
+        let workout = app.staticTexts["Full Body"].firstMatch
+        XCTAssertTrue(workout.waitForExistence(timeout: 10), "Seeded workout missing from History")
+        workout.tap()
+        waitABit(2)
+
+        let tile = app.buttons["effortTile"].firstMatch
+        XCTAssertTrue(tile.waitForExistence(timeout: 10), "Effort tile missing on the workout detail")
+        attach(app, "effortone_01_detail_tile_unrated")
+
+        tile.tap()
+        waitABit(2)
+        attach(app, "effortone_02_rating_sheet_unrated")
+
+        let scale = app.otherElements["effortScale"].firstMatch
+        XCTAssertTrue(scale.waitForExistence(timeout: 5), "Effort scale missing on the rating sheet")
+        scale.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.5)).tap()
+        waitABit(1)
+        attach(app, "effortone_03_rating_sheet_rated")
+
+        app.buttons["effortConfirmButton"].firstMatch.tap()
+        waitABit(2)
+        attach(app, "effortone_04_detail_tile_rated")
+    }
+
+    /// The recorder's finish panel rates in place, from the same bars and capsule as the sheet,
+    /// and opens the same description list.
+    func testEffortFinishPanelCard() {
+        let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
+
+        // By identifier, never by placeholder: the tray's resting row is a button since #177, and
+        // probing `app.textFields` by placeholder falls back to swiping the whole library.
+        let traySearchField = app.textFields.matching(
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
+        ).firstMatch
+        XCTAssertTrue(traySearchField.waitForExistence(timeout: 20), "Recorder/tray never presented")
+        waitABit(2)
+
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
+        waitABit(2)
+        let finish = app.buttons["Finish"].firstMatch
+        XCTAssertTrue(finish.waitForExistence(timeout: 5), "Finish button missing from the expanded header")
+        finish.tap()
+
+        XCTAssertTrue(
+            app.buttons["finishPanelEndWorkout"].firstMatch.waitForExistence(timeout: 5),
+            "Finish panel did not open"
+        )
+        waitABit(2)
+        attach(app, "effortfinish_01_panel_unrated")
+
+        let scale = app.otherElements["effortScale"].firstMatch
+        XCTAssertTrue(scale.waitForExistence(timeout: 5), "Effort scale missing on the finish panel")
+        scale.coordinate(withNormalizedOffset: CGVector(dx: 0.62, dy: 0.5)).tap()
+        waitABit(1)
+        attach(app, "effortfinish_02_panel_rated")
+
+        let info = app.buttons["effortDescriptionsButton"].firstMatch
+        XCTAssertTrue(info.waitForExistence(timeout: 5), "Info button missing on the finish panel's capsule")
+        info.tap()
+        waitABit(2)
+        attach(app, "effortfinish_03_descriptions")
+        XCTAssertTrue(
+            app.buttons["effortSkip"].waitForExistence(timeout: 5),
+            "Skip missing from the description list"
+        )
+    }
+
     // MARK: - Exercise editor (measurement builder)
 
     /// The redesigned exercise editor: measurement type is composed from four tracked-field

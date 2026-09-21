@@ -19,11 +19,6 @@ enum WorkoutEffort: CaseIterable, Identifiable {
     /// (see `Workout.effortScore`).
     static let scoreRange = 1...10
 
-    /// Where the finish panel's scale starts, the way Apple's effort screen does: in the middle,
-    /// so rating is a nudge from a neutral position rather than a pick from nothing. The centre of
-    /// the range and of the Moderate band both land on 5.
-    static let defaultScore = 5
-
     init?(score: Int) {
         switch score {
         case 1...3: self = .easy
@@ -36,6 +31,17 @@ enum WorkoutEffort: CaseIterable, Identifiable {
 
     var id: Self { self }
 
+    /// The ratings this band holds. The picker's four bars are this wide — three slots for Easy
+    /// and Moderate, two for Hard and All Out — so a bar's width *is* how many answers it covers.
+    var scores: ClosedRange<Int> {
+        switch self {
+        case .easy: return 1...3
+        case .moderate: return 4...6
+        case .hard: return 7...8
+        case .allOut: return 9...10
+        }
+    }
+
     var name: String {
         switch self {
         case .easy: return NSLocalizedString("effortEasy", comment: "")
@@ -45,4 +51,25 @@ enum WorkoutEffort: CaseIterable, Identifiable {
         }
     }
 
+    /// How the band feels while it happens — the first line under its heading in the description
+    /// list. Kept in step with the wording Fitness uses for the same bucket: the rating LOGIT
+    /// writes is read back there, so the two apps must not describe one number two ways.
+    var feelDescription: String {
+        switch self {
+        case .easy: return NSLocalizedString("effortEasyFeel", comment: "")
+        case .moderate: return NSLocalizedString("effortModerateFeel", comment: "")
+        case .hard: return NSLocalizedString("effortHardFeel", comment: "")
+        case .allOut: return NSLocalizedString("effortAllOutFeel", comment: "")
+        }
+    }
+
+    /// How long you could keep it up — the second line.
+    var enduranceDescription: String {
+        switch self {
+        case .easy: return NSLocalizedString("effortEasyEndurance", comment: "")
+        case .moderate: return NSLocalizedString("effortModerateEndurance", comment: "")
+        case .hard: return NSLocalizedString("effortHardEndurance", comment: "")
+        case .allOut: return NSLocalizedString("effortAllOutEndurance", comment: "")
+        }
+    }
 }

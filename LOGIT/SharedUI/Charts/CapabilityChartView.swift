@@ -231,6 +231,7 @@ struct CapabilityChartView: View {
                 .valueAligned(matching: chartRange.scrollSnapComponents)
             )
             .chartXSelection(value: $selectedDate)
+            .chartTapSelection($selectedDate)
             .chartXVisibleDomain(length: chartRange.visibleDomainSeconds(firstDataDate: firstDataDate))
             .chartXAxis {
                 chartRange.xAxisMarks(firstDataDate: firstDataDate)

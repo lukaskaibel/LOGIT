@@ -7,18 +7,17 @@
 
 import SwiftUI
 
-/// The training-focus editor, in two parts: the focus itself — a tappable title over a stacked bar of
-/// the week it describes — and the eight muscle groups as a two-column grid, each tile a weekly set
-/// target between a round minus and plus (`MuscleTargetControl`).
+/// The target editor — "Set targets manually" in the focus picker. Two parts: the focus as it stands,
+/// its name over the same pills the picker draws, and the eight muscle groups as a two-column grid,
+/// each tile a weekly set target between a round minus and plus (`MuscleTargetControl`).
 ///
 /// Targets are real numbers of sets per week, not shares and not priority levels: it is the unit
 /// programs are written in, it needs no explaining, and unlike a percentage split one group's number
-/// never has to move because another's did. The four presets live in the title's menu as ready-made
-/// weeks; any target change makes the focus "Custom" (the title says so, with nothing checked in the
-/// menu). Setting a group to 0 takes it out of the focus.
+/// never has to move because another's did. Presets are chosen in the picker one level up; any change
+/// here makes the focus "Custom", which the title says. Setting a group to 0 takes it out of the focus.
 ///
-/// Commits on every change through the `MuscleFocusStore`, so the Muscle Groups overview and the
-/// Summary's Balance tile update live. Free — it's configuration, not analytics.
+/// Commits on every change through the `MuscleFocusStore`, so Muscle Groups and the Summary's Balance
+/// tile update live. Free — it's configuration, not analytics.
 struct MuscleFocusScreen: View {
     @EnvironmentObject private var store: MuscleFocusStore
 
@@ -52,15 +51,16 @@ struct MuscleFocusScreen: View {
     // MARK: - Focus
 
     /// The setting's value over the week it describes: the focus's name — a preset's, or "Custom" —
-    /// above every group with a target as a segment of one bar, sized by its sets, and the week's total
-    /// under it. The bar re-proportions as the steppers move, which shows at a glance where the week's
-    /// sets go.
+    /// above one pill per group, as tall as its target, and the week's total under them. The pills
+    /// move with the controls below, which shows at a glance where the week's sets go.
     private var focusSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 10) {
-                MuscleFocusMenu()
-                MuscleSplitBar(focus: store.focus, order: Self.order)
-                    .frame(height: 24)
+            VStack(alignment: .leading, spacing: 14) {
+                Text(store.focus.matchingPreset?.title ?? NSLocalizedString("muscleFocusCustom", comment: ""))
+                    .font(.system(.title2, design: .rounded, weight: .bold))
+                    .foregroundStyle(Color.label)
+                    .contentTransition(.opacity)
+                MuscleFocusPillChart(focus: store.focus, scaleMax: max(store.focus.highestTarget, 1))
                 Text(String(format: NSLocalizedString("muscleFocusWeeklyTotal", comment: ""), store.focus.weeklyTotal))
                     .font(.subheadline)
                     .foregroundStyle(Color.secondaryLabel)
@@ -129,7 +129,7 @@ struct MuscleFocusScreen: View {
 // MARK: - Target control
 
 /// A group's weekly set target as a number between a round minus and plus, on the focus editor's
-/// tiles. Buttons wear the muscle's colour on a tinted disc, repeat while held, and give a
+/// tiles and in the Muscle Groups popover. Buttons wear the muscle's colour on a tinted disc, repeat while held, and give a
 /// selection tick per step (held repeats included); each end greys out at its bound (0, or 1 for the last group with a target,
 /// and `MuscleFocus.targetRange`'s top).
 ///
@@ -177,7 +177,7 @@ struct MuscleTargetControl: View {
         .sensoryFeedback(.selection, trigger: steps)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(group.description))
-        .accessibilityValue(Text(String(format: NSLocalizedString("muscleFocusWeeklyTotal", comment: ""), target)))
+        .accessibilityValue(Text(String(format: NSLocalizedString("muscleFocusSetsPerWeekValue", comment: ""), target)))
         .accessibilityAdjustableAction { direction in
             switch direction {
             case .increment: set(target + 1)
@@ -209,95 +209,6 @@ struct MuscleTargetControl: View {
         .buttonRepeatBehavior(.enabled)
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.3)
-    }
-}
-
-// MARK: - Focus menu
-
-/// The focus as a control: its name — a preset's, or "Custom" — with a chevron, opening the four
-/// presets with the current one checked. Shared by the editor and the Muscle Groups screen, so the
-/// setting reads and changes the same way wherever it appears.
-///
-/// "Custom" is never an item. It isn't something you pick; it is what the focus becomes when a
-/// target changes, so it only ever appears as the title with nothing checked.
-struct MuscleFocusMenu: View {
-    /// Adds an "Edit Targets" item — the way into the full editor from surfaces that aren't it.
-    var onEditTargets: (() -> Void)? = nil
-
-    @EnvironmentObject private var store: MuscleFocusStore
-
-    var body: some View {
-        let selection = Binding<MuscleFocusPreset?>(
-            get: { store.focus.matchingPreset },
-            set: { newValue in
-                guard let newValue else { return }
-                store.apply(preset: newValue)
-            }
-        )
-        Menu {
-            Picker(NSLocalizedString("trainingFocus", comment: ""), selection: selection) {
-                ForEach(MuscleFocusPreset.allCases) { preset in
-                    Text("\(preset.emoji)  \(preset.title)").tag(Optional(preset))
-                }
-            }
-            if let onEditTargets {
-                Divider()
-                Button(action: onEditTargets) {
-                    Label(NSLocalizedString("muscleFocusEditTargets", comment: ""), systemImage: "slider.horizontal.3")
-                }
-            }
-        } label: {
-            HStack(spacing: 7) {
-                Text(store.focus.matchingPreset?.title ?? NSLocalizedString("muscleFocusCustom", comment: ""))
-                    .font(.system(.title2, design: .rounded, weight: .bold))
-                    .foregroundStyle(Color.label)
-                // Down, not up-and-down: this opens a list of choices rather than cycling a value,
-                // and it is the glyph a menu-backed title wears everywhere else in iOS.
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(Color.secondaryLabel)
-            }
-            .padding(.vertical, 4)
-            .padding(.trailing, 6)
-            .contentShape(Rectangle())
-        }
-        // Deliberately unstretched — callers align it leading. A menu hit-tests only the content its
-        // label draws, so widening it to the row would leave the control dead everywhere except on
-        // the words, while still reporting the full width to accessibility: VoiceOver and any
-        // synthetic tap would aim at the middle of that empty box and miss.
-        .accessibilityIdentifier("muscleFocusMenu")
-    }
-}
-
-// MARK: - Split bar
-
-/// One stacked bar of a focus's week, each group with a target a segment in its own colour sized by
-/// its sets, in the given order. Segments animate as targets change; a group at 0 has no segment.
-struct MuscleSplitBar: View {
-    let focus: MuscleFocus
-    let order: [MuscleGroup]
-
-    private let gap: CGFloat = 2
-
-    private var segments: [MuscleGroup] {
-        order.filter { focus.target(for: $0) > 0 }
-    }
-
-    var body: some View {
-        GeometryReader { geometry in
-            let segments = self.segments
-            let total = CGFloat(max(focus.weeklyTotal, 1))
-            let available = max(geometry.size.width - gap * CGFloat(max(segments.count - 1, 0)), 0)
-            HStack(spacing: gap) {
-                ForEach(segments, id: \.self) { group in
-                    Rectangle()
-                        .fill(group.color)
-                        .frame(width: available * CGFloat(focus.target(for: group)) / total)
-                }
-            }
-            .frame(width: geometry.size.width, alignment: .leading)
-            .clipShape(Capsule())
-        }
     }
 }
 

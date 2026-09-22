@@ -194,29 +194,62 @@ final class PeriodHistoryChartTests: XCTestCase {
 // MARK: - MuscleFocus
 
 final class MuscleFocusTests: XCTestCase {
-    func testPresetsCoverEveryGroupWithATarget() {
+    private let goals = 1 ... 9
+
+    func testPresetsTargetEveryStrengthGroupAndOnlyTheCardioPresetTargetsCardio() {
         for preset in MuscleFocusPreset.allCases {
-            for group in MuscleGroup.allCases {
-                XCTAssertGreaterThan(preset.focus.target(for: group), 0, "\(preset.rawValue) must give \(group.rawValue) a target")
+            let focus = preset.focus(forWorkoutsPerWeek: MuscleFocus.baseWorkoutsPerWeek)
+            for group in MuscleGroup.allCases where group != .cardio {
+                XCTAssertGreaterThan(focus.target(for: group), 0, "\(preset.rawValue) must keep \(group.rawValue) at maintenance at least")
             }
-            XCTAssertEqual(preset.focus.matchingPreset, preset, "\(preset.rawValue) must recognise itself")
+            XCTAssertEqual(focus.target(for: .cardio) > 0, preset == .cardio, "Only the cardio focus targets cardio")
         }
     }
 
-    func testPresetsAreFourDistinctWeeksWithDistinctGlyphs() {
-        XCTAssertEqual(MuscleFocusPreset.allCases.count, 4)
-        let focuses = MuscleFocusPreset.allCases.map(\.focus)
-        for (index, focus) in focuses.enumerated() {
-            for other in focuses[(index + 1)...] {
-                XCTAssertNotEqual(focus, other)
+    func testPresetsAreFiveDistinctWeeksThatRecogniseThemselvesAtEveryGoal() {
+        XCTAssertEqual(MuscleFocusPreset.allCases.count, 5)
+        for goal in goals {
+            let focuses = MuscleFocusPreset.allCases.map { $0.focus(forWorkoutsPerWeek: goal) }
+            for (index, focus) in focuses.enumerated() {
+                XCTAssertEqual(focus.matchingPreset, MuscleFocusPreset.allCases[index], "at \(goal) a week")
+                XCTAssertEqual(focus.workoutsPerWeek, goal)
+                for other in focuses[(index + 1)...] {
+                    XCTAssertFalse(focus.hasSameTargets(as: other), "two presets collide at \(goal) a week")
+                }
             }
         }
-        XCTAssertEqual(Set(MuscleFocusPreset.allCases.map(\.emoji)).count, 4)
     }
 
-    func testDefaultIsFullBody() {
+    func testBackIsNeverBehindChestInAPreset() {
+        for preset in MuscleFocusPreset.allCases {
+            XCTAssertGreaterThanOrEqual(preset.baseTargets[.back] ?? 0, preset.baseTargets[.chest] ?? 0, preset.rawValue)
+        }
+    }
+
+    func testDefaultIsFullBodyForTheBaseWeek() {
         XCTAssertEqual(MuscleFocus.default.matchingPreset, .fullBody)
-        XCTAssertEqual(MuscleFocus.default.weeklyTotal, 56)
+        XCTAssertEqual(MuscleFocus.default.workoutsPerWeek, 3)
+        XCTAssertEqual(MuscleFocus.default.weeklyTotal, 46)
+    }
+
+    func testPresetsScaleWithTheWeeklyGoal() {
+        func week(_ goal: Int) -> [Int] {
+            let focus = MuscleFocusPreset.fullBody.focus(forWorkoutsPerWeek: goal)
+            return MuscleFocus.displayOrder.map { focus.target(for: $0) }
+        }
+        // legs, back, chest, shoulders, biceps, triceps, abs, cardio
+        XCTAssertEqual(week(2), [7, 7, 5, 4, 3, 3, 3, 0])
+        XCTAssertEqual(week(3), [10, 10, 8, 6, 4, 4, 4, 0])
+        XCTAssertEqual(week(4), [13, 13, 11, 8, 5, 5, 5, 0])
+        XCTAssertEqual(week(5), [17, 17, 13, 10, 7, 7, 7, 0])
+        let single = MuscleFocusPreset.cardio.focus(forWorkoutsPerWeek: 1)
+        for group in MuscleGroup.allCases {
+            XCTAssertGreaterThanOrEqual(single.target(for: group), 1, "a targeted group never scales away")
+        }
+        XCTAssertLessThanOrEqual(
+            MuscleFocusPreset.lowerBody.focus(forWorkoutsPerWeek: 9).target(for: .legs),
+            MuscleFocus.targetRange.upperBound
+        )
     }
 
     func testDisplayOrderCoversEveryGroupOnce() {
@@ -235,11 +268,10 @@ final class MuscleFocusTests: XCTestCase {
     }
 
     func testChangingATargetMakesTheFocusCustom() {
-        var focus = MuscleFocusPreset.upperBody.focus
-        focus.setTarget(5, for: .legs)
-        XCTAssertNil(focus.matchingPreset)
-        focus.apply(.upperBody)
+        var focus = MuscleFocusPreset.upperBody.focus(forWorkoutsPerWeek: 4)
         XCTAssertEqual(focus.matchingPreset, .upperBody)
+        focus.setTarget(9, for: .legs)
+        XCTAssertNil(focus.matchingPreset)
     }
 
     func testLastGroupWithATargetCannotReachZero() {
@@ -254,14 +286,79 @@ final class MuscleFocusTests: XCTestCase {
         XCTAssertEqual(focus.minimumTarget(for: .legs), 0, "Other groups can still be at 0")
     }
 
-    func testCodableRoundTripKeepsTargets() throws {
-        var original = MuscleFocusPreset.lowerBody.focus
-        original.setTarget(0, for: .cardio)
+    // MARK: Resizing for a new weekly goal
+
+    func testResizingAPresetKeepsItExactlyThatPreset() {
+        let resized = MuscleFocusPreset.armsAndShoulders.focus(forWorkoutsPerWeek: 3).resized(forWorkoutsPerWeek: 5)
+        XCTAssertEqual(resized, MuscleFocusPreset.armsAndShoulders.focus(forWorkoutsPerWeek: 5))
+        XCTAssertEqual(resized.matchingPreset, .armsAndShoulders)
+        // Back again lands on the preset too, with no rounding drift from the round trip.
+        XCTAssertEqual(resized.resized(forWorkoutsPerWeek: 3), MuscleFocusPreset.armsAndShoulders.focus(forWorkoutsPerWeek: 3))
+    }
+
+    func testResizingCustomTargetsScalesEveryGroupAndKeepsZeroes() {
+        var custom = MuscleFocusPreset.fullBody.focus(forWorkoutsPerWeek: 3)
+        custom.setTarget(12, for: .legs)
+        custom.setTarget(1, for: .abdominals)
+        let resized = custom.resized(forWorkoutsPerWeek: 6)
+        XCTAssertNil(resized.matchingPreset)
+        XCTAssertEqual(resized.workoutsPerWeek, 6)
+        XCTAssertEqual(resized.target(for: .legs), 24)
+        XCTAssertEqual(resized.target(for: .abdominals), 2)
+        XCTAssertEqual(resized.target(for: .cardio), 0, "A group out of the focus stays out")
+        let shrunk = custom.resized(forWorkoutsPerWeek: 1)
+        XCTAssertEqual(shrunk.target(for: .abdominals), 1, "A group in the focus never scales to zero")
+    }
+
+    func testTheOfferToRescaleIsForANewGoalTheUserHasNotKept() {
+        var focus = MuscleFocusPreset.fullBody.focus(forWorkoutsPerWeek: 3)
+        XCTAssertFalse(focus.suggestsResize(forWorkoutsPerWeek: nil), "No goal, nothing to size for")
+        XCTAssertFalse(focus.suggestsResize(forWorkoutsPerWeek: 3))
+        XCTAssertTrue(focus.suggestsResize(forWorkoutsPerWeek: 4))
+        focus.keep(forWorkoutsPerWeek: 4)
+        XCTAssertFalse(focus.suggestsResize(forWorkoutsPerWeek: 4), "Not Now holds for that goal")
+        XCTAssertTrue(focus.suggestsResize(forWorkoutsPerWeek: 5), "…and not for the next one")
+        XCTAssertEqual(focus.matchingPreset, .fullBody, "Keeping the targets doesn't make them custom")
+    }
+
+    // MARK: Persistence
+
+    func testCodableRoundTripKeepsTargetsTheGoalAndAKeptGoal() throws {
+        var original = MuscleFocusPreset.lowerBody.focus(forWorkoutsPerWeek: 4)
         original.setTarget(13, for: .back)
+        original.keep(forWorkoutsPerWeek: 6)
         let decoded = try JSONDecoder().decode(MuscleFocus.self, from: JSONEncoder().encode(original))
         XCTAssertEqual(decoded, original)
         XCTAssertEqual(decoded.target(for: .back), 13)
-        XCTAssertTrue(decoded.isExcluded(.cardio))
+        XCTAssertEqual(decoded.workoutsPerWeek, 4)
+        XCTAssertFalse(decoded.suggestsResize(forWorkoutsPerWeek: 6))
+    }
+
+    func testTargetsSavedBeforeGoalSizingBecomeTheirSuccessorPresets() throws {
+        func decode(_ targets: String) throws -> MuscleFocus {
+            try JSONDecoder().decode(MuscleFocus.self, from: Data(#"{"targets": \#(targets)}"#.utf8))
+        }
+        let oldFullBody = try decode(#"{"legs": 10, "back": 10, "chest": 10, "shoulders": 8, "biceps": 6, "triceps": 6, "abdominals": 4, "cardio": 2}"#)
+        XCTAssertEqual(oldFullBody.matchingPreset, .fullBody, "A Full Body user stays Full Body")
+        XCTAssertEqual(oldFullBody.workoutsPerWeek, 3)
+        XCTAssertTrue(oldFullBody.isExcluded(.cardio))
+
+        let oldEndurance = try decode(#"{"legs": 10, "back": 6, "chest": 3, "shoulders": 3, "biceps": 2, "triceps": 2, "abdominals": 6, "cardio": 6}"#)
+        XCTAssertEqual(oldEndurance.matchingPreset, .cardio)
+
+        let custom = try decode(#"{"legs": 11, "back": 10, "chest": 10, "shoulders": 8, "biceps": 6, "triceps": 6, "abdominals": 4, "cardio": 2}"#)
+        XCTAssertNil(custom.matchingPreset, "Hand-set targets are kept as they were")
+        XCTAssertEqual(custom.target(for: .legs), 11)
+        XCTAssertEqual(custom.target(for: .cardio), 2)
+        XCTAssertEqual(custom.workoutsPerWeek, 3)
+    }
+
+    func testANewShapeFocusIsNeverRemapped() throws {
+        // Current JSON that happens to hold the old Full Body numbers is a custom focus, not a migration.
+        let json = #"{"targets": {"legs": 10, "back": 10, "chest": 10, "shoulders": 8, "biceps": 6, "triceps": 6, "abdominals": 4, "cardio": 2}, "workoutsPerWeek": 3}"#
+        let focus = try JSONDecoder().decode(MuscleFocus.self, from: Data(json.utf8))
+        XCTAssertNil(focus.matchingPreset)
+        XCTAssertEqual(focus.target(for: .cardio), 2)
     }
 
     func testPriorityShapeDecodesToSets() throws {
@@ -272,6 +369,7 @@ final class MuscleFocusTests: XCTestCase {
         XCTAssertEqual(focus.target(for: .chest), 3)
         XCTAssertEqual(focus.target(for: .shoulders), 6, "A group missing from the priorities read as medium")
         XCTAssertEqual(focus.target(for: .cardio), 0)
+        XCTAssertEqual(focus.workoutsPerWeek, 3)
     }
 
     func testLegacyPercentPresetsMigrateToTheirSuccessors() {
@@ -283,16 +381,26 @@ final class MuscleFocusTests: XCTestCase {
 
     func testLegacyCustomPercentagesScaleOntoTheDefaultWeek() {
         let focus = MuscleFocus(legacyPercentages: [.legs: 50, .back: 49, .chest: 1])
-        // 56 sets a week, split 50 / 49 / 1 %: the tiny share still keeps a set.
-        XCTAssertEqual(focus.target(for: .legs), 28)
-        XCTAssertEqual(focus.target(for: .back), 27)
+        // 46 sets a week, split 50 / 49 / 1 %: the tiny share still keeps a set.
+        XCTAssertEqual(focus.target(for: .legs), 23)
+        XCTAssertEqual(focus.target(for: .back), 23)
         XCTAssertEqual(focus.target(for: .chest), 1)
         XCTAssertTrue(focus.isExcluded(.biceps), "A zeroed share stays out")
     }
 
-    func testStoreMigratesLegacySplitAndPersistsEdits() throws {
-        let suite = "MuscleFocusTests-\(UUID().uuidString)"
+    // MARK: Store
+
+    private func makeDefaults(_ name: String, goal: Int? = nil) throws -> (UserDefaults, String) {
+        let suite = "\(name)-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        if let goal {
+            defaults.set(goal, forKey: MuscleFocusStore.workoutGoalKey)
+        }
+        return (defaults, suite)
+    }
+
+    func testStoreMigratesLegacySplitAndPersistsEdits() throws {
+        let (defaults, suite) = try makeDefaults("MuscleFocusTests")
         defer { defaults.removePersistentDomain(forName: suite) }
         let legacy = ["chest": 18, "back": 18, "shoulders": 16, "biceps": 13, "triceps": 13, "legs": 12, "abdominals": 6, "cardio": 4]
         defaults.set(try JSONEncoder().encode(legacy), forKey: MuscleFocusStore.legacyStorageKey)
@@ -301,15 +409,14 @@ final class MuscleFocusTests: XCTestCase {
         XCTAssertEqual(store.focus.matchingPreset, .upperBody)
         XCTAssertTrue(store.hasChosenFocus, "Someone who tuned percentages made a choice")
 
-        store.setTarget(0, for: .cardio)
+        store.setTarget(0, for: .abdominals)
         let reloaded = MuscleFocusStore(defaults: defaults)
-        XCTAssertTrue(reloaded.focus.isExcluded(.cardio))
+        XCTAssertTrue(reloaded.focus.isExcluded(.abdominals))
         XCTAssertNil(reloaded.focus.matchingPreset)
     }
 
     func testStoreKnowsWhetherAFocusWasEverChosen() throws {
-        let suite = "MuscleFocusChosen-\(UUID().uuidString)"
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        let (defaults, suite) = try makeDefaults("MuscleFocusChosen")
         defer { defaults.removePersistentDomain(forName: suite) }
 
         let fresh = MuscleFocusStore(defaults: defaults)
@@ -319,6 +426,53 @@ final class MuscleFocusTests: XCTestCase {
         fresh.apply(preset: .fullBody)
         XCTAssertTrue(fresh.hasChosenFocus)
         XCTAssertTrue(MuscleFocusStore(defaults: defaults).hasChosenFocus)
+    }
+
+    func testTheDefaultFollowsTheWeeklyGoalUntilAFocusIsChosen() throws {
+        let (defaults, suite) = try makeDefaults("MuscleFocusGoal", goal: 4)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let store = MuscleFocusStore(defaults: defaults)
+        XCTAssertEqual(store.focus, MuscleFocusPreset.fullBody.focus(forWorkoutsPerWeek: 4))
+        XCTAssertNil(store.suggestedResizeGoal, "Nothing to offer before a choice — the default already follows")
+
+        defaults.set(2, forKey: MuscleFocusStore.workoutGoalKey)
+        store.reloadWorkoutGoal()
+        XCTAssertEqual(store.focus, MuscleFocusPreset.fullBody.focus(forWorkoutsPerWeek: 2))
+
+        defaults.set(-1, forKey: MuscleFocusStore.workoutGoalKey)
+        store.reloadWorkoutGoal()
+        XCTAssertNil(store.workoutGoal)
+        XCTAssertEqual(store.focus, MuscleFocus.default, "No goal: the base week")
+    }
+
+    func testAChosenFocusOnlyOffersToFollowTheGoal() throws {
+        let (defaults, suite) = try makeDefaults("MuscleFocusResize", goal: 3)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let store = MuscleFocusStore(defaults: defaults)
+        store.apply(preset: .upperBody)
+        XCTAssertEqual(store.focus, MuscleFocusPreset.upperBody.focus(forWorkoutsPerWeek: 3))
+
+        defaults.set(5, forKey: MuscleFocusStore.workoutGoalKey)
+        store.reloadWorkoutGoal()
+        XCTAssertEqual(store.focus, MuscleFocusPreset.upperBody.focus(forWorkoutsPerWeek: 3), "Never moved by itself")
+        XCTAssertEqual(store.suggestedResizeGoal, 5)
+
+        store.keepTargetsForWorkoutGoal()
+        XCTAssertNil(store.suggestedResizeGoal)
+        XCTAssertNil(MuscleFocusStore(defaults: defaults).suggestedResizeGoal, "Not Now survives a relaunch")
+
+        defaults.set(6, forKey: MuscleFocusStore.workoutGoalKey)
+        store.reloadWorkoutGoal()
+        XCTAssertEqual(store.suggestedResizeGoal, 6)
+        store.resizeToWorkoutGoal()
+        XCTAssertEqual(store.focus, MuscleFocusPreset.upperBody.focus(forWorkoutsPerWeek: 6))
+        XCTAssertNil(store.suggestedResizeGoal)
+
+        // A preset chosen later is sized for the goal in force.
+        store.apply(preset: .cardio)
+        XCTAssertEqual(store.focus.workoutsPerWeek, 6)
     }
 
     // MARK: Balance entries
@@ -331,6 +485,48 @@ final class MuscleFocusTests: XCTestCase {
         XCTAssertEqual(state(10, target: 10), .met)
         XCTAssertEqual(state(11, target: 10), .over, "One set past the target is already above it")
         XCTAssertNil(MuscleBalanceEntry(muscleGroup: .legs, setCount: 3, setsPerWeek: 3, target: 0).goalFraction)
+    }
+
+    func testTheRecommendationLeadsWithTheGroupsFurthestBehind() {
+        func entry(_ group: MuscleGroup, _ setsPerWeek: Int, _ target: Int) -> MuscleBalanceEntry {
+            MuscleBalanceEntry(muscleGroup: group, setCount: setsPerWeek * 4, setsPerWeek: setsPerWeek, target: target)
+        }
+        let calculator = MuscleBalanceCalculator(entries: [
+            entry(.chest, 12, 10), entry(.triceps, 5, 6), entry(.shoulders, 8, 8), entry(.biceps, 6, 6),
+            entry(.back, 7, 10), entry(.legs, 4, 10), entry(.abdominals, 4, 4), entry(.cardio, 1, 2),
+        ])
+        // Short by sets (legs 6, back 3), then the two one-set gaps by fill (cardio ½ before triceps ⅚),
+        // then at target in display order, then past it.
+        XCTAssertEqual(
+            calculator.rankedEntries.map(\.muscleGroup),
+            [.legs, .back, .cardio, .triceps, .shoulders, .biceps, .abdominals, .chest]
+        )
+        XCTAssertEqual(calculator.namedFocusEntries.map(\.muscleGroup), [.legs, .back])
+        XCTAssertEqual(calculator.unnamedFocusCount, 2)
+        XCTAssertEqual(calculator.rankedEntries.first?.setsShort, 6)
+        XCTAssertEqual(calculator.rankedEntries.last?.setsOver, 2)
+    }
+
+    func testAnUntrainedGroupRanksByItsWholeTargetAndAnOffGroupNeverRanks() {
+        let calculator = MuscleBalanceCalculator(entries: [
+            MuscleBalanceEntry(muscleGroup: .legs, setCount: 0, setsPerWeek: 0, target: 8),
+            MuscleBalanceEntry(muscleGroup: .back, setCount: 20, setsPerWeek: 5, target: 10),
+            MuscleBalanceEntry(muscleGroup: .cardio, setCount: 0, setsPerWeek: 0, target: 0),
+            MuscleBalanceEntry(muscleGroup: .chest, setCount: 40, setsPerWeek: 10, target: 10),
+        ])
+        XCTAssertEqual(calculator.focusEntries.map(\.muscleGroup), [.legs, .back])
+        XCTAssertEqual(calculator.unnamedFocusCount, 0)
+        XCTAssertFalse(calculator.rankedEntries.contains { $0.muscleGroup == .cardio })
+        XCTAssertEqual(calculator.excludedEntries.map(\.muscleGroup), [.cardio])
+    }
+
+    func testNothingIsRecommendedOnceEveryGroupIsAtTarget() {
+        let calculator = MuscleBalanceCalculator(entries: [
+            MuscleBalanceEntry(muscleGroup: .legs, setCount: 40, setsPerWeek: 10, target: 10),
+            MuscleBalanceEntry(muscleGroup: .back, setCount: 48, setsPerWeek: 12, target: 10),
+        ])
+        XCTAssertTrue(calculator.focusEntries.isEmpty)
+        XCTAssertTrue(calculator.namedFocusEntries.isEmpty)
     }
 
     func testWeeksCoveredCapsAtTheHistoryAndNeverDropsBelowOneWeek() {

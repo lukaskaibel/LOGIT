@@ -32,7 +32,6 @@ enum HomeNavigationDestinationType: Hashable, Identifiable, Equatable {
          // Like `summaryStat`: nil — the Balance tile — inherits the Summary's window; a highlight card
          // pins the window it compares over.
          muscleGroupsOverview(TrendWindow?),
-         muscleFocus,
          progressHighlights,
          strength,
          // The optional window pins the stat screen to a timeframe (highlight cards open the chart

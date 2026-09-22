@@ -74,7 +74,7 @@
 "lastBest" = "Dernier meilleur";
 "lastBestInfo" = "Affiché quand tu n'as pas entraîné cet exercice depuis plus de 4 semaines : ta meilleure valeur lors de la dernière séance enregistrée, aussi ancienne soit-elle.";
 "newRecord" = "Nouveau record";
-"currentBestInfo" = "Ton meilleur actuel est la valeur la plus élevée des 4 dernières semaines. La tendance à côté la compare à ton meilleur des 4 semaines qui ont précédé le jour où tu l'as atteinte.";
+"currentBestInfo" = "Ton meilleur actuel est la valeur la plus élevée des 4 dernières semaines.";
 "currentBestComparisonInfo" = "À droite se trouve ton meilleur actuel : la valeur la plus élevée des 4 dernières semaines. À gauche, ton meilleur sur la période affichée dans le graphique, et le badge entre les deux indique comment ils se comparent. Fais défiler le graphique pour comparer avec n'importe quelle autre période.";
 /* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
 "averageComparisonInfo" = "À droite se trouve la période actuellement affichée dans le graphique. À gauche, la même durée juste avant, et le badge entre les deux indique comment elles se comparent.";
@@ -930,7 +930,7 @@
 "rps" = "rép";
 "average" = "Moyenne";
 "volumePerSet" = "Volume par série";
-"workoutStatCompareRecentInfo" = "La tendance compare cette séance à la moyenne de tes %d dernières séances. Chaque barre est l'une de ces séances ; celle-ci est la barre mise en évidence à droite.";
+"workoutStatCompareRecentInfo" = "Chaque barre est l'une de tes %d dernières séances ; celle-ci est la barre mise en évidence à droite.";
 "workoutVolumeAboutInfo" = "Le volume est le poids total déplacé pendant une séance. LOGIT multiplie le poids de chaque série par ses répétitions et additionne toutes les séries. Comparé d'une séance à l'autre, il montre la quantité de travail que contiennent tes entraînements.";
 "workoutDurationAboutInfo" = "La durée est le temps écoulé entre le début et la fin d'une séance. En soi, plus longue n'est ni mieux ni moins bien que plus courte — lis-la avec le volume pour voir la quantité de travail que tu as mise dans ce temps.";
 "workoutSetsAboutInfo" = "Le nombre de séries que tu as enregistrées dans une séance. Une série est un enchaînement de répétitions : c'est donc une mesure simple de ce que tu as fait, quelle que soit la charge utilisée.";

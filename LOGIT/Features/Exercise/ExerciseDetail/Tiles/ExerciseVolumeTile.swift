@@ -9,21 +9,23 @@ import Charts
 import SwiftUI
 
 /// The full-width volume tile. Unlike the four "best value" tiles it answers "how much did I do",
-/// so its pill compares the current period against the one before it and its bar chart gets the
-/// whole row (bars need the horizontal room). Sets of the workout currently being recorded are
-/// excluded like everywhere on the tiles: the standings update when the session is logged.
+/// so its bar chart gets the whole row (bars need the horizontal room). Sets of the workout
+/// currently being recorded are excluded like everywhere on the tiles: the standings update when the
+/// session is logged.
 ///
 /// Its period comes from `window`. On the exercise detail screen that's nil and the tile is weekly —
 /// "Volume · This Week", the reading it has always had, and the one the screen around it is built
-/// for: five bars, one per calendar week, the current one tinted.
+/// for: five bars, one per calendar week, the current one tinted. The weekly reading is also why the
+/// tile carries no percentage any more: "this week" is an unfinished period, and comparing it with a
+/// finished one made a Tuesday read as a collapse (before the first session of the week, a literal
+/// "down 100%"). The bars say the same thing without the arithmetic — the current week's bar simply
+/// stands where it stands beside the four behind it.
 ///
 /// Pinned on the Summary it gets that screen's selected `TrendWindow` instead, and then it draws the
 /// same thing every other tile under the picker draws: the window split into its **bins** (days for
 /// four weeks, weeks for a quarter, months for a year), every bar tinted because every bar is in
-/// scope, compared against the equally long window immediately before. It used to show five whole
-/// windows with one tinted — so a tile set to "4 weeks" spent four fifths of its chart outside the
-/// timeframe — and its pill fell back to the *best* of those five when the previous window was empty,
-/// a baseline reaching months outside the span the tile claimed to report.
+/// scope. It used to show five whole windows with one tinted — so a tile set to "4 weeks" spent four
+/// fifths of its chart outside the timeframe.
 struct ExerciseVolumeTile: View {
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
@@ -42,8 +44,6 @@ struct ExerciseVolumeTile: View {
         let bars: [Double]
         /// The reported span's volume, in raw storage units.
         let current: Int
-        /// What the trend pill measures against, in raw units. Zero means nothing to compare.
-        let baseline: Int
         /// Trained at some point, but not inside anything the tile can show.
         let isLapsed: Bool
     }
@@ -54,7 +54,6 @@ struct ExerciseVolumeTile: View {
         let report = window.map { self.windowReport(in: sets, window: $0, hasAnyVolume: hasAnyVolume) }
             ?? weeklyReport(in: sets, hasAnyVolume: hasAnyVolume)
         let currentVolume = report.current
-        let baseline = report.baseline
         let isLapsed = report.isLapsed
         let lastBest = isLapsed ? lastTrainedPeriod(in: sets) : nil
         let muscleColor = exercise.muscleGroup?.color ?? .accentColor
@@ -72,16 +71,7 @@ struct ExerciseVolumeTile: View {
                 ? nil
                 : formatWeightForDisplay(isLapsed ? (lastBest?.volume ?? 0) : currentVolume),
             unit: WeightUnit.used.rawValue,
-            accent: AnyShapeStyle(muscleColor),
             accentColor: muscleColor,
-            // The current period against the baseline. With a real baseline but nothing logged in
-            // this period yet, that's a genuine "down 100%" — zero work, not missing data — so the
-            // pill says so rather than disappearing. A fully lapsed exercise drops the pill for the
-            // last-best date instead.
-            percentChange: baseline > 0 && !isLapsed
-                ? (Double(currentVolume) - Double(baseline)) / Double(baseline) * 100
-                : nil,
-            isRecord: isRecordPeriod(volume: currentVolume, in: sets),
             requiresPro: true,
             lastBestDate: lastBest?.date,
             showsEmptyPlaceholder: !hasAnyVolume,
@@ -135,15 +125,16 @@ struct ExerciseVolumeTile: View {
 
     // MARK: - Periods
 
-    /// The pinned reading: the selected window split into its bins, against the window before it.
+    /// The pinned reading: the selected window split into its bins. Only the window the tile names is
+    /// binned now — it used to bin the window before it as well, purely to give the trend pill a
+    /// baseline.
     ///
-    /// Both windows are binned in **one** strip so the two spans are defined by exactly the same
-    /// boundaries — the same construction the Summary's own stat tiles use — and only the newer half
-    /// is drawn. There is no "best earlier period" fallback here: a baseline is the previous window or
-    /// there is none, because anything else would compare the named timeframe against an unnamed one.
+    /// The window before it still decides one thing: whether the tile is *lapsed*. An empty window
+    /// alone isn't — a quiet four weeks after a busy four weeks is a zero worth showing — but an
+    /// exercise untrained across this window and the one before it hands the tile over to its
+    /// last-trained date instead of a bare "0".
     private func windowReport(in sets: [WorkoutSet], window: TrendWindow, hasAnyVolume: Bool) -> Report {
-        let perWindow = window.binsPerWindow
-        let ranges = window.binRanges(count: perWindow * 2)
+        let ranges = window.binRanges(count: window.binsPerWindow)
         var binned = [[WorkoutSet]](repeating: [], count: ranges.count)
         for set in sets {
             guard let date = set.workout?.date,
@@ -151,23 +142,19 @@ struct ExerciseVolumeTile: View {
             binned[index].append(set)
         }
         let volumes = binned.map { getVolume(of: $0, for: exercise) }
-        let split = ranges.count - perWindow
-        let current = volumes[split...].reduce(0, +)
-        let previous = volumes[..<split].reduce(0, +)
+        let current = volumes.reduce(0, +)
+        let trainedPreviousWindow = current > 0 || sets.contains { set in
+            guard let date = set.workout?.date, window.contains(date, windowsAgo: 1) else { return false }
+            return set.volume(for: exercise) > 0
+        }
         return Report(
-            bars: volumes[split...].map { convertWeightForDisplayingDecimal($0) },
+            bars: volumes.map { convertWeightForDisplayingDecimal($0) },
             current: current,
-            baseline: previous,
-            // Trained at some point, but nothing in either window the tile can draw or compare.
-            isLapsed: hasAnyVolume && current == 0 && previous == 0
+            isLapsed: hasAnyVolume && current == 0 && !trainedPreviousWindow
         )
     }
 
-    /// The detail screen's reading: five calendar weeks, this one last. The baseline is last week, or
-    /// — when that was a rest week — the best of the weeks on the chart, so the pill stays present
-    /// whenever there is a prior week to compare to. That fallback is safe here in a way it is not
-    /// under a picker: all five weeks are on screen, and the tile names its span "This Week" rather
-    /// than borrowing a timeframe the whole screen claims.
+    /// The detail screen's reading: five calendar weeks, this one last.
     private func weeklyReport(in sets: [WorkoutSet], hasAnyVolume: Bool) -> Report {
         let volumes = (0 ..< Self.weekCount).reversed().map { weeksAgo -> Int in
             let range = weekRange(weeksAgo: weeksAgo)
@@ -178,13 +165,9 @@ struct ExerciseVolumeTile: View {
             }
             return getVolume(of: weekSets, for: exercise)
         }
-        let current = volumes.last ?? 0
-        let previous = volumes.dropLast().last ?? 0
-        let bestPrior = volumes.dropLast().max() ?? 0
         return Report(
             bars: volumes.map { convertWeightForDisplayingDecimal($0) },
-            current: current,
-            baseline: previous > 0 ? previous : bestPrior,
+            current: volumes.last ?? 0,
             isLapsed: hasAnyVolume && !volumes.contains { $0 > 0 }
         )
     }
@@ -211,22 +194,6 @@ struct ExerciseVolumeTile: View {
         return (getVolume(of: periodSets, for: exercise), lastDate)
     }
 
-    /// The trophy — only in weekly mode. A record week has to *beat* every previous week, not just
-    /// match the best, and there has to be a previous week to beat or the first trained week would be
-    /// a record by default.
-    ///
-    /// Rolling windows get no trophy at all. Every instant starts a window, so "the best window ever"
-    /// isn't a thing the history contains — only the arbitrary five the chart happens to draw — and a
-    /// trophy for beating those would claim far more than it means.
-    private func isRecordPeriod(volume: Int, in sets: [WorkoutSet]) -> Bool {
-        guard window == nil else { return false }
-        let weekStart = Date.now.startOfWeek
-        let bestPreviousWeek = Dictionary(grouping: sets) { $0.workout?.date?.startOfWeek ?? .now }
-            .filter { $0.key < weekStart }
-            .map { getVolume(of: $0.value, for: exercise) }
-            .max() ?? 0
-        return volume > 0 && bestPreviousWeek > 0 && volume > bestPreviousWeek
-    }
 }
 
 private struct PreviewWrapperView: View {

@@ -10,24 +10,26 @@ import SwiftUI
 // MARK: - Metric Tile
 
 /// The shared metric tile behind every stat on the exercise-detail and workout-detail screens: a
-/// title row carrying the navigation chevron beside the title and the trend pill in the trailing
-/// corner, an optional gray subtitle, and the large label-colored value; beneath them the caller's
-/// chart, running the tile's **full width** — a line sparkline bleeding to the bottom and side
-/// edges, or a bar chart inset just enough (`chartBleeds: false`) that its rounded bars sit inside
-/// the corners.
+/// title row ending in the navigation chevron at the trailing edge, an optional gray subtitle, and
+/// the large label-colored value; beneath them the caller's chart, running the tile's **full
+/// width** — a line sparkline bleeding to the bottom and side edges, or a bar chart inset just
+/// enough (`chartBleeds: false`) that its rounded bars sit inside the corners.
 ///
-/// The pill sits in the title row rather than beside the value or over the chart's corner, and both
-/// alternatives are ruled out by arithmetic rather than taste: the value is a 28pt `.title` and a
-/// four-digit volume with its unit already fills the tile's 144pt of content width, while a pill in
-/// the chart's bottom-leading corner makes the chart's width depend on whether a pill exists (two
-/// tiles in one row then get differently-sized charts) and forces the sparkline to fade away its
-/// leading third just to clear it. In the title row it costs no width the number needs and no height
-/// at all — the title shrinks to fit instead (see `titleMinimumScale`).
+/// **The title row carries no percentage.** A trend pill sat in its trailing corner until 2026-09,
+/// and it went because one identical badge stood for six different comparisons across the app — a
+/// timeframe against the one before it, a workout against the average of the last eight, a week
+/// against the previous week, a 4-week best against the best before it — with nothing on the tile
+/// saying which, so a perfectly normal arm day read as four grey declines and five of one
+/// exercise's six tiles wore a trophy. Every tile already draws its own history underneath with the
+/// current value highlighted, which is the honest version of the same story. The percentage still
+/// lives wherever both of its numbers are on screen beside it: the chart-detail header a tile taps
+/// into (`MetricComparisonView`), the Highlights cards, the Strength figure, and the in-workout set
+/// badges. The slot the pill vacated still holds the last-best date capsule (`TileDatePill`).
 ///
-/// The accent (a flat muscle color, or a workout's multi-muscle gradient) tints only the trend pill
-/// and, through the caller's chart, the highlighted bar/line; the number itself always stays neutral
-/// so the color reads as "progress", never decoration. Every tile is one fixed height so a grid row
-/// stays even — the chart fills the height the value block leaves, never growing the tile.
+/// The tile's own text is entirely neutral; the accent (a flat muscle color, or a workout's
+/// multi-muscle gradient) reaches it only through the caller's chart — the highlighted bar or line
+/// — so the color reads as "progress", never decoration. Every tile is one fixed height so a grid
+/// row stays even — the chart fills the height the value block leaves, never growing the tile.
 struct MetricTile<ChartContent: View>: View {
     enum Label {
         case currentBest
@@ -50,28 +52,15 @@ struct MetricTile<ChartContent: View>: View {
     /// Nil renders the "––" placeholder.
     let value: String?
     let unit: String
-    /// Tints the trend pill (and, through the caller's chart, the highlighted bar/line). A flat
-    /// `Color` or a multi-muscle gradient, type-erased so both fit. The value and unit stay neutral
-    /// regardless — the accent only ever marks progress.
-    let accent: AnyShapeStyle
-    /// The flat-color form of the accent, for the two consumers that need a `Color` rather than a
-    /// style: the trend pill's non-gradient fallback and the empty state's ghost dot.
+    /// The tile's muscle color — the empty state's ghost dot, and nothing else. The caller tints its
+    /// own chart; the tile's text is neutral throughout.
     let accentColor: Color
-    let percentChange: Double?
-    var isRecord: Bool = false
-    /// Whether the change is an improvement, when that isn't simply "the number went up" — a
-    /// duration on a faster-is-better exercise. Nil keeps the pill's default reading.
-    var isImprovement: Bool? = nil
-    /// Gates the tile's data — pill, subtitle, value, and chart — behind Pro (blur + compact crown).
-    /// The title and chevron stay readable so a locked tile still says what it is.
+    /// Gates the tile's data — date capsule, subtitle, value, and chart — behind Pro (blur +
+    /// compact crown). The title and chevron stay readable so a locked tile still says what it is.
     var requiresPro: Bool = false
-    /// Last session this tile's metric has a value from, when that session predates the metric's
-    /// window — renders the gray "time since" capsule in the trend pill's slot.
-    var lapsedSince: Date? = nil
     /// The date of the "last best" entry — the most recent session's best, shown when a metric's
-    /// current-best window is empty. Renders an absolute-date capsule in the trend pill's slot, the
-    /// dated companion to the value above. Distinct from `lapsedSince`, which shows a *relative*
-    /// "time since" for the weekly tiles; this stamps the exact day the value was last reached.
+    /// current-best window is empty. Renders an absolute-date capsule between the title and the
+    /// chevron, the dated companion to the value above: the exact day the value was last reached.
     var lastBestDate: Date? = nil
     /// Swaps subtitle, value, and chart for the centered ghost placeholder — for tiles whose metric
     /// has no usable data at all (the weight tiles of a bodyweight exercise). The content keeps
@@ -92,11 +81,11 @@ struct MetricTile<ChartContent: View>: View {
     /// The chart's height once the tile is no longer fixed-height (accessibility sizes): the footer
     /// can't fill the leftover space, so it takes a flat height instead of collapsing.
     private static var accessibilityChartHeight: CGFloat { 64 }
-    /// How far the title may shrink before it truncates instead. The pill now shares its row, so the
-    /// longest titles ("Set Volume", "Satzvolumen") no longer fit at full size — they scale down a
-    /// step rather than losing their tail, which is what makes a metric name still readable. Titles
-    /// longer than any metric name (a pinned tile leads with the *exercise* name) bottom out here and
-    /// truncate: past this point shrinking stops buying legibility.
+    /// How far the title may shrink before it truncates instead. Every metric name now fits at full
+    /// size, but a state capsule can still share the row, and a pinned tile leads with the
+    /// *exercise* name rather than a metric name — those scale down a step rather than losing their
+    /// tail, which is what makes a name still readable. Past this point they truncate: shrinking
+    /// stops buying legibility.
     private static var titleMinimumScale: CGFloat { 0.75 }
 
     private var usesFixedHeight: Bool { !dynamicTypeSize.isAccessibilitySize }
@@ -118,14 +107,12 @@ struct MetricTile<ChartContent: View>: View {
         .tileStyle()
     }
 
-    /// Title, its chevron, then the trend pill in the trailing corner. The chevron travels with the
-    /// title rather than staying pinned to the trailing edge: it marks *this title* as tappable, and
-    /// leaving it in the corner would put two unrelated things there and cost the title the width
-    /// between them. "Title ›" is iOS's own pattern for a heading that navigates.
+    /// Title, the last-best date capsule where there is one, then the navigation chevron pinned to
+    /// the trailing edge — the same order and the same trailing anchor as `TileHeader`, the shared
+    /// row every other navigable tile uses, so a screen mixing the two reads as one system. (The
+    /// chevron used to travel with the title, to keep it away from the trend pill in the corner;
+    /// with the pill gone the corner is the chevron's again.)
     private var header: some View {
-        // Tight spacing, deliberately: every point between the four items is a point the title can't
-        // use, and at 6pt each the longest metric names ("Repetitions" beside a three-glyph percent)
-        // ran out of room to shrink into and truncated instead.
         HStack(spacing: 4) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
@@ -133,18 +120,18 @@ struct MetricTile<ChartContent: View>: View {
                 .lineLimit(1)
                 // A long title ("Satzvolumen") gets shrunk rather than ellipsized.
                 .minimumScaleFactor(Self.titleMinimumScale)
+            Spacer(minLength: 4)
+            if let lastBestDate {
+                TileDatePill(date: lastBestDate)
+                    // The capsule never compresses to make room — the title shrinks instead.
+                    .fixedSize()
+                    // The capsule annotates data the tile may be gating; the title row deliberately
+                    // stays legible on a locked tile, so it has to be blurred on its own.
+                    .proBlurred(requiresPro)
+            }
             if showsChevron {
                 NavigationChevron()
                     .foregroundStyle(Color.secondaryLabel)
-            }
-            Spacer(minLength: 4)
-            if hasPill {
-                pill
-                    // The pill never compresses to make room — the title shrinks instead.
-                    .fixedSize()
-                    // The pill summarises data the tile may be gating; the title row deliberately
-                    // stays legible on a locked tile, so the pill has to be blurred on its own.
-                    .proBlurred(requiresPro)
             }
         }
     }
@@ -250,32 +237,6 @@ struct MetricTile<ChartContent: View>: View {
         }
     }
 
-    /// The title row's trailing pill — the trend percent, or one of the two state pills that stand in
-    /// for it. All three are `.compact`: in the title row the pill annotates a 15pt heading, not the
-    /// 28pt value it used to sit under.
-    @ViewBuilder
-    private var pill: some View {
-        if let percentChange {
-            TrendIndicatorView(
-                percentChange: percentChange,
-                positiveColor: accentColor,
-                positiveStyle: accent,
-                isRecord: isRecord,
-                isImprovement: isImprovement,
-                size: .compact
-            )
-        } else if let lapsedSince {
-            TileLapsedPill(date: lapsedSince)
-        } else if let lastBestDate {
-            TileDatePill(date: lastBestDate)
-        }
-    }
-
-    /// Whether any pill applies — a trend percent, or one of the two state pills standing in for it.
-    private var hasPill: Bool {
-        percentChange != nil || lapsedSince != nil || lastBestDate != nil
-    }
-
     private var placeholder: some View {
         VStack(spacing: 10) {
             GhostSparkline(color: accentColor)
@@ -288,33 +249,15 @@ struct MetricTile<ChartContent: View>: View {
     }
 }
 
-// MARK: - Lapsed Pill
-
-/// The gray "time since the last session" capsule in the trend pill's slot on lapsed tiles — the
-/// trend pill's anatomy (icon + rounded bold text on a 0.15 fill) with the history icon and a
-/// relative date, so the stale state is visible right where the trend usually lives. A size softer
-/// than the trend pill: it's quiet metadata, not a score.
-private struct TileLapsedPill: View {
-    let date: Date
-
-    var body: some View {
-        ProgressIndicatorPill(symbol: "clock.arrow.circlepath", color: .secondary, size: .compact) {
-            Text(date, format: .relative(presentation: .numeric, unitsStyle: .narrow))
-                .font(.system(.caption2, design: .rounded, weight: .bold))
-        }
-        // The pill never compresses or wraps — the title next to it shrinks instead.
-        .fixedSize()
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(date, format: .relative(presentation: .named)))
-    }
-}
-
 // MARK: - Date Pill
 
-/// The absolute-date companion to `TileLapsedPill`, in the trend pill's slot on a tile showing its
-/// "last best" (the most recent session's best, when the current-best window is empty). Same compact
-/// capsule anatomy as the lapsed pill, but a calendar glyph and an exact date — the dated stamp on
-/// the value above, "when this was last done" — rather than a relative "time since".
+/// The only capsule the title row still carries: an exact date on a tile showing its "last best"
+/// (the most recent session's best, when the current-best window is empty). The app's pill anatomy
+/// — calendar glyph + rounded bold text on a 0.15 gray fill — stamping the value above with when it
+/// was last reached. Gray and compact deliberately: it's quiet metadata, not a score.
+///
+/// It used to have a sibling, `TileLapsedPill`, showing a *relative* "time since" for the weekly
+/// tiles. No tile ever passed it a date, so it went with the trend pill.
 private struct TileDatePill: View {
     let date: Date
 

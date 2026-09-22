@@ -10,9 +10,14 @@ import SwiftUI
 
 // MARK: - Trend
 
-/// The numbers behind a metric tile's trend pill: the exercise's best over the tile's window (the
-/// value the tile shows), the last execution's change versus the execution before it (the pill's
-/// percent), and whether that best stands at the exercise's all-time best (the pill's trophy).
+/// The numbers behind a metric tile: the exercise's best over the tile's window — the value the
+/// tile shows — and its best across all of history, the fallback once the window runs empty.
+///
+/// It used to carry the percent and the trophy the tile's trend pill drew (this best against the
+/// best before it, and whether the two were the same all-time peak). Both are gone with the pill:
+/// on a progressing lift nearly every tile wore a trophy at once, and the percent compared two
+/// windows only one of which the tile named. The exercise's chart screens still show the
+/// comparison, with both values spelled out.
 ///
 /// `window` is four weeks everywhere but the Summary's pinned grid, which reports over whatever the
 /// screen's picker is set to. Four weeks is what the app calls a "current best" (see
@@ -28,37 +33,18 @@ struct ExerciseTileTrend {
     /// Best value within the window — the value the tile displays. Nil when no set in the window has
     /// a usable value.
     let currentBest: Int?
-    /// Percent change of the current best over the *previous* current best — the best value in the
-    /// four weeks before the day the current best was reached (sliding back to the most recent
-    /// earlier window with data after a gap). "How much better your peak is than it used to be."
-    /// Nil only while the exercise is lapsed, or the current best is a first-ever execution with
-    /// nothing before it to compare; the pill is hidden then.
-    let percentChange: Double?
-    /// True while the current best *is* the all-time best — "you're at your peak right now".
-    /// Requires a usable value from before the window: with no older history there is no record
-    /// to be at, and every first-month value would wear a trophy on day one.
-    let isAtAllTimeBest: Bool
     /// Best value across the exercise's whole history — the tile's fallback when the window is
     /// empty (untrained for over a month). Nil when no set has a usable value for this metric.
     let allTimeBest: Int?
-
-    /// Whether the current best beats the previous one in the exercise's own direction — what the
-    /// pill tints on, since the sign of `percentChange` alone would call a quicker sprint a decline.
-    let isImprovement: Bool
 
     init(
         sets: [WorkoutSet], window: TrendWindow = .fourWeeks,
         exercise: Exercise, metric: ExercisePrimaryMetric, value: (WorkoutSet) -> Int
     ) {
         let windowStart = window.windowStart()
-        let calendar = Calendar.current
 
         var currentMax: Int?
         var allTimeMax: Int?
-        var hasValueBeforeWindow = false
-        // The day the current best was first reached — the anchor the previous-best window sits
-        // before. Tracked as the earliest day at the peak so a later equal day can't hide the climb.
-        var currentBestDate: Date?
         for workoutSet in sets {
             let setValue = value(workoutSet)
             // Zero means "not recorded", and it has to be skipped before any comparison: on a
@@ -70,70 +56,14 @@ struct ExerciseTileTrend {
             }
             let date = workoutSet.workout?.date ?? .distantPast
             if date >= windowStart {
-                let day = calendar.startOfDay(for: date)
                 if currentMax == nil || exercise.isBetter(setValue, than: currentMax!, for: metric) {
                     currentMax = setValue
-                    currentBestDate = day
-                } else if setValue == currentMax, let best = currentBestDate, day < best {
-                    currentBestDate = day
                 }
-            } else {
-                hasValueBeforeWindow = true
             }
         }
 
         currentBest = currentMax
         allTimeBest = allTimeMax
-        isAtAllTimeBest = currentMax != nil && hasValueBeforeWindow && currentMax == allTimeMax
-
-        // Trend pill: the best versus the previous one — the best in the window before it was
-        // reached. A lapsed exercise (no best in the window) keeps its "time since" pill instead; a
-        // first-ever best with nothing before it has nothing to compare and shows none.
-        if let currentMax, let anchor = currentBestDate,
-           let previousBest = Self.previousBest(
-               before: anchor, window: window, sets: sets,
-               exercise: exercise, metric: metric, value: value
-           ) {
-            // Magnitude in the denominator: an assisted baseline is negative, and dividing by it
-            // would invert every comparison it takes part in.
-            percentChange = (Double(currentMax) - Double(previousBest)) / abs(Double(previousBest)) * 100
-            isImprovement = exercise.isBetter(currentMax, than: previousBest, for: metric)
-        } else {
-            percentChange = nil
-            isImprovement = false
-        }
-    }
-
-    /// The previous best: the highest value in the window before `anchor` (the day the current best
-    /// was reached), excluding that day. When that window holds no training, slides back to the most
-    /// recent earlier session and takes the window ending at it, so a gap before the best doesn't
-    /// erase the comparison — the tiles' sibling of the chart screens'
-    /// `exerciseWindowTrendPercentage` slide-back. Nil only with no earlier history at all.
-    ///
-    /// The look-back is one `window` long, so a tile reading a year compares its best against the
-    /// year before it rather than against the month before it — otherwise widening the scope would
-    /// leave the value and its pill measuring different spans.
-    private static func previousBest(
-        before anchor: Date, window: TrendWindow, sets: [WorkoutSet],
-        exercise: Exercise, metric: ExercisePrimaryMetric, value: (WorkoutSet) -> Int
-    ) -> Int? {
-        let windowStart = window.windowStart(from: anchor)
-        let inWindow = sets.filter {
-            let date = $0.workout?.date ?? .distantPast
-            return date >= windowStart && date < anchor
-        }
-        if let best = exercise.best(of: inWindow.map(value), for: metric) { return best }
-        // The window before the best was empty: slide back to the most recent earlier session and
-        // take the window ending at it.
-        guard let lastPrior = sets.compactMap({ $0.workout?.date }).filter({ $0 < windowStart }).max() else {
-            return nil
-        }
-        let slideStart = window.windowStart(from: lastPrior)
-        let slid = sets.filter {
-            let date = $0.workout?.date ?? .distantPast
-            return date >= slideStart && date <= lastPrior
-        }
-        return exercise.best(of: slid.map(value), for: metric)
     }
 }
 
@@ -332,8 +262,8 @@ struct ExerciseTileSparkline: View {
         .chartYAxis {}
 
         // The bleeding footer (metric tiles) fills the slot the tile hands it and runs edge to edge to
-        // the trailing + bottom edges — no clip — but fades IN from the left so it doesn't start
-        // abruptly behind the trend pill the tile overlays at its bottom-left. The all-time line spans
+        // the trailing + bottom edges — no clip — but fades IN from the left so the series doesn't
+        // begin with a hard vertical edge against the tile's rounded corner. The all-time line spans
         // the full width at a fixed height with only the bottom fade (its point is to show where the
         // history begins and ends). The windowed corner sparklines clip and fade in from the left.
         if bleeds {
@@ -359,7 +289,7 @@ struct ExerciseTileSparkline: View {
 
 /// One of the four "current best" tiles (weight, e1RM, repetitions, set volume) on the exercise
 /// detail screen. Sets of the workout currently being recorded are excluded from everything —
-/// value, pill, and chart — so the whole tile tells one consistent story: where you stood going
+/// value and chart alike — so the whole tile tells one consistent story: where you stood going
 /// into this session.
 struct ExerciseBestMetricTile: View {
     let exercise: Exercise
@@ -373,7 +303,7 @@ struct ExerciseBestMetricTile: View {
     /// detail screen where the exercise is already the screen title and the metric name belongs up top.
     /// Off by default (the detail screen); the pinned grid turns it on. Mirrors `SampleExerciseTile`.
     var showsExerciseName: Bool = false
-    /// The span the value, the pill and the chart all cover. Four weeks — the app-wide "current best"
+    /// The span the value and the chart both cover. Four weeks — the app-wide "current best"
     /// — on the exercise detail screen; the Summary's pinned grid passes the screen's selected
     /// window, so a pinned tile reports over the same timeframe as everything around it.
     var window: TrendWindow = .fourWeeks
@@ -395,17 +325,17 @@ struct ExerciseBestMetricTile: View {
         )
         let color = exercise.muscleGroup?.color ?? .accentColor
         // Untrained for the whole window, but the history isn't empty. Show the "last best" — the
-        // best from the most recent session, with that session's date in the pill slot and no chart
-        // (it would be a lone carry-forward dash over an empty span) — instead of a "––". Computed
-        // from this tile's own metric, so one metric can lapse (e.g. weight on a now-bodyweight
-        // exercise) while its neighbours still show a best.
+        // best from the most recent session, with that session's date in the title row's capsule
+        // slot and no chart (it would be a lone carry-forward dash over an empty span) — instead of
+        // a "––". Computed from this tile's own metric, so one metric can lapse (e.g. weight on a
+        // now-bodyweight exercise) while its neighbours still show a best.
         let isLapsed = trend.currentBest == nil && trend.allTimeBest != nil
         let lastBest = isLapsed ? lastSessionBest(in: sets) : nil
         MetricTile(
             title: showsExerciseName ? exercise.displayName : title,
             // Pinned tiles put the exercise name in the title, so the metric name moves down to the
-            // subtitle here; the pill still carries the current-vs-last-best distinction. The detail
-            // screen keeps "current best" / "last best", where the metric name is already the title.
+            // subtitle here. The detail screen keeps "current best" / "last best", where the metric
+            // name is already the title.
             label: showsExerciseName
                 ? .plain(title)
                 : (isLapsed
@@ -413,11 +343,7 @@ struct ExerciseBestMetricTile: View {
                     : .currentBest),
             value: trend.currentBest.map(formattedValue) ?? lastBest.map { formattedValue($0.value) },
             unit: unit,
-            accent: AnyShapeStyle(color),
             accentColor: color,
-            percentChange: isLapsed ? nil : trend.percentChange,
-            isRecord: isLapsed ? false : trend.isAtAllTimeBest,
-            isImprovement: trend.isImprovement,
             requiresPro: requiresPro,
             lastBestDate: lastBest?.date,
             showsEmptyPlaceholder: trend.allTimeBest == nil

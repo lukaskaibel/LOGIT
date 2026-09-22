@@ -74,7 +74,7 @@
 "lastBest" = "前回のベスト";
 "lastBestInfo" = "この種目を4週間以上記録していないときに表示されます。どれだけ前であっても、最後に記録したセッションでのベスト値です。";
 "newRecord" = "新記録";
-"currentBestInfo" = "現在のベストは、直近4週間の最高値です。隣のトレンドは、その値を、達成した日までの4週間のベストと比べたものです。";
+"currentBestInfo" = "現在のベストは、直近4週間の最高値です。";
 "currentBestComparisonInfo" = "右は現在のベスト、つまり直近4週間の最高値です。左はグラフに表示中の期間でのベストで、その間のバッジが両者の比較を示します。グラフをスクロールすれば、どの期間とでも比べられます。";
 /* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
 "averageComparisonInfo" = "右はグラフに表示中の期間です。左はその直前にある同じ長さの期間で、その間のバッジが両者の比較を示します。";
@@ -930,7 +930,7 @@
 "rps" = "回";
 "average" = "平均";
 "volumePerSet" = "セットごとのボリューム";
-"workoutStatCompareRecentInfo" = "トレンドは、このワークアウトを直近%d回のワークアウトの平均と比べます。各バーがそのワークアウトで、右端の強調されたバーがこのワークアウトです。";
+"workoutStatCompareRecentInfo" = "各バーは直近%d回のワークアウトで、右端の強調されたバーがこのワークアウトです。";
 "workoutVolumeAboutInfo" = "ボリュームは、ワークアウトで動かした重量の合計です。LOGITは各セットの重量にその回数を掛け、すべてのセットを合計します。ワークアウト同士を比べると、セッションにどれだけの仕事量が含まれていたかがわかります。";
 "workoutDurationAboutInfo" = "時間は、ワークアウトを始めてから終えるまでの長さです。長い・短いだけで良し悪しは決まりません。ボリュームと合わせて見ると、その時間にどれだけの仕事を詰め込んだかがわかります。";
 "workoutSetsAboutInfo" = "ワークアウトで記録したセットの数です。セットとは続けて行う1組の回数のことなので、重量の重さに関係なく、そのセッションでどれだけ行ったかを示すシンプルな指標になります。";

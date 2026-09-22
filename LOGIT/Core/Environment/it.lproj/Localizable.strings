@@ -74,7 +74,7 @@
 "lastBest" = "Ultima migliore";
 "lastBestInfo" = "Mostrato quando non alleni questo esercizio da più di 4 settimane: il tuo valore migliore dell'ultima sessione registrata, per quanto lontana nel tempo.";
 "newRecord" = "Nuovo record";
-"currentBestInfo" = "Il tuo migliore attuale è il valore più alto delle ultime 4 settimane. L'andamento accanto lo confronta con il tuo migliore delle 4 settimane precedenti al giorno in cui lo hai raggiunto.";
+"currentBestInfo" = "Il tuo migliore attuale è il valore più alto delle ultime 4 settimane.";
 "currentBestComparisonInfo" = "A destra c'è il tuo migliore attuale: il valore più alto delle ultime 4 settimane. A sinistra c'è il tuo migliore nel periodo mostrato nel grafico, e il distintivo tra i due mostra come si confrontano. Scorri il grafico per confrontarlo con qualsiasi altro periodo.";
 /* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
 "averageComparisonInfo" = "A destra c'è il periodo attualmente mostrato nel grafico. A sinistra c'è lo stesso intervallo di tempo immediatamente precedente, e il distintivo tra i due mostra come si confrontano.";
@@ -930,7 +930,7 @@
 "rps" = "rip";
 "average" = "Media";
 "volumePerSet" = "Volume per serie";
-"workoutStatCompareRecentInfo" = "Il trend confronta questo allenamento con la media dei tuoi ultimi %d allenamenti. Ogni barra è uno di quegli allenamenti; questo è la barra evidenziata a destra.";
+"workoutStatCompareRecentInfo" = "Ogni barra è uno dei tuoi ultimi %d allenamenti; questo allenamento è la barra evidenziata a destra.";
 "workoutVolumeAboutInfo" = "Il volume è il peso totale sollevato in un allenamento. LOGIT moltiplica il peso di ogni serie per le sue ripetizioni e somma tutte le serie. Confrontato tra gli allenamenti, mostra quanto lavoro contengono le tue sessioni.";
 "workoutDurationAboutInfo" = "La durata è il tempo dall'inizio alla fine di un allenamento. Di per sé, più lunga non è né meglio né peggio di più corta: leggila insieme al volume per capire quanto lavoro hai messo in quel tempo.";
 "workoutSetsAboutInfo" = "Il numero di serie che hai registrato in un allenamento. Una serie è un ciclo di ripetizioni, quindi è una misura semplice di quanto hai fatto nella sessione, indipendentemente da quanto era pesante il carico.";

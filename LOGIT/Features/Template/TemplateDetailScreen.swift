@@ -199,7 +199,7 @@ struct TemplateDetailScreen: View {
     /// components (and Pro gating) as the workout screen. Only shown once the template has been run.
     @ViewBuilder
     private var progressGrid: some View {
-        let history = WorkoutRunHistory(basis: .sameWorkout, runs: recentSessions)
+        let history = WorkoutRunHistory(runs: recentSessions)
         let spacing: CGFloat = 10
         if dynamicTypeSize.isAccessibilitySize {
             VStack(spacing: spacing) {
@@ -221,19 +221,15 @@ struct TemplateDetailScreen: View {
         }
     }
 
-    /// One session-stat tile: the latest session's value, the trend versus the previous session, and
-    /// the per-session bars — assembled from the shared `MetricTile` + `WorkoutRunsBarChart` the
-    /// workout detail uses, so the two can't drift. Duration stays neutral gray (a longer session is
-    /// neither better nor worse); the rest wear the template's muscle-group tint. No subtitle — the
-    /// screen title and section already say these are this template's sessions.
+    /// One session-stat tile: the latest session's value and the per-session bars — assembled from
+    /// the shared `MetricTile` + `WorkoutRunsBarChart` the workout detail uses, so the two can't
+    /// drift. Duration stays neutral gray (a longer session is neither better nor worse); the rest
+    /// wear the template's muscle-group tint. No subtitle — the screen title and section already say
+    /// these are this template's sessions, and the bars say how the latest compares to them.
     private func templateStatTile(_ metric: WorkoutStatMetric, history: WorkoutRunHistory) -> some View {
         let latest = history.runs.last
         let raw = latest.map { metric.rawValue(of: $0) } ?? 0
         let isDuration = metric == .duration
-        let accent: AnyShapeStyle = isDuration
-            ? AnyShapeStyle(Color.secondary)
-            : (latest?.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
-                ?? AnyShapeStyle(dominantMuscleColor.gradient))
         let barStyle: AnyShapeStyle = isDuration
             ? AnyShapeStyle(Color.secondary)
             : (latest?.sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top)
@@ -244,9 +240,7 @@ struct TemplateDetailScreen: View {
             label: .none,
             value: raw > 0 ? metric.formattedValue(fromRaw: raw) : nil,
             unit: metric.unit,
-            accent: accent,
             accentColor: isDuration ? .secondary : dominantMuscleColor,
-            percentChange: history.percentChange(for: metric),
             requiresPro: metric.requiresPro,
             chartBleeds: false
         ) {

@@ -74,7 +74,7 @@
 "lastBest" = "Última melhor";
 "lastBestInfo" = "Exibido quando você não treina este exercício há mais de 4 semanas: seu melhor valor da última sessão registrada, por mais antiga que seja.";
 "newRecord" = "Novo recorde";
-"currentBestInfo" = "Seu melhor atual é o valor mais alto das últimas 4 semanas. A tendência ao lado o compara com o seu melhor das 4 semanas anteriores ao dia em que você o alcançou.";
+"currentBestInfo" = "Seu melhor atual é o valor mais alto das últimas 4 semanas.";
 "currentBestComparisonInfo" = "À direita está o seu melhor atual: o valor mais alto das últimas 4 semanas. À esquerda está o seu melhor no período exibido no gráfico, e o selo entre os dois mostra como eles se comparam. Deslize o gráfico para comparar com qualquer outro período.";
 /* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
 "averageComparisonInfo" = "À direita está o período exibido no gráfico neste momento. À esquerda está o mesmo intervalo de tempo imediatamente anterior, e o selo entre os dois mostra como eles se comparam.";
@@ -930,7 +930,7 @@
 "rps" = "rep";
 "average" = "Média";
 "volumePerSet" = "Volume por série";
-"workoutStatCompareRecentInfo" = "A tendência compara este treino com a média dos seus últimos %d treinos. Cada barra é um desses treinos; este é a barra destacada à direita.";
+"workoutStatCompareRecentInfo" = "Cada barra é um dos seus últimos %d treinos; este treino é a barra destacada à direita.";
 "workoutVolumeAboutInfo" = "Volume é o peso total movido em um treino. O LOGIT multiplica o peso de cada série pelas suas repetições e soma todas as séries. Comparado entre treinos, mostra quanto trabalho suas sessões contêm.";
 "workoutDurationAboutInfo" = "A duração é o tempo do início ao fim de um treino. Por si só, mais longa não é melhor nem pior do que mais curta — leia junto com o volume para ver quanto trabalho você colocou nesse tempo.";
 "workoutSetsAboutInfo" = "O número de séries que você registrou em um treino. Uma série é uma rodada de repetições, então esta é uma medida simples de quanto você fez na sessão, independentemente de quão pesado era o peso.";

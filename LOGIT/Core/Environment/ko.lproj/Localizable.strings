@@ -74,7 +74,7 @@
 "lastBest" = "최근 최고";
 "lastBestInfo" = "이 운동을 4주 넘게 기록하지 않았을 때 표시됩니다. 아무리 오래전이더라도, 마지막으로 기록한 세션에서의 최고 기록입니다.";
 "newRecord" = "새 기록";
-"currentBestInfo" = "현재 최고는 최근 4주 동안의 가장 높은 값입니다. 옆의 추세는 그 값을, 기록을 세운 날 직전 4주 동안의 최고와 비교합니다.";
+"currentBestInfo" = "현재 최고는 최근 4주 동안의 가장 높은 값입니다.";
 "currentBestComparisonInfo" = "오른쪽은 현재 최고, 즉 최근 4주 동안의 가장 높은 값입니다. 왼쪽은 차트에 보이는 기간의 최고이며, 그 사이의 배지가 둘을 비교해 보여줍니다. 차트를 스크롤하면 다른 어떤 기간과도 비교할 수 있습니다.";
 /* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
 "averageComparisonInfo" = "오른쪽은 지금 차트에 보이는 기간입니다. 왼쪽은 그 바로 앞의 같은 길이의 기간이며, 그 사이의 배지가 둘을 비교해 보여줍니다.";
@@ -930,7 +930,7 @@
 "rps" = "회";
 "average" = "평균";
 "volumePerSet" = "세트당 볼륨";
-"workoutStatCompareRecentInfo" = "추세는 이번 워크아웃을 최근 워크아웃 %d회의 평균과 비교합니다. 각 막대가 그 워크아웃들이며, 오른쪽의 강조된 막대가 이번 워크아웃입니다.";
+"workoutStatCompareRecentInfo" = "각 막대는 최근 워크아웃 %d회이며, 오른쪽의 강조된 막대가 이번 워크아웃입니다.";
 "workoutVolumeAboutInfo" = "볼륨은 한 번의 워크아웃에서 움직인 중량의 총합입니다. LOGIT은 세트마다 중량에 반복 횟수를 곱한 뒤 모든 세트를 더합니다. 워크아웃끼리 비교하면 각 세션에 담긴 운동량을 알 수 있습니다.";
 "workoutDurationAboutInfo" = "지속 시간은 워크아웃을 시작해서 마칠 때까지의 시간입니다. 길거나 짧다는 것만으로 좋고 나쁨이 정해지지는 않습니다. 볼륨과 함께 보면 그 시간 동안 얼마나 많은 운동을 했는지 알 수 있습니다.";
 "workoutSetsAboutInfo" = "워크아웃에 기록한 세트의 수입니다. 세트는 연달아 수행하는 한 묶음의 반복이므로, 중량이 얼마나 무거웠는지와 관계없이 그 세션에서 얼마나 했는지를 보여주는 간단한 지표입니다.";

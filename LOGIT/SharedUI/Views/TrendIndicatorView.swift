@@ -35,7 +35,7 @@ struct TrendIndicatorView: View {
     private enum Direction { case up, down, flat }
 
     /// The percent's font, matched to the pill size — footnote in the regular pill, caption2 in the
-    /// compact one, the size `TileLapsedPill` and `TileDatePill` already use.
+    /// compact one, the size `TileDatePill` already uses.
     private var labelFont: Font {
         size == .compact
             ? .system(.caption2, design: .rounded, weight: .bold)

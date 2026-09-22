@@ -23,14 +23,12 @@ struct PinnedExercisesEmptyState: View {
                 SampleExerciseTile(
                     name: "Bench Press",
                     value: "102",
-                    percentChange: 4.2,
                     color: MuscleGroup.chest.color,
                     points: [0.35, 0.5, 0.45, 0.7, 1.0]
                 )
                 SampleExerciseTile(
                     name: "Squat",
                     value: "145",
-                    percentChange: 2.8,
                     color: MuscleGroup.legs.color,
                     points: [0.4, 0.55, 0.5, 0.8, 1.0]
                 )
@@ -134,7 +132,6 @@ private func callToAction(title: String, buttonTitle: String, onAdd: @escaping (
 private struct SampleExerciseTile: View {
     let name: String
     let value: String
-    let percentChange: Double
     let color: Color
     /// Normalized 0…1 progression, oldest → newest, laid out weekly across the current-best window.
     let points: [Double]
@@ -147,9 +144,7 @@ private struct SampleExerciseTile: View {
             label: .plain(NSLocalizedString("strengthMetric", comment: "")),
             value: value,
             unit: WeightUnit.used.rawValue,
-            accent: AnyShapeStyle(color),
-            accentColor: color,
-            percentChange: percentChange
+            accentColor: color
         ) {
             ExerciseTileSparkline(
                 points: samplePoints,

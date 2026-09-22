@@ -74,7 +74,7 @@
 "lastBest" = "Last Best";
 "lastBestInfo" = "Shown when you haven't trained this exercise for more than 4 weeks: your best value from the last session you logged, however long ago that was.";
 "newRecord" = "New Record";
-"currentBestInfo" = "Your current best is the highest value you reached in the last 4 weeks. The trend next to it compares that value with your best in the 4 weeks leading up to the day you reached it.";
+"currentBestInfo" = "Your current best is the highest value you reached in the last 4 weeks.";
 "currentBestComparisonInfo" = "On the right is your current best: the highest value you reached in the last 4 weeks. On the left is your best in the period shown in the chart, and the badge between them shows how the two compare. Scroll the chart to compare against any other time.";
 /* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
 "averageComparisonInfo" = "On the right is the timeframe currently shown in the chart. On the left is the same length of time directly before it, and the badge between them shows how the two compare.";
@@ -930,7 +930,7 @@
 "rps" = "rep";
 "average" = "Average";
 "volumePerSet" = "Volume per Set";
-"workoutStatCompareRecentInfo" = "The trend compares this workout with the average of your last %d workouts. Each bar is one of those workouts; this one is the highlighted bar on the right.";
+"workoutStatCompareRecentInfo" = "Each bar is one of your last %d workouts; this one is the highlighted bar on the right.";
 "workoutVolumeAboutInfo" = "Volume is the total amount of weight moved in a workout. LOGIT multiplies the weight of every set by its repetitions and adds all the sets together. Compared across workouts, it shows how much work your sessions contain.";
 "workoutDurationAboutInfo" = "Duration is the time from starting a workout to finishing it. On its own, longer is neither better nor worse than shorter — read it together with volume to see how much work you fit into that time.";
 "workoutSetsAboutInfo" = "The number of sets you logged in a workout. A set is one round of repetitions, so this is a simple measure of how much you did in a session, no matter how heavy the weight was.";

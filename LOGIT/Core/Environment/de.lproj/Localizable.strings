@@ -74,7 +74,7 @@
 "lastBest" = "Letzter Bestwert";
 "lastBestInfo" = "Wird angezeigt, wenn du diese Übung seit mehr als 4 Wochen nicht trainiert hast: dein bester Wert aus der letzten Einheit, die du protokolliert hast — wie lange sie auch zurückliegt.";
 "newRecord" = "Neuer Rekord";
-"currentBestInfo" = "Dein aktueller Bestwert ist der höchste Wert der letzten 4 Wochen. Der Trend daneben vergleicht ihn mit deinem Bestwert aus den 4 Wochen vor dem Tag, an dem du ihn erreicht hast.";
+"currentBestInfo" = "Dein aktueller Bestwert ist der höchste Wert der letzten 4 Wochen.";
 "currentBestComparisonInfo" = "Rechts steht dein aktueller Bestwert: der höchste Wert der letzten 4 Wochen. Links steht dein Bestwert im Zeitraum, der im Diagramm zu sehen ist, und das Abzeichen dazwischen zeigt, wie beide zueinander stehen. Scrolle im Diagramm, um mit jedem anderen Zeitraum zu vergleichen.";
 /* Two different scoreboards: averageComparisonInfo is the trend-window header (previous window vs shown window); periodAverageComparisonInfo is the period header (visible finished periods' average vs the current period). */
 "averageComparisonInfo" = "Rechts steht der Zeitraum, der gerade im Diagramm zu sehen ist. Links steht der gleich lange Zeitraum direkt davor, und das Abzeichen dazwischen zeigt, wie beide zueinander stehen.";
@@ -926,7 +926,7 @@
 "rps" = "Wdh";
 "average" = "Durchschnitt";
 "volumePerSet" = "Volumen pro Satz";
-"workoutStatCompareRecentInfo" = "Der Trend vergleicht dieses Workout mit dem Durchschnitt deiner letzten %d Workouts. Jeder Balken ist eines davon; dieses Workout ist der hervorgehobene Balken rechts.";
+"workoutStatCompareRecentInfo" = "Jeder Balken ist eines deiner letzten %d Workouts; dieses Workout ist der hervorgehobene Balken rechts.";
 "workoutVolumeAboutInfo" = "Das Volumen ist das in einem Workout insgesamt bewegte Gewicht. LOGIT multipliziert das Gewicht jedes Satzes mit seinen Wiederholungen und addiert alle Sätze. Im Vergleich über Workouts hinweg zeigt es, wie viel Arbeit in deinen Einheiten steckt.";
 "workoutDurationAboutInfo" = "Die Dauer ist die Zeit vom Start eines Workouts bis zum Abschluss. Für sich genommen ist länger weder besser noch schlechter als kürzer — zusammen mit dem Volumen zeigt sie, wie viel Arbeit du in diese Zeit gepackt hast.";
 "workoutSetsAboutInfo" = "Die Anzahl der Sätze, die du in einem Workout erfasst hast. Ein Satz ist ein Durchgang mit Wiederholungen — ein einfaches Maß dafür, wie viel du in einer Einheit gemacht hast, unabhängig davon, wie schwer das Gewicht war.";

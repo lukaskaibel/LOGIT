@@ -197,10 +197,15 @@ struct MuscleGroupExerciseSets: Identifiable {
                 }
             }
         }
-        return counts
-            .map { MuscleGroupExerciseSets(name: $0.key, sets: $0.value) }
-            .sorted { $0.sets == $1.sets ? $0.name < $1.name : $0.sets > $1.sets }
-            .prefix(limit)
-            .map { $0 }
+        // Stepwise on purpose: as one chained expression Xcode 26.3's type-checker gave up on it.
+        var rows: [MuscleGroupExerciseSets] = []
+        for (name, sets) in counts {
+            rows.append(MuscleGroupExerciseSets(name: name, sets: sets))
+        }
+        rows.sort { lhs, rhs in
+            if lhs.sets != rhs.sets { return lhs.sets > rhs.sets }
+            return lhs.name < rhs.name
+        }
+        return Array(rows.prefix(limit))
     }
 }

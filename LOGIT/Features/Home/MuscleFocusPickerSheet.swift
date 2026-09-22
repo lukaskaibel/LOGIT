@@ -25,8 +25,8 @@ struct MuscleFocusPickerSheet: View {
     @EnvironmentObject private var store: MuscleFocusStore
     @Environment(\.dismiss) private var dismiss
 
-    /// The tile the user is on. Starts on the preset in force — Full Body before anything is chosen,
-    /// since that is the default already being measured against — and on nothing for custom targets.
+    /// The tile the user is on. Starts on the preset in force, and on nothing before any choice or
+    /// for custom targets: there is no default focus, so nothing is pre-picked for the user.
     @State private var selection: MuscleFocusPreset?
     @State private var hasLoadedSelection = false
     @State private var isShowingEditor = false
@@ -91,7 +91,7 @@ struct MuscleFocusPickerSheet: View {
         .onAppear {
             guard !hasLoadedSelection else { return }
             hasLoadedSelection = true
-            selection = store.hasChosenFocus ? store.focus.matchingPreset : .fullBody
+            selection = store.hasChosenFocus ? store.focus.matchingPreset : nil
         }
         // The editor commits as it goes; coming back from it, the tiles say what it left behind.
         .onChange(of: store.focus) { _, focus in
@@ -185,10 +185,21 @@ struct MuscleFocusPickerSheet: View {
     // MARK: - Actions
 
     /// The commit, pinned under the tiles. On a preset it takes that preset; on custom targets it
-    /// opens them instead, and the manual link would only repeat it.
+    /// opens them instead, and the manual link would only repeat it. Before anything is picked there
+    /// is nothing to commit, so only the manual way in shows — the tiles are the call to action.
     private var actions: some View {
         VStack(spacing: 4) {
-            if let selection {
+            if !hasCustomTargets, selection == nil {
+                Button {
+                    isShowingEditor = true
+                } label: {
+                    Text(NSLocalizedString("muscleFocusSetManually", comment: ""))
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                }
+                .accessibilityIdentifier("muscleFocusManualButton")
+            } else if let selection {
                 Button {
                     commit(selection)
                 } label: {

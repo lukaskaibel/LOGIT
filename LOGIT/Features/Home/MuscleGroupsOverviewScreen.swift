@@ -11,8 +11,11 @@ import SwiftUI
 /// lettered, and all eight groups as rows filed under Below / At / Above target. The 4 weeks / 3 months
 /// / 1 year picker sets the window. Pro; the Summary's Balance tile is the free hook into it.
 ///
-/// **The focus every number is measured against** is the navigation subtitle ("Full Body", "Custom",
-/// "Default targets"), and the toolbar button beside it opens the focus picker — the one setting that
+/// **There is no default focus.** Until one is chosen the screen holds no readings at all — a short
+/// explanation of what a focus is and one button to choose one — because "behind on" only means
+/// something against targets the user endorsed. After that, **the focus every number is measured
+/// against** is the navigation subtitle ("Full Body", "Custom"), and the toolbar button beside it
+/// opens the focus picker — the one setting that
 /// changes what everything on the screen means, stated where a screen states what it shows. It used
 /// to be a menu row at the top of the page, and before that the last row, a screen below the numbers
 /// it explained.
@@ -66,20 +69,20 @@ struct MuscleGroupsOverviewScreen: View {
 
         return ScrollView {
             VStack(alignment: .leading, spacing: SECTION_SPACING) {
-                TrendWindowPicker(selection: $window)
-                if let goal = focusStore.suggestedResizeGoal {
-                    resizeCard(goal: goal)
-                        .transition(.opacity.combined(with: .scale(scale: 0.97)))
-                }
                 if !focusStore.hasChosenFocus {
-                    focusPromptCard
-                        .transition(.opacity.combined(with: .scale(scale: 0.97)))
-                }
-                if calculator.totalSets > 0 {
-                    hero(calculator)
-                    groupSections(calculator, windowWorkouts: windowWorkouts)
+                    focusIntro
                 } else {
-                    emptyState
+                    TrendWindowPicker(selection: $window)
+                    if let goal = focusStore.suggestedResizeGoal {
+                        resizeCard(goal: goal)
+                            .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                    }
+                    if calculator.totalSets > 0 {
+                        hero(calculator)
+                        groupSections(calculator, windowWorkouts: windowWorkouts)
+                    } else {
+                        emptyState
+                    }
                 }
             }
             .padding(.horizontal)
@@ -112,11 +115,10 @@ struct MuscleGroupsOverviewScreen: View {
         }
     }
 
-    /// What every number is measured against: the preset, "Custom", or — before a choice — the default.
+    /// What every number is measured against: the preset, or "Custom". Nothing before a choice — there
+    /// is no focus to name.
     private var focusSubtitle: String {
-        guard focusStore.hasChosenFocus else {
-            return NSLocalizedString("muscleFocusDefaultTargets", comment: "")
-        }
+        guard focusStore.hasChosenFocus else { return "" }
         return focusStore.focus.matchingPreset?.title ?? NSLocalizedString("muscleFocusCustom", comment: "")
     }
 
@@ -174,48 +176,62 @@ struct MuscleGroupsOverviewScreen: View {
         .tileStyle()
     }
 
-    /// Before a focus is chosen the readings are real — the default targets are real targets — but
-    /// the advice is withheld: this card takes the headline's place and asks for the choice instead.
-    private var focusPromptCard: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(NSLocalizedString("muscleFocusPromptCardTitle", comment: ""))
-                .font(.headline)
-                .foregroundStyle(Color.label)
-            Text(String(format: NSLocalizedString("muscleFocusPromptCardMessage", comment: ""), MuscleFocusPreset.fullBody.title))
-                .font(.subheadline)
-                .foregroundStyle(Color.secondaryLabel)
-                .fixedSize(horizontal: false, vertical: true)
+    /// The whole screen before a focus is chosen: what a focus is, in three lines, and the one thing
+    /// to do. No picker, no chart, no rows — there are no targets to read anything against, and
+    /// showing readings against a default the user never picked was the thing this replaces.
+    private var focusIntro: some View {
+        VStack(alignment: .leading, spacing: 28) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(NSLocalizedString("muscleFocusIntroTitle", comment: ""))
+                    .font(.system(.title, design: .rounded, weight: .bold))
+                    .foregroundStyle(Color.label)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(NSLocalizedString("muscleFocusIntroLead", comment: ""))
+                    .font(.body)
+                    .foregroundStyle(Color.secondaryLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            VStack(alignment: .leading, spacing: 18) {
+                introPoint("target", "muscleFocusIntroTargets")
+                introPoint("chart.bar.fill", "muscleFocusIntroBehind")
+                introPoint("slider.horizontal.3", "muscleFocusIntroAdjust")
+            }
             Button {
                 isShowingFocusPicker = true
             } label: {
                 Text(NSLocalizedString("muscleFocusChoose", comment: ""))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.background)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 10)
-                    .background(Color.accentColor, in: Capsule())
             }
-            .buttonStyle(TileButtonStyle())
+            .buttonStyle(PrimaryButtonStyle())
             .accessibilityIdentifier("muscleFocusPromptButton")
-            .padding(.top, 10)
         }
-        .padding(CELL_PADDING + 2)
+        .padding(.horizontal, 4)
+        .padding(.top, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .tileStyle()
+    }
+
+    private func introPoint(_ systemImage: String, _ key: String) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: systemImage)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 28)
+            Text(NSLocalizedString(key, comment: ""))
+                .font(.subheadline)
+                .foregroundStyle(Color.label)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     // MARK: - Hero
 
     /// The recommendation over the chart. "Behind on" and the groups furthest behind, at most two,
     /// in their colours, with the count of further groups small at the end of the line; "All on
-    /// target" once none is short. Before a focus is chosen there is no headline — the card above asks
-    /// for one.
+    /// target" once none is short.
     private func hero(_ calculator: MuscleBalanceCalculator) -> some View {
-        let named = focusStore.hasChosenFocus ? calculator.namedFocusEntries.map(\.muscleGroup) : []
+        let named = calculator.namedFocusEntries.map(\.muscleGroup)
         let more = calculator.unnamedFocusCount
         return VStack(alignment: .leading, spacing: 16) {
-            if focusStore.hasChosenFocus {
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 2) {
                     Text(named.isEmpty ? focusSubtitle : NSLocalizedString("muscleBalanceBehindOn", comment: ""))
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(Color.secondaryLabel)
@@ -241,9 +257,8 @@ struct MuscleGroupsOverviewScreen: View {
                                 .accessibilityLabel(Text(String(format: NSLocalizedString("muscleFocusMoreAccessibility", comment: ""), more)))
                         }
                     }
-                }
-                .padding(.horizontal, 4)
             }
+            .padding(.horizontal, 4)
             MuscleBalanceTrackChart(entries: calculator.rankedEntries, spacing: 10, badgeDiameter: 22)
                 .frame(height: 160)
         }

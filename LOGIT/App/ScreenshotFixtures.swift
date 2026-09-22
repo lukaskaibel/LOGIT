@@ -72,6 +72,12 @@ enum ScreenshotFixtures {
         // seeded week counts as complete, so the goal ring fills and the
         // Streak screen shows a real multi-week run instead of "0 weeks".
         defaults.set(3, forKey: "workoutPerWeekTarget")
+        // A chosen Full Body focus sized for that week, so the Balance tile and Muscle Groups show a
+        // recommendation instead of asking for a focus — the state every user reaches after one tap,
+        // and the one the store listing describes.
+        if let focus = try? JSONEncoder().encode(MuscleFocusPreset.fullBody.focus(forWorkoutsPerWeek: 3)) {
+            defaults.set(focus, forKey: MuscleFocusStore.storageKey)
+        }
 
         // The Summary's timeframe is @AppStorage-backed, and the simulator keeps
         // UserDefaults between launches — so without writing it on every launch

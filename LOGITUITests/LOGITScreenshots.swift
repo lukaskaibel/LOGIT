@@ -79,12 +79,11 @@ final class LOGITScreenshots: XCTestCase {
         snapshot("03_Streak")
     }
 
-    /// The Muscle Groups overview: the "groups at target" hero over the
-    /// `MuscleBalanceTrackChart`, then the eight groups as a two-column grid
-    /// split by verdict (below target first, then at target, then overshoot),
-    /// each section under a circled chevron/check header. (The donut and the
-    /// diverging balance bars this comment used to describe were both removed
-    /// in #124.)
+    /// Muscle Groups: the "Focus on" recommendation over the lettered
+    /// `MuscleBalanceTrackChart` (the recommended groups' bars outlined), then
+    /// every group as a row under Below / At / Above target. The fixtures seed a
+    /// chosen Full Body focus (`ScreenshotFixtures`), so the capture shows the
+    /// recommendation rather than the choose-a-focus card.
     func test04MuscleBalance() {
         launch(["-UITEST_DEEPLINK", "muscleOverview"])
         waitForPushedScreen()

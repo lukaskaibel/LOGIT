@@ -28,7 +28,12 @@ struct LOGIT: App {
     @StateObject private var measurementController: MeasurementEntryController
     @StateObject private var purchaseManager = PurchaseManager()
     @StateObject private var networkMonitor = NetworkMonitor()
-    @StateObject private var muscleFocusStore = MuscleFocusStore()
+    /// Held, not observed: the scene only hands the store down, and every view that shows a target
+    /// observes it itself. As a `@StateObject`, each target change re-ran this whole body, and the
+    /// TabView pushed its items to UIKit again. A push while a popover has the window's tint dimmed
+    /// (a target edited in Muscle Groups' popover) left the unselected tabs in the accent colour
+    /// after the popover closed.
+    @State private var muscleFocusStore = MuscleFocusStore()
     @StateObject private var workoutRecorder: WorkoutRecorder
     @StateObject private var workoutLiveActivityManager: WorkoutLiveActivityManager
     @StateObject private var muscleGroupService: MuscleGroupService

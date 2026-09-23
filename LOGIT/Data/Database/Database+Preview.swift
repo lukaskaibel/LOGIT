@@ -298,6 +298,8 @@ extension Database {
         }()
         let armDay = database.newWorkout(name: NSLocalizedString("previewArmDay", comment: ""), date: armDayDate)
         armDay.endDate = Calendar.current.date(byAdding: .minute, value: 42, to: armDayDate)
+        // Rated, so the workout-detail screenshot shows 5.2's effort row filled in rather than "Add Effort".
+        armDay.effortScore = 8
 
         let armsSuperSetGroup = database.newWorkoutSetGroup(
             createFirstSetAutomatically: false,

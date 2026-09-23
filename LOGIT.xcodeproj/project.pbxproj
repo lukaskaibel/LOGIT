@@ -327,6 +327,7 @@
 		E1E1E1000000000000000B16 /* PersonalBestRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F16 /* PersonalBestRow.swift */; };
 		E1E1E1000000000000000B17 /* LiveActivityScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1000000000000000F17 /* LiveActivityScreenshots.swift */; };
 		E5F79A5B29FEF4F260749E66 /* LiveActivityShowcaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95CC85E7895692DD1082ACD /* LiveActivityShowcaseView.swift */; };
+		5A2C0F1E9B3D4E7F8A6B1C20 /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AE937C7333501AE5BD9977 /* WorkoutLiveActivityWidget.swift */; };
 		F344926EBBAE89A564139E06 /* MuscleFocusStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DDAB0743896FB9245B6D5A9 /* MuscleFocusStore.swift */; };
 		F7C76517E05AC18F16E4AC39 /* StrengthScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD1BA8A1474C3D38694723 /* StrengthScreen.swift */; };
 		F83E8531DDDC8C271BDF20F1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A72B470FE19DAE1E42233F7F /* Foundation.framework */; };
@@ -1972,6 +1973,7 @@
 				9C03B11C8A034786C5544D2E /* ScreenshotFixtures.swift in Sources */,
 				9D2E7A022F30AA0100C1D2E2 /* DemoWorkoutSeeder.swift in Sources */,
 				E5F79A5B29FEF4F260749E66 /* LiveActivityShowcaseView.swift in Sources */,
+				5A2C0F1E9B3D4E7F8A6B1C20 /* WorkoutLiveActivityWidget.swift in Sources */,
 				CFBDBE49B12AA1C06C620875 /* ChartRange.swift in Sources */,
 				28E43ABE4881F802FBBACCE9 /* RangePicker.swift in Sources */,
 				5F6C92E180BAAEC435086790 /* PeriodHistoryChart.swift in Sources */,

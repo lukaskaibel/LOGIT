@@ -912,6 +912,14 @@
 "firstTimeForThisWorkout" = "Première fois pour cette séance — les prochaines séances y seront comparées.";
 "workoutPRInfo" = "Un record personnel signifie qu'une série de cette séance a dépassé ta meilleure charge, ton plus grand nombre de répétitions ou ta meilleure force de toutes les séances précédentes. Il reste le record de ce jour-là même si tu l'as battu depuis. Si plusieurs d'entre eux progressent en même temps, ils comptent ensemble comme un seul record. Le plus concret mène la carte : d'abord une charge réellement soulevée, puis la force, puis un nombre de répétitions. Les autres y sont listés.";
 "alsoARecord" = "Également un record · %@";
+"showMoreCount" = "Voir %d de plus";
+"finishFirstSessionsOne" = "Première séance pour 1 exercice";
+"finishFirstSessionsMany" = "Première séance pour %d exercices";
+"finishFirstSessionsDetail" = "La prochaine fois, tu auras un record à battre.";
+"highlightRecordLabel" = "PR de %@";
+"highlightImprovedLabel" = "%@ amélioré";
+"exercisesCountOne" = "1 exercice";
+"exercisesCountMany" = "%d exercices";
 "workoutTrendInfo" = "Chaque exercice a une métrique de progression : la valeur qui sert à le mesurer, comme le poids ou la force. La tendance compare la meilleure valeur atteinte lors de cette séance à ton meilleur des quatre semaines précédentes — la même comparaison que les badges à côté des exercices ci-dessous.";
 "workoutVolumeCompareInfo" = "Volume total (charge × répétitions de chaque série) comparé à la dernière fois que tu as fait cette séance.";
 "improvedCount" = "%d en progression";
@@ -940,6 +948,9 @@
 "weeklyGoalReached" = "Objectif atteint";
 "weeklyGoalToGoOne" = "Encore 1 séance";
 "weeklyGoalToGoMany" = "Encore %d séances";
+"ofWeeklyGoal" = "sur %d";
+"weeklyGoalBeyondOne" = "1 de plus que ton objectif";
+"weeklyGoalBeyondMany" = "%d de plus que ton objectif";
 "weeklyStreakWeeks" = "%d sem";
 "muscleBalance" = "Équilibre musculaire";
 "balance" = "Équilibre";
@@ -1166,6 +1177,7 @@
 "notRated" = "Non évalué";
 "rateYourEffort" = "Évaluez votre effort";
 "addEffort" = "Ajouter l'effort";
+"rateEffortShort" = "Évaluer";
 "effortDescriptions" = "Descriptions de l'effort";
 "effortSelectDescription" = "Sélectionne la description qui correspond le mieux à l'ensemble de la séance.";
 "effortSkipFootnote" = "Ignorer cette séance la retire de ta charge d'entraînement dans Fitness.";

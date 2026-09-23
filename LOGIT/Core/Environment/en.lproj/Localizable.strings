@@ -912,6 +912,14 @@
 "firstTimeForThisWorkout" = "First time doing this workout — future sessions will be compared against it.";
 "workoutPRInfo" = "A personal record means a set in this workout beat your best weight, your most repetitions, or your best strength from every workout before it. It stays this day's record even if you have beaten it since. When several of these improve at once, they count as one record together. The most concrete one leads the card: first a weight you really lifted, then strength, then a number of repetitions. The rest are listed with it.";
 "alsoARecord" = "Also a record · %@";
+"showMoreCount" = "Show %d more";
+"finishFirstSessionsOne" = "First session for 1 exercise";
+"finishFirstSessionsMany" = "First session for %d exercises";
+"finishFirstSessionsDetail" = "Next time, there's a best to beat.";
+"highlightRecordLabel" = "%@ PR";
+"highlightImprovedLabel" = "%@ improved";
+"exercisesCountOne" = "1 exercise";
+"exercisesCountMany" = "%d exercises";
 "workoutTrendInfo" = "Every exercise has a progress metric: the value it is measured by, such as weight or strength. The trend compares the best value this workout reached with your best from the four weeks before it — the same comparison the badges next to the exercises below show.";
 "workoutVolumeCompareInfo" = "Total volume (weight × reps of every set) compared with the last time you did this workout.";
 "improvedCount" = "%d improved";
@@ -940,6 +948,9 @@
 "weeklyGoalReached" = "Goal reached";
 "weeklyGoalToGoOne" = "1 workout to go";
 "weeklyGoalToGoMany" = "%d workouts to go";
+"ofWeeklyGoal" = "of %d";
+"weeklyGoalBeyondOne" = "1 more than your goal";
+"weeklyGoalBeyondMany" = "%d more than your goal";
 "weeklyStreakWeeks" = "%d wk";
 "muscleBalance" = "Muscle Balance";
 "balance" = "Balance";
@@ -1166,6 +1177,7 @@
 "notRated" = "Not rated";
 "rateYourEffort" = "Rate Your Effort";
 "addEffort" = "Add Effort";
+"rateEffortShort" = "Rate";
 "effortDescriptions" = "Effort Descriptions";
 "effortSelectDescription" = "Select the description that best matches the workout overall.";
 "effortSkipFootnote" = "Skipping this workout removes it from your Training Load in Fitness.";

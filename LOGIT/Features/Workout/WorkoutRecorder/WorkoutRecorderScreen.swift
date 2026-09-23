@@ -84,10 +84,11 @@ struct WorkoutRecorderScreen: View {
     /// `isFinishing`; the reveal itself is observed by the sheet's own small views, so folding it
     /// never re-renders the recorder.
     @State private var topSheet = RecorderTopSheetModel()
-    /// The records this session set, for the finish panel's highlight line. Computed once when the
-    /// panel opens rather than per render: the walk over every exercise's history is real work and
-    /// the recorder must never do it on a redraw.
-    @State private var finishReport: WorkoutProgressReport?
+    /// The finish panel: its recap (computed once when the panel opens — the walk over every
+    /// exercise's history is real work, never done on a redraw), the reveal's progress and the
+    /// celebration. Plain `@State` holding an observable, like `topSheet`: the screen never reads
+    /// the reveal, so its beats re-render only the panel views that show them.
+    @State private var finishModel = RecorderFinishModel()
     /// The finish bar's height, so the finish content can scroll clear of it.
     @State private var finishBarHeight: CGFloat = 0
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
@@ -159,6 +160,9 @@ struct WorkoutRecorderScreen: View {
                 if !isHeaderHidden {
                     topSheetView
                 }
+                // Over everything: the panel clips to its own edge, and the burst falls through all
+                // of it.
+                RecorderCelebrationOverlay(model: finishModel)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
@@ -864,34 +868,47 @@ struct WorkoutRecorderScreen: View {
             topSheet.reveal = topSheet.revealBeforeFinishing
         } completion: {
             topSheet.isReturningFromFinish = false
-            finishReport = nil
+            finishModel.reset()
         }
     }
 
-    /// The finish panel's scrolling body: how long, what you did, how it felt, what to change. It
-    /// scrolls under the pinned bar, so a long note never pushes End Workout out of reach.
+    /// The finish panel's scrolling body — the week, what the session beat, how it felt, what it was
+    /// (see `RecorderFinishPanelContent`). It scrolls under the pinned bar, so however long it grows,
+    /// End Workout never leaves reach.
     private func finishContent(for workout: Workout) -> some View {
-        ScrollView {
-            RecorderFinishPanelContent(
-                workout: workout,
-                records: finishReport?.exerciseRecords ?? [],
-                isNoteFieldFocused: $isNoteFieldFocused
-            )
-            .padding(.horizontal)
-            .padding(.top, 10)
+        ScrollViewReader { proxy in
+            ScrollView {
+                RecorderFinishPanelContent(workout: workout, model: finishModel, scrollProxy: proxy)
+                    .padding(.horizontal)
+                    .padding(.top, 10)
+            }
         }
         .contentMargins(.bottom, finishBarHeight + 8, for: .scrollContent)
         .scrollIndicators(.hidden)
         .scrollDismissesKeyboard(.interactively)
-        // Records are computed off the back of the travel, not into it. `compute` walks every
-        // exercise's whole history on the view context's queue; running it inline stutters the
-        // panel's expansion, so it waits for the spring to land and the line fades in after.
+        // Content scrolling up under the title dissolves rather than being cut on a hard line.
+        .mask {
+            VStack(spacing: 0) {
+                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 14)
+                Color.black
+            }
+        }
+        // The recap is computed off the back of the travel, not into it: `WorkoutRecap.compute` walks
+        // every exercise's whole history on the view context's queue, and running it inline stutters
+        // the panel's expansion. Once the spring has landed, the reveal plays from the top.
         .task {
-            guard finishReport == nil else { return }
+            guard finishModel.recap == nil else { return }
             try? await Task.sleep(for: .milliseconds(450))
             guard !Task.isCancelled, topSheet.isFinishing else { return }
-            let report = WorkoutProgressReport.compute(for: workout, database: database)
-            withAnimation(.snappy(duration: 0.3)) { finishReport = report }
+            let recap = WorkoutRecap.compute(for: workout, database: database)
+            await finishModel.reveal(
+                recap,
+                // Read at the moment rather than observed: the recorder must not re-render when a
+                // setting changes (see the chronograph note above). The hero observes it itself.
+                target: UserDefaults.standard.integer(forKey: "workoutPerWeekTarget"),
+                reduceMotion: UIAccessibility.isReduceMotionEnabled
+            )
         }
     }
 
@@ -943,6 +960,10 @@ struct WorkoutRecorderScreen: View {
             .accessibilityIdentifier("finishPanelContinue")
         }
         .padding(.horizontal)
+        // Only the solid part of the bar takes taps. Declared before the scrim's padding: over the
+        // whole bar it also swallowed every tap on the content showing through the fade — a button
+        // sitting in that 30pt band was visible, looked live, and did nothing.
+        .contentShape(Rectangle())
         .padding(.top, 30)
         // The scrim: content scrolling under the bar dissolves over the top 30pt and is fully covered
         // before the bar's own text starts, so the warning never reads on top of the note.
@@ -954,7 +975,6 @@ struct WorkoutRecorderScreen: View {
             }
             .allowsHitTesting(false)
         }
-        .contentShape(Rectangle())
         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
             if abs(height - finishBarHeight) > 1 { finishBarHeight = height }
         }
@@ -1287,78 +1307,6 @@ private struct RecorderHeaderNoteSection: View {
 
 /// The finish panel's scrolling body.
 ///
-/// Its own view purely so it can `@ObservedObject` the workout: the recorder screen observes the
-/// *recorder*, not the managed object, so a rating tapped into the scale would move the bars (the
-/// scale owns that state) while the verdict beside it silently kept saying "not rated".
-private struct RecorderFinishPanelContent: View {
-    @ObservedObject var workout: Workout
-    let records: [WorkoutProgressReport.ExerciseRecords]
-    var isNoteFieldFocused: FocusState<Bool>.Binding
-
-    var body: some View {
-        VStack(spacing: SECTION_SPACING) {
-            RecorderHeaderStatTiles(workout: workout)
-
-            // With the facts, above the rating: what you just did, and the best of it.
-            PersonalRecordsHighlight(workout: workout, records: records)
-                .transition(.opacity.combined(with: .move(edge: .top)))
-
-            VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-                Text(NSLocalizedString("rateYourEffort", comment: ""))
-                    .sectionHeaderStyle2()
-                // The rating happens in place here rather than behind a tap: finishing *is* the
-                // moment the question is asked. Same bars, same capsule, same description list
-                // as the sheet the editor and the detail screen open.
-                WorkoutEffortRatingCard(
-                    score: Binding(
-                        get: { workout.effortScore },
-                        set: { workout.effortScore = $0 }
-                    ),
-                    // Top to bottom, not leading to trailing: the marker is a narrow, tall
-                    // capsule, and a horizontal sweep squeezes the whole spectrum into ~25pt.
-                    tint: workout.sets.muscleGroupGradientStyle(startPoint: .top, endPoint: .bottom),
-                    muscleGroups: workout.muscleGroups
-                )
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-                Text(NSLocalizedString("note", comment: ""))
-                    .sectionHeaderStyle2()
-                WorkoutNoteField(
-                    workout: workout,
-                    isFocused: isNoteFieldFocused,
-                    prompt: NSLocalizedString("workoutNotePrompt", comment: ""),
-                    lineLimit: 4...12
-                )
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            // Everything the session contained, for a last look before it is written. Read-only:
-            // changing a set is what Continue is for.
-            VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-                Text(NSLocalizedString("exercises", comment: ""))
-                    .sectionHeaderStyle2()
-                RecorderFinishExerciseList(workout: workout)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            // Reassurance, not a warning — it scrolls. Its counterpart (sets that will be thrown
-            // away) rides the sticky bar below, where it cannot be scrolled past.
-            if workout.allSetsHaveEntries {
-                Label(
-                    NSLocalizedString("allSetsCompleted", comment: ""),
-                    systemImage: "checkmark.circle.fill"
-                )
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.accentColor)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-    }
-
-}
-
 /// The panel's Volume and Repetitions tiles. They appear only once the workout has a logged
 /// value — an empty (fresh / template) start shows just the panel's two buttons, so it stays
 /// small. Each tile is pared down to the metric name over its value, rendered exactly as the
@@ -1400,64 +1348,6 @@ private struct RecorderHeaderStatTiles: View {
         // wash and pick up its colour, but without Liquid Glass's specular rim, which made them the
         // loudest thing on the header.
         .translucentTileStyle()
-    }
-}
-
-/// One row per set group: the exercise (both, for a superset), its muscle group in colour, and how
-/// many of its sets were logged. The finish panel's last section, so the whole session can be
-/// checked against memory before End Workout writes it.
-private struct RecorderFinishExerciseList: View {
-    @ObservedObject var workout: Workout
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(workout.setGroups.enumerated()), id: \.element.objectID) { index, setGroup in
-                if index > 0 {
-                    Divider().overlay(Color.fill)
-                }
-                row(for: setGroup)
-            }
-        }
-        .padding(.horizontal, CELL_PADDING)
-        .padding(.vertical, 4)
-        .translucentTileStyle()
-        .accessibilityIdentifier("finishPanelExercises")
-    }
-
-    private func row(for setGroup: WorkoutSetGroup) -> some View {
-        let exercises = [setGroup.exercise, setGroup.secondaryExercise].compactMap { $0 }
-        let logged = setGroup.sets.filter { $0.hasEntry }.count
-        let total = setGroup.sets.count
-        return HStack(alignment: .firstTextBaseline, spacing: 12) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(exercises.map { $0.displayName }.joined(separator: " + "))
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(Color.label)
-                    .lineLimit(1)
-                Text(
-                    Set(exercises.compactMap { $0.muscleGroup })
-                        .sorted { $0.rawValue < $1.rawValue }
-                        .map { $0.description }
-                        .joined(separator: " · ")
-                )
-                .font(.system(.footnote, design: .rounded, weight: .bold))
-                .foregroundStyle(
-                    exercises.compactMap { $0.muscleGroup }
-                        .weightedSpectrumGradientStyle()
-                )
-            }
-            Spacer(minLength: 0)
-            // "3 / 4 sets" only when something is missing; a complete group just says "4 sets".
-            Text(
-                (logged < total ? "\(logged) / \(total)" : "\(total)")
-                    + " " + NSLocalizedString("sets", comment: "").lowercased()
-            )
-            .font(.subheadline.weight(.semibold))
-            .monospacedDigit()
-            .foregroundStyle(logged < total ? Color.secondaryLabel : Color.label)
-        }
-        .padding(.vertical, 10)
-        .accessibilityElement(children: .combine)
     }
 }
 

@@ -20,9 +20,8 @@ import SwiftUI
 /// "shoulders". The muscle groups still colour the *background* the picker sits on — that is
 /// LOGIT's one departure from Apple here — and the scale itself stays grey and white.
 ///
-/// One view serves every size: the rating screen, the recorder's finish panel and the tile's
-/// read-only echo all draw these bars, so the shape a rating is made on is the shape it is later
-/// recognised by.
+/// One view serves every size: the rating screen and the tile's read-only echo both draw these
+/// bars, so the shape a rating is made on is the shape it is later recognised by.
 struct WorkoutEffortBars: View {
     /// How big the bars are drawn, and with it how much of the anatomy survives: the mini size
     /// drops the dots and the marker (there is no room to aim at 26pt) and shows the level by
@@ -48,18 +47,6 @@ struct WorkoutEffortBars: View {
             dotDiameter: 7,
             dotBottomInset: 13,
             markerPadding: 7,
-            showsMarkers: true
-        )
-
-        /// The recorder's finish panel, where the rating shares the screen with everything else
-        /// that just happened.
-        static let compact = Size(
-            height: 132,
-            spacing: 8,
-            cornerRadius: 18,
-            dotDiameter: 6,
-            dotBottomInset: 11,
-            markerPadding: 6,
             showsMarkers: true
         )
 
@@ -380,8 +367,8 @@ private struct RampBar: Shape {
 /// offers one — the ⓘ that opens the description list. Unrated, the whole capsule is the
 /// invitation instead.
 ///
-/// It is a capsule under the bars on the rating screen and inside the finish panel's card, so
-/// "what a 5 means" is answered in the same place and the same shape wherever you are rating.
+/// It is a capsule under the bars on the rating screen, so "what a 5 means" is answered in the same
+/// place and the same shape wherever you are rating from.
 struct WorkoutEffortValueCapsule: View {
     let score: Int?
     var onInfo: (() -> Void)? = nil
@@ -446,21 +433,21 @@ struct WorkoutEffortScoreBadge: View {
 // MARK: - The picker
 
 /// The bars and the capsule together — the rating itself, without any chrome around it. The
-/// rating sheet and the recorder's finish panel both show exactly this, which is what makes
-/// rating a workout the same act wherever it happens.
+/// rating sheet shows exactly this, and every place a workout is rated opens that sheet (the
+/// recorder's finish panel included, from its effort tile), so rating is the same act everywhere.
 struct WorkoutEffortPicker: View {
     @Binding var score: Int?
     /// The marker's fill — the workout's muscle-group gradient, top to bottom.
     let tint: AnyShapeStyle
     var size: WorkoutEffortBars.Size = .rating
-    /// What the capsule's ⓘ does: the sheet pushes the description list, the finish panel
-    /// presents it. Passing `nil` drops the button.
+    /// What the capsule's ⓘ does — the sheet pushes the description list. Passing `nil` drops the
+    /// button.
     var showDescriptions: (() -> Void)? = nil
 
     /// The rating while a finger is still on it. Writing through on every slot a drag crosses
-    /// republishes whatever the binding reaches — in the recorder's finish panel that is the
-    /// managed object, and with it the entire panel — which is what used to make the scale feel
-    /// laggy. The drag moves this; only the lift writes.
+    /// republishes whatever the binding reaches — bound straight to the managed object, that is the
+    /// whole screen observing it — which is what used to make the scale feel laggy. The drag moves
+    /// this; only the lift writes.
     @State private var draft: Int?
 
     var body: some View {
@@ -498,44 +485,27 @@ struct WorkoutEffortTile: View {
         case translucent
     }
 
+    enum Layout {
+        /// Label and rating on the leading side, the bars' echo at the trailing edge — a full-width row.
+        case wide
+        /// Half a row, beside the note on the finish panel: the label and a small echo on top, the
+        /// rating under them, so the band's name never has to share its line with the bars.
+        case compact
+    }
+
     let score: Int?
     /// The rated band's fill in the echo at the trailing edge — the workout's muscle-group
     /// gradient, so the tile carries the same colour the marker did on the rating screen.
     let tint: AnyShapeStyle
     var style: Style = .tile
+    var layout: Layout = .wide
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("effort", comment: ""))
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Color.label)
-                    if let score, let effort = WorkoutEffort(score: score) {
-                        HStack(spacing: 10) {
-                            WorkoutEffortScoreBadge(score: score, diameter: 26)
-                            Text(effort.name)
-                                .font(.title2.weight(.semibold))
-                                .foregroundStyle(Color.label)
-                        }
-                    } else {
-                        Label(
-                            NSLocalizedString("addEffort", comment: ""),
-                            systemImage: "plus.circle"
-                        )
-                        .font(.title2.weight(.semibold))
-                        .foregroundStyle(Color.secondaryLabel)
-                    }
-                }
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                Spacer(minLength: 8)
-                WorkoutEffortBars(score: score, tint: tint, size: .mini)
-                    .frame(width: 58)
-            }
-            .padding(CELL_PADDING)
-            .contentShape(Rectangle())
+            content
+                .padding(CELL_PADDING)
+                .contentShape(Rectangle())
         }
         // The identifier and label ride the Button itself: wrapping it in an
         // `accessibilityElement(children:)` container drops the button trait, and with it every
@@ -545,6 +515,77 @@ struct WorkoutEffortTile: View {
         .accessibilityLabel(effortLabel)
         .modifier(EffortTileSurface(style: style))
         .animation(.snappy(duration: 0.25), value: score)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch layout {
+        case .wide: wideContent
+        case .compact: compactContent
+        }
+    }
+
+    private var wideContent: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(NSLocalizedString("effort", comment: ""))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.label)
+                if let score, let effort = WorkoutEffort(score: score) {
+                    HStack(spacing: 10) {
+                        WorkoutEffortScoreBadge(score: score, diameter: 26)
+                        Text(effort.name)
+                            .font(.title2.weight(.semibold))
+                            .foregroundStyle(Color.label)
+                    }
+                } else {
+                    Label(
+                        NSLocalizedString("addEffort", comment: ""),
+                        systemImage: "plus.circle"
+                    )
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(Color.secondaryLabel)
+                }
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            Spacer(minLength: 8)
+            WorkoutEffortBars(score: score, tint: tint, size: .mini)
+                .frame(width: 58)
+        }
+    }
+
+    /// Half a row: the label, the rating under it, and the bars' echo along the bottom at the tile's
+    /// full width. Fills whatever height the row gives it.
+    private var compactContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(NSLocalizedString("effort", comment: ""))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.label)
+                .lineLimit(1)
+            Group {
+                if let score, let effort = WorkoutEffort(score: score) {
+                    HStack(spacing: 8) {
+                        WorkoutEffortScoreBadge(score: score, diameter: 24)
+                        Text(effort.name)
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(Color.label)
+                    }
+                } else {
+                    // "Rate", not "Add Effort": the label above already says what is being rated,
+                    // and at half width the long form wraps in every language but English.
+                    Label(NSLocalizedString("rateEffortShort", comment: ""), systemImage: "plus.circle")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(Color.secondaryLabel)
+                }
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .padding(.top, 4)
+            Spacer(minLength: 12)
+            WorkoutEffortBars(score: score, tint: tint, size: .mini)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var effortLabel: String {

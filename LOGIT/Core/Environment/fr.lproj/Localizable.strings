@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Atteins ton objectif hebdomadaire pour lancer une série";
+"streakFactFirstWeek" = "Ta première semaine";
 "streakFactMonth" = "Un mois complet";
 "streakFactQuarter" = "Un trimestre complet";
 "streakFactHalfYear" = "Une demi-année";
@@ -1033,8 +1034,9 @@
 "share" = "Part";
 "weekStreakSuffix" = "semaines d'affilée";
 "weeklyGoalAccessibility" = "Objectif hebdo, %d séances sur %d";
-"weeklyGoalSubtitle" = "sur ton objectif de %d séances";
-"milestones" = "Paliers";
+"workoutGoalPerWeek" = "%d séances par semaine";
+"workoutGoalPerWeekOne" = "1 séance par semaine";
+"workoutGoalAboutInfo" = "Ton objectif d'entraînement, c'est le nombre de séances que tu veux faire chaque semaine. Chaque semaine où tu l'atteins ajoute une semaine à ta série ; une semaine où tu n'y arrives pas y met fin. La semaine en cours ne casse jamais ta série : elle compte dès que tu atteins ton objectif.\n\nLes paliers sont des durées de série à atteindre : ta première semaine, puis 4 semaines pour un mois, 12 un trimestre, 26 une demi-année, 52 une année et 104 deux ans. Ceux que ta série actuelle a déjà franchis sont listés avec la semaine où tu les as atteints, et quand une série prend fin, tout repart de zéro. Si ta plus longue série est plus proche que le prochain palier, la battre passe en premier, et la semaine où tu y arrives apparaît dans la liste comme nouveau record. Si tu changes ton objectif, ta série est recalculée avec le nouveau nombre.";
 "weeksToGo" = "encore %d";
 "bestStreakLabel" = "Record · %d sem";
 "monthWorkoutsCount" = "%d séances";

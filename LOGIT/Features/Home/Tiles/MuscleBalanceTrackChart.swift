@@ -22,7 +22,11 @@ import SwiftUI
 ///
 /// Draws the entries in the order given — `MuscleBalanceCalculator.rankedEntries`, the one order
 /// every balance surface shares, which puts the groups furthest behind first.
-struct MuscleBalanceTrackChart: View {
+///
+/// `bar` dresses each group's bar (its track over its letters, handed in drawn): Muscle Groups makes
+/// it a button that opens the group's popover, the Summary tile leaves it as it is — its bars are too
+/// narrow to aim at, and the tile opens Muscle Groups as a whole.
+struct MuscleBalanceTrackChart<Bar: View>: View {
     /// Already narrowed and ordered by the caller (`MuscleBalanceCalculator.rankedEntries`).
     let entries: [MuscleBalanceEntry]
     var spacing: CGFloat = 5
@@ -30,20 +34,16 @@ struct MuscleBalanceTrackChart: View {
     /// Each group's letters under its track, in its colour. The point size follows the track width:
     /// the Summary tile's bars are about 20 pt wide, the Muscle Groups chart's nearly twice that.
     var labelSize: CGFloat = 12
+    @ViewBuilder let bar: (MuscleBalanceEntry, MuscleBalanceTrackColumn) -> Bar
 
     var body: some View {
         HStack(alignment: .bottom, spacing: spacing) {
             ForEach(entries) { entry in
-                VStack(spacing: labelSize * 0.5) {
-                    MuscleBalanceTrack(entry: entry, badgeDiameter: badgeDiameter)
-                    Text(entry.muscleGroup.abbreviation)
-                        .font(.system(size: labelSize, weight: .bold, design: .rounded))
-                        .foregroundStyle(entry.muscleGroup.color)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                }
+                bar(entry, MuscleBalanceTrackColumn(entry: entry, badgeDiameter: badgeDiameter, labelSize: labelSize))
             }
         }
+        // One element for VoiceOver even where the bars are buttons: the Muscle Groups rows open the
+        // same popovers, so a button per bar would only say everything twice.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
     }
@@ -53,7 +53,10 @@ struct MuscleBalanceTrackChart: View {
         Text(
             entries
                 .map { entry in
-                    entry.muscleGroup.description + ", "
+                    guard entry.target > 0 else {
+                        return entry.muscleGroup.description + ", " + NSLocalizedString("muscleBalanceNoTarget", comment: "")
+                    }
+                    return entry.muscleGroup.description + ", "
                         + String(
                             format: NSLocalizedString("muscleBalanceSetsOfTarget", comment: ""),
                             entry.setsPerWeek, entry.target
@@ -64,8 +67,38 @@ struct MuscleBalanceTrackChart: View {
     }
 }
 
+extension MuscleBalanceTrackChart where Bar == MuscleBalanceTrackColumn {
+    /// The bars as they are, nothing to tap.
+    init(entries: [MuscleBalanceEntry], spacing: CGFloat = 5, badgeDiameter: CGFloat = 13, labelSize: CGFloat = 12) {
+        self.init(entries: entries, spacing: spacing, badgeDiameter: badgeDiameter, labelSize: labelSize) { $1 }
+    }
+}
+
+/// One group's bar in a `MuscleBalanceTrackChart`: its track, and its letters under it in its colour.
+struct MuscleBalanceTrackColumn: View {
+    let entry: MuscleBalanceEntry
+    let badgeDiameter: CGFloat
+    let labelSize: CGFloat
+
+    var body: some View {
+        VStack(spacing: labelSize * 0.5) {
+            MuscleBalanceTrack(entry: entry, badgeDiameter: badgeDiameter)
+            Text(entry.muscleGroup.abbreviation)
+                .font(.system(size: labelSize, weight: .bold, design: .rounded))
+                // Grey once its target is off, like its row under Off.
+                .foregroundStyle(entry.target == 0 ? Color.secondaryLabel : entry.muscleGroup.color)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+        }
+    }
+}
+
 /// One muscle group's filling track, normalised to its own target — the bar behind every balance
 /// chart, so the tile and the Muscle Groups screen can never draw a group differently.
+///
+/// Charts only draw groups with a target, with one exception: Muscle Groups holds its bars in place
+/// while a popover is open, so a group whose target was just turned off there keeps its track until
+/// the popover closes — empty and grey, with no verdict, since there is nothing left to meet.
 struct MuscleBalanceTrack: View {
     let entry: MuscleBalanceEntry
     var badgeDiameter: CGFloat = 13
@@ -73,14 +106,15 @@ struct MuscleBalanceTrack: View {
     var body: some View {
         let color = entry.muscleGroup.color
         let fraction = min(entry.goalFraction ?? 0, 1)
-        let isMet = entry.goalState != .under
+        let isOff = entry.target == 0
+        let isMet = !isOff && entry.goalState != .under
         return GeometryReader { geo in
             ZStack(alignment: .bottom) {
                 // The unfilled remainder stays visible on every track, so "not there yet" is a
                 // shape rather than something you infer from the absence of a badge. An untrained
                 // group keeps its colour at low alpha: identity without inventing a single set.
                 Capsule(style: .continuous)
-                    .fill(entry.setCount == 0 ? color.opacity(0.12) : Color.label.opacity(0.07))
+                    .fill(entry.setCount == 0 && !isOff ? color.opacity(0.12) : Color.label.opacity(0.07))
                 // The fill keeps the track's original near-flat top; the capsule clip below rounds
                 // its bottom (and its top once full). A capsule-shaped fill instead shrinks into a
                 // circle whenever it is shorter than the track is wide — every low weekly count.

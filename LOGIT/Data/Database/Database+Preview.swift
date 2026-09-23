@@ -101,6 +101,21 @@ extension Database {
             return calendar.date(byAdding: .day, value: offset, to: weekStart) ?? weekStart
         }
 
+        // Whole days of the current week already begun: 0 on its first day, 6 on its last.
+        let daysIntoThisWeek = calendar.dateComponents([.day], from: thisWeekStart, to: calendar.startOfDay(for: .now)).day ?? 0
+
+        // Where a session actually lands. A current-week session whose weekday hasn't come
+        // round yet moves onto today, a few hours in, instead of being dropped. Dropping it
+        // made every "this week" screen depend on the weekday of the capture and on the
+        // locale's first weekday: early in the week the goal ring read 1 of 3, the streak
+        // lost a week and the exercise tiles read 0 kg, down 100% — in Sunday-start locales
+        // before Wednesday, in Monday-start locales before Thursday. Late in the week every
+        // offset has already passed, so nothing moves and the dataset is unchanged.
+        func sessionDate(dayOffset offset: Int, weeksAgo w: Int) -> Date {
+            guard w == 0, offset > daysIntoThisWeek else { return date(dayOffset: offset, weeksAgo: w) }
+            return calendar.date(byAdding: .hour, value: offset * 2, to: calendar.startOfDay(for: .now)) ?? .now
+        }
+
         func seedPushDay(on day: Date, week w: Int, minutes: Int) {
             let kg = weights(week: w)
             let push = database.newWorkout(name: NSLocalizedString("previewPushDay", comment: ""), date: day)
@@ -157,9 +172,9 @@ extension Database {
         // positive. `date(...) <= .now` guards against seeding into the future.
         let durations = [65, 58, 72, 55, 68, 61, 70]
         for w in 0 ..< numberOfWeeks {
-            let push = date(dayOffset: 1, weeksAgo: w)
-            let pull = date(dayOffset: 3, weeksAgo: w)
-            let leg = date(dayOffset: 0, weeksAgo: w)
+            let push = sessionDate(dayOffset: 1, weeksAgo: w)
+            let pull = sessionDate(dayOffset: 3, weeksAgo: w)
+            let leg = sessionDate(dayOffset: 0, weeksAgo: w)
             if push <= .now { seedPushDay(on: push, week: w, minutes: durations[w % durations.count]) }
             if pull <= .now { seedPullDay(on: pull, week: w, minutes: durations[(w + 2) % durations.count]) }
             if leg <= .now { seedLegDay(on: leg, week: w, minutes: durations[(w + 4) % durations.count]) }
@@ -271,7 +286,16 @@ extension Database {
         // set and a drop set one after another inside the same completed
         // workout. Uses NSLocalizedString("previewArmDay", comment: "") as the name so the UI test can find it
         // unambiguously (other seeded workouts are named Push/Pull/Leg Day).
-        let armDayDate = Calendar.current.date(byAdding: .day, value: -1, to: .now)!
+        //
+        // Yesterday — unless today opens the week, when yesterday belongs to last week and the
+        // current week would lose the session that tips its trends positive. Then it moves onto
+        // today with the rest of the week (see `sessionDate`), at the Tuesday slot's hour.
+        let armDayDate: Date = {
+            let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: .now)!
+            guard daysIntoThisWeek == 0 else { return yesterday }
+            let today = sessionDate(dayOffset: 2, weeksAgo: 0)
+            return today <= .now ? today : yesterday
+        }()
         let armDay = database.newWorkout(name: NSLocalizedString("previewArmDay", comment: ""), date: armDayDate)
         armDay.endDate = Calendar.current.date(byAdding: .minute, value: 42, to: armDayDate)
 

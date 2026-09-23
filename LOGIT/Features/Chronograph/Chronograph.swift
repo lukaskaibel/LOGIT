@@ -105,6 +105,8 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
                     self.seconds -= timePassed
                     if self.seconds <= 0 {
                         self.seconds = 0
+                        // Before the callback: its `endRest` cancels the chronograph, and the
+                        // ringing alert has to be out of reach of that cancel by then.
                         self.scheduleAlarmAutoDismiss()
                         self.reset()
                         self.onTimerFired?()
@@ -428,26 +430,46 @@ class Chronograph: NSObject, ObservableObject, UNUserNotificationCenterDelegate 
         LocalizedStringResource(stringLiteral: NSLocalizedString(key, comment: ""))
     }
 
+    /// The countdown reached zero on its own. The alert is already sounding — it was scheduled a
+    /// second early (`notificationTriggerInterval`) — and it gets `alarmAutoDismissInterval` more
+    /// before it is taken down, so the whole `timer.wav` plays.
+    ///
+    /// The alarm is **handed over** here, not just timed: `activeTimerAlarmID` is cleared at once, so
+    /// the ringing alert belongs to this closure alone. That matters because the tick calls
+    /// `onTimerFired` straight after, and the recorder's auto rest answers it with
+    /// `endRest(.timerCompleted)`, which calls `cancel()`. While the ID was still set, that cancel
+    /// took the alert down the instant the in-app clock hit zero: an auto rest played ~1 s of the
+    /// sound where a manual timer (no callback) rang its full ~2.5 s. With the ID gone, `cancel()`
+    /// after a completion finds no alarm of the chronograph's own and the alert plays out.
+    ///
+    /// It also stops the closure clobbering a *newer* alarm. It used to nil `activeTimerAlarmID`
+    /// itself, 1.5 s later — when a rest started in the meantime (the next set logged at once) had
+    /// already put its own alarm there, which pause or stop could then no longer cancel.
+    ///
+    /// Pause, stop and every early end still cancel at once (`cancelTimerAlarm`): they happen while
+    /// the timer is running, when the alarm is still the chronograph's own.
     private func scheduleAlarmAutoDismiss() {
-        let alarmIDToCancel = activeTimerAlarmID
+        let alarmIDToDismiss = activeTimerAlarmID
+        activeTimerAlarmID = nil
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.alarmAutoDismissInterval) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.alarmAutoDismissInterval) {
             // Remove delivered local notification
             UNUserNotificationCenter.current().removeDeliveredNotifications(
                 withIdentifiers: [Self.timerFinishedNotificationIdentifier]
             )
 
-            // Cancel AlarmKit alarm if it was active
-            if let alarmIDToCancel {
+            // Take down the AlarmKit alert this completion rang, if it rang one
+            if let alarmIDToDismiss {
                 if #available(iOS 26.0, *) {
-                    try? AlarmManager.shared.cancel(id: alarmIDToCancel)
+                    try? AlarmManager.shared.cancel(id: alarmIDToDismiss)
                 }
             }
-
-            self?.activeTimerAlarmID = nil
         }
     }
 
+    /// Takes down the alarm the chronograph still owns, immediately — the path for pause, stop, a
+    /// rest ended early, a mode switch or a rescheduled duration. A timer that finished on its own
+    /// has already handed its alert to `scheduleAlarmAutoDismiss`, so this leaves that one ringing.
     private func cancelTimerAlarm() {
         timerAlarmScheduleToken = UUID()
 

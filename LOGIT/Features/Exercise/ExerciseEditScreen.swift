@@ -23,6 +23,11 @@ struct ExerciseEditScreen: View {
     @State private var distanceStyle: SetMeasurementType.DistanceStyle
     @State private var durationStyle: SetMeasurementType.DurationStyle
     @State private var primaryMetric: ExercisePrimaryMetric
+    /// Whether the progress metric is one the user picked (or the edited exercise already had).
+    /// Until then it follows the measurement being composed, so a run built by switching reps and
+    /// weight off before turning distance on still starts on distance rather than on whichever
+    /// metric an intermediate step left behind.
+    @State private var hasChosenMetric: Bool
     @State private var durationGoal: ExerciseDurationGoal
     @State private var showingExerciseExistsAlert: Bool = false
     @State private var showingExerciseNameEmptyAlert: Bool = false
@@ -59,6 +64,7 @@ struct ExerciseEditScreen: View {
             initialValue: exerciseToEdit?.durationStyle ?? initialType.durationStyle ?? .seconds
         )
         _primaryMetric = State(initialValue: exerciseToEdit?.primaryMetric ?? .defaultMetric)
+        _hasChosenMetric = State(initialValue: exerciseToEdit != nil)
         _durationGoal = State(initialValue: exerciseToEdit?.durationGoal ?? .longer)
     }
 
@@ -148,7 +154,9 @@ struct ExerciseEditScreen: View {
                     durationStyle = defaultStyle
                 }
                 let allowed = ExercisePrimaryMetric.allowed(for: newType)
-                if !allowed.contains(primaryMetric) {
+                if !hasChosenMetric || !allowed.contains(primaryMetric) {
+                    // The same fallback `Exercise.primaryMetric` reads for an exercise without a
+                    // choice, so what the editor shows is what the badge will use.
                     primaryMetric = allowed.contains(.defaultMetric) ? .defaultMetric : allowed[0]
                 }
             }
@@ -398,7 +406,7 @@ struct ExerciseEditScreen: View {
             previewDistanceField(tertiary: 0)
         case .distanceAndDuration:
             previewDistanceField(tertiary: 0)
-            previewDurationField(tertiary: 1)
+            previewDurationField(tertiary: 1, coversDistance: true)
         case .weightAndDistance:
             previewWeightField(tertiary: 0)
             previewDistanceField(tertiary: 1)
@@ -432,13 +440,16 @@ struct ExerciseEditScreen: View {
         )
     }
 
+    /// A hold or a carry samples 45 seconds; a time that covers a distance samples 32:15, so the
+    /// preview reads like a real run next to its distance rather than five of them in 45 seconds.
     @ViewBuilder
-    private func previewDurationField(tertiary: Int) -> some View {
+    private func previewDurationField(tertiary: Int, coversDistance: Bool = false) -> some View {
+        let sampleSeconds: Int64 = coversDistance ? 1935 : 45
         switch durationStyle {
         case .seconds:
             IntegerField(
                 placeholder: 0,
-                value: .constant(45),
+                value: .constant(sampleSeconds),
                 maxDigits: 4,
                 index: previewIndex(tertiary),
                 focusedIntegerFieldIndex: .constant(nil),
@@ -447,7 +458,7 @@ struct ExerciseEditScreen: View {
         case .clock:
             DurationClockField(
                 placeholder: 0,
-                value: .constant(45_000),
+                value: .constant(sampleSeconds * 1000),
                 index: previewIndex(tertiary),
                 focusedIntegerFieldIndex: .constant(nil)
             )
@@ -566,6 +577,7 @@ struct ExerciseEditScreen: View {
                     Button {
                         UISelectionFeedbackGenerator().selectionChanged()
                         primaryMetric = metric
+                        hasChosenMetric = true
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: primaryMetric == metric ? "circle.inset.filled" : "circle")

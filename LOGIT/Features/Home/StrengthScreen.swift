@@ -115,7 +115,7 @@ struct StrengthScreen: View {
             caption
             if let percent = heroPercent {
                 figure(percent, color: heroColor)
-            } else {
+            } else if progress.historyFraction < 1 {
                 // Same gray ring the tile and the core-stat tiles wear while they wait for data —
                 // at the same size, which is the point of it being one view.
                 TrendPlaceholder(
@@ -124,6 +124,14 @@ struct StrengthScreen: View {
                     systemImage: "chart.line.uptrend.xyaxis"
                 )
                 .padding(.vertical, 12)
+            } else {
+                // A history that already spans both windows has nothing left to build, so a full
+                // ring saying "building" would be wrong — the tile's rule (`StrengthTile`'s
+                // `showsTrendPlaceholder`): no lift to compare is simply no data.
+                Text("––")
+                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.label)
+                    .accessibilityLabel(Text(NSLocalizedString("noData", comment: "")))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

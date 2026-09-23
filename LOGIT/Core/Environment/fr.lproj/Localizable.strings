@@ -203,6 +203,10 @@
 "measurements" = "Mesures";
 "min" = "min";
 "minimize" = "Réduire";
+"recorderSheetHandleLabel" = "Actions de la séance";
+"recorderShowSummaryAction" = "Afficher le résumé";
+"accessibilityExpanded" = "Développé";
+"accessibilityCollapsed" = "Réduit";
 "missing" = "Manquant";
 "measurementsPromotionDescription" = "Suis ton poids, ta masse grasse et tes mensurations (bras, poitrine, taille) pour voir clairement tes progrès.";
 "month" = "Mois";
@@ -491,7 +495,9 @@
 "streakFactHalfYear" = "Une demi-année";
 "streakFactYear" = "Une année complète";
 "streakFactTwoYears" = "Deux ans";
+"streakFactOneWeek" = "Une semaine";
 "nextMilestone" = "Prochain palier";
+"beatYourBest" = "Bats ton record";
 "streakToGoalOne" = "1 semaine avant ton prochain palier";
 "streakToGoalMany" = "%d semaines avant ton prochain palier";
 "streakAtBest" = "Ta meilleure série à ce jour";
@@ -921,6 +927,9 @@
 "highlightImprovedLabel" = "%@ amélioré";
 "exercisesCountOne" = "1 exercice";
 "exercisesCountMany" = "%d exercices";
+"setsCountOne" = "1 série";
+"setsCountMany" = "%d séries";
+"setsLoggedOfTotal" = "%1$d / %2$d séries";
 "workoutTrendInfo" = "Chaque exercice a une métrique de progression : la valeur qui sert à le mesurer, comme le poids ou la force. La tendance compare la meilleure valeur atteinte lors de cette séance à ton meilleur des quatre semaines précédentes — la même comparaison que les badges à côté des exercices ci-dessous.";
 "workoutVolumeCompareInfo" = "Volume total (charge × répétitions de chaque série) comparé à la dernière fois que tu as fait cette séance.";
 "improvedCount" = "%d en progression";
@@ -999,6 +1008,7 @@
 "muscleFocusReplaceCustomTitle" = "Remplacer tes objectifs personnalisés ?";
 "muscleFocusReplaceCustomMessage" = "Les objectifs du préréglage remplacent ceux que tu as définis toi-même.";
 "muscleFocusSetsPerWeekValue" = "%d séries par semaine";
+"muscleFocusSetsPerWeekValueOne" = "1 série par semaine";
 "muscleFocusNamesJoiner" = " et ";
 "muscleFocusPromptTileTitle" = "Choisis une orientation";
 "muscleFocusPromptTileMessage" = "Découvre quels groupes musculaires travailler.";
@@ -1202,6 +1212,8 @@
 "overallStrengthShowAllLifts" = "Voir les %d exercices";
 "overallStrengthAxisLeastDeclined" = "Plus faible baisse";
 "showLess" = "Voir moins";
+"finishHighlightsAllShownValue" = "Tout affiché";
+"finishHighlightsSomeShownValue" = "%1$d sur %2$d affichés";
 "overallStrengthInfo" = "La force globale résume tout cela en un seul chiffre. Pour chaque exercice, LOGIT prend ton meilleur résultat sur la période sélectionnée et le compare à ton meilleur sur la période précédente, puis fait la moyenne de tous ces écarts. Plus tu as fait de séries d'un exercice, plus il pèse dans le résultat. Les séries de cardio et au poids du corps n'ont pas de valeur de force et ne sont pas prises en compte.";
 
 
@@ -1239,6 +1251,7 @@
 "lastTime" = "La dernière fois";
 "previewWorkoutNote" = "Le développé couché passait facile à 80 — 82,5 la prochaine fois. Garder les coudes serrés au développé militaire.";
 "setsIncompleteWillNotBeSaved" = "%d séries incomplètes — elles ne seront pas enregistrées.";
+"setIncompleteWillNotBeSaved" = "1 série incomplète — elle ne sera pas enregistrée.";
 
 // MARK: - Assisted Sets & Time Goals
 

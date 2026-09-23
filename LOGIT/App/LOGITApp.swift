@@ -50,14 +50,11 @@ struct LOGIT: App {
     @State private var isShowingWorkoutRecorder = false
     @State private var isShowingStartWorkoutSheet = false
     @State private var isShowingLiveActivityShowcase = false
-    /// Mirrors the drag phase of the recorder's interactive dismissal (see
-    /// `WorkoutRecorderPresentationController`); feeds `\.workoutRecorderIsDragging`.
-    @State private var recorderIsDragging = false
     /// True once the recorder's presentation slide-in has landed; feeds
     /// `\.workoutRecorderIsSettled`, which gates the persistent exercise tray sheet.
     @State private var recorderIsSettled = false
-    /// Lets the recorder's header drive the interactive dismissal from inside the
-    /// presented content (see `WorkoutRecorderDragDriver`).
+    /// Lets the recorder's list and header drag the presented recorder from inside its
+    /// content (see `WorkoutRecorderDragDriver`).
     @State private var recorderDragDriver = WorkoutRecorderDragDriver()
 
     // Import handling state
@@ -597,7 +594,6 @@ struct LOGIT: App {
             .environment(\.managedObjectContext, database.context)
             .environment(\.goHome) { selectedTab = .home }
             .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
-            .environment(\.workoutRecorderIsDragging, recorderIsDragging)
             .environment(\.workoutRecorderIsSettled, recorderIsSettled)
             .environment(\.workoutRecorderDragDriver, recorderDragDriver)
             // The old cover ignored the keyboard at container level; the recorder
@@ -608,20 +604,14 @@ struct LOGIT: App {
     private var recorderTransition: PresentationLinkTransition {
         .workoutRecorder(
             dragDriver: recorderDragDriver,
-            onDragChanged: { dragging in
-                if dragging {
-                    // Tear the tray sheet down instantly: it must be gone before the
-                    // pan gesture ends, or UIKit would forward the recorder's
-                    // dismissal to it (see WorkoutRecorderPresentationController).
-                    var transaction = Transaction()
-                    transaction.disablesAnimations = true
-                    withTransaction(transaction) {
-                        recorderIsDragging = true
-                    }
-                } else {
-                    withAnimation {
-                        recorderIsDragging = false
-                    }
+            onTrayTeardownRequested: {
+                // A released drag is minimizing the recorder (already slid off screen):
+                // the tray sheet has to be gone before the recorder is dismissed, or
+                // UIKit would forward the dismissal to it.
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    recorderIsSettled = false
                 }
             },
             onPresentationSettled: { completed in
@@ -634,18 +624,12 @@ struct LOGIT: App {
                 // presentation delegate; only the phase mirrors need resetting here.
                 if completed {
                     recorderIsSettled = false
-                    recorderIsDragging = false
-                } else {
-                    withAnimation {
-                        recorderIsDragging = false
-                    }
                 }
             }
         )
     }
 
     private func showWorkoutRecorder() {
-        recorderIsDragging = false
         recorderIsSettled = false
         withAnimation {
             isShowingWorkoutRecorder = true

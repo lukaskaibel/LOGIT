@@ -21,19 +21,17 @@ private let RECORDER_LIST_SCROLL_SLACK: CGFloat = 120
 /// title while the summary is still folded away.
 private let RECORDER_HEADER_ACTIONS_SPACING: CGFloat = 14
 
-/// How far a downward pull has to travel before it hands the recorder over to the dismissal
-/// driver. Engaging is not a free look: it tears the exercise tray down (UIKit forwards the
-/// recorder's `dismiss` to a presented child, so the tray has to go first) and that teardown
-/// commits the minimize. So the pull has to be a deliberate drag — a swipe that just flings
-/// the list back to its top must never minimize the workout. Up to here the list simply
-/// rubber-bands, which is the feedback that something is being pulled.
-private let RECORDER_DISMISS_ENGAGEMENT_DISTANCE: CGFloat = 200
-
 /// Holds the set list's live scroll offset outside SwiftUI's state graph: it changes on every
 /// scroll frame and nothing in the body reads it directly, so writing it must not invalidate
 /// the recorder (see `RecorderSheetGeometry` for the same reasoning about the tray's height).
 final class RecorderScrollTracker {
     var offset: CGFloat = 0
+    /// True while a finger is on the list (the scroll view is tracking or scrolling).
+    var isTouched = false
+    /// The offset when the finger landed — what decides whether a pull drags the recorder:
+    /// only a list that was already resting at its top when touched. Checking the live offset
+    /// instead would let a swipe that scrolls the list back up carry on into a drag.
+    var offsetAtTouch: CGFloat = 0
 }
 
 struct WorkoutRecorderScreen: View {
@@ -46,7 +44,6 @@ struct WorkoutRecorderScreen: View {
     // MARK: - Environment
 
     @Environment(\.goHome) var goHome
-    @Environment(\.workoutRecorderIsDragging) var workoutRecorderIsDragging
     @Environment(\.workoutRecorderIsSettled) var workoutRecorderIsSettled
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Environment(\.dismissWorkoutRecorder) var dismissWorkoutRecorder
@@ -115,14 +112,18 @@ struct WorkoutRecorderScreen: View {
 
     @State private var enteredRepetitionSetIDs: Set<NSManagedObjectID> = []
 
-    // Full-screen drag-to-dismiss from the set list: only engages once the list is
-    // scrolled to the very top, then hands the drag to the same driver as the header.
-    @State private var scrollIsAtTop = false
+    // Dragging the recorder down from the set list: only a pull that starts on a list already
+    // resting at its top picks the recorder up; the driver moves it with the finger.
     @State private var listDragActive = false
     @State private var listDragBaseline: CGFloat = 0
-    /// Translation at which a drag on an already-extended header handed over to the
-    /// recorder's dismissal (non-nil while that hand-over is in flight).
+    /// The current list gesture was judged not to be a recorder drag (it started scrolled
+    /// down, or went up or sideways first) — it stays a scroll until the finger lifts.
+    @State private var listDragDeclined = false
+    @GestureState private var listGestureIsLive = false
+    /// Translation at which a drag on a fully extended header picked the recorder up
+    /// (non-nil while that drag is in flight).
     @State private var headerDismissBaseline: CGFloat?
+    @GestureState private var sheetGestureIsLive = false
 
     @FocusState var isFocusingTitleTextfield: Bool
     /// The workout note's focus. While it is up the set list stops scrolling, and the sheet ignores
@@ -223,18 +224,26 @@ struct WorkoutRecorderScreen: View {
             .onChange(of: isFocusingTitleTextfield) {
                 if isFocusingTitleTextfield { focusedIntegerFieldIndex = nil }
             }
-            .onChange(of: workoutRecorderIsDragging) {
-                if workoutRecorderIsDragging {
-                    dismissKeyboard()
-                } else {
-                    // Safety net: whenever the drag settles (dismiss committed or
-                    // snapped back), re-enable scrolling and forget the hand-over
-                    // baselines even if the gesture's own onEnded didn't fire (e.g.
-                    // the scroll pan won the arbitration).
+            // A cancelled gesture never reaches `onEnded`: put the recorder back and forget
+            // the drag. Deferred a tick so a regular end, which also resets the gesture state,
+            // has run first and this finds nothing left to do.
+            .onChange(of: listGestureIsLive) {
+                guard !listGestureIsLive else { return }
+                DispatchQueue.main.async {
+                    listDragDeclined = false
+                    guard listDragActive else { return }
                     listDragActive = false
+                    recorderDragDriver.dragCancelled()
+                }
+            }
+            .onChange(of: sheetGestureIsLive) {
+                guard !sheetGestureIsLive else { return }
+                DispatchQueue.main.async {
+                    guard headerDismissBaseline != nil else { return }
                     headerDismissBaseline = nil
                     topSheet.dragStart = nil
                     topSheet.isDragging = false
+                    recorderDragDriver.dragCancelled()
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -386,14 +395,12 @@ struct WorkoutRecorderScreen: View {
             .mask {
                 RecorderListFadeMask(model: topSheet)
             }
-            // One geometry observer, two jobs: `scrollIsAtTop` gates the list's drag-to-dismiss,
-            // and the scroll folds the sheet (see `RecorderTopSheetModel.scrollDidChange`).
+            // The offset feeds the recorder drag's at-top check, and the scroll folds the sheet
+            // (see `RecorderTopSheetModel.scrollDidChange`).
             .onScrollGeometryChange(for: CGFloat.self) { geometry in
                 geometry.contentOffset.y + geometry.contentInsets.top
             } action: { _, newOffset in
                 scrollTracker.offset = newOffset
-                let isAtTop = newOffset <= 2
-                if scrollIsAtTop != isAtTop { scrollIsAtTop = isAtTop }
                 // Lock-step with the finger: never let an animated scroll (the opening scroll to the
                 // last set, a focus scroll) turn the fold into a trailing spring.
                 var transaction = Transaction()
@@ -410,16 +417,24 @@ struct WorkoutRecorderScreen: View {
             } action: { _, height in
                 if abs(height - listViewportHeight) > 8 { listViewportHeight = height }
             }
-            // Freeze the list while a dismiss-drag is in flight so it can't rubber-band against
-            // the screen the driver is translating, while the note is being written, and while
-            // the finish panel owns the screen.
+            .onScrollPhaseChange { _, newPhase, context in
+                let touched = newPhase == .tracking || newPhase == .interacting
+                if touched, !scrollTracker.isTouched {
+                    let geometry = context.geometry
+                    scrollTracker.offsetAtTouch = geometry.contentOffset.y + geometry.contentInsets.top
+                }
+                scrollTracker.isTouched = touched
+            }
+            // Freeze the list while it is dragging the recorder so it can't rubber-band inside
+            // the moving screen, while the note is being written, and while the finish panel
+            // owns the screen.
             .scrollDisabled(listDragActive || isNoteFieldFocused || topSheet.isFinishing)
-            // The whole set list is a drag handle once at the top: dragging
-            // down from there drives the same interactive dismissal as the
-            // header. Simultaneous so taps, scrolling and context menus keep
-            // working; the gate below only latches on a downward drag at top.
+            // The whole set list is a handle for dragging the recorder down, once it rests at
+            // its top. Simultaneous so taps, scrolling and context menus keep working; the gate
+            // below only latches on a pull that starts at the top and heads down.
             .simultaneousGesture(
                 DragGesture(minimumDistance: 12, coordinateSpace: .global)
+                    .updating($listGestureIsLive) { _, isLive, _ in isLive = true }
                     .onChanged { value in
                         handleListDragChanged(value)
                     }
@@ -435,7 +450,6 @@ struct WorkoutRecorderScreen: View {
             .sheet(isPresented: Binding(
                 get: {
                     workoutRecorderIsSettled
-                        && !workoutRecorderIsDragging
                         && !topSheet.isFinishing
                         && !isKbdTest
                         && !ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SHEET")
@@ -740,11 +754,12 @@ struct WorkoutRecorderScreen: View {
 
     /// A finger on the sheet moves its edge 1:1, wherever the list is; release snaps to the nearest
     /// stop, or the next one in the direction of a fling. Pulling down on a sheet that is already
-    /// all the way out while the list rests at its top has nothing left to open, so past the
-    /// engagement distance that pull drags the whole recorder down instead. Measured globally:
-    /// once the dismissal has the screen, the header moves with it.
+    /// all the way out while the list rests at its top has nothing left to open, so that pull
+    /// drags the whole recorder down instead (decided at its first movement, for the whole
+    /// gesture). Measured globally: while the recorder is being dragged, the header moves with it.
     private var sheetDragGesture: some Gesture {
         DragGesture(minimumDistance: 10, coordinateSpace: .global)
+            .updating($sheetGestureIsLive) { _, isLive, _ in isLive = true }
             .onChanged { value in
                 // Finishing has its own handles (the title row and the bar), and minimising behind
                 // a half-finished workout would be a trap.
@@ -760,17 +775,18 @@ struct WorkoutRecorderScreen: View {
                 }
                 guard let start = topSheet.dragStart else { return }
                 if headerDismissBaseline == nil,
-                   translation >= RECORDER_DISMISS_ENGAGEMENT_DISTANCE,
+                   start.isFirstChange,
+                   translation > abs(value.translation.width),
                    start.scrollOffset <= 2,
-                   start.wasFullyOpen
+                   start.wasFullyOpen,
+                   recorderDragDriver.canBeginDrag
                 {
                     headerDismissBaseline = translation
-                    withAnimation(sheetAnimation) { topSheet.reveal = topSheet.openStop }
+                    dismissKeyboard()
                 }
+                topSheet.dragStart?.isFirstChange = false
                 if let baseline = headerDismissBaseline {
-                    recorderDragDriver.dragChanged(
-                        translation: CGSize(width: 0, height: translation - baseline)
-                    )
+                    recorderDragDriver.dragChanged(translation: translation - baseline)
                     return
                 }
                 topSheet.reveal = RecorderTopSheetModel.rubberBand(
@@ -785,8 +801,8 @@ struct WorkoutRecorderScreen: View {
                     headerDismissBaseline = nil
                     topSheet.isDragging = false
                     recorderDragDriver.dragEnded(
-                        translation: CGSize(width: 0, height: value.translation.height - baseline),
-                        velocity: CGSize(width: 0, height: value.velocity.height)
+                        translation: value.translation.height - baseline,
+                        velocity: value.velocity.height
                     )
                     return
                 }
@@ -1070,32 +1086,40 @@ struct WorkoutRecorderScreen: View {
         return listViewportHeight + topSheet.actionsHeight
     }
 
-    // MARK: - List drag-to-dismiss
+    // MARK: - List drag
 
-    /// Latches a dismiss-drag only once the list is resting at its top and the pull has
-    /// carried a deliberate `RECORDER_DISMISS_ENGAGEMENT_DISTANCE` downward, then drives the
-    /// shared driver with the translation measured from the moment it latched (so the screen
-    /// picks up under the finger instead of jumping).
+    /// Decides at the gesture's first movement whether it drags the recorder: only when the list
+    /// was resting at its top when the finger landed and the pull heads down. Anything else stays
+    /// a scroll until the finger lifts — so a swipe that scrolls the list back to its top can
+    /// never carry on into moving the recorder. Once picked up, the recorder follows the finger
+    /// from where it latched (so it doesn't jump) and is only decided on release.
     private func handleListDragChanged(_ value: DragGesture.Value) {
+        guard !listDragDeclined else { return }
         if !listDragActive {
-            guard scrollIsAtTop,
-                  value.translation.height >= RECORDER_DISMISS_ENGAGEMENT_DISTANCE,
-                  value.translation.height > abs(value.translation.width)
-            else { return }
+            // Before the scroll view has reacted, the live offset still is the touch-down offset.
+            let offsetAtTouch = scrollTracker.isTouched ? scrollTracker.offsetAtTouch : scrollTracker.offset
+            guard offsetAtTouch <= 2,
+                  value.translation.height > abs(value.translation.width),
+                  !topSheet.isFinishing,
+                  recorderDragDriver.canBeginDrag
+            else {
+                listDragDeclined = true
+                return
+            }
             listDragActive = true
             listDragBaseline = value.translation.height
+            dismissKeyboard()
         }
-        recorderDragDriver.dragChanged(
-            translation: CGSize(width: 0, height: value.translation.height - listDragBaseline)
-        )
+        recorderDragDriver.dragChanged(translation: value.translation.height - listDragBaseline)
     }
 
     private func handleListDragEnded(_ value: DragGesture.Value) {
+        listDragDeclined = false
         guard listDragActive else { return }
         listDragActive = false
         recorderDragDriver.dragEnded(
-            translation: CGSize(width: 0, height: value.translation.height - listDragBaseline),
-            velocity: CGSize(width: 0, height: value.velocity.height)
+            translation: value.translation.height - listDragBaseline,
+            velocity: value.velocity.height
         )
     }
 
@@ -1426,8 +1450,6 @@ final class RecorderSheetGeometry: ObservableObject {
 /// frequent publishes and the per-frame sheet-geometry updates re-render only this small
 /// overlay, never the whole recorder tree.
 private struct FloatingChronoControlsOverlay: View {
-    @Environment(\.workoutRecorderIsDragging) private var workoutRecorderIsDragging
-
     @ObservedObject var chronograph: Chronograph
     @ObservedObject var workoutRecorder: WorkoutRecorder
     @ObservedObject var sheetGeometry: RecorderSheetGeometry
@@ -1554,11 +1576,10 @@ private struct FloatingChronoControlsOverlay: View {
         !(chronograph.mode == .timer && Int(chronograph.seconds) == 0)
     }
 
-    /// Hidden while the recorder is being dragged, and before the tray has been measured — but
-    /// never while a keyboard is on screen: the tray's measured height swings wildly as one opens
-    /// over it, and `toolbarOpacity`'s fade would take the controls away exactly mid-slide.
+    /// Hidden before the tray has been measured — but never while a keyboard is on screen: the
+    /// tray's measured height swings wildly as one opens over it, and `toolbarOpacity`'s fade
+    /// would take the controls away exactly mid-slide.
     private var opacity: CGFloat {
-        if workoutRecorderIsDragging { return 0 }
         if isKeyboardVisible { return 1 }
         return sheetGeometry.sheetHeight > 0 ? sheetGeometry.toolbarOpacity : 0
     }

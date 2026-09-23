@@ -69,8 +69,10 @@ final class RecorderTopSheetModel {
     struct DragStart {
         let reveal: CGFloat
         let scrollOffset: CGFloat
-        /// Nothing was left to open — only then may a long pull hand over to the dismissal.
+        /// Nothing was left to open — only then may a pull drag the whole recorder down.
         let wasFullyOpen: Bool
+        /// Still at the gesture's first movement, where the recorder-drag decision is made.
+        var isFirstChange = true
     }
 
     // MARK: Derived

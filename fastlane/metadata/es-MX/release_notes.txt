@@ -1,32 +1,30 @@
-LOGIT 5.1 reúne todo tu progreso en un solo Resumen, rehace el grabador de entrenamientos y agrega nuevas formas de registrar lo que entrenas.
+LOGIT 5.2 cambia cómo termina un entrenamiento, le da un enfoque a tu entrenamiento y agrega más formas de registrar lo que haces.
 
-Un solo Resumen
-Esta semana y Progreso ahora son una sola pantalla. Elige el periodo una vez —4 semanas, 3 meses o un año— y cada tarjeta, gráfica y pantalla de detalle lo seguirá.
+Un grabador nuevo
+El encabezado del entrenamiento ahora es una hoja que flota sobre tus series. Deslízalo hacia abajo para Minimizar y Finalizar, y un poco más para ver tus estadísticas y una nota. Cuando bajas todo el grabador, ahora sigue a tu dedo, así que un deslizamiento rápido ya no lo minimiza por accidente.
 
-Fuerza de un vistazo
-Una nueva tarjeta de Fuerza encabeza el Resumen con tu tendencia y abre una pantalla de detalle completa: tus mejores levantamientos, los ejercicios que impulsan el cambio y una gráfica que puedes mantener presionada para consultar cualquier punto.
+Termina con fuerza
+Al finalizar un entrenamiento ves lo que lograste: tu objetivo semanal llenándose y luego tus nuevos récords personales y mejoras. Califica tu esfuerzo con la misma escala que Apple Fitness (la calificación también llega a Apple Salud) y agrega una nota para recordar la sesión.
 
-Equilibrio muscular, reconstruido
-La vista de Grupos musculares ahora muestra cada grupo como una barra que se llena con su parte de tus series, para que veas de un vistazo qué entrenas y qué estás descuidando.
+Enfoque del entrenamiento
+Los objetivos de equilibrio muscular ahora son series por semana para cada grupo muscular. Elige un enfoque, como Cuerpo completo, Tren superior, Tren inferior, Brazos y hombros o Cardio, y LOGIT ajusta los objetivos a tu semana. El Resumen te dice en qué grupos vas por detrás, y al tocar una barra ves su objetivo y los ejercicios detrás de ella.
 
-Tu semana, en el Resumen
-El objetivo semanal ahora es un arco con tu conteo adentro, en la fila del título del Resumen. Tócalo y ese mismo arco se abre a pantalla completa, sobre tu semana en colores musculares, tu racha y el siguiente hito.
+Más formas de registrar
+Series asistidas, objetivos de tiempo para durar más o ir más rápido, y tiempos que escribes como 32:15 en vez de 1935. Elige el formato de tiempo para cada ejercicio.
 
-Un grabador mejor
-El encabezado del entrenamiento se pliega al desplazarte y vuelve a bajar con el dedo. Las superseries son una sola tarjeta con los ejercicios paginados adentro, compartiendo una única barra de acciones.
+Apple Salud
+La grasa corporal ahora se sincroniza en ambos sentidos con Salud, y al agregar tu altura en Ajustes obtienes tu IMC.
 
-Nuevas formas de registrar
-Registra distancia, distancia + duración, peso + distancia y ejercicios solo de duración o solo de repeticiones. El editor de ejercicios ahora arma la medición a partir de los campos que realmente registras, con vista previa en vivo.
+En tu pantalla bloqueada
+La Actividad en vivo ahora se ve como el grabador: la serie que estás registrando o tu descanso, y nada más.
 
-Apple Health
-Los entrenamientos terminados se escriben en Salud, incluida una importación de tu historial, además de sincronización bidireccional del peso corporal y una estimación de calorías activas para cada entrenamiento.
-
-Más en 5.1
-· Historial con secciones semanales, estadísticas por sección y filtros
-· Las plantillas ahora siguen exactamente el diseño de los entrenamientos
-· Exporta todo lo que has registrado en un archivo que tú conservas
-· Cuenta regresiva del descanso en la Dynamic Island
-· Borrar un ejercicio ya no afecta tu historial de entrenamientos
-· Gráficas más nítidas, redondeo de libras corregido y mejor redacción en todos los idiomas
+Más en 5.2
+· La búsqueda entiende fechas: prueba con un mes, un día de la semana o "la semana pasada"
+· Explicaciones más claras en cada pantalla de métricas, y el e1RM ahora se llama Fuerza
+· Las series descendentes ahora se sincronizan entre tus dispositivos con iCloud
+· Los ejercicios y plantillas que iCloud duplicó se vuelven a unir en uno, sin perder ninguna serie
+· Cancelar ahora sí descarta un entrenamiento
+· Una barra de teclado flotante con Siguiente
+· Correcciones de un cierre inesperado en el Historial y de íconos de pestañas que se quedaban coloreados
 
 Gracias por entrenar con LOGIT. ¡Sigue así!

@@ -1,32 +1,30 @@
-O LOGIT 5.1 reúne todo o seu progresso em um único Resumo, reconstrói o gravador de treino e traz novas formas de registrar o que você treina.
+O LOGIT 5.2 muda o jeito como um treino termina, dá um foco ao seu treino e traz novas formas de registrar o que você faz.
 
-Um só Resumo
-Esta semana e Progresso agora são uma única tela. Escolha o período uma vez — 4 semanas, 3 meses ou um ano — e cada bloco, gráfico e tela de detalhe segue essa escolha.
+Um novo gravador
+O cabeçalho do treino agora é uma folha que flutua sobre as suas séries. Puxe para baixo para Minimizar e Concluir, e mais um pouco para ver suas estatísticas e uma nota. Ao puxar o gravador inteiro para baixo, ele agora acompanha o seu dedo, então um gesto rápido não o minimiza mais sem querer.
 
-Força num relance
-Um novo bloco de Força abre o Resumo com a sua tendência e leva a uma tela de detalhe completa: seus melhores levantamentos, os exercícios que puxam a mudança e um gráfico que você pode manter pressionado para ler qualquer ponto.
+Termine com força
+Ao concluir um treino, você vê o que ele rendeu: sua meta semanal se completando e, depois, seus novos recordes pessoais e melhorias. Avalie seu esforço na mesma escala do Apple Fitness (a avaliação também vai para o app Saúde) e adicione uma nota para lembrar da sessão.
 
-Equilíbrio muscular, reconstruído
-A visão geral dos Grupos Musculares agora mostra cada grupo como uma barra que se preenche com a sua fatia das séries, para você ver num relance o que treina e o que anda deixando de lado.
+Foco do treino
+As metas de equilíbrio muscular agora são séries por semana para cada grupo muscular. Escolha um foco, como Corpo inteiro, Parte superior, Parte inferior, Braços e ombros ou Cardio, e o LOGIT ajusta as metas à sua semana. O Resumo mostra os grupos em que você está atrasado, e tocar em uma barra mostra a meta e os exercícios por trás dela.
 
-Sua semana, no Resumo
-A meta semanal agora é um arco com a sua contagem no centro, na própria linha de título do Resumo. Toque nele e o mesmo arco se abre em tela cheia, sobre a sua semana em cores dos músculos, sua sequência e o próximo marco.
-
-Um gravador melhor
-O cabeçalho do treino se recolhe conforme você rola e volta a descer com o dedo. Os supersets são um único cartão com os exercícios paginados dentro dele, com uma só barra de ações.
-
-Novas formas de registrar
-Registre distância, distância + duração, peso + distância e exercícios só de duração ou só de repetições. O editor de exercícios agora monta a medição a partir dos campos que você realmente acompanha, com pré-visualização ao vivo.
+Mais formas de registrar
+Séries assistidas, metas de tempo para durar mais ou ir mais rápido, e tempos digitados como 32:15 em vez de 1935. Escolha o formato de tempo para cada exercício.
 
 Apple Saúde
-Treinos finalizados são gravados no Saúde, incluindo o preenchimento do seu histórico, além de sincronização do peso corporal nos dois sentidos e uma estimativa de calorias ativas para cada treino.
+A gordura corporal agora é sincronizada nos dois sentidos com o Saúde, e ao informar sua altura em Ajustes você vê o seu IMC.
 
-Mais na 5.1
-· Histórico com seções semanais, estatísticas por seção e filtros
-· Os modelos agora seguem exatamente o design dos treinos
-· Exporte tudo o que você registrou em um arquivo que fica com você
-· Contagem regressiva do descanso na Dynamic Island
-· Excluir um exercício não mexe mais no seu histórico de treinos
-· Gráficos mais nítidos, arredondamento de libras corrigido e textos melhores em todos os idiomas
+Na sua Tela Bloqueada
+A Atividade ao Vivo agora se parece com o gravador: a série que você está registrando, ou o seu descanso, e nada mais.
+
+Mais no 5.2
+· A busca entende datas: tente um mês, um dia da semana ou "semana passada"
+· Explicações mais claras em cada tela de métricas, e o e1RM agora se chama Força
+· As séries drop agora sincronizam entre seus dispositivos com o iCloud
+· Exercícios e modelos duplicados pelo iCloud voltam a ser um só, sem perder nenhuma série
+· Cancelar agora descarta de verdade um treino
+· Uma barra de teclado flutuante com Seguinte
+· Correções de uma falha no Histórico e de ícones de abas que ficavam coloridos
 
 Obrigado por treinar com o LOGIT. Continue assim!

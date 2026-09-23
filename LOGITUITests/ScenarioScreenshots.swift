@@ -2070,10 +2070,19 @@ final class ScenarioScreenshots: XCTestCase {
         app.launch()
         // The recorder opens scrolled to its last set; the lowest field on screen is that set's
         // weight.
-        let anyField = app.textFields.firstMatch
-        XCTAssertTrue(anyField.waitForExistence(timeout: 30), "The recorder's set fields never appeared")
-        sleep(2)
-        let onScreen = app.textFields.allElementsBoundByIndex.filter {
+        // The recorder presents over the app with an animation and then scrolls to its last set,
+        // so poll until set fields sit on screen rather than trusting a fixed delay.
+        var onScreen: [XCUIElement] = []
+        let deadline = Date().addingTimeInterval(30)
+        while onScreen.isEmpty, Date() < deadline {
+            onScreen = app.textFields.allElementsBoundByIndex.filter {
+                $0.exists && $0.frame.minY > 0 && $0.frame.maxY < app.frame.height * 0.9
+            }
+            if onScreen.isEmpty { sleep(1) }
+        }
+        // Let the opening scroll to the last set finish before picking the lowest field.
+        sleep(1)
+        onScreen = app.textFields.allElementsBoundByIndex.filter {
             $0.exists && $0.frame.minY > 0 && $0.frame.maxY < app.frame.height * 0.9
         }
         guard let lastField = onScreen.max(by: {

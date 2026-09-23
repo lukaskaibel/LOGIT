@@ -168,3 +168,226 @@ final class RecorderTopSheetModelTests: XCTestCase {
         XCTAssertLessThan(stretched, panel + 40)
     }
 }
+
+// MARK: - Finish panel recap
+
+/// The finish panel's recap: which week a workout counts in, how the goal moves, when a
+/// finish earns its celebration, and that records and improvements never list an exercise twice.
+final class WorkoutRecapTests: XCTestCase {
+    private var database: Database!
+    private var builder: TestDataBuilder!
+    private let calendar = Calendar.current
+
+    /// A Wednesday at noon, so every "earlier this week" and "last week" below is unambiguous
+    /// whatever day the suite runs on.
+    private lazy var workoutDate: Date = {
+        let week = Date.now.startOfWeek
+        return calendar.date(byAdding: .hour, value: 2 * 24 + 12, to: week)!
+    }()
+
+    override func setUp() {
+        super.setUp()
+        database = Database(inMemory: true)
+        builder = TestDataBuilder(database: database)
+    }
+
+    override func tearDown() {
+        database = nil
+        builder = nil
+        super.tearDown()
+    }
+
+    // MARK: Helpers
+
+    private func day(_ offset: Int, from date: Date? = nil) -> Date {
+        calendar.date(byAdding: .day, value: offset, to: date ?? workoutDate)!
+    }
+
+    /// A finished workout with one logged set per exercise.
+    @discardableResult
+    private func finishedWorkout(on date: Date, _ sets: [(Exercise, reps: Int, grams: Int)] = []) -> Workout {
+        let workout = database.newWorkout(name: "Past", date: date)
+        let entries = sets.isEmpty ? [(builder.createExercise(name: "Filler"), reps: 10, grams: 20000)] : sets
+        for (exercise, reps, grams) in entries {
+            let group = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: exercise, workout: workout)
+            database.newStandardSet(repetitions: reps, weight: grams, setGroup: group)
+        }
+        return workout
+    }
+
+    /// The in-progress workout being finished.
+    private func currentWorkout(_ sets: [(Exercise, reps: Int, grams: Int)]) -> Workout {
+        let workout = finishedWorkout(on: workoutDate, sets)
+        workout.name = "Current"
+        workout.isCurrentWorkout = true
+        return workout
+    }
+
+    // MARK: The week
+
+    func testTheWeekCountsFinishedWorkoutsBeforeThisOne() {
+        finishedWorkout(on: day(-1))
+        finishedWorkout(on: day(-2))
+        let current = currentWorkout([(builder.createExercise(), reps: 10, grams: 50000)])
+
+        let recap = WorkoutRecap.compute(for: current, database: database)
+
+        XCTAssertEqual(recap.weekCountBefore, 2)
+        XCTAssertEqual(recap.weekCountAfter, 3)
+        let goal = recap.goal(target: 3)
+        XCTAssertEqual(goal?.countBefore, 2)
+        XCTAssertEqual(goal?.countAfter, 3)
+        XCTAssertEqual(goal?.isReachedByThisWorkout, true)
+        XCTAssertEqual(goal?.remaining, 0)
+        XCTAssertEqual(goal?.progressBefore ?? 0, 2.0 / 3.0, accuracy: 0.0001)
+        XCTAssertEqual(goal?.progressAfter, 1)
+    }
+
+    func testEmptyWorkoutsAndOtherWeeksDontCount() {
+        _ = database.newWorkout(name: "Empty", date: day(-1)) // no set groups
+        finishedWorkout(on: day(-7)) // last week
+        let current = currentWorkout([(builder.createExercise(), reps: 10, grams: 50000)])
+
+        let recap = WorkoutRecap.compute(for: current, database: database)
+
+        XCTAssertEqual(recap.weekCountBefore, 0)
+        XCTAssertEqual(recap.weekWorkouts.count, 0)
+        XCTAssertNil(recap.goal(target: 0), "No goal set means no goal to report")
+        XCTAssertEqual(recap.goal(target: 4)?.remaining, 3)
+    }
+
+    func testAnAlreadyMetWeekReportsTheExtraWorkout() {
+        finishedWorkout(on: day(-1))
+        finishedWorkout(on: day(-2))
+        let current = currentWorkout([(builder.createExercise(), reps: 10, grams: 50000)])
+
+        let goal = WorkoutRecap.compute(for: current, database: database).goal(target: 2)
+
+        XCTAssertEqual(goal?.wasAlreadyMet, true)
+        XCTAssertEqual(goal?.isReachedByThisWorkout, false)
+        XCTAssertEqual(goal?.beyond, 1)
+    }
+
+    // MARK: Records, improvements, celebration
+
+    func testRecordsAndImprovementsNeverListAnExerciseTwice() {
+        let bench = builder.createExercise(name: "Bench", muscleGroup: .chest)
+        let row = builder.createExercise(name: "Row", muscleGroup: .back)
+        let curl = builder.createExercise(name: "Curl", muscleGroup: .biceps)
+        // Bench: beaten outright — a record, and so not repeated under the improvements.
+        finishedWorkout(on: day(-7), [(bench, reps: 5, grams: 100_000)])
+        // Row: heavier two months ago than today, but better than anything this month.
+        finishedWorkout(on: day(-60), [(row, reps: 8, grams: 120_000)])
+        finishedWorkout(on: day(-10), [(row, reps: 5, grams: 100_000)])
+        let current = currentWorkout([
+            (bench, reps: 5, grams: 105_000),
+            (row, reps: 6, grams: 110_000),
+            (curl, reps: 10, grams: 15000), // first session ever
+        ])
+
+        let recap = WorkoutRecap.compute(for: current, database: database)
+
+        XCTAssertEqual(recap.records.map { $0.exercise.name }, ["Bench"])
+        XCTAssertEqual(recap.improvements.map { $0.exercise.name }, ["Row"])
+        XCTAssertEqual(recap.firstSessionCount, 1)
+        XCTAssertTrue(recap.celebrates(target: 0), "A record earns the celebration on its own")
+    }
+
+    func testAnImprovementShowsTheWeightWhenItAlsoWentUp() {
+        let press = builder.createExercise(name: "Press", muscleGroup: .shoulders)
+        let curl = builder.createExercise(name: "Curl", muscleGroup: .biceps)
+        // Two months ago both were heavier than anything this month, so neither is a record.
+        finishedWorkout(on: day(-60), [(press, reps: 8, grams: 70000), (curl, reps: 12, grams: 20000)])
+        finishedWorkout(on: day(-10), [(press, reps: 5, grams: 50000), (curl, reps: 8, grams: 15000)])
+        // Press: more weight AND a better estimate → the weight is what's shown.
+        // Curl: the same weight for more reps → only the estimate moved, so Strength as a percent.
+        let current = currentWorkout([(press, reps: 5, grams: 55000), (curl, reps: 10, grams: 15000)])
+
+        let recap = WorkoutRecap.compute(for: current, database: database)
+        let shown = Dictionary(uniqueKeysWithValues: recap.improvements.map {
+            ($0.exercise.name ?? "", recap.displayedTrend(for: $0))
+        })
+
+        XCTAssertEqual(shown["Press"]?.metric, .weight)
+        XCTAssertEqual(shown["Press"]?.current, 55000)
+        XCTAssertEqual(shown["Press"]?.baseline, 50000)
+        XCTAssertEqual(shown["Curl"]?.metric, .estimatedOneRepMax)
+        XCTAssertEqual(recap.report.weightTrends.count, 2, "Every Strength-scored exercise gets a weight comparison")
+    }
+
+    func testAStrengthOnlyRecordIsAnImprovementNotARecord() {
+        let press = builder.createExercise(name: "Press", muscleGroup: .shoulders)
+        // Best weight 100 kg (for 5), best reps 12 (at 60 kg): 95 kg for 10 beats neither, but its
+        // estimate (126.7 kg) beats every earlier one (116.7 kg).
+        finishedWorkout(on: day(-14), [(press, reps: 5, grams: 100_000)])
+        finishedWorkout(on: day(-7), [(press, reps: 12, grams: 60000)])
+        let current = currentWorkout([(press, reps: 10, grams: 95000)])
+
+        let recap = WorkoutRecap.compute(for: current, database: database)
+
+        XCTAssertEqual(recap.report.exerciseRecords.map { $0.lead.metric }, [.estimatedOneRepMax], "The report still counts the estimate")
+        XCTAssertTrue(recap.records.isEmpty, "The finish panel does not call an estimate a record")
+        XCTAssertEqual(recap.improvements.map { $0.exercise.name }, ["Press"])
+        XCTAssertEqual(recap.displayedTrend(for: recap.improvements[0]).metric, .estimatedOneRepMax, "No weight gain, so Strength as a percent")
+        XCTAssertFalse(recap.celebrates(target: 0), "An estimate moving doesn't earn the confetti on its own")
+    }
+
+    func testAnOrdinaryFinishDoesNotCelebrate() {
+        let squat = builder.createExercise(name: "Squat", muscleGroup: .legs)
+        finishedWorkout(on: day(-7), [(squat, reps: 5, grams: 140_000)])
+        let current = currentWorkout([(squat, reps: 5, grams: 120_000)])
+
+        let recap = WorkoutRecap.compute(for: current, database: database)
+
+        XCTAssertTrue(recap.records.isEmpty)
+        XCTAssertFalse(recap.celebrates(target: 3), "One of three workouts: the week moved, nothing was won")
+        XCTAssertFalse(recap.celebrates(target: 1), "Winning the week is the arc's moment, not the confetti's")
+        XCTAssertEqual(recap.goal(target: 1)?.isReachedByThisWorkout, true)
+    }
+
+    func testTheCelebrationKeyIsStableUntilSomethingChanges() {
+        let press = builder.createExercise(name: "Press", muscleGroup: .shoulders)
+        finishedWorkout(on: day(-7), [(press, reps: 5, grams: 50000)])
+        let current = currentWorkout([(press, reps: 5, grams: 52500)])
+
+        let first = WorkoutRecap.compute(for: current, database: database)
+        let second = WorkoutRecap.compute(for: current, database: database)
+        XCTAssertEqual(first.celebrationKey(target: 3), second.celebrationKey(target: 3))
+
+        current.setGroups.first?.sets.first?.entries.first?.weight = 55000
+        let changed = WorkoutRecap.compute(for: current, database: database)
+        XCTAssertNotEqual(first.celebrationKey(target: 3), changed.celebrationKey(target: 3))
+    }
+
+    func testTheCascadeLandsRowsOneAfterAnother() {
+        XCTAssertEqual(FinishRevealTiming.total(rowCount: 0), 0)
+        XCTAssertGreaterThan(FinishRevealTiming.rowDelay(index: 2), FinishRevealTiming.rowDelay(index: 1))
+        XCTAssertGreaterThan(
+            FinishRevealTiming.total(rowCount: 3),
+            FinishRevealTiming.rowDelay(index: 2) + FinishRevealTiming.rollAfterRow,
+            "The cascade ends after the last row has landed and rolled"
+        )
+    }
+
+    func testHighlightsListRecordsBeforeImprovements() {
+        let bench = builder.createExercise(name: "Bench", muscleGroup: .chest)
+        let row = builder.createExercise(name: "Row", muscleGroup: .back)
+        finishedWorkout(on: day(-7), [(bench, reps: 5, grams: 100_000)])
+        finishedWorkout(on: day(-60), [(row, reps: 8, grams: 120_000)])
+        finishedWorkout(on: day(-10), [(row, reps: 5, grams: 100_000)])
+        let current = currentWorkout([(row, reps: 6, grams: 110_000), (bench, reps: 5, grams: 105_000)])
+
+        let recap = WorkoutRecap.compute(for: current, database: database)
+
+        XCTAssertEqual(recap.highlights.map { $0.exercise.name }, ["Bench", "Row"], "Records first, whatever the order in the workout")
+        XCTAssertEqual(recap.highlights.map(\.isRecord), [true, false])
+        XCTAssertEqual(recap.highlights.first?.metric, .weight)
+        XCTAssertEqual(recap.highlights.first?.previous, 100_000)
+        XCTAssertEqual(recap.highlights.first?.current, 105_000)
+    }
+
+    func testRevealPhasesRunTopToBottom() {
+        let phases: [FinishRevealPhase] = [.hidden, .hero, .heroFilled, .heroSettled, .achievements, .details, .done]
+        XCTAssertEqual(phases, phases.sorted())
+    }
+}

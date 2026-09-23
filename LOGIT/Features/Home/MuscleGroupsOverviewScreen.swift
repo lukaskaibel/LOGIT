@@ -282,6 +282,7 @@ struct MuscleGroupsOverviewScreen: View {
                 .buttonStyle(MuscleBalanceBarButtonStyle())
                 .targetPopover(
                     isPresented: popoverBinding(.bar(entry.muscleGroup)),
+                    arrowEdge: .top,
                     group: entry.muscleGroup,
                     window: window,
                     workouts: windowWorkouts,
@@ -439,6 +440,7 @@ struct MuscleGroupsOverviewScreen: View {
         .buttonStyle(MuscleBalanceRowButtonStyle())
         .targetPopover(
             isPresented: popoverBinding(.row(group)),
+            arrowEdge: nil,
             group: group,
             window: window,
             workouts: windowWorkouts,
@@ -539,16 +541,19 @@ private struct MuscleBalanceBarButtonStyle: ButtonStyle {
 // MARK: - Target popover
 
 private extension View {
-    /// Hangs a group's `MuscleTargetPopover` below this view, arrow up — the one popover a row and a
-    /// bar both open.
+    /// Hangs a group's `MuscleTargetPopover` off this view — the one popover a row and a bar both
+    /// open. A bar pins it below (`.top`), so the bar stays in sight while its target changes; a row
+    /// passes `nil` and lets the system pick, so a row near the bottom of the screen opens it above
+    /// instead of squeezing it under the tab bar.
     func targetPopover(
         isPresented: Binding<Bool>,
+        arrowEdge: Edge?,
         group: MuscleGroup,
         window: TrendWindow,
         workouts: [Workout],
         focusStore: MuscleFocusStore
     ) -> some View {
-        popover(isPresented: isPresented, arrowEdge: .top) {
+        popover(isPresented: isPresented, arrowEdge: arrowEdge) {
             MuscleTargetPopover(group: group, window: window, workouts: workouts)
                 .environmentObject(focusStore)
                 .presentationCompactAdaptation(.popover)

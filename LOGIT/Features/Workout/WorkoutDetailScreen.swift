@@ -96,7 +96,13 @@ struct WorkoutDetailScreen: View {
                             .sectionHeaderStyle2()
                         Spacer()
                         if let progressReport, progressReport.comparableTrendCount > 0 {
-                            exercisesImprovedPill(report: progressReport)
+                            ExercisesImprovedPill(
+                                report: progressReport,
+                                style: workout.sets.muscleGroupGradientStyle(
+                                    startPoint: .bottomLeading,
+                                    endPoint: .topTrailing
+                                )
+                            )
                         }
                     }
                     WorkoutSetGroupList(
@@ -299,30 +305,6 @@ struct WorkoutDetailScreen: View {
                 .frame(width: headerTextHeight, height: headerTextHeight)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    /// Pill beside the "Exercises" section title: how many exercises beat their previous session.
-    /// Muted gray while nothing improved; muscle-group themed once at least one did. The detailed
-    /// per-exercise trends live on each exercise's badge in the list below.
-    private func exercisesImprovedPill(report: WorkoutProgressReport) -> some View {
-        let improved = report.improvedTrendCount
-        // Muscle-group gradient once at least one exercise improved, muted gray otherwise.
-        let style = improved > 0
-            ? workout.sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
-            : AnyShapeStyle(Color.secondary)
-        return ProgressIndicatorPill(symbol: improved > 0 ? "arrow.up" : nil, style: style) {
-            Text(String(format: NSLocalizedString("improvedCount", comment: ""), improved))
-                .font(.system(.footnote, design: .rounded, weight: .bold))
-                .monospacedDigit()
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            String(
-                format: NSLocalizedString("exercisesImproved", comment: ""),
-                improved,
-                report.comparableTrendCount
-            )
-        )
     }
 
     /// The full-width records tile under the stat grid. The per-set volume tile that used to sit

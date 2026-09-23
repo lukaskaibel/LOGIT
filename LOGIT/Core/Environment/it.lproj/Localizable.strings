@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Raggiungi il tuo obiettivo settimanale per iniziare una serie";
+"streakFactFirstWeek" = "La tua prima settimana";
 "streakFactMonth" = "Un mese intero";
 "streakFactQuarter" = "Un trimestre intero";
 "streakFactHalfYear" = "Mezzo anno";
@@ -912,6 +913,14 @@
 "firstTimeForThisWorkout" = "Prima volta con questo allenamento: le prossime sessioni verranno confrontate con questa.";
 "workoutPRInfo" = "Un record personale significa che una serie di questo allenamento ha superato il tuo miglior peso, il tuo maggior numero di ripetizioni o la tua forza migliore di tutti gli allenamenti precedenti. Resta il record di quel giorno anche se nel frattempo lo hai battuto. Se più di questi migliorano insieme, contano come un unico record. Il più concreto guida la scheda: prima un peso davvero sollevato, poi la forza, poi un numero di ripetizioni. Gli altri sono elencati insieme.";
 "alsoARecord" = "Anche un record · %@";
+"showMoreCount" = "Mostra altri %d";
+"finishFirstSessionsOne" = "Prima sessione per 1 esercizio";
+"finishFirstSessionsMany" = "Prima sessione per %d esercizi";
+"finishFirstSessionsDetail" = "La prossima volta avrai un record da battere.";
+"highlightRecordLabel" = "PR di %@";
+"highlightImprovedLabel" = "%@ migliorato";
+"exercisesCountOne" = "1 esercizio";
+"exercisesCountMany" = "%d esercizi";
 "workoutTrendInfo" = "Ogni esercizio ha una metrica di progresso: il valore con cui viene misurato, come il peso o la forza. Il trend confronta il valore migliore raggiunto in questo allenamento con il tuo migliore delle quattro settimane precedenti — lo stesso confronto mostrato dai badge accanto agli esercizi qui sotto.";
 "workoutVolumeCompareInfo" = "Volume totale (peso × ripetizioni di ogni serie) confrontato con l'ultima volta che hai fatto questo allenamento.";
 "improvedCount" = "%d migliorati";
@@ -940,6 +949,9 @@
 "weeklyGoalReached" = "Obiettivo raggiunto";
 "weeklyGoalToGoOne" = "Manca 1 allenamento";
 "weeklyGoalToGoMany" = "Mancano %d allenamenti";
+"ofWeeklyGoal" = "su %d";
+"weeklyGoalBeyondOne" = "1 in più del tuo obiettivo";
+"weeklyGoalBeyondMany" = "%d in più del tuo obiettivo";
 "weeklyStreakWeeks" = "%d sett";
 "muscleBalance" = "Equilibrio muscolare";
 "balance" = "Equilibrio";
@@ -1033,8 +1045,9 @@
 "share" = "Quota";
 "weekStreakSuffix" = "settimane di fila";
 "weeklyGoalAccessibility" = "Obiettivo settimanale, %d di %d allenamenti";
-"weeklyGoalSubtitle" = "del tuo obiettivo di %d allenamenti";
-"milestones" = "Traguardi";
+"workoutGoalPerWeek" = "%d allenamenti a settimana";
+"workoutGoalPerWeekOne" = "1 allenamento a settimana";
+"workoutGoalAboutInfo" = "Il tuo obiettivo di allenamento è il numero di allenamenti che vuoi fare ogni settimana. Ogni settimana in cui lo raggiungi aggiunge una settimana alla tua serie; una settimana in cui non ci arrivi la interrompe. La settimana in corso non interrompe mai la tua serie: conta non appena raggiungi l'obiettivo.\n\nI traguardi sono durate della serie da raggiungere: la tua prima settimana, poi 4 settimane per un mese, 12 un trimestre, 26 mezzo anno, 52 un anno e 104 due anni. Quelli che la tua serie attuale ha già superato sono elencati con la settimana in cui li hai raggiunti, e quando una serie finisce si riparte da zero. Se la tua serie più lunga è più vicina del prossimo traguardo, batterla viene prima, e la settimana in cui ci riesci compare nella lista come nuovo record. Se cambi obiettivo, la tua serie viene ricalcolata con il nuovo numero.";
 "weeksToGo" = "ancora %d";
 "bestStreakLabel" = "Migliore · %d sett";
 "monthWorkoutsCount" = "%d allenamenti";
@@ -1209,6 +1222,7 @@
 "notRated" = "Non valutato";
 "rateYourEffort" = "Valuta il tuo sforzo";
 "addEffort" = "Aggiungi sforzo";
+"rateEffortShort" = "Valuta";
 "effortDescriptions" = "Descrizioni dello sforzo";
 "effortSelectDescription" = "Seleziona la descrizione che corrisponde meglio all'allenamento nel complesso.";
 "effortSkipFootnote" = "Se salti questo allenamento, verrà rimosso dal tuo carico di allenamento in Fitness.";

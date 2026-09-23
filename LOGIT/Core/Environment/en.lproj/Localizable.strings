@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Hit your weekly goal to start a streak";
+"streakFactFirstWeek" = "Your first week";
 "streakFactMonth" = "A full month";
 "streakFactQuarter" = "A full quarter";
 "streakFactHalfYear" = "Half a year";
@@ -912,6 +913,14 @@
 "firstTimeForThisWorkout" = "First time doing this workout — future sessions will be compared against it.";
 "workoutPRInfo" = "A personal record means a set in this workout beat your best weight, your most repetitions, or your best strength from every workout before it. It stays this day's record even if you have beaten it since. When several of these improve at once, they count as one record together. The most concrete one leads the card: first a weight you really lifted, then strength, then a number of repetitions. The rest are listed with it.";
 "alsoARecord" = "Also a record · %@";
+"showMoreCount" = "Show %d more";
+"finishFirstSessionsOne" = "First session for 1 exercise";
+"finishFirstSessionsMany" = "First session for %d exercises";
+"finishFirstSessionsDetail" = "Next time, there's a best to beat.";
+"highlightRecordLabel" = "%@ PR";
+"highlightImprovedLabel" = "%@ improved";
+"exercisesCountOne" = "1 exercise";
+"exercisesCountMany" = "%d exercises";
 "workoutTrendInfo" = "Every exercise has a progress metric: the value it is measured by, such as weight or strength. The trend compares the best value this workout reached with your best from the four weeks before it — the same comparison the badges next to the exercises below show.";
 "workoutVolumeCompareInfo" = "Total volume (weight × reps of every set) compared with the last time you did this workout.";
 "improvedCount" = "%d improved";
@@ -940,6 +949,9 @@
 "weeklyGoalReached" = "Goal reached";
 "weeklyGoalToGoOne" = "1 workout to go";
 "weeklyGoalToGoMany" = "%d workouts to go";
+"ofWeeklyGoal" = "of %d";
+"weeklyGoalBeyondOne" = "1 more than your goal";
+"weeklyGoalBeyondMany" = "%d more than your goal";
 "weeklyStreakWeeks" = "%d wk";
 "muscleBalance" = "Muscle Balance";
 "balance" = "Balance";
@@ -1033,8 +1045,9 @@
 "share" = "Share";
 "weekStreakSuffix" = "week streak";
 "weeklyGoalAccessibility" = "Weekly goal, %d of %d workouts";
-"weeklyGoalSubtitle" = "of your %d-workout goal";
-"milestones" = "Milestones";
+"workoutGoalPerWeek" = "%d workouts a week";
+"workoutGoalPerWeekOne" = "1 workout a week";
+"workoutGoalAboutInfo" = "Your workout goal is how many workouts you want to do each week. Every week you reach it adds a week to your streak; a week that falls short ends it. The current week never breaks your streak — it counts as soon as you reach your goal.\n\nMilestones are streak lengths worth reaching: your first week, then 4 weeks for a month, 12 a quarter, 26 half a year, 52 a year and 104 two years. The ones your current streak has passed are listed with the week you reached them, and when a streak ends, the climb starts again from zero. If your longest streak is closer than the next milestone, beating it comes first, and the week you beat it joins the list as a new record. Changing your goal recounts your streak against the new number.";
 "weeksToGo" = "%d to go";
 "bestStreakLabel" = "Best · %d wks";
 "monthWorkoutsCount" = "%d workouts";
@@ -1209,6 +1222,7 @@
 "notRated" = "Not rated";
 "rateYourEffort" = "Rate Your Effort";
 "addEffort" = "Add Effort";
+"rateEffortShort" = "Rate";
 "effortDescriptions" = "Effort Descriptions";
 "effortSelectDescription" = "Select the description that best matches the workout overall.";
 "effortSkipFootnote" = "Skipping this workout removes it from your Training Load in Fitness.";

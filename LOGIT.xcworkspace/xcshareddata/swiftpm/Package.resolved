@@ -1,5 +1,5 @@
 {
-  "originHash" : "64488b7886d427d9c32310063685605623d22027b7fbdbde800b4a39f9515ce7",
+  "originHash" : "2dc90e1c8ec66d82a82d8d3e892c70a8fe32d80c59ca838d5b07183587230011",
   "pins" : [
     {
       "identity" : "camera-swiftui",
@@ -107,6 +107,15 @@
       "state" : {
         "revision" : "f5a531fcece5d65c75397d01cf2910b31347e0b9",
         "version" : "2.13.4"
+      }
+    },
+    {
+      "identity" : "vortex",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/twostraws/Vortex",
+      "state" : {
+        "revision" : "9d9d9016ceace579455f01f8e0bd59facae7d252",
+        "version" : "1.0.4"
       }
     }
   ],

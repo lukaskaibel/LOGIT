@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Atinja sua meta semanal para iniciar uma sequência";
+"streakFactFirstWeek" = "Sua primeira semana";
 "streakFactMonth" = "Um mês inteiro";
 "streakFactQuarter" = "Um trimestre inteiro";
 "streakFactHalfYear" = "Meio ano";
@@ -912,6 +913,14 @@
 "firstTimeForThisWorkout" = "Primeira vez fazendo este treino — as próximas sessões serão comparadas com esta.";
 "workoutPRInfo" = "Um recorde pessoal significa que uma série deste treino superou seu melhor peso, seu maior número de repetições ou sua melhor força de todos os treinos anteriores. Ele continua sendo o recorde daquele dia mesmo que você já o tenha superado. Quando vários deles melhoram de uma vez, contam juntos como um único recorde. O mais concreto lidera o cartão: primeiro um peso que você realmente levantou, depois a força e depois um número de repetições. Os demais aparecem junto.";
 "alsoARecord" = "Também um recorde · %@";
+"showMoreCount" = "Ver mais %d";
+"finishFirstSessionsOne" = "Primeira sessão de 1 exercício";
+"finishFirstSessionsMany" = "Primeira sessão de %d exercícios";
+"finishFirstSessionsDetail" = "Na próxima vez, haverá uma marca para superar.";
+"highlightRecordLabel" = "PR de %@";
+"highlightImprovedLabel" = "%@ melhorou";
+"exercisesCountOne" = "1 exercício";
+"exercisesCountMany" = "%d exercícios";
 "workoutTrendInfo" = "Cada exercício tem uma métrica de progresso: o valor pelo qual ele é medido, como o peso ou a força. A tendência compara o melhor valor alcançado neste treino com o seu melhor das quatro semanas anteriores — a mesma comparação mostrada nos emblemas ao lado dos exercícios abaixo.";
 "workoutVolumeCompareInfo" = "Volume total (peso × repetições de cada série) comparado com a última vez que você fez este treino.";
 "improvedCount" = "%d melhorados";
@@ -940,6 +949,9 @@
 "weeklyGoalReached" = "Meta alcançada";
 "weeklyGoalToGoOne" = "Falta 1 treino";
 "weeklyGoalToGoMany" = "Faltam %d treinos";
+"ofWeeklyGoal" = "de %d";
+"weeklyGoalBeyondOne" = "1 a mais que sua meta";
+"weeklyGoalBeyondMany" = "%d a mais que sua meta";
 "weeklyStreakWeeks" = "%d sem";
 "muscleBalance" = "Equilíbrio muscular";
 "balance" = "Equilíbrio";
@@ -1033,8 +1045,9 @@
 "share" = "Cota";
 "weekStreakSuffix" = "semanas seguidas";
 "weeklyGoalAccessibility" = "Meta semanal, %d de %d treinos";
-"weeklyGoalSubtitle" = "da sua meta de %d treinos";
-"milestones" = "Marcos";
+"workoutGoalPerWeek" = "%d treinos por semana";
+"workoutGoalPerWeekOne" = "1 treino por semana";
+"workoutGoalAboutInfo" = "Sua meta de treino é quantos treinos você quer fazer por semana. Cada semana em que você a cumpre soma uma semana à sua sequência; uma semana que fica abaixo a encerra. A semana atual nunca quebra sua sequência — ela conta assim que você cumpre a meta.\n\nMarcos são durações de sequência que valem a pena alcançar: sua primeira semana, depois 4 semanas para um mês, 12 um trimestre, 26 meio ano, 52 um ano e 104 dois anos. Os que sua sequência atual já passou aparecem na lista com a semana em que você os alcançou, e quando uma sequência termina, tudo recomeça do zero. Se sua sequência mais longa estiver mais perto que o próximo marco, superá-la vem primeiro, e a semana em que você consegue aparece na lista como novo recorde. Se você mudar sua meta, sua sequência é recalculada com o novo número.";
 "weeksToGo" = "faltam %d";
 "bestStreakLabel" = "Melhor · %d sem";
 "monthWorkoutsCount" = "%d treinos";
@@ -1209,6 +1222,7 @@
 "notRated" = "Não avaliado";
 "rateYourEffort" = "Avalie seu esforço";
 "addEffort" = "Adicionar esforço";
+"rateEffortShort" = "Avaliar";
 "effortDescriptions" = "Descrições do esforço";
 "effortSelectDescription" = "Selecione a descrição que melhor corresponde ao treino como um todo.";
 "effortSkipFootnote" = "Pular este treino o remove da sua carga de treino no Fitness.";

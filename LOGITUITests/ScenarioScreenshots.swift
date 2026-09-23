@@ -105,9 +105,9 @@ final class ScenarioScreenshots: XCTestCase {
     // MARK: - Weekly goal screen
 
     /// The goal screen after the arc redesign: an arc carrying this week's count, the week's day
-    /// rings, one streak row, and the milestone ladder. The month calendar and the 52-week grid it
-    /// used to open with are gone (History already owns a ring calendar), and the ± toolbar button
-    /// went with them — the goal now lives in the line under the count, which is what this drives.
+    /// rings, the streak drawn as a chain with its milestones on it, and an About section. The
+    /// goal reads as the nav bar's subtitle and changes from the slider button in the toolbar — the
+    /// tappable "of your N-workout goal ›" line that used to sit in the arc is gone.
     func testWeeklyGoalScreen() {
         let app = launchApp(scenario: "many")
         let tabBar = app.tabBars.firstMatch
@@ -122,19 +122,18 @@ final class ScenarioScreenshots: XCTestCase {
         let goalButton = app.buttons["weeklyGoalTargetButton"]
         XCTAssertTrue(
             goalButton.waitForExistence(timeout: 5),
-            "Goal screen didn't show the goal line under the count"
+            "Goal screen didn't show the change-goal toolbar button"
         )
         XCTAssertTrue(
-            app.staticTexts["Milestones"].waitForExistence(timeout: 3),
-            "Milestone list missing from the goal screen"
+            app.staticTexts["Streak"].waitForExistence(timeout: 3),
+            "Streak chain missing from the goal screen"
         )
         attach(app, "goal_01_arc")
 
-        // The goal moved out of the toolbar and into the sentence under the count.
         goalButton.tap()
         XCTAssertTrue(
             app.buttons["Change Goal"].waitForExistence(timeout: 5),
-            "The goal line didn't open the target picker"
+            "The toolbar button didn't open the target picker"
         )
         attach(app, "goal_02_picker")
 
@@ -1055,7 +1054,40 @@ final class ScenarioScreenshots: XCTestCase {
             traySearchField.waitForNonExistence(timeout: 5),
             "Tray still up behind the finish panel"
         )
+        // The panel reveals itself in beats (the week, then records, then the rest), so the
+        // capture waits for the last of them.
+        XCTAssertTrue(
+            app.otherElements["finishGoalHero"].firstMatch.waitForExistence(timeout: 5),
+            "The weekly goal hero never appeared (the stress scenario has a goal)"
+        )
+        waitABit(4)
         attach(app, "recorder_14_finish_panel")
+
+        XCTAssertTrue(
+            app.descendants(matching: .any).matching(identifier: "finishHighlights").firstMatch.exists,
+            "The stress scenario's records should be listed under Highlights"
+        )
+        // The exercise list is folded to one row; opening it lists the set groups with their set
+        // counts, and closing it folds them away again.
+        let exercisesToggle = app.buttons["finishExercisesToggle"].firstMatch
+        for _ in 0 ..< 6 where !(exercisesToggle.exists && exercisesToggle.isHittable) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.62))
+                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)))
+            waitABit(1)
+        }
+        XCTAssertTrue(exercisesToggle.exists, "The folded exercise row is missing from the finish panel")
+        XCTAssertEqual(exercisesToggle.value as? String, "collapsed")
+        exercisesToggle.tap()
+        waitABit(2)
+        XCTAssertEqual(exercisesToggle.value as? String, "expanded")
+        XCTAssertTrue(
+            app.otherElements["finishPanelExercises"].staticTexts["Barbell Bench Press"].firstMatch.exists,
+            "Unfolding the exercises should list the set groups"
+        )
+        attach(app, "recorder_14b_finish_exercises_unfolded")
+        exercisesToggle.tap()
+        waitABit(1)
+        XCTAssertEqual(exercisesToggle.value as? String, "collapsed")
 
         endWorkoutButton.tap()
         let startPill = app.staticTexts["Start Workout"].firstMatch
@@ -1530,40 +1562,24 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "effortone_04_detail_tile_rated")
     }
 
-    /// The recorder's finish panel rates in place, from the same bars and capsule as the sheet,
-    /// and opens the same description list.
-    func testEffortFinishPanelCard() {
-        let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
-
-        // By identifier, never by placeholder: the tray's resting row is a button since #177, and
-        // probing `app.textFields` by placeholder falls back to swiping the whole library.
-        let traySearchField = app.textFields.matching(
-            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
-        ).firstMatch
-        XCTAssertTrue(traySearchField.waitForExistence(timeout: 20), "Recorder/tray never presented")
-        waitABit(2)
-
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
-        waitABit(2)
-        let finish = app.buttons["Finish"].firstMatch
-        XCTAssertTrue(finish.waitForExistence(timeout: 5), "Finish button missing from the expanded header")
-        finish.tap()
-
-        XCTAssertTrue(
-            app.buttons["finishPanelEndWorkout"].firstMatch.waitForExistence(timeout: 5),
-            "Finish panel did not open"
-        )
-        waitABit(2)
+    /// The finish panel's effort tile opens the same rating sheet as the workout detail and the
+    /// editor; the rating lands back on the tile.
+    func testEffortFinishPanelTile() {
+        let app = openFinishPanel(scenario: "stress")
         attach(app, "effortfinish_01_panel_unrated")
 
+        let tile = app.buttons["effortTile"].firstMatch
+        XCTAssertTrue(scrollFinishPanel(app, toReveal: tile), "Effort tile never scrolled into reach")
+        tile.tap()
+
         let scale = app.otherElements["effortScale"].firstMatch
-        XCTAssertTrue(scale.waitForExistence(timeout: 5), "Effort scale missing on the finish panel")
+        XCTAssertTrue(scale.waitForExistence(timeout: 5), "Effort rating sheet did not open from the tile")
         scale.coordinate(withNormalizedOffset: CGVector(dx: 0.62, dy: 0.5)).tap()
         waitABit(1)
-        attach(app, "effortfinish_02_panel_rated")
+        attach(app, "effortfinish_02_sheet_rated")
 
         let info = app.buttons["effortDescriptionsButton"].firstMatch
-        XCTAssertTrue(info.waitForExistence(timeout: 5), "Info button missing on the finish panel's capsule")
+        XCTAssertTrue(info.waitForExistence(timeout: 5), "Info button missing on the rating sheet")
         info.tap()
         waitABit(2)
         attach(app, "effortfinish_03_descriptions")
@@ -1571,6 +1587,146 @@ final class ScenarioScreenshots: XCTestCase {
             app.buttons["effortSkip"].waitForExistence(timeout: 5),
             "Skip missing from the description list"
         )
+    }
+
+    /// The note tile opens the note sheet with the keyboard up; what is typed there is on the tile
+    /// once the sheet closes.
+    func testFinishPanelNoteSheet() {
+        let app = openFinishPanel(scenario: "stress")
+
+        let tile = app.buttons["workoutNoteTile"].firstMatch
+        XCTAssertTrue(scrollFinishPanel(app, toReveal: tile), "Note tile never scrolled into reach")
+        tile.tap()
+
+        let field = app.descendants(matching: .any).matching(identifier: "workoutNoteField").firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "Note sheet did not open from the tile")
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "A blank note opens with the keyboard up")
+        app.typeText("Bench felt easy at 100, try 102.5 next time and keep the pause on the chest")
+        attach(app, "notefinish_01_sheet_typing")
+
+        app.buttons["workoutNoteDone"].firstMatch.tap()
+        XCTAssertTrue(field.waitForNonExistence(timeout: 5), "Done did not close the note sheet")
+        waitABit(1)
+        let value = tile.value as? String ?? ""
+        XCTAssertTrue(value.hasPrefix("Bench felt easy"), "The tile doesn't show the note just written: \(value)")
+        attach(app, "notefinish_02_tile_with_note")
+    }
+
+    /// No weekly goal: the week still counts up, and the hero offers to set one. The target is
+    /// cleared with 0, not -1: the argument domain reads "-1" as the next flag, not as a value.
+    func testFinishPanelWithoutGoal() {
+        let app = openFinishPanel(scenario: "stress", extraArguments: ["-workoutPerWeekTarget", "0"])
+        XCTAssertTrue(
+            app.buttons["finishSetGoalButton"].firstMatch.waitForExistence(timeout: 5),
+            "The goal-less hero should offer to set a goal"
+        )
+        attach(app, "nogoalfinish_01_panel")
+    }
+
+    /// A brand-new user's first finish: no goal yet (the hero counts the week and offers one) and no
+    /// history (the exercises trained for the first time now have a best to beat).
+    func testFinishPanelFirstWorkout() {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments += [
+            "-SCENARIO", "empty",
+            "-UITEST_START_LOGGED_WORKOUT", "1",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launch()
+        let finish = app.buttons["Finish"].firstMatch
+        XCTAssertTrue(finish.waitForExistence(timeout: 25), "Recorder with a logged set never presented")
+        waitABit(2)
+        finish.tap()
+        XCTAssertTrue(
+            app.buttons["finishSetGoalButton"].firstMatch.waitForExistence(timeout: 8),
+            "Without a goal the hero should offer to set one"
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any).matching(identifier: "finishFirstSessions").firstMatch
+                .waitForExistence(timeout: 5),
+            "A first session should say it now has a best to beat"
+        )
+        waitABit(4)
+        attach(app, "firstfinish_01_panel")
+    }
+
+
+    /// Every shape a highlight takes, on the seeded demo: weight and repetition records first, then
+    /// the improvements — including the one case that reads as Strength — capped with a Show more.
+    func testFinishPanelHighlights() {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments += [
+            "-SCENARIO", "empty",
+            "-UITEST_HIGHLIGHTS_DEMO", "1",
+            "-workoutPerWeekTarget", "2",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launch()
+        waitABit(10)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
+        waitABit(2)
+        let finish = app.buttons["Finish"].firstMatch
+        XCTAssertTrue(finish.waitForExistence(timeout: 10), "Demo recorder never presented")
+        finish.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any).matching(identifier: "finishHighlights").firstMatch
+                .waitForExistence(timeout: 10),
+            "The highlights section never appeared"
+        )
+        waitABit(6)
+        let records = app.staticTexts.matching(NSPredicate(format: "label ENDSWITH 'PR'")).count
+        XCTAssertEqual(records, 3, "Two weight records and a repetitions record")
+        XCTAssertTrue(
+            app.staticTexts["Strength improved"].exists,
+            "An exercise whose estimate rose without the weight reads as a Strength improvement"
+        )
+        attach(app, "recorder_16_finish_highlights")
+
+        // Capped at five, the rest behind Show more.
+        let more = app.buttons["finishHighlightsShowMore"].firstMatch
+        XCTAssertTrue(more.exists, "Six highlights should be capped with a Show more")
+        XCTAssertFalse(app.staticTexts["Repetitions improved"].exists, "The sixth highlight starts hidden")
+        more.tap()
+        waitABit(2)
+        XCTAssertEqual((more.value as? String)?.lowercased(), "all")
+        XCTAssertTrue(app.staticTexts["Repetitions improved"].exists, "Show more reveals the rest")
+        attach(app, "recorder_17_finish_highlights_all")
+    }
+
+    /// The workout's name keeps its size on the finish panel and can still be renamed there.
+    func testFinishPanelTitleIsEditable() {
+        let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER", "1", "-workoutPerWeekTarget", "2"])
+        let traySearchField = app.textFields.matching(
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
+        ).firstMatch
+        XCTAssertTrue(traySearchField.waitForExistence(timeout: 25), "Recorder/tray never presented")
+        waitABit(3)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
+        waitABit(2)
+        let expandedTitleHeight = app.textFields["recorderTitleField"].firstMatch.frame.height
+        app.buttons["Finish"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["finishPanelEndWorkout"].firstMatch.waitForExistence(timeout: 8))
+        waitABit(6)
+
+        let title = app.textFields["recorderTitleField"].firstMatch
+        XCTAssertTrue(title.exists, "The title field is missing on the finish panel")
+        XCTAssertEqual(title.frame.height, expandedTitleHeight, accuracy: 1, "The title should not grow when finishing")
+        attach(app, "recorder_18_finish_title")
+        let restingTitleY = title.frame.minY
+        title.tap()
+        waitABit(1)
+        XCTAssertEqual(title.frame.minY, restingTitleY, accuracy: 1, "The keyboard should not push the title off screen")
+        title.typeText(" Renamed")
+        attach(app, "recorder_19_finish_title_editing")
+        app.keyboards.buttons["done"].firstMatch.tap()
+        waitABit(1)
+        XCTAssertTrue(
+            (title.value as? String ?? "").hasSuffix(" Renamed"),
+            "The title should be editable from the finish panel, got \(title.value ?? "nil")"
+        )
+        XCTAssertTrue(app.buttons["finishPanelEndWorkout"].firstMatch.exists, "Renaming should not leave the finish panel")
     }
 
     // MARK: - Exercise editor (measurement builder)
@@ -1944,6 +2100,45 @@ final class ScenarioScreenshots: XCTestCase {
             return
         }
         button.tap()
+    }
+
+    /// Launches straight into the recorder, opens the finish panel and waits out its reveal.
+    private func openFinishPanel(scenario: String, extraArguments: [String] = []) -> XCUIApplication {
+        // `-UITEST_SHOW_RECORDER` carries a value so the flags after it still parse as key/value
+        // pairs — valueless, it swallowed the next flag as its value.
+        let app = launchApp(scenario: scenario, extraArguments: ["-UITEST_SHOW_RECORDER", "1"] + extraArguments)
+        let traySearchField = app.textFields.matching(
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
+        ).firstMatch
+        XCTAssertTrue(traySearchField.waitForExistence(timeout: 20), "Recorder/tray never presented")
+        waitABit(2)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
+        waitABit(2)
+        let finish = app.buttons["Finish"].firstMatch
+        XCTAssertTrue(finish.waitForExistence(timeout: 5), "Finish button missing from the expanded header")
+        finish.tap()
+        XCTAssertTrue(
+            app.buttons["finishPanelEndWorkout"].firstMatch.waitForExistence(timeout: 5),
+            "Finish panel did not open"
+        )
+        waitABit(4)
+        return app
+    }
+
+    /// Scrolls the finish panel's content until `element` sits in the upper part of the screen, clear
+    /// of the pinned End Workout bar — a tap near the bottom edge lands on that bar and ends the
+    /// workout. Short, controlled drags in the content's middle band; never on the bar itself.
+    private func scrollFinishPanel(_ app: XCUIApplication, toReveal element: XCUIElement) -> Bool {
+        let height = app.frame.height
+        for _ in 0 ..< 8 {
+            if element.exists, element.isHittable, element.frame.maxY < height * 0.7, element.frame.minY > height * 0.12 {
+                return true
+            }
+            let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.62))
+            start.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.38)))
+            waitABit(1)
+        }
+        return element.exists && element.frame.maxY < height * 0.7
     }
 
     private func attach(_ app: XCUIApplication, _ name: String) {

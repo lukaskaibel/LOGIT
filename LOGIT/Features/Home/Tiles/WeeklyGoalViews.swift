@@ -30,6 +30,13 @@ struct WeeklyGoalStrip: View {
     /// The week's own progress ring on the trailing edge. Off wherever the count is already the
     /// subject above the strip — on the goal screen the arc says it, and two rings would say it twice.
     var showsCompletionRing: Bool = true
+    /// Any day in the week to draw. The current week everywhere but the recorder's finish panel,
+    /// which draws the week the finished workout is filed under.
+    var weekOf: Date = .now
+    /// Whether today's cell draws its workout's muscle ring instead of the plain accent outline (the
+    /// letter stays accent-coloured either way). The goal screen marks today as *today*; the finish
+    /// panel marks it as the day that just got its workout — the ring drawing in is the week moving.
+    var showsTodaysWorkout: Bool = false
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
     private let calendar = Calendar.current
@@ -49,7 +56,7 @@ struct WeeklyGoalStrip: View {
     }
 
     private var weekDays: [Date] {
-        let start = Date.now.startOfWeek
+        let start = weekOf.startOfWeek
         return (0 ..< 7).map { calendar.date(byAdding: .day, value: $0, to: start) ?? start }
     }
 
@@ -61,7 +68,7 @@ struct WeeklyGoalStrip: View {
             ? "\(calendar.component(.day, from: day))"
             : day.formatted(.dateTime.weekday(.narrow))
         return ZStack {
-            if isToday {
+            if isToday && !(showsTodaysWorkout && hasWorkout) {
                 Circle()
                     .strokeBorder(Color.accentColor, lineWidth: 1.7)
                     .frame(width: 32, height: 32)
@@ -69,6 +76,9 @@ struct WeeklyGoalStrip: View {
                 MuscleOccurrenceRing(occurrences: occurrences, lineWidth: 4)
                     .frame(width: 32, height: 32)
                     .accessibilityHidden(true)
+                    // Today's ring, arriving: it draws itself clockwise from the top, the way the
+                    // muscle arcs are laid down, rather than popping or scaling in.
+                    .modifier(RingDrawIn(isEnabled: isToday && showsTodaysWorkout))
             }
             Text(centerLabel)
                 .font(.system(size: 13, weight: (isToday || hasWorkout) ? .bold : .semibold))
@@ -108,11 +118,37 @@ struct WeeklyGoalStrip: View {
     }
 
     private var weekWorkoutCount: Int {
-        let range = Date.now.startOfWeek ... Date.now.endOfWeek
+        let range = weekOf.startOfWeek ... weekOf.endOfWeek
         return workouts.filter {
             guard !$0.isEmpty, let d = $0.date else { return false }
             return range.contains(d)
         }.count
+    }
+}
+
+/// Draws a ring in clockwise on appearance — a stroke mask whose trim runs 0 → 1 — for the day that
+/// just got its workout. Off everywhere else, where the rings are simply there.
+private struct RingDrawIn: ViewModifier {
+    let isEnabled: Bool
+    @State private var drawn = false
+
+    func body(content: Content) -> some View {
+        content
+            .mask {
+                if isEnabled {
+                    Circle()
+                        .trim(from: 0, to: drawn ? 1 : 0.001)
+                        .stroke(style: StrokeStyle(lineWidth: 8, lineCap: .butt))
+                        .rotationEffect(.degrees(-90))
+                        .padding(-2)
+                } else {
+                    Rectangle()
+                }
+            }
+            .onAppear {
+                guard isEnabled else { return }
+                withAnimation(.easeOut(duration: 0.6)) { drawn = true }
+            }
     }
 }
 
@@ -129,6 +165,9 @@ struct WeeklyGoalArc<Label: View>: View {
     /// Completion 0…1; values outside are clamped.
     let progress: Double
     var lineWidth: CGFloat = 14
+    /// How the sweep moves when `progress` changes. The finish panel slows it down: there the sweep
+    /// *is* the moment, the week moving by one workout.
+    var animation: Animation = .snappy
     @ViewBuilder var label: () -> Label
 
     /// 240° of the circle, which leaves a 120° opening centred on the bottom.
@@ -148,7 +187,7 @@ struct WeeklyGoalArc<Label: View>: View {
                         Color.accentColor.gradient,
                         style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                     )
-                    .animation(.snappy, value: clampedProgress)
+                    .animation(animation, value: clampedProgress)
             }
             // A circle's trim starts at 3 o'clock; 150° puts the arc's start at 8 o'clock, so the
             // sweep runs up over the top and ends at 4 o'clock — symmetric about the vertical.
@@ -167,17 +206,18 @@ struct WeeklyGoalArc<Label: View>: View {
 
 extension WeeklyGoalArc where Label == EmptyView {
     /// A bare arc with nothing in its middle.
-    init(progress: Double, lineWidth: CGFloat = 14) {
-        self.init(progress: progress, lineWidth: lineWidth, label: { EmptyView() })
+    init(progress: Double, lineWidth: CGFloat = 14, animation: Animation = .snappy) {
+        self.init(progress: progress, lineWidth: lineWidth, animation: animation, label: { EmptyView() })
     }
 }
 
 // MARK: - Streak milestones (shared)
 
-/// The weekly-streak milestone ladder — a month, quarter, half-year, year, two years — shared by the
-/// Summary hero and the Workout Goal screen so the two never disagree on what the next goal is.
+/// The weekly-streak milestone ladder — the first week, then a month, quarter, half-year, year, two
+/// years. The first week is a milestone too, so a new streak has a goal one week away and the chain on
+/// the Workout Goal screen always ends on a flag: the week the streak started.
 enum StreakMilestone {
-    static let all: [Int] = [4, 12, 26, 52, 104]
+    static let all: [Int] = [1, 4, 12, 26, 52, 104]
 
     /// The first milestone beyond `current`; once every milestone is passed, keep pulling a year ahead.
     static func next(after current: Int) -> Int {
@@ -187,6 +227,7 @@ enum StreakMilestone {
     /// A calendar meaning for a milestone ("a full quarter", "a full year"). Empty for off-ladder values.
     static func fact(for weeks: Int) -> String {
         switch weeks {
+        case 1: return NSLocalizedString("streakFactFirstWeek", comment: "")
         case 4: return NSLocalizedString("streakFactMonth", comment: "")
         case 12: return NSLocalizedString("streakFactQuarter", comment: "")
         case 26: return NSLocalizedString("streakFactHalfYear", comment: "")

@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "週間目標を達成してストリークを始めよう";
+"streakFactFirstWeek" = "最初の1週間";
 "streakFactMonth" = "まる1か月";
 "streakFactQuarter" = "まる3か月";
 "streakFactHalfYear" = "半年";
@@ -912,6 +913,14 @@
 "firstTimeForThisWorkout" = "このワークアウトは今回が初めてです。今後のセッションはこれと比較されます。";
 "workoutPRInfo" = "自己ベストとは、このワークアウトのあるセットが、それ以前のすべてのワークアウトでの最高重量・最多回数・最高筋力のいずれかを上回ったことを意味します。あとで更新しても、その日の記録として残ります。複数が同時に更新された場合は、まとめてひとつの記録として数えます。最も確かなものがカードの主役になります。実際に挙げた重量が最優先で、次に筋力、次に回数です。残りはあわせて表示されます。";
 "alsoARecord" = "こちらも新記録 · %@";
+"showMoreCount" = "さらに%d件を表示";
+"finishFirstSessionsOne" = "初めて記録した種目：1";
+"finishFirstSessionsMany" = "初めて記録した種目：%d";
+"finishFirstSessionsDetail" = "次回は、超えるべきベストがあります。";
+"highlightRecordLabel" = "%@の自己ベスト";
+"highlightImprovedLabel" = "%@が向上";
+"exercisesCountOne" = "1種目";
+"exercisesCountMany" = "%d種目";
 "workoutTrendInfo" = "種目にはそれぞれ進捗指標があります。重量や筋力など、その種目を評価する値のことです。トレンドは、このワークアウトで達した最高値を、その前の4週間のベストと比べます。下にある各種目のバッジと同じ比較です。";
 "workoutVolumeCompareInfo" = "総ボリューム（各セットの重量×回数）を、前回同じワークアウトを行ったときと比較します。";
 "improvedCount" = "%d種目向上";
@@ -940,6 +949,9 @@
 "weeklyGoalReached" = "目標達成";
 "weeklyGoalToGoOne" = "あと1回";
 "weeklyGoalToGoMany" = "あと%d回";
+"ofWeeklyGoal" = "目標 %d回";
+"weeklyGoalBeyondOne" = "目標より1回多い";
+"weeklyGoalBeyondMany" = "目標より%d回多い";
 "weeklyStreakWeeks" = "%d週";
 "muscleBalance" = "筋肉バランス";
 "balance" = "バランス";
@@ -1033,8 +1045,9 @@
 "share" = "シェア";
 "weekStreakSuffix" = "週連続";
 "weeklyGoalAccessibility" = "週間目標、%d/%d ワークアウト";
-"weeklyGoalSubtitle" = "週%d回の目標のうち";
-"milestones" = "マイルストーン";
+"workoutGoalPerWeek" = "週%d回";
+"workoutGoalPerWeekOne" = "週1回";
+"workoutGoalAboutInfo" = "ワークアウトの目標は、毎週こなしたいワークアウトの回数です。目標を達成した週ごとに連続記録が1週ずつ伸び、達成できなかった週があると途切れます。今週が連続記録を途切れさせることはなく、目標を達成した時点でカウントされます。\n\nマイルストーンは、連続記録の節目となる長さです。最初の1週間、そして4週でまる1か月、12週でまる3か月、26週で半年、52週でまる1年、104週で2年です。今の連続記録で到達したマイルストーンは、到達した週とともに一覧に表示されます。連続記録が途切れると、ゼロからやり直しです。次のマイルストーンより自己ベストのほうが近い場合は、まずそれを超えることが目標になり、超えた週は新記録として一覧に加わります。目標を変更すると、連続記録は新しい回数で数え直されます。";
 "weeksToGo" = "あと%d週";
 "bestStreakLabel" = "最高 · %d週";
 "monthWorkoutsCount" = "%d回";
@@ -1209,6 +1222,7 @@
 "notRated" = "未評価";
 "rateYourEffort" = "運動強度を評価";
 "addEffort" = "運動強度を追加";
+"rateEffortShort" = "評価";
 "effortDescriptions" = "運動強度の説明";
 "effortSelectDescription" = "ワークアウト全体に最も当てはまる説明を選択してください。";
 "effortSkipFootnote" = "このワークアウトをスキップすると、フィットネスのトレーニング負荷から除外されます。";

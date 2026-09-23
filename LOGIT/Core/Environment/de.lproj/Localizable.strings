@@ -481,6 +481,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Erreiche dein Wochenziel, um eine Serie zu starten";
+"streakFactFirstWeek" = "Deine erste Woche";
 "streakFactMonth" = "Ein ganzer Monat";
 "streakFactQuarter" = "Ein ganzes Quartal";
 "streakFactHalfYear" = "Ein halbes Jahr";
@@ -908,6 +909,14 @@
 "firstTimeForThisWorkout" = "Erstes Mal bei diesem Workout — künftige Einheiten werden damit verglichen.";
 "workoutPRInfo" = "Ein persönlicher Rekord bedeutet: Ein Satz in diesem Workout hat dein bestes Gewicht, deine meisten Wiederholungen oder deine beste Kraft aus allen früheren Workouts übertroffen. Er bleibt der Rekord dieses Tages, auch wenn du ihn inzwischen überboten hast. Verbessern sich mehrere davon auf einmal, zählen sie zusammen als ein Rekord. Das Konkreteste führt die Karte an: zuerst ein wirklich bewegtes Gewicht, dann die Kraft, dann eine Wiederholungszahl. Der Rest steht mit dabei.";
 "alsoARecord" = "Ebenfalls Rekord · %@";
+"showMoreCount" = "%d weitere anzeigen";
+"finishFirstSessionsOne" = "Erstes Training für 1 Übung";
+"finishFirstSessionsMany" = "Erstes Training für %d Übungen";
+"finishFirstSessionsDetail" = "Beim nächsten Mal gibt es eine Bestmarke zu schlagen.";
+"highlightRecordLabel" = "%@-PR";
+"highlightImprovedLabel" = "%@ verbessert";
+"exercisesCountOne" = "1 Übung";
+"exercisesCountMany" = "%d Übungen";
 "workoutTrendInfo" = "Jede Übung hat eine Fortschrittsmetrik: den Wert, an dem sie gemessen wird, etwa Gewicht oder Kraft. Der Trend vergleicht den besten Wert dieses Workouts mit deinem besten aus den vier Wochen davor — derselbe Vergleich, den die Abzeichen neben den Übungen unten zeigen.";
 "workoutVolumeCompareInfo" = "Gesamtvolumen (Gewicht × Wiederholungen aller Sätze) im Vergleich zum letzten Mal, als du dieses Workout gemacht hast.";
 "improvedCount" = "%d verbessert";
@@ -936,6 +945,9 @@
 "weeklyGoalReached" = "Ziel erreicht";
 "weeklyGoalToGoOne" = "Noch 1 Workout";
 "weeklyGoalToGoMany" = "Noch %d Workouts";
+"ofWeeklyGoal" = "von %d";
+"weeklyGoalBeyondOne" = "1 mehr als dein Ziel";
+"weeklyGoalBeyondMany" = "%d mehr als dein Ziel";
 "weeklyStreakWeeks" = "%d Wo.";
 "muscleBalance" = "Muskelbalance";
 "balance" = "Balance";
@@ -1029,8 +1041,9 @@
 "share" = "Anteil";
 "weekStreakSuffix" = "Wochen-Streak";
 "weeklyGoalAccessibility" = "Wochenziel, %d von %d Workouts";
-"weeklyGoalSubtitle" = "von deinem Ziel: %d Workouts";
-"milestones" = "Meilensteine";
+"workoutGoalPerWeek" = "%d Workouts pro Woche";
+"workoutGoalPerWeekOne" = "1 Workout pro Woche";
+"workoutGoalAboutInfo" = "Dein Workout-Ziel ist die Anzahl an Workouts, die du jede Woche schaffen möchtest. Jede Woche, in der du es erreichst, verlängert deinen Streak um eine Woche; eine Woche, in der du es verfehlst, beendet ihn. Die laufende Woche beendet deinen Streak nie – sie zählt, sobald du dein Ziel erreichst.\n\nMeilensteine sind Streak-Längen, auf die es sich hinzuarbeiten lohnt: deine erste Woche, dann 4 Wochen für einen Monat, 12 ein Quartal, 26 ein halbes Jahr, 52 ein Jahr und 104 zwei Jahre. Die Meilensteine, die dein aktueller Streak schon erreicht hat, stehen mit der Woche in der Liste, in der du sie erreicht hast. Endet ein Streak, beginnt alles wieder bei null. Liegt dein längster Streak näher als der nächste Meilenstein, gilt es zuerst, ihn zu übertreffen – die Woche, in der du das schaffst, kommt als neuer Rekord in die Liste. Änderst du dein Ziel, wird dein Streak mit der neuen Zahl neu berechnet.";
 "weeksToGo" = "noch %d";
 "bestStreakLabel" = "Beste · %d Wo.";
 "monthWorkoutsCount" = "%d Workouts";
@@ -1205,6 +1218,7 @@
 "notRated" = "Nicht bewertet";
 "rateYourEffort" = "Anstrengung bewerten";
 "addEffort" = "Anstrengung hinzufügen";
+"rateEffortShort" = "Bewerten";
 "effortDescriptions" = "Beschreibungen der Anstrengung";
 "effortSelectDescription" = "Wähle die Beschreibung, die am besten zum gesamten Training passt.";
 "effortSkipFootnote" = "Wenn du dieses Training überspringst, wird es in Fitness nicht zur Trainingsbelastung gezählt.";

@@ -203,6 +203,10 @@
 "measurements" = "Medidas";
 "min" = "min";
 "minimize" = "Minimizar";
+"recorderSheetHandleLabel" = "Acciones del entrenamiento";
+"recorderShowSummaryAction" = "Mostrar resumen";
+"accessibilityExpanded" = "Expandido";
+"accessibilityCollapsed" = "Contraído";
 "missing" = "Falta";
 "measurementsPromotionDescription" = "Registra peso corporal, grasa corporal y medidas como brazos, pecho y cintura para ver tu progreso.";
 "month" = "Mes";
@@ -491,7 +495,9 @@
 "streakFactHalfYear" = "Medio año";
 "streakFactYear" = "Un año completo";
 "streakFactTwoYears" = "Dos años";
+"streakFactOneWeek" = "Una semana";
 "nextMilestone" = "Próximo hito";
+"beatYourBest" = "Supera tu mejor marca";
 "streakToGoalOne" = "1 semana para tu próximo hito";
 "streakToGoalMany" = "%d semanas para tu próximo hito";
 "streakAtBest" = "Tu mejor racha hasta ahora";
@@ -921,6 +927,9 @@
 "highlightImprovedLabel" = "%@ mejorado";
 "exercisesCountOne" = "1 ejercicio";
 "exercisesCountMany" = "%d ejercicios";
+"setsCountOne" = "1 serie";
+"setsCountMany" = "%d series";
+"setsLoggedOfTotal" = "%1$d / %2$d series";
 "workoutTrendInfo" = "Cada ejercicio tiene una métrica de progreso: el valor con el que se mide, como el peso o la fuerza. La tendencia compara el mejor valor alcanzado en este entrenamiento con tu mejor marca de las cuatro semanas anteriores, la misma comparación que muestran las insignias junto a los ejercicios de abajo.";
 "workoutVolumeCompareInfo" = "Volumen total (peso × repeticiones de cada serie) comparado con la última vez que hiciste este entrenamiento.";
 "improvedCount" = "%d mejorados";
@@ -999,6 +1008,7 @@
 "muscleFocusReplaceCustomTitle" = "¿Reemplazar tus objetivos personalizados?";
 "muscleFocusReplaceCustomMessage" = "Los objetivos del preajuste reemplazan los que definiste tú.";
 "muscleFocusSetsPerWeekValue" = "%d series por semana";
+"muscleFocusSetsPerWeekValueOne" = "1 serie por semana";
 "muscleFocusNamesJoiner" = " y ";
 "muscleFocusPromptTileTitle" = "Elige un enfoque de entrenamiento";
 "muscleFocusPromptTileMessage" = "Descubre qué grupos musculares trabajar.";
@@ -1202,6 +1212,8 @@
 "overallStrengthShowAllLifts" = "Ver los %d levantamientos";
 "overallStrengthAxisLeastDeclined" = "Menor descenso";
 "showLess" = "Ver menos";
+"finishHighlightsAllShownValue" = "Todos visibles";
+"finishHighlightsSomeShownValue" = "%1$d de %2$d visibles";
 "overallStrengthInfo" = "La fuerza general resume todo eso en un solo número. Para cada ejercicio, LOGIT toma tu mejor marca del periodo seleccionado y la compara con tu mejor marca del periodo anterior, y luego promedia todos esos cambios. Cuantas más series hiciste de un ejercicio, más peso tiene en el resultado. Las series de cardio y de peso corporal no tienen valor de fuerza, así que no se tienen en cuenta.";
 
 
@@ -1239,6 +1251,7 @@
 "lastTime" = "La última vez";
 "previewWorkoutNote" = "El press de banca fue fácil con 80: la próxima vez, 82,5. Mantén los codos pegados en el press militar.";
 "setsIncompleteWillNotBeSaved" = "%d series incompletas: no se guardarán.";
+"setIncompleteWillNotBeSaved" = "1 serie incompleta: no se guardará.";
 
 // MARK: - Assisted Sets & Time Goals
 

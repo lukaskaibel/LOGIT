@@ -62,7 +62,11 @@ struct ChangeWeeklyWorkoutGoalScreen: View {
                 targetPerWeek = selectedValue
                 dismiss()
             } label: {
-                Label(NSLocalizedString("changeGoal", comment: ""), systemImage: "checkmark")
+                // "Set Goal" the first time — there is nothing to change yet (-1 means unset).
+                Label(
+                    NSLocalizedString(targetPerWeek > 0 ? "changeGoal" : "setGoal", comment: ""),
+                    systemImage: "checkmark"
+                )
             }
             .buttonStyle(PrimaryButtonStyle())
             Spacer()

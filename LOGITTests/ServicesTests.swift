@@ -1787,10 +1787,87 @@ final class PersonalRecordCountIndexTests: XCTestCase {
         }
     }
 
+    /// Assistance is stored as a negative weight and a bodyweight set as 0 kg, which only counts as
+    /// a weight against assistance (`WorkoutProgressReport.weightBest`). The preview history has no
+    /// assisted work, so this history pins both walks to the same reading of it.
+    func testIndexAgreesOnAssistedAndBodyweightSets() async {
+        let database = Database(inMemory: true)
+        let builder = TestDataBuilder(database: database)
+        let pullUp = builder.createExercise(name: "Assisted Pull-up", muscleGroup: .back)
+        let dip = builder.createExercise(name: "Dip", muscleGroup: .chest)
+        // Days ago → the pull-up's load (the dip is always bodyweight, always ten reps).
+        let history: [(daysAgo: Int, grams: Int)] = [(30, -30000), (20, -20000), (10, 0), (5, 0), (2, -10000)]
+        var byDaysAgo = [Int: Workout]()
+        for (daysAgo, grams) in history {
+            let date = Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now)!
+            let workout = database.newWorkout(name: "\(daysAgo) days ago", date: date)
+            let pullUpGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: pullUp, workout: workout)
+            database.newStandardSet(repetitions: 8, weight: grams, setGroup: pullUpGroup)
+            let dipGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: dip, workout: workout)
+            database.newStandardSet(repetitions: 10, weight: 0, setGroup: dipGroup)
+            byDaysAgo[daysAgo] = workout
+        }
+
+        let counts = await PersonalRecordCountIndex.build(database: database)
+
+        for workout in byDaysAgo.values {
+            XCTAssertEqual(
+                counts[workout.objectID] ?? 0,
+                WorkoutProgressReport.compute(for: workout, database: database).exerciseRecords.count,
+                "Record count disagrees for \(workout.name ?? "unnamed")"
+            )
+        }
+        XCTAssertEqual(counts[byDaysAgo[20]!.objectID], 1, "Less help is a record")
+        XCTAssertEqual(counts[byDaysAgo[10]!.objectID], 1, "No help at all is a record")
+        XCTAssertNil(counts[byDaysAgo[5]!.objectID], "Unassisted again only ties")
+        XCTAssertNil(counts[byDaysAgo[2]!.objectID], "Help again after going without is no record")
+    }
+
     func testWorkoutsWithoutRecordsAreAbsentRatherThanZero() async {
         let database = Database(isPreview: true)
         let counts = await PersonalRecordCountIndex.build(database: database)
         XCTAssertFalse(counts.values.contains(0), "Only workouts that set a record belong in the index")
+    }
+
+    /// Since model v8 a set's values live on its `SetEntry` rows, so editing a weight in a past
+    /// workout changes only the entry. The cached index used to ignore entry changes, and History
+    /// kept showing the old "n PR" until relaunch while the detail screen showed the new count.
+    func testEditingAPastWorkoutsEntryRefreshesTheCachedCounts() async throws {
+        let database = Database(isPreview: true)
+        // A fresh exercise, so the preview's randomised history can't touch these two sessions.
+        let exercise = database.newExercise(name: "Index invalidation", muscleGroup: .chest)
+        let earlier = database.newWorkout(name: "Earlier", date: .now.addingTimeInterval(-3 * 24 * 60 * 60))
+        let later = database.newWorkout(name: "Later", date: .now.addingTimeInterval(-24 * 60 * 60))
+        database.newStandardSet(
+            repetitions: 5,
+            weight: 50_000,
+            setGroup: database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: exercise, workout: earlier)
+        )
+        let laterSet = database.newStandardSet(
+            repetitions: 5,
+            weight: 40_000,
+            setGroup: database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: exercise, workout: later)
+        )
+        // Saved synchronously, so the edit below is an update of stored rows — and so a cache left
+        // over from another test's database is dropped by these inserts before the first read.
+        try database.context.save()
+
+        let index = PersonalRecordCountIndex.shared
+        let before = await index.counts(database: database)
+        XCTAssertEqual(before[later.objectID] ?? 0, 0, "A lighter session beats nothing")
+
+        // The edit a user makes in the workout editor: the entry changes, nothing above it does.
+        let entry = try XCTUnwrap(laterSet.entries.first)
+        entry.weight = 60_000
+        database.context.processPendingChanges()
+
+        let after = await index.counts(database: database)
+        XCTAssertEqual(after[later.objectID] ?? 0, 1, "The heavier session is now a record")
+        XCTAssertEqual(
+            after[later.objectID] ?? 0,
+            WorkoutProgressReport.compute(for: later, database: database).exerciseRecords.count,
+            "History's count must match the detail screen's straight after the edit"
+        )
     }
 }
 

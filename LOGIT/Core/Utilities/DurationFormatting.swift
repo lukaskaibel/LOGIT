@@ -69,13 +69,24 @@ public let DURATION_DECIMAL_PLACES: Int = 2
 /// push the hours off the left edge, which would destroy what was already typed.
 public let MAX_CLOCK_ENTRY_DIGITS: Int = 6
 
+/// The longest duration, in whole seconds, a clock field stores: `99:59:59`, the largest reading
+/// `MAX_CLOCK_ENTRY_DIGITS` digits can spell. Six digits can *sum* to more — 99:99:99 is
+/// 100:40:39 — and anything past this ceiling re-reads as seven digits, which the field cuts back
+/// to six: a stored 100:40:39 came back as "10:04:03", and editing it again saved that.
+public let MAX_CLOCK_ENTRY_SECONDS: Int64 = 99 * 3600 + 59 * 60 + 59
+
 /// The digits a stored duration is typed as in a clock field, leading zeros stripped:
 /// 1_935_000 ms → "3215", 45_000 ms → "45", 0 → "".
 ///
 /// Sub-second precision is dropped, because a clock field enters whole seconds — the stored
 /// value keeps its hundredths until the set is actually re-typed (see `DurationClockField`).
+///
+/// Capped at `MAX_CLOCK_ENTRY_SECONDS`, so the buffer never exceeds `MAX_CLOCK_ENTRY_DIGITS`
+/// whatever is stored — including a value saved past the ceiling before the entry side capped it.
+/// It reads as 99:59:59, less than stored rather than a mangled seventh digit (a field must never
+/// show more than the stored value; see `formatDurationForEntry`).
 public func clockEntryDigits(forDuration milliseconds: Int64) -> String {
-    let seconds = max(milliseconds, 0) / 1000
+    let seconds = min(max(milliseconds, 0) / 1000, MAX_CLOCK_ENTRY_SECONDS)
     guard seconds > 0 else { return "" }
     let hours = seconds / 3600
     let digits = String(format: "%d%02d%02d", hours, (seconds % 3600) / 60, seconds % 60)
@@ -89,13 +100,19 @@ public func clockEntryDigits(forDuration milliseconds: Int64) -> String {
 /// 59 is a legal intermediate state, not an error: digits shift in from the right, so reaching
 /// 9:59 (type 9, 5, 9) has to pass through 0:95 on the way, and 95 seconds really is 95 seconds.
 /// Rejecting or clamping it here would make the second half of the clock untypeable.
+///
+/// Only the *total* is capped, at `MAX_CLOCK_ENTRY_SECONDS` (99:59:59). That never gets in the
+/// way of typing: five digits sum to at most 9:99:99, so the cap only bites on a full six-digit
+/// buffer, where no further digit can shift in — and each keystroke re-reads the whole buffer,
+/// so a backspace from 99:99:99 stores 9:99:99 as before. The field keeps showing the digits as
+/// typed and re-seeds to 99:59:59 on blur, the same way "0:95" becomes "1:35".
 public func durationMilliseconds(fromClockEntryDigits digits: String) -> Int64 {
     let buffer = digits.filter(\.isNumber)
     guard !buffer.isEmpty else { return 0 }
     let seconds = Int64(buffer.suffix(2)) ?? 0
     let minutes = Int64(buffer.dropLast(2).suffix(2)) ?? 0
     let hours = Int64(buffer.dropLast(4)) ?? 0
-    return (hours * 3600 + minutes * 60 + seconds) * 1000
+    return min(hours * 3600 + minutes * 60 + seconds, MAX_CLOCK_ENTRY_SECONDS) * 1000
 }
 
 /// How a clock-entry digit buffer reads while it is being typed: "3" → "0:03", "32" → "0:32",

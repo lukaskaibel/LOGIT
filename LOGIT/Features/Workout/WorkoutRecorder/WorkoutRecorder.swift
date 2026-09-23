@@ -323,6 +323,12 @@ final class WorkoutRecorder: ObservableObject {
     /// comes through here, so they all write the same number down for the same situation.
     ///
     /// Stops the chronograph either way. Safe to call with nothing running.
+    ///
+    /// Stopping doesn't silence a timer that ran out: for `.timerCompleted` the chronograph has
+    /// already handed its ringing alert to its own auto-dismiss (see
+    /// `Chronograph.scheduleAlarmAutoDismiss`), so the `cancel()` below leaves the sound to finish,
+    /// exactly as a manual timer's does. Every other reason ends a rest that is still counting, and
+    /// the same `cancel()` takes its pending alarm down at once.
     func endRest(
         using chronograph: Chronograph,
         reason: RestEndReason,

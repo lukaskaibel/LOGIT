@@ -16,7 +16,10 @@ import SwiftUI
 /// Opened from the Balance tile before any focus is chosen (the tile asks for one instead of
 /// recommending anything) and from the Muscle Groups toolbar after. Tapping a tile only selects it,
 /// so the weeks can be compared before anything changes; the button is the commit. The numbers are
-/// sized for the user's weekly workout goal as it stands, and the lead says which goal that is.
+/// sized for the user's weekly workout goal as it stands, and the lead says which goal that is —
+/// except on the preset in force, whose tile shows the targets actually in force, which may be sized
+/// for an earlier goal the user kept with "Not Now". Confirming that tile keeps them; only the Muscle
+/// Groups card rescales (see `MuscleFocusStore.focusOnChoosing`).
 ///
 /// "Set targets manually" pushes the number editor, starting from the tile you're on. Its check saves
 /// the targets and closes the sheet, so setting them up by hand ends where it's done; going back keeps
@@ -67,11 +70,10 @@ struct MuscleFocusPickerSheet: View {
         return !store.hasChosenFocus || draft != store.focus
     }
 
-    private var goal: Int { store.workoutsPerWeekToSizeFor }
-
-    /// One scale for every tile, so a taller pill means more sets wherever it stands.
+    /// One scale for every tile, so a taller pill means more sets wherever it stands. Taken from what
+    /// the tiles actually draw — the preset in force may be sized above the current goal.
     private var scaleMax: Int {
-        let presetMax = MuscleFocusPreset.allCases.map { $0.focus(forWorkoutsPerWeek: goal).highestTarget }.max() ?? 1
+        let presetMax = MuscleFocusPreset.allCases.map { store.focusOnChoosing($0).highestTarget }.max() ?? 1
         return max(presetMax, customFocus?.highestTarget ?? 0)
     }
 
@@ -143,13 +145,15 @@ struct MuscleFocusPickerSheet: View {
     }
 
     /// Back from the editor: targets left as they are in force need no saving, targets that came out
-    /// as a preset's numbers are that preset, and anything else stays as the custom tile, selected.
+    /// as a preset tile's numbers are that preset, and anything else stays as the custom tile,
+    /// selected. "A tile's numbers" are the ones it draws, so the preset in force matches on its
+    /// targets in force — committing it then keeps exactly what the draft held.
     private func settleDraft() {
         guard let draft else { return }
         if !hasUnsavedDraft {
             self.draft = nil
             selection = inForceChoice
-        } else if let preset = MuscleFocusPreset.allCases.first(where: { draft.hasSameTargets(as: $0.focus(forWorkoutsPerWeek: goal)) }) {
+        } else if let preset = MuscleFocusPreset.allCases.first(where: { draft.hasSameTargets(as: store.focusOnChoosing($0)) }) {
             self.draft = nil
             selection = .preset(preset)
         } else {
@@ -157,12 +161,13 @@ struct MuscleFocusPickerSheet: View {
         }
     }
 
-    /// Opens the editor on the tile you're on: the custom targets, a preset's numbers to adjust, or —
-    /// with nothing picked — the week the app would measure against anyway.
+    /// Opens the editor on the tile you're on: the custom targets, a preset's numbers to adjust (the
+    /// ones its tile shows, so the preset in force starts from the targets in force), or — with
+    /// nothing picked — the week the app would measure against anyway.
     private func openEditor() {
         switch selection {
         case .preset(let preset):
-            draft = preset.focus(forWorkoutsPerWeek: goal)
+            draft = store.focusOnChoosing(preset)
         case .custom, nil:
             draft = customFocus ?? store.focus
         }
@@ -186,6 +191,8 @@ struct MuscleFocusPickerSheet: View {
     }
 
     /// Which week the numbers below were sized for — the user's goal, or the base week without one.
+    /// The one tile it may not describe is the preset in force after a "Not Now": that tile shows
+    /// targets kept from an earlier goal, and nothing on it says which one yet.
     private var lead: String {
         guard let workoutGoal = store.workoutGoal else {
             return String(format: NSLocalizedString("muscleFocusPickerLeadNoGoal", comment: ""), MuscleFocus.baseWorkoutsPerWeek)
@@ -198,12 +205,14 @@ struct MuscleFocusPickerSheet: View {
 
     // MARK: - Tiles
 
+    /// A preset's week as choosing it would put it in force: sized for the current goal, except the
+    /// preset already in force, which shows its targets as they are — the numbers "Use …" keeps.
     private func presetTile(_ preset: MuscleFocusPreset) -> some View {
         tile(
             .preset(preset),
             title: preset.title,
             summary: preset.summary,
-            focus: preset.focus(forWorkoutsPerWeek: goal),
+            focus: store.focusOnChoosing(preset),
             identifier: "muscleFocusPreset_\(preset.rawValue)"
         )
     }
@@ -440,7 +449,7 @@ struct MuscleFocusPillChart: View {
             MuscleFocus.displayOrder
                 .map { group in
                     group.description + ", "
-                        + String(format: NSLocalizedString("muscleFocusSetsPerWeekValue", comment: ""), focus.target(for: group))
+                        + MuscleFocus.setsPerWeekDescription(focus.target(for: group))
                 }
                 .joined(separator: "; ")
         )

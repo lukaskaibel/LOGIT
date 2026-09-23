@@ -64,6 +64,14 @@ struct MuscleFocus: Codable, Equatable {
         MuscleGroup.allCases.filter { target(for: $0) > 0 }
     }
 
+    /// "10 sets per week" — what VoiceOver reads for a target. "1 set per week" on its own key,
+    /// since the strings files have no plural rules.
+    static func setsPerWeekDescription(_ target: Int) -> String {
+        target == 1
+            ? NSLocalizedString("muscleFocusSetsPerWeekValueOne", comment: "")
+            : String(format: NSLocalizedString("muscleFocusSetsPerWeekValue", comment: ""), target)
+    }
+
     /// Every group's target added up — the week the focus describes.
     var weeklyTotal: Int {
         MuscleGroup.allCases.reduce(0) { $0 + target(for: $1) }
@@ -76,6 +84,12 @@ struct MuscleFocus: Codable, Equatable {
 
     /// The preset whose targets these are exactly, at the goal they were sized for — else `nil`
     /// ("Custom").
+    ///
+    /// At *their own* goal on purpose: Full Body sized for 3 and kept under a goal of 5 ("Not Now")
+    /// is still Full Body, not Custom. The flip side is that the preset matched here and the same
+    /// preset at the current goal can be different numbers, so a surface showing the preset in force
+    /// has to show these targets rather than re-derive the preset — see
+    /// `MuscleFocusStore.focusOnChoosing`, which the picker's tiles and its commit share.
     var matchingPreset: MuscleFocusPreset? {
         MuscleFocusPreset.allCases.first { hasSameTargets(as: $0.focus(forWorkoutsPerWeek: workoutsPerWeek)) }
     }

@@ -196,7 +196,7 @@ struct MuscleTargetControl: View {
         .sensoryFeedback(.selection, trigger: steps)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(group.description))
-        .accessibilityValue(Text(String(format: NSLocalizedString("muscleFocusSetsPerWeekValue", comment: ""), target)))
+        .accessibilityValue(Text(MuscleFocus.setsPerWeekDescription(target)))
         .accessibilityAdjustableAction { direction in
             switch direction {
             case .increment: set(target + 1)

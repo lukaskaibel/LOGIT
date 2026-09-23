@@ -99,7 +99,7 @@ struct WorkoutNoteField: View {
                 .foregroundStyle(Color.secondaryLabel)
                 .padding(.top, 1)
             TextField(
-                "Note",
+                NSLocalizedString("note", comment: ""),
                 text: Binding(get: { workout.note ?? "" }, set: { workout.note = $0 }),
                 prompt: Text(prompt).foregroundStyle(Color.tertiaryLabel),
                 axis: .vertical
@@ -229,8 +229,18 @@ struct WorkoutNoteEditorSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(role: .confirm) { dismiss() }
-                        .accessibilityIdentifier("workoutNoteDone")
+                    // The effort sheet's ✓, not the system confirm button: that one fills with the
+                    // app's lime tint and draws its glyph in a tint as well, which all but vanished.
+                    // A white disc with a black check reads the same on either sheet.
+                    Button { dismiss() } label: {
+                        Image(systemName: "checkmark")
+                            .fontWeight(.bold)
+                            .foregroundStyle(.black)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .tint(Color.label)
+                    .accessibilityLabel(Text(NSLocalizedString("done", comment: "")))
+                    .accessibilityIdentifier("workoutNoteDone")
                 }
             }
         }

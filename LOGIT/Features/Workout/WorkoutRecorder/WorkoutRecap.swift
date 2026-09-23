@@ -42,8 +42,9 @@ struct WorkoutRecap {
     /// estimate is therefore listed there, not here. The report's own records (which the workout
     /// detail and the Summary count) are untouched.
     let records: [WorkoutProgressReport.ExerciseRecords]
-    /// Exercises that beat their recent best without setting a record — the records have their own
-    /// section above, so no exercise is listed twice. Biggest gain first.
+    /// Exercises that beat their recent best without setting a record, and the exercises whose
+    /// only record was Strength (see `compute`) — the records come first in the highlights, so no
+    /// exercise is listed twice. Biggest gain first.
     let improvements: [WorkoutProgressReport.ExerciseTrend]
     /// Exercises trained for the first time: nothing to beat yet, but next time there will be.
     let firstSessionCount: Int
@@ -113,6 +114,15 @@ struct WorkoutRecap {
     /// also went up shows the weight — the number that was on the bar is the more tangible win than
     /// the estimate derived from it. Otherwise the trend as scored.
     func displayedTrend(for trend: WorkoutProgressReport.ExerciseTrend) -> WorkoutProgressReport.ExerciseTrend {
+        Self.displayedTrend(for: trend, in: report)
+    }
+
+    /// `displayedTrend(for:)` before the recap exists — `compute` needs it to decide which row an
+    /// exercise keeps.
+    private static func displayedTrend(
+        for trend: WorkoutProgressReport.ExerciseTrend,
+        in report: WorkoutProgressReport
+    ) -> WorkoutProgressReport.ExerciseTrend {
         guard trend.metric == .estimatedOneRepMax,
               let weight = report.weightTrend(for: trend.exercise),
               weight.isImprovement
@@ -166,10 +176,38 @@ struct WorkoutRecap {
         }
         let recordIDs = Set(records.map(\.id))
 
-
-        let improvements = report.trends
-            .filter { $0.isImprovement && !recordIDs.contains($0.id) }
-            .sorted { abs($0.percentChange ?? 0) > abs($1.percentChange ?? 0) }
+        var improvements = report.trends.filter { $0.isImprovement && !recordIDs.contains($0.id) }
+        // A group whose only record was Strength still has to show — the workout detail counts it
+        // as a record, and a best-ever estimate is news. Waiting for the exercise's scored trend to
+        // carry it lost it whenever that trend hadn't beaten the month's best: more reps at the
+        // same weight, on an exercise scored on repetitions (the free default), set a Strength
+        // record and no highlight at all. So it becomes a "Strength improved" row of its own, the
+        // percent it beat the previous best by — an improvement, so no confetti.
+        for group in report.exerciseRecords where !recordIDs.contains(group.id) {
+            guard let estimate = group.records.first(where: { $0.metric == .estimatedOneRepMax }) else { continue }
+            let strength = WorkoutProgressReport.ExerciseTrend(
+                exercise: group.exercise,
+                metric: .estimatedOneRepMax,
+                current: estimate.value,
+                baseline: estimate.previousBest
+            )
+            // A gain too small to read as 1% would show as "0%"; the detail keeps it, the panel
+            // doesn't, like every other improvement.
+            guard strength.isImprovement else { continue }
+            if let index = improvements.firstIndex(where: { $0.id == group.id }) {
+                // The exercise already has its row — once is enough. It stays when it already says
+                // weight (weight wins over the estimate whenever both moved) or Strength (the same
+                // news, against the recent best like every other row). A rep, time or distance gain
+                // over the month gives way: a best-ever Strength outranks it, the order records
+                // lead in (`ExerciseRecords.leadPriority`).
+                let shown = Self.displayedTrend(for: improvements[index], in: report)
+                if shown.metric == .weight || shown.metric == .estimatedOneRepMax { continue }
+                improvements[index] = strength
+            } else {
+                improvements.append(strength)
+            }
+        }
+        improvements.sort { abs($0.percentChange ?? 0) > abs($1.percentChange ?? 0) }
 
         return WorkoutRecap(
             workoutDate: workoutDate,

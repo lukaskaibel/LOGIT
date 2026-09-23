@@ -1,32 +1,30 @@
-LOGIT 5.1 pulls your whole progress into one Summary, rebuilds the workout recorder, and adds new ways to log what you train.
+LOGIT 5.2 changes how a workout ends, gives your training a focus, and adds more ways to log what you do.
 
-One Summary
-This Week and Progress are now a single screen. Pick your timeframe once — 4 weeks, 3 months or a year — and every tile, chart and detail screen follows it.
+A new recorder
+The workout header is now a sheet that floats over your sets. Pull it down for Minimize and Finish, and further for your stats and a note. Pulling the whole recorder down now follows your finger, so a quick swipe never minimizes it by accident.
 
-Strength at a glance
-A new Strength tile leads the Summary with your trend, and opens a full detail screen: your strongest lifts, the exercises driving the change, and a chart you can hold to inspect any point.
+Finish strong
+Finishing a workout shows what it achieved: your weekly goal filling up, then your new personal records and improvements. Rate your effort on the same scale as Apple Fitness (the rating goes to Apple Health too) and add a note to remember the session.
 
-Muscle balance, rebuilt
-The Muscle Groups overview now shows each group as a filling bar with its share of your sets, so you can see at a glance what you train and what you neglect.
+Training Focus
+Muscle balance targets are now sets per week for each muscle group. Pick a focus, such as Full Body, Upper Body, Lower Body, Arms & Shoulders or Cardio, and LOGIT sizes the targets to your week. The Summary names the groups you're behind on, and tapping a bar shows its target and the exercises behind it.
 
-Your week, on the Summary
-The weekly goal is now an arc with your count inside, right in the Summary's title row. Tap it and the same arc opens full size, over your week in muscle colours, your streak and the next milestone.
-
-A better recorder
-The workout header folds away as you scroll and pulls back down with your finger. Supersets are a single card with the exercises paged inside it, sharing one action bar.
-
-New ways to log
-Track distance, distance + duration, weight + distance, duration-only and reps-only exercises. The exercise editor now composes the measurement from the fields you actually track, with a live preview.
+More ways to log
+Assisted sets, time goals that aim longer or faster, and durations typed as 32:15 instead of 1935. Choose the time format per exercise.
 
 Apple Health
-Finished workouts write to Health, including a backfill of your history, plus two-way body weight sync and an active energy estimate for every workout.
+Body fat now syncs both ways with Health, and adding your height in Settings gives you your BMI.
 
-More in 5.1
-· History with week sections, per-section stats and filters
-· Templates now match the workout design exactly
-· Export everything you've logged as a file you keep
-· Rest timer countdown in the Dynamic Island
-· Deleting an exercise no longer touches your workout history
-· Sharper charts, corrected pound rounding and better wording in every language
+On your Lock Screen
+The Live Activity now looks like the recorder: the set you're logging, or your rest timer, and nothing else.
+
+More in 5.2
+· Search understands dates: try a month, a weekday or "last week"
+· Clearer explanations on every metric screen, and e1RM is now called Strength
+· Drop sets now sync across your devices with iCloud
+· Exercises and templates that iCloud duplicated are merged back into one, keeping every set
+· Cancel now really discards a workout
+· A floating keyboard bar with Next
+· Fixes for a crash in History and for tab icons that stayed tinted
 
 Thanks for training with LOGIT. Keep it up!

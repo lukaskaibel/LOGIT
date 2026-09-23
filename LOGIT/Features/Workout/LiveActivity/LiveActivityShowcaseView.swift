@@ -2,11 +2,13 @@
 //  LiveActivityShowcaseView.swift
 //  LOGIT
 //
-//  Marketing-only Lock Screen mockup used by fastlane snapshot to capture a
-//  single App Store asset showing LOGIT's Live Activity in both modes: auto
-//  rest countdown and normal set logging (previous + current weight). Copy is
-//  only the fake Lock Screen (clock + cards); frameit adds the device frame
-//  and headline like the rest of the screenshot set.
+//  Marketing-only Lock Screen used by fastlane snapshot to capture a single
+//  App Store asset showing LOGIT's Live Activity in both modes: the rest timer
+//  and a set being logged. Only the Lock Screen around the cards is staged
+//  (wallpaper, clock, captions); each card is the widget's own
+//  `WorkoutLiveActivityLockScreenView`, so the screenshot changes whenever the
+//  Live Activity does. frameit adds the device frame and headline like the
+//  rest of the screenshot set.
 //
 //  Only presented when `ScreenshotFixtures.shouldShowLiveActivityShowcase`
 //  is true. Not wired into any user-facing flow.
@@ -30,13 +32,13 @@ struct LiveActivityShowcaseView: View {
                         text: NSLocalizedString("screenshotLiveActivityModeAutoCaption", comment: "")
                     )
 
-                    LiveActivityShowcaseAutoTimerCard()
+                    LiveActivityShowcaseCard(state: LiveActivityShowcaseState.restTimer())
 
                     LiveActivityShowcaseModeCaption(
                         text: NSLocalizedString("screenshotLiveActivityModeLoggingCaption", comment: "")
                     )
 
-                    LiveActivityShowcaseCurrentSetCard()
+                    LiveActivityShowcaseCard(state: LiveActivityShowcaseState.setLogging())
                 }
                 .padding(.horizontal, 20)
 
@@ -130,274 +132,83 @@ private struct LiveActivityShowcaseModeCaption: View {
     }
 }
 
-// MARK: - Shared card chrome
+// MARK: - Cards
 
-private struct LiveActivityShowcaseCard<Content: View>: View {
-    @ViewBuilder var content: Content
+/// The Lock Screen platter around the real Live Activity content: the system paints the widget's
+/// `activityBackgroundTint` in a rounded card, and that is all the showcase adds.
+private struct LiveActivityShowcaseCard: View {
+    let state: WorkoutLiveActivityAttributes.ContentState
 
     var body: some View {
-        content
+        WorkoutLiveActivityLockScreenView(attributes: LiveActivityShowcaseState.attributes, state: state)
             .frame(maxWidth: .infinity, alignment: .topLeading)
-            .padding(16)
             .background(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(Color.black)
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(WorkoutLiveActivityLockScreenView.backgroundTint)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 0.8)
-            )
-            .shadow(color: Color.black.opacity(0.55), radius: 32, y: 14)
+            .shadow(color: Color.black.opacity(0.45), radius: 28, y: 12)
+            .environment(\.colorScheme, .dark)
     }
 }
 
-// MARK: - Auto timer card (Live Activity “chrono” mode)
+/// The two moments the screenshot shows, on the same set of the same workout, with names from the
+/// localized screenshot keys so every locale reads in its own language.
+private enum LiveActivityShowcaseState {
+    static let attributes = WorkoutLiveActivityAttributes(
+        workoutID: UUID(uuidString: "11111111-2222-3333-4444-555555555555")!,
+        startedAt: Date().addingTimeInterval(-(22 * 60 + 14))
+    )
 
-private struct LiveActivityShowcaseAutoTimerCard: View {
-    /// Chest muscle theme color mirrors `WorkoutLiveActivityThemeToken.chest`.
-    private let timerTint = Color(red: 160 / 255, green: 210 / 255, blue: 120 / 255)
-
-    var body: some View {
-        LiveActivityShowcaseCard {
-            VStack(spacing: 14) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Image(systemName: "timer")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(timerTint)
-
-                    Text(NSLocalizedString("autoRestTimer", comment: ""))
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(timerTint)
-
-                    Spacer(minLength: 8)
-
-                    HStack(spacing: 8) {
-                        pill(title: "\(NSLocalizedString("set", comment: "")) 3/4")
-                        Text("2:30")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(timerTint)
-                            .monospacedDigit()
-                    }
-                }
-
-                Text("1:37")
-                    .font(.system(size: 56, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(timerTint)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 4)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(NSLocalizedString("liveActivityContextLabelUpNext", comment: ""))
-                        .font(.caption2.weight(.semibold))
-                        .fontDesign(.rounded)
-                        .foregroundStyle(Color.white.opacity(0.72))
-                        .textCase(.uppercase)
-                        .padding(.leading, 12)
-
-                    nextSetPill
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-    }
-
-    private func pill(title: String) -> some View {
-        Text(title)
-            .font(.caption2.weight(.bold))
-            .fontDesign(.rounded)
-            .foregroundStyle(Color.white.opacity(0.72))
-            .textCase(.uppercase)
-            .lineLimit(1)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(
-                Capsule()
-                    .fill(Color.white.opacity(0.07))
-                    .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 0.8))
+    /// Resting before set 3 of 4: the chest-tinted countdown owns the card, with that set underneath.
+    static func restTimer(now: Date = .now) -> WorkoutLiveActivityAttributes.ContentState {
+        state(
+            setIndex: 3,
+            reps: ("10", true),
+            weight: ("32.5", true),
+            chronoChip: WorkoutLiveActivityChronoChip(
+                phase: .timerRunning,
+                tintKind: .restTimer,
+                muscleThemeToken: .chest,
+                timerEndDate: now.addingTimeInterval(97),
+                timerTotalSeconds: 150,
+                staticTickSeconds: nil,
+                stopwatchStartDate: nil
             )
-    }
-
-    private var nextSetPill: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 12) {
-            Text(NSLocalizedString("screenshotInclineDumbbellPress", comment: ""))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-
-            Spacer(minLength: 10)
-
-            HStack(alignment: .lastTextBaseline, spacing: 10) {
-                unitChip(value: "10", unit: "REPS")
-                unitChip(value: "32.5", unit: "KG")
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.white.opacity(0.08))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.white.opacity(0.14), lineWidth: 0.9)
-                )
         )
     }
 
-    private func unitChip(value: String, unit: String) -> some View {
-        HStack(alignment: .lastTextBaseline, spacing: 2) {
-            Text(value)
-                .font(.subheadline.weight(.bold))
-                .fontDesign(.rounded)
-                .foregroundStyle(Color.white.opacity(0.92))
-            Text(unit)
-                .font(.caption2.weight(.semibold))
-                .fontDesign(.rounded)
-                .foregroundStyle(Color.white.opacity(0.68))
-        }
-    }
-}
-
-// MARK: - Current set card (normal mode — previous row + current weight)
-
-private struct LiveActivityShowcaseCurrentSetCard: View {
-    var body: some View {
-        LiveActivityShowcaseCard {
-            VStack(alignment: .leading, spacing: 14) {
-                header
-
-                Text(NSLocalizedString("screenshotInclineDumbbellPress", comment: ""))
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .lineLimit(2)
-
-                VStack(alignment: .leading, spacing: 0) {
-                    previousPill
-                    currentPill
-                }
-            }
-        }
+    /// Logging set 3: the reps are in, the weight still shows the template's value in placeholder grey.
+    static func setLogging() -> WorkoutLiveActivityAttributes.ContentState {
+        state(setIndex: 3, reps: ("10", false), weight: ("32.5", true), chronoChip: nil)
     }
 
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Image(systemName: "dumbbell.fill")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color.white.opacity(0.78))
-                Text(NSLocalizedString("screenshotPushDay", comment: ""))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color.white.opacity(0.78))
-            }
-
-            Spacer(minLength: 8)
-
-            HStack(spacing: 8) {
-                pill(title: "\(NSLocalizedString("set", comment: "")) 3/4")
-                Text("22 min")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.white)
-                    .monospacedDigit()
-            }
-        }
-    }
-
-    private func pill(title: String) -> some View {
-        Text(title)
-            .font(.caption2.weight(.bold))
-            .fontDesign(.rounded)
-            .foregroundStyle(Color.white.opacity(0.72))
-            .textCase(.uppercase)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(
-                Capsule()
-                    .fill(Color.white.opacity(0.07))
-                    .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 0.8))
-            )
-    }
-
-    private var previousPill: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 10) {
-            Text(NSLocalizedString("liveActivitySetRowPrevious", comment: ""))
-                .font(.caption2.weight(.bold))
-                .fontDesign(.rounded)
-                .foregroundStyle(Color.white.opacity(0.45))
-                .textCase(.uppercase)
-
-            Spacer(minLength: 10)
-
-            HStack(alignment: .lastTextBaseline, spacing: 12) {
-                previousUnit(value: "9", unit: NSLocalizedString("reps", comment: ""))
-                previousUnit(value: "30", unit: "kg")
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 5)
-        .padding(.horizontal, 16)
-        .background(
-            UnevenRoundedRectangle(
-                topLeadingRadius: 14,
-                bottomLeadingRadius: 0,
-                bottomTrailingRadius: 0,
-                topTrailingRadius: 14,
-                style: .continuous
-            )
-            .fill(Color.white.opacity(0.08))
+    private static func state(
+        setIndex: Int,
+        reps: (value: String, isPlaceholder: Bool),
+        weight: (value: String, isPlaceholder: Bool),
+        chronoChip: WorkoutLiveActivityChronoChip?
+    ) -> WorkoutLiveActivityAttributes.ContentState {
+        WorkoutLiveActivityAttributes.ContentState(
+            workoutTitle: NSLocalizedString("screenshotPushDay", comment: ""),
+            exerciseIndex: 2,
+            exerciseCount: 3,
+            setIndex: setIndex,
+            setCount: 4,
+            primaryExerciseName: NSLocalizedString("screenshotInclineDumbbellPress", comment: ""),
+            secondaryExerciseName: nil,
+            supersetPartnerIsLeading: false,
+            primaryMetrics: ExerciseMetricDisplay(
+                repetitionSegments: [reps.value],
+                repetitionSegmentPlaceholders: [reps.isPlaceholder],
+                repetitionsUnit: NSLocalizedString("reps", comment: ""),
+                weightSegments: [weight.value],
+                weightSegmentPlaceholders: [weight.isPlaceholder],
+                weightUnit: "kg"
+            ),
+            themeToken: .chest,
+            chronoChip: chronoChip,
+            hasPendingSet: true
         )
-    }
-
-    private var currentPill: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 10) {
-            Text(NSLocalizedString("liveActivitySetRowCurrent", comment: ""))
-                .font(.caption2.weight(.bold))
-                .fontDesign(.rounded)
-                .foregroundStyle(Color.white.opacity(0.72))
-                .textCase(.uppercase)
-
-            Spacer(minLength: 10)
-
-            HStack(alignment: .lastTextBaseline, spacing: 12) {
-                currentUnit(value: "10", unit: "REPS")
-                currentUnit(value: "32.5", unit: "KG")
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.white.opacity(0.08))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.white.opacity(0.14), lineWidth: 0.9)
-                )
-        )
-    }
-
-    private func previousUnit(value: String, unit: String) -> some View {
-        HStack(alignment: .lastTextBaseline, spacing: 2) {
-            Text(value)
-                .font(.subheadline.weight(.bold))
-                .fontDesign(.rounded)
-                .foregroundStyle(Color.white.opacity(0.55))
-            Text(unit)
-                .font(.caption2.weight(.semibold))
-                .fontDesign(.rounded)
-                .foregroundStyle(Color.white.opacity(0.45))
-        }
-    }
-
-    private func currentUnit(value: String, unit: String) -> some View {
-        HStack(alignment: .lastTextBaseline, spacing: 2) {
-            Text(value)
-                .font(.title3.weight(.bold))
-                .fontDesign(.rounded)
-                .foregroundStyle(.white)
-            Text(unit)
-                .font(.subheadline.weight(.semibold))
-                .fontDesign(.rounded)
-                .foregroundStyle(Color.white.opacity(0.72))
-        }
     }
 }
 

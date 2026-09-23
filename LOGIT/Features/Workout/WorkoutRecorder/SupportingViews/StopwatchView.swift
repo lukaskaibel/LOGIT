@@ -18,7 +18,9 @@ struct StopwatchView: View {
         if updater || !updater {
             Text(workoutDurationString)
                 .contentTransition(.numericText())
-                .animation(.easeOut(duration: 0.18), value: workoutDurationString)
+                // No roll in screenshot runs: a capture that lands inside the 0.18 s transition shows
+                // the seconds digit half-way between two values.
+                .animation(ScreenshotFixtures.isEnabled ? nil : .easeOut(duration: 0.18), value: workoutDurationString)
                 .onReceive(timer) { _ in
                     updater.toggle()
                 }

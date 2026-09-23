@@ -94,9 +94,13 @@ class PurchaseManager: NSObject, ObservableObject {
         // Pro is always unlocked in the simulator so gated features are testable.
         return true
         #else
+        #if DEBUG
+        // Screenshot fixtures on a device. Release builds never honour the launch argument, or anyone
+        // who can pass one would get Pro for free.
         if ScreenshotFixtures.isEnabled {
             return true
         }
+        #endif
         if let proExpirationDate = storedProExpirationDate {
             return proExpirationDate > .now
         }

@@ -726,6 +726,8 @@ struct WorkoutRecorderScreen: View {
                     systemImage: hasEntries ? "flag.checkered" : "xmark"
                 )
             }
+            // The label is localized; UI tests and the App Store screenshots find it by this.
+            .accessibilityIdentifier("recorderFinishButton")
             // Carries the workout's own muscle-group gradient, like the wash behind the
             // panel and the exercise cards below it — an empty workout has no muscle groups,
             // so the gradient falls back to the accent colour on its own.

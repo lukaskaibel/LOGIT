@@ -415,6 +415,33 @@ final class MuscleFocusTests: XCTestCase {
         XCTAssertNil(reloaded.focus.matchingPreset)
     }
 
+    func testALegacySplitIsSizedForTheUsersOwnWeeklyGoal() throws {
+        // The percent editor stored shares with no week attached. Read as a three-workout week, a
+        // goal of 5 came out of the update a third short and was offered a rescale for a goal of 3
+        // the user never set.
+        let (defaults, suite) = try makeDefaults("MuscleFocusLegacyGoal", goal: 5)
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let upper = ["chest": 18, "back": 18, "shoulders": 16, "biceps": 13, "triceps": 13, "legs": 12, "abdominals": 6, "cardio": 4]
+        defaults.set(try JSONEncoder().encode(upper), forKey: MuscleFocusStore.legacyStorageKey)
+
+        let store = MuscleFocusStore(defaults: defaults)
+        XCTAssertEqual(store.focus, MuscleFocusPreset.upperBody.focus(forWorkoutsPerWeek: 5))
+        XCTAssertNil(store.suggestedResizeGoal, "Nothing to offer: the targets already fit the goal")
+    }
+
+    func testALegacyCustomSplitScalesToTheWeeklyGoal() throws {
+        let (defaults, suite) = try makeDefaults("MuscleFocusLegacyCustom", goal: 6)
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let custom = ["legs": 50, "back": 49, "chest": 1]
+        defaults.set(try JSONEncoder().encode(custom), forKey: MuscleFocusStore.legacyStorageKey)
+
+        let store = MuscleFocusStore(defaults: defaults)
+        XCTAssertEqual(store.focus.workoutsPerWeek, 6)
+        XCTAssertEqual(store.focus.target(for: .legs), 40, "23 sets for 3 workouts doubles to 46, capped at 40")
+        XCTAssertEqual(store.focus.target(for: .chest), 2)
+        XCTAssertNil(store.suggestedResizeGoal)
+    }
+
     func testStoreKnowsWhetherAFocusWasEverChosen() throws {
         let (defaults, suite) = try makeDefaults("MuscleFocusChosen")
         defer { defaults.removePersistentDomain(forName: suite) }

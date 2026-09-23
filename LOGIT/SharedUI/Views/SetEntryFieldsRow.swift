@@ -54,6 +54,38 @@ struct KeyboardAssistedButton: View {
     }
 }
 
+/// Where the ± sits while a *weight* field has the keyboard: the button once the set holds a
+/// weight, nothing before.
+///
+/// It observes the focused entry because the keyboard row's host observes neither the set nor its
+/// entries. Decided there, the ± only appeared after the field was left and focused again, never
+/// with the first digit typed into it, which is when it is needed.
+struct KeyboardAssistedSlot: View {
+    @ObservedObject var workoutSet: WorkoutSet
+    @ObservedObject var entry: SetEntry
+
+    var body: some View {
+        // Nothing to flip before there is a weight: 0 is bodyweight, never "assisted by zero".
+        if workoutSet.entryValues.contains(where: { $0.type.usesWeight && $0.weight != 0 }) {
+            KeyboardAssistedButton(workoutSet: workoutSet)
+        }
+    }
+
+    /// The set and entry whose weight field has the keyboard, or nil when the focused field is
+    /// anything else — the ± acts on a weight's sign, so it has no business over a reps or
+    /// duration pad.
+    static func focusedWeightEntry(
+        in sets: [WorkoutSet], focusedIndex: IntegerField.Index?
+    ) -> (workoutSet: WorkoutSet, entry: SetEntry)? {
+        guard let focusedIndex,
+              let workoutSet = sets.first(where: { $0.id == focusedIndex.setID }),
+              let entry = workoutSet.entries.value(at: focusedIndex.secondary),
+              entry.type.weightFieldIndex == focusedIndex.tertiary
+        else { return nil }
+        return (workoutSet, entry)
+    }
+}
+
 // MARK: - Keyboard field navigation
 
 /// A set the keyboard's Next button can walk: its identity and the entries it lays out.

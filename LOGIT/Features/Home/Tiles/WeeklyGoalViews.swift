@@ -142,7 +142,11 @@ private struct RingDrawIn: ViewModifier {
                         .rotationEffect(.degrees(-90))
                         .padding(-2)
                 } else {
+                    // Outset past the frame: the ring's stroke is centred on the circle's edge, so half
+                    // its width lies outside the view, and a frame-sized mask clipped every ring to a
+                    // rounded square.
                     Rectangle()
+                        .padding(-4)
                 }
             }
             .onAppear {

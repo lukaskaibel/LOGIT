@@ -251,24 +251,29 @@ final class WorkoutRecorder: ObservableObject {
         workoutSetTemplateSetDictionary[workoutSet]
     }
 
-    func repetitionEnteredSetIDs(in workout: Workout) -> Set<NSManagedObjectID> {
-        Set(workout.sets.filter { $0.hasRepetitionEntry }.map(\.objectID))
+    /// The sets that hold a repetition entry, by their own `id`.
+    ///
+    /// Not by `objectID`: a set added mid-workout has a temporary one until the autosave hands it a
+    /// permanent one, and the same set then read as newly logged — its rest started over, or a newer
+    /// set's rest never started.
+    func repetitionEnteredSetIDs(in workout: Workout) -> Set<UUID> {
+        Set(workout.sets.filter { $0.hasRepetitionEntry }.compactMap(\.id))
     }
 
     func autoRestTriggerSet(
         in workout: Workout,
-        previousRepetitionEntrySetIDs: Set<NSManagedObjectID>,
+        previousRepetitionEntrySetIDs: Set<UUID>,
         preferredSet: WorkoutSet? = nil
-    ) -> (triggerSet: WorkoutSet?, repetitionEntrySetIDs: Set<NSManagedObjectID>) {
+    ) -> (triggerSet: WorkoutSet?, repetitionEntrySetIDs: Set<UUID>) {
         let currentRepetitionEntrySetIDs = repetitionEnteredSetIDs(in: workout)
         let newlyEnteredSetIDs = currentRepetitionEntrySetIDs.subtracting(previousRepetitionEntrySetIDs)
 
         let triggerSet: WorkoutSet?
-        if let preferredSet, newlyEnteredSetIDs.contains(preferredSet.objectID) {
+        if let preferredSet, let id = preferredSet.id, newlyEnteredSetIDs.contains(id) {
             triggerSet = preferredSet
         } else {
             // Choose deterministically based on workout.sets order
-            triggerSet = workout.sets.first(where: { newlyEnteredSetIDs.contains($0.objectID) })
+            triggerSet = workout.sets.first(where: { $0.id.map(newlyEnteredSetIDs.contains) ?? false })
         }
 
         // The tally only ever grows. A set whose rest has already started stays in it even
@@ -338,34 +343,46 @@ final class WorkoutRecorder: ObservableObject {
             activeRestTimerSet = nil
         }
 
-        // Nothing to write for a chronograph the athlete started by hand, or for a workout
-        // that is being thrown away.
-        guard reason != .workoutDiscarded, let activeRestSet = activeRestTimerSet else { return }
+        // Nothing to write for a chronograph the athlete started by hand, for a workout that is
+        // being thrown away, or for a rest too short to have been one.
+        guard reason != .workoutDiscarded, let activeRestSet = activeRestTimerSet, let duration else {
+            return
+        }
 
         recordRestDuration(duration, for: activeRestSet)
     }
 
-    /// What a rest ending for `reason` is worth, in seconds.
+    /// A measured rest shorter than this isn't recorded.
+    ///
+    /// Sets logged a few seconds apart, typically all at once after the fact, each cut the
+    /// previous rest short. Written down, those 2–3 s replaced a template's planned rest, and
+    /// Duplicate and Save as Template carried them on, so the next auto rest was a 3-second
+    /// timer. Nobody rests for less than this, so the set keeps the rest it already had.
+    static let shortestRecordedRestSeconds = 10
+
+    /// What a rest ending for `reason` is worth, in seconds, or nil when it is not worth recording:
+    /// a measured rest shorter than `shortestRecordedRestSeconds`.
     func restDuration(
         for chronograph: Chronograph,
         reason: RestEndReason,
         recordingMode: RestRecordingMode
-    ) -> Int {
-        // A rest that was interrupted still happened: floor it at a second so the set shows
-        // a rest rather than silently showing none.
-        let elapsed = max(1, chronograph.elapsedSeconds)
+    ) -> Int? {
+        let elapsed = chronograph.elapsedSeconds
+        let measured = elapsed >= Self.shortestRecordedRestSeconds ? elapsed : nil
 
         switch chronograph.mode {
         case .stopwatch:
             // A stopwatch has no prescribed length — measuring is the whole point of it.
-            return elapsed
+            return measured
 
         case .timer:
             let fullDuration = max(0, Int(chronograph.initialTimerSeconds.rounded(.down)))
             if reason == .timerCompleted {
                 return fullDuration
             }
-            return recordingMode == .fullDuration ? fullDuration : elapsed
+            // The full-duration setting records the timer's value, which is the plan itself —
+            // nothing a short interruption could skew.
+            return recordingMode == .fullDuration ? fullDuration : measured
         }
     }
 

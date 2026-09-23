@@ -268,7 +268,10 @@ enum WorkoutLiveActivitySnapshotBuilder {
                 performancePlaceholders.append(value.durationMs == 0)
             }
             if value.type.usesWeight {
-                let shown = value.weight > 0 ? value.weight : (template?.weight ?? 0)
+                // Any weight but 0 was entered: assistance is stored as a negative weight, and a
+                // `> 0` test showed the template's plan — or a solid "0 KG" — in place of a logged
+                // −20 kg.
+                let shown = value.weight != 0 ? value.weight : (template?.weight ?? 0)
                 weightSegments.append(formatWeightForDisplay(shown))
                 weightPlaceholders.append(value.weight == 0)
             }

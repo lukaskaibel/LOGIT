@@ -59,9 +59,9 @@ struct TemplateEditorScreen: View {
     @State private var collapsesTrayAfterCreate = false
     /// "Show Details" from the tray's context menus — host-owned for the same reason.
     @State private var exerciseDetailFromTray: Exercise?
-    /// The set groups the template had when this editor opened. Cancel restores exactly this
-    /// composition for an existing template — see `discardChangesThatSurvivedRollback()`.
-    @State private var setGroupOrderOnOpen: [UUID] = []
+    /// The set groups this editor added. Cancel gives back exactly these for an existing template —
+    /// see `Database.discardEditorChanges(to:wasAddedInEditor:setGroupsAddedInEditor:)`.
+    @State private var setGroupsAddedHere: Set<UUID> = []
 
     // MARK: - Parameters
 
@@ -175,11 +175,12 @@ struct TemplateEditorScreen: View {
                             selectedExercise: nil,
                             setExercise: { exercise in
                                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                                database.newTemplateSetGroup(
+                                let added = database.newTemplateSetGroup(
                                     createFirstSetAutomatically: true,
                                     exercise: exercise,
                                     template: template
                                 )
+                                if let id = added.id { setGroupsAddedHere.insert(id) }
                                 withAnimation {
                                     scrollable.scrollTo(1, anchor: .bottom)
                                 }
@@ -206,11 +207,12 @@ struct TemplateEditorScreen: View {
                             ExerciseEditScreen(
                                 onEditFinished: { exercise in
                                     UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                                    database.newTemplateSetGroup(
+                                    let added = database.newTemplateSetGroup(
                                         createFirstSetAutomatically: true,
                                         exercise: exercise,
                                         template: template
                                     )
+                                    if let id = added.id { setGroupsAddedHere.insert(id) }
                                     withAnimation {
                                         scrollable.scrollTo(1, anchor: .bottom)
                                     }
@@ -296,7 +298,6 @@ struct TemplateEditorScreen: View {
                 if !isEditingExistingTemplate {
                     database.flagAsTemporary(template)
                 }
-                setGroupOrderOnOpen = template.setGroups.compactMap { $0.id }
                 exerciseSelectionPresentationDetent = template.setGroups.isEmpty ? .medium : .height(BOTTOM_SHEET_SMALL)
             }
             .toolbar {
@@ -343,7 +344,7 @@ struct TemplateEditorScreen: View {
                             database.discardEditorChanges(
                                 to: template,
                                 wasAddedInEditor: !isEditingExistingTemplate,
-                                setGroupOrderOnOpen: setGroupOrderOnOpen
+                                setGroupsAddedInEditor: setGroupsAddedHere
                             )
                             dismiss()
                         }

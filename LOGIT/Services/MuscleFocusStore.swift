@@ -85,6 +85,11 @@ final class MuscleFocusStore: ObservableObject {
         commit(preset.focus(forWorkoutsPerWeek: workoutsPerWeekToSizeFor))
     }
 
+    /// Takes over targets set in the editor as a whole.
+    func apply(focus updated: MuscleFocus) {
+        commit(updated)
+    }
+
     /// Sets a group's weekly set target (0 leaves the group out of the focus).
     func setTarget(_ value: Int, for muscleGroup: MuscleGroup) {
         var updated = focus

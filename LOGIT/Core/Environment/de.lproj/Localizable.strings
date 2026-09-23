@@ -963,6 +963,7 @@
 "muscleFocusPreset_upperBody" = "Oberkörper";
 "muscleFocusPreset_lowerBody" = "Unterkörper";
 "muscleFocusCustom" = "Benutzerdefiniert";
+"muscleFocusCustomSummary" = "Deine eigenen Sätze pro Woche, Gruppe für Gruppe.";
 "setsPerWeekTitle" = "Sätze pro Woche";
 "muscleFocusWeeklyTotal" = "%d Sätze insgesamt";
 "muscleFocusTargetsFooter" = "Wie viele Sätze jede Muskelgruppe pro Woche bekommen soll. Setze eine Gruppe auf 0, um sie aus deiner Balance herauszulassen.";
@@ -990,6 +991,7 @@
 "muscleFocusPickerLeadNoGoal" = "Wöchentliche Satzziele für jede Muskelgruppe, ausgelegt auf %d Workouts pro Woche.";
 "muscleFocusUsePreset" = "%@ verwenden";
 "muscleFocusSetManually" = "Ziele manuell festlegen";
+"muscleFocusUseCustom" = "Eigene Ziele verwenden";
 "muscleFocusReplaceCustomTitle" = "Eigene Ziele ersetzen?";
 "muscleFocusReplaceCustomMessage" = "Die Ziele der Vorlage ersetzen die, die du selbst festgelegt hast.";
 "muscleFocusSetsPerWeekValue" = "%d Sätze pro Woche";

@@ -967,6 +967,7 @@
 "muscleFocusPreset_upperBody" = "Upper Body";
 "muscleFocusPreset_lowerBody" = "Lower Body";
 "muscleFocusCustom" = "Custom";
+"muscleFocusCustomSummary" = "Your own weekly sets, group by group.";
 "setsPerWeekTitle" = "Sets per week";
 "muscleFocusWeeklyTotal" = "%d sets in total";
 "muscleFocusTargetsFooter" = "How many sets each muscle group should get per week. Set a group to 0 to leave it out of your balance.";
@@ -994,6 +995,7 @@
 "muscleFocusPickerLeadNoGoal" = "Weekly set targets for each muscle group, sized for %d workouts a week.";
 "muscleFocusUsePreset" = "Use %@";
 "muscleFocusSetManually" = "Set Targets Manually";
+"muscleFocusUseCustom" = "Use Custom Targets";
 "muscleFocusReplaceCustomTitle" = "Replace your custom targets?";
 "muscleFocusReplaceCustomMessage" = "The preset's targets replace the ones you set yourself.";
 "muscleFocusSetsPerWeekValue" = "%d sets per week";

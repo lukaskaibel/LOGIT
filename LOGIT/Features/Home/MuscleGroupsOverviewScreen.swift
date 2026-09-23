@@ -574,6 +574,8 @@ struct MuscleTargetPopover: View {
     let window: TrendWindow
     let workouts: [Workout]
 
+    @EnvironmentObject private var focusStore: MuscleFocusStore
+
     private static let exerciseLimit = 3
 
     var body: some View {
@@ -594,7 +596,7 @@ struct MuscleTargetPopover: View {
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
-                MuscleTargetControl(group: group)
+                MuscleTargetControl(group: group, focus: focusStore.committingFocus)
                     .accessibilityIdentifier("muscleTargetControl_\(group.rawValue)")
             }
             Divider()

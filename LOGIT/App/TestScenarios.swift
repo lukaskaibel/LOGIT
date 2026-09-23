@@ -107,21 +107,28 @@ enum TestScenario: String {
     /// `-UITEST_MUSCLE_FOCUS <preset>[@<workouts>]` starts the session with that training focus already
     /// chosen — sized for the scenario's weekly goal, or for `<workouts>` a week to stage the offer to
     /// rescale (`-SCENARIO many -UITEST_MUSCLE_FOCUS fullBody@3` sizes for 3 under a goal of 4).
-    /// Without it every scenario starts with no focus chosen, like a new install.
+    /// `custom` in place of a preset seeds targets no preset has — Full Body with more legs and no
+    /// abs — for the picker's Custom tile. Without it every scenario starts with no focus chosen, like a
+    /// new install.
     private static func seededMuscleFocus(goal: Any?) -> Data? {
         let args = ProcessInfo.processInfo.arguments
         guard let index = args.firstIndex(of: "-UITEST_MUSCLE_FOCUS"), args.indices.contains(index + 1) else {
             return nil
         }
         let parts = args[index + 1].split(separator: "@").map(String.init)
-        guard let preset = MuscleFocusPreset(rawValue: parts[0]) else {
+        let isCustom = parts[0] == "custom"
+        guard let preset = isCustom ? .fullBody : MuscleFocusPreset(rawValue: parts[0]) else {
             NSLog("TestScenario: unknown muscle focus '%@'", parts[0])
             return nil
         }
         let scenarioGoal = (goal as? Int).flatMap { $0 > 0 ? $0 : nil }
             ?? (goal as? String).flatMap(Int.init).flatMap { $0 > 0 ? $0 : nil }
         let sizedFor = parts.count > 1 ? Int(parts[1]) : scenarioGoal
-        let focus = preset.focus(forWorkoutsPerWeek: sizedFor ?? MuscleFocus.baseWorkoutsPerWeek)
+        var focus = preset.focus(forWorkoutsPerWeek: sizedFor ?? MuscleFocus.baseWorkoutsPerWeek)
+        if isCustom {
+            focus.setTarget(focus.target(for: .legs) + 4, for: .legs)
+            focus.setTarget(0, for: .abdominals)
+        }
         return try? JSONEncoder().encode(focus)
     }
 

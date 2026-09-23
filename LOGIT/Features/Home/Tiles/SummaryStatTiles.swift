@@ -183,9 +183,9 @@ struct SummaryBinStrip: View {
 /// the same four weeks. The tile itself no longer reports a percentage; the window-against-window
 /// comparison lives on the `SummaryStatScreen` this taps into, where both numbers are spelled out.
 ///
-/// There is no "building your trend" placeholder any more. It existed because one lone bar among five
-/// windows read as a half-loaded tile; a single bar among twenty-eight days is just a true statement
-/// about a window with one workout in it. A window with nothing in it still shows "––" and the shared
+/// A new account with a single trained bin shows the "building your trend" placeholder instead of the
+/// strip (see `showsTrendPlaceholder`). Once the history covers the span, a lone bar is drawn as what
+/// it is: one workout in the window. A window with nothing in it still shows "––" and the shared
 /// chart's own no-data treatment.
 ///
 /// Every bar uses the app accent — the bars mark the window, not a judgement, so the four tiles read
@@ -213,10 +213,10 @@ struct SummaryStatTile: View {
                 chartBleeds: false
             ) {
                 if showsTrendPlaceholder {
-                    // One lone bar in an otherwise empty strip doesn't read as "you trained once" —
-                    // it reads as a half-loaded tile, and it sits beside a Strength tile that says
-                    // "building your strength trend" in exactly this situation. Show the same hint
-                    // until the window holds something to see; the bars return on their own.
+                    // A brand-new account's one lone bar reads as a half-loaded tile, and it sits
+                    // beside a Strength tile that says "building your strength trend" in exactly this
+                    // situation. Show the same hint while the history fills in; the bars return on
+                    // their own.
                     TrendPlaceholder(progress: data.historyFraction, text: NSLocalizedString("buildingYourTrend", comment: ""))
                 } else {
                     // Every bar the accent, even on the duration tile — the bars mark the window, not
@@ -233,15 +233,21 @@ struct SummaryStatTile: View {
         .buttonStyle(TileButtonStyle())
     }
 
-    /// A single trained bin is a stripe, not a chart. Swap it for the placeholder, but only once the
-    /// window itself has a value: an all-empty tile already shows "––" and keeps the strip's own
-    /// no-data treatment.
+    /// A new account's single trained bin is a stripe, not a chart. Swap it for the placeholder, but
+    /// only once the window itself has a value: an all-empty tile already shows "––" and keeps the
+    /// strip's own no-data treatment.
     ///
     /// The threshold is *bins with training*, not windows with data as it was when a bar was a whole
     /// window — the strip is inside one window now, so "is there enough here to draw" is a question
     /// about this window alone.
+    ///
+    /// **Only while the history is still short of the span.** The ring reports `historyFraction`, so
+    /// for anyone whose history already covers it the placeholder drew a *full* ring over the words
+    /// "building your trend" — complete and waiting at once, with nothing left to build. Someone with
+    /// months of training and one workout in the last four weeks isn't building a trend; they trained
+    /// once, and the strip says so with one dated bar on its ruled timeline.
     private var showsTrendPlaceholder: Bool {
-        data.hasData && data.bins.filter { $0 > 0 }.count < 2
+        data.hasData && data.historyFraction < 1 && data.bins.filter { $0 > 0 }.count < 2
     }
 }
 

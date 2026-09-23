@@ -241,6 +241,11 @@ struct LOGIT: App {
                         isShowingWelcome = true
                     }
                     if shouldImportBodyWeight {
+                        // Before the import: a body-fat grant made here is what lets it read body fat.
+                        await HealthAuthorizationRefresh.requestMissingAuthorization(
+                            workouts: healthKitSyncManager,
+                            bodyMeasurements: bodyMeasurementSyncManager
+                        )
                         await bodyMeasurementSyncManager.importFromHealth()
                     }
                     // Scenario launches already imported default content in init.

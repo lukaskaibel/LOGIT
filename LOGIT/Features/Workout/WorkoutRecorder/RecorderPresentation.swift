@@ -11,17 +11,11 @@ import UIKit
 
 // MARK: - Environment
 
-/// True while the user is dragging the presented recorder down (the transform phase of
-/// the interactive slide dismissal, before it commits or snaps back).
-struct WorkoutRecorderIsDraggingKey: EnvironmentKey {
-    static let defaultValue: Bool = false
-}
-
 /// True once the recorder's presentation transition has fully landed. The persistent
-/// exercise tray sheet is gated on this: presenting it mid-morph would glitch the
-/// transition, and it must be torn down while dragging because UIKit forwards `dismiss`
-/// on a view controller to its presented child — a lingering tray would swallow the
-/// interactive dismissal meant for the recorder.
+/// exercise tray sheet is gated on this: presenting it mid-slide would glitch the
+/// transition, and it must be gone before the recorder is dismissed because UIKit
+/// forwards `dismiss` on a view controller to its presented child — a lingering tray
+/// would swallow the dismissal meant for the recorder.
 ///
 /// Defaults to true so the screen still shows its tray when rendered outside the
 /// Transmission presentation (previews, tests).
@@ -29,18 +23,13 @@ struct WorkoutRecorderIsSettledKey: EnvironmentKey {
     static let defaultValue: Bool = true
 }
 
-/// The header's drag driver; the default is inert (no controller attached), which is
+/// The recorder's drag driver; the default is inert (no controller attached), which is
 /// what previews and tests rendering the screen outside the presentation get.
 struct WorkoutRecorderDragDriverKey: EnvironmentKey {
     static let defaultValue = WorkoutRecorderDragDriver()
 }
 
 extension EnvironmentValues {
-    var workoutRecorderIsDragging: Bool {
-        get { self[WorkoutRecorderIsDraggingKey.self] }
-        set { self[WorkoutRecorderIsDraggingKey.self] = newValue }
-    }
-
     var workoutRecorderIsSettled: Bool {
         get { self[WorkoutRecorderIsSettledKey.self] }
         set { self[WorkoutRecorderIsSettledKey.self] = newValue }
@@ -54,35 +43,32 @@ extension EnvironmentValues {
 
 // MARK: - Presentation controller
 
-/// A full-screen slide presentation controller that reports its interactive phases back
-/// into SwiftUI so the recorder can hide its floating buttons, resign the keyboard and
-/// tear down the exercise tray sheet exactly like the old hand-rolled draggable cover did.
-/// The recorder slides up from the bottom edge and is dragged straight back down to
-/// dismiss (no morph, no fade) — the behaviour the plain full-screen cover had, now
-/// driven by UIKit so the drag is interactive and coordinates with the scroll view.
+/// A full-screen slide presentation controller for the recorder: it slides up from the
+/// bottom edge, and a drag pulls it back down.
+///
+/// The drag is purely visual until the finger lifts. While it is in flight the recorder
+/// — and the exercise tray sheet with it — just follow the finger as a layer transform:
+/// no dismissal is started, no SwiftUI state changes, nothing is torn down. That is what
+/// makes it a real drag you can pull back up and let go of. Only a release far enough
+/// down commits: the screen finishes sliding off, and only then is the tray removed and
+/// the recorder dismissed underneath (UIKit forwards `dismiss` to a presented child, so
+/// the tray has to go first — and tearing it down while the finger was still down is
+/// what used to cancel the gesture and minimize the recorder on the spot).
 final class WorkoutRecorderPresentationController: SlidePresentationController {
-    var onDragChanged: ((Bool) -> Void)?
     var onPresentationSettled: ((Bool) -> Void)?
     var onDismissalEnded: ((Bool) -> Void)?
+    /// Removes the exercise tray sheet (unanimated) ahead of a committed drag dismissal.
+    var onTrayTeardownRequested: (() -> Void)?
 
-    /// True while the SwiftUI drag driver owns a percent-driven dismissal session.
-    private(set) var isExternalDragActive = false
-
-    private var isPanDragging = false
-
-    /// Reporting interactive intent while the external session calls `dismiss` makes
-    /// `attach(to:)` keep the transition's `wantsInteractiveStart` on, so UIKit pauses
-    /// the dismissal for scrubbing instead of playing it straight through.
-    override var wantsInteractiveTransition: Bool {
-        isExternalDragActive || super.wantsInteractiveTransition
-    }
+    /// True from the drag's first movement until its release animation has finished.
+    private(set) var isDragging = false
 
     /// Transmission's own pan gesture is disabled for the recorder: it does receive
     /// touches through the tray sheet's background-interaction passthrough, but its
     /// dismissal path breaks against a presented child (UIKit forwards `dismiss` to
-    /// the tray). All drags are driven by `WorkoutRecorderDragDriver` instead, which
-    /// handles the tray teardown before dismissing. The framework re-enables the pan
-    /// after transitions, so it is forced off at every hook.
+    /// the tray), and it would start the dismissal mid-gesture. Drags come from
+    /// `WorkoutRecorderDragDriver` instead. The framework re-enables the pan after
+    /// transitions, so it is forced off at every hook.
     override func presentationTransitionWillBegin() {
         super.presentationTransitionWillBegin()
         panGesture.isEnabled = false
@@ -93,18 +79,6 @@ final class WorkoutRecorderPresentationController: SlidePresentationController {
         panGesture.isEnabled = false
     }
 
-    // Kept for the paths where Transmission's own pan gesture does receive the touches
-    // and transform-follows: mirror the drag phase into SwiftUI like the external
-    // session does.
-    override func transformPresentedView(transform: CGAffineTransform) {
-        super.transformPresentedView(transform: transform)
-        let dragging = !transform.isIdentity
-        if dragging != isPanDragging {
-            isPanDragging = dragging
-            onDragChanged?(dragging)
-        }
-    }
-
     override func presentationTransitionDidEnd(_ completed: Bool) {
         super.presentationTransitionDidEnd(completed)
         panGesture.isEnabled = false
@@ -113,162 +87,174 @@ final class WorkoutRecorderPresentationController: SlidePresentationController {
 
     override func dismissalTransitionDidEnd(_ completed: Bool) {
         super.dismissalTransitionDidEnd(completed)
-        isExternalDragActive = false
-        isPanDragging = false
+        isDragging = false
         onDismissalEnded?(completed)
     }
 
-    // MARK: External drag session (driven by WorkoutRecorderDragDriver)
+    // MARK: Drag
 
-    /// Starts (once possible) and scrubs the percent-driven dismissal. Until the tray
-    /// sheet is gone the session can't begin — UIKit forwards `dismiss` on a view
-    /// controller to its presented child — so the first tick(s) request the teardown
-    /// and wait; the driver keeps calling this on every gesture change.
-    func driveExternalDismissal(progress: CGFloat) {
-        if !isExternalDragActive {
-            guard !presentedViewController.isBeingDismissed else { return }
-            if let child = presentedViewController.presentedViewController {
-                if !child.isBeingDismissed {
-                    // Mirror the drag into SwiftUI first (drops the tray's presented
-                    // binding), then remove the sheet without animation one runloop
-                    // tick later — dismissing a child inside the gesture's event
-                    // delivery can cancel the very touch driving the drag.
-                    onDragChanged?(true)
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self,
-                              let child = self.presentedViewController.presentedViewController,
-                              !child.isBeingDismissed
-                        else { return }
-                        self.presentedViewController.dismiss(animated: false)
-                    }
-                }
-                return
-            }
-            onDragChanged?(true)
-            isExternalDragActive = true
-            presentedViewController.dismiss(animated: true)
-            guard transition != nil else {
-                // The dismissal didn't start interactively — let it play out.
-                isExternalDragActive = false
-                return
-            }
-        }
-        guard let transition else { return }
-        transition.pause()
-        transition.update(max(0, min(progress, 1)))
+    /// Whether a drag may pick the recorder up right now: fully presented, not on its
+    /// way out, and not already settling from a previous drag.
+    var canBeginDrag: Bool {
+        !presentedViewController.isBeingPresented
+            && !presentedViewController.isBeingDismissed
+            && !isSettlingDrag
     }
 
-    /// Ends the session. The driver only opens one after a deliberate downward pull (see
-    /// `RECORDER_DISMISS_ENGAGEMENT_DISTANCE`) — that pull *is* the commitment, and starting
-    /// the session already tore the tray down — so releasing finishes the dismissal. Dragging
-    /// back up above where the session engaged, or releasing while moving upward, cancels it
-    /// and the screen springs back. A flick never commits on its own: it never engages.
-    func endExternalDismissal(progress rawProgress: CGFloat, velocity: CGFloat) {
-        guard isExternalDragActive else { return }
-        guard let transition else {
-            isExternalDragActive = false
-            return
-        }
-        let shouldFinish = rawProgress >= 0 && velocity >= 0
-        let progress = max(0, min(rawProgress, 1))
-        var completionSpeed = shouldFinish ? 1 - progress : progress
-        if velocity >= 4000 {
-            completionSpeed = 1
-        }
-        transition.completionSpeed = max(0.1, completionSpeed)
-        let height = max(presentedViewController.view.bounds.height, 1)
-        let remaining = (shouldFinish ? (1 - progress) : progress) * height
-        let dy = remaining >= 1 ? max(-30, min(velocity / remaining, 30)) : 0
-        transition.timingCurve = UISpringTimingParameters(
-            dampingRatio: shouldFinish ? 1 : 0.84,
-            initialVelocity: CGVector(dx: 0, dy: dy)
-        )
-        if shouldFinish {
-            transition.finish()
-        } else {
-            transition.cancel()
-        }
-        self.transition = nil
-        // dismissalTransitionDidEnd resets the session flag and reports the outcome
-        // (completed == false re-presents the tray).
+    private var isSettlingDrag = false
+
+    /// The tray sheet's container: it lives in its own presentation, so it has to be
+    /// moved alongside the recorder to read as part of it.
+    private var trayContainerView: UIView? {
+        presentedViewController.presentedViewController?.presentationController?.containerView
     }
 
-    /// Fallback for a flick so fast the gesture ended before the interactive session
-    /// could start (the tray teardown takes a runloop tick): dismiss non-interactively
-    /// once the torn-down tray has fully unwound.
-    func requestImmediateDismissal() {
+    private var dragHeight: CGFloat {
+        max(containerView?.bounds.height ?? presentedViewController.view.bounds.height, 1)
+    }
+
+    /// Moves the recorder (and its tray) `offset` points down from its resting place.
+    func dragChanged(offset: CGFloat) {
+        guard let presentedView else { return }
+        if !isDragging {
+            guard canBeginDrag else { return }
+            isDragging = true
+            // Rounded like the screen while it's off its resting place, as the slide
+            // transition does.
+            CornerRadiusOptions.RoundedRectangle.screen(min: 0).apply(to: presentedView)
+        }
+        let transform = CGAffineTransform(translationX: 0, y: max(offset, 0))
+        presentedView.transform = transform
+        trayContainerView?.transform = transform
+    }
+
+    /// Settles a drag: slides the recorder off and dismisses it when `commit` is true,
+    /// otherwise springs it back into place.
+    func dragEnded(offset: CGFloat, velocity: CGFloat, commit: Bool) {
+        guard isDragging, let presentedView else { return }
+        isSettlingDrag = true
+        let target: CGFloat = commit ? dragHeight : 0
+        let remaining = abs(target - max(offset, 0))
+        let springVelocity = remaining >= 1 ? max(-30, min(velocity / remaining, 30)) : 0
+        let tray = trayContainerView
+        UIView.animate(
+            withDuration: commit ? 0.38 : 0.42,
+            delay: 0,
+            usingSpringWithDamping: commit ? 1 : 0.84,
+            initialSpringVelocity: commit ? max(springVelocity, 0) : abs(springVelocity),
+            options: [.beginFromCurrentState, .allowUserInteraction]
+        ) {
+            let transform = CGAffineTransform(translationX: 0, y: target)
+            presentedView.transform = transform
+            tray?.transform = transform
+        } completion: { [weak self] _ in
+            guard let self else { return }
+            if commit {
+                self.dismissAfterTrayTeardown()
+            } else {
+                CornerRadiusOptions.RoundedRectangle.identity.apply(to: presentedView)
+                self.isDragging = false
+                self.isSettlingDrag = false
+            }
+        }
+    }
+
+    /// The recorder is off screen now; take the tray down, wait for it to be gone, then
+    /// dismiss the recorder itself. The slide-out has nothing left to animate — the
+    /// dismissal animates the same transform the drag already reached.
+    private func dismissAfterTrayTeardown(attempt: Int = 0) {
         let recorder = presentedViewController
         guard !recorder.isBeingDismissed else { return }
-        if recorder.presentedViewController != nil {
-            DispatchQueue.main.async {
-                guard !recorder.isBeingDismissed, recorder.presentedViewController == nil else { return }
-                recorder.dismiss(animated: true)
+        if let child = recorder.presentedViewController {
+            if attempt == 0 {
+                onTrayTeardownRequested?()
+            } else if attempt == 30, !child.isBeingDismissed {
+                // SwiftUI never took it down (should not happen) — do it directly.
+                recorder.dismiss(animated: false)
+            } else if attempt == 120 {
+                // Still covered: bring the recorder back rather than leave it presented
+                // off screen, where it would block the app behind it.
+                isSettlingDrag = false
+                dragEnded(offset: dragHeight, velocity: 0, commit: false)
+                return
             }
-        } else {
-            recorder.dismiss(animated: true)
+            DispatchQueue.main.async { [weak self] in
+                self?.dismissAfterTrayTeardown(attempt: attempt + 1)
+            }
+            return
         }
+        isSettlingDrag = false
+        recorder.dismiss(animated: true)
     }
 }
 
-// MARK: - Header drag driver
+// MARK: - Drag driver
 
-/// Drives the recorder's interactive dismissal from a SwiftUI drag gesture on the
-/// header or set list. Transmission's own pan recognizer sits on the presented view's
-/// root, and the persistent tray sheet's background-interaction passthrough only
+/// Connects the recorder's SwiftUI drag gestures (on the set list and the header) to
+/// the presentation controller. Transmission's own pan recognizer sits on the presented
+/// view's root, and the persistent tray sheet's background-interaction passthrough only
 /// delivers touches to recognizers *inside* the hosted content — the root-level pan
-/// never sees them while the tray is up. This driver reproduces what that pan does:
-/// it starts the dismissal as a percent-driven interactive transition and scrubs it
-/// with the finger, so the screen tracks 1:1, can be dragged back up, and on release
-/// either finishes or springs back — exactly like a sheet.
+/// never sees them while the tray is up, so the drag has to come from SwiftUI.
+///
+/// A drag always tracks the finger 1:1 and is decided on release, by distance: a release
+/// past `commitFraction` of the screen minimizes the recorder, anything short of it — or a
+/// release while moving back up — springs it back. Speed never helps a release commit; a
+/// release still flicking fast even needs `flickCommitFraction`, so a quick swipe can't
+/// minimize the workout.
 final class WorkoutRecorderDragDriver {
     weak var controller: WorkoutRecorderPresentationController?
 
-    /// Translation at the moment the interactive session actually starts (the tray
-    /// teardown takes a runloop tick) — scrubbing measures from there, so the screen
-    /// picks up at the finger without a jump.
-    private var sessionBaseline: CGFloat?
-    private var isSessionActive = false
+    /// How far down (as a share of the screen height) a release has to be to minimize.
+    static let commitFraction: CGFloat = 1 / 3
+    /// The same for a release that is still flicking down faster than `flickVelocity`.
+    static let flickCommitFraction: CGFloat = 1 / 2
+    static let flickVelocity: CGFloat = 1500
 
-    func dragChanged(translation: CGSize) {
+    private var isActive = false
+    private var isPastCommit = false
+    private let feedback = UIImpactFeedbackGenerator(style: .light)
+
+    /// Whether the recorder can be picked up by a drag right now.
+    var canBeginDrag: Bool {
+        controller?.canBeginDrag ?? false
+    }
+
+    /// `translation` is measured from where the drag picked the recorder up.
+    func dragChanged(translation: CGFloat) {
         guard let controller else { return }
-        guard isSessionActive || translation.height > 0 else { return }
-        isSessionActive = true
-
-        if controller.isExternalDragActive {
-            let height = max(controller.presentedViewController.view.bounds.height, 1)
-            let progress = (translation.height - (sessionBaseline ?? 0)) / height
-            controller.driveExternalDismissal(progress: progress)
-        } else {
-            // Not started yet: keep asking; the controller begins the session once the
-            // tray is torn down. Record where the finger was when it finally starts.
-            controller.driveExternalDismissal(progress: 0)
-            if controller.isExternalDragActive {
-                sessionBaseline = translation.height
-            }
+        if !isActive {
+            guard controller.canBeginDrag else { return }
+            isActive = true
+            isPastCommit = false
+            feedback.prepare()
+        }
+        controller.dragChanged(offset: translation)
+        // A tick when the release would start to minimize, and again when it no longer would.
+        let pastCommit = translation >= screenHeight(for: controller) * Self.commitFraction
+        if pastCommit != isPastCommit {
+            isPastCommit = pastCommit
+            feedback.impactOccurred()
         }
     }
 
-    func dragEnded(translation: CGSize, velocity: CGSize) {
-        defer {
-            isSessionActive = false
-            sessionBaseline = nil
-        }
-        guard let controller, isSessionActive else { return }
+    func dragEnded(translation: CGFloat, velocity: CGFloat) {
+        guard isActive, let controller else { return }
+        isActive = false
+        let fraction = velocity > Self.flickVelocity ? Self.flickCommitFraction : Self.commitFraction
+        let commit = translation >= screenHeight(for: controller) * fraction && velocity > -200
+        controller.dragEnded(offset: translation, velocity: velocity, commit: commit)
+    }
 
-        let height = max(controller.presentedViewController.view.bounds.height, 1)
-        if controller.isExternalDragActive {
-            let progress = (translation.height - (sessionBaseline ?? 0)) / height
-            controller.endExternalDismissal(progress: progress, velocity: velocity.height)
-        } else if !controller.presentedViewController.isBeingDismissed {
-            // The gesture ended before the session could start (tray teardown still in
-            // flight). Getting here already took the deliberate engagement pull, so commit
-            // unless the finger had come back up.
-            if translation.height > 0 {
-                controller.requestImmediateDismissal()
-            } else {
-                controller.onDragChanged?(false)
-            }
-        }
+    /// The gesture was cancelled (another gesture or the system took the touch): put the
+    /// recorder back.
+    func dragCancelled() {
+        guard isActive, let controller else { return }
+        isActive = false
+        controller.dragEnded(offset: 0, velocity: 0, commit: false)
+    }
+
+    private func screenHeight(for controller: WorkoutRecorderPresentationController) -> CGFloat {
+        max(controller.containerView?.bounds.height ?? controller.presentedViewController.view.bounds.height, 1)
     }
 }
 
@@ -281,7 +267,7 @@ final class WorkoutRecorderDragDriver {
 struct WorkoutRecorderTransition: PresentationLinkTransitionRepresentable {
     let options: SlidePresentationLinkTransition.Options
     let dragDriver: WorkoutRecorderDragDriver
-    let onDragChanged: (Bool) -> Void
+    let onTrayTeardownRequested: () -> Void
     let onPresentationSettled: (Bool) -> Void
     let onDismissalEnded: (Bool) -> Void
 
@@ -352,7 +338,7 @@ struct WorkoutRecorderTransition: PresentationLinkTransitionRepresentable {
     }
 
     private func assignCallbacks(to controller: WorkoutRecorderPresentationController) {
-        controller.onDragChanged = onDragChanged
+        controller.onTrayTeardownRequested = onTrayTeardownRequested
         controller.onPresentationSettled = onPresentationSettled
         controller.onDismissalEnded = onDismissalEnded
         dragDriver.controller = controller
@@ -362,7 +348,7 @@ struct WorkoutRecorderTransition: PresentationLinkTransitionRepresentable {
 extension PresentationLinkTransition {
     static func workoutRecorder(
         dragDriver: WorkoutRecorderDragDriver,
-        onDragChanged: @escaping (Bool) -> Void,
+        onTrayTeardownRequested: @escaping () -> Void,
         onPresentationSettled: @escaping (Bool) -> Void,
         onDismissalEnded: @escaping (Bool) -> Void
     ) -> PresentationLinkTransition {
@@ -390,7 +376,7 @@ extension PresentationLinkTransition {
                     hapticsStyle: .light
                 ),
                 dragDriver: dragDriver,
-                onDragChanged: onDragChanged,
+                onTrayTeardownRequested: onTrayTeardownRequested,
                 onPresentationSettled: onPresentationSettled,
                 onDismissalEnded: onDismissalEnded
             )

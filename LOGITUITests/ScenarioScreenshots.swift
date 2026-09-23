@@ -858,9 +858,10 @@ final class ScenarioScreenshots: XCTestCase {
     // so those elements stay queryable; tray-up flows are coordinate-driven.
     //
     // Dismissal: a header drag folds/unfolds the stats panel, so the recorder is
-    // dismissed by the set-list drag-to-dismiss (at the top), by pulling on a header
-    // that is already fully extended, and by the header's Minimize button. All drag
-    // paths only engage past a deliberate distance — a swipe never minimizes.
+    // dismissed by dragging the set list down (starting at its top), by pulling on a
+    // header that is already fully extended, and by the header's Minimize button. A
+    // drag moves the recorder with the finger and is decided on release: only a
+    // release a third of the screen down minimizes — a swipe never does.
 
     /// Keyboard focus in the presented recorder, then Minimize back into the pill, then
     /// reopen. Tray suppressed so the header stays queryable; also proves the title field
@@ -923,35 +924,112 @@ final class ScenarioScreenshots: XCTestCase {
 
         // Scroll the list to the very top (it opens scrolled to the bottom). Swiping
         // down in the list area moves content down = scrolls up; verifies scrolling
-        // still works alongside the dismiss gesture. Each swipe stays well under the
-        // dismissal's engagement distance — scrolling back to the top must never
-        // minimize the recorder.
-        let mid = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.32))
-        let low = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.50))
-        for _ in 0 ..< 10 {
-            mid.press(forDuration: 0.02, thenDragTo: low)
-        }
-        waitABit(1)
+        // still works alongside the drag gesture. The swipe that lands the list at its
+        // top started scrolled down, so it must never go on to minimize the recorder.
+        scrollRecorderListToTop(app)
         attach(app, "list_01_scrolled_to_top")
         XCTAssertTrue(tray.exists, "Scrolling the list back to its top must not minimize the recorder")
 
         // Drag down from the list body → dismiss. Starts at 0.55: at the top the
         // header is expanded (scroll-linked, like a large title) and occupies the
         // upper ~45% of the screen, so higher origins would drag the header instead.
-        // The travel (~0.35 of the screen) clears the engagement distance a mere
-        // swipe never reaches.
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55)).press(
-            forDuration: 0.1,
-            thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)),
-            withVelocity: 700,
-            thenHoldForDuration: 0.1
-        )
+        // The release (~0.4 of the screen down, finger at rest) is past the third of
+        // the screen a release has to reach.
+        dragRecorderList(app, from: 0.55, to: 0.97)
         waitABit(2)
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 8), "Tab bar not reachable — list drag didn't dismiss")
         let pill = app.staticTexts["Push Day"].firstMatch
         XCTAssertTrue(pill.waitForExistence(timeout: 5), "Current-workout pill missing after list drag-to-dismiss")
         attach(app, "list_02_dismissed_to_pill")
+    }
+
+    /// A drag that is let go of short of a third of the screen puts the recorder back —
+    /// with the tray, which rides along with it — and a fast swipe from the list's top
+    /// never minimizes, even one that travels further than that.
+    func testRecorderDragReleaseSpringsBack() {
+        let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
+        let tray = app.textFields.matching(
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
+        ).firstMatch
+        XCTAssertTrue(tray.waitForExistence(timeout: 20), "Recorder/tray never presented")
+        waitABit(2)
+        scrollRecorderListToTop(app)
+
+        dragRecorderList(app, from: 0.55, to: 0.8)
+        waitABit(1)
+        attach(app, "drag_02_released_short")
+        XCTAssertTrue(tray.exists, "A drag released short of a third of the screen must not minimize the recorder")
+
+        // A fast swipe covering more than a third of the screen: still no minimize.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(
+            forDuration: 0.01,
+            thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95)),
+            withVelocity: 3000,
+            thenHoldForDuration: 0
+        )
+        waitABit(2)
+        attach(app, "drag_03_after_fast_swipe")
+        XCTAssertTrue(tray.exists, "A fast swipe must not minimize the recorder")
+    }
+
+    /// The header's path to the same drag: with the summary pulled fully open (nothing
+    /// left to open) at the top of the list, pulling the header down again drags the
+    /// whole recorder, and a release well down minimizes it.
+    func testRecorderHeaderDragDismiss() {
+        let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER"])
+        let tray = app.textFields.matching(
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
+        ).firstMatch
+        XCTAssertTrue(tray.waitForExistence(timeout: 20), "Recorder/tray never presented")
+        waitABit(2)
+        scrollRecorderListToTop(app)
+
+        // First pull opens the summary panel all the way.
+        let title = app.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.08))
+        title.press(
+            forDuration: 0.1,
+            thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.4)),
+            withVelocity: 600,
+            thenHoldForDuration: 0.2
+        )
+        waitABit(2)
+        attach(app, "header_drag_01_summary_open")
+        XCTAssertTrue(tray.exists, "Opening the summary must not minimize the recorder")
+
+        // Second pull: nothing left to open, so it drags the recorder; released at rest
+        // over half the screen down → minimized.
+        title.press(
+            forDuration: 0.1,
+            thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.62)),
+            withVelocity: 600,
+            thenHoldForDuration: 0.3
+        )
+        waitABit(2)
+        let pill = app.staticTexts["Push Day"].firstMatch
+        XCTAssertTrue(pill.waitForExistence(timeout: 8), "Current-workout pill missing after the header drag")
+        attach(app, "header_drag_02_minimized")
+    }
+
+    /// Scrolls the recorder's set list to its top with short swipes (it opens scrolled
+    /// to the bottom).
+    private func scrollRecorderListToTop(_ app: XCUIApplication) {
+        let mid = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.32))
+        let low = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.50))
+        for _ in 0 ..< 10 {
+            mid.press(forDuration: 0.02, thenDragTo: low)
+        }
+        waitABit(1)
+    }
+
+    /// A deliberate drag on the set list: the finger comes to rest before it lifts.
+    private func dragRecorderList(_ app: XCUIApplication, from: CGFloat, to: CGFloat, hold: TimeInterval = 0.3) {
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: from)).press(
+            forDuration: 0.1,
+            thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: to)),
+            withVelocity: 600,
+            thenHoldForDuration: hold
+        )
     }
 
     /// The persistent exercise tray under the Transmission presentation: it must
@@ -971,15 +1049,9 @@ final class ScenarioScreenshots: XCTestCase {
         waitABit(2)
         attach(app, "recorder_06_tray_settled")
 
-        // Scroll the list to the very top (it opens scrolled to the bottom) so the
-        // list-drag dismissal can engage. Short swipes: anything past the engagement
-        // distance would minimize the recorder before the drag under test.
-        let mid = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.32))
-        let low = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.50))
-        for _ in 0 ..< 10 {
-            mid.press(forDuration: 0.02, thenDragTo: low)
-        }
-        waitABit(1)
+        // Scroll the list to the very top (it opens scrolled to the bottom) so a list
+        // drag can pick the recorder up.
+        scrollRecorderListToTop(app)
 
         // Drag down from the list body: the presentation controller must tear the
         // tray down when the drag commits so the dismissal reaches the recorder.
@@ -990,12 +1062,7 @@ final class ScenarioScreenshots: XCTestCase {
         // Origin 0.55: at the top the header is expanded (scroll-linked) and owns
         // the upper part of the screen — higher origins would drag the header.
         for _ in 0 ..< 2 where !trayDismissed {
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55)).press(
-                forDuration: 0.1,
-                thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.86)),
-                withVelocity: 800,
-                thenHoldForDuration: 0.1
-            )
+            dragRecorderList(app, from: 0.55, to: 0.97)
             let expectation = XCTNSPredicateExpectation(predicate: trayGone, object: traySearchField)
             trayDismissed = XCTWaiter().wait(for: [expectation], timeout: 8) == .completed
         }

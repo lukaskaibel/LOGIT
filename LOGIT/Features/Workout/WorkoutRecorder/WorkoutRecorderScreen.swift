@@ -110,7 +110,7 @@ struct WorkoutRecorderScreen: View {
 
     @State var focusedIntegerFieldIndex: IntegerField.Index?
 
-    @State private var enteredRepetitionSetIDs: Set<NSManagedObjectID> = []
+    @State private var enteredRepetitionSetIDs: Set<UUID> = []
 
     // Dragging the recorder down from the set list: only a pull that starts on a list already
     // resting at its top picks the recorder up; the driver moves it with the finger.
@@ -899,6 +899,11 @@ struct WorkoutRecorderScreen: View {
             topSheet.isFinishing = false
             topSheet.reveal = topSheet.revealBeforeFinishing
         } completion: {
+            // Finish tapped again before this spring landed: the panel is open once more, and
+            // clearing the recap now would empty it under the user — the goal card, highlights,
+            // effort and note all gone, only the title and End Workout left. The reopened panel
+            // reveals it afresh instead (see `finishContent`).
+            guard !topSheet.isFinishing else { return }
             topSheet.isReturningFromFinish = false
             finishModel.reset()
         }
@@ -929,8 +934,11 @@ struct WorkoutRecorderScreen: View {
         // The recap is computed off the back of the travel, not into it: `WorkoutRecap.compute` walks
         // every exercise's whole history on the view context's queue, and running it inline stutters
         // the panel's expansion. Once the spring has landed, the reveal plays from the top.
+        //
+        // Always computed, even with a recap still in hand: a panel reopened before Continue's spring
+        // landed keeps it (see `endFinishing`), and Continue may have cut its reveal off mid-beat.
+        // Revealing it again is cheap on the eye — an unchanged workout shows its settled panel at once.
         .task {
-            guard finishModel.recap == nil else { return }
             try? await Task.sleep(for: .milliseconds(450))
             guard !Task.isCancelled, topSheet.isFinishing else { return }
             let recap = WorkoutRecap.compute(for: workout, database: database)
@@ -1163,7 +1171,7 @@ struct WorkoutRecorderScreen: View {
 
     private func startRestTimerForSet(_ completedSet: WorkoutSet) {
         // This set's own rest is already on the clock.
-        guard workoutRecorder.activeRestTimerSet?.objectID != completedSet.objectID else { return }
+        guard workoutRecorder.activeRestTimerSet !== completedSet else { return }
 
         // Read at call time instead of via `@AppStorage`: these settings are only consumed
         // here, and an `@AppStorage` subscription re-rendered the whole recorder tree on every

@@ -99,7 +99,10 @@ final class LOGITScreenshots: XCTestCase {
 
     /// The full-screen workout recorder mid-session (auto-presented at launch).
     func test06Recorder() {
-        launch(["-UITEST_SHOW_RECORDER", "1"])
+        // Opened at the top of the list rather than scrolled to its end: since #209 the last set's
+        // keyboard scroll target reaches below the card, so "the end" cut the first visible card's
+        // header off under the top sheet.
+        launch(["-UITEST_SHOW_RECORDER", "1", "-UITEST_NO_SCROLLTO"])
         // The recorder cover auto-presents ~0.6s after the tab view appears.
         waitABit(5)
         snapshot("06_Recorder")

@@ -482,23 +482,14 @@ struct RecorderFinishHighlightsSection: View {
         let highlights = recap.highlights
         let shown = showsAll ? highlights : Array(highlights.prefix(Self.collapsedCount))
         VStack(alignment: .leading, spacing: SECTION_HEADER_SPACING) {
-            HStack(spacing: 8) {
-                Image(systemName: "sparkles")
-                    .foregroundStyle(
-                        highlights.compactMap { $0.exercise.muscleGroup }
-                            .weightedSpectrumGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing)
-                    )
-                    .symbolEffect(.bounce, options: .speed(0.9), value: isRevealed)
-                Text(NSLocalizedString("highlights", comment: ""))
-                    .foregroundStyle(Color.label)
-            }
-            .font(.title3.weight(.bold))
-            .padding(.leading)
-            .modifier(FinishReveal(isRevealed: isRevealed))
-            // On the header rather than the section: a container's identifier would overwrite the
-            // rows' and the Show More button's own.
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("finishHighlights")
+            Text(NSLocalizedString("highlights", comment: ""))
+                .foregroundStyle(Color.label)
+                .font(.title3.weight(.bold))
+                .padding(.leading)
+                .modifier(FinishReveal(isRevealed: isRevealed))
+                // On the header rather than the section: a container's identifier would overwrite
+                // the rows' and the Show More button's own.
+                .accessibilityIdentifier("finishHighlights")
 
             // One tile per exercise, not rows on a shared card: each arrives as its own object,
             // one, two, three, rather than a list filling in.

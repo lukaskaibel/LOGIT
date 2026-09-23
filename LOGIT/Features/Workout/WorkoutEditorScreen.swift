@@ -45,9 +45,9 @@ struct WorkoutEditorScreen: View {
     @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
     @FocusState private var isNoteFieldFocused: Bool
     @State private var isRatingEffort = false
-    /// The set groups the workout had when this editor opened. Cancel restores exactly this
-    /// composition for an existing workout — see `discardChangesThatSurvivedRollback()`.
-    @State private var setGroupOrderOnOpen: [UUID] = []
+    /// The set groups this editor added. Cancel gives back exactly these for an existing workout —
+    /// see `Database.discardEditorChanges(to:wasAddedInEditor:setGroupsAddedInEditor:)`.
+    @State private var setGroupsAddedHere: Set<UUID> = []
 
     /// Top to bottom, not leading to trailing: the effort marker is a narrow, tall capsule, and a
     /// horizontal sweep would squeeze the whole spectrum into ~25pt.
@@ -181,11 +181,12 @@ struct WorkoutEditorScreen: View {
                         ExerciseSelectionScreen(
                             selectedExercise: nil,
                             setExercise: { exercise in
-                                database.newWorkoutSetGroup(
+                                let added = database.newWorkoutSetGroup(
                                     createFirstSetAutomatically: true,
                                     exercise: exercise,
                                     workout: workout
                                 )
+                                if let id = added.id { setGroupsAddedHere.insert(id) }
                             },
                             forSecondary: false,
                             currentWorkoutExercises: workout.exercises,
@@ -210,11 +211,12 @@ struct WorkoutEditorScreen: View {
                         .sheet(item: $createExerciseRequest) { request in
                             ExerciseEditScreen(
                                 onEditFinished: { exercise in
-                                    database.newWorkoutSetGroup(
+                                    let added = database.newWorkoutSetGroup(
                                         createFirstSetAutomatically: true,
                                         exercise: exercise,
                                         workout: workout
                                     )
+                                    if let id = added.id { setGroupsAddedHere.insert(id) }
                                     exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
                                 },
                                 initialExerciseName: request.name,
@@ -386,7 +388,7 @@ struct WorkoutEditorScreen: View {
                         database.discardEditorChanges(
                             to: workout,
                             wasAddedInEditor: isAddingNewWorkout,
-                            setGroupOrderOnOpen: setGroupOrderOnOpen
+                            setGroupsAddedInEditor: setGroupsAddedHere
                         )
                         dismiss()
                     }
@@ -400,7 +402,6 @@ struct WorkoutEditorScreen: View {
                 if workout.date == nil {
                     workout.date = .now
                 }
-                setGroupOrderOnOpen = workout.setGroups.compactMap { $0.id }
                 refreshOnChange()
                 exerciseSelectionPresentationDetent = workout.isEmpty ? .medium : .height(BOTTOM_SHEET_SMALL)
             }
@@ -423,8 +424,10 @@ struct WorkoutEditorScreen: View {
                 KeyboardToolbarGroup {
                     // Leading of Next, so the capsule grows away from the edge — see the
                     // recorder's copy.
-                    if let assistedSet = focusedWeightSet {
-                        KeyboardAssistedButton(workoutSet: assistedSet)
+                    if let focused = KeyboardAssistedSlot.focusedWeightEntry(
+                        in: workout.sets, focusedIndex: focusedIntegerFieldIndex
+                    ) {
+                        KeyboardAssistedSlot(workoutSet: focused.workoutSet, entry: focused.entry)
                     }
                     KeyboardToolbarTextButton(
                         title: NSLocalizedString("next", comment: ""),
@@ -446,18 +449,6 @@ struct WorkoutEditorScreen: View {
                 .accessibilityIdentifier("keyboardHide")
             }
         }
-    }
-
-    /// The focused set, but only while the field with the keyboard is its *weight* — see the
-    /// recorder's `focusedWeightSet`, which this mirrors.
-    private var focusedWeightSet: WorkoutSet? {
-        guard let focusedIndex = focusedIntegerFieldIndex,
-              let workoutSet = workout.sets.first(where: { $0.id == focusedIndex.setID }),
-              let entry = workoutSet.entryValues.value(at: focusedIndex.secondary),
-              entry.type.weightFieldIndex == focusedIndex.tertiary,
-              workoutSet.entryValues.contains(where: { $0.type.usesWeight && $0.weight != 0 })
-        else { return nil }
-        return workoutSet
     }
 
     // MARK: - Computed Properties

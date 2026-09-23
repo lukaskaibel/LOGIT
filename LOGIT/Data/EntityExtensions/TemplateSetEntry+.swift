@@ -22,7 +22,7 @@ extension TemplateSetEntry {
     /// including its pre-v11 whole-second fallback and write-through. See there for why the
     /// legacy attribute stays.
     var durationMs: Int64 {
-        get { durationMillis?.int64Value ?? duration * 1000 }
+        get { fineGrainedValue(durationMillis, coarseMirror: duration) }
         set {
             durationMillis = NSNumber(value: newValue)
             duration = roundedToThousands(newValue)
@@ -31,7 +31,7 @@ extension TemplateSetEntry {
 
     /// Planned distance in **millimeters** — the template mirror of `SetEntry.distanceMm`.
     var distanceMm: Int64 {
-        get { distanceMillimeters?.int64Value ?? distance * 1000 }
+        get { fineGrainedValue(distanceMillimeters, coarseMirror: distance) }
         set {
             distanceMillimeters = NSNumber(value: newValue)
             distance = roundedToThousands(newValue)

@@ -14,6 +14,20 @@ internal func roundedToThousands(_ value: Int64) -> Int64 {
     value < 0 ? -((-value + 500) / 1000) : (value + 500) / 1000
 }
 
+/// Reads a v11 fine-grained value against its pre-v11 coarse mirror.
+///
+/// The fine value is the truth only while the mirror still agrees with it. Every writer since v11
+/// keeps the two in step, so a mirror that no longer matches was written by an older app version
+/// that knows only the coarse attribute (a second device still on 5.1 editing or clearing the
+/// set), and that edit is the newer one. Absent a fine value, the row predates v11 and reads as
+/// coarse × 1000.
+internal func fineGrainedValue(_ fine: NSNumber?, coarseMirror: Int64) -> Int64 {
+    guard let fine = fine?.int64Value, roundedToThousands(fine) == coarseMirror else {
+        return coarseMirror * 1000
+    }
+    return fine
+}
+
 extension SetEntry {
     static func == (lhs: SetEntry, rhs: SetEntry) -> Bool {
         lhs.objectID == rhs.objectID
@@ -30,11 +44,13 @@ extension SetEntry {
     /// The recorded duration in **milliseconds** — the unit every reader works in since model
     /// v11, so a sprint can be logged as 12.34 s rather than rounded to a whole second.
     ///
-    /// `durationMillis` is the truth when present. Rows written before v11 — and rows still
-    /// arriving through CloudKit from devices on older app versions, which happens for as long
-    /// as those installs live — carry only the whole-second `duration`, and read as seconds
-    /// × 1000. That fallback is why no migration sweep is needed: an unconverted row reads
-    /// identically to a converted one.
+    /// `durationMillis` is the truth when present and still agreeing with `duration` (see
+    /// `fineGrainedValue`). Rows written before v11 — and rows still arriving through CloudKit
+    /// from devices on older app versions, which happens for as long as those installs live —
+    /// carry only the whole-second `duration`, and read as seconds × 1000. That fallback is why no
+    /// migration sweep is needed: an unconverted row reads identically to a converted one. It
+    /// also covers a row an older version *edited*: it changes only `duration`, which then no
+    /// longer matches the millisecond value, and the edit wins.
     ///
     /// Writing keeps both in step. The millisecond value is the real one; `duration` is
     /// mirrored as rounded whole seconds so older versions keep showing a sensible number.
@@ -42,7 +58,7 @@ extension SetEntry {
     /// half a second reads as the empty placeholder) — CloudKit's schema is additive-only, so
     /// the seconds attribute can never be removed, only left behind.
     var durationMs: Int64 {
-        get { durationMillis?.int64Value ?? duration * 1000 }
+        get { fineGrainedValue(durationMillis, coarseMirror: duration) }
         set {
             durationMillis = NSNumber(value: newValue)
             duration = roundedToThousands(newValue)
@@ -58,7 +74,7 @@ extension SetEntry {
     /// and redisplays as 0.05 yd), while millimeters carry m and yd at two decimals and km and
     /// mi at three.
     var distanceMm: Int64 {
-        get { distanceMillimeters?.int64Value ?? distance * 1000 }
+        get { fineGrainedValue(distanceMillimeters, coarseMirror: distance) }
         set {
             distanceMillimeters = NSNumber(value: newValue)
             distance = roundedToThousands(newValue)

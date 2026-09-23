@@ -417,12 +417,15 @@ public class Database: ObservableObject {
     ///
     /// So: a workout added in the editor is deleted outright. Cascade takes its set groups and sets
     /// with it; exercises are only nullified, so one created along the way stays in the library where
-    /// the user put it. An existing workout keeps its rows and only gives back the set groups added
-    /// in this session — `setGroupOrderOnOpen` is the composition the editor opened with.
+    /// the user put it. An existing workout keeps its rows and only gives back the set groups the
+    /// editor itself added — `setGroupsAddedInEditor`, which the editor records as it adds them.
+    ///
+    /// Recorded rather than inferred as "present now but not on open": a set group that arrived
+    /// through iCloud while the editor was open is also present now, and inferring deleted it.
     func discardEditorChanges(
         to workout: Workout,
         wasAddedInEditor: Bool,
-        setGroupOrderOnOpen: [UUID]
+        setGroupsAddedInEditor: Set<UUID>
     ) {
         discardUnsavedChanges()
         guard survivedRollback(workout) else { return }
@@ -430,27 +433,26 @@ public class Database: ObservableObject {
             delete(workout, saveContext: true)
             return
         }
-        let idsOnOpen = Set(setGroupOrderOnOpen)
         let addedHere = workout.setGroups.filter { setGroup in
             guard let id = setGroup.id else { return false }
-            return !idsOnOpen.contains(id)
+            return setGroupsAddedInEditor.contains(id)
         }
         guard !addedHere.isEmpty else { return }
         // Order first: it is a plain attribute, written synchronously, while the deletes below go
         // through the context's queue. `resolvedOrder` ignores ids it cannot resolve, so the list
         // never reads as broken in between.
-        workout.setGroupOrder = setGroupOrderOnOpen
+        workout.setGroupOrder = workout.setGroupOrder?.filter { !setGroupsAddedInEditor.contains($0) }
         addedHere.forEach { delete($0) }
         save()
     }
 
-    /// The template editor's Cancel — see `discardEditorChanges(to:wasAddedInEditor:setGroupOrderOnOpen:)`,
+    /// The template editor's Cancel — see `discardEditorChanges(to:wasAddedInEditor:setGroupsAddedInEditor:)`,
     /// which this mirrors exactly; the same hazard applies, and a cancelled new template would
     /// otherwise sit untitled in the template list.
     func discardEditorChanges(
         to template: Template,
         wasAddedInEditor: Bool,
-        setGroupOrderOnOpen: [UUID]
+        setGroupsAddedInEditor: Set<UUID>
     ) {
         // Read before the rollback, which can take back the set groups that are the template's only
         // route to its exercises.
@@ -475,13 +477,14 @@ public class Database: ObservableObject {
             return
         }
         guard survivedRollback(template) else { return }
-        let idsOnOpen = Set(setGroupOrderOnOpen)
         let addedHere = template.setGroups.filter { setGroup in
             guard let id = setGroup.id else { return false }
-            return !idsOnOpen.contains(id)
+            return setGroupsAddedInEditor.contains(id)
         }
         guard !addedHere.isEmpty else { return }
-        template.templateSetGroupOrder = setGroupOrderOnOpen
+        template.templateSetGroupOrder = template.templateSetGroupOrder?.filter {
+            !setGroupsAddedInEditor.contains($0)
+        }
         addedHere.forEach { delete($0) }
         save()
     }

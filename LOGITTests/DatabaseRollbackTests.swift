@@ -127,7 +127,7 @@ final class DatabaseRollbackTests: XCTestCase {
         database.context.performAndWait { try? database.context.save() }
         XCTAssertFalse(database.context.hasChanges, "Precondition: the nested save left nothing pending")
 
-        database.discardEditorChanges(to: workout, wasAddedInEditor: true, setGroupOrderOnOpen: [])
+        database.discardEditorChanges(to: workout, wasAddedInEditor: true, setGroupsAddedInEditor: [])
         drainContext()
 
         XCTAssertTrue(workout.isDeleted || workout.managedObjectContext == nil,
@@ -144,7 +144,7 @@ final class DatabaseRollbackTests: XCTestCase {
         _ = database.newWorkoutSetGroup(createFirstSetAutomatically: true, exercise: exercise, workout: workout)
         database.context.performAndWait { try? database.context.save() }
 
-        database.discardEditorChanges(to: workout, wasAddedInEditor: true, setGroupOrderOnOpen: [])
+        database.discardEditorChanges(to: workout, wasAddedInEditor: true, setGroupsAddedInEditor: [])
         drainContext()
 
         XCTAssertFalse(exercise.isDeleted, "The new exercise belongs to the library, not to the cancelled workout")
@@ -165,16 +165,53 @@ final class DatabaseRollbackTests: XCTestCase {
         let orderOnOpen = workout.setGroups.compactMap { $0.id }
         XCTAssertEqual(orderOnOpen.count, 1, "Precondition: the workout starts with one set group")
 
-        _ = database.newWorkoutSetGroup(createFirstSetAutomatically: true, exercise: deadlift, workout: workout)
+        let addedID = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: true, exercise: deadlift, workout: workout
+        ).id!
         database.context.performAndWait { try? database.context.save() }
         XCTAssertEqual(workout.setGroups.count, 2, "Precondition: the nested save committed the added set group")
 
-        database.discardEditorChanges(to: workout, wasAddedInEditor: false, setGroupOrderOnOpen: orderOnOpen)
+        database.discardEditorChanges(
+            to: workout, wasAddedInEditor: false, setGroupsAddedInEditor: [addedID]
+        )
         drainContext()
 
         XCTAssertFalse(workout.isDeleted, "An existing workout must survive its editor's Cancel")
         XCTAssertEqual(workout.setGroups.compactMap { $0.id }, orderOnOpen,
                        "Cancel should leave exactly the set groups the editor opened with")
+    }
+
+    /// A set group that arrives some other way while the editor is open — through iCloud from
+    /// another device, say — is not the editor's to take back. Cancel used to delete everything that
+    /// wasn't there on open, which took such a group, and its sets, with it.
+    func testDiscardEditorChanges_keepsASetGroupTheEditorDidNotAdd() {
+        let benchpress = database.newExercise(name: "Benchpress", muscleGroup: .chest)
+        let deadlift = database.newExercise(name: "Deadlift", muscleGroup: .back)
+        let squat = database.newExercise(name: "Squat", muscleGroup: .legs)
+        let workout = database.newWorkout(name: "Leg Day")
+        _ = database.newWorkoutSetGroup(createFirstSetAutomatically: true, exercise: benchpress, workout: workout)
+        database.save()
+        drainContext()
+
+        // Read up front: a deleted object's attributes read as nil.
+        let addedID = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: true, exercise: deadlift, workout: workout
+        ).id!
+        // Stands in for a group synced in from another device while the editor is open.
+        let syncedID = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: true, exercise: squat, workout: workout
+        ).id!
+        database.context.performAndWait { try? database.context.save() }
+
+        database.discardEditorChanges(
+            to: workout, wasAddedInEditor: false, setGroupsAddedInEditor: [addedID]
+        )
+        drainContext()
+
+        let remaining = Set(workout.setGroups.compactMap { $0.id })
+        XCTAssertFalse(remaining.contains(addedID), "The group this editor added should go")
+        XCTAssertTrue(remaining.contains(syncedID), "A group the editor didn't add must stay")
+        XCTAssertEqual(remaining.count, 2)
     }
 
     /// The same for templates — cancelling a new one must not leave an untitled template behind.
@@ -190,7 +227,7 @@ final class DatabaseRollbackTests: XCTestCase {
         )
         database.context.performAndWait { try? database.context.save() }
 
-        database.discardEditorChanges(to: template, wasAddedInEditor: true, setGroupOrderOnOpen: [])
+        database.discardEditorChanges(to: template, wasAddedInEditor: true, setGroupsAddedInEditor: [])
         drainContext()
 
         let remaining = database.fetch(Template.self) as? [Template] ?? []
@@ -211,7 +248,7 @@ final class DatabaseRollbackTests: XCTestCase {
         )
         database.context.performAndWait { try? database.context.save() }
 
-        database.discardEditorChanges(to: template, wasAddedInEditor: true, setGroupOrderOnOpen: [])
+        database.discardEditorChanges(to: template, wasAddedInEditor: true, setGroupsAddedInEditor: [])
         drainContext()
 
         let exercises = database.fetch(Exercise.self) as? [Exercise] ?? []
@@ -305,7 +342,7 @@ final class DatabaseRollbackTests: XCTestCase {
             workout: workout
         )
 
-        database.discardEditorChanges(to: workout, wasAddedInEditor: true, setGroupOrderOnOpen: [])
+        database.discardEditorChanges(to: workout, wasAddedInEditor: true, setGroupsAddedInEditor: [])
         drainContext()
 
         let remaining = database.fetch(Workout.self) as? [Workout] ?? []

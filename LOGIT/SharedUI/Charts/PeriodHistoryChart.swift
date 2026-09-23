@@ -85,6 +85,11 @@ struct PeriodHistoryChart: View {
                     RuleMark(y: .value(NSLocalizedString("average", comment: ""), averageLine))
                         .averageLineStyle()
                 }
+                // The inspected bar's card, drawn after the dashed line so the line never strikes
+                // through it.
+                if let selectedBucket {
+                    card(for: selectedBucket)
+                }
             }
             // A round ceiling just above the tallest bar in view, so the plot closes on a labelled
             // grid line instead of open space (see `chartAxisTop`).
@@ -150,38 +155,53 @@ struct PeriodHistoryChart: View {
 
     // MARK: - Marks
 
-    /// One bucket's bar, and — for the inspected one — the card that names it.
+    /// One bucket's bar.
     ///
-    /// The coloured bar *is* the selection indicator, and it carries the card itself. A rule mark
-    /// used to stand in for it, which left a grey stalk sticking up out of the bar and hung the card
-    /// at the top of the plot rather than over the thing it described. Colour against gray already
-    /// says which bar is being read, and this is the same idiom as every other bar chart in the app.
-    @ChartContentBuilder
+    /// The coloured bar *is* the selection indicator. A rule mark used to stand in for it, which left
+    /// a grey stalk sticking up out of the bar and hung the card at the top of the plot rather than
+    /// over the thing it described. Colour against gray already says which bar is being read, and
+    /// this is the same idiom as every other bar chart in the app. Unstacked so the clear copy
+    /// carrying the card (`card(for:)`) covers this bar rather than stacking on top of it.
     private func bar(for bucket: Bucket, selected: Bucket?) -> some ChartContent {
-        let mark = BarMark(
+        BarMark(
             x: .value("Period", bucket.date, unit: period.calendarComponent),
             y: .value(valueLabel, bucket.value),
-            width: .ratio(0.6)
+            width: .ratio(0.6),
+            stacking: .unstacked
         )
         .foregroundStyle(barStyle(for: bucket, selected: selected))
         .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-        if selected?.id == bucket.id {
-            mark.annotation(
-                position: annotationPosition(for: bucket),
-                overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
-            ) {
-                annotationCard(for: bucket)
-            }
-        } else {
-            mark
+    }
+
+    /// The card that names the inspected bucket, hung off a clear copy of its bar. It is a mark of its
+    /// own rather than the bar's annotation so it can be drawn after the dashed average line: hung off
+    /// the bar, it sat under the line, which struck through its text.
+    private func card(for bucket: Bucket) -> some ChartContent {
+        BarMark(
+            x: .value("Period", bucket.date, unit: period.calendarComponent),
+            y: .value(valueLabel, bucket.value),
+            width: .ratio(0.6),
+            stacking: .unstacked
+        )
+        .foregroundStyle(Color.clear)
+        .annotation(
+            position: annotationPosition(for: bucket),
+            overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
+        ) {
+            annotationCard(for: bucket)
         }
     }
 
     // MARK: - Selection
 
-    /// The bucket whose bar sits nearest the raw selection point — snaps the tap/drag onto a bar.
+    /// The bucket whose bar is under the raw selection point — the period that contains it.
+    ///
+    /// A bucket is dated by its period's *start*, but its bar spans the whole period
+    /// (`BarMark(x:unit:)`), so it has to be the latest start at or before the point. Picking the
+    /// start nearest the point selected the next period's bar for any tap on a bar's right half.
     private func nearestBucket(to date: Date) -> Bucket? {
-        buckets.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }
+        buckets.filter { $0.date <= date }.max { $0.date < $1.date }
+            ?? buckets.min { $0.date < $1.date }
     }
 
     /// At rest the current period wears the chart's colour and the completed periods stay the quiet

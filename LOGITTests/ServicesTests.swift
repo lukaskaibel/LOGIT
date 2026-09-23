@@ -61,6 +61,40 @@ final class DefaultExerciseServiceTests: XCTestCase {
         // Count should remain the same (version-based loading prevents duplicates)
         XCTAssertEqual(countAfterFirst, countAfterSecond, "Loading twice should not create duplicates")
     }
+
+    /// A built-in exercise created outside seeding (a shared workout naming one this device lacks)
+    /// takes the library's id, so seeding recognizes it instead of adding a second one.
+    func testLibraryIDMatchesTheSeededExercise() {
+        let suiteName = "DefaultExerciseServiceTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let database = Database(inMemory: true)
+        let service = DefaultExerciseService(database: database, defaults: defaults)
+        XCTAssertTrue(service.hasNeverLoadedLibrary)
+
+        service.loadDefaultExercisesIfNeeded()
+
+        XCTAssertFalse(service.hasNeverLoadedLibrary)
+        let pushups = database.fetch(
+            Exercise.self, predicate: NSPredicate(format: "name == %@", "_default.exercise.pushups")
+        ) as? [Exercise] ?? []
+        XCTAssertEqual(pushups.count, 1)
+        XCTAssertEqual(DefaultExerciseService.libraryID(forNameKey: "_default.exercise.pushups"), pushups.first?.id)
+        XCTAssertNil(DefaultExerciseService.libraryID(forNameKey: "My Push-ups"))
+    }
+
+    /// First-launch seeding waits for the first CloudKit import — but a store that doesn't sync
+    /// has none coming, and must not wait at all.
+    @MainActor
+    func testWaitForInitialCloudKitImportReturnsAtOnceWithoutCloudKit() async {
+        let database = Database(inMemory: true)
+        XCTAssertFalse(database.isCloudKitMirrored)
+        let start = ContinuousClock.now
+
+        await database.waitForInitialCloudKitImport(timeout: .seconds(20))
+
+        XCTAssertLessThan(ContinuousClock.now - start, .seconds(1))
+    }
 }
 
 // MARK: - MuscleGroupService Tests

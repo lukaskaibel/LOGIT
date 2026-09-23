@@ -418,6 +418,11 @@ final class WorkoutSharingService {
                 muscleGroup: dto.type,
                 measurementType: SetMeasurementType(rawValue: dto.measurementType ?? "") ?? .repsAndWeight
             )
+            // With the library's own id, seeding recognizes this exercise later instead of adding
+            // a second one of the same name.
+            if let libraryID = DefaultExerciseService.libraryID(forNameKey: name) {
+                exercise.id = libraryID
+            }
             database.flagAsTemporary(exercise)
             return exercise
         } else {

@@ -52,6 +52,9 @@ struct TimerStopwatchView: View {
                         .fontWeight(.bold)
                         .foregroundStyle(chronograph.mode == .timer ? themeColor : .placeholder)
                 }
+                // The recorder's idle floating timer is labelled "Timer" as well, so UI tests
+                // tell the sheet apart by this.
+                .accessibilityIdentifier("chronoSheetTimerModeButton")
                 Spacer()
                 Button {
                     guard chronograph.mode != .stopwatch else { return }

@@ -83,7 +83,38 @@ class DefaultExerciseService: ObservableObject {
         self.database = database
         self.defaults = defaults
     }
-    
+
+    /// Whether this install has never loaded the bundled library: its very first launch, or its
+    /// first after a reinstall. Only then may the account's existing library still be on its way
+    /// in from iCloud — see `Database.waitForInitialCloudKitImport(timeout:)`.
+    var hasNeverLoadedLibrary: Bool {
+        defaults.integer(forKey: lastLoadedVersionKey) == 0
+    }
+
+    /// The fixed id the bundled library gives the exercise stored under this `_default.` name
+    /// key, or nil for a key the bundled library doesn't know.
+    ///
+    /// For code that has to create a built-in exercise outside seeding (a shared workout naming
+    /// one this device hasn't seeded yet): with the library's id, seeding later recognizes it
+    /// instead of adding a second exercise of the same name, and a copy synced in from another
+    /// device merges with it (see `Database+DuplicateMerge`).
+    static func libraryID(forNameKey nameKey: String) -> UUID? {
+        libraryIDsByNameKey[nameKey]
+    }
+
+    private static let libraryIDsByNameKey: [String: UUID] = {
+        guard let url = Bundle.main.url(forResource: "default_exercises", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let library = try? JSONDecoder().decode(DefaultExerciseData.self, from: data)
+        else { return [:] }
+        return Dictionary(
+            library.exercises.map { ($0.nameKey, DeterministicUUID.make(namespace: exerciseNamespace, id: $0.id)) },
+            uniquingKeysWith: { first, _ in first }
+        )
+    }()
+
+    private static let exerciseNamespace = "com.logit.defaultexercise"
+
     func loadDefaultExercisesIfNeeded() {
         guard let url = Bundle.main.url(forResource: "default_exercises", withExtension: "json"),
               let data = try? Data(contentsOf: url),
@@ -169,7 +200,7 @@ class DefaultExerciseService: ObservableObject {
     }
     
     private func generateUUID(from defaultId: String) -> UUID {
-        DeterministicUUID.make(namespace: "com.logit.defaultexercise", id: defaultId)
+        DeterministicUUID.make(namespace: Self.exerciseNamespace, id: defaultId)
     }
 
     private func fetchExerciseByDefaultId(_ defaultId: String) -> Exercise? {

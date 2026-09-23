@@ -29,6 +29,9 @@ import OSLog
 ///   `resolvedOrder` ignores them.
 /// - **Write only on a real change.** An unchanged list is never reassigned, so a quiet sweep
 ///   produces no save, no export, and no remote-change notification to wake the next sweep.
+///
+/// One direction runs the other way: a set group's `exerciseOrder` re-links an exercise the
+/// relationship lost (see `relinkListedExercises`).
 extension Database {
     /// Runs a repair sweep asynchronously on the shared background context.
     func repairOrderedRelationships() {
@@ -48,10 +51,16 @@ extension Database {
 
     /// The sweep itself. Must run on `context`'s queue.
     static func performRelationshipRepair(in context: NSManagedObjectContext) {
+        // The shared context doesn't merge other contexts' saves; anything still registered from
+        // an earlier sweep would be read — and, under the object-trump policy, written back — as
+        // it was then. Start from what the store holds now.
+        context.refreshAllObjects()
         do {
             var adopted = 0
             var relisted = 0
 
+            // First, so the adoption below only sees groups whose own list couldn't help.
+            let relinked = try relinkListedExercises(in: context)
             adopted = try adoptOrphanedSetGroups(in: context)
 
             for exercise in try all(Exercise.self, in: context) {
@@ -108,8 +117,8 @@ extension Database {
             guard context.hasChanges else { return }
             try context.save()
             os_log(
-                "Database: Relationship repair adopted %d orphaned set groups and relisted %d ordered relationships",
-                type: .info, adopted, relisted
+                "Database: Relationship repair re-linked %d exercises, adopted %d orphaned set groups and relisted %d ordered relationships",
+                type: .info, relinked, adopted, relisted
             )
         } catch {
             context.rollback()
@@ -118,6 +127,88 @@ extension Database {
                 type: .error, String(describing: error)
             )
         }
+    }
+
+    // MARK: - Re-linking Listed Exercises
+
+    /// Re-links set groups to the exercises their own `exerciseOrder` names, and entries that
+    /// lost their exercise to the one at their position.
+    ///
+    /// Every edit writes a group's exercises to both the relationship and the list, so a listed
+    /// exercise the relationship is missing was never removed on purpose — its link was nullified
+    /// by the deletion of an object with the same `id`. Only sync copies share an id (see
+    /// `Database+DuplicateMerge`): a device merging a copy away deletes it, and whatever another
+    /// device had logged against that copy loses its link on import. The id outlives the copy,
+    /// so the group (and its entries) go back to the copy that survived. A listed id that no
+    /// exercise carries — the exercise was deleted — stays orphaned, as before.
+    private static func relinkListedExercises(in context: NSManagedObjectContext) throws -> Int {
+        // Candidates only: groups holding no exercise, plus the groups of entries holding none.
+        // A group missing just one of its two exercises still has entries without one.
+        var workoutGroups = Set(try context.fetch(orphanedGroupsRequest(WorkoutSetGroup.self)))
+        for entry in try context.fetch(unattributedEntriesRequest(SetEntry.self)) {
+            if let setGroup = entry.workoutSet?.setGroup { workoutGroups.insert(setGroup) }
+        }
+        var templateGroups = Set(try context.fetch(orphanedGroupsRequest(TemplateSetGroup.self)))
+        for entry in try context.fetch(unattributedEntriesRequest(TemplateSetEntry.self)) {
+            if let setGroup = entry.templateSet?.setGroup { templateGroups.insert(setGroup) }
+        }
+        guard !workoutGroups.isEmpty || !templateGroups.isEmpty else { return 0 }
+
+        let listedIDs = Set(
+            workoutGroups.flatMap { $0.exerciseOrder ?? [] } + templateGroups.flatMap { $0.exerciseOrder ?? [] }
+        )
+        let exerciseRequest = NSFetchRequest<Exercise>(entityName: "Exercise")
+        exerciseRequest.predicate = NSPredicate(format: "id IN %@", Array(listedIDs))
+        var exercisesByID = [UUID: Exercise]()
+        // Copies the duplicate merge hasn't folded yet: any one will do (the merge moves the
+        // group along with the rest), but the same one every sweep.
+        let exercises = try context.fetch(exerciseRequest).sorted {
+            $0.objectID.uriRepresentation().absoluteString < $1.objectID.uriRepresentation().absoluteString
+        }
+        for exercise in exercises {
+            if let id = exercise.id, exercisesByID[id] == nil { exercisesByID[id] = exercise }
+        }
+
+        var relinked = 0
+        func relink(_ setGroup: NSManagedObject, listing order: [UUID]?, linked: NSSet?) {
+            let linkedIDs = Set(((linked?.allObjects as? [Exercise]) ?? []).compactMap(\.id))
+            var added = Set<UUID>()
+            for id in order ?? [] where !linkedIDs.contains(id) && added.insert(id).inserted {
+                guard let exercise = exercisesByID[id] else { continue }
+                setGroup.mutableSetValue(forKey: "exercises_").add(exercise)
+                relinked += 1
+            }
+        }
+
+        for setGroup in workoutGroups {
+            relink(setGroup, listing: setGroup.exerciseOrder, linked: setGroup.exercises_)
+            for set in (setGroup.sets_?.allObjects as? [WorkoutSet]) ?? [] {
+                for entry in (set.entries_?.allObjects as? [SetEntry]) ?? [] where entry.exercise == nil {
+                    if let owner = set.positionalExercise(forOrder: entry.order) { entry.exercise = owner }
+                }
+            }
+        }
+        for setGroup in templateGroups {
+            relink(setGroup, listing: setGroup.exerciseOrder, linked: setGroup.exercises_)
+            for set in (setGroup.sets_?.allObjects as? [TemplateSet]) ?? [] {
+                for entry in (set.entries_?.allObjects as? [TemplateSetEntry]) ?? [] where entry.exercise == nil {
+                    if let owner = set.positionalExercise(forOrder: entry.order) { entry.exercise = owner }
+                }
+            }
+        }
+        return relinked
+    }
+
+    private static func orphanedGroupsRequest<Group: NSManagedObject>(_ type: Group.Type) -> NSFetchRequest<Group> {
+        let request = NSFetchRequest<Group>(entityName: String(describing: type))
+        request.predicate = NSPredicate(format: "exercises_.@count == 0")
+        return request
+    }
+
+    private static func unattributedEntriesRequest<Entry: NSManagedObject>(_ type: Entry.Type) -> NSFetchRequest<Entry> {
+        let request = NSFetchRequest<Entry>(entityName: String(describing: type))
+        request.predicate = NSPredicate(format: "exercise == nil")
+        return request
     }
 
     // MARK: - Orphan Adoption

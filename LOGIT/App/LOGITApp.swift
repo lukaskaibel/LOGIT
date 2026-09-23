@@ -243,6 +243,13 @@ struct LOGIT: App {
                     }
                     // Scenario launches already imported default content in init.
                     if TestScenario.active == nil {
+                        // On a fresh install of an account that has used LOGIT before, the
+                        // library is already in iCloud: seeding ahead of the first import would
+                        // add a second copy of every built-in exercise and template. The welcome
+                        // sheet covers the wait; a slow import only costs a later merge.
+                        if defaultExerciseService.hasNeverLoadedLibrary {
+                            await database.waitForInitialCloudKitImport(timeout: .seconds(20))
+                        }
                         defaultExerciseService.loadDefaultExercisesIfNeeded()
                         // Skipped for fastlane screenshot runs so the curated fixture data stays
                         // exactly what the marketing screenshots expect.

@@ -493,3 +493,414 @@ final class ExerciseMergeServiceTests: XCTestCase {
         database.context.processPendingChanges()
     }
 }
+
+// MARK: - Duplicate Merge (sync copies sharing one id)
+
+/// `Database+DuplicateMerge`: copies of one exercise or template that CloudKit sync leaves behind
+/// fold back into one object, with nothing lost and the same survivor on every device.
+final class DuplicateMergeTests: XCTestCase {
+
+    private var database: Database!
+
+    override func setUp() {
+        super.setUp()
+        database = Database(inMemory: true)
+    }
+
+    override func tearDown() {
+        database = nil
+        super.tearDown()
+    }
+
+    // MARK: Exercises
+
+    /// Both copies collected history; afterwards one exercise holds all of it, oldest first, and
+    /// not a single set group, set or entry is gone.
+    func testMergeMovesAllHistoryOntoOneExercise() throws {
+        let (first, second) = makeCopies(of: "_default.exercise.pullups")
+        let older = logWorkout(on: first, date: .daysAgo(9), sets: 2)
+        let newest = logWorkout(on: first, date: .daysAgo(1), sets: 1)
+        let middle = logWorkout(on: second, date: .daysAgo(4), sets: 3)
+        let template = database.newTemplate(name: "Back")
+        let templateGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false, exercise: second, template: template
+        )
+        database.newTemplateStandardSet(repetitions: 8, setGroup: templateGroup)
+        try database.context.save()
+        let counts = storeCounts()
+        let id = first.id!
+
+        let merged = Database.performDuplicateMerge(
+            in: database.context, identity: recordNames([first: "B", second: "A"])
+        )
+
+        XCTAssertEqual(merged.exercises, 1)
+        let survivors = exercises(withID: id)
+        XCTAssertEqual(survivors, [second], "the copy with the lowest record name survives")
+        XCTAssertEqual(second.setGroups, [older, middle, newest], "all history, oldest first")
+        XCTAssertEqual(second.sets.count, 6)
+        XCTAssertEqual(templateGroup.exercise, second)
+        XCTAssertEqual(second.templateSetGroups_ as? Set<TemplateSetGroup>, [templateGroup])
+        let entries = second.sets.flatMap(\.entries)
+        XCTAssertEqual(entries.count, 6)
+        XCTAssertTrue(entries.allSatisfy { $0.exercise == second }, "every entry names the survivor")
+        XCTAssertEqual(storeCounts().removingExercises, counts.removingExercises, "no set group, set or entry lost")
+    }
+
+    /// Two devices hold the same two copies but created them in opposite order, so their local
+    /// object ids rank them differently. Both must still keep the same copy — keeping "their own"
+    /// would make each delete the other's, leaving none.
+    func testEveryDeviceKeepsTheCopyWithTheLowestRecordName() throws {
+        for lowestCreatedFirst in [true, false] {
+            database = Database(inMemory: true)
+            let id = UUID()
+            let firstCreated = makeExercise(named: "_default.exercise.squat", id: id)
+            let secondCreated = makeExercise(named: "_default.exercise.squat", id: id)
+            let (low, high) = lowestCreatedFirst
+                ? (firstCreated, secondCreated) : (secondCreated, firstCreated)
+            logWorkout(on: low, date: .daysAgo(3), sets: 1)
+            logWorkout(on: high, date: .daysAgo(2), sets: 1)
+            try database.context.save()
+
+            Database.performDuplicateMerge(
+                in: database.context, identity: recordNames([low: "0A", high: "0B"])
+            )
+
+            XCTAssertEqual(exercises(withID: id), [low], "lowest created first: \(lowestCreatedFirst)")
+            XCTAssertEqual(low.setGroups.count, 2)
+        }
+    }
+
+    /// A copy that hasn't been exported has no record name — and might yet sort first once it
+    /// has one. Until then nothing is merged.
+    func testCopyWithoutRecordNameWaits() throws {
+        let (first, second) = makeCopies(of: "_default.exercise.dips")
+        logWorkout(on: first, date: .daysAgo(2), sets: 1)
+        try database.context.save()
+
+        let merged = Database.performDuplicateMerge(
+            in: database.context, identity: recordNames([first: "A"])
+        )
+
+        XCTAssertEqual(merged.exercises, 0)
+        XCTAssertEqual(Set(exercises(withID: first.id!)), [first, second])
+    }
+
+    /// A super set pairing both copies keeps both lanes: its order list already names the id
+    /// twice, which is how a super set of one exercise is stored.
+    func testSuperSetPairingBothCopiesKeepsBothLanes() throws {
+        let (first, second) = makeCopies(of: "_default.exercise.pushups")
+        let workout = database.newWorkout(name: "Pairs", date: .daysAgo(1))
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false, exercise: first, workout: workout
+        )
+        setGroup.secondaryExercise = second
+        database.newSuperSet(repetitionsFirstExercise: 10, repetitionsSecondExercise: 12, setGroup: setGroup)
+        try database.context.save()
+
+        Database.performDuplicateMerge(
+            in: database.context, identity: recordNames([first: "A", second: "B"])
+        )
+
+        XCTAssertEqual(setGroup.exercise, first)
+        XCTAssertEqual(setGroup.secondaryExercise, first)
+        XCTAssertEqual(setGroup.exerciseOrder, [first.id!, first.id!])
+        let entries = setGroup.sets.flatMap(\.entries)
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertTrue(entries.allSatisfy { $0.exercise == first })
+    }
+
+    /// The survivor takes on the settings of the copy the user actually logged with — the
+    /// measurement type and formats their habit was built on.
+    func testSurvivorAdoptsSettingsOfTheMostUsedCopy() throws {
+        let (first, second) = makeCopies(of: "_default.exercise.running")
+        first.measurementType = .distanceAndDuration
+        second.measurementType = .duration
+        second.durationStyleString = "clock"
+        logWorkout(on: second, date: .daysAgo(5), sets: 1)
+        try database.context.save()
+
+        Database.performDuplicateMerge(
+            in: database.context, identity: recordNames([first: "A", second: "B"])
+        )
+
+        XCTAssertEqual(exercises(withID: first.id!), [first])
+        XCTAssertEqual(first.measurementType, .duration)
+        XCTAssertEqual(first.durationStyleString, "clock")
+        XCTAssertEqual(first.setGroups.count, 1)
+    }
+
+    /// Something saved from elsewhere after the merge read its copies (an import, a background
+    /// sweep) aborts the merge instead of being overwritten; nothing changes.
+    func testConcurrentStoreWriteAbortsTheMerge() throws {
+        let (first, second) = makeCopies(of: "_default.exercise.deadlift")
+        logWorkout(on: second, date: .daysAgo(2), sets: 1)
+        try database.context.save()
+        let secondID = second.objectID
+        _ = second.setGroups  // the view context now holds the copy as read at this moment
+
+        let background = database.setEntryBackfillContext
+        try background.performAndWait {
+            let copy = try background.existingObject(with: secondID) as! Exercise
+            copy.durationStyleString = "clock"
+            try background.save()
+        }
+
+        let merged = Database.performDuplicateMerge(
+            in: database.context, identity: recordNames([first: "A", second: "B"])
+        )
+
+        XCTAssertEqual(merged.exercises, 0)
+        XCTAssertFalse(database.context.hasChanges, "the attempt was rolled back")
+        let request = NSFetchRequest<NSManagedObject>(entityName: "Exercise")
+        request.predicate = NSPredicate(format: "id == %@", first.id! as CVarArg)
+        XCTAssertEqual(try background.performAndWait { try background.count(for: request) }, 2)
+    }
+
+    /// The merge saves the view context, so it never runs under unsaved edits — it would commit
+    /// them, or delete an object an editor holds. It runs once they're saved, and drops the undo
+    /// history, whose steps could reach for a merged-away copy.
+    func testMergeWaitsForUnsavedEditsInTheViewContext() throws {
+        let (first, _) = makeCopies(of: "_default.exercise.squat")
+        let id = first.id!
+        try database.context.save()
+        first.durationStyleString = "clock"  // an editor's pending change
+
+        database.mergeDuplicates()
+        drainMainQueue()
+        XCTAssertEqual(exercises(withID: id).count, 2, "nothing merged under the pending edit")
+        XCTAssertTrue(database.context.hasChanges, "and the edit is still pending, not committed")
+
+        try database.context.save()
+        XCTAssertEqual(database.context.undoManager?.canUndo, true)
+        database.mergeDuplicates()
+        drainMainQueue()
+        XCTAssertEqual(exercises(withID: id).count, 1)
+        XCTAssertEqual(database.context.undoManager?.canUndo, false)
+    }
+
+    // MARK: Templates
+
+    /// Identical copies of a starter template merge; workouts started from either stay linked.
+    func testIdenticalTemplateCopiesMergeKeepingTheirWorkouts() throws {
+        let exercise = makeExercise(named: "_default.exercise.benchPress", id: UUID())
+        let id = UUID()
+        let first = makeTemplate(id: id, exercise: exercise, created: .daysAgo(3))
+        let second = makeTemplate(id: id, exercise: exercise, created: .daysAgo(1))
+        let fromSecond = database.newWorkout(name: "Push", date: .daysAgo(1))
+        fromSecond.template = second
+        try database.context.save()
+
+        let merged = Database.performDuplicateMerge(
+            in: database.context, identity: recordNames([first: "A", second: "B"])
+        )
+
+        XCTAssertEqual(merged.templates, 1)
+        XCTAssertEqual(templates(withID: id), [first])
+        XCTAssertEqual(fromSecond.template, first)
+        XCTAssertEqual(first.setGroups.count, 1)
+        XCTAssertEqual(first.sets.count, 3)
+    }
+
+    /// A copy that just appeared may be about to be edited on the device that seeded it; merging
+    /// waits until that edit has had time to sync (and make the copies differ).
+    func testFreshTemplateCopyWaitsBeforeMerging() throws {
+        let exercise = makeExercise(named: "_default.exercise.benchPress", id: UUID())
+        let id = UUID()
+        let first = makeTemplate(id: id, exercise: exercise, created: .daysAgo(3))
+        let second = makeTemplate(id: id, exercise: exercise, created: Date().addingTimeInterval(-5 * 60))
+        try database.context.save()
+        let identity = recordNames([first: "A", second: "B"])
+
+        XCTAssertEqual(Database.performDuplicateMerge(in: database.context, identity: identity).templates, 0)
+        XCTAssertEqual(templates(withID: id).count, 2)
+
+        let later = Date().addingTimeInterval(Database.templateSettlingInterval)
+        XCTAssertEqual(
+            Database.performDuplicateMerge(in: database.context, identity: identity, now: later).templates, 1
+        )
+        XCTAssertEqual(templates(withID: id), [first])
+    }
+
+    /// Copies that differ mean someone edited one; neither edit may be thrown away.
+    func testEditedTemplateCopiesAreBothKept() throws {
+        let exercise = makeExercise(named: "_default.exercise.benchPress", id: UUID())
+        let id = UUID()
+        let first = makeTemplate(id: id, exercise: exercise, created: .daysAgo(3))
+        let second = makeTemplate(id: id, exercise: exercise, created: .daysAgo(3))
+        second.setGroups.first?.sets.first?.restDuration = 150
+        try database.context.save()
+
+        Database.performDuplicateMerge(
+            in: database.context, identity: recordNames([first: "A", second: "B"])
+        )
+
+        XCTAssertEqual(Set(templates(withID: id)), [first, second])
+    }
+
+    /// A set group a drifted order list hides is still part of its template, so a copy holding
+    /// one is not "identical" to a copy without it.
+    func testTemplateFingerprintSeesMembersHiddenByADriftedList() throws {
+        let exercise = makeExercise(named: "_default.exercise.benchPress", id: UUID())
+        let id = UUID()
+        let first = makeTemplate(id: id, exercise: exercise, created: .daysAgo(3))
+        let second = makeTemplate(id: id, exercise: exercise, created: .daysAgo(3))
+        XCTAssertEqual(Database.contentFingerprint(of: first), Database.contentFingerprint(of: second))
+
+        let hidden = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false, exercise: exercise, template: second
+        )
+        database.newTemplateStandardSet(repetitions: 5, setGroup: hidden)
+        second.templateSetGroupOrder = second.templateSetGroupOrder?.filter { $0 != hidden.id }
+        XCTAssertEqual(second.setGroups.count, 1, "precondition: the extra group is hidden")
+
+        XCTAssertNotEqual(Database.contentFingerprint(of: first), Database.contentFingerprint(of: second))
+    }
+
+    // MARK: Re-linking by id
+
+    /// Another device merged away the copy this device logged against: the import deletes it,
+    /// and the group and its entries lose their exercise. The group's order list still names the
+    /// id, so the repair hands them to the copy that survived.
+    func testRepairRelinksHistoryCutLooseByAMergeElsewhere() throws {
+        let (merged, survivor) = makeCopies(of: "_default.exercise.pullups")
+        let setGroup = logWorkout(on: merged, date: .daysAgo(1), sets: 2)
+        try database.context.save()
+
+        database.context.delete(merged)  // as the import of the peer's deletion would
+        try database.context.save()
+        XCTAssertNil(setGroup.exercise, "precondition: the group lost its exercise")
+        XCTAssertTrue(setGroup.sets.flatMap(\.entries).allSatisfy { $0.exercise == nil })
+
+        Database.performRelationshipRepair(in: database.context)
+
+        XCTAssertEqual(setGroup.exercise, survivor)
+        XCTAssertEqual(survivor.setGroups, [setGroup])
+        XCTAssertTrue(setGroup.sets.flatMap(\.entries).allSatisfy { $0.exercise == survivor })
+    }
+
+    /// A super set that lost only its second exercise gets that one back.
+    func testRepairRelinksMissingSuperSetPartner() throws {
+        let partner = makeExercise(named: "Face Pulls", id: UUID())
+        let (lost, survivor) = makeCopies(of: "_default.exercise.lateralRaises")
+        let workout = database.newWorkout(name: "Shoulders", date: .daysAgo(1))
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false, exercise: partner, workout: workout
+        )
+        setGroup.secondaryExercise = lost
+        database.newSuperSet(repetitionsFirstExercise: 12, repetitionsSecondExercise: 15, setGroup: setGroup)
+        try database.context.save()
+
+        database.context.delete(lost)
+        try database.context.save()
+        XCTAssertNil(setGroup.secondaryExercise, "precondition: the partner is gone")
+
+        Database.performRelationshipRepair(in: database.context)
+
+        XCTAssertEqual(setGroup.exercise, partner)
+        XCTAssertEqual(setGroup.secondaryExercise, survivor)
+        let entries = setGroup.sets.flatMap(\.entries).sorted { $0.order < $1.order }
+        XCTAssertEqual(entries.map(\.exercise), [partner, survivor])
+    }
+
+    /// A group whose exercise was really deleted — no copy left — stays as it was.
+    func testRepairLeavesGroupOfADeletedExerciseAlone() throws {
+        let exercise = makeExercise(named: "Old Custom Exercise", id: UUID())
+        let setGroup = logWorkout(on: exercise, date: .daysAgo(1), sets: 1)
+        let listedID = exercise.id!
+        try database.context.save()
+
+        database.context.delete(exercise)
+        try database.context.save()
+
+        Database.performRelationshipRepair(in: database.context)
+
+        XCTAssertNil(setGroup.exercise)
+        XCTAssertEqual(setGroup.exerciseOrder, [listedID], "the id stays for a copy that may still arrive")
+        XCTAssertEqual(setGroup.sets.count, 1)
+    }
+
+    // MARK: Helpers
+
+    /// `mergeDuplicates()` queues its work on the main-queue view context.
+    private func drainMainQueue() {
+        let drained = expectation(description: "main queue drained")
+        DispatchQueue.main.async { drained.fulfill() }
+        wait(for: [drained], timeout: 5)
+    }
+
+    private func makeExercise(named name: String, id: UUID) -> Exercise {
+        let exercise = Exercise(context: database.context)
+        exercise.id = id
+        exercise.name = name
+        exercise.muscleGroup = .back
+        return exercise
+    }
+
+    private func makeCopies(of name: String) -> (Exercise, Exercise) {
+        let id = UUID()
+        return (makeExercise(named: name, id: id), makeExercise(named: name, id: id))
+    }
+
+    @discardableResult
+    private func logWorkout(on exercise: Exercise, date: Date, sets: Int) -> WorkoutSetGroup {
+        let workout = database.newWorkout(name: "Workout", date: date)
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false, exercise: exercise, workout: workout
+        )
+        for index in 0..<sets {
+            database.newStandardSet(repetitions: 8 + index, weight: 20000, setGroup: setGroup)
+        }
+        return setGroup
+    }
+
+    /// Built the way `DefaultTemplateService` seeds a starter template.
+    private func makeTemplate(id: UUID, exercise: Exercise, created: Date) -> Template {
+        let template = database.newTemplate(name: "_default.template.pushDay")
+        template.id = id
+        template.descriptionText = "_default.template.pushDay.description"
+        template.creationDate = created
+        let setGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false, exercise: exercise, template: template
+        )
+        for _ in 0..<3 {
+            database.newTemplateStandardSet(repetitions: 10, weight: 0, restDuration: 90, setGroup: setGroup)
+        }
+        return template
+    }
+
+    private func recordNames(_ names: [NSManagedObject: String]) -> DuplicateMergeIdentity {
+        let byID = Dictionary(uniqueKeysWithValues: names.map { ($0.key.objectID, $0.value) })
+        return .cloudKit { objectIDs in
+            byID.filter { objectIDs.contains($0.key) }
+        }
+    }
+
+    private func exercises(withID id: UUID) -> [Exercise] {
+        let request = NSFetchRequest<Exercise>(entityName: "Exercise")
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        return (try? database.context.fetch(request)) ?? []
+    }
+
+    private func templates(withID id: UUID) -> [Template] {
+        let request = NSFetchRequest<Template>(entityName: "Template")
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        return (try? database.context.fetch(request)) ?? []
+    }
+
+    private struct StoreCounts: Equatable {
+        var exercises: Int
+        var removingExercises: [Int]
+    }
+
+    private func storeCounts() -> StoreCounts {
+        func count(_ entity: String) -> Int {
+            (try? database.context.count(for: NSFetchRequest<NSManagedObject>(entityName: entity))) ?? -1
+        }
+        return StoreCounts(
+            exercises: count("Exercise"),
+            removingExercises: ["Workout", "WorkoutSetGroup", "WorkoutSet", "SetEntry", "TemplateSetGroup", "TemplateSet"]
+                .map(count)
+        )
+    }
+}

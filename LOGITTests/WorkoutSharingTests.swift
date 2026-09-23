@@ -1010,6 +1010,30 @@ final class WorkoutSharingServiceTests: XCTestCase {
         }
     }
 
+    /// A shared workout naming a built-in exercise this device hasn't seeded yet creates it with
+    /// the library's own id — seeding then recognizes it instead of adding a second one.
+    func testImportCreatesMissingBuiltInExerciseWithTheLibraryID() throws {
+        let workout = database.newWorkout(name: "Shared", date: Date())
+        let pushups = builder.createExercise(name: "_default.exercise.pushups", muscleGroup: .chest)
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false, exercise: pushups, workout: workout
+        )
+        database.newStandardSet(repetitions: 20, weight: 0, setGroup: setGroup)
+        guard let exportURL = sharingService.exportWorkout(workout) else {
+            XCTFail("Export returned nil")
+            return
+        }
+        defer { try? FileManager.default.removeItem(at: exportURL) }
+
+        let importDatabase = createCleanDatabase()
+        let imported = try WorkoutSharingService(database: importDatabase).importWorkout(from: exportURL)
+
+        XCTAssertEqual(
+            imported.setGroups.first?.exercise?.id,
+            DefaultExerciseService.libraryID(forNameKey: "_default.exercise.pushups")
+        )
+    }
+
     // LOGITApp.handleIncomingFile dispatches imports to a background queue, so the
     // service must confine entity creation to the context's queue itself.
 

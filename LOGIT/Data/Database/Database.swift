@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 23.01.22.
 //
 
+import CloudKit
 import Combine
 import CoreData
 import OSLog
@@ -45,6 +46,19 @@ public class Database: ObservableObject {
     /// for every store write (including our own saves), so sweeps coalesce behind a short delay
     /// and start with a cheap count check.
     private var setEntryReconciliationDebounce: DispatchWorkItem?
+
+    /// Debounce for the duplicate merge that finished CloudKit exports and imports trigger (see
+    /// `observeCloudKitEvents`). Separate from the remote-change sweep so a burst of sync events
+    /// doesn't re-run the full relationship repair each time.
+    private var duplicateMergeDebounce: DispatchWorkItem?
+
+    /// Whether the store mirrors to CloudKit. False for every throwaway store (previews, tests,
+    /// launch scenarios) — nothing there can reach another device.
+    let isCloudKitMirrored: Bool
+
+    /// Set on the main queue once this launch's first CloudKit import has finished (or failed to
+    /// set up) — see `waitForInitialCloudKitImport(timeout:)`. Starts true for unmirrored stores.
+    private var initialCloudKitImportSettled: Bool
 
     // MARK: - Properties
 
@@ -90,6 +104,13 @@ public class Database: ObservableObject {
             // sync; throwaway stores must stay strictly local.
             description?.cloudKitContainerOptions = nil
         }
+        isCloudKitMirrored = description?.cloudKitContainerOptions != nil
+        initialCloudKitImportSettled = !isCloudKitMirrored
+        if isCloudKitMirrored {
+            // Before loading: the mirroring delegate starts its setup and first import as soon as
+            // the store is up, and the end of that import is what first-launch seeding waits for.
+            observeCloudKitEvents()
+        }
         loadStores()
         if isPreview {
             // The in-progress workout (and its floating mini bar) is only wanted
@@ -121,6 +142,10 @@ public class Database: ObservableObject {
         if !usesInMemoryStore {
             startSetEntryReconciliation()
             backfillSetEntries()
+            // Sync copies of built-in exercises and templates (see `Database+DuplicateMerge`).
+            // Runs on the view context while the others run in the background; they don't
+            // depend on each other's order — the merge rebuilds the survivor's lists itself.
+            mergeDuplicates()
             repairOrderedRelationships()
         }
     }
@@ -180,6 +205,8 @@ public class Database: ObservableObject {
             self.setEntryReconciliationDebounce?.cancel()
             let workItem = DispatchWorkItem { [weak self] in
                 self?.backfillSetEntries()
+                // Imports are also how a sync copy of a built-in exercise or template arrives.
+                self?.mergeDuplicates()
                 // Imported changes are the main way an ordered relationship and its id list drift
                 // apart (a property-level merge takes one device's whole array), so the repair
                 // sweep rides along with the backfill on the same debounce and context.
@@ -187,6 +214,88 @@ public class Database: ObservableObject {
             }
             self.setEntryReconciliationDebounce = workItem
             DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: workItem)
+        }
+    }
+
+    // MARK: - CloudKit Events
+
+    /// Watches the mirroring delegate's setup, import and export events for two things:
+    /// - the end of this launch's first import, which first-launch seeding waits for; and
+    /// - finished exports, after which the duplicate merge re-runs. A copy seeded on this device
+    ///   is only mergeable once it has a CloudKit record name, which it gets by being exported —
+    ///   an event no store write announces, so the remote-change sweep alone could miss it.
+    private func observeCloudKitEvents() {
+        // No observer queue: with one, the mirroring delegate's queue blocks until the block has
+        // run there — and anything on the main queue that waits for that delegate (asking it for
+        // record names, say) deadlocks. Hop to main without making the delegate wait.
+        NotificationCenter.default.addObserver(
+            forName: NSPersistentCloudKitContainer.eventChangedNotification,
+            object: container,
+            queue: nil
+        ) { [weak self] notification in
+            guard
+                let event = notification.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey]
+                    as? NSPersistentCloudKitContainer.Event,
+                event.endDate != nil
+            else { return }
+            let type = event.type
+            let succeeded = event.succeeded
+            DispatchQueue.main.async {
+                guard let self else { return }
+                switch type {
+                case .setup where !succeeded, .import:
+                    // A failed setup (no iCloud account, iCloud off for the app) means no import
+                    // is coming this launch.
+                    self.initialCloudKitImportSettled = true
+                default:
+                    break
+                }
+                if succeeded, type == .import || type == .export {
+                    self.scheduleDuplicateMerge()
+                }
+            }
+        }
+    }
+
+    /// The CloudKit record names of those objects that have one — every object this device has
+    /// exported or imported. Record names are the one identity all devices agree on (a
+    /// `NSManagedObjectID` is local, and duplicated objects share their `id`), which is what the
+    /// duplicate merge ranks copies by. Empty for an unmirrored store.
+    func cloudKitRecordNames(for objectIDs: [NSManagedObjectID]) -> [NSManagedObjectID: String] {
+        guard isCloudKitMirrored, let cloudKitContainer = container as? NSPersistentCloudKitContainer else {
+            return [:]
+        }
+        return cloudKitContainer.recordIDs(for: objectIDs).mapValues(\.recordName)
+    }
+
+    private func scheduleDuplicateMerge() {
+        duplicateMergeDebounce?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.mergeDuplicates()
+        }
+        duplicateMergeDebounce = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: workItem)
+    }
+
+    /// Returns once this launch's first CloudKit import has finished, when `timeout` runs out, or
+    /// straight away when there's nothing to wait for (an unmirrored store, no iCloud account).
+    ///
+    /// For first-launch seeding of the bundled library: the store only knows it already holds a
+    /// built-in exercise once the import has brought it in, and seeding before that adds a second
+    /// copy of everything the account already has (see `Database+DuplicateMerge`, which cleans up
+    /// when the wait runs out anyway — the timeout only costs a merge, never data).
+    @MainActor
+    func waitForInitialCloudKitImport(timeout: Duration) async {
+        guard !initialCloudKitImportSettled else { return }
+        if let identifier = container.persistentStoreDescriptions.first?
+            .cloudKitContainerOptions?.containerIdentifier
+        {
+            let status = try? await CKContainer(identifier: identifier).accountStatus()
+            guard status == .available else { return }
+        }
+        let deadline = ContinuousClock.now + timeout
+        while !initialCloudKitImportSettled, ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(250))
         }
     }
 

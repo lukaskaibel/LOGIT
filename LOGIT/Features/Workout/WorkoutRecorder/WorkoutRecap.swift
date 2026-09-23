@@ -15,7 +15,7 @@ import Foundation
 ///    that happens every single time, so it leads.
 /// 2. **What was the best of it?** Personal records, then the exercises that beat their recent best.
 /// 3. **How did it feel?** Effort and the note — the user's own answers, not ours.
-/// 4. **What was it?** The exercises and the totals.
+/// 4. **What was it?** The exercises and the totals — read off the workout itself, not from here.
 ///
 /// Everything here is computed once, on the view context's queue, when the panel opens — never on a
 /// redraw. The goal itself is *not* baked in: it is derived per target (`goal(target:)`), so setting a
@@ -42,34 +42,11 @@ struct WorkoutRecap {
     /// estimate is therefore listed there, not here. The report's own records (which the workout
     /// detail and the Summary count) are untouched.
     let records: [WorkoutProgressReport.ExerciseRecords]
-    /// The ladder step an exercise's records crossed ("first time past 100 kg"), by exercise.
-    let milestones: [NSManagedObjectID: RecordMilestone]
     /// Exercises that beat their recent best without setting a record — the records have their own
     /// section above, so no exercise is listed twice. Biggest gain first.
     let improvements: [WorkoutProgressReport.ExerciseTrend]
     /// Exercises trained for the first time: nothing to beat yet, but next time there will be.
     let firstSessionCount: Int
-
-    // MARK: Totals
-
-    /// Volume and repetitions against the recent sessions. Time and sets are already in the header
-    /// caption right above the panel, ticking live, so they are not repeated here.
-    let stats: [Stat]
-
-    struct RecordMilestone {
-        let record: WorkoutProgressReport.PRRecord
-        /// The crossed step in the record metric's base units.
-        let step: Int
-    }
-
-    struct Stat: Identifiable {
-        let metric: WorkoutStatMetric
-        let raw: Int
-        /// Against the average of the recent sessions — the workout detail's stat tiles' basis, so
-        /// the panel and the saved workout never disagree.
-        let percentChange: Double?
-        var id: Int { metric.id }
-    }
 
     /// The week's goal, before and after this workout, for one target. Nil without a goal.
     struct Goal: Equatable {
@@ -189,42 +166,18 @@ struct WorkoutRecap {
         }
         let recordIDs = Set(records.map(\.id))
 
-        var milestones = [NSManagedObjectID: RecordMilestone]()
-        for group in records {
-            // The first crossing in lead order — the most tangible one — exactly as the Summary's
-            // Highlights pick it, so the same record is never "past 100 kg" in one place and not in
-            // the other. An exercise trained to get quicker climbs no ladder going down.
-            let crossing = group.records.lazy.compactMap { record -> RecordMilestone? in
-                guard !(record.metric == .duration && record.exercise.durationGoal == .faster) else { return nil }
-                return MilestoneLadder
-                    .highestStep(crossedFrom: record.previousBest, to: record.value, metric: record.metric)
-                    .map { RecordMilestone(record: record, step: $0) }
-            }.first
-            if let crossing { milestones[group.id] = crossing }
-        }
 
         let improvements = report.trends
             .filter { $0.isImprovement && !recordIDs.contains($0.id) }
             .sorted { abs($0.percentChange ?? 0) > abs($1.percentChange ?? 0) }
-
-        let history = WorkoutRunHistory.compute(for: workout, database: database)
-        let stats = [WorkoutStatMetric.volume, .repetitions].map { metric in
-            Stat(
-                metric: metric,
-                raw: metric.rawValue(of: workout),
-                percentChange: history.percentChange(for: metric)
-            )
-        }
 
         return WorkoutRecap(
             workoutDate: workoutDate,
             weekWorkouts: weekWorkouts,
             report: report,
             records: records,
-            milestones: milestones,
             improvements: improvements,
-            firstSessionCount: report.trends.filter { $0.baseline == nil }.count,
-            stats: stats
+            firstSessionCount: report.trends.filter { $0.baseline == nil }.count
         )
     }
 }

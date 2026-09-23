@@ -2056,6 +2056,53 @@ final class ScenarioScreenshots: XCTestCase {
     /// to survive — the button floats over the keys, hiding the keyboard keeps the typed height
     /// (the field stores it as each keystroke parses, so hiding isn't the save, it just mustn't
     /// undo it), and the BMI already on screen in the Summary tab follows the new height.
+    /// Focusing the last set of the last exercise must leave its field above the keyboard's row of
+    /// capsules. The recorder scrolls the focused field to the bottom of the visible area, which is
+    /// the keyboard's top edge — and the row floats above that edge. On iOS 27 the keyboard's
+    /// frame no longer includes the row at all, so set 4's field landed entirely under Next and hide
+    /// and was typed blind; on iOS 26.4 it was half covered.
+    func testRecorderLastSetFieldStaysAboveKeyboardRow() {
+        let app = XCUIApplication(bundleIdentifier: ".com.lukaskbl.LOGIT")
+        app.launchArguments = [
+            "-UITEST_FIXTURES", "1", "-UITEST_SHOW_RECORDER", "1",
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+        ]
+        app.launch()
+        // The recorder opens scrolled to its last set; the lowest field on screen is that set's
+        // weight.
+        // The recorder presents over the app with an animation and then scrolls to its last set,
+        // so poll until set fields sit on screen rather than trusting a fixed delay.
+        var onScreen: [XCUIElement] = []
+        let deadline = Date().addingTimeInterval(30)
+        while onScreen.isEmpty, Date() < deadline {
+            onScreen = app.textFields.allElementsBoundByIndex.filter {
+                $0.exists && $0.frame.minY > 0 && $0.frame.maxY < app.frame.height * 0.9
+            }
+            if onScreen.isEmpty { sleep(1) }
+        }
+        // Let the opening scroll to the last set finish before picking the lowest field.
+        sleep(1)
+        onScreen = app.textFields.allElementsBoundByIndex.filter {
+            $0.exists && $0.frame.minY > 0 && $0.frame.maxY < app.frame.height * 0.9
+        }
+        guard let lastField = onScreen.max(by: {
+            $0.frame.minY == $1.frame.minY ? $0.frame.minX < $1.frame.minX : $0.frame.minY < $1.frame.minY
+        }) else {
+            XCTFail("No set field on screen"); return
+        }
+        lastField.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "No keyboard for the set field")
+        let hide = app.buttons["keyboardHide"]
+        XCTAssertTrue(hide.waitForExistence(timeout: 5), "No keyboard row over the set field")
+        // Let the focus scroll settle before measuring.
+        sleep(1)
+        attachScreen("recorder_last_set_above_keyboard_row")
+        XCTAssertLessThanOrEqual(
+            lastField.frame.maxY, hide.frame.minY,
+            "The focused field \(lastField.frame) is under the keyboard row \(hide.frame)"
+        )
+    }
+
     func testSettingsHeightKeyboardHide() {
         // The measurements list stays pushed in the Summary tab while Settings is edited, so its
         // BMI tile is one that was drawn before the height changed.

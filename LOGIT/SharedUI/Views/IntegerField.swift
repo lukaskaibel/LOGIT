@@ -123,6 +123,7 @@ struct IntegerField: View {
             isFocused = true
         }
         .id(index)
+        .keyboardScrollTarget(index)
     }
 
     // MARK: - Computed Properties

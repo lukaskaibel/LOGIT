@@ -365,7 +365,9 @@ struct WorkoutRecorderScreen: View {
                             if isKbdTest || ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SCROLLTO") { return }
                             if let id = focusedIntegerFieldIndex {
                                 withAnimation(.easeOut(duration: 0.25)) {
-                                    proxy.scrollTo(id, anchor: .bottom)
+                                    // The field's keyboard target, not the field: it reaches below
+                                    // the field by the accessory row, so the field lands above it.
+                                    proxy.scrollTo(KeyboardScrollTarget(index: id), anchor: .bottom)
                                 }
                             }
                         }

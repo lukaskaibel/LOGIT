@@ -48,100 +48,113 @@ final class LOGITScreenshots: XCTestCase {
     }
 
     // MARK: - Screens (ordered by screenshot filename)
+    //
+    // The store shows the first three in search results, so they carry the core loop: the overview,
+    // logging a workout, and what the workout achieved. Progress detail follows, then the rest.
 
-    /// The top of the merged Summary: the title row's weekly-goal arc, the
-    /// timeframe picker, then the Strength and Balance pair over the 2×2 core
-    /// stat tiles — one screen since This Week and Progress merged in #113.
+    /// The top of the merged Summary: the title row's weekly-goal arc, the timeframe picker, then the
+    /// Strength and Balance pair over the 2×2 core stat tiles.
     func test01Summary() {
         launch()
         waitForTabBar()
+        // The fixtures load after the tab bar appears; captured too early this was the empty state
+        // ("Log your first workout"), and that image reached App Store Connect for 5.2. The Balance
+        // tile only exists once there is data, so wait for it and fail rather than capture without.
+        XCTAssertTrue(
+            app.descendants(matching: .any)["balanceTile"].firstMatch.waitForExistence(timeout: 20),
+            "Summary never showed its data — refusing to capture the empty state"
+        )
         waitABit(2)
         snapshot("01_Summary")
     }
 
-    /// The lower half of the merged Summary: the core stat grid, muscle balance and
-    /// the pinned exercise tiles. The app itself scrolls to a fixed anchor in this
-    /// mode (HomeScreen's screenshot `.task`), so the pinned tiles clear the Start
-    /// Workout bar — deterministically, without a flaky gesture. (The `progress`
-    /// target name predates the tab merge; the fastlane title strings key off the
-    /// `02_Progress` file name, so both stay put.)
-    func test02Progress() {
-        launch(["-UITEST_DEEPLINK", "progress"])
-        waitForTabBar()
+    /// The workout recorder mid-session, opened at the top of the list: the top sheet on its actions
+    /// stop (Minimize, Finish) over whole exercise cards. Scrolled to its end, as the recorder opens
+    /// for real, the first visible card's header sat under the sheet since #209.
+    func test02Recorder() {
+        launch(["-UITEST_SHOW_RECORDER", "1", "-UITEST_NO_SCROLLTO"])
+        XCTAssertTrue(recorderFinishButton.waitForExistence(timeout: 20), "Recorder never presented")
         waitABit(3)
-        snapshot("02_Progress")
+        snapshot("02_Recorder")
     }
 
-    /// The Workout Goal screen led by the weekly-streak scoreboard.
-    func test03Streak() {
-        launch(["-UITEST_DEEPLINK", "goal"])
+    /// The finish panel, 5.2's end of a workout: the week's goal, the session's records and
+    /// improvements, then its effort and note.
+    func test03Finish() {
+        launch(["-UITEST_SHOW_RECORDER", "1", "-UITEST_NO_SCROLLTO"])
+        XCTAssertTrue(recorderFinishButton.waitForExistence(timeout: 20), "Recorder never presented")
+        waitABit(2)
+        recorderFinishButton.tap()
+        XCTAssertTrue(
+            app.otherElements["finishGoalHero"].firstMatch.waitForExistence(timeout: 10),
+            "The finish panel never showed its weekly goal"
+        )
+        // The panel reveals itself in beats (the week, then the records, then the rest).
+        waitABit(5)
+        snapshot("03_Finish")
+    }
+
+    /// The Strength detail screen: the strength trend over the selected window, the per-muscle
+    /// breakdown and the strongest lifts.
+    func test04Strength() {
+        launch(["-UITEST_DEEPLINK", "strength"])
         waitForPushedScreen()
-        snapshot("03_Streak")
+        snapshot("04_Strength")
     }
 
-    /// Muscle Groups: the "Focus on" recommendation over the lettered
-    /// `MuscleBalanceTrackChart` (the recommended groups' bars outlined), then
-    /// every group as a row under Below / At / Above target. The fixtures seed a
-    /// chosen Full Body focus (`ScreenshotFixtures`), so the capture shows the
-    /// recommendation rather than the choose-a-focus card.
-    func test04MuscleBalance() {
+    /// Muscle Groups: "Behind on" over the lettered weekly-set chart, then every group under
+    /// Below / At / Above target.
+    func test05MuscleBalance() {
         launch(["-UITEST_DEEPLINK", "muscleOverview"])
         waitForPushedScreen()
-        snapshot("04_MuscleBalance")
+        snapshot("05_MuscleBalance")
+    }
+
+    /// The Workout Goal screen: this week's arc, the week strip and the streak's milestone chain.
+    func test06Streak() {
+        launch(["-UITEST_DEEPLINK", "goal"])
+        waitForPushedScreen()
+        snapshot("06_Streak")
     }
 
     /// A single exercise's progress: metric tiles, chart and personal records.
-    func test05ExerciseDetail() {
+    func test07ExerciseDetail() {
         launch(["-UITEST_DEEPLINK", "exerciseDetail"])
         waitForPushedScreen()
-        snapshot("05_ExerciseDetail")
+        snapshot("07_ExerciseDetail")
     }
 
-    /// The full-screen workout recorder mid-session (auto-presented at launch).
-    func test06Recorder() {
-        // Opened at the top of the list rather than scrolled to its end: since #209 the last set's
-        // keyboard scroll target reaches below the card, so "the end" cut the first visible card's
-        // header off under the top sheet.
-        launch(["-UITEST_SHOW_RECORDER", "1", "-UITEST_NO_SCROLLTO"])
-        // The recorder cover auto-presents ~0.6s after the tab view appears.
-        waitABit(5)
-        snapshot("06_Recorder")
-    }
-
-    /// A completed workout showing a superset and a drop set back to back.
-    func test07SuperDropSet() {
-        launch(["-UITEST_DEEPLINK", "workoutDetail"])
-        waitForPushedScreen()
-        // Scroll past the stat tiles so both set groups — the superset and the
-        // drop set right below it — land in frame together.
-        app.swipeUp(velocity: .slow)
-        waitABit(2)
-        snapshot("07_SuperDropSet")
-    }
-
-    /// Lock Screen-style composition of the Live Activity cards.
+    /// Lock Screen composition of the real Live Activity: the rest timer and a set being logged.
     func test08LiveActivity() {
         launch(["-UITEST_LIVE_ACTIVITY_SHOWCASE", "1"])
         waitABit(3)
         snapshot("08_LiveActivity")
     }
 
-    /// The Pro Measurements body-fat trend chart.
-    func test09BodyMeasurements() {
-        launch(["-UITEST_DEEPLINK", "measurement"])
+    /// A completed workout showing its effort, a superset and a drop set back to back.
+    func test09SuperDropSet() {
+        launch(["-UITEST_DEEPLINK", "workoutDetail"])
         waitForPushedScreen()
-        snapshot("09_BodyMeasurements")
+        // Scroll past the stat tiles so both set groups — the superset and the
+        // drop set right below it — land in frame together.
+        app.swipeUp(velocity: .slow)
+        waitABit(2)
+        snapshot("09_SuperDropSet")
     }
 
-    /// The Strength detail screen — 5.1's headline addition: the strength trend
-    /// over the selected window, the About section and the strongest-lifts list.
-    func test10Strength() {
-        launch(["-UITEST_DEEPLINK", "strength"])
+    /// The Pro Measurements body-fat trend chart.
+    func test10BodyMeasurements() {
+        launch(["-UITEST_DEEPLINK", "measurement"])
         waitForPushedScreen()
-        snapshot("10_Strength")
+        snapshot("10_BodyMeasurements")
     }
 
     // MARK: - Helpers
+
+    /// The recorder's Finish button, by identifier: its label is localized.
+    private var recorderFinishButton: XCUIElement {
+        app.buttons["recorderFinishButton"].firstMatch
+    }
 
     private func waitForTabBar() {
         _ = app.tabBars.firstMatch.waitForExistence(timeout: 20)

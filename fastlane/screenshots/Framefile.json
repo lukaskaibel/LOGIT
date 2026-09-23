@@ -52,40 +52,40 @@
       "keyword": { "color": "#C6FF4B" }
     },
     {
-      "filter": "02_Progress",
-      "keyword": { "color": "#6FE0A6" }
-    },
-    {
-      "filter": "03_Streak",
-      "keyword": { "color": "#FF8A5C" }
-    },
-    {
-      "filter": "04_MuscleBalance",
-      "keyword": { "color": "#7AB7FF" }
-    },
-    {
-      "filter": "05_ExerciseDetail",
-      "keyword": { "color": "#FFCE54" }
-    },
-    {
-      "filter": "06_Recorder",
+      "filter": "02_Recorder",
       "keyword": { "color": "#F05A5A" }
     },
     {
-      "filter": "07_SuperDropSet",
-      "keyword": { "color": "#E47CC9" }
+      "filter": "03_Finish",
+      "keyword": { "color": "#6FE0A6" }
+    },
+    {
+      "filter": "04_Strength",
+      "keyword": { "color": "#C6FF4B" }
+    },
+    {
+      "filter": "05_MuscleBalance",
+      "keyword": { "color": "#7AB7FF" }
+    },
+    {
+      "filter": "06_Streak",
+      "keyword": { "color": "#FF8A5C" }
+    },
+    {
+      "filter": "07_ExerciseDetail",
+      "keyword": { "color": "#FFCE54" }
     },
     {
       "filter": "08_LiveActivity",
       "keyword": { "color": "#5ADBEB" }
     },
     {
-      "filter": "09_BodyMeasurements",
-      "keyword": { "color": "#7AD39F" }
+      "filter": "09_SuperDropSet",
+      "keyword": { "color": "#E47CC9" }
     },
     {
-      "filter": "10_Strength",
-      "keyword": { "color": "#C6FF4B" }
+      "filter": "10_BodyMeasurements",
+      "keyword": { "color": "#7AD39F" }
     }
   ]
 }

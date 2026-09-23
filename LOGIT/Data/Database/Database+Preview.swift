@@ -246,6 +246,8 @@ extension Database {
             let inProgressStart = Calendar.current.date(byAdding: .minute, value: -23, to: .now)!
             let currentPushDay = database.newWorkout(name: NSLocalizedString("previewPushDay", comment: ""), date: inProgressStart)
             currentPushDay.isCurrentWorkout = true
+            // Rated, so the finish-panel screenshot shows the effort scale in use rather than "Rate".
+            currentPushDay.effortScore = 8
 
             // Ordering matters for the screenshot: the recorder scrolls its set
             // list to the bottom on appear, so we put the exercise with the most

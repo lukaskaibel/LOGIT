@@ -137,24 +137,38 @@ final class BodyMeasurementSyncManager: ObservableObject {
         UserDefaults.standard.bool(forKey: Self.syncEnabledKey)
     }
 
-    /// Whether body measurements may be written. HealthKit deliberately never reveals *read*
+    /// Whether this one quantity may be written. HealthKit deliberately never reveals *read*
     /// permission (denied reads are indistinguishable from "no data"), so this only covers the
     /// write half — the settings copy explains the rest instead of pretending.
     ///
-    /// Written as "every synced quantity is granted": a half-authorised state would otherwise
-    /// report as authorised and then silently drop one series.
-    var isAuthorizedToWrite: Bool {
-        SyncedQuantity.all.allSatisfy {
-            healthStore.authorizationStatus(for: $0.quantityType) == .sharingAuthorized
-        }
+    /// Every export decides per quantity. A single "all of them" gate stopped weight exports for
+    /// everyone who turned sync on before body fat joined it: their body-fat permission was never
+    /// asked for, so the gate stayed shut while the toggle still read on. And someone who allows
+    /// weight but declines body fat has still chosen to sync weight.
+    func isAuthorizedToWrite(_ quantity: SyncedQuantity) -> Bool {
+        healthStore.authorizationStatus(for: quantity.quantityType) == .sharingAuthorized
     }
 
-    /// Presents the system Health access sheet for every synced quantity (read **and** write) plus
-    /// height (read only), and reports whether writing ended up granted.
+    /// Whether anything at all can be written — the settings tile's "access missing" warning, and
+    /// what decides whether turning the toggle on sticks.
+    var isAuthorizedToWrite: Bool {
+        SyncedQuantity.all.contains { isAuthorizedToWrite($0) }
+    }
+
+    /// What the sync asks Health for: read **and** write for every synced quantity, plus height
+    /// (read only). Shared with `HealthAuthorizationRefresh`, which asks again at launch for any of
+    /// these that were added after the user turned the sync on.
+    var authorizationTypes: (share: Set<HKSampleType>, read: Set<HKObjectType>) {
+        let quantityTypes: [HKSampleType] = SyncedQuantity.all.map(\.quantityType)
+        let readTypes: [HKObjectType] = quantityTypes + [heightType]
+        return (share: Set(quantityTypes), read: Set(readTypes))
+    }
+
+    /// Presents the system Health access sheet for `authorizationTypes`, and reports whether any
+    /// writing ended up granted.
     func requestAuthorization() async -> Bool {
         guard isHealthDataAvailable else { return false }
-        let share = Set(SyncedQuantity.all.map(\.quantityType))
-        let read = share.union([heightType])
+        let (share, read) = authorizationTypes
         do {
             try await healthStore.requestAuthorization(toShare: share, read: read)
         } catch {
@@ -172,8 +186,9 @@ final class BodyMeasurementSyncManager: ObservableObject {
     /// re-exporting them would duplicate the sample and start an echo. Types LOGIT doesn't mirror
     /// (muscle mass, the length measurements) fall straight through.
     func syncEntry(_ entry: MeasurementEntry) {
-        guard isSyncEnabled, isAuthorizedToWrite,
+        guard isSyncEnabled,
               let quantity = SyncedQuantity.forEntryType(entry.type),
+              isAuthorizedToWrite(quantity),
               entry.healthKitUUID == nil,
               let id = entry.id, let date = entry.date, entry.value_ > 0
         else { return }
@@ -193,8 +208,9 @@ final class BodyMeasurementSyncManager: ObservableObject {
     /// this deletes the *original* Health sample, so a delete in LOGIT also clears it from Health —
     /// which is what "kept in sync" has to mean in both directions.
     func removeEntry(ofType type: MeasurementEntryType?, id: UUID?, healthKitUUID: String?) {
-        guard isSyncEnabled, isAuthorizedToWrite,
-              let quantity = SyncedQuantity.forEntryType(type)
+        guard isSyncEnabled,
+              let quantity = SyncedQuantity.forEntryType(type),
+              isAuthorizedToWrite(quantity)
         else { return }
         Task {
             do {
@@ -291,7 +307,7 @@ final class BodyMeasurementSyncManager: ObservableObject {
     /// Exports every LOGIT-native entry of one quantity. Returns how many were written.
     @discardableResult
     func exportAll(_ quantity: SyncedQuantity) async -> Int {
-        guard isSyncEnabled, isAuthorizedToWrite else { return 0 }
+        guard isSyncEnabled, isAuthorizedToWrite(quantity) else { return 0 }
         let payloads: [(id: UUID, stored: Int64, date: Date)] = await withCheckedContinuation { continuation in
             database.context.perform {
                 let entries = (self.database.fetch(MeasurementEntry.self) as? [MeasurementEntry]) ?? []

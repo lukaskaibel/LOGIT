@@ -82,9 +82,17 @@ final class HealthKitSyncManager: ObservableObject {
     }
 
     /// Same story as the energy type: users who authorised before effort ratings existed sync
-    /// without them until any settings toggle-on re-runs the request.
+    /// without them until they answer the sheet `HealthAuthorizationRefresh` shows once at launch
+    /// (or any settings toggle-on re-runs the request).
     var isAuthorizedForEffortScore: Bool {
         healthStore.authorizationStatus(for: HKQuantityType(.workoutEffortScore)) == .sharingAuthorized
+    }
+
+    /// What the workout sync writes: the workout, its energy estimate and its effort rating. Shared
+    /// with `HealthAuthorizationRefresh`, which asks again at launch for any of these added after
+    /// the user turned the sync on (the effort rating, in 5.2).
+    var authorizationTypes: Set<HKSampleType> {
+        [.workoutType(), HKQuantityType(.activeEnergyBurned), HKQuantityType(.workoutEffortScore)]
     }
 
     /// Presents the system Health access sheet (only for so-far-undetermined types; later
@@ -92,14 +100,7 @@ final class HealthKitSyncManager: ObservableObject {
     func requestAuthorization() async -> Bool {
         guard isHealthDataAvailable else { return false }
         do {
-            try await healthStore.requestAuthorization(
-                toShare: [
-                    .workoutType(),
-                    HKQuantityType(.activeEnergyBurned),
-                    HKQuantityType(.workoutEffortScore),
-                ],
-                read: []
-            )
+            try await healthStore.requestAuthorization(toShare: authorizationTypes, read: [])
         } catch {
             Self.logger.error(
                 "Requesting Health authorization failed: \(String(describing: error), privacy: .public)"
@@ -337,5 +338,57 @@ extension Workout {
                 : nil,
             effortScore: effortScore
         )
+    }
+}
+
+// MARK: - Asking again for what a sync gained since it was turned on
+
+/// The one-time Health sheet for syncs that grew after the user turned them on.
+///
+/// 5.2 asks Health for more than 5.1 did: body fat beside body weight, and an effort rating beside
+/// each workout. Anyone who switched a sync on under 5.1 granted only the older set, and iOS never
+/// shows the sheet again by itself. So on launch, for each sync that is on, this asks once for
+/// whatever is still undetermined, in a single sheet that covers both syncs.
+///
+/// "Once" needs no flag of our own. `statusForAuthorizationRequest` answers `.unnecessary` as soon
+/// as every type has an answer, granted or declined, so after the user has seen the sheet this
+/// never presents it again. A type added in a later release reopens it, which is the point.
+enum HealthAuthorizationRefresh {
+    private static let logger = Logger(subsystem: ".com.lukaskbl.LOGIT", category: "HealthAuthorizationRefresh")
+
+    /// Asks for the types missing from the syncs that are on, then exports the body measurements
+    /// that couldn't be written while the permission was missing.
+    static func requestMissingAuthorization(
+        workouts: HealthKitSyncManager,
+        bodyMeasurements: BodyMeasurementSyncManager
+    ) async {
+        guard HKHealthStore.isHealthDataAvailable() else { return }
+        var share = Set<HKSampleType>()
+        var read = Set<HKObjectType>()
+        if workouts.isSyncEnabled {
+            share.formUnion(workouts.authorizationTypes)
+        }
+        if bodyMeasurements.isSyncEnabled {
+            let types = bodyMeasurements.authorizationTypes
+            share.formUnion(types.share)
+            read.formUnion(types.read)
+        }
+        guard !share.isEmpty || !read.isEmpty else { return }
+
+        let healthStore = HKHealthStore()
+        do {
+            guard try await healthStore.statusForAuthorizationRequest(toShare: share, read: read)
+                == .shouldRequest
+            else { return }
+            try await healthStore.requestAuthorization(toShare: share, read: read)
+        } catch {
+            logger.error("Asking again for Health access failed: \(String(describing: error), privacy: .public)")
+            return
+        }
+        // Weights logged while the old all-or-nothing gate was shut never reached Health. The export
+        // is keyed by each entry's sync identifier, so re-running it only fills the gaps.
+        if bodyMeasurements.isSyncEnabled {
+            await bodyMeasurements.exportAll()
+        }
     }
 }

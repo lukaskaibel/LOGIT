@@ -67,7 +67,7 @@ struct WorkoutGoalScreen: View {
                 } label: {
                     Image(systemName: "slider.horizontal.3")
                 }
-                .accessibilityLabel(Text(NSLocalizedString("changeGoal", comment: "")))
+                .accessibilityLabel(Text(NSLocalizedString(hasGoal ? "changeGoal" : "setGoal", comment: "")))
                 .accessibilityIdentifier("weeklyGoalTargetButton")
             }
         }
@@ -205,7 +205,7 @@ struct WorkoutGoalScreen: View {
     }
 
     private func nextMilestoneRow(goal: (value: Int, isBest: Bool)) -> some View {
-        let fact = goal.isBest ? "" : StreakMilestone.fact(for: goal.value)
+        let fact = goal.isBest ? "" : StreakMilestone.fact(for: goal.value, isFirstStreak: previousBest == 0)
         let remaining = max(goal.value - streak, 0)
         return HStack(spacing: 12) {
             ZStack {
@@ -219,7 +219,7 @@ struct WorkoutGoalScreen: View {
             }
             .frame(width: Self.iconColumnWidth, height: Self.iconColumnWidth)
             VStack(alignment: .leading, spacing: 1) {
-                Text(NSLocalizedString(goal.isBest ? "personalBest" : "nextMilestone", comment: ""))
+                Text(NSLocalizedString(goal.isBest ? "beatYourBest" : "nextMilestone", comment: ""))
                     .font(.system(size: 10, weight: .heavy))
                     .foregroundStyle(Color.accentColor)
                 UnitView(
@@ -250,7 +250,7 @@ struct WorkoutGoalScreen: View {
     }
 
     private func reachedRow(_ mark: ReachedMark) -> some View {
-        let fact = mark.isMilestone ? StreakMilestone.fact(for: mark.weeks) : ""
+        let fact = mark.isMilestone ? StreakMilestone.fact(for: mark.weeks, isFirstStreak: previousBest == 0) : ""
         return HStack(spacing: 12) {
             ZStack {
                 Circle().fill(Color.accentColor)

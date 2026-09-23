@@ -236,6 +236,9 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
             // Match the input precision to what integer-gram storage can round-trip:
             // 3 decimals in kg (exact), 2 in lbs (a third decimal is below 1 g resolution).
             decimalPlaces: WeightUnit.used == .kg ? 3 : 2,
+            // The one field whose value can be negative (assistance) — the duration and distance
+            // fields below leave `allowsNegative` off, so a pasted minus can't reach their storage.
+            allowsNegative: true,
             index: fieldIndex(tertiary),
             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
             unit: WeightUnit.used.rawValue,

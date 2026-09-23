@@ -43,6 +43,11 @@ struct WorkoutEditorScreen: View {
     /// when its owning state lives outside the recycled tray content
     /// (see TemplateEditorScreen).
     @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
+    /// Set when an exercise created from the tray has been added: the tray folds back to its resting
+    /// row once the create sheet is *gone* (its `onDismiss`), not while it is still on top. Changing
+    /// the tray's detent under a nested sheet left it at full height with only the resting row in
+    /// it, and the next swipe down merely caught the two up.
+    @State private var collapsesTrayAfterCreate = false
     @FocusState private var isNoteFieldFocused: Bool
     @State private var isRatingEffort = false
     /// The set groups this editor added. Cancel gives back exactly these for an existing workout —
@@ -208,7 +213,11 @@ struct WorkoutEditorScreen: View {
                             }
                             .presentationDragIndicator(.visible)
                         }
-                        .sheet(item: $createExerciseRequest) { request in
+                        .sheet(item: $createExerciseRequest, onDismiss: {
+                            guard collapsesTrayAfterCreate else { return }
+                            collapsesTrayAfterCreate = false
+                            exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
+                        }) { request in
                             ExerciseEditScreen(
                                 onEditFinished: { exercise in
                                     let added = database.newWorkoutSetGroup(
@@ -217,7 +226,7 @@ struct WorkoutEditorScreen: View {
                                         workout: workout
                                     )
                                     if let id = added.id { setGroupsAddedHere.insert(id) }
-                                    exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
+                                    collapsesTrayAfterCreate = true
                                 },
                                 initialExerciseName: request.name,
                                 initialMuscleGroup: request.muscleGroup ?? .chest

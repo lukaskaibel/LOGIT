@@ -1121,6 +1121,10 @@ private final class ExerciseHistoryBestsCache: @unchecked Sendable {
                 switch object {
                 case let workoutSet as WorkoutSet:
                     workout = workoutSet.setGroup?.workout
+                // Since model v8 a set's values live on its entries, so editing a past workout's
+                // weight changes only a `SetEntry` — it counts as a change to its set's workout.
+                case let entry as SetEntry:
+                    workout = entry.workoutSet?.setGroup?.workout
                 case let setGroup as WorkoutSetGroup:
                     workout = setGroup.workout
                 case let changedWorkout as Workout:
@@ -1340,14 +1344,20 @@ private struct MetricBadgeView: View {
         let accent = exercise?.muscleGroup?.color ?? .accentColor
         let displayed = displayedMetric
         let sessionBest = comparison.sessionBest(displayed)
+        let baseline = comparison.currentBest(displayed)
         // Before this session's first entry there's nothing to trend, so rather than a dead "0 %"
         // the badge previews the bar this metric is scored against: the exercise's current best
-        // (`idleBest`). With no prior best either — a brand-new exercise — there's nothing to show,
-        // so the badge renders nothing (the info panel owns the "no data yet" state). The instant a
-        // value is entered `sessionBest` turns positive and the trend pill takes over, unchanged.
-        let idleBest = sessionBest == 0 ? comparison.currentBest(displayed) : nil
+        // (`idleBest`). The instant a value is entered `sessionBest` turns non-zero (negative for
+        // an assisted weight) and the trend pill takes over, unchanged.
+        //
+        // Both states need that bar, so without one — a brand-new exercise, or a metric never
+        // logged before — the badge renders nothing, before *and* after the first entry: a trend
+        // with no baseline has no percent, and drawing it as "0 %" read like a stalled session on
+        // day one. The info panel owns the "no data yet" state. (No baseline also means no record:
+        // `isPersonalRecord` needs an earlier value to beat, which would be the baseline.)
+        let idleBest = sessionBest == 0 ? baseline : nil
         return Group {
-            if sessionBest > 0 || idleBest != nil {
+            if baseline != nil {
                 pill(accent: accent, idleBest: idleBest)
                     .onGeometryChange(for: CGRect.self) { proxy in
                         proxy.frame(in: .global)
@@ -1435,9 +1445,9 @@ private struct MetricBadgeView: View {
     // MARK: - Pill rendering
 
     /// Idle vs trend dispatch: before this session's first entry the badge shows the current best
-    /// to beat (`idleBest`); once a value is in, the trend pill takes over. The empty-empty case
-    /// (no entry, no prior best) is filtered out in `body`, so a non-nil `idleBest` here always has
-    /// a value to show.
+    /// to beat (`idleBest`); once a value is in, the trend pill takes over. Every case without a
+    /// prior best is filtered out in `body`, so a non-nil `idleBest` here always has a value to show
+    /// and the trend pill always has a baseline to take a percent from.
     @ViewBuilder
     private func pill(accent: Color, idleBest: Int?) -> some View {
         if let idleBest {
@@ -1957,8 +1967,10 @@ struct MetricInfoPanel: View {
         return formattedValue(best, for: metric)
     }
 
+    /// "––" only for zero, the model's "nothing recorded" — an assisted weight is stored negative
+    /// (−20 kg) and is a real value to show.
     private func formattedValue(_ value: Int, for metric: ExercisePrimaryMetric) -> String {
-        guard value > 0 else { return "––" }
+        guard value != 0 else { return "––" }
         switch metric {
         case .estimatedOneRepMax: return formatEstimatedOneRepMax(value)
         case .weight: return formatWeightForDisplay(value)
@@ -2006,20 +2018,24 @@ struct MetricInfoPanel: View {
         }
     }
 
-    /// Daily-max points for `metric` across this exercise's sessions up to the window anchor,
+    /// Daily-best points for `metric` across this exercise's sessions up to the window anchor,
     /// oldest → newest. Sessions after a finished workout's date are cut so the chart's story ends
     /// where the comparison's does (the domain would clip them anyway, but a Catmull-Rom segment
     /// into a clipped point still bends the visible line).
+    ///
+    /// Each day's best goes through `Exercise.best(of:for:)`, like the exercise-detail tiles, not a
+    /// plain max: that drops the zeroes of empty sets first, so a day of assisted sets (−20 kg)
+    /// isn't beaten by an untouched field and read as "no data yet", and it ranks a sprint's
+    /// fastest time as its best.
     private func metricPoints(for metric: ExercisePrimaryMetric) -> [TileSparklinePoint] {
         guard let exercise else { return [] }
         let grouped = Dictionary(grouping: exercise.sets) {
             Calendar.current.startOfDay(for: $0.workout?.date ?? .now)
         }
         return grouped.compactMap { _, sets -> TileSparklinePoint? in
-            guard let best = sets.max(by: { metricBase($0, metric, exercise) < metricBase($1, metric, exercise) })
+            guard let base = exercise.best(of: sets.map { metricBase($0, metric, exercise) }, for: metric),
+                  let date = sets.first(where: { metricBase($0, metric, exercise) == base })?.workout?.date
             else { return nil }
-            let base = metricBase(best, metric, exercise)
-            guard base > 0, let date = best.workout?.date else { return nil }
             return TileSparklinePoint(date: date, value: metricDisplayValue(base, metric))
         }
         .filter { $0.date <= windowAnchor }
@@ -2048,16 +2064,18 @@ struct MetricInfoPanel: View {
     }
 
     /// Compact progression chart matching the exercise-detail tiles (line + area, muscle-group
-    /// colour, faded leading edge, hidden axes). Empty when the metric has no history.
+    /// colour, faded leading edge, hidden axes). Empty when the metric has no history. The y-floor
+    /// drops below zero only for assisted (negative) weights, which would otherwise be clipped away.
     @ViewBuilder
     private func metricChart(for metric: ExercisePrimaryMetric, color: Color) -> some View {
         let points = metricPoints(for: metric)
         let maxValue = points.map(\.value).max() ?? 1
+        let minValue = points.map(\.value).min() ?? 0
         Chart {
             tileSparklineMarks(points: points, color: color, carryForwardEnd: windowAnchor)
         }
         .chartXScale(domain: chartStartDate ... chartEndDate)
-        .chartYScale(domain: 0 ... max(maxValue * 1.15, 1))
+        .chartYScale(domain: min(minValue * 1.15, 0) ... max(maxValue * 1.15, 1))
         .chartXAxis {}
         .chartYAxis {}
         .frame(maxWidth: .infinity)

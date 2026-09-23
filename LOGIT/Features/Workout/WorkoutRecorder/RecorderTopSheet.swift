@@ -377,8 +377,10 @@ struct RecorderTopSheetTitleField: View {
             Text(verbatim: "Ag")
                 .modifier(AnimatableTitleFont(size: max(size, expandedSize)))
                 .hidden()
+            // Titled for VoiceOver, which otherwise announced an unlabelled text field; the prompt
+            // is what sighted users see in its place.
             TextField(
-                "",
+                NSLocalizedString("name", comment: ""),
                 text: text,
                 prompt: Text(Workout.getStandardName(for: Date())).foregroundStyle(Color.label)
             )

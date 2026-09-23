@@ -96,8 +96,12 @@ struct WorkoutProgressReport {
         /// Change against the baseline, as a percentage of its *magnitude*. The magnitude matters
         /// for assisted work: a baseline of −20 kg would otherwise flip the sign of every
         /// comparison, reporting six kilos less help as −30%.
+        ///
+        /// A current of zero is "nothing to compare" — except against an assisted (negative)
+        /// baseline, where 0 kg is the set done with no help at all (see `weightBest`): −20 kg to
+        /// unassisted reads as +100%, the biggest step there is.
         var percentChange: Double? {
-            guard let baseline, baseline != 0, current != 0 else { return nil }
+            guard let baseline, baseline != 0, current != 0 || baseline < 0 else { return nil }
             return (Double(current) - Double(baseline)) / abs(Double(baseline)) * 100
         }
 
@@ -132,6 +136,31 @@ struct WorkoutProgressReport {
 
     static let empty = WorkoutProgressReport(exerciseRecords: [], trends: [])
 
+    // MARK: Assisted weight
+
+    /// The weight a run of sets reached — `rawBest`, their best as `Exercise.best(of:for:)` finds
+    /// it, zeroes dropped — except that a bodyweight entry (reps with no load) counts as a real
+    /// 0 kg whenever the comparison is among assisted loads.
+    ///
+    /// Zero means "nothing recorded" throughout the model, and for most exercises that is right: a
+    /// pull-up logged at 0 kg every week has no weight to set a record in. But assistance is stored
+    /// as a negative load (−20 kg of help), so on an assisted exercise 0 kg is the set done with no
+    /// help at all — the biggest step up there is. Read as nothing, going from −20 kg last time to
+    /// unassisted today reported neither a record nor an improvement.
+    ///
+    /// So a bodyweight entry counts once either side is assisted: the sets' own best is negative,
+    /// or the `baseline` they are about to be compared against is. A history that was only ever
+    /// bodyweight stays nil — no weight, so no weight record and no weight improvement — and a
+    /// loaded set (+5 kg) still beats the bodyweight ones as it always did.
+    ///
+    /// One rule for `compute` and `PersonalRecordCountIndex`, so the detail's records, the finish
+    /// panel's highlights and History's "n PR" can never disagree about an assisted lift.
+    static func weightBest(rawBest: Int?, hasBodyweightEntry: Bool, against baseline: Int? = nil) -> Int? {
+        let best = rawBest ?? 0
+        guard hasBodyweightEntry, best <= 0, best < 0 || (baseline ?? 0) < 0 else { return rawBest }
+        return 0
+    }
+
     // MARK: Computation
 
     static func compute(for workout: Workout, database: Database) -> WorkoutProgressReport {
@@ -154,67 +183,68 @@ struct WorkoutProgressReport {
                 workoutSet.metricValue(metric, for: exercise)
             }
 
-            func sessionBest(_ metric: ExercisePrimaryMetric) -> Int {
-                exercise.best(of: workout.sets.map { value($0, metric) }, for: metric) ?? 0
+            /// The best of `sets` for `metric`, nil when none of them recorded one. Weight goes
+            /// through `weightBest`, so a bodyweight entry is a real 0 kg against assisted loads —
+            /// the sets' own, or the `baseline` they're about to be compared against.
+            func best(_ metric: ExercisePrimaryMetric, in sets: [WorkoutSet], against baseline: Int? = nil) -> Int? {
+                let raw = exercise.best(of: sets.map { value($0, metric) }, for: metric)
+                guard metric == .weight else { return raw }
+                return weightBest(
+                    rawBest: raw,
+                    hasBodyweightEntry: sets.contains { $0.hasBodyweightEntry(for: exercise) },
+                    against: baseline
+                )
             }
 
             var records = [PRRecord]()
             for metric in ExercisePrimaryMetric.allCases {
-                let current = sessionBest(metric)
-                let priorBest = exercise.best(of: priorSets.map { value($0, metric) }, for: metric) ?? 0
                 // Ties don't count, and neither do first-ever entries — with no earlier value
                 // there is no record to beat. "Beat" is the exercise's own direction: a faster
-                // sprint, a heavier lift, or less help from the machine.
-                if current != 0, priorBest != 0, exercise.isBetter(current, than: priorBest, for: metric) {
-                    // When the beaten record was first set: the earliest prior session that reached
-                    // it, so the card can date the previous best beside the new one.
-                    let previousBestDate = priorSets
-                        .filter { value($0, metric) == priorBest }
-                        .compactMap { $0.workout?.date }
-                        .min()
-                    records.append(
-                        PRRecord(
-                            exercise: exercise,
-                            metric: metric,
-                            value: current,
-                            previousBest: priorBest,
-                            previousBestDate: previousBestDate,
-                            date: workoutDate
-                        )
+                // sprint, a heavier lift, or less help from the machine (down to none: 0 kg after
+                // assisted sets is a record, see `weightBest`).
+                guard let priorBest = best(metric, in: priorSets),
+                      let current = best(metric, in: workout.sets, against: priorBest),
+                      exercise.isBetter(current, than: priorBest, for: metric)
+                else { continue }
+                // When the beaten record was first set: the earliest prior session that reached
+                // it, so the card can date the previous best beside the new one. A beaten 0 kg is
+                // a bodyweight set — its `value` reads 0, as would a set with nothing in it.
+                let previousBestDate = priorSets
+                    .filter {
+                        metric == .weight && priorBest == 0
+                            ? $0.hasBodyweightEntry(for: exercise)
+                            : value($0, metric) == priorBest
+                    }
+                    .compactMap { $0.workout?.date }
+                    .min()
+                records.append(
+                    PRRecord(
+                        exercise: exercise,
+                        metric: metric,
+                        value: current,
+                        previousBest: priorBest,
+                        previousBestDate: previousBestDate,
+                        date: workoutDate
                     )
-                }
+                )
             }
             exerciseRecords.append(contentsOf: ExerciseRecords.grouped(records))
 
-            var trendMetric = exercise.primaryMetric
-            if sessionBest(trendMetric) == 0 {
-                trendMetric = .repetitions
-            }
             // Same baseline as the exercise badge: best of the month before this workout, falling
             // back to the all-time best before it — so the "n improved" pill beside the exercises
             // title can never disagree with the badges it summarizes.
             let windowStart = Exercise.currentBestWindowStart(endingAt: workoutDate)
+            let windowSets = priorSets.filter { ($0.workout?.date ?? .distantPast) >= windowStart }
             func trend(_ metric: ExercisePrimaryMetric) -> ExerciseTrend? {
-                let current = sessionBest(metric)
-                guard current != 0 else { return nil }
-                let windowBest = exercise.best(
-                    of: priorSets
-                        .filter { ($0.workout?.date ?? .distantPast) >= windowStart }
-                        .map { value($0, metric) },
-                    for: metric
-                ) ?? 0
-                let priorBest = exercise.best(of: priorSets.map { value($0, metric) }, for: metric) ?? 0
-                let baseline = windowBest != 0 ? windowBest : priorBest
-                return ExerciseTrend(
-                    exercise: exercise,
-                    metric: metric,
-                    current: current,
-                    baseline: baseline != 0 ? baseline : nil
-                )
+                let baseline = best(metric, in: windowSets) ?? best(metric, in: priorSets)
+                guard let current = best(metric, in: workout.sets, against: baseline) else { return nil }
+                return ExerciseTrend(exercise: exercise, metric: metric, current: current, baseline: baseline)
             }
-            if let primary = trend(trendMetric) {
+            // The exercise's chosen metric, or repetitions when this workout has no value for it
+            // (a bodyweight set on a weight-scored exercise — unless it was assisted before).
+            if let primary = trend(exercise.primaryMetric) ?? trend(.repetitions) {
                 trends.append(primary)
-                if trendMetric == .estimatedOneRepMax, let weight = trend(.weight) {
+                if primary.metric == .estimatedOneRepMax, let weight = trend(.weight) {
                     weightTrends.append(weight)
                 }
             }
@@ -232,6 +262,16 @@ struct WorkoutProgressReport {
     }
 }
 
+fileprivate extension WorkoutSet {
+    /// Whether `exercise` did something here with no load — reps (or the time, or the distance)
+    /// at 0 kg: a bodyweight entry. Its 0 kg reads as "nothing" to `metricValue`, and only
+    /// `WorkoutProgressReport.weightBest` decides when it is a real weight (against assisted,
+    /// negative loads). An entry with nothing in it at all is no bodyweight set.
+    func hasBodyweightEntry(for exercise: Exercise) -> Bool {
+        entryValues(for: exercise).contains { $0.weight == 0 && $0.hasPerformanceValue }
+    }
+}
+
 // MARK: - Record counts for every workout
 
 /// How many exercises set a personal record in each workout — the "n PR" on every workout cell and
@@ -246,7 +286,8 @@ struct WorkoutProgressReport {
 /// The same answer for *every* workout costs one walk over the history instead: take each
 /// exercise's sessions oldest first, carry the running best per metric, and a session that beats it
 /// set a record. That is `compute`'s own rule, expressed with `compute`'s own primitives
-/// (`best(of:for:)`, `isBetter(_:than:for:)`, `metricValue(_:for:)`), one exercise at a time rather
+/// (`best(of:for:)`, `isBetter(_:than:for:)`, `metricValue(_:for:)`, and `weightBest` for a
+/// bodyweight set after assisted ones), one exercise at a time rather
 /// than one workout at a time — linear in sets instead of quadratic. `PersonalRecordCountIndexTests`
 /// pins the two to the same numbers so they can never drift apart.
 final class PersonalRecordCountIndex: @unchecked Sendable {
@@ -336,7 +377,12 @@ final class PersonalRecordCountIndex: @unchecked Sendable {
         }
         sessions.sort { $0.date < $1.date }
 
+        // The raw bests (zeroes dropped, as `best(of:for:)` finds them) and whether any bodyweight
+        // entry came before: together they are everything `WorkoutProgressReport.weightBest` needs
+        // to read the history's weight as `compute` does — a bodyweight set is a real 0 kg once
+        // the rest was assisted, whichever order the two came in.
         var runningBest = [ExercisePrimaryMetric: Int]()
+        var runningHasBodyweight = false
         var batchStart = sessions.startIndex
         while batchStart < sessions.endIndex {
             // Sessions sharing an instant are judged against the same history and only then folded
@@ -348,28 +394,48 @@ final class PersonalRecordCountIndex: @unchecked Sendable {
             }
 
             var batchBest = [ExercisePrimaryMetric: Int]()
+            var batchHasBodyweight = false
             for session in sessions[batchStart ..< batchEnd] {
+                let sessionHasBodyweight = session.sets.contains { $0.hasBodyweightEntry(for: exercise) }
                 var setARecord = false
                 for metric in ExercisePrimaryMetric.allCases {
-                    let current = exercise.best(
+                    let raw = exercise.best(
                         of: session.sets.map { $0.metricValue(metric, for: exercise) },
                         for: metric
-                    ) ?? 0
-                    guard current != 0 else { continue }
+                    )
+                    if let raw {
+                        batchBest[metric] = exercise.best(of: [batchBest[metric] ?? 0, raw], for: metric) ?? raw
+                    }
                     // Ties don't count, and neither does a first-ever entry — with no earlier
                     // value there is no record to beat.
-                    let previous = runningBest[metric] ?? 0
-                    if previous != 0, exercise.isBetter(current, than: previous, for: metric) {
+                    let previous: Int?
+                    let current: Int?
+                    if metric == .weight {
+                        previous = WorkoutProgressReport.weightBest(
+                            rawBest: runningBest[metric],
+                            hasBodyweightEntry: runningHasBodyweight
+                        )
+                        current = WorkoutProgressReport.weightBest(
+                            rawBest: raw,
+                            hasBodyweightEntry: sessionHasBodyweight,
+                            against: previous
+                        )
+                    } else {
+                        previous = runningBest[metric]
+                        current = raw
+                    }
+                    if let previous, let current, exercise.isBetter(current, than: previous, for: metric) {
                         setARecord = true
                     }
-                    batchBest[metric] = exercise.best(of: [batchBest[metric] ?? 0, current], for: metric) ?? 0
                 }
+                batchHasBodyweight = batchHasBodyweight || sessionHasBodyweight
                 if setARecord { counts[session.workout.objectID, default: 0] += 1 }
             }
 
             for (metric, value) in batchBest {
-                runningBest[metric] = exercise.best(of: [runningBest[metric] ?? 0, value], for: metric) ?? 0
+                runningBest[metric] = exercise.best(of: [runningBest[metric] ?? 0, value], for: metric) ?? value
             }
+            runningHasBodyweight = runningHasBodyweight || batchHasBodyweight
             batchStart = batchEnd
         }
     }
@@ -378,6 +444,18 @@ final class PersonalRecordCountIndex: @unchecked Sendable {
     /// means imported history, and a main-context change confined to the workout being recorded
     /// (typing a value, adding a set) touches nothing this index describes — History excludes the
     /// in-progress workout. Everything else invalidates.
+    ///
+    /// **`SetEntry` counts as a set.** Since model v8 a set's values live on its entries, so editing
+    /// a weight in a past workout changes *only* the entry — no `WorkoutSet`, group or workout shows
+    /// up in the notification. Skipping entries left History's "n PR" on the old count until
+    /// relaunch while the workout's own detail screen, which recomputes, already showed the new one.
+    /// An entry is traced through its set to the workout like a set is, so typing in the recorder
+    /// still leaves the index alone.
+    ///
+    /// Still cheap while typing into a past workout: invalidating only drops the cache, and the
+    /// rebuild waits for the next History read (a cell or recap `.task`, which the editor sheet over
+    /// it doesn't trigger). After the first keystroke there is no cache and no build, so the guard
+    /// below returns before looking at the rest.
     @objc private func contextObjectsDidChange(_ notification: Notification) {
         guard Thread.isMainThread else {
             Task { @MainActor in self.invalidate() }
@@ -394,6 +472,7 @@ final class PersonalRecordCountIndex: @unchecked Sendable {
                 for object in objects {
                     let workout: Workout?
                     switch object {
+                    case let entry as SetEntry: workout = entry.workoutSet?.setGroup?.workout
                     case let workoutSet as WorkoutSet: workout = workoutSet.setGroup?.workout
                     case let setGroup as WorkoutSetGroup: workout = setGroup.workout
                     case let changedWorkout as Workout: workout = changedWorkout

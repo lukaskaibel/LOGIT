@@ -128,59 +128,33 @@ private func totalRepetitions(of workoutSet: WorkoutSet) -> Int {
 
 // MARK: - Run History
 
-/// The comparison basis behind a stat tile's bars: a run of sessions, oldest → newest, with the
-/// session the tile is about last. One basis for a whole grid, so its four tiles can never disagree
-/// about what "vs. last time" means.
+/// The sessions behind a stat tile's bars: a run of workouts, oldest → newest, with the session the
+/// tile is about last. One history for a whole grid, so its four tiles can never disagree about
+/// which sessions they are drawing.
 ///
 /// The workout detail's grid takes the *last eight workouts of any kind* ending with this one —
-/// the same eight its detail screens draw on their run axis, so tapping a tile never changes which
-/// sessions you are being compared against. The template detail builds its own history from that
-/// template's sessions instead, where a like-for-like previous run genuinely exists.
+/// the same eight its detail screens draw on their run axis, so tapping a tile never changes the
+/// sessions on screen. The template detail builds its own history from that template's sessions
+/// instead, where a like-for-like previous run genuinely exists.
+///
+/// It used to carry a `Basis` naming which run the tile's trend pill compared against (the previous
+/// run of this template, or the average of the recent eight). The tiles report no percentage now, so
+/// the runs alone are the whole story; the comparison and its wording live on the detail screen.
 struct WorkoutRunHistory {
-    enum Basis {
-        /// Previous runs of this same workout — the pill compares against the immediately
-        /// previous run, a precise like-for-like. The template detail's grid.
-        case sameWorkout
-        /// Consecutive workouts of any kind — the pill compares against the *average* of the runs
-        /// shown, this session included, which is exactly the number the detail screen's scoreboard
-        /// carries for the same window. A single unrelated session (push vs. legs) can't swing it
-        /// the way a like-for-like comparison against one workout would.
-        case recentWorkouts
-    }
-
     /// Workouts in a workout-detail comparison — the tile's bars and the window its detail screen
     /// opens on are the same eight sessions. `WorkoutStatScreen` scrolls back through more of them;
     /// the tile just shows the window.
     static let windowCount = 8
 
-    let basis: Basis
     /// Oldest → newest with the workout itself last; at most the chart's slot count.
     let runs: [Workout]
-
-    func percentChange(for metric: WorkoutStatMetric) -> Double? {
-        guard let current = runs.last.map({ metric.rawValue(of: $0) }), current > 0 else { return nil }
-        // Sessions with no value for this metric (a workout with no recorded end, on duration)
-        // don't count — the same rule the detail screen's axis applies by not giving them a bar.
-        let priorValues = runs.dropLast().map { metric.rawValue(of: $0) }.filter { $0 > 0 }
-        guard !priorValues.isEmpty else { return nil }
-        let baseline: Double
-        switch basis {
-        case .sameWorkout:
-            guard let previous = runs.dropLast().last.map({ metric.rawValue(of: $0) }),
-                  previous > 0 else { return nil }
-            baseline = Double(previous)
-        case .recentWorkouts:
-            baseline = Double(priorValues.reduce(0, +) + current) / Double(priorValues.count + 1)
-        }
-        return (Double(current) - baseline) / baseline * 100
-    }
 
     /// The window behind the workout detail's grid: this workout and the seven logged before it,
     /// whatever they were. Opening an older workout takes the seven before *it*, so the tile always
     /// shows the same eight bars its detail screen opens on.
     static func compute(for workout: Workout, database: Database) -> WorkoutRunHistory {
         guard let workoutDate = workout.date else {
-            return WorkoutRunHistory(basis: .recentWorkouts, runs: [workout])
+            return WorkoutRunHistory(runs: [workout])
         }
         let previous = recentWorkouts(
             before: workoutDate,
@@ -188,7 +162,7 @@ struct WorkoutRunHistory {
             database: database,
             limit: windowCount - 1
         )
-        return WorkoutRunHistory(basis: .recentWorkouts, runs: previous.reversed() + [workout])
+        return WorkoutRunHistory(runs: previous.reversed() + [workout])
     }
 
     private static func recentWorkouts(
@@ -269,21 +243,17 @@ struct WorkoutRunsBarChart: View {
 // MARK: - Stat Tile
 
 /// One compact session stat on the workout detail — the shared metric tile with the workout
-/// vocabulary: "This Workout" over a neutral value, the trend pill wearing the workout's
-/// muscle-group gradient on a gain, and the run bars in the corner with this workout's bar in that
-/// same gradient. The duration tile stays neutral gray in both directions — a longer workout is
-/// neither better nor worse.
+/// vocabulary: "This Workout" over a neutral value, and the run bars underneath with this workout's
+/// bar in the session's muscle-group gradient. The duration tile stays neutral gray — a longer
+/// workout is neither better nor worse.
 struct WorkoutStatTile: View {
     let metric: WorkoutStatMetric
     let workout: Workout
     let history: WorkoutRunHistory
-    /// Tints the trend pill — the workout's muscle-group gradient on a diagonal (text reads
-    /// diagonally), or neutral gray on the duration tile.
-    let accent: AnyShapeStyle
-    /// Tints the current workout's run bar — the same muscle-group gradient as `accent` but running
-    /// vertically (bars read bottom-to-top), or neutral gray on the duration tile.
+    /// Tints the current workout's run bar — the workout's muscle-group gradient running vertically
+    /// (bars read bottom-to-top), or neutral gray on the duration tile.
     let barStyle: AnyShapeStyle
-    /// The flat-color form of `accent`, for the pill's non-gradient fallback and the ghost dot.
+    /// The flat-color form of `barStyle`, for the empty state's ghost dot.
     let accentColor: Color
 
     var body: some View {
@@ -301,10 +271,7 @@ struct WorkoutStatTile: View {
             ),
             value: raw > 0 ? metric.formattedValue(fromRaw: raw) : nil,
             unit: metric.unit,
-            accent: accent,
             accentColor: accentColor,
-            percentChange: history.percentChange(for: metric),
-            isRecord: false,
             requiresPro: metric.requiresPro,
             chartBleeds: false
         ) {
@@ -342,7 +309,7 @@ struct WorkoutStatTileGrid: View {
     @State private var history: WorkoutRunHistory?
 
     var body: some View {
-        let history = history ?? WorkoutRunHistory(basis: .recentWorkouts, runs: [workout])
+        let history = history ?? WorkoutRunHistory(runs: [workout])
         let spacing: CGFloat = 10
         Group {
             if dynamicTypeSize.isAccessibilitySize {
@@ -381,7 +348,6 @@ struct WorkoutStatTileGrid: View {
                 metric: metric,
                 workout: workout,
                 history: history,
-                accent: isDuration ? AnyShapeStyle(Color.secondary) : sets.muscleGroupGradientStyle(startPoint: .bottomLeading, endPoint: .topTrailing),
                 barStyle: isDuration ? AnyShapeStyle(Color.secondary) : sets.muscleGroupGradientStyle(startPoint: .bottom, endPoint: .top),
                 accentColor: isDuration ? .secondary : dominantMuscleGroupColor
             )
@@ -389,8 +355,8 @@ struct WorkoutStatTileGrid: View {
         .buttonStyle(TileButtonStyle())
     }
 
-    /// The workout's most-trained muscle group — the single-color tint passed to the shared tile
-    /// layout as the trend pill's fallback behind its muscle-group gradient.
+    /// The workout's most-trained muscle group — the single-color tint the shared tile layout uses
+    /// where a gradient can't go (the empty state's ghost dot).
     private var dominantMuscleGroupColor: Color {
         muscleGroupService.getMuscleGroupOccurances(in: workout).first?.0.color ?? .accentColor
     }

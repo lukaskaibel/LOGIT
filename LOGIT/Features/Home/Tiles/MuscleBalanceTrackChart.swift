@@ -15,48 +15,57 @@ import SwiftUI
 /// puzzle). What differs between groups is how full they are, and nothing else.
 ///
 /// A track's state is `MuscleBalanceEntry.goalState`: partly filled and unbadged while short, then
-/// translucent with a check once it is at target, and translucent with a double chevron when it is
-/// well past it. Overshoot still counts — the chevron admits it rather than hiding it.
+/// translucent with a check once it is at target, and translucent with a double chevron past it.
+/// Nothing else marks a track. The groups the headline names are always the leftmost bars, in the
+/// headline's own colours, and every bar carries its group's letters — a ring around the named bars
+/// was tried and pulled the whole Summary toward that corner.
+///
+/// Draws the entries in the order given — `MuscleBalanceCalculator.rankedEntries`, the one order
+/// every balance surface shares, which puts the groups furthest behind first.
 struct MuscleBalanceTrackChart: View {
-    /// Already narrowed to targeted groups by the caller (`MuscleBalanceCalculator.goalEntries`).
+    /// Already narrowed and ordered by the caller (`MuscleBalanceCalculator.rankedEntries`).
     let entries: [MuscleBalanceEntry]
     var spacing: CGFloat = 5
     var badgeDiameter: CGFloat = 13
-    /// Fullest last, so the gaps read first — matching the Strength chart beside it.
-    var sortsByFill: Bool = true
-
-    private var ordered: [MuscleBalanceEntry] {
-        guard sortsByFill else { return entries }
-        return entries.sorted { ($0.goalFraction ?? 0) < ($1.goalFraction ?? 0) }
-    }
+    /// Each group's letters under its track, in its colour. The point size follows the track width:
+    /// the Summary tile's bars are about 20 pt wide, the Muscle Groups chart's nearly twice that.
+    var labelSize: CGFloat = 12
 
     var body: some View {
         HStack(alignment: .bottom, spacing: spacing) {
-            ForEach(ordered) { entry in
-                MuscleBalanceTrack(entry: entry, badgeDiameter: badgeDiameter)
+            ForEach(entries) { entry in
+                VStack(spacing: labelSize * 0.5) {
+                    MuscleBalanceTrack(entry: entry, badgeDiameter: badgeDiameter)
+                    Text(entry.muscleGroup.abbreviation)
+                        .font(.system(size: labelSize, weight: .bold, design: .rounded))
+                        .foregroundStyle(entry.muscleGroup.color)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
             }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
     }
 
+    /// Every group in reading order with its weekly sets against its target — the chart said aloud.
     private var accessibilityLabel: Text {
-        let met = entries.filter { $0.goalState != .under }.count
-        let base = String(
-            format: NSLocalizedString("muscleBalanceGoalAccessibility", comment: ""),
-            met, entries.count
+        Text(
+            entries
+                .map { entry in
+                    entry.muscleGroup.description + ", "
+                        + String(
+                            format: NSLocalizedString("muscleBalanceSetsOfTarget", comment: ""),
+                            entry.setsPerWeek, entry.target
+                        )
+                }
+                .joined(separator: "; ")
         )
-        let short = entries.filter { $0.goalState == .under }
-            .sorted { ($0.goalFraction ?? 0) < ($1.goalFraction ?? 0) }
-            .prefix(2)
-            .map(\.muscleGroup.description)
-        guard !short.isEmpty else { return Text(base) }
-        return Text(base + ", " + short.joined(separator: ", "))
     }
 }
 
-/// One muscle group's filling track, normalised to its own target — the shared bar behind both the
-/// chart above and the overview's cells, so the two can never drift apart.
+/// One muscle group's filling track, normalised to its own target — the bar behind every balance
+/// chart, so the tile and the Muscle Groups screen can never draw a group differently.
 struct MuscleBalanceTrack: View {
     let entry: MuscleBalanceEntry
     var badgeDiameter: CGFloat = 13
@@ -85,142 +94,50 @@ struct MuscleBalanceTrack: View {
             // parked every badge on the floor.
             .overlay {
                 if isMet {
-                    badge(for: entry.goalState, color: color)
+                    MuscleBalanceGoalBadge(state: entry.goalState, color: color, diameter: badgeDiameter)
                 }
             }
         }
-    }
-
-    /// The verdict, centred on the filled track. Solid on a translucent fill so it reads as a badge
-    /// rather than part of the bar.
-    private func badge(for state: MuscleBalanceGoalState, color: Color) -> some View {
-        ZStack {
-            Circle().fill(color)
-            Image(systemName: state == .over ? "chevron.up.2" : "checkmark")
-                .font(.system(size: badgeDiameter * (state == .over ? 0.48 : 0.56), weight: .black))
-                .foregroundStyle(Color.background)
-        }
-        .frame(width: badgeDiameter, height: badgeDiameter)
     }
 }
 
-/// One muscle group as a compact cell for the Muscle Groups grid: the name at the top, the group's
-/// weekly sets over its weekly target ("7/10") at the bottom-leading corner, and its filling track
-/// standing full height on the trailing edge.
-///
-/// The track is literally `MuscleBalanceTrack`, the same bar the hero chart above draws, badge and
-/// all: a cell and its bar in the hero say the same thing in the same shape, and the verdict glyph
-/// lives in one place instead of being repeated beside the name.
-///
-/// A reading only: the cell opens nothing, so it wears no chevron.
-struct MuscleBalanceGoalCell: View {
-    let entry: MuscleBalanceEntry
-    /// A group the user turned off. It keeps its place in the grid — the editor keeps it in place as
-    /// "Off" too, so nothing shifts between the two screens — but has no share to read against a
-    /// target: its name gives up its colour, the value says Off, and the track stands empty.
-    var isExcluded: Bool = false
+/// A verdict as a glyph in a filled circle — a check at target, a double chevron past it, a chevron
+/// down short of it. Solid on a translucent fill so it reads as a badge rather than part of a bar, and
+/// the same mark heads each section of the Muscle Groups list, so a section and its bars share a sign.
+struct MuscleBalanceGoalBadge: View {
+    let systemImage: String
+    /// The disc. `nil` draws the neutral one the section headers use.
+    var color: Color? = nil
+    var diameter: CGFloat = 13
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    init(systemImage: String, color: Color? = nil, diameter: CGFloat = 13) {
+        self.systemImage = systemImage
+        self.color = color
+        self.diameter = diameter
+    }
 
-    /// One height for every cell, so a grid row stays even and every track is measured against the
-    /// same span. Dropped at accessibility sizes, where the text has to be free to grow.
-    private static let height: CGFloat = 104
-    /// The track's height once the cell is no longer fixed-height: it can't fill the leftover space,
-    /// so it takes a flat height rather than collapsing.
-    private static let accessibilityTrackHeight: CGFloat = 72
-    /// Roughly the hero chart's own width-to-height ratio at this cell's height (its tracks run about
-    /// 37×130), so the tile's bar reads as one of those bars rather than a thinner cousin.
-    private static let trackWidth: CGFloat = 24
-    /// Narrower than the track, like the hero's badges — the bar has to stay visible around it.
-    private static let badgeDiameter: CGFloat = 16
+    init(state: MuscleBalanceGoalState, color: Color? = nil, diameter: CGFloat = 13) {
+        self.init(systemImage: Self.symbol(for: state), color: color, diameter: diameter)
+    }
 
-    private var usesFixedHeight: Bool { !dynamicTypeSize.isAccessibilitySize }
+    static func symbol(for state: MuscleBalanceGoalState) -> String {
+        switch state {
+        case .under: return "chevron.down"
+        case .met: return "checkmark"
+        case .over: return "chevron.up.2"
+        }
+    }
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 12) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text(entry.muscleGroup.description)
-                    .font(.system(.subheadline, design: .rounded, weight: .bold))
-                    .foregroundStyle(isExcluded ? Color.secondaryLabel : entry.muscleGroup.color)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                Spacer(minLength: 10)
-                if isExcluded {
-                    Text(NSLocalizedString("musclePriorityOff", comment: ""))
-                        .font(.title.weight(.bold))
-                        .fontDesign(.rounded)
-                        .foregroundStyle(Color.secondaryLabel)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                } else {
-                    share
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            if isExcluded {
-                Capsule(style: .continuous)
-                    .fill(Color.label.opacity(0.07))
-                    .frame(width: Self.trackWidth)
-                    .frame(maxHeight: usesFixedHeight ? .infinity : Self.accessibilityTrackHeight)
-            } else {
-                track
-            }
+        ZStack {
+            Circle().fill(color ?? Color.fill)
+            Image(systemName: systemImage)
+                // A check fills its box; chevrons and a minus read heavier, so they draw smaller.
+                .font(.system(size: diameter * (systemImage == "checkmark" ? 0.56 : 0.48), weight: .black))
+                .foregroundStyle(color == nil ? Color.label : Color.background)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 11)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: usesFixedHeight ? Self.height : nil)
-        .secondaryTileStyle()
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            Text(
-                isExcluded
-                    ? entry.muscleGroup.description + ", " + NSLocalizedString("musclePriorityOff", comment: "")
-                    : entry.muscleGroup.description + ", "
-                        + String(format: NSLocalizedString("muscleBalanceSetsOfTarget", comment: ""), entry.setsPerWeek, entry.target)
-            )
-        )
-    }
-
-    /// "7/10" over "sets per week": the group's weekly sets over its weekly target, in the goal shape
-    /// every other count on these screens uses — 4/8 groups above it. Neutral like every other value in
-    /// the app: the name and the track already carry the group's colour, and a coloured number would
-    /// read as a verdict of its own.
-    private var share: some View {
-        VStack(alignment: .leading, spacing: 1) {
-            HStack(alignment: .lastTextBaseline, spacing: 0) {
-                Text("\(entry.setsPerWeek)")
-                    .font(.title.weight(.bold))
-                    .foregroundStyle(Color.label)
-                Text("/\(entry.target)")
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(Color.secondaryLabel)
-            }
-            .fontDesign(.rounded)
-            .monospacedDigit()
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
-            Text(NSLocalizedString("setsPerWeekCaption", comment: ""))
-                .font(.caption2)
-                .foregroundStyle(Color.secondaryLabel)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-    }
-
-    /// Fills the cell's height at normal sizes; at accessibility sizes the cell grows with its text,
-    /// so the track takes a fixed height instead (a `GeometryReader` given no height to work with
-    /// would have nothing to divide).
-    @ViewBuilder
-    private var track: some View {
-        if usesFixedHeight {
-            MuscleBalanceTrack(entry: entry, badgeDiameter: Self.badgeDiameter)
-                .frame(width: Self.trackWidth)
-                .frame(maxHeight: .infinity)
-        } else {
-            MuscleBalanceTrack(entry: entry, badgeDiameter: Self.badgeDiameter)
-                .frame(width: Self.trackWidth, height: Self.accessibilityTrackHeight)
-        }
+        .frame(width: diameter, height: diameter)
+        .accessibilityHidden(true)
     }
 }
 
@@ -228,11 +145,10 @@ struct MuscleBalanceGoalCell: View {
     FetchRequestWrapper(Workout.self) { workouts in
         let calculator = MuscleBalanceCalculator(workouts: workouts, focus: .default, weeks: 4)
         VStack(spacing: 24) {
-            MuscleBalanceTrackChart(entries: calculator.goalEntries)
+            MuscleBalanceTrackChart(entries: calculator.rankedEntries, labelSize: 8.5)
                 .frame(height: 90)
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
-                ForEach(calculator.goalEntries) { MuscleBalanceGoalCell(entry: $0) }
-            }
+            MuscleBalanceTrackChart(entries: calculator.rankedEntries, spacing: 10, badgeDiameter: 22)
+                .frame(height: 160)
         }
         .padding()
     }

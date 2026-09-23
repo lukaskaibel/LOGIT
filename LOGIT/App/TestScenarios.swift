@@ -83,7 +83,11 @@ enum TestScenario: String {
         // the views fall back to their defaults.
         overrides["pinnedExercises"] = "cleared"
         overrides["pinnedMeasurements"] = "cleared"
-        overrides["muscleFocus"] = "cleared"
+        if let seededFocus = Self.seededMuscleFocus(goal: overrides["workoutPerWeekTarget"]) {
+            overrides["muscleFocus"] = seededFocus
+        } else {
+            overrides["muscleFocus"] = "cleared"
+        }
         overrides["muscleTargetSplit"] = "cleared"
         // Force the default exercises/templates to import into the fresh
         // in-memory store even though the persistent domain records them as
@@ -98,6 +102,27 @@ enum TestScenario: String {
         overrides["wasPromptedToRateApp"] = true
 
         UserDefaults.standard.setVolatileDomain(overrides, forName: UserDefaults.argumentDomain)
+    }
+
+    /// `-UITEST_MUSCLE_FOCUS <preset>[@<workouts>]` starts the session with that training focus already
+    /// chosen — sized for the scenario's weekly goal, or for `<workouts>` a week to stage the offer to
+    /// rescale (`-SCENARIO many -UITEST_MUSCLE_FOCUS fullBody@3` sizes for 3 under a goal of 4).
+    /// Without it every scenario starts with no focus chosen, like a new install.
+    private static func seededMuscleFocus(goal: Any?) -> Data? {
+        let args = ProcessInfo.processInfo.arguments
+        guard let index = args.firstIndex(of: "-UITEST_MUSCLE_FOCUS"), args.indices.contains(index + 1) else {
+            return nil
+        }
+        let parts = args[index + 1].split(separator: "@").map(String.init)
+        guard let preset = MuscleFocusPreset(rawValue: parts[0]) else {
+            NSLog("TestScenario: unknown muscle focus '%@'", parts[0])
+            return nil
+        }
+        let scenarioGoal = (goal as? Int).flatMap { $0 > 0 ? $0 : nil }
+            ?? (goal as? String).flatMap(Int.init).flatMap { $0 > 0 ? $0 : nil }
+        let sizedFor = parts.count > 1 ? Int(parts[1]) : scenarioGoal
+        let focus = preset.focus(forWorkoutsPerWeek: sizedFor ?? MuscleFocus.baseWorkoutsPerWeek)
+        return try? JSONEncoder().encode(focus)
     }
 
     // MARK: - Seeding

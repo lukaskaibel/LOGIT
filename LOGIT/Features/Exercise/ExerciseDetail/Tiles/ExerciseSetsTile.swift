@@ -11,9 +11,10 @@ import SwiftUI
 /// The weekly *sets* tile on the exercise detail screen, sitting beside the weekly Volume tile and
 /// sharing its shape. Where Volume answers "how much total weight did I move this week", this
 /// answers "how many working sets did I do this week" — the standard training-volume landmark (the
-/// "10–20 sets per week" guideline). Like Volume it compares this week against last week, wears the
-/// trophy when this week already tops every previous one, and excludes the sets of the workout
-/// currently being recorded so the tile tells the standing going *into* this session.
+/// "10–20 sets per week" guideline). Like Volume it draws five calendar weeks with this one
+/// highlighted — no percentage against last week, which would read as a collapse every Monday — and
+/// excludes the sets of the workout currently being recorded so the tile tells the standing going
+/// *into* this session.
 struct ExerciseSetsTile: View {
     let exercise: Exercise
     let workoutSets: [WorkoutSet]
@@ -28,12 +29,6 @@ struct ExerciseSetsTile: View {
         let sets = workoutSets.filter { $0.workout?.isCurrentWorkout != true }
         let weeklySets = weeklySets(in: sets)
         let thisWeekCount = count(in: weeklySets, equalTo: .now)
-        let lastWeek = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: .now) ?? .now
-        let lastWeekCount = count(in: weeklySets, equalTo: lastWeek)
-        // Baseline for the trend pill: last week, or — when last week was a rest week — the best
-        // earlier week, so the pill stays present whenever there's any prior week to compare to.
-        let bestPriorWeekCount = weeklySets.filter { $0.week < Date.now.startOfWeek }.map(\.count).max() ?? 0
-        let countBaseline = lastWeekCount > 0 ? lastWeekCount : bestPriorWeekCount
         // No sets in the chart's five-week window but some further back: untrained for over a month.
         // Fall back to the "last best" — the most recent trained week's set count, dated — to match
         // the four best-value tiles, instead of a "0" floating above an empty chart.
@@ -51,15 +46,7 @@ struct ExerciseSetsTile: View {
             // A count needs no unit — the title ("Sets") and label ("This Week") carry the meaning,
             // and an empty unit renders as nothing through UnitView.
             unit: "",
-            accent: AnyShapeStyle(muscleColor),
             accentColor: muscleColor,
-            // This week against the baseline. With a real baseline but nothing logged this week yet,
-            // that's a genuine "down 100%" — zero work, not missing data — so the pill says so rather
-            // than disappearing. A fully lapsed exercise drops the pill for the last-best date instead.
-            percentChange: countBaseline > 0 && !isLapsed
-                ? (Double(thisWeekCount) - Double(countBaseline)) / Double(countBaseline) * 100
-                : nil,
-            isRecord: isRecordWeek(count: thisWeekCount, in: weeklySets),
             requiresPro: true,
             lastBestDate: lastBestDate,
             showsEmptyPlaceholder: weeklySets.isEmpty,
@@ -107,7 +94,7 @@ struct ExerciseSetsTile: View {
     // MARK: - Weekly Sets
 
     /// Working-set count per trained week across the exercise's whole history, oldest → newest —
-    /// the chart shows the last five, the trend and record check need them all. A set counts only
+    /// the chart shows the last five, the lapsed check needs them all. A set counts only
     /// when it has an entry (`hasEntry`); empty, unfilled sets aren't training volume. Weeks that
     /// end up with no completed set are dropped so they can't render as invisible bars.
     private func weeklySets(in sets: [WorkoutSet]) -> [WeeklySets] {
@@ -123,15 +110,6 @@ struct ExerciseSetsTile: View {
         }?.count ?? 0
     }
 
-    /// A record week has to *beat* every previous week, not just match the best — and there has to
-    /// be a previous week to beat, or the first trained week would be a record by default.
-    private func isRecordWeek(count: Int, in weeklySets: [WeeklySets]) -> Bool {
-        let bestPreviousWeek = weeklySets
-            .filter { $0.week < Date.now.startOfWeek }
-            .map(\.count)
-            .max() ?? 0
-        return count > 0 && bestPreviousWeek > 0 && count > bestPreviousWeek
-    }
 }
 
 private struct PreviewWrapperView: View {

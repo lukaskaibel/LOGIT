@@ -235,6 +235,14 @@ struct WorkoutRecorderScreen: View {
             .toolbar(.hidden, for: .navigationBar)
             .toolbar {
                 KeyboardToolbarItem(onRowBottom: { sheetGeometry.keyboardRowBottomY = $0 }) {
+                    FloatingChronoKeyboardTapTargets(sheetGeometry: sheetGeometry) { control in
+                        switch control {
+                        case .timer: isShowingChronoSheet = true
+                        case .playPause:
+                            chronograph.status == .running ? pauseChronograph() : resumeChronograph()
+                        case .stop: stopChronograph()
+                        }
+                    }
                     keyboardToolbarContent
                 }
             }
@@ -538,8 +546,9 @@ struct WorkoutRecorderScreen: View {
                     sheetGeometry: sheetGeometry,
                     isAtSmallDetent: exerciseSelectionPresentationDetent == .height(BOTTOM_SHEET_SMALL),
                     onOpenChronoSheet: { isShowingChronoSheet = true },
-                    onStopStopwatch: stopStopwatch,
-                    onCancelTimer: cancelTimer
+                    onPauseChronograph: pauseChronograph,
+                    onResumeChronograph: resumeChronograph,
+                    onStopChronograph: stopChronograph
                 )
             }
             .onGeometryChange(for: CGFloat.self) {
@@ -1174,19 +1183,31 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
-    private func stopStopwatch() {
-        guard chronograph.mode == .stopwatch else { return }
+    /// Holds the rest rather than ending it: `activeRestTimerSet` stays, so resuming continues
+    /// the same set's rest and nothing is recorded until it is stopped.
+    private func pauseChronograph() {
+        guard chronograph.status == .running else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        workoutRecorder.endRest(
-            using: chronograph,
-            reason: .stopped,
-            recordingMode: AutoRestSettings.recordingMode()
-        )
+        chronograph.stop()
     }
 
-    private func cancelTimer() {
-        guard chronograph.mode == .timer else { return }
+    private func resumeChronograph() {
+        guard chronograph.status == .paused, chronographCanResume else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        chronograph.start()
+    }
+
+    /// A paused timer with nothing left on the clock has nothing to resume — `start()` would
+    /// fire it on the first tick.
+    private var chronographCanResume: Bool {
+        !(chronograph.mode == .timer && Int(chronograph.seconds) == 0)
+    }
+
+    /// Ends the rest in either mode, running or paused, through the same funnel as every other
+    /// exit. Heavier than pause/resume: this one is final.
+    private func stopChronograph() {
+        guard chronograph.status != .idle else { return }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         workoutRecorder.endRest(
             using: chronograph,
             reason: .stopped,
@@ -1370,6 +1391,9 @@ final class RecorderSheetGeometry: ObservableObject {
     @Published var toolbarOpacity: CGFloat = 1
     @Published var animationDuration: CGFloat = 0
     @Published var safeAreaBottomInset: CGFloat = 0
+    /// Where each floating control is parked beside the keyboard accessory, in global
+    /// coordinates — empty whenever no keyboard is up. See `FloatingChronoKeyboardTapTargets`.
+    @Published var parkedControlFrames: [FloatingChronoControl: CGRect] = [:]
     private var mediumSheetHeight: CGFloat = 0
 
     func update(sheetHeight newHeight: CGFloat, previousHeight: CGFloat, isAtMediumDetent: Bool) {
@@ -1392,7 +1416,7 @@ final class RecorderSheetGeometry: ObservableObject {
     }
 }
 
-/// The floating timer/stopwatch button (with its stop/cancel companion) and the placement math
+/// The floating timer/stopwatch button (with its pause/play and stop companions) and the placement math
 /// that tracks the persistent sheet. Isolated from the recorder screen so the chronograph's
 /// frequent publishes and the per-frame sheet-geometry updates re-render only this small
 /// overlay, never the whole recorder tree.
@@ -1404,8 +1428,9 @@ private struct FloatingChronoControlsOverlay: View {
     @ObservedObject var sheetGeometry: RecorderSheetGeometry
     let isAtSmallDetent: Bool
     let onOpenChronoSheet: () -> Void
-    let onStopStopwatch: () -> Void
-    let onCancelTimer: () -> Void
+    let onPauseChronograph: () -> Void
+    let onResumeChronograph: () -> Void
+    let onStopChronograph: () -> Void
 
     /// Whether a keyboard is on screen. What the slide is keyed on — and what keeps the controls
     /// visible while it happens, since the tray's measured height spikes and re-settles as a
@@ -1415,6 +1440,9 @@ private struct FloatingChronoControlsOverlay: View {
     /// Measured, not assumed: the controls are a plain circle while idle and a wide pill while a
     /// rest counts down, and the slide has to land on the leading edge either way.
     @State private var controlsWidth: CGFloat = 0
+
+    /// Where each button actually is, for the keyboard accessory's tap targets.
+    @State private var controlFrames: [FloatingChronoControl: CGRect] = [:]
 
     /// Leading inset while the keyboard is up — the same margin the accessory row's capsules keep
     /// on the other side, so the two read as one row.
@@ -1451,27 +1479,74 @@ private struct FloatingChronoControlsOverlay: View {
             ) { notification in
                 withAnimation(.keyboard(from: notification)) { isKeyboardVisible = false }
             }
+            .onChange(of: isKeyboardVisible) { publishParkedFrames() }
+            .onChange(of: controlFrames) { publishParkedFrames() }
+    }
+
+    /// Parked, these controls sit under the keyboard accessory's row, which lives in the
+    /// keyboard's own window above the app and takes every touch across its full width — so the
+    /// row can only pass a tap on to them if it knows where they are.
+    private func publishParkedFrames() {
+        let frames = isKeyboardVisible ? controlFrames : [:]
+        if sheetGeometry.parkedControlFrames != frames { sheetGeometry.parkedControlFrames = frames }
+    }
+
+    /// Records `control`'s on-screen frame for as long as it is in the hierarchy.
+    private func tracked(_ view: some View, as control: FloatingChronoControl) -> some View {
+        view
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { controlFrames[control] = $0 }
+            .onDisappear { controlFrames[control] = nil }
     }
 
     private var controls: some View {
         HStack {
-            WorkoutRecorderFloatingTimerButton(
-                chronograph: chronograph,
-                workoutRecorder: workoutRecorder,
-                action: onOpenChronoSheet
+            tracked(
+                WorkoutRecorderFloatingTimerButton(
+                    chronograph: chronograph,
+                    workoutRecorder: workoutRecorder,
+                    action: onOpenChronoSheet
+                ),
+                as: .timer
             )
-            if chronograph.mode == .stopwatch, chronograph.status == .running {
-                WorkoutRecorderFloatingStopwatchStopButton(
-                    workoutRecorder: workoutRecorder,
-                    action: onStopStopwatch
+            // Running: pause. Paused: play, and only then stop beside it. The same in both
+            // modes, and one button across pause/play so its glyph morphs in place.
+            if chronograph.status != .idle {
+                let isRunning = chronograph.status == .running
+                tracked(
+                    WorkoutRecorderFloatingChronoTransportButton(
+                        workoutRecorder: workoutRecorder,
+                        systemImage: isRunning ? "pause.fill" : "play.fill",
+                        accessibilityLabel: NSLocalizedString(isRunning ? "pause" : "continue", comment: ""),
+                        isEnabled: isRunning || canResume,
+                        action: isRunning ? onPauseChronograph : onResumeChronograph
+                    )
+                    .accessibilityIdentifier("recorderFloatingChronoPlayPauseButton"),
+                    as: .playPause
                 )
-            } else if chronograph.mode == .timer, chronograph.status == .running {
-                WorkoutRecorderFloatingStopwatchStopButton(
-                    workoutRecorder: workoutRecorder,
-                    action: onCancelTimer
+                .transition(.scale(scale: 0.2).combined(with: .opacity))
+            }
+            if chronograph.status == .paused {
+                tracked(
+                    WorkoutRecorderFloatingChronoTransportButton(
+                        workoutRecorder: workoutRecorder,
+                        systemImage: "stop.fill",
+                        accessibilityLabel: NSLocalizedString("stop", comment: ""),
+                        action: onStopChronograph
+                    )
+                    .accessibilityIdentifier("recorderFloatingChronoStopButton"),
+                    as: .stop
                 )
+                .transition(.scale(scale: 0.2).combined(with: .opacity))
             }
         }
+        // Declarative, so a status flip from anywhere — the sheet, an auto rest starting, the
+        // timer running out — animates the pair, not only a tap here.
+        .animation(.spring(response: 0.34, dampingFraction: 0.84), value: chronograph.status)
+    }
+
+    /// A paused timer with nothing left on the clock has nothing to resume.
+    private var canResume: Bool {
+        !(chronograph.mode == .timer && Int(chronograph.seconds) == 0)
     }
 
     /// Hidden while the recorder is being dragged, and before the tray has been measured — but
@@ -1515,6 +1590,48 @@ private struct FloatingChronoControlsOverlay: View {
     private var bottomOffset: CGFloat {
         let base = sheetGeometry.safeAreaBottomInset - 10
         return isAtSmallDetent ? base - 10 : base
+    }
+}
+
+/// The floating chronograph's buttons, as the keyboard accessory's tap targets know them.
+enum FloatingChronoControl: Hashable {
+    case timer, playPause, stop
+}
+
+/// Invisible stand-ins for the parked floating controls, placed inside the keyboard accessory row.
+///
+/// That row is hosted in the keyboard's window, above the app's, and stretches the full width of
+/// the bar (see `KeyboardToolbar.idealWidth`). Its host claims every touch inside those bounds —
+/// empty space included — so with a keyboard up, a tap on the timer or a transport button parked
+/// in the row's leading space lands on the row and never reaches them. These targets sit on the
+/// buttons' measured frames and do what the buttons do. The buttons stay one view that slides;
+/// only their taps are answered from here.
+///
+/// Zero-sized in the row's layout, so the capsules don't move. Observes the sheet geometry itself
+/// so the frames' updates re-render only this, never the recorder.
+private struct FloatingChronoKeyboardTapTargets: View {
+    @ObservedObject var sheetGeometry: RecorderSheetGeometry
+    let onTap: (FloatingChronoControl) -> Void
+
+    @State private var origin: CGPoint = .zero
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .onGeometryChange(for: CGPoint.self) { $0.frame(in: .global).origin } action: { origin = $0 }
+            .overlay(alignment: .topLeading) {
+                ZStack(alignment: .topLeading) {
+                    ForEach(Array(sheetGeometry.parkedControlFrames), id: \.key) { control, frame in
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .frame(width: frame.width, height: frame.height)
+                            .onTapGesture { onTap(control) }
+                            .offset(x: frame.minX - origin.x, y: frame.minY - origin.y)
+                    }
+                }
+            }
+            // The real buttons are what VoiceOver (and UI tests) find; these are only for touch.
+            .accessibilityHidden(true)
     }
 }
 

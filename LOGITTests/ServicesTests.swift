@@ -1916,6 +1916,53 @@ final class AutoRestTests: XCTestCase {
         }
     }
 
+    // MARK: Pausing
+
+    func testPausingHoldsTheRestWithoutRecordingIt() {
+        // The floating pause button: the rest is held, not ended, so resuming continues the
+        // same set's rest.
+        let set = makeSet()
+        let chronograph = runningTimer(total: 90, elapsed: 20)
+        recorder.activeRestTimerSet = set
+
+        chronograph.stop()
+
+        XCTAssertEqual(chronograph.status, .paused)
+        XCTAssertEqual(chronograph.seconds, 70.99, accuracy: 0.001)
+        XCTAssertEqual(recorder.activeRestTimerSet, set)
+        XCTAssertEqual(set.restDurationSeconds, 0)
+    }
+
+    func testStoppingAPausedTimerRecordsWhatWasRested() {
+        for (mode, expected) in [(RestRecordingMode.elapsed, 20), (.fullDuration, 90)] {
+            let set = makeSet()
+            let chronograph = runningTimer(total: 90, elapsed: 20)
+            recorder.activeRestTimerSet = set
+            chronograph.stop()
+
+            recorder.endRest(using: chronograph, reason: .stopped, recordingMode: mode)
+
+            XCTAssertEqual(set.restDurationSeconds, expected, "\(mode)")
+            XCTAssertNil(recorder.activeRestTimerSet)
+            XCTAssertEqual(chronograph.status, .idle)
+        }
+    }
+
+    func testStoppingAPausedStopwatchRecordsWhatItMeasured() {
+        let set = makeSet()
+        let chronograph = Chronograph()
+        chronograph.mode = .stopwatch
+        chronograph.setSeconds(47.4)
+        chronograph.status = .running
+        recorder.activeRestTimerSet = set
+        chronograph.stop()
+
+        recorder.endRest(using: chronograph, reason: .stopped, recordingMode: .fullDuration)
+
+        XCTAssertEqual(set.restDurationSeconds, 47)
+        XCTAssertEqual(chronograph.status, .idle)
+    }
+
     // MARK: Re-arming
 
     func testCorrectingALoggedSetDoesNotRestartItsRest() {

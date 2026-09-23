@@ -16,6 +16,14 @@ public enum MuscleGroup: String, Codable, Identifiable, CaseIterable, Comparable
         NSLocalizedString(rawValue, comment: "")
     }
 
+    /// The group in two or three letters ("LE", "BA") — the label under a bar too narrow for the name,
+    /// and the lead of the group's row, so a bar and its row read as the same thing. Written per
+    /// locale rather than cut from the name: prefixes collide (Portuguese "Pernas" and "Peito"), and
+    /// Japanese and Korean need a character chosen, not truncated.
+    var abbreviation: String {
+        NSLocalizedString("muscleGroupAbbreviation_\(rawValue)", comment: "")
+    }
+
     public static func < (lhs: MuscleGroup, rhs: MuscleGroup) -> Bool {
         return lhs.rawValue > rhs.rawValue
     }

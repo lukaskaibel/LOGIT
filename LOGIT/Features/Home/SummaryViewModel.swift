@@ -36,7 +36,6 @@ final class SummaryViewModel: ObservableObject {
         /// Whether the current window had any workout to average — false renders the "––" no-data
         /// tile instead of a misleading "0", since there is no session to average.
         let hasData: Bool
-        let percentChange: Double?
         /// The selected window's bins in display units, oldest → newest — one per day, week or month
         /// of it (see `TrendWindow.bin`). Every one is in scope, so the tile draws them all in the
         /// accent; a zero is an untrained bin and draws no bar at all.
@@ -72,12 +71,11 @@ final class SummaryViewModel: ObservableObject {
     // MARK: - Core stats
 
     func statData(for metric: WorkoutStatMetric, window: TrendWindow, workouts: [Workout]) -> StatData {
-        // Two windows of bins in one strip: the newer half is what the tile draws and reports, the
-        // older half is the baseline its trend pill compares against. Binning both together — rather
-        // than filtering the workouts twice — keeps the two spans defined by exactly the same
-        // boundaries, which is what makes "up 8%" mean "this window against the one before it".
-        let perWindow = window.binsPerWindow
-        let ranges = window.binRanges(count: perWindow * 2)
+        // One window of bins — exactly what the tile draws. It used to bin two windows, the older
+        // half serving only as the trend pill's baseline; with the pill gone the window before this
+        // one has no reader, and the comparison it fed lives on the detail screen, which computes
+        // its own.
+        let ranges = window.binRanges(count: window.binsPerWindow)
         // Per bin: the metric summed and the non-empty workouts counted. The count is the per-workout
         // divisor — matching the "3 workouts" the weekly-goal pill counts, so the tile reads as "per
         // one of those". Empty workouts are excluded: they'd inflate the divisor while contributing
@@ -90,45 +88,24 @@ final class SummaryViewModel: ObservableObject {
             sums[index] += metric.rawValue(of: workout)
             counts[index] += 1
         }
-        let split = ranges.count - perWindow
-        let current = Self.aggregate(sums: sums, counts: counts, in: split ..< ranges.count)
-        let previous = Self.aggregate(sums: sums, counts: counts, in: 0 ..< split)
-        // Both windows need a session to compare — a window that has only just opened never reads as
-        // a collapse.
-        let percentChange: Double? = (current.count > 0 && previous.count > 0 && previous.average > 0)
-            ? (current.average - previous.average) / previous.average * 100
-            : nil
+        // The window's per-workout average: the metric summed over the sessions that produced it,
+        // never the mean of the bins' own averages — that would weight a day holding one workout the
+        // same as a day holding two.
+        let totalSum = sums.reduce(0, +)
+        let totalCount = counts.reduce(0, +)
         return StatData(
-            rawAverage: current.average,
-            hasData: current.count > 0,
-            percentChange: percentChange,
-            // Only the current window's bins are drawn — the older half exists purely as the pill's
-            // baseline, and drawing it would put bars outside the timeframe back on the tile.
-            bins: (split ..< ranges.count).map { index in
+            rawAverage: StatBasis.perWorkout.aggregate(sum: totalSum, count: totalCount),
+            hasData: totalCount > 0,
+            bins: sums.indices.map { index in
                 metric.displayValue(
                     fromRaw: Int(StatBasis.perWorkout.aggregate(sum: sums[index], count: counts[index]).rounded())
                 )
             },
-            binRanges: Array(ranges[split ..< ranges.count]),
+            binRanges: ranges,
             historyFraction: window.historyFraction(
                 firstDataDate: workouts.lazy.filter { !$0.isEmpty }.compactMap(\.date).min()
             )
         )
-    }
-
-    /// A run of bins collapsed to one window's per-workout average: the metric summed over the
-    /// sessions that produced it. Never the mean of the bins' own averages — that would weight a day
-    /// holding one workout the same as a day holding two.
-    private static func aggregate(
-        sums: [Int], counts: [Int], in indices: Range<Int>
-    ) -> (average: Double, count: Int) {
-        var sum = 0
-        var count = 0
-        for index in indices where index >= 0 && index < sums.count {
-            sum += sums[index]
-            count += counts[index]
-        }
-        return (StatBasis.perWorkout.aggregate(sum: sum, count: count), count)
     }
 
     // MARK: - Weekly streak

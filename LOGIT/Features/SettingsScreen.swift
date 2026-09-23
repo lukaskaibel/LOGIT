@@ -66,6 +66,9 @@ struct SettingsScreen: View {
             }
             .padding(.horizontal)
         }
+        // The height field's decimal pad has no return key, and on iOS 27 the keyboard row below
+        // doesn't appear on this screen, so a swipe down the list has to be able to put it away.
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle(NSLocalizedString("settings", comment: ""))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {

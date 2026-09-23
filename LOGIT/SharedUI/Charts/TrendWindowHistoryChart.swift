@@ -297,17 +297,22 @@ struct TrendWindowHistoryChart: View {
             ForEach(bins) { bin in
                 bar(for: bin, dimmed: selected != nil)
             }
-            // The inspected bar, redrawn in colour over its grayed self, and the one mark in the
-            // strip carrying an annotation. Hanging the card off every bar and showing it for one
-            // meant several hundred annotations laid out per pass.
+            // The inspected bar, redrawn in colour over its grayed self.
             if let selected {
                 inspectedBar(for: selected)
             }
-            // The visible window's typical bar, as a dashed reference. Drawn last so it sits above the
-            // bars.
+            // The visible window's typical bar, as a dashed reference. Drawn after the bars so it sits
+            // above them.
             if let averageLine {
                 RuleMark(y: .value(NSLocalizedString("average", comment: ""), averageLine))
                     .averageLineStyle()
+            }
+            // The inspected bar's value card, on a mark of its own drawn after the dashed line. Hung
+            // off the bar itself, the card sat under the line, which struck through its text. And it
+            // is the one annotation in the strip: hanging a card off every bar and showing it for one
+            // meant several hundred annotations laid out per pass.
+            if let selected {
+                inspectedCard(for: selected)
             }
         }
         .chartXScale(domain: TrendWindow.stripEpoch ... TrendWindow.stripDate(forIndex: bins.count))
@@ -325,18 +330,31 @@ struct TrendWindowHistoryChart: View {
                 if let date = value.as(Date.self) {
                     let index = TrendWindow.stripIndex(for: date)
                     if let label = axis.byIndex[index] {
+                        let isNewest = index == bins.count - 1
                         AxisGridLine()
                             .foregroundStyle(Color.gray.opacity(0.4))
-                        // The newest bin hugs the right edge on first load, where a centred label is
-                        // silently clipped to half a date ("Au"). Hang that one trailing off its mark
-                        // so it renders whole; every other label centres under the bar it names.
-                        // Styling lives on the Text inside the closure — hierarchical styles on the
-                        // AxisMark resolve against the chart's accent on iOS 26 (labels turned lime).
-                        AxisValueLabel(anchor: index == bins.count - 1 ? .topTrailing : nil) {
-                            Text(label)
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(Color.secondaryLabel)
-                                .fixedSize()
+                        // A label runs from its mark towards the right. A mark scrolled just past the
+                        // leading edge still pushes its label into view, where the plot's edge cut it to
+                        // "ug 26", so only marks in view are labelled.
+                        if index >= ownLeadingBin {
+                            // The newest bin hugs the right edge on first load, where a label running
+                            // right is silently clipped to half a date ("Au"). Hang that one trailing off
+                            // its mark so it renders whole. It then runs left towards its neighbour, and
+                            // one stride is narrower than two dates on the four-week and three-month
+                            // strips ("Sep 16Sep 23"), so the labels resolve collisions greedily and
+                            // the newest goes first: "now" keeps its date and a neighbour that would
+                            // touch it gives way.
+                            // Styling lives on the Text inside the closure — hierarchical styles on the
+                            // AxisMark resolve against the chart's accent on iOS 26 (labels turned lime).
+                            AxisValueLabel(
+                                anchor: isNewest ? .topTrailing : nil,
+                                collisionResolution: .greedy(priority: isNewest ? 1 : 0, minimumSpacing: 8)
+                            ) {
+                                Text(label)
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(Color.secondaryLabel)
+                                    .fixedSize()
+                            }
                         }
                     }
                 }
@@ -395,9 +413,8 @@ struct TrendWindowHistoryChart: View {
         .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
     }
 
-    /// The inspected bar and its value card, drawn over the grayed strip in the chart's own colour —
-    /// unstacked, so it covers the bar it repeats instead of sitting on top of it (see
-    /// `bar(for:dimmed:)`).
+    /// The inspected bar, drawn over the grayed strip in the chart's own colour — unstacked, so it
+    /// covers the bar it repeats instead of sitting on top of it (see `bar(for:dimmed:)`).
     private func inspectedBar(for bin: TrendWindowBin) -> some ChartContent {
         BarMark(
             x: .value("Bin", bin.stripDate, unit: .day),
@@ -407,6 +424,18 @@ struct TrendWindowHistoryChart: View {
         )
         .foregroundStyle(selectionStyle ?? barStyle)
         .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+    }
+
+    /// The inspected bar's value card, carried by a clear copy of the bar so it hangs exactly where
+    /// the bar's own annotation would, but in the layer above the dashed average line.
+    private func inspectedCard(for bin: TrendWindowBin) -> some ChartContent {
+        BarMark(
+            x: .value("Bin", bin.stripDate, unit: .day),
+            y: .value(valueLabel, bin.value),
+            width: .ratio(0.6),
+            stacking: .unstacked
+        )
+        .foregroundStyle(Color.clear)
         .annotation(
             position: annotationPosition(for: bin),
             overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))

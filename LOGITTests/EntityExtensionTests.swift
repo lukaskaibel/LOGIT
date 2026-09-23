@@ -513,6 +513,29 @@ final class EntityExtensionTests: XCTestCase {
         XCTAssertEqual(entry.distanceMm, 40_250, "…while the precise value is untouched")
     }
 
+    /// A device still on an older version edits only the legacy attribute. Its edit is the newer
+    /// one, so it has to win over the millisecond value it left behind — which used to go on
+    /// showing the old time, and a cleared set kept showing a value.
+    func testAnEditFromAnOlderVersionWinsOverTheStaleFineValue() throws {
+        let set = database.newStandardSet(repetitions: 0, weight: 0)
+        set.overrideMeasurementType(.distanceAndDuration)
+        let entry = try XCTUnwrap(set.entries.first)
+        entry.durationMs = 12_340
+        entry.distanceMm = 40_250
+
+        // What a pre-v11 writer does: whole seconds and meters, nothing else.
+        entry.duration = 15
+        entry.distance = 42
+        XCTAssertEqual(entry.durationMs, 15_000)
+        XCTAssertEqual(entry.distanceMm, 42_000)
+
+        entry.duration = 0
+        entry.distance = 0
+        XCTAssertEqual(entry.durationMs, 0)
+        XCTAssertEqual(entry.distanceMm, 0)
+        XCTAssertFalse(entry.hasValue, "a set cleared on the older device reads as cleared")
+    }
+
     /// Clearing has to clear both representations — a stale mirror would resurrect the value on
     /// an older device.
     func testClearingZeroesBothRepresentations() throws {

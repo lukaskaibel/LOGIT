@@ -19,6 +19,12 @@ import Foundation
 /// Deliberately *not* built on `NSDataDetector`: it reads a bare "2024" as the
 /// time 20:24 and guesses wildly outside English, which makes search-as-you-type
 /// unpredictable. Everything here is explicit and unit-tested instead.
+///
+/// A name beats a guessed date. A month or weekday typed only in part ("mit",
+/// "Di", "dec") stays text when a word in an exercise or template name starts
+/// with it, so "Bankdrücken mit Kurzhanteln" and "Dips" still find the exercise
+/// instead of turning into Wednesday and Tuesday. A name typed in full
+/// ("Mittwoch", "December") is always a date.
 struct SearchQueryParser {
 
     // MARK: - Configuration
@@ -26,18 +32,25 @@ struct SearchQueryParser {
     private let calendar: Calendar
     private let locale: Locale
     private let now: () -> Date
+    private let nameWords: NameWords
 
     /// The oldest and newest year a bare four-digit number is read as a year.
     private static let yearRange = 1900...2100
 
+    /// - Parameter names: the exercise and template names a partly typed date word must not
+    ///   swallow (see the type's documentation). Workout names are left out on purpose: they are
+    ///   generated from the weekday ("Wednesday Afternoon Workout"), so every weekday abbreviation
+    ///   would start one of them and could never be a date.
     init(
         calendar: Calendar = .current,
         locale: Locale = .current,
-        now: @escaping () -> Date = { Date.now }
+        now: @escaping () -> Date = { Date.now },
+        names: [String] = []
     ) {
         self.calendar = calendar
         self.locale = locale
         self.now = now
+        self.nameWords = NameWords(names: names, locale: locale)
     }
 
     // MARK: - Parsing
@@ -73,28 +86,43 @@ struct SearchQueryParser {
         case month(Int)
         /// A year still looking for a month next to it.
         case year(Int)
-        /// The second word of a two-word phrase like "last week".
+        /// A later word of a phrase like "last week".
         case consumed
     }
+
+    /// The most words a relative phrase runs to — "La semaine dernière", "Il mese scorso".
+    private static let longestPhraseWordCount = 3
 
     private func classify(_ words: [String]) -> [ClassifiedWord] {
         var result = [ClassifiedWord]()
         var index = 0
         while index < words.count {
-            // Two-word relative phrases ("last week") before single words, so
-            // "last" is never read on its own.
-            if index + 1 < words.count,
-               let token = relativeToken(for: "\(words[index]) \(words[index + 1])")
-            {
-                result.append(.token(token))
-                result.append(.consumed)
-                index += 2
+            // Multi-word relative phrases before single words, longest first, so "last" is never
+            // read on its own and the "dernière" of "La semaine dernière" is not read again as the
+            // start of "Dernière année".
+            if let phrase = phraseToken(in: words, at: index) {
+                result.append(.token(phrase.token))
+                result.append(contentsOf: Array(repeating: .consumed, count: phrase.wordCount - 1))
+                index += phrase.wordCount
                 continue
             }
             result.append(classify(words[index]))
             index += 1
         }
         return result
+    }
+
+    /// The relative phrase starting at `index` that spans two or more words, preferring the longest.
+    private func phraseToken(in words: [String], at index: Int) -> (token: SearchDateToken, wordCount: Int)? {
+        let longest = min(Self.longestPhraseWordCount, words.count - index)
+        guard longest >= 2 else { return nil }
+        for count in stride(from: longest, through: 2, by: -1) {
+            let phrase = words[index ..< index + count].joined(separator: " ")
+            if let token = relativeToken(for: phrase) {
+                return (token, count)
+            }
+        }
+        return nil
     }
 
     private func classify(_ word: String) -> ClassifiedWord {
@@ -129,11 +157,24 @@ struct SearchQueryParser {
     }
 
     private func month(for word: String) -> Int? {
-        uniqueIndex(of: word, in: tables.months)
+        guard let month = uniqueIndex(of: word, in: tables.months),
+              isDateRatherThanName(word, fullNames: tables.fullMonthNames)
+        else { return nil }
+        return month
     }
 
     private func weekday(for word: String) -> Int? {
-        uniqueIndex(of: word, in: tables.weekdays)
+        guard let weekday = uniqueIndex(of: word, in: tables.weekdays),
+              isDateRatherThanName(word, fullNames: tables.fullWeekdayNames)
+        else { return nil }
+        return weekday
+    }
+
+    /// Whether a word that reads as a date should be taken as one. A name typed in full always is;
+    /// anything shorter gives way to an exercise or template name that one of its words starts with.
+    private func isDateRatherThanName(_ word: String, fullNames: Set<String>) -> Bool {
+        let normalized = normalize(word)
+        return fullNames.contains(normalized) || !nameWords.hasWord(startingWith: normalized)
     }
 
     /// The 1-based index a word points at, but only when every symbol it could be
@@ -213,14 +254,32 @@ struct SearchQueryParser {
 
     // MARK: - Relative phrases
 
+    /// Matches with the spaces taken out on both sides, so "이번주" finds "이번 주" and the words
+    /// of a phrase can be split however the keyboard split them. A phrase may be typed in part once
+    /// three characters are in; one of only two characters (ja 今日, ko 오늘) has to be typed in full.
     private func relativeToken(for phrase: String) -> SearchDateToken? {
-        let normalized = normalize(phrase)
-        guard normalized.count >= 3 else { return nil }
-        let matches = tables.relativePhrases.filter { $0.phrase.hasPrefix(normalized) }
+        let normalized = Self.removingSpaces(normalize(phrase))
+        guard !normalized.isEmpty else { return nil }
+        let matches = tables.relativePhrases.filter {
+            let candidate = Self.removingSpaces($0.phrase)
+            return normalized.count >= min(3, candidate.count) && candidate.hasPrefix(normalized)
+        }
         guard let first = matches.first,
               matches.allSatisfy({ $0.kind == first.kind })
         else { return nil }
+        // A single word only begun ("hie", "heu") gives way to a name that starts the same way; a
+        // phrase typed in full, or one spanning words, is a date.
+        let isComplete = matches.contains { Self.removingSpaces($0.phrase) == normalized }
+        if !isComplete, !phrase.contains(where: \.isWhitespace),
+           nameWords.hasWord(startingWith: normalized)
+        {
+            return nil
+        }
         return token(for: first.kind)
+    }
+
+    private static func removingSpaces(_ string: String) -> String {
+        string.filter { !$0.isWhitespace }
     }
 
     enum RelativeKind: Hashable {
@@ -294,6 +353,10 @@ struct SearchQueryParser {
     struct Tables {
         let months: [(symbol: String, index: Int)]
         let weekdays: [(symbol: String, index: Int)]
+        /// The months and weekdays written out in full ("dezember", "mittwoch"), which are dates
+        /// whatever a name in the library starts with.
+        let fullMonthNames: Set<String>
+        let fullWeekdayNames: Set<String>
         let relativePhrases: [(phrase: String, kind: RelativeKind)]
 
         private static let cache = Cache()
@@ -305,6 +368,9 @@ struct SearchQueryParser {
         static func normalize(_ string: String, locale: Locale) -> String {
             string
                 .folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: locale)
+                // The keyboard types a curly apostrophe ("aujourd’hui", "quest’anno") while the
+                // strings files use a straight one.
+                .replacingOccurrences(of: "\u{2019}", with: "'")
                 .trimmingCharacters(in: CharacterSet(charactersIn: ".,"))
         }
 
@@ -352,6 +418,8 @@ struct SearchQueryParser {
             weekdays = symbols([
                 \.weekdaySymbols, \.standaloneWeekdaySymbols, \.shortWeekdaySymbols, \.shortStandaloneWeekdaySymbols,
             ])
+            fullMonthNames = Set(symbols([\.monthSymbols, \.standaloneMonthSymbols]).map(\.symbol))
+            fullWeekdayNames = Set(symbols([\.weekdaySymbols, \.standaloneWeekdaySymbols]).map(\.symbol))
 
             // Every spelling of a relative phrase this device should understand:
             // the wording the app already prints for it (the same strings the
@@ -395,6 +463,28 @@ struct SearchQueryParser {
                   let bundle = Bundle(path: path)
             else { return .main }
             return bundle
+        }
+    }
+
+    // MARK: - Names
+
+    /// The words of the library's exercise and template names, normalised the way a typed word is.
+    /// Split and normalised on first use, because only a partly typed date word ever asks — most
+    /// keystrokes never do.
+    final class NameWords {
+        private let names: [String]
+        private let locale: Locale
+        private lazy var words: [String] = names
+            .flatMap { $0.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) }
+            .map { Tables.normalize(String($0), locale: locale) }
+
+        init(names: [String], locale: Locale) {
+            self.names = names
+            self.locale = locale
+        }
+
+        func hasWord(startingWith prefix: String) -> Bool {
+            !prefix.isEmpty && words.contains { $0.hasPrefix(prefix) }
         }
     }
 }

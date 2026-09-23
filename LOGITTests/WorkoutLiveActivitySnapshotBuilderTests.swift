@@ -142,6 +142,31 @@ final class WorkoutLiveActivitySnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(snapshot.primaryMetrics.weightSegmentPlaceholders, [false])
     }
 
+    func testAssistedWeightShowsTheLoggedAssistanceNotThePlan() throws {
+        let (database, builder) = createTestBuilder()
+        let workout = builder.createWorkout()
+        let template = database.newTemplate(name: "Pull Day")
+        let templateGroup = database.newTemplateSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: builder.createExercise(name: "Assisted Pull-up", muscleGroup: .back),
+            template: template
+        )
+        database.newTemplateStandardSet(repetitions: 8, weight: -30_000, setGroup: templateGroup)
+        workout.template = template
+
+        let workoutGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            exercise: templateGroup.exercise,
+            workout: workout
+        )
+        database.newStandardSet(repetitions: 0, weight: -20_000, setGroup: workoutGroup)
+
+        let snapshot = try XCTUnwrap(WorkoutLiveActivitySnapshotBuilder.build(for: workout))
+
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegments, ["-20"])
+        XCTAssertEqual(snapshot.primaryMetrics.weightSegmentPlaceholders, [false])
+    }
+
     func testTemplateBackedStandardSetUsesTemplateValuesWhenUntouched() throws {
         let (database, builder) = createTestBuilder()
         let workout = builder.createWorkout()

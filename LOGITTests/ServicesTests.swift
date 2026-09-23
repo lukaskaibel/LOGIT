@@ -560,7 +560,38 @@ final class WorkoutRecorderTests: XCTestCase {
         )
 
         XCTAssertEqual(trigger.triggerSet, lastSet)
-        XCTAssertEqual(trigger.repetitionEntrySetIDs, Set([setGroup.sets.first!.objectID, lastSet.objectID]))
+        XCTAssertEqual(trigger.repetitionEntrySetIDs, Set([setGroup.sets.first!.id!, lastSet.id!]))
+    }
+
+    func testAutoRestTriggerSetDoesNotReTriggerWhenASaveMakesTheSetsIDPermanent() throws {
+        // The recorder autosaves 1.5 s after an edit. A save swaps a new set's temporary objectID
+        // for a permanent one, and when the tally was keyed on objectID the same set read as
+        // newly logged: its rest started over, or a newer set's rest never started.
+        let workout = database.newWorkout(name: "Test")
+        let setGroup = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: false,
+            workout: workout
+        )
+        let workoutSet = database.newStandardSet(setGroup: setGroup)
+        let beforeEntry = workoutRecorder.repetitionEnteredSetIDs(in: workout)
+        workoutSet.entries.first?.repetitions = 8
+        let logged = workoutRecorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: beforeEntry,
+            preferredSet: workoutSet
+        )
+        XCTAssertEqual(logged.triggerSet, workoutSet)
+        XCTAssertTrue(workoutSet.objectID.isTemporaryID)
+
+        try database.context.obtainPermanentIDs(for: [workoutSet])
+        XCTAssertFalse(workoutSet.objectID.isTemporaryID)
+
+        let afterSave = workoutRecorder.autoRestTriggerSet(
+            in: workout,
+            previousRepetitionEntrySetIDs: logged.repetitionEntrySetIDs,
+            preferredSet: workoutSet
+        )
+        XCTAssertNil(afterSave.triggerSet)
     }
 
     func testEndStopwatchPersistsElapsedForActiveRestSet() {
@@ -1857,12 +1888,12 @@ final class AutoRestTests: XCTestCase {
 
     func testStoppingEarlyRecordsWhatWasActuallyRested() {
         let set = makeSet()
-        let chronograph = runningTimer(total: 90, elapsed: 8)
+        let chronograph = runningTimer(total: 90, elapsed: 18)
         recorder.activeRestTimerSet = set
 
         recorder.endRest(using: chronograph, reason: .stopped, recordingMode: .elapsed)
 
-        XCTAssertEqual(set.restDurationSeconds, 8)
+        XCTAssertEqual(set.restDurationSeconds, 18)
     }
 
     func testStoppingEarlyRecordsTheFullDurationWhenThatIsTheSetting() {
@@ -1875,19 +1906,43 @@ final class AutoRestTests: XCTestCase {
         XCTAssertEqual(set.restDurationSeconds, 90)
     }
 
-    func testStoppingInsideTheFirstSecondStillRecordsARest() {
-        // Used to record nothing at all, leaving the set with a blank rest.
+    func testARestUnderTenSecondsKeepsThePlannedRest() {
+        // Sets logged seconds apart each cut the previous rest short. Written down, the 2–3 s
+        // replaced the template's 2:00 and were copied on by Duplicate and Save as Template.
+        for reason in [RestEndReason.stopped, .superseded] {
+            let set = makeSet(rest: 120)
+            let chronograph = runningTimer(total: 120, elapsed: 3)
+            recorder.activeRestTimerSet = set
+
+            recorder.endRest(using: chronograph, reason: reason, recordingMode: .elapsed)
+
+            XCTAssertEqual(set.restDurationSeconds, 120, "\(reason) overwrote the plan")
+            XCTAssertNil(recorder.activeRestTimerSet)
+            XCTAssertEqual(chronograph.status, .idle)
+        }
+    }
+
+    func testARestUnderTenSecondsLeavesASetWithoutAPlanBlank() {
         let set = makeSet()
         let chronograph = Chronograph()
-        chronograph.mode = .timer
-        chronograph.setSeconds(90.99)
-        chronograph.seconds = 90.49
+        chronograph.mode = .stopwatch
+        chronograph.setSeconds(4)
         chronograph.status = .running
         recorder.activeRestTimerSet = set
 
-        recorder.endRest(using: chronograph, reason: .stopped, recordingMode: .elapsed)
+        recorder.endRest(using: chronograph, reason: .superseded, recordingMode: .elapsed)
 
-        XCTAssertEqual(set.restDurationSeconds, 1)
+        XCTAssertEqual(set.restDurationSeconds, 0)
+    }
+
+    func testTenSecondsIsARest() {
+        let set = makeSet(rest: 120)
+        let chronograph = runningTimer(total: 120, elapsed: WorkoutRecorder.shortestRecordedRestSeconds)
+        recorder.activeRestTimerSet = set
+
+        recorder.endRest(using: chronograph, reason: .superseded, recordingMode: .elapsed)
+
+        XCTAssertEqual(set.restDurationSeconds, WorkoutRecorder.shortestRecordedRestSeconds)
     }
 
     func testLoggingTheNextSetRecordsTheRestItInterrupts() {

@@ -1,1 +1,1 @@
-LOGIT 5.1 is here: one Summary for everything, a new Strength trend with its own detail screen, a rebuilt recorder, and Apple Health sync.
+LOGIT 5.2: a recorder that floats over your sets, effort ratings and notes for every workout, a Training Focus that shows what's behind, and more ways to log.

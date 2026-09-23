@@ -30,7 +30,8 @@ private enum LiveActivityPalette {
 
 /// One card, one job: while a set is being logged the activity is that exercise and its set row; while a
 /// timer or stopwatch runs it is the clock, with what comes next as a single quiet line underneath.
-struct WorkoutLiveActivityWidget: Widget {
+// Qualified because this file is also compiled into the app, where `Widget` is a Core Data entity.
+struct WorkoutLiveActivityWidget: SwiftUI.Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: WorkoutLiveActivityAttributes.self) { context in
             WorkoutLiveActivityLockScreenView(attributes: context.attributes, state: context.state)
@@ -82,7 +83,12 @@ struct WorkoutLiveActivityWidget: Widget {
 
 // MARK: - Lock Screen
 
-private struct WorkoutLiveActivityLockScreenView: View {
+/// Also compiled into the app, where `LiveActivityShowcaseView` draws the App Store screenshot with it — so
+/// the screenshot is the real Lock Screen card, not a replica that drifts when this one changes.
+struct WorkoutLiveActivityLockScreenView: View {
+    /// The card colour the system paints behind this view (`activityBackgroundTint`).
+    static let backgroundTint = LiveActivityPalette.card
+
     let attributes: WorkoutLiveActivityAttributes
     let state: WorkoutLiveActivityAttributes.ContentState
 

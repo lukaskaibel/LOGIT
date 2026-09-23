@@ -20,9 +20,13 @@ final class DatabaseRollbackTests: XCTestCase {
         // Unseeded throwaway store: these tests count the rows that are left, so the curated
         // preview dataset `isPreview: true` seeds would drown out what they create themselves.
         database = Database(inMemory: true)
+        // The temporary flag list lives in UserDefaults, so it outlives each test's store. Cancel no
+        // longer clears the whole list, so start every test from an empty one.
+        UserDefaults.standard.removeObject(forKey: "temporaryObjectIds")
     }
 
     override func tearDown() {
+        UserDefaults.standard.removeObject(forKey: "temporaryObjectIds")
         database = nil
         super.tearDown()
     }
@@ -215,6 +219,80 @@ final class DatabaseRollbackTests: XCTestCase {
             exercises.contains(importedExercise),
             "An imported exercise must not outlive the template it came in with"
         )
+    }
+
+    /// The temporary flag list is shared. A workout started from a scanned template keeps that
+    /// template and the exercises the scan invented flagged until the workout ends — so cancelling
+    /// an unrelated new template (built while that workout is minimized) must take only its own
+    /// rows, never the running workout's.
+    func testDiscardEditorChanges_cancellingANewTemplateSparesARunningWorkoutsTemporaryObjects() {
+        let scannedExercise = database.newExercise(name: "Scanned Lift", muscleGroup: .back)
+        let scannedTemplate = database.newTemplate(name: "Scanned")
+        _ = database.newTemplateSetGroup(
+            createFirstSetAutomatically: true,
+            exercise: scannedExercise,
+            template: scannedTemplate
+        )
+        let runningWorkout = database.newWorkout(name: "Scanned")
+        _ = database.newWorkoutSetGroup(
+            createFirstSetAutomatically: true,
+            exercise: scannedExercise,
+            workout: runningWorkout
+        )
+        database.context.performAndWait { try? database.context.save() }
+        database.flagAsTemporary(scannedExercise)
+        database.flagAsTemporary(scannedTemplate)
+
+        let newTemplate = database.newTemplate(name: "")
+        database.flagAsTemporary(newTemplate)
+        _ = database.newTemplateSetGroup(
+            createFirstSetAutomatically: true,
+            exercise: database.newExercise(name: "Brand New Lift", muscleGroup: .chest),
+            template: newTemplate
+        )
+        database.context.performAndWait { try? database.context.save() }
+
+        database.discardEditorChanges(to: newTemplate, wasAddedInEditor: true, setGroupOrderOnOpen: [])
+        drainContext()
+
+        let templates = database.fetch(Template.self) as? [Template] ?? []
+        let exercises = database.fetch(Exercise.self) as? [Exercise] ?? []
+        XCTAssertFalse(templates.contains(newTemplate), "The cancelled template should be gone")
+        XCTAssertTrue(templates.contains(scannedTemplate), "Cancel deleted the running workout's scanned template")
+        XCTAssertTrue(exercises.contains(scannedExercise), "Cancel deleted the running workout's scanned exercise")
+        XCTAssertTrue(
+            database.isTemporaryObject(scannedExercise),
+            "The running workout's exercise should stay flagged for the recorder to settle"
+        )
+        XCTAssertEqual(runningWorkout.setGroups.first?.exercise, scannedExercise)
+    }
+
+    /// An imported exercise the user also picked into another template belongs to that template
+    /// now, so cancelling the import must leave it in the library.
+    func testDiscardEditorChanges_keepsATemporaryExerciseAnotherTemplateUses() {
+        let importedExercise = database.newExercise(name: "Imported Lift", muscleGroup: .chest)
+        let otherTemplate = database.newTemplate(name: "Push")
+        _ = database.newTemplateSetGroup(
+            createFirstSetAutomatically: true,
+            exercise: importedExercise,
+            template: otherTemplate
+        )
+        let template = database.newTemplate(name: "")
+        _ = database.newTemplateSetGroup(
+            createFirstSetAutomatically: true,
+            exercise: importedExercise,
+            template: template
+        )
+        database.context.performAndWait { try? database.context.save() }
+        database.flagAsTemporary(template)
+        database.flagAsTemporary(importedExercise)
+
+        database.discardEditorChanges(to: template, wasAddedInEditor: true, setGroupOrderOnOpen: [])
+        drainContext()
+
+        let exercises = database.fetch(Exercise.self) as? [Exercise] ?? []
+        XCTAssertTrue(exercises.contains(importedExercise), "Another template still trains this exercise")
+        XCTAssertEqual(otherTemplate.setGroups.first?.exercise, importedExercise)
     }
 
     /// Nothing saved in between: the rollback alone still does the whole job, and Cancel must not

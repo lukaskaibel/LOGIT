@@ -289,7 +289,7 @@ final class DatabaseRollbackTests: XCTestCase {
         )
         database.context.performAndWait { try? database.context.save() }
 
-        database.discardEditorChanges(to: newTemplate, wasAddedInEditor: true, setGroupOrderOnOpen: [])
+        database.discardEditorChanges(to: newTemplate, wasAddedInEditor: true, setGroupsAddedInEditor: [])
         drainContext()
 
         let templates = database.fetch(Template.self) as? [Template] ?? []
@@ -324,7 +324,7 @@ final class DatabaseRollbackTests: XCTestCase {
         database.flagAsTemporary(template)
         database.flagAsTemporary(importedExercise)
 
-        database.discardEditorChanges(to: template, wasAddedInEditor: true, setGroupOrderOnOpen: [])
+        database.discardEditorChanges(to: template, wasAddedInEditor: true, setGroupsAddedInEditor: [])
         drainContext()
 
         let exercises = database.fetch(Exercise.self) as? [Exercise] ?? []

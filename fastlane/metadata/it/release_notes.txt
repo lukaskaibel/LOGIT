@@ -1,32 +1,30 @@
-LOGIT 5.1 raccoglie tutti i tuoi progressi in un unico Riepilogo, ricostruisce il registratore di allenamento e aggiunge nuovi modi per registrare ciò che alleni.
+LOGIT 5.2 cambia il modo in cui finisce un allenamento, dà un focus al tuo allenamento e aggiunge nuovi modi per registrare quello che fai.
 
-Un unico Riepilogo
-Questa settimana e Progressi ora sono un'unica schermata. Scegli il periodo una volta — 4 settimane, 3 mesi o un anno — e ogni riquadro, grafico e schermata di dettaglio lo segue.
+Un nuovo registratore
+L'intestazione dell'allenamento ora è un foglio che fluttua sopra le tue serie. Trascinala verso il basso per Riduci e Termina, e ancora più giù per le statistiche e una nota. Quando trascini giù l'intero registratore, ora segue il tuo dito: uno scorrimento veloce non lo riduce più per sbaglio.
 
-La forza a colpo d'occhio
-Un nuovo riquadro Forza apre il Riepilogo con il tuo andamento e porta a una schermata di dettaglio completa: i tuoi sollevamenti migliori, gli esercizi che spingono il cambiamento e un grafico che puoi tenere premuto per leggere qualsiasi punto.
+Chiudi in bellezza
+Terminando un allenamento vedi cosa hai ottenuto: il tuo obiettivo settimanale che si riempie, poi i nuovi record personali e i miglioramenti. Valuta il tuo sforzo sulla stessa scala di Apple Fitness (la valutazione arriva anche in Apple Salute) e aggiungi una nota per ricordare la sessione.
 
-Equilibrio muscolare, ricostruito
-La panoramica dei Gruppi muscolari mostra ora ogni gruppo come una barra che si riempie con la sua quota delle tue serie, così vedi a colpo d'occhio cosa alleni e cosa trascuri.
+Focus dell'allenamento
+Gli obiettivi di equilibrio muscolare ora sono serie a settimana per ogni gruppo muscolare. Scegli un focus, come Corpo intero, Parte superiore, Parte inferiore, Braccia e spalle o Cardio, e LOGIT adatta gli obiettivi alla tua settimana. Il Riepilogo indica i gruppi su cui sei indietro, e toccando una barra vedi il suo obiettivo e gli esercizi che lo compongono.
 
-La tua settimana, nel Riepilogo
-L'obiettivo settimanale è ora un arco con il tuo conteggio al centro, nella riga del titolo del Riepilogo. Toccalo e lo stesso arco si apre a tutto schermo, sopra la tua settimana nei colori dei muscoli, la tua streak e il prossimo traguardo.
-
-Un registratore migliore
-L'intestazione dell'allenamento si ripiega mentre scorri e si riapre con un trascinamento del dito. I superset sono un'unica scheda con gli esercizi sfogliabili all'interno, con una sola barra di azioni.
-
-Nuovi modi di registrare
-Registra distanza, distanza + durata, peso + distanza ed esercizi di sola durata o sole ripetizioni. L'editor degli esercizi ora compone la misurazione dai campi che segui davvero, con anteprima in tempo reale.
+Più modi di registrare
+Serie assistite, obiettivi di tempo per durare di più o andare più veloce, e tempi che scrivi come 32:15 invece di 1935. Scegli il formato del tempo per ogni esercizio.
 
 Apple Salute
-Gli allenamenti conclusi vengono scritti in Salute, incluso il recupero della tua cronologia, più la sincronizzazione bidirezionale del peso corporeo e una stima delle calorie attive per ogni allenamento.
+Il grasso corporeo ora si sincronizza in entrambe le direzioni con Salute, e aggiungendo la tua altezza in Impostazioni ottieni il tuo IMC.
 
-Altro nella 5.1
-· Cronologia con sezioni settimanali, statistiche per sezione e filtri
-· I modelli ora seguono esattamente il design degli allenamenti
-· Esporta tutto ciò che hai registrato in un file che resta tuo
-· Conto alla rovescia del recupero nella Dynamic Island
-· Eliminare un esercizio non tocca più la cronologia dei tuoi allenamenti
-· Grafici più nitidi, arrotondamento delle libbre corretto e formulazioni migliori in tutte le lingue
+Sulla schermata di blocco
+L'Attività in tempo reale ora ha l'aspetto del registratore: la serie che stai registrando o il tuo recupero, e nient'altro.
+
+Altro nella 5.2
+· La ricerca capisce le date: prova un mese, un giorno della settimana o "la settimana scorsa"
+· Spiegazioni più chiare in ogni schermata delle metriche, e l'e1RM ora si chiama Forza
+· Le serie a scalare ora si sincronizzano tra i tuoi dispositivi con iCloud
+· Esercizi e modelli duplicati da iCloud tornano a essere uno solo, senza perdere nessuna serie
+· Annulla ora scarta davvero un allenamento
+· Una barra della tastiera fluttuante con Avanti
+· Correzioni di un arresto anomalo nella Cronologia e di icone delle schede che restavano colorate
 
 Grazie per allenarti con LOGIT. Continua così!

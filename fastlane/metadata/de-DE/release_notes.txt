@@ -1,32 +1,30 @@
-LOGIT 5.1 bündelt deinen gesamten Fortschritt in einer Übersicht, baut den Workout-Recorder neu auf und bringt neue Arten, dein Training aufzuzeichnen.
+LOGIT 5.2 verändert, wie ein Workout endet, gibt deinem Training einen Fokus und bringt neue Arten, dein Training aufzuzeichnen.
 
-Eine Übersicht
-Diese Woche und Fortschritt sind jetzt ein einziger Screen. Wähle deinen Zeitraum einmal – 4 Wochen, 3 Monate oder ein Jahr – und jede Kachel, jeder Chart und jeder Detail-Screen folgt ihm.
+Ein neuer Recorder
+Der Workout-Header ist jetzt ein Sheet, das über deinen Sätzen schwebt. Zieh ihn herunter für Minimieren und Beenden, weiter für deine Statistiken und eine Notiz. Wenn du den ganzen Recorder herunterziehst, folgt er jetzt deinem Finger – ein kurzes Wischen minimiert ihn nicht mehr aus Versehen.
 
-Kraft auf einen Blick
-Eine neue Kraft-Kachel führt die Übersicht mit deinem Trend an und öffnet einen vollständigen Detail-Screen: deine stärksten Übungen, die Treiber der Veränderung und ein Chart, den du gedrückt halten kannst, um jeden Punkt abzulesen.
+Stark abschließen
+Beim Beenden siehst du, was das Workout gebracht hat: dein Wochenziel, das sich füllt, dann deine neuen persönlichen Rekorde und Verbesserungen. Bewerte deine Anstrengung auf derselben Skala wie Apple Fitness (die Bewertung landet auch in Apple Health) und halte die Einheit mit einer Notiz fest.
 
-Muskel-Balance, neu gebaut
-Die Muskelgruppen-Übersicht zeigt jede Gruppe jetzt als füllenden Balken mit ihrem Anteil an deinen Sätzen. So siehst du auf einen Blick, was du trainierst – und was zu kurz kommt.
-
-Deine Woche, direkt in der Übersicht
-Das Wochenziel ist jetzt ein Bogen mit deiner Anzahl in der Mitte – direkt in der Titelzeile der Übersicht. Tippe darauf, und derselbe Bogen öffnet sich in voller Größe, über deiner Woche in Muskelfarben, deiner Serie und dem nächsten Meilenstein.
-
-Ein besserer Recorder
-Der Workout-Header klappt beim Scrollen ein und lässt sich mit dem Finger wieder herunterziehen. Supersätze sind eine einzige Karte, in der die Übungen durchgeblättert werden – mit einer gemeinsamen Aktionsleiste.
+Trainingsfokus
+Die Ziele der Muskel-Balance sind jetzt Sätze pro Woche für jede Muskelgruppe. Wähle einen Fokus wie Ganzkörper, Oberkörper, Unterkörper, Arme & Schultern oder Cardio, und LOGIT passt die Ziele an deine Woche an. Die Übersicht nennt die Gruppen, bei denen du im Rückstand bist, und ein Tipp auf einen Balken zeigt sein Ziel und die Übungen dahinter.
 
 Neue Arten aufzuzeichnen
-Erfasse Distanz, Distanz + Dauer, Gewicht + Distanz sowie reine Dauer- und Wiederholungs-Übungen. Der Übungs-Editor stellt die Messung jetzt aus den Feldern zusammen, die du wirklich verfolgst – mit Live-Vorschau.
+Assistierte Sätze, Zeitziele für länger oder schneller und Zeiten, die du als 32:15 statt 1935 eingibst. Das Zeitformat wählst du pro Übung.
 
 Apple Health
-Abgeschlossene Workouts werden nach Health geschrieben, inklusive Nachtrag deines Verlaufs, dazu Zwei-Wege-Sync des Körpergewichts und eine Schätzung des Aktivkalorienverbrauchs für jedes Workout.
+Körperfett synchronisiert jetzt in beide Richtungen mit Health, und mit deiner Körpergröße in den Einstellungen bekommst du deinen BMI.
 
-Mehr in 5.1
-· Verlauf mit Wochenabschnitten, Statistiken pro Abschnitt und Filtern
-· Vorlagen entsprechen jetzt exakt dem Workout-Design
-· Exportiere alles Aufgezeichnete als Datei, die dir gehört
-· Countdown der Satzpause in der Dynamic Island
-· Das Löschen einer Übung rührt deinen Workout-Verlauf nicht mehr an
-· Schärfere Charts, korrigierte Pfund-Rundung und bessere Formulierungen in allen Sprachen
+Auf deinem Sperrbildschirm
+Die Live-Aktivität sieht jetzt aus wie der Recorder: der Satz, den du gerade aufzeichnest, oder deine Pause – sonst nichts.
+
+Mehr in 5.2
+· Die Suche versteht Datumsangaben: probier einen Monat, einen Wochentag oder „letzte Woche“
+· Verständlichere Erklärungen auf allen Metrik-Screens, und e1RM heißt jetzt Kraft
+· Drop-Sets synchronisieren jetzt per iCloud zwischen deinen Geräten
+· Übungen und Vorlagen, die iCloud doppelt angelegt hat, werden wieder zu einer zusammengeführt – jeder Satz bleibt erhalten
+· Abbrechen verwirft ein Workout jetzt wirklich
+· Eine schwebende Tastaturleiste mit Weiter
+· Behoben: ein Absturz im Verlauf und Tab-Symbole, die eingefärbt blieben
 
 Danke, dass du mit LOGIT trainierst. Bleib dran!

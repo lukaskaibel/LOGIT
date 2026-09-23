@@ -203,6 +203,10 @@
 "measurements" = "測定";
 "min" = "分";
 "minimize" = "最小化";
+"recorderSheetHandleLabel" = "ワークアウトの操作";
+"recorderShowSummaryAction" = "サマリーを表示";
+"accessibilityExpanded" = "展開";
+"accessibilityCollapsed" = "折りたたみ";
 "missing" = "未記入";
 "measurementsPromotionDescription" = "体重、体脂肪、腕、胸、ウエストなどの体の部位の測定値を追跡し、進捗状況を明確に確認します。";
 "month" = "月";
@@ -491,7 +495,9 @@
 "streakFactHalfYear" = "半年";
 "streakFactYear" = "まる1年";
 "streakFactTwoYears" = "2年";
+"streakFactOneWeek" = "1週間";
 "nextMilestone" = "次のマイルストーン";
+"beatYourBest" = "自己ベストを更新";
 "streakToGoalOne" = "次のマイルストーンまであと1週";
 "streakToGoalMany" = "次のマイルストーンまであと%d週";
 "streakAtBest" = "自己ベストのストリーク";
@@ -921,6 +927,9 @@
 "highlightImprovedLabel" = "%@が向上";
 "exercisesCountOne" = "1種目";
 "exercisesCountMany" = "%d種目";
+"setsCountOne" = "1セット";
+"setsCountMany" = "%dセット";
+"setsLoggedOfTotal" = "%1$d / %2$dセット";
 "workoutTrendInfo" = "種目にはそれぞれ進捗指標があります。重量や筋力など、その種目を評価する値のことです。トレンドは、このワークアウトで達した最高値を、その前の4週間のベストと比べます。下にある各種目のバッジと同じ比較です。";
 "workoutVolumeCompareInfo" = "総ボリューム（各セットの重量×回数）を、前回同じワークアウトを行ったときと比較します。";
 "improvedCount" = "%d種目向上";
@@ -999,6 +1008,7 @@
 "muscleFocusReplaceCustomTitle" = "カスタム目標を置き換えますか？";
 "muscleFocusReplaceCustomMessage" = "プリセットの目標が、自分で設定した目標に置き換わります。";
 "muscleFocusSetsPerWeekValue" = "週%dセット";
+"muscleFocusSetsPerWeekValueOne" = "週1セット";
 "muscleFocusNamesJoiner" = "・";
 "muscleFocusPromptTileTitle" = "トレーニングの重点を選ぶ";
 "muscleFocusPromptTileMessage" = "鍛えるべき筋肉グループがわかります。";
@@ -1202,6 +1212,8 @@
 "overallStrengthShowAllLifts" = "%d 種目をすべて表示";
 "overallStrengthAxisLeastDeclined" = "最小の低下";
 "showLess" = "表示を減らす";
+"finishHighlightsAllShownValue" = "すべて表示中";
+"finishHighlightsSomeShownValue" = "%2$d件中%1$d件を表示";
 "overallStrengthInfo" = "総合筋力は、それをひとつの数字にまとめたものです。種目ごとに、選択した期間のベスト値をその前の期間のベスト値と比べ、それらの変化をすべて平均します。セット数の多い種目ほど、結果に大きく反映されます。有酸素運動と自重のセットには筋力の値がないため、含まれません。";
 
 
@@ -1239,6 +1251,7 @@
 "lastTime" = "前回";
 "previewWorkoutNote" = "ベンチは80で余裕だった。次は82.5へ。ショルダープレスは肘を締める。";
 "setsIncompleteWillNotBeSaved" = "未入力のセットが%d件 — 保存されません。";
+"setIncompleteWillNotBeSaved" = "未入力のセットが1件 — 保存されません。";
 
 // MARK: - Assisted Sets & Time Goals
 

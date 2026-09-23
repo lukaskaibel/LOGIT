@@ -610,6 +610,34 @@ final class DurationFormattingTests: XCTestCase {
         XCTAssertEqual(formatClockEntryDigits("995959"), "99:59:59")
     }
 
+    /// Six nines spell 99:99:99, which sums to 100:40:39. Stored uncapped, that re-read as seven
+    /// digits, was cut back to six and came back as 10:04:03 — and editing it again saved that.
+    /// The total is capped at 99:59:59 instead, so what is stored always re-reads as itself.
+    func testClockDigitsOverflowIsCappedAtTheLongestReading() {
+        // 99:59:59, spelled out: the literal arithmetic timed out the CI compiler's type checker.
+        let ceiling: Int64 = 359_999_000
+        XCTAssertEqual(Int64(MAX_CLOCK_ENTRY_SECONDS) * 1000, ceiling)
+        XCTAssertEqual(durationMilliseconds(fromClockEntryDigits: "999999"), ceiling)
+        XCTAssertEqual(durationMilliseconds(fromClockEntryDigits: "996000"), ceiling)
+        XCTAssertEqual(
+            clockEntryDigits(forDuration: durationMilliseconds(fromClockEntryDigits: "999999")),
+            "995959"
+        )
+        // Shown as typed while focused; the capped reading arrives on blur, like "0:95".
+        XCTAssertEqual(formatClockEntryDigits("999999"), "99:99:99")
+        // A value stored past the ceiling before the cap never re-reads as a seventh digit.
+        XCTAssertEqual(clockEntryDigits(forDuration: 362_439_000), "995959")
+        XCTAssertEqual(clockEntryDigits(forDuration: .max), "995959")
+        // Below six digits nothing reaches the ceiling, so groups over 59 are still summed.
+        XCTAssertEqual(
+            durationMilliseconds(fromClockEntryDigits: "99999"),
+            Int64(38_439_000) // 9:99:99 summed: 9 h + 99 min + 99 s
+        )
+        // Sub-second values under the ceiling keep truncating exactly as before.
+        XCTAssertEqual(clockEntryDigits(forDuration: 359_999_500), "995959")
+        XCTAssertEqual(clockEntryDigits(forDuration: 12_340), "12")
+    }
+
     /// A clock field types whole seconds, so it shows a sprint's 0:12.34 as 0:12 — while every
     /// display site keeps reading the hundredths the store still holds. And the entry side
     /// truncates where display rounds: a field must never show more than the stored value.

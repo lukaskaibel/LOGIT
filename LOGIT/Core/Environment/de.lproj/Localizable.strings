@@ -199,6 +199,10 @@
 "measurementsPromotionDescription" = "Verfolge Körpergewicht, Körperfett und Körpermaße wie Arme, Brust und Taille, um deinen Fortschritt zu sehen.";
 "min" = "min";
 "minimize" = "Minimieren";
+"recorderSheetHandleLabel" = "Workout-Aktionen";
+"recorderShowSummaryAction" = "Übersicht anzeigen";
+"accessibilityExpanded" = "Ausgeklappt";
+"accessibilityCollapsed" = "Eingeklappt";
 "missing" = "Fehlt";
 "month" = "Monat";
 "monthly" = "Monatlich";
@@ -487,7 +491,9 @@
 "streakFactHalfYear" = "Ein halbes Jahr";
 "streakFactYear" = "Ein ganzes Jahr";
 "streakFactTwoYears" = "Zwei Jahre";
+"streakFactOneWeek" = "Eine Woche";
 "nextMilestone" = "Nächster Meilenstein";
+"beatYourBest" = "Bestleistung schlagen";
 "streakToGoalOne" = "Noch 1 Woche bis zum nächsten Meilenstein";
 "streakToGoalMany" = "Noch %d Wochen bis zum nächsten Meilenstein";
 "streakAtBest" = "Deine beste Serie aller Zeiten";
@@ -917,6 +923,9 @@
 "highlightImprovedLabel" = "%@ verbessert";
 "exercisesCountOne" = "1 Übung";
 "exercisesCountMany" = "%d Übungen";
+"setsCountOne" = "1 Satz";
+"setsCountMany" = "%d Sätze";
+"setsLoggedOfTotal" = "%1$d / %2$d Sätze";
 "workoutTrendInfo" = "Jede Übung hat eine Fortschrittsmetrik: den Wert, an dem sie gemessen wird, etwa Gewicht oder Kraft. Der Trend vergleicht den besten Wert dieses Workouts mit deinem besten aus den vier Wochen davor — derselbe Vergleich, den die Abzeichen neben den Übungen unten zeigen.";
 "workoutVolumeCompareInfo" = "Gesamtvolumen (Gewicht × Wiederholungen aller Sätze) im Vergleich zum letzten Mal, als du dieses Workout gemacht hast.";
 "improvedCount" = "%d verbessert";
@@ -995,6 +1004,7 @@
 "muscleFocusReplaceCustomTitle" = "Eigene Ziele ersetzen?";
 "muscleFocusReplaceCustomMessage" = "Die Ziele der Vorlage ersetzen die, die du selbst festgelegt hast.";
 "muscleFocusSetsPerWeekValue" = "%d Sätze pro Woche";
+"muscleFocusSetsPerWeekValueOne" = "1 Satz pro Woche";
 "muscleFocusNamesJoiner" = " & ";
 "muscleFocusPromptTileTitle" = "Wähle einen Trainingsfokus";
 "muscleFocusPromptTileMessage" = "Sieh, welche Muskelgruppen du trainieren solltest.";
@@ -1198,6 +1208,8 @@
 "overallStrengthShowAllLifts" = "Alle %d Übungen zeigen";
 "overallStrengthAxisLeastDeclined" = "Geringster Rückgang";
 "showLess" = "Weniger anzeigen";
+"finishHighlightsAllShownValue" = "Alle angezeigt";
+"finishHighlightsSomeShownValue" = "%1$d von %2$d angezeigt";
 "overallStrengthInfo" = "Die Gesamtkraft fasst das zu einer einzigen Zahl zusammen. Für jede Übung nimmt LOGIT deinen besten Wert im gewählten Zeitraum und vergleicht ihn mit deinem besten im Zeitraum davor, dann werden all diese Veränderungen gemittelt. Je mehr Sätze du von einer Übung gemacht hast, desto stärker zählt sie für das Ergebnis. Cardio- und Körpergewichtssätze haben keinen Kraftwert und bleiben außen vor.";
 
 
@@ -1235,6 +1247,7 @@
 "lastTime" = "Letztes Mal";
 "previewWorkoutNote" = "Bankdrücken lief locker mit 80 – nächstes Mal 82,5. Bei Überkopfdrücken die Ellbogen enger führen.";
 "setsIncompleteWillNotBeSaved" = "%d Sätze unvollständig – sie werden nicht gespeichert.";
+"setIncompleteWillNotBeSaved" = "1 Satz unvollständig – er wird nicht gespeichert.";
 
 // MARK: - Assisted Sets & Time Goals
 

@@ -21,6 +21,11 @@ struct DecimalField: View {
     @Binding var value: Double
     let maxDigits: Int?
     let decimalPlaces: Int
+    /// Whether a leading "-" survives `filterInput`. Only a weight can be negative — assistance is
+    /// stored as a negative load — so only weight fields opt in. Everywhere else a minus is
+    /// dropped: the number pad has no minus key, but a paste or a hardware keyboard can still
+    /// type one, and a negative duration used to land as a permanent "fastest" record at 0:00.
+    var allowsNegative: Bool = false
     let index: IntegerField.Index
     @Binding var focusedIntegerFieldIndex: IntegerField.Index?
     var unit: String? = "kg"
@@ -156,19 +161,22 @@ struct DecimalField: View {
 
     // MARK: - Helper Methods
 
-    /// Puts the model's sign on the string being typed, without reformatting the digits.
+    /// Puts the model's sign on the string being typed, without reformatting the digits. A field
+    /// that doesn't allow negatives has no sign to carry.
     private func syncSignWhileTyping(of newValue: Double) {
+        guard allowsNegative else { return }
         let isNegative = newValue < 0
         guard !valueString.isEmpty, isNegative != valueString.hasPrefix("-") else { return }
         valueString = isNegative ? "-" + valueString : String(valueString.dropFirst())
     }
 
     private func filterInput(_ input: String) -> String {
-        // A number pad has no minus key, so a sign here never came from a keystroke: it came
-        // from the ± in the keyboard row, which flips the stored weight. Set it aside, filter
-        // the magnitude exactly as before, and put it back — a field showing assistance has to
-        // read as the negative number it stores.
-        let isNegative = input.hasPrefix("-")
+        // On a weight field (`allowsNegative`) a sign comes from the ± in the keyboard row, which
+        // flips the stored weight. Set it aside, filter the magnitude exactly as before, and put it
+        // back — a field showing assistance has to read as the negative number it stores. On any
+        // other field the sign is simply dropped with the rest of the non-digits below, so a
+        // pasted "-30" enters as 30.
+        let isNegative = allowsNegative && input.hasPrefix("-")
         var filtered = isNegative ? String(input.dropFirst()) : input
         
         // Only allow digits and one decimal separator

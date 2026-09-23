@@ -21,6 +21,9 @@ struct SettingsScreen: View {
     @AppStorage("preventAutoLock") var preventAutoLock: Bool = true
     /// 0 means unset — `UserHeight` is the one that decides what counts as a real height.
     @AppStorage(UserHeight.storageKey) var heightCentimeters: Double = 0
+    /// The feet and inches being typed while the weight unit is lbs — see `imperialHeightFields`.
+    @State private var heightFeetText = ""
+    @State private var heightInchesText = ""
     @AppStorage("timerIsMuted") var timerIsMuted: Bool = false
     @AppStorage(AutoRestSettings.recordingModeKey) var restRecordingMode: RestRecordingMode = .elapsed
     @AppStorage(CalorieEstimator.enabledKey) var calorieEstimatesEnabled: Bool = true
@@ -173,28 +176,33 @@ struct SettingsScreen: View {
     /// Height lives here rather than among the measurements: it barely moves, nobody wants a chart
     /// of it, and the only thing LOGIT does with it is derive BMI — which is what the caption says,
     /// so the field has a reason to exist rather than being one more thing to fill in.
+    ///
+    /// Entered in the unit system the weight unit implies — centimetres beside kg, feet and inches
+    /// beside lbs — since height and body weight are the two halves of BMI. Stored in centimetres
+    /// either way (`UserHeight`), so switching the weight unit only changes how it is typed.
     private var heightTile: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(NSLocalizedString("height", comment: ""))
                 Spacer()
-                TextField(
-                    "––",
-                    value: Binding(
-                        get: { heightCentimeters > 0 ? heightCentimeters : nil },
-                        set: { heightCentimeters = $0 ?? 0 }
-                    ),
-                    format: .number.precision(.fractionLength(0...1))
-                )
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-                .fontWeight(.semibold)
-                .frame(maxWidth: 80)
-                .accessibilityIdentifier("heightField")
-                Text("cm")
-                    .font(.footnote)
-                    .textCase(.uppercase)
-                    .foregroundStyle(Color.secondaryLabel)
+                if weightUnit == .lbs {
+                    imperialHeightFields
+                } else {
+                    TextField(
+                        "––",
+                        value: Binding(
+                            get: { heightCentimeters > 0 ? heightCentimeters : nil },
+                            set: { heightCentimeters = $0 ?? 0 }
+                        ),
+                        format: .number.precision(.fractionLength(0...1))
+                    )
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: 80)
+                    .accessibilityIdentifier("heightField")
+                    heightUnitLabel("cm")
+                }
             }
             Text(NSLocalizedString("heightDescription", comment: ""))
                 .font(.caption)
@@ -202,6 +210,76 @@ struct SettingsScreen: View {
         }
         .padding(CELL_PADDING)
         .tileStyle()
+    }
+
+    /// Feet and inches, each its own whole number, typed as text and written back on every change —
+    /// so typing the feet alone already stores a height, and clearing both clears it.
+    ///
+    /// Text fields over local strings rather than `TextField(value:format:)` bound to the stored
+    /// centimetres: that initializer writes on every keystroke that parses, and with two fields
+    /// derived from one number each write re-derived the *other* field under the caret, so typing
+    /// "5" then "11" came out as "156 ft 1111 in". The strings are only refreshed from storage when
+    /// what is stored no longer matches them — a height from Apple Health, or inches carried into
+    /// feet.
+    @ViewBuilder
+    private var imperialHeightFields: some View {
+        TextField("–", text: $heightFeetText)
+            .keyboardType(.numberPad)
+            .multilineTextAlignment(.trailing)
+            .fontWeight(.semibold)
+            .frame(maxWidth: 36)
+            .accessibilityIdentifier("heightFeetField")
+            .onChange(of: heightFeetText) { _, text in
+                let digits = String(text.filter(\.isNumber).prefix(1))
+                if digits != text { heightFeetText = digits } else { storeImperialHeight() }
+            }
+        heightUnitLabel("ft")
+        TextField("–", text: $heightInchesText)
+            .keyboardType(.numberPad)
+            .multilineTextAlignment(.trailing)
+            .fontWeight(.semibold)
+            .frame(maxWidth: 36)
+            .accessibilityIdentifier("heightInchesField")
+            .onChange(of: heightInchesText) { _, text in
+                let digits = String(text.filter(\.isNumber).prefix(2))
+                if digits != text { heightInchesText = digits } else { storeImperialHeight() }
+            }
+        heightUnitLabel("in")
+            .onAppear(perform: loadImperialHeight)
+            .onChange(of: heightCentimeters) { loadImperialHeight() }
+    }
+
+    private static let centimetersPerInch = 2.54
+
+    /// The stored height as whole feet and inches, rounded to the nearest inch; nil when unset.
+    private var storedFeetAndInches: (feet: Int, inches: Int)? {
+        guard heightCentimeters > 0 else { return nil }
+        let totalInches = Int((heightCentimeters / Self.centimetersPerInch).rounded())
+        return (totalInches / 12, totalInches % 12)
+    }
+
+    /// Fills the fields from storage, unless they already say the same — so the caret is left alone
+    /// while typing, and only a change from elsewhere (or a carry) rewrites them.
+    private func loadImperialHeight() {
+        let stored = storedFeetAndInches
+        let typedFeet = Int(heightFeetText) ?? 0
+        let typedInches = Int(heightInchesText) ?? 0
+        guard stored?.feet ?? 0 != typedFeet || stored?.inches ?? 0 != typedInches else { return }
+        heightFeetText = stored.map { "\($0.feet)" } ?? ""
+        heightInchesText = stored.map { "\($0.inches)" } ?? ""
+    }
+
+    /// Inches past 11 carry into the feet, the way a tape measure reads.
+    private func storeImperialHeight() {
+        let total = (Int(heightFeetText) ?? 0) * 12 + (Int(heightInchesText) ?? 0)
+        heightCentimeters = total > 0 ? Double(total) * Self.centimetersPerInch : 0
+    }
+
+    private func heightUnitLabel(_ unit: String) -> some View {
+        Text(unit)
+            .font(.footnote)
+            .textCase(.uppercase)
+            .foregroundStyle(Color.secondaryLabel)
     }
 
     private var workoutSection: some View {

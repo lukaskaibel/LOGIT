@@ -211,6 +211,11 @@ struct DurationClockField: View {
     /// append digits or remove the last one, so the buffer normally needs no correcting and
     /// nothing is written back to the field — the one exception being the rare keystroke that
     /// would leave a leading zero or a seventh digit.
+    ///
+    /// What is stored never exceeds 99:59:59: six digits can spell 99:99:99, but
+    /// `durationMilliseconds(fromClockEntryDigits:)` caps the total, so the value always re-seeds
+    /// within six digits (99:99:99 comes back as 99:59:59) — never as seven, which `prefix` would
+    /// cut to a different, much shorter time.
     private func handleTyping(_ newDigits: String) {
         // A leading zero is swallowed rather than shown, exactly as the decimal field does.
         let trimmed = String(newDigits.filter(\.isNumber).drop(while: { $0 == "0" }))

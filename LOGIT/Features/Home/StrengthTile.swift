@@ -82,9 +82,12 @@ struct StrengthTile: View {
                 StrengthBarChart(changes: progress.changes)
                     .frame(maxHeight: .infinity)
                     .padding(.top, 12)
-            } else {
+            } else if showsTrendPlaceholder {
                 emptyState
                     .padding(.top, 12)
+            } else {
+                noComparison
+                    .padding(.top, 2)
             }
         }
         .padding(CELL_PADDING)
@@ -149,9 +152,22 @@ struct StrengthTile: View {
         return Text(NSLocalizedString("trendFlat", comment: ""))
     }
 
+    /// Whether a missing trend is still being built. The same rule `SummaryStatTile` follows (#199):
+    /// **only while the history is short of the span** the trend compares.
+    ///
+    /// The ring reports `historyFraction`, so for anyone whose history already covers both windows the
+    /// placeholder drew a *full* ring over "Building your strength trend" — complete and waiting at
+    /// once, with nothing left to build. A longtime user lands there whenever no lift has a best in
+    /// both windows — back from a long break, one of them simply holds no lift, and training more this
+    /// week doesn't fill in the one before it. They get `noComparison` instead.
+    private var showsTrendPlaceholder: Bool {
+        progress.historyFraction < 1
+    }
+
     /// Before there's a trend, the tile wears the same gray ring the core-stat tiles use while their
     /// first period fills — tracking how far the history reaches into the span being compared, so it
-    /// creeps forward with every workout instead of sitting at nothing.
+    /// creeps forward with every workout instead of sitting at nothing. A new account's state only;
+    /// see `showsTrendPlaceholder`.
     ///
     /// Greedy without a `Spacer` beside it, because `TrendPlaceholder` bottom-anchors itself: it
     /// stands in for the chart, which runs to the tile's bottom edge.
@@ -161,6 +177,30 @@ struct StrengthTile: View {
             text: NSLocalizedString("overallStrengthEmpty", comment: ""),
             systemImage: "chart.line.uptrend.xyaxis"
         )
+    }
+
+    /// A history long enough for a trend, but no lift to compare across the two windows: the app's
+    /// plain no-data statement, exactly as the core-stat tiles below make it for a window with nothing
+    /// in it — "––" in the figure's place and "No Data" where the chart would stand. Nothing here is
+    /// on its way, so nothing claims to be; the trend returns by itself once a lift has a best in both
+    /// windows.
+    ///
+    /// The dash takes the hero's size so the tile keeps its anatomy, and the neutral label colour
+    /// rather than the trend's, since there is no trend for a colour to describe.
+    private var noComparison: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("––")
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.label)
+                .lineLimit(1)
+            Text(NSLocalizedString("noData", comment: ""))
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.top, 12)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(NSLocalizedString("noData", comment: "")))
     }
 }
 

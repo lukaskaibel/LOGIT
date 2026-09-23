@@ -1148,10 +1148,11 @@ final class ScenarioScreenshots: XCTestCase {
             waitABit(1)
         }
         XCTAssertTrue(exercisesToggle.exists, "The folded exercise row is missing from the finish panel")
-        XCTAssertEqual(exercisesToggle.value as? String, "collapsed")
+        // Localized values ("Collapsed" / "Expanded"); iOS may capitalise them, so compare lowercased.
+        XCTAssertEqual((exercisesToggle.value as? String)?.lowercased(), "collapsed")
         exercisesToggle.tap()
         waitABit(2)
-        XCTAssertEqual(exercisesToggle.value as? String, "expanded")
+        XCTAssertEqual((exercisesToggle.value as? String)?.lowercased(), "expanded")
         XCTAssertTrue(
             app.otherElements["finishPanelExercises"].staticTexts["Barbell Bench Press"].firstMatch.exists,
             "Unfolding the exercises should list the set groups"
@@ -1159,7 +1160,7 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "recorder_14b_finish_exercises_unfolded")
         exercisesToggle.tap()
         waitABit(1)
-        XCTAssertEqual(exercisesToggle.value as? String, "collapsed")
+        XCTAssertEqual((exercisesToggle.value as? String)?.lowercased(), "collapsed")
 
         endWorkoutButton.tap()
         let startPill = app.staticTexts["Start Workout"].firstMatch
@@ -1760,9 +1761,11 @@ final class ScenarioScreenshots: XCTestCase {
         let more = app.buttons["finishHighlightsShowMore"].firstMatch
         XCTAssertTrue(more.exists, "Six highlights should be capped with a Show more")
         XCTAssertFalse(app.staticTexts["Repetitions improved"].exists, "The sixth highlight starts hidden")
+        // Localized values; iOS may capitalise them, so compare lowercased.
+        XCTAssertEqual((more.value as? String)?.lowercased(), "5 of 6 shown")
         more.tap()
         waitABit(2)
-        XCTAssertEqual((more.value as? String)?.lowercased(), "all")
+        XCTAssertEqual((more.value as? String)?.lowercased(), "all shown")
         XCTAssertTrue(app.staticTexts["Repetitions improved"].exists, "Show more reveals the rest")
         attach(app, "recorder_17_finish_highlights_all")
     }

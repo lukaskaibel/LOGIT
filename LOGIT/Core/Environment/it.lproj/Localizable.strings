@@ -203,6 +203,10 @@
 "measurements" = "Misure";
 "min" = "min";
 "minimize" = "Riduci";
+"recorderSheetHandleLabel" = "Azioni dell’allenamento";
+"recorderShowSummaryAction" = "Mostra riepilogo";
+"accessibilityExpanded" = "Espanso";
+"accessibilityCollapsed" = "Compresso";
 "missing" = "Mancante";
 "measurementsPromotionDescription" = "Tieni traccia del peso corporeo, del grasso corporeo e delle misurazioni delle parti del corpo come braccia, petto e vita per vedere chiaramente i tuoi progressi.";
 "month" = "Mese";
@@ -491,7 +495,9 @@
 "streakFactHalfYear" = "Mezzo anno";
 "streakFactYear" = "Un anno intero";
 "streakFactTwoYears" = "Due anni";
+"streakFactOneWeek" = "Una settimana";
 "nextMilestone" = "Prossimo traguardo";
+"beatYourBest" = "Batti il tuo record";
 "streakToGoalOne" = "1 settimana al prossimo traguardo";
 "streakToGoalMany" = "%d settimane al prossimo traguardo";
 "streakAtBest" = "La tua serie migliore di sempre";
@@ -921,6 +927,9 @@
 "highlightImprovedLabel" = "%@ migliorato";
 "exercisesCountOne" = "1 esercizio";
 "exercisesCountMany" = "%d esercizi";
+"setsCountOne" = "1 serie";
+"setsCountMany" = "%d serie";
+"setsLoggedOfTotal" = "%1$d / %2$d serie";
 "workoutTrendInfo" = "Ogni esercizio ha una metrica di progresso: il valore con cui viene misurato, come il peso o la forza. Il trend confronta il valore migliore raggiunto in questo allenamento con il tuo migliore delle quattro settimane precedenti — lo stesso confronto mostrato dai badge accanto agli esercizi qui sotto.";
 "workoutVolumeCompareInfo" = "Volume totale (peso × ripetizioni di ogni serie) confrontato con l'ultima volta che hai fatto questo allenamento.";
 "improvedCount" = "%d migliorati";
@@ -999,6 +1008,7 @@
 "muscleFocusReplaceCustomTitle" = "Sostituire i tuoi obiettivi personalizzati?";
 "muscleFocusReplaceCustomMessage" = "Gli obiettivi del preset sostituiscono quelli impostati da te.";
 "muscleFocusSetsPerWeekValue" = "%d serie a settimana";
+"muscleFocusSetsPerWeekValueOne" = "1 serie a settimana";
 "muscleFocusNamesJoiner" = " e ";
 "muscleFocusPromptTileTitle" = "Scegli un focus di allenamento";
 "muscleFocusPromptTileMessage" = "Scopri quali gruppi muscolari allenare.";
@@ -1202,6 +1212,8 @@
 "overallStrengthShowAllLifts" = "Mostra tutti i %d esercizi";
 "overallStrengthAxisLeastDeclined" = "Calo minore";
 "showLess" = "Mostra meno";
+"finishHighlightsAllShownValue" = "Tutti visibili";
+"finishHighlightsSomeShownValue" = "%1$d di %2$d visibili";
 "overallStrengthInfo" = "La forza complessiva riassume tutto questo in un unico numero. Per ogni esercizio, LOGIT prende il tuo valore migliore nel periodo selezionato e lo confronta con il migliore del periodo precedente, poi fa la media di tutte queste variazioni. Più serie hai fatto di un esercizio, più esso pesa sul risultato. Le serie di cardio e a corpo libero non hanno un valore di forza e non vengono considerate.";
 
 
@@ -1239,6 +1251,7 @@
 "lastTime" = "L'ultima volta";
 "previewWorkoutNote" = "La panca era facile a 80: la prossima volta 82,5. Tieni i gomiti stretti nel lento avanti.";
 "setsIncompleteWillNotBeSaved" = "%d serie incomplete: non verranno salvate.";
+"setIncompleteWillNotBeSaved" = "1 serie incompleta: non verrà salvata.";
 
 // MARK: - Assisted Sets & Time Goals
 

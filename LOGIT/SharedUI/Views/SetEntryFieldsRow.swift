@@ -30,59 +30,35 @@ extension TemplateSetEntry: SetEntryFieldsEditable {}
 /// The keyboard accessory's ± — the number pad has no minus key, and assistance is stored as a
 /// negative weight, so this is the only way to type one.
 ///
-/// A view of its own because it has to *observe* the set: flipping the sign mutates entries rather
-/// than the set, and without something watching, the button would change the weights and go on
-/// drawing itself un-latched.
-struct KeyboardAssistedButton: View {
-    @ObservedObject var workoutSet: WorkoutSet
-
-    var body: some View {
-        KeyboardToolbarIconButton(
-            systemImage: workoutSet.isAssisted ? "plusminus.circle.fill" : "plusminus.circle",
-            accessibilityLabel: NSLocalizedString("assisted", comment: ""),
-            isOn: workoutSet.isAssisted
-        ) {
-            withAnimation(.interactiveSpring()) {
-                workoutSet.setAssisted(!workoutSet.isAssisted)
-                // The entries changed, not the set — the cells need telling, exactly as the set's
-                // own context-menu toggle does.
-                workoutSet.objectWillChange.send()
-                workoutSet.setGroup?.objectWillChange.send()
-            }
-        }
-        .accessibilityIdentifier("keyboardAssisted")
-    }
-}
-
-/// Where the ± sits while a *weight* field has the keyboard: the button once the set holds a
-/// weight, nothing before.
+/// It flips the one value being typed, never the rest of the set: a superset's other exercise has
+/// weights of its own, and a drop set may run from added weight to assistance partway through. The
+/// menus are where a whole exercise flips at once.
 ///
-/// It observes the focused entry because the keyboard row's host observes neither the set nor its
-/// entries. Decided there, the ± only appeared after the field was left and focused again, never
-/// with the first digit typed into it, which is when it is needed.
-struct KeyboardAssistedSlot: View {
-    @ObservedObject var workoutSet: WorkoutSet
+/// A view of its own because it has to *observe* the entry. The toolbar that places it is drawn by
+/// a screen that doesn't redraw on a keystroke, so the button decides for itself whether there is a
+/// number to flip yet — which is what lets it arrive with the first digit. 0 is bodyweight, never
+/// "assisted by zero", so an empty field shows no ±.
+struct KeyboardAssistedButton: View {
     @ObservedObject var entry: SetEntry
+    let workoutSet: WorkoutSet
 
     var body: some View {
-        // Nothing to flip before there is a weight: 0 is bodyweight, never "assisted by zero".
-        if workoutSet.entryValues.contains(where: { $0.type.usesWeight && $0.weight != 0 }) {
-            KeyboardAssistedButton(workoutSet: workoutSet)
+        if entry.weight != 0 {
+            KeyboardToolbarIconButton(
+                systemImage: entry.weight < 0 ? "plusminus.circle.fill" : "plusminus.circle",
+                accessibilityLabel: NSLocalizedString("assisted", comment: ""),
+                isOn: entry.weight < 0
+            ) {
+                withAnimation(.interactiveSpring()) {
+                    entry.weight = -entry.weight
+                    // The entry changed, not the set — the cells need telling, exactly as the set's
+                    // own context-menu toggle does.
+                    workoutSet.objectWillChange.send()
+                    workoutSet.setGroup?.objectWillChange.send()
+                }
+            }
+            .accessibilityIdentifier("keyboardAssisted")
         }
-    }
-
-    /// The set and entry whose weight field has the keyboard, or nil when the focused field is
-    /// anything else — the ± acts on a weight's sign, so it has no business over a reps or
-    /// duration pad.
-    static func focusedWeightEntry(
-        in sets: [WorkoutSet], focusedIndex: IntegerField.Index?
-    ) -> (workoutSet: WorkoutSet, entry: SetEntry)? {
-        guard let focusedIndex,
-              let workoutSet = sets.first(where: { $0.id == focusedIndex.setID }),
-              let entry = workoutSet.entries.value(at: focusedIndex.secondary),
-              entry.type.weightFieldIndex == focusedIndex.tertiary
-        else { return nil }
-        return (workoutSet, entry)
     }
 }
 
@@ -103,6 +79,19 @@ extension TemplateSet: SetFieldNavigable {}
 /// the other half of a superset, which is the next thing performed — and only then to the next
 /// set. `SetEntryFieldsRow` decides which field a position means; this decides the order.
 enum SetFieldNavigation {
+    /// The entry whose weight field `index` points at, or nil when it points at any other field
+    /// (reps, a duration, a distance) — the one field the keyboard's ± belongs to.
+    static func weightEntry(
+        at index: IntegerField.Index, in workoutSet: WorkoutSet
+    ) -> (entry: SetEntry, set: WorkoutSet)? {
+        guard workoutSet.id == index.setID,
+              workoutSet.entries.indices.contains(index.secondary)
+        else { return nil }
+        let entry = workoutSet.entries[index.secondary]
+        guard entry.type.weightFieldIndex == index.tertiary else { return nil }
+        return (entry: entry, set: workoutSet)
+    }
+
     /// The field after `index`, or nil at the last field of the last set.
     static func index<S: SetFieldNavigable>(
         after index: IntegerField.Index,

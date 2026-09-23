@@ -359,16 +359,36 @@ public extension WorkoutSet {
     /// −20 kg, which puts "less help" and "more weight" on one scale that already sorts the
     /// right way. A drop set that runs belt → bodyweight → machine is deliberately *not*
     /// assisted by this definition — it spans the sign, and only its own entries know where.
-    var isAssisted: Bool {
-        let weights = entryValues.filter { $0.type.usesWeight }.map(\.weight).filter { $0 != 0 }
+    ///
+    /// Only for sets that train one exercise. A superset's entries belong to two exercises, and
+    /// each is assisted or not on its own (assisted pull-ups beside a weighted bench), so every
+    /// superset caller goes through `isAssisted(for:)`.
+    var isAssisted: Bool { isAssisted(for: nil) }
+
+    /// Whether `exercise`'s part of this set records assistance: its weight entries, and every one
+    /// of them negative. `nil` reads every entry.
+    func isAssisted(for exercise: Exercise?) -> Bool {
+        let weights = entryValues
+            .filter { $0.type.usesWeight && (exercise == nil || $0.exercise == exercise) }
+            .map(\.weight)
+            .filter { $0 != 0 }
         return !weights.isEmpty && weights.allSatisfy { $0 < 0 }
     }
 
-    /// Records this set's weights as assistance (or as added load again), by flipping the sign of
-    /// every weight it holds. Empty fields stay empty: 0 is bodyweight, never "assisted by zero".
+    /// Records this set's weights as assistance (or as added load again) — see `isAssisted` for
+    /// why this is only for single-exercise sets.
     internal func setAssisted(_ isAssisted: Bool) {
+        setAssisted(isAssisted, for: nil)
+    }
+
+    /// Flips the sign of every weight `exercise` holds in this set (`nil`: every weight). Empty
+    /// fields stay empty: 0 is bodyweight, never "assisted by zero". A superset partner's weights
+    /// are never touched.
+    internal func setAssisted(_ isAssisted: Bool, for exercise: Exercise?) {
         ensureEntries()
-        for entry in entries where entry.type.usesWeight && entry.weight != 0 {
+        for entry in entries
+        where entry.type.usesWeight && entry.weight != 0
+            && (exercise == nil || owningExercise(of: entry) == exercise) {
             entry.weight = isAssisted ? -abs(entry.weight) : abs(entry.weight)
         }
     }

@@ -163,6 +163,53 @@ final class EntityExtensionTests: XCTestCase {
         XCTAssertFalse(setGroup.isAssisted, "Added weight in the group ends the assisted reading")
     }
 
+    /// Assisted pull-ups beside a weighted bench: marking the pull-ups assisted must leave the bench
+    /// weight alone, and the bench must never read as assisted because the pull-ups are.
+    func testSupersetAssistanceIsPerExercise() {
+        let pullUps = builder.createExercise(name: "Pull-Ups")
+        let bench = builder.createExercise(name: "Bench Press")
+        let setGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: pullUps)
+        setGroup.secondaryExercise = bench
+        let superSet = database.newSuperSet(
+            repetitionsFirstExercise: 8, repetitionsSecondExercise: 10,
+            weightFirstExercise: 20000, weightSecondExercise: 60000,
+            setGroup: setGroup
+        )
+
+        superSet.setAssisted(true, for: pullUps)
+
+        XCTAssertEqual(superSet.maximum(.weight, for: pullUps), -20000)
+        XCTAssertEqual(superSet.maximum(.weight, for: bench), 60000, "The partner's weight was flipped too")
+        XCTAssertTrue(superSet.isAssisted(for: pullUps))
+        XCTAssertFalse(superSet.isAssisted(for: bench))
+        XCTAssertTrue(setGroup.isAssisted(for: pullUps))
+        XCTAssertFalse(setGroup.isAssisted(for: bench), "The partner would enter new weights as assistance")
+
+        setGroup.setAssisted(false, for: pullUps)
+        XCTAssertEqual(superSet.maximum(.weight, for: pullUps), 20000)
+        XCTAssertEqual(superSet.maximum(.weight, for: bench), 60000)
+    }
+
+    /// The group menu on a superset lane flips that lane's exercise in every set, and only it.
+    func testSupersetGroupAssistanceFlipsOnlyTheChosenExercise() {
+        let pullUps = builder.createExercise(name: "Pull-Ups")
+        let curls = builder.createExercise(name: "Curls")
+        let setGroup = database.newWorkoutSetGroup(createFirstSetAutomatically: false, exercise: pullUps)
+        setGroup.secondaryExercise = curls
+        for _ in 0 ..< 3 {
+            database.newSuperSet(
+                repetitionsFirstExercise: 8, repetitionsSecondExercise: 12,
+                weightFirstExercise: 20000, weightSecondExercise: 12000,
+                setGroup: setGroup
+            )
+        }
+
+        setGroup.setAssisted(true, for: curls)
+
+        XCTAssertTrue(setGroup.sets.allSatisfy { $0.maximum(.weight, for: curls) == -12000 })
+        XCTAssertTrue(setGroup.sets.allSatisfy { $0.maximum(.weight, for: pullUps) == 20000 })
+    }
+
     // MARK: - StandardSet Tests
     
     func testStandardSetHasEntryWithValues() {

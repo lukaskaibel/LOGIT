@@ -156,17 +156,31 @@ public extension WorkoutSetGroup {
     /// Whether this exercise is being trained with assistance — true when at least one set
     /// records it and none of them records added load, so a group mid-transition (three assisted
     /// sets, then the first unassisted one) stops claiming to be assisted as a whole.
-    var isAssisted: Bool {
+    ///
+    /// Only for groups that train one exercise — a superset's two exercises are each assisted or
+    /// not on their own, so superset callers go through `isAssisted(for:)`.
+    var isAssisted: Bool { isAssisted(for: nil) }
+
+    /// Whether `exercise` is being trained with assistance in this group (`nil`: every exercise).
+    func isAssisted(for exercise: Exercise?) -> Bool {
         let setsWithWeight = sets.filter { set in
-            set.entryValues.contains { $0.type.usesWeight && $0.weight != 0 }
+            set.entryValues.contains {
+                $0.type.usesWeight && $0.weight != 0 && (exercise == nil || $0.exercise == exercise)
+            }
         }
-        return !setsWithWeight.isEmpty && setsWithWeight.allSatisfy(\.isAssisted)
+        return !setsWithWeight.isEmpty && setsWithWeight.allSatisfy { $0.isAssisted(for: exercise) }
     }
 
     /// Records every set in this group as assisted (or as added load again). The recorder's
     /// common case: you get on the machine and do all your sets there.
     internal func setAssisted(_ isAssisted: Bool) {
-        sets.forEach { $0.setAssisted(isAssisted) }
+        setAssisted(isAssisted, for: nil)
+    }
+
+    /// The same for one exercise of the group — in a superset, the lane the user is on. The other
+    /// exercise's weights are never touched.
+    internal func setAssisted(_ isAssisted: Bool, for exercise: Exercise?) {
+        sets.forEach { $0.setAssisted(isAssisted, for: exercise) }
     }
 
     subscript(index: Int) -> WorkoutSet { sets[index] }

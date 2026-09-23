@@ -138,8 +138,10 @@ struct WorkoutSetCell: View {
                         reference: reference(for: entry, at: entryIndex, in: referenceValues),
                         placeholder: placeholder(for: entry, at: entryIndex, in: placeholderValues),
                         // Sets added after the group was marked assisted have no value and no
-                        // history to take the sign from — the group they sit in is the answer.
-                        entersAssistance: workoutSet.setGroup?.isAssisted ?? false,
+                        // history to take the sign from — the group they sit in is the answer,
+                        // read for this entry's own exercise: a superset partner is never
+                        // assisted because the other exercise is.
+                        entersAssistance: workoutSet.setGroup?.isAssisted(for: entryExercise) ?? false,
                         trendColor: entryExercise?.muscleGroup?.color ?? .accentColor,
                         onTapPreviousValue: previousValueTapHandler(for: entryExercise)
                     )
@@ -148,6 +150,14 @@ struct WorkoutSetCell: View {
             }
             .padding(.vertical, CELL_SPACING / 2)
         }
+    }
+
+    /// Which exercise the set's Assisted toggle flips: in a superset, the lane this cell draws (the
+    /// primary exercise if it draws both), so the partner's weights are never touched; `nil` for
+    /// sets that train one exercise, meaning all of them.
+    private var assistedMenuExercise: Exercise? {
+        guard workoutSet.isSuperSet else { return nil }
+        return visibleExercise ?? workoutSet.setGroup?.exercise
     }
 
     /// The set's entries with their original array positions, restricted to `visibleExercise`
@@ -286,7 +296,7 @@ struct WorkoutSetCell: View {
             Section {
                 Button {
                     withAnimation(.interactiveSpring()) {
-                        workoutSet.setAssisted(!workoutSet.isAssisted)
+                        workoutSet.setAssisted(!workoutSet.isAssisted(for: assistedMenuExercise), for: assistedMenuExercise)
                         // The entries changed, not the set, so the cell needs telling.
                         workoutSet.objectWillChange.send()
                         workoutSet.setGroup?.objectWillChange.send()
@@ -294,7 +304,7 @@ struct WorkoutSetCell: View {
                 } label: {
                     Label(
                         NSLocalizedString("assisted", comment: ""),
-                        systemImage: workoutSet.isAssisted ? "checkmark" : "plusminus.circle"
+                        systemImage: workoutSet.isAssisted(for: assistedMenuExercise) ? "checkmark" : "plusminus.circle"
                     )
                 }
             } header: {

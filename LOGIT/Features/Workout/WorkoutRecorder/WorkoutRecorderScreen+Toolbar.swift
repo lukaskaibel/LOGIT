@@ -35,7 +35,7 @@ extension WorkoutRecorderScreen {
                 // the edge and neither Next nor hide — the buttons you tap sixty times a workout —
                 // moves under your thumb.
                 if let focused = focusedWeightEntry {
-                    KeyboardAssistedSlot(workoutSet: focused.workoutSet, entry: focused.entry)
+                    KeyboardAssistedButton(entry: focused.entry, workoutSet: focused.set)
                 }
                 KeyboardToolbarTextButton(
                     title: NSLocalizedString("next", comment: ""),
@@ -58,11 +58,17 @@ extension WorkoutRecorderScreen {
         }
     }
 
-    /// The focused set and entry, but only while the field with the keyboard is a *weight* — see
-    /// `KeyboardAssistedSlot`, which decides from there whether the ± shows.
-    var focusedWeightEntry: (workoutSet: WorkoutSet, entry: SetEntry)? {
-        KeyboardAssistedSlot.focusedWeightEntry(
-            in: workoutRecorder.workout?.sets ?? [], focusedIndex: focusedIntegerFieldIndex
-        )
+    /// The entry whose *weight* has the keyboard, with its set — the ± acts on the weight's sign,
+    /// so it has no business appearing over a reps or duration pad.
+    ///
+    /// Deliberately not gated on the field holding a number: this is read by the recorder's body,
+    /// which a keystroke doesn't redraw. `KeyboardAssistedButton` observes the entry and shows
+    /// itself once there is something to flip, so the ± arrives with the first digit, the way a
+    /// calculator's does — you type the weight, then say it was help rather than load.
+    var focusedWeightEntry: (entry: SetEntry, set: WorkoutSet)? {
+        guard let focusedIndex = focusedIntegerFieldIndex,
+              let workoutSet = selectedWorkoutSet
+        else { return nil }
+        return SetFieldNavigation.weightEntry(at: focusedIndex, in: workoutSet)
     }
 }

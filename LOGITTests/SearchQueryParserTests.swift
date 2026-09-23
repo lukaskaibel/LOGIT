@@ -25,11 +25,12 @@ final class SearchQueryParserTests: XCTestCase {
         return calendar
     }()
 
-    private func parser(_ identifier: String = "en_US") -> SearchQueryParser {
+    private func parser(_ identifier: String = "en_US", names: [String] = []) -> SearchQueryParser {
         SearchQueryParser(
             calendar: calendar,
             locale: Locale(identifier: identifier),
-            now: { self.referenceDate }
+            now: { self.referenceDate },
+            names: names
         )
     }
 
@@ -173,6 +174,78 @@ final class SearchQueryParserTests: XCTestCase {
     func testThisMonthAndLastYear() {
         XCTAssertEqual(parser().parse("this month").dateTokens, [.month(9, year: 2025)])
         XCTAssertEqual(parser().parse("last year").dateTokens, [.year(2024)])
+    }
+
+    func testThreeWordPhrasesInEveryLanguageThatHasThem() {
+        // The app's own wording for last week / last month, which runs to three words in these
+        // languages. Reading only two words ahead left the third behind as a name filter — and
+        // French "dernière" then read again as the start of "Dernière année".
+        for (identifier, phrase) in [
+            ("fr_FR", "La semaine dernière"),
+            ("es_ES", "La semana pasada"),
+            ("it_IT", "La settimana scorsa"),
+        ] {
+            let query = parser(identifier).parse(phrase)
+            XCTAssertEqual(query.dateTokens.count, 1, "\(phrase) should be one date")
+            XCTAssertEqual(query.text, "", "\(phrase) should leave no text behind")
+            guard case .span? = query.dateTokens.first else {
+                return XCTFail("\(phrase) should resolve to last week")
+            }
+        }
+        let lastMonth = parser("it_IT").parse("Il mese scorso")
+        XCTAssertEqual(lastMonth.dateTokens, [.month(8, year: 2025)])
+        XCTAssertEqual(lastMonth.text, "")
+    }
+
+    func testAPhraseKeepsTheTextAroundIt() {
+        let query = parser("fr_FR").parse("squat la semaine dernière")
+        XCTAssertEqual(query.text, "squat")
+        XCTAssertEqual(query.dateTokens.count, 1)
+    }
+
+    func testTwoCharacterPhrasesInJapaneseAndKorean() {
+        XCTAssertEqual(parser("ja_JP").parse("今日").dateTokens, [.day(referenceDate)])
+        guard case .span? = parser("ja_JP").parse("先週").dateTokens.first else {
+            return XCTFail("先週 should resolve to last week")
+        }
+        XCTAssertEqual(parser("ko_KR").parse("오늘").dateTokens, [.day(referenceDate)])
+        // One character is still too little to guess from.
+        XCTAssertTrue(parser("ja_JP").parse("今").dateTokens.isEmpty)
+    }
+
+    func testAPhraseTypedWithoutItsSpace() {
+        guard case .span? = parser("ko_KR").parse("이번주").dateTokens.first else {
+            return XCTFail("이번주 should resolve to this week")
+        }
+    }
+
+    func testCurlyApostropheFromTheKeyboard() {
+        XCTAssertEqual(parser("fr_FR").parse("aujourd\u{2019}hui").dateTokens, [.day(referenceDate)])
+    }
+
+    func testANameBeatsAHalfTypedDate() {
+        let names = ["Bankdrücken mit Kurzhanteln", "Dips", "Decline Bench Press"]
+        let german = parser("de_DE", names: names)
+        XCTAssertTrue(german.parse("Bankdrücken mit Kurzhanteln").dateTokens.isEmpty)
+        XCTAssertTrue(german.parse("mit").dateTokens.isEmpty)
+        XCTAssertTrue(german.parse("Di").dateTokens.isEmpty)
+        XCTAssertTrue(parser(names: names).parse("dec").dateTokens.isEmpty)
+    }
+
+    func testADateTypedInFullBeatsAName() {
+        let german = parser("de_DE", names: ["Bankdrücken mit Kurzhanteln"])
+        XCTAssertEqual(german.parse("Mittwoch").dateTokens, [.weekday(4)])
+        XCTAssertEqual(
+            parser(names: ["Decline Bench Press"]).parse("december").dateTokens,
+            [.month(12, year: nil)]
+        )
+    }
+
+    func testAnAbbreviationNoNameStartsWithIsStillADate() {
+        XCTAssertEqual(
+            parser("de_DE", names: ["Bankdrücken"]).parse("dez").dateTokens,
+            [.month(12, year: nil)]
+        )
     }
 
     func testAnAmbiguousHalfTypedPhraseIsNotGuessed() {

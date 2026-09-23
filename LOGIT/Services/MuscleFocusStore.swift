@@ -49,7 +49,7 @@ final class MuscleFocusStore: ObservableObject {
         self.defaults = defaults
         let goal = Self.readWorkoutGoal(from: defaults)
         let stored = Self.load(from: defaults)
-        let migrated = stored == nil ? Self.migrateLegacySplit(from: defaults) : nil
+        let migrated = stored == nil ? Self.migrateLegacySplit(from: defaults, sizedFor: goal) : nil
         workoutGoal = goal
         focus = stored ?? migrated
             ?? MuscleFocusPreset.fullBody.focus(forWorkoutsPerWeek: goal ?? MuscleFocus.baseWorkoutsPerWeek)
@@ -150,7 +150,11 @@ final class MuscleFocusStore: ObservableObject {
         return try? JSONDecoder().decode(MuscleFocus.self, from: data)
     }
 
-    private static func migrateLegacySplit(from defaults: UserDefaults) -> MuscleFocus? {
+    /// The split from the percent editor as weekly targets, sized for the weekly goal the user has
+    /// now. A share says nothing about how many workouts it was meant for; read as sized for the base
+    /// week, a user with a goal of 5 came out of the update a third short of every target and was
+    /// offered to "update" them for a goal of 3 they never set.
+    private static func migrateLegacySplit(from defaults: UserDefaults, sizedFor goal: Int?) -> MuscleFocus? {
         guard let data = defaults.data(forKey: legacyStorageKey),
               let raw = try? JSONDecoder().decode([String: Int].self, from: data)
         else { return nil }
@@ -159,6 +163,8 @@ final class MuscleFocusStore: ObservableObject {
                 result[group] = pair.value
             }
         }
-        return MuscleFocus(legacyPercentages: percentages)
+        let focus = MuscleFocus(legacyPercentages: percentages)
+        guard let goal, goal != focus.workoutsPerWeek else { return focus }
+        return focus.resized(forWorkoutsPerWeek: goal)
     }
 }

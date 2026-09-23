@@ -172,9 +172,7 @@ struct GlobalSearchScreen: View {
     }
     
     private var searchResultsView: some View {
-        let query = SearchQueryParser().parse(searchText)
-
-        return FetchRequestWrapper(
+        FetchRequestWrapper(
             Exercise.self,
             sortDescriptors: [SortDescriptor(\.name)]
         ) { allExercises in
@@ -186,6 +184,12 @@ struct GlobalSearchScreen: View {
                     Template.self,
                     sortDescriptors: [SortDescriptor(\.name)]
                 ) { allTemplates in
+                    // Parsed against the library's names as shown — a built-in exercise stores a
+                    // localisation key, not its name — so a half-typed date word that starts one of
+                    // them ("mit", "Di") keeps finding the exercise instead of becoming a date.
+                    let query = SearchQueryParser(
+                        names: allExercises.map(\.displayName) + allTemplates.map(\.displayName)
+                    ).parse(searchText)
                     let results = SearchEngine.shared.results(
                         for: query,
                         exercises: allExercises,

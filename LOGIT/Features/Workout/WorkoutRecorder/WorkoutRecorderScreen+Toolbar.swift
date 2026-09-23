@@ -34,8 +34,8 @@ extension WorkoutRecorderScreen {
                 // loses a number, and the row is trailing-aligned, so the capsule grows away from
                 // the edge and neither Next nor hide — the buttons you tap sixty times a workout —
                 // moves under your thumb.
-                if let assistedSet = focusedWeightSet {
-                    KeyboardAssistedButton(workoutSet: assistedSet)
+                if let focused = focusedWeightEntry {
+                    KeyboardAssistedSlot(workoutSet: focused.workoutSet, entry: focused.entry)
                 }
                 KeyboardToolbarTextButton(
                     title: NSLocalizedString("next", comment: ""),
@@ -58,19 +58,11 @@ extension WorkoutRecorderScreen {
         }
     }
 
-    /// The focused set, but only while the field with the keyboard is its *weight* — the ± acts on
-    /// the weight's sign, so it has no business appearing over a reps or duration pad.
-    ///
-    /// Nil until the field actually holds a number, because a sign flip needs something to flip:
-    /// 0 is bodyweight, never "assisted by zero". So the ± arrives with the first digit, the way a
-    /// calculator's does — you type the weight, then say it was help rather than load.
-    var focusedWeightSet: WorkoutSet? {
-        guard let focusedIndex = focusedIntegerFieldIndex,
-              let workoutSet = selectedWorkoutSet,
-              let entry = workoutSet.entryValues.value(at: focusedIndex.secondary),
-              entry.type.weightFieldIndex == focusedIndex.tertiary,
-              workoutSet.entryValues.contains(where: { $0.type.usesWeight && $0.weight != 0 })
-        else { return nil }
-        return workoutSet
+    /// The focused set and entry, but only while the field with the keyboard is a *weight* — see
+    /// `KeyboardAssistedSlot`, which decides from there whether the ± shows.
+    var focusedWeightEntry: (workoutSet: WorkoutSet, entry: SetEntry)? {
+        KeyboardAssistedSlot.focusedWeightEntry(
+            in: workoutRecorder.workout?.sets ?? [], focusedIndex: focusedIntegerFieldIndex
+        )
     }
 }

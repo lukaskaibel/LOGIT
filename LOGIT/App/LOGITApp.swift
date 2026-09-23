@@ -252,6 +252,7 @@ struct LOGIT: App {
                     }
                     #if DEBUG
                     DemoWorkoutSeeder.seedIfRequested(database: database)
+                    DemoWorkoutSeeder.seedHighlightsDemoIfRequested(database: database)
                     #endif
                     Task {
                         do {
@@ -278,6 +279,40 @@ struct LOGIT: App {
                        workoutRecorder.workout == nil {
                         try? await Task.sleep(nanoseconds: 600_000_000)
                         workoutRecorder.startWorkout()
+                        showWorkoutRecorder()
+                    }
+                    // UI-test hook: a fresh workout with one logged set — with `-SCENARIO empty`, a
+                    // brand-new user's first finish (no goal, no history to beat). Typing the set
+                    // in from a test doesn't work: the tray is its own presentation, so the field
+                    // behind it never reads as focused to XCUITest.
+                    if ProcessInfo.processInfo.arguments.contains("-UITEST_START_LOGGED_WORKOUT"),
+                       workoutRecorder.workout == nil,
+                       let exercise = database.getExercises(for: .chest).first {
+                        try? await Task.sleep(nanoseconds: 600_000_000)
+                        workoutRecorder.startWorkout()
+                        workoutRecorder.addSetGroup(with: exercise)
+                        if let set = workoutRecorder.workout?.setGroups.first?.sets.first as? StandardSet,
+                           let entry = set.entries.first {
+                            entry.repetitions = 10
+                            entry.weight = 60000
+                        }
+                        showWorkoutRecorder()
+                    }
+                    // UI-test hook: the finish panel's highlights, every shape at once — two weight
+                    // records, a repetitions record, a Strength improvement, a repetitions
+                    // improvement and a weight improvement, against the history seeded above.
+                    if DemoWorkoutSeeder.isHighlightsDemoRequested, workoutRecorder.workout == nil {
+                        try? await Task.sleep(nanoseconds: 600_000_000)
+                        workoutRecorder.startWorkout()
+                        workoutRecorder.workout?.name = "Push Day"
+                        for demoEntry in DemoWorkoutSeeder.highlightsDemoPlan(database: database) {
+                            workoutRecorder.addSetGroup(with: demoEntry.exercise)
+                            if let set = workoutRecorder.workout?.setGroups.last?.sets.first as? StandardSet,
+                               let entry = set.entries.first {
+                                entry.repetitions = Int64(demoEntry.today.reps)
+                                entry.weight = Int64(demoEntry.today.grams)
+                            }
+                        }
                         showWorkoutRecorder()
                     }
                     #endif

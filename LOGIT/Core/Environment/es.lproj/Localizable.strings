@@ -913,6 +913,14 @@
 "firstTimeForThisWorkout" = "Primera vez con este entrenamiento: las próximas sesiones se compararán con esta.";
 "workoutPRInfo" = "Un récord personal significa que una serie de este entrenamiento superó tu mejor peso, tu mayor número de repeticiones o tu mejor fuerza de todos los entrenamientos anteriores. Sigue siendo el récord de ese día aunque lo hayas superado después. Si varios mejoran a la vez, cuentan juntos como un solo récord. El más concreto encabeza la tarjeta: primero un peso que levantaste de verdad, después la fuerza y después un número de repeticiones. Los demás se listan con él.";
 "alsoARecord" = "También récord · %@";
+"showMoreCount" = "Ver %d más";
+"finishFirstSessionsOne" = "Primera sesión de 1 ejercicio";
+"finishFirstSessionsMany" = "Primera sesión de %d ejercicios";
+"finishFirstSessionsDetail" = "La próxima vez tendrás una marca que superar.";
+"highlightRecordLabel" = "PR de %@";
+"highlightImprovedLabel" = "%@ mejorado";
+"exercisesCountOne" = "1 ejercicio";
+"exercisesCountMany" = "%d ejercicios";
 "workoutTrendInfo" = "Cada ejercicio tiene una métrica de progreso: el valor con el que se mide, como el peso o la fuerza. La tendencia compara el mejor valor alcanzado en este entrenamiento con tu mejor marca de las cuatro semanas anteriores, la misma comparación que muestran las insignias junto a los ejercicios de abajo.";
 "workoutVolumeCompareInfo" = "Volumen total (peso × repeticiones de cada serie) comparado con la última vez que hiciste este entrenamiento.";
 "improvedCount" = "%d mejorados";
@@ -941,6 +949,9 @@
 "weeklyGoalReached" = "Objetivo alcanzado";
 "weeklyGoalToGoOne" = "Falta 1 entrenamiento";
 "weeklyGoalToGoMany" = "Faltan %d entrenamientos";
+"ofWeeklyGoal" = "de %d";
+"weeklyGoalBeyondOne" = "1 más que tu objetivo";
+"weeklyGoalBeyondMany" = "%d más que tu objetivo";
 "weeklyStreakWeeks" = "%d sem";
 "muscleBalance" = "Balance muscular";
 "balance" = "Balance";
@@ -1211,6 +1222,7 @@
 "notRated" = "Sin valorar";
 "rateYourEffort" = "Valora tu esfuerzo";
 "addEffort" = "Añadir esfuerzo";
+"rateEffortShort" = "Valorar";
 "effortDescriptions" = "Descripciones del esfuerzo";
 "effortSelectDescription" = "Selecciona la descripción que mejor se ajuste al entrenamiento en general.";
 "effortSkipFootnote" = "Si omites este entrenamiento, se eliminará de tu carga de entrenamiento en Fitness.";

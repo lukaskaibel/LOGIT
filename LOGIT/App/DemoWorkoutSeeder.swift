@@ -185,6 +185,86 @@ enum DemoWorkoutSeeder {
         NSLog("DemoWorkoutSeeder: seeded %d demo workouts", workoutNames.count)
     }
 
+    // MARK: Highlights demo
+
+    static var isHighlightsDemoRequested: Bool {
+        ProcessInfo.processInfo.arguments.contains("-UITEST_HIGHLIGHTS_DEMO")
+    }
+
+    /// One exercise of the highlights demo: its best ever, its best of the last four weeks, and
+    /// what it does today — chosen so the finish panel's highlights show every shape at once.
+    struct HighlightsDemoEntry {
+        let exercise: Exercise
+        let allTime: (reps: Int, grams: Int)
+        let recent: (reps: Int, grams: Int)
+        let today: (reps: Int, grams: Int)
+    }
+
+    /// The demo's six exercises, in the order they are trained. What each produces:
+    ///
+    /// - **Bench press, squats** — a weight personal record: today is heavier than anything before.
+    /// - **Barbell curls** — a repetitions record at a weight that was already matched, so weight
+    ///   isn't a record and the row leads with the reps.
+    /// - **Lat pulldowns** — a *Strength* improvement: the estimate beats the last four weeks while
+    ///   the weight on the bar doesn't move and the all-time estimate stays out of reach, which is
+    ///   the only way this row is ever about Strength.
+    /// - **Triceps pushdowns** — more reps than recently, fewer than ever.
+    /// - **Shoulder press** — heavier than recently, lighter than ever.
+    static func highlightsDemoPlan(database: Database) -> [HighlightsDemoEntry] {
+        func entry(
+            _ nameKey: String,
+            _ fallback: String,
+            _ muscleGroup: MuscleGroup,
+            metric: ExercisePrimaryMetric,
+            allTime: (reps: Int, grams: Int),
+            recent: (reps: Int, grams: Int),
+            today: (reps: Int, grams: Int)
+        ) -> HighlightsDemoEntry {
+            let exercise = exercise(nameKey, fallback, muscleGroup, database)
+            exercise.primaryMetric = metric
+            return HighlightsDemoEntry(exercise: exercise, allTime: allTime, recent: recent, today: today)
+        }
+        return [
+            entry("_default.exercise.barbellBenchPress", "Bench Press", .chest, metric: .estimatedOneRepMax,
+                  allTime: (5, 100_000), recent: (5, 95000), today: (5, 105_000)),
+            entry("_default.exercise.squats", "Squats", .legs, metric: .estimatedOneRepMax,
+                  allTime: (5, 140_000), recent: (5, 130_000), today: (5, 150_000)),
+            entry("_default.exercise.barbellCurls", "Barbell Curls", .biceps, metric: .repetitions,
+                  allTime: (12, 20000), recent: (10, 20000), today: (14, 20000)),
+            // Ten reps, not more: above twelve the app reports no estimate at all, and the trend
+            // would quietly fall back to repetitions.
+            entry("_default.exercise.latPulldowns", "Lat Pulldowns", .back, metric: .estimatedOneRepMax,
+                  allTime: (12, 100_000), recent: (5, 90000), today: (10, 90000)),
+            entry("_default.exercise.tricepPushdowns", "Tricep Pushdowns", .triceps, metric: .repetitions,
+                  allTime: (18, 30000), recent: (13, 30000), today: (14, 30000)),
+            entry("_default.exercise.shoulderPress", "Shoulder Press", .shoulders, metric: .estimatedOneRepMax,
+                  allTime: (5, 70000), recent: (5, 57500), today: (5, 62500)),
+        ]
+    }
+
+    /// The history the demo's highlights are measured against: one session two months ago holding
+    /// every all-time best, one twelve days ago holding the recent bests.
+    static func seedHighlightsDemoIfRequested(database: Database) {
+        guard isHighlightsDemoRequested else { return }
+        let plan = highlightsDemoPlan(database: database)
+        for (name, daysAgo, values) in [
+            ("Two Months Ago", 60, \HighlightsDemoEntry.allTime),
+            ("Last Session", 12, \HighlightsDemoEntry.recent),
+        ] as [(String, Int, KeyPath<HighlightsDemoEntry, (reps: Int, grams: Int)>)] {
+            let workout = database.newWorkout(name: name, date: startDate(daysAgo: daysAgo, hour: 18, minute: 0))
+            workout.endDate = workout.date?.addingTimeInterval(70 * 60)
+            for demoEntry in plan {
+                let group = database.newWorkoutSetGroup(
+                    createFirstSetAutomatically: false, exercise: demoEntry.exercise, workout: workout
+                )
+                let value = demoEntry[keyPath: values]
+                database.newStandardSet(repetitions: value.reps, weight: value.grams, setGroup: group)
+            }
+        }
+        database.save()
+        NSLog("DemoWorkoutSeeder: seeded the highlights demo history")
+    }
+
     /// The built-in exercise matching the default-library name key, or a new
     /// stand-alone exercise when the library isn't loaded (or the key changed).
     private static func exercise(

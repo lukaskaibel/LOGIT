@@ -221,6 +221,10 @@
 		80AB10032F15AA0100AB1003 /* Transmission in Frameworks */ = {isa = PBXBuildFile; productRef = 80AB10022F15AA0100AB1002 /* Transmission */; };
 		80AB10052F15AA0100AB1005 /* RecorderPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AB10042F15AA0100AB1004 /* RecorderPresentation.swift */; };
 		80AB10082F15AA0100AB1008 /* RecorderTopSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AB10072F15AA0100AB1007 /* RecorderTopSheet.swift */; };
+		80EE20032F20BB0100EE2003 /* Vortex in Frameworks */ = {isa = PBXBuildFile; productRef = 80EE20022F20BB0100EE2002 /* Vortex */; };
+		80EE20052F20BB0100EE2005 /* WorkoutRecap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EE20042F20BB0100EE2004 /* WorkoutRecap.swift */; };
+		80EE20072F20BB0100EE2007 /* RecorderFinishPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EE20062F20BB0100EE2006 /* RecorderFinishPanel.swift */; };
+		80EE20092F20BB0100EE2009 /* CelebrationEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EE20082F20BB0100EE2008 /* CelebrationEffects.swift */; };
 		80AB100A2F15AA0100AB100A /* RecorderTopSheetModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AB10092F15AA0100AB1009 /* RecorderTopSheetModelTests.swift */; };
 		80B387BB2EBA187100AD7EFC /* DecimalField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387BA2EBA187100AD7EFC /* DecimalField.swift */; };
 		80B387DC2EBA187100AD7EFD /* DurationClockField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B387DB2EBA187100AD7EFD /* DurationClockField.swift */; };
@@ -606,6 +610,9 @@
 		80AA10062F5CAA0200AA1006 /* default_templates.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = default_templates.json; sourceTree = "<group>"; };
 		80AB10042F15AA0100AB1004 /* RecorderPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderPresentation.swift; sourceTree = "<group>"; };
 		80AB10072F15AA0100AB1007 /* RecorderTopSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderTopSheet.swift; sourceTree = "<group>"; };
+		80EE20042F20BB0100EE2004 /* WorkoutRecap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRecap.swift; sourceTree = "<group>"; };
+		80EE20062F20BB0100EE2006 /* RecorderFinishPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderFinishPanel.swift; sourceTree = "<group>"; };
+		80EE20082F20BB0100EE2008 /* CelebrationEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CelebrationEffects.swift; sourceTree = "<group>"; };
 		80AB10092F15AA0100AB1009 /* RecorderTopSheetModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderTopSheetModelTests.swift; sourceTree = "<group>"; };
 		80B387BA2EBA187100AD7EFC /* DecimalField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalField.swift; sourceTree = "<group>"; };
 		80B387DB2EBA187100AD7EFD /* DurationClockField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DurationClockField.swift; sourceTree = "<group>"; };
@@ -753,6 +760,7 @@
 				80C2B98F2EC9362A00118FE2 /* ColorfulX in Frameworks */,
 				791347B62AE2BEB100D20BB7 /* MarkdownUI in Frameworks */,
 				80AB10032F15AA0100AB1003 /* Transmission in Frameworks */,
+				80EE20032F20BB0100EE2003 /* Vortex in Frameworks */,
 				79C8FADF2AE3F657001EA5A7 /* OpenAIKit in Frameworks */,
 				7907FDEA289E99B1006AF271 /* CloudKit.framework in Frameworks */,
 				795767812AE706DB0040E327 /* Camera-SwiftUI in Frameworks */,
@@ -1232,6 +1240,8 @@
 				801BBD242DF7338A00CDB1FB /* WorkoutRecorderScreen.swift */,
 				80AB10042F15AA0100AB1004 /* RecorderPresentation.swift */,
 				80AB10072F15AA0100AB1007 /* RecorderTopSheet.swift */,
+				80EE20042F20BB0100EE2004 /* WorkoutRecap.swift */,
+				80EE20062F20BB0100EE2006 /* RecorderFinishPanel.swift */,
 				801BBD252DF7338A00CDB1FB /* WorkoutRecorderScreen+Toolbar.swift */,
 			);
 			path = WorkoutRecorder;
@@ -1382,6 +1392,7 @@
 				9F15F1FFB910F4064DBF3874 /* WorkoutEffortViews.swift */,
 				227314112C93FB00464928D8 /* WorkoutEffortRatingSheet.swift */,
 				6A24220ABAB2BDAEBAB63B05 /* WorkoutNoteField.swift */,
+				80EE20082F20BB0100EE2008 /* CelebrationEffects.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1535,6 +1546,7 @@
 				80C2B98E2EC9362A00118FE2 /* ColorfulX */,
 				80036CE02EFEFFD100B7C7B4 /* Ifrit */,
 				80AB10022F15AA0100AB1002 /* Transmission */,
+				80EE20022F20BB0100EE2002 /* Vortex */,
 			);
 			productName = WorkoutDiary;
 			productReference = 8065AA6B2686667F00F53A5A /* LOGIT.app */;
@@ -1599,6 +1611,7 @@
 				80C2B98D2EC9362A00118FE2 /* XCRemoteSwiftPackageReference "ColorfulX" */,
 				80036CDF2EFEFFD100B7C7B4 /* XCRemoteSwiftPackageReference "Ifrit" */,
 				80AB10012F15AA0100AB1001 /* XCRemoteSwiftPackageReference "Transmission" */,
+				80EE20012F20BB0100EE2001 /* XCRemoteSwiftPackageReference "Vortex" */,
 			);
 			productRefGroup = 8065AA6C2686667F00F53A5A /* Products */;
 			projectDirPath = "";
@@ -1901,6 +1914,9 @@
 				801BBDF02DF7338A00CDB1FB /* TemplateListScreen.swift in Sources */,
 				80AB10052F15AA0100AB1005 /* RecorderPresentation.swift in Sources */,
 				80AB10082F15AA0100AB1008 /* RecorderTopSheet.swift in Sources */,
+				80EE20052F20BB0100EE2005 /* WorkoutRecap.swift in Sources */,
+				80EE20072F20BB0100EE2007 /* RecorderFinishPanel.swift in Sources */,
+				80EE20092F20BB0100EE2009 /* CelebrationEffects.swift in Sources */,
 				801BBDF42DF7338A00CDB1FB /* TextProcessing.swift in Sources */,
 				801BBDF52DF7338A00CDB1FB /* FirstStartScreen.swift in Sources */,
 				801BBDF72DF7338A00CDB1FB /* UpgradeToProScreen.swift in Sources */,
@@ -2439,6 +2455,14 @@
 				minimumVersion = 2.9.3;
 			};
 		};
+		80EE20012F20BB0100EE2001 /* XCRemoteSwiftPackageReference "Vortex" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twostraws/Vortex";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.4;
+			};
+		};
 		80C2B98D2EC9362A00118FE2 /* XCRemoteSwiftPackageReference "ColorfulX" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Lakr233/ColorfulX.git";
@@ -2474,6 +2498,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 80AB10012F15AA0100AB1001 /* XCRemoteSwiftPackageReference "Transmission" */;
 			productName = Transmission;
+		};
+		80EE20022F20BB0100EE2002 /* Vortex */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 80EE20012F20BB0100EE2001 /* XCRemoteSwiftPackageReference "Vortex" */;
+			productName = Vortex;
 		};
 		80C2B98E2EC9362A00118FE2 /* ColorfulX */ = {
 			isa = XCSwiftPackageProductDependency;

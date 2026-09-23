@@ -116,6 +116,16 @@ struct WorkoutProgressReport {
 
     let exerciseRecords: [ExerciseRecords]
     let trends: [ExerciseTrend]
+    /// For every exercise scored on Strength (the estimated one-rep max), the same comparison on
+    /// the weight it actually lifted. A heavier top set is the more tangible news than a derived
+    /// estimate moving, so the finish panel leads with it whenever both improved; the estimate is
+    /// still what `trends` counts by. Empty for exercises scored on anything else.
+    var weightTrends: [ExerciseTrend] = []
+
+    /// The weight comparison behind an exercise's Strength trend, if there is one.
+    func weightTrend(for exercise: Exercise) -> ExerciseTrend? {
+        weightTrends.first { $0.exercise.objectID == exercise.objectID }
+    }
 
     var comparableTrendCount: Int { trends.filter { $0.percentChange != nil }.count }
     var improvedTrendCount: Int { trends.filter { $0.isImprovement }.count }
@@ -129,6 +139,7 @@ struct WorkoutProgressReport {
 
         var exerciseRecords = [ExerciseRecords]()
         var trends = [ExerciseTrend]()
+        var weightTrends = [ExerciseTrend]()
 
         for exercise in uniqueExercises(in: workout) {
             // All of the exercise's sets before this workout, by timestamp (strictly earlier, so
@@ -179,32 +190,37 @@ struct WorkoutProgressReport {
             if sessionBest(trendMetric) == 0 {
                 trendMetric = .repetitions
             }
-            let current = sessionBest(trendMetric)
             // Same baseline as the exercise badge: best of the month before this workout, falling
             // back to the all-time best before it — so the "n improved" pill beside the exercises
             // title can never disagree with the badges it summarizes.
             let windowStart = Exercise.currentBestWindowStart(endingAt: workoutDate)
-            let windowBest = exercise.best(
-                of: priorSets
-                    .filter { ($0.workout?.date ?? .distantPast) >= windowStart }
-                    .map { value($0, trendMetric) },
-                for: trendMetric
-            ) ?? 0
-            let priorBestForTrend = exercise.best(
-                of: priorSets.map { value($0, trendMetric) }, for: trendMetric
-            ) ?? 0
-            let baseline = windowBest != 0 ? windowBest : priorBestForTrend
-            if current != 0 {
-                trends.append(ExerciseTrend(
+            func trend(_ metric: ExercisePrimaryMetric) -> ExerciseTrend? {
+                let current = sessionBest(metric)
+                guard current != 0 else { return nil }
+                let windowBest = exercise.best(
+                    of: priorSets
+                        .filter { ($0.workout?.date ?? .distantPast) >= windowStart }
+                        .map { value($0, metric) },
+                    for: metric
+                ) ?? 0
+                let priorBest = exercise.best(of: priorSets.map { value($0, metric) }, for: metric) ?? 0
+                let baseline = windowBest != 0 ? windowBest : priorBest
+                return ExerciseTrend(
                     exercise: exercise,
-                    metric: trendMetric,
+                    metric: metric,
                     current: current,
                     baseline: baseline != 0 ? baseline : nil
-                ))
+                )
+            }
+            if let primary = trend(trendMetric) {
+                trends.append(primary)
+                if trendMetric == .estimatedOneRepMax, let weight = trend(.weight) {
+                    weightTrends.append(weight)
+                }
             }
         }
 
-        return WorkoutProgressReport(exerciseRecords: exerciseRecords, trends: trends)
+        return WorkoutProgressReport(exerciseRecords: exerciseRecords, trends: trends, weightTrends: weightTrends)
     }
 
     private static func uniqueExercises(in workout: Workout) -> [Exercise] {
@@ -460,59 +476,33 @@ struct WorkoutPersonalBestsTile: View {
 
 }
 
-/// The records this session set, as one line — the recorder's finish panel.
-///
-/// Deliberately a *line*, not the detail screen's tile of `PersonalBestRow`s: at the moment you
-/// finish, the reward is the recognition ("you got stronger on two things"), and the numbers are
-/// still fresh in your hands. The full cards, the value each record beat and its history chart all
-/// live on the workout detail, one tap away once the workout is saved.
-///
-/// Renders nothing when the session set no records — a finish screen should never announce a zero.
-struct PersonalRecordsHighlight: View {
-    let workout: Workout
-    let records: [WorkoutProgressReport.ExerciseRecords]
+/// How many exercises beat their recent best, as a pill beside an "Exercises" title — the workout
+/// detail's and the recorder's finish panel's, so the two never count differently. Muted gray while
+/// nothing improved; the workout's own gradient once at least one did. The per-exercise detail lives
+/// on each row's badge below it.
+struct ExercisesImprovedPill: View {
+    let report: WorkoutProgressReport
+    /// The workout's muscle-group gradient, worn once at least one exercise improved.
+    let style: AnyShapeStyle
 
     var body: some View {
-        if !records.isEmpty {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            workout.sets
-                                .muscleGroupGradient(startPoint: .bottomLeading, endPoint: .topTrailing)
-                                .opacity(0.18)
-                        )
-                        .frame(width: 38, height: 38)
-                    Image(systemName: "trophy.fill")
-                        .font(.footnote)
-                        .foregroundStyle(
-                            workout.sets.muscleGroupGradientStyle(
-                                startPoint: .bottomLeading,
-                                endPoint: .topTrailing
-                            )
-                        )
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(personalRecordsHeadline(count: records.count))
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Color.label)
-                    // The exercises, not the values: which lifts moved is the part worth naming
-                    // here, and it stays one line however many there are.
-                    Text(records.map { $0.exercise.displayName }.joined(separator: " · "))
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(CELL_PADDING)
-            // The same translucent surface as the Volume and Repetitions tiles above it.
-            .translucentTileStyle()
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("finishPersonalRecords")
+        let improved = report.improvedTrendCount
+        ProgressIndicatorPill(
+            symbol: improved > 0 ? "arrow.up" : nil,
+            style: improved > 0 ? style : AnyShapeStyle(Color.secondary)
+        ) {
+            Text(String(format: NSLocalizedString("improvedCount", comment: ""), improved))
+                .font(.system(.footnote, design: .rounded, weight: .bold))
+                .monospacedDigit()
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            String(
+                format: NSLocalizedString("exercisesImproved", comment: ""),
+                improved,
+                report.comparableTrendCount
+            )
+        )
     }
 }
 

@@ -913,6 +913,14 @@
 "firstTimeForThisWorkout" = "이 워크아웃은 이번이 처음입니다. 앞으로의 세션은 이번 기록과 비교됩니다.";
 "workoutPRInfo" = "개인 기록은 이번 워크아웃의 어떤 세트가 이전 모든 워크아웃에서의 최고 중량, 최다 반복 횟수, 또는 최고 근력을 넘어섰다는 뜻입니다. 나중에 경신하더라도 그날의 기록으로 남습니다. 여러 항목이 한꺼번에 좋아지면 묶어서 하나의 기록으로 셉니다. 가장 확실한 항목이 카드를 대표합니다. 실제로 든 중량이 가장 우선이고, 그다음이 근력, 그다음이 반복 횟수입니다. 나머지는 함께 표시됩니다.";
 "alsoARecord" = "또 하나의 기록 · %@";
+"showMoreCount" = "%d개 더 보기";
+"finishFirstSessionsOne" = "처음 기록한 운동 1개";
+"finishFirstSessionsMany" = "처음 기록한 운동 %d개";
+"finishFirstSessionsDetail" = "다음에는 넘어야 할 기록이 생겨요.";
+"highlightRecordLabel" = "%@ 개인 기록";
+"highlightImprovedLabel" = "%@ 향상";
+"exercisesCountOne" = "운동 1개";
+"exercisesCountMany" = "운동 %d개";
 "workoutTrendInfo" = "운동마다 진전 지표가 있습니다. 중량이나 근력처럼 그 운동을 평가하는 값입니다. 추세는 이번 워크아웃에서 도달한 최고 값을 직전 4주간의 최고 기록과 비교합니다. 아래 운동 옆에 붙은 배지와 같은 비교입니다.";
 "workoutVolumeCompareInfo" = "총 볼륨(각 세트의 중량 × 횟수)을 지난번 같은 워크아웃과 비교합니다.";
 "improvedCount" = "%d개 향상";
@@ -941,6 +949,9 @@
 "weeklyGoalReached" = "목표 달성";
 "weeklyGoalToGoOne" = "1회 남음";
 "weeklyGoalToGoMany" = "%d회 남음";
+"ofWeeklyGoal" = "목표 %d회";
+"weeklyGoalBeyondOne" = "목표보다 1회 더";
+"weeklyGoalBeyondMany" = "목표보다 %d회 더";
 "weeklyStreakWeeks" = "%d주";
 "muscleBalance" = "근육 균형";
 "balance" = "밸런스";
@@ -1211,6 +1222,7 @@
 "notRated" = "평가 안 함";
 "rateYourEffort" = "운동 강도 평가";
 "addEffort" = "운동 강도 추가";
+"rateEffortShort" = "평가";
 "effortDescriptions" = "운동 강도 설명";
 "effortSelectDescription" = "운동 전체에 가장 잘 맞는 설명을 선택하십시오.";
 "effortSkipFootnote" = "이 운동을 건너뛰면 피트니스의 훈련 부하에서 제외됩니다.";

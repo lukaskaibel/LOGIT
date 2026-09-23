@@ -10,9 +10,9 @@ import SwiftUI
 /// The workout's own note — "bench felt easy, go 82.5 next time".
 ///
 /// One component, three homes: the recorder header (over the muscle wash, so `.translucent`), the
-/// finish panel, and the workout editor (`.tile`). Deliberately the same shape as
-/// `WorkoutSetGroupCell.noteField` — a note on the workout and a note on an exercise should not
-/// look like two different features.
+/// note sheet the finish panel's note tile opens, and the workout editor (`.tile`). Deliberately the
+/// same shape as `WorkoutSetGroupCell.noteField` — a note on the workout and a note on an exercise
+/// should not look like two different features.
 ///
 /// When the workout came from a template that has been run before, last session's note lives
 /// **inside this same card**, above a hairline, rather than in a separate row floating above it.
@@ -21,7 +21,7 @@ import SwiftUI
 /// typing into?".
 struct WorkoutNoteField: View {
     enum Style {
-        /// A translucent card, for the header and finish panel where the muscle wash shows through.
+        /// A translucent card, for the header and the note sheet, where the muscle wash shows through.
         case translucent
         /// The app's standard opaque cell, for the editor.
         case tile
@@ -140,5 +140,120 @@ struct WorkoutNoteCard: View {
         .tileStyle()
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("workoutNoteCard")
+    }
+}
+
+// MARK: - On half a tile
+
+/// The note on half a tile: its label over as much of the note as fits, the last visible line
+/// ending in an ellipsis, or the prompt while there is none. A button into
+/// `WorkoutNoteEditorSheet`.
+///
+/// The finish panel stands it beside the effort tile — the two are the workout's own account of
+/// itself, and side by side they cost one row instead of two sections. The row takes the effort
+/// tile's height and the note fills it: however long the note, the row never grows.
+struct WorkoutNoteTile: View {
+    @ObservedObject var workout: Workout
+    var prompt: String = NSLocalizedString("workoutNotePrompt", comment: "")
+    let action: () -> Void
+
+    private var note: String {
+        (workout.note ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .top, spacing: 8) {
+                    Text(NSLocalizedString("note", comment: ""))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.label)
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                    Image(systemName: "square.and.pencil")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Color.secondaryLabel)
+                }
+                // No line limit: the text takes every line the height it is given can hold and
+                // truncates the last of them — "as much as fits", whatever the tile's height.
+                Text(workout.hasNote ? note : prompt)
+                    .font(.subheadline)
+                    .foregroundStyle(workout.hasNote ? Color.label : Color.tertiaryLabel)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+            .padding(CELL_PADDING)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .contentShape(Rectangle())
+        }
+        // Identifier and label on the Button itself, as `WorkoutEffortTile` does, so the button
+        // trait survives for `app.buttons["workoutNoteTile"]`.
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("workoutNoteTile")
+        .accessibilityLabel(NSLocalizedString("note", comment: ""))
+        .accessibilityValue(workout.hasNote ? note : prompt)
+        .translucentTileStyle()
+    }
+}
+
+// MARK: - The whole note
+
+/// The whole note, editable — the same card the recorder header writes into, last session's note
+/// above the hairline and this one below it — on a sheet over the workout's muscle wash, the
+/// background the effort sheet wears, so the two ways of describing a workout read as one family.
+///
+/// Edits land on the workout as they are typed, like everywhere else the note is written; Done only
+/// closes the sheet. A blank note opens with the keyboard up (the tap was to write one); a written
+/// one opens to be read, all of it, with the keyboard a tap away.
+struct WorkoutNoteEditorSheet: View {
+    @ObservedObject var workout: Workout
+
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                WorkoutNoteField(
+                    workout: workout,
+                    isFocused: $isFocused,
+                    style: .translucent,
+                    prompt: NSLocalizedString("workoutNotePrompt", comment: ""),
+                    lineLimit: 6 ... 60
+                )
+                .padding(.horizontal)
+                .padding(.top, 8)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle(NSLocalizedString("note", comment: ""))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(role: .confirm) { dismiss() }
+                        .accessibilityIdentifier("workoutNoteDone")
+                }
+            }
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+        .presentationBackground {
+            WorkoutEffortBackground(muscleGroups: workout.muscleGroups)
+        }
+        .task {
+            guard !workout.hasNote else { return }
+            // After the sheet has risen: focusing during the presentation animation is dropped
+            // intermittently, and the keyboard would race the sheet up the screen anyway.
+            try? await Task.sleep(for: .milliseconds(380))
+            isFocused = true
+        }
+    }
+}
+
+extension View {
+    /// Presents the note editor over this view — the one way the note tile opens, wherever it sits.
+    func workoutNoteEditorSheet(isPresented: Binding<Bool>, workout: Workout) -> some View {
+        sheet(isPresented: isPresented) {
+            WorkoutNoteEditorSheet(workout: workout)
+        }
     }
 }

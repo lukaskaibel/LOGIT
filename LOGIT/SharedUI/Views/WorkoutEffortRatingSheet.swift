@@ -328,42 +328,6 @@ extension View {
     }
 }
 
-// MARK: - The rating, in place
-
-/// The rating screen without its chrome, on a card. The recorder's finish panel *is* the moment
-/// a workout is rated, so it rates in place instead of behind a tap — but from the same bars,
-/// the same capsule and the same description list as the sheet.
-struct WorkoutEffortRatingCard: View {
-    @Binding var score: Int?
-    /// The marker's fill, top to bottom — the workout's muscle-group gradient.
-    let tint: AnyShapeStyle
-    let muscleGroups: [MuscleGroup]
-
-    @State private var isShowingDescriptions = false
-
-    var body: some View {
-        WorkoutEffortPicker(score: $score, tint: tint, size: .compact) {
-            isShowingDescriptions = true
-        }
-        .padding(.horizontal, CELL_PADDING)
-        .padding(.vertical, 18)
-        .translucentTileStyle()
-        .sheet(isPresented: $isShowingDescriptions) {
-            WorkoutEffortDescriptionList(
-                score: $score,
-                onBack: { isShowingDescriptions = false },
-                onSkip: {
-                    score = nil
-                    isShowingDescriptions = false
-                }
-            )
-            .presentationBackground {
-                WorkoutEffortBackground(muscleGroups: muscleGroups)
-            }
-        }
-    }
-}
-
 #Preview {
     struct Wrapper: View {
         @State private var score: Int? = 5

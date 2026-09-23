@@ -361,10 +361,12 @@ struct RecorderTopSheetTitleField: View {
 
     @ScaledMetric(relativeTo: .body) private var collapsedSize: CGFloat = 17
     @ScaledMetric(relativeTo: .title2) private var expandedSize: CGFloat = 22
-    @ScaledMetric(relativeTo: .largeTitle) private var finishingSize: CGFloat = 32
 
+    /// Finishing keeps the size the title had a moment before, when Finish was tapped. It used to
+    /// grow to a large title, which cut most names off ("Tuesday Night Wo…") for a line that is the
+    /// least interesting thing on the finish panel; the room goes to the week and the highlights.
     private var size: CGFloat {
-        if model.isFinishing { return finishingSize }
+        if model.isFinishing { return expandedSize }
         return collapsedSize + (expandedSize - collapsedSize) * model.primaryRevealFraction
     }
 
@@ -383,6 +385,7 @@ struct RecorderTopSheetTitleField: View {
             .lineLimit(1)
             .foregroundColor(.label)
             .modifier(AnimatableTitleFont(size: size))
+            .accessibilityIdentifier("recorderTitleField")
         }
     }
 }

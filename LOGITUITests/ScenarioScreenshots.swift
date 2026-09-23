@@ -1017,10 +1017,15 @@ final class ScenarioScreenshots: XCTestCase {
         // the chrono sheet above the tray. Left presented — the test ends here;
         // gesture-dismissing a sheet stacked on the tray is choreography the
         // other flows don't depend on.
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.90, dy: 0.86)).tap()
-        // "Timer"/"Stopwatch" are the chrono sheet's mode-switch buttons.
-        let timerLabel = app.buttons["Timer"].firstMatch
-        XCTAssertTrue(timerLabel.waitForExistence(timeout: 5), "Chrono sheet did not open from the floating timer button")
+        // Tapped by identifier: the list scrolls under the button, so a fixed coordinate can land
+        // on whatever row control is there. The sheet is checked by its mode switch's identifier,
+        // because the idle button is itself a "Timer" button and matching that label passed
+        // even when the tap opened nothing.
+        let floatingTimer = app.buttons["recorderFloatingTimerButton"].firstMatch
+        XCTAssertTrue(floatingTimer.waitForExistence(timeout: 5), "Floating timer button missing above the tray")
+        floatingTimer.tap()
+        let timerModeButton = app.buttons["chronoSheetTimerModeButton"].firstMatch
+        XCTAssertTrue(timerModeButton.waitForExistence(timeout: 5), "Chrono sheet did not open from the floating timer button")
         waitABit()
         attach(app, "recorder_07_chrono_sheet")
     }

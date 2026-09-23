@@ -80,6 +80,10 @@ struct WorkoutRecorderFloatingTimerButton: View {
                 }
             }
             .clipShape(Capsule())
+            // The whole capsule takes the tap. A plain button only answers where its label draws
+            // something hit-testable, and glass on `Color.clear` is not: without this the timer
+            // ignored taps, and they went to the set list under it.
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel(for: displayState))

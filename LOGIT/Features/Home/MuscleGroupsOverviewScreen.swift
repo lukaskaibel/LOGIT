@@ -24,9 +24,12 @@ import SwiftUI
 /// first, furthest behind leading, then at target, then past it. The headline names the first two,
 /// they are the leftmost bars, and their rows open the list. Each bar's letters are the lead of its row.
 ///
-/// **A row opens a popover** with the group's weekly target and the exercises behind its sets. The
-/// row keeps its section while the popover is up — it is the popover's anchor — and slides to its new
-/// section when it closes.
+/// **A row or a bar opens a popover** with the group's weekly target and the exercises behind its
+/// sets. Bar and row are the same group, so both open the same popover, hanging off whichever was
+/// tapped. Opened from a bar, the popover hangs under it, so the bar changes above the target control
+/// while you edit it. While a popover is up the chart keeps its order and every row its section — one
+/// of them is the popover's anchor, and a bar sliding away from under its arrow would take the popover
+/// with it. Only the numbers stay live. On close, bars and rows move to their new places together.
 ///
 /// It opens on the window the Summary was showing, so the screen states the same measurement as the
 /// Balance tile that opened it.
@@ -41,11 +44,11 @@ struct MuscleGroupsOverviewScreen: View {
     @EnvironmentObject private var focusStore: MuscleFocusStore
 
     @State private var isShowingFocusPicker = false
-    /// The group whose target popover is open.
-    @State private var editingGroup: MuscleGroup?
-    /// The rows as they were filed when the popover opened. While it is set, sections and order come
-    /// from here and only the numbers are live.
-    @State private var frozenSections: [MuscleBalanceSection: [MuscleGroup]]?
+    /// The open target popover, and what it hangs off.
+    @State private var popoverAnchor: PopoverAnchor?
+    /// The chart and the rows as they stood when the popover opened. While it is set, bar order and
+    /// sections come from here and only the numbers are live.
+    @State private var frozenArrangement: Arrangement?
 
     var body: some View {
         FetchRequestWrapper(
@@ -66,6 +69,8 @@ struct MuscleGroupsOverviewScreen: View {
             weeks: window.weeksCovered(firstDataDate: allWorkouts.compactMap(\.date).min()),
             muscleGroupService: muscleGroupService
         )
+        let arrangement = frozenArrangement ?? Arrangement(calculator)
+        let byGroup = Dictionary(uniqueKeysWithValues: calculator.entries.map { ($0.muscleGroup, $0) })
 
         return ScrollView {
             VStack(alignment: .leading, spacing: SECTION_SPACING) {
@@ -78,8 +83,8 @@ struct MuscleGroupsOverviewScreen: View {
                             .transition(.opacity.combined(with: .scale(scale: 0.97)))
                     }
                     if calculator.totalSets > 0 {
-                        hero(calculator)
-                        groupSections(calculator, windowWorkouts: windowWorkouts)
+                        hero(calculator, arrangement: arrangement, byGroup: byGroup, windowWorkouts: windowWorkouts)
+                        groupSections(arrangement: arrangement, byGroup: byGroup, windowWorkouts: windowWorkouts)
                     } else {
                         emptyState
                     }
@@ -93,7 +98,7 @@ struct MuscleGroupsOverviewScreen: View {
         .animation(.snappy(duration: 0.3), value: window)
         .animation(.snappy(duration: 0.3), value: focusStore.focus)
         .animation(.snappy(duration: 0.3), value: focusStore.hasChosenFocus)
-        .animation(.snappy(duration: 0.3), value: frozenSections == nil)
+        .animation(.snappy(duration: 0.3), value: frozenArrangement == nil)
         .isBlockedWithoutPro()
         .navigationTitle(NSLocalizedString("muscleGroups", comment: ""))
         .navigationSubtitle(focusSubtitle)
@@ -226,8 +231,13 @@ struct MuscleGroupsOverviewScreen: View {
 
     /// The recommendation over the chart. "Behind on" and the groups furthest behind, at most two,
     /// in their colours, with the count of further groups small at the end of the line; "All on
-    /// target" once none is short.
-    private func hero(_ calculator: MuscleBalanceCalculator) -> some View {
+    /// target" once none is short. Each bar opens its group's popover, like its row.
+    private func hero(
+        _ calculator: MuscleBalanceCalculator,
+        arrangement: Arrangement,
+        byGroup: [MuscleGroup: MuscleBalanceEntry],
+        windowWorkouts: [Workout]
+    ) -> some View {
         let named = calculator.namedFocusEntries.map(\.muscleGroup)
         let more = calculator.unnamedFocusCount
         return VStack(alignment: .leading, spacing: 16) {
@@ -259,20 +269,86 @@ struct MuscleGroupsOverviewScreen: View {
                     }
             }
             .padding(.horizontal, 4)
-            MuscleBalanceTrackChart(entries: calculator.rankedEntries, spacing: 10, badgeDiameter: 22)
-                .frame(height: 160)
+            MuscleBalanceTrackChart(
+                entries: arrangement.bars.compactMap { byGroup[$0] },
+                spacing: 10,
+                badgeDiameter: 22
+            ) { entry, bar in
+                Button {
+                    openPopover(.bar(entry.muscleGroup), arrangement: arrangement)
+                } label: {
+                    bar.contentShape(Rectangle())
+                }
+                .buttonStyle(MuscleBalanceBarButtonStyle())
+                .targetPopover(
+                    isPresented: popoverBinding(.bar(entry.muscleGroup)),
+                    group: entry.muscleGroup,
+                    window: window,
+                    workouts: windowWorkouts,
+                    focusStore: focusStore
+                )
+            }
+            .frame(height: 160)
+            .accessibilityIdentifier("muscleBalanceChart")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Popover
+
+    /// Where a group's target popover hangs. Bar and row open the same popover, so the anchor is the
+    /// only difference, and it keeps the two from both presenting.
+    private enum PopoverAnchor: Hashable {
+        case bar(MuscleGroup)
+        case row(MuscleGroup)
+    }
+
+    /// Where every group stands on the screen: the chart's bar order and the rows' sections, both
+    /// from `rankedEntries`, so they always agree — frozen together, released together.
+    private struct Arrangement {
+        var bars: [MuscleGroup]
+        var sections: [MuscleBalanceSection: [MuscleGroup]]
+
+        init(_ calculator: MuscleBalanceCalculator) {
+            let ranked = calculator.rankedEntries
+            bars = ranked.map(\.muscleGroup)
+            sections = [:]
+            for entry in ranked {
+                sections[MuscleBalanceSection(entry.goalState), default: []].append(entry.muscleGroup)
+            }
+            sections[.off] = calculator.excludedEntries.map(\.muscleGroup)
+        }
+    }
+
+    private func openPopover(_ anchor: PopoverAnchor, arrangement: Arrangement) {
+        // Pin the chart and the list as they stand, so the bar or row under the popover stays where
+        // its arrow points.
+        frozenArrangement = arrangement
+        popoverAnchor = anchor
+    }
+
+    private func popoverBinding(_ anchor: PopoverAnchor) -> Binding<Bool> {
+        Binding(
+            get: { popoverAnchor == anchor },
+            set: { isPresented in
+                if !isPresented, popoverAnchor == anchor {
+                    popoverAnchor = nil
+                    frozenArrangement = nil
+                }
+            }
+        )
     }
 
     // MARK: - Sections
 
     /// Every group as a row, filed by verdict — short first, as in the chart — with the groups the
     /// user turned off last, so the list always holds all eight. Empty sections don't appear.
-    private func groupSections(_ calculator: MuscleBalanceCalculator, windowWorkouts: [Workout]) -> some View {
-        let live = Self.sections(calculator)
-        let filing = frozenSections ?? live
-        let byGroup = Dictionary(uniqueKeysWithValues: calculator.entries.map { ($0.muscleGroup, $0) })
+    private func groupSections(
+        arrangement: Arrangement,
+        byGroup: [MuscleGroup: MuscleBalanceEntry],
+        windowWorkouts: [Workout]
+    ) -> some View {
+        let filing = arrangement.sections
         let visible = MuscleBalanceSection.allCases.filter { !(filing[$0] ?? []).isEmpty }
         return VStack(alignment: .leading, spacing: SECTION_SPACING) {
             ForEach(visible, id: \.self) { section in
@@ -285,7 +361,7 @@ struct MuscleGroupsOverviewScreen: View {
                                     .padding(.leading, 60)
                             }
                             if let entry = byGroup[group] {
-                                row(entry, windowWorkouts: windowWorkouts, filing: filing)
+                                row(entry, windowWorkouts: windowWorkouts, arrangement: arrangement)
                             }
                         }
                     }
@@ -299,15 +375,6 @@ struct MuscleGroupsOverviewScreen: View {
                 }
             }
         }
-    }
-
-    private static func sections(_ calculator: MuscleBalanceCalculator) -> [MuscleBalanceSection: [MuscleGroup]] {
-        var result: [MuscleBalanceSection: [MuscleGroup]] = [:]
-        for entry in calculator.rankedEntries {
-            result[MuscleBalanceSection(entry.goalState), default: []].append(entry.muscleGroup)
-        }
-        result[.off] = calculator.excludedEntries.map(\.muscleGroup)
-        return result
     }
 
     /// The section's verdict as the same mark its bars wear, over a neutral disc, and its name.
@@ -329,14 +396,12 @@ struct MuscleGroupsOverviewScreen: View {
     private func row(
         _ entry: MuscleBalanceEntry,
         windowWorkouts: [Workout],
-        filing: [MuscleBalanceSection: [MuscleGroup]]
+        arrangement: Arrangement
     ) -> some View {
         let group = entry.muscleGroup
         let isOff = entry.target == 0
         return Button {
-            // Pin the list as it stands, so the row under the popover stays where its arrow points.
-            frozenSections = filing
-            editingGroup = group
+            openPopover(.row(group), arrangement: arrangement)
         } label: {
             HStack(spacing: 12) {
                 Text(group.abbreviation)
@@ -372,26 +437,13 @@ struct MuscleGroupsOverviewScreen: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(MuscleBalanceRowButtonStyle())
-        .popover(
-            isPresented: Binding(
-                get: { editingGroup == group },
-                set: { isPresented in
-                    if !isPresented {
-                        editingGroup = nil
-                        frozenSections = nil
-                    }
-                }
-            ),
-            arrowEdge: .top
-        ) {
-            MuscleTargetPopover(
-                group: group,
-                window: window,
-                workouts: windowWorkouts
-            )
-            .environmentObject(focusStore)
-            .presentationCompactAdaptation(.popover)
-        }
+        .targetPopover(
+            isPresented: popoverBinding(.row(group)),
+            group: group,
+            window: window,
+            workouts: windowWorkouts,
+            focusStore: focusStore
+        )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(rowAccessibilityLabel(entry)))
         .accessibilityHint(Text(NSLocalizedString("muscleBalanceRowHint", comment: "")))
@@ -474,12 +526,40 @@ private struct MuscleBalanceRowButtonStyle: ButtonStyle {
     }
 }
 
+/// A bar's press: the whole bar, letters included, dims under the finger, the way a plain button's
+/// content does. A bar has no cell around it to grey.
+private struct MuscleBalanceBarButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.5 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
 // MARK: - Target popover
 
-/// A group's popover from its Muscle Groups row: the weekly target, with the editor's own control,
-/// and the exercises behind the group's sets in the window. The target is the one thing worth changing
-/// here, and where the sets came from is the one thing the row can't say. No chart — the group's bar
-/// is right above.
+private extension View {
+    /// Hangs a group's `MuscleTargetPopover` below this view, arrow up — the one popover a row and a
+    /// bar both open.
+    func targetPopover(
+        isPresented: Binding<Bool>,
+        group: MuscleGroup,
+        window: TrendWindow,
+        workouts: [Workout],
+        focusStore: MuscleFocusStore
+    ) -> some View {
+        popover(isPresented: isPresented, arrowEdge: .top) {
+            MuscleTargetPopover(group: group, window: window, workouts: workouts)
+                .environmentObject(focusStore)
+                .presentationCompactAdaptation(.popover)
+        }
+    }
+}
+
+/// A group's popover from its Muscle Groups row or bar: the weekly target, with the editor's own
+/// control, and the exercises behind the group's sets in the window. The target is the one thing worth
+/// changing here, and where the sets came from is the one thing the row can't say. No chart — the
+/// group's bar is right above, whichever opened it.
 ///
 /// A change commits at once and counts as choosing a focus, like every target change: the row's
 /// numbers follow live, the subtitle turns "Custom", and the row moves to its new section when the

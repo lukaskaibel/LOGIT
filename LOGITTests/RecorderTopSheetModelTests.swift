@@ -386,6 +386,75 @@ final class WorkoutRecapTests: XCTestCase {
         XCTAssertEqual(recap.highlights.first?.current, 105_000)
     }
 
+    func testAStrengthOnlyRecordIsHighlightedEvenWhenTheScoredTrendIsNot() {
+        let press = builder.createExercise(name: "Press", muscleGroup: .shoulders)
+        let row = builder.createExercise(name: "Row", muscleGroup: .back)
+        // Both scored on repetitions, the free default. Today's 95 kg for 10 beats every earlier
+        // estimate (126.7 kg over 116.7 kg) and neither the best weight nor the best reps.
+        press.primaryMetric = .repetitions
+        row.primaryMetric = .repetitions
+        finishedWorkout(on: day(-60), [(row, reps: 15, grams: 60000)])
+        finishedWorkout(on: day(-14), [(press, reps: 5, grams: 100_000), (row, reps: 5, grams: 100_000)])
+        finishedWorkout(on: day(-7), [(press, reps: 12, grams: 60000), (row, reps: 8, grams: 60000)])
+        // Press: twelve reps this month, so its scored trend didn't improve. Row: eight this month,
+        // so its reps trend did (fifteen two months ago keeps it from being a record).
+        let current = currentWorkout([(press, reps: 10, grams: 95000), (row, reps: 10, grams: 95000)])
+
+        let recap = WorkoutRecap.compute(for: current, database: database)
+
+        XCTAssertEqual(recap.report.exerciseRecords.map { $0.lead.metric }, [.estimatedOneRepMax, .estimatedOneRepMax])
+        XCTAssertTrue(recap.records.isEmpty, "Still no Strength records on the finish panel")
+        XCTAssertEqual(recap.highlights.compactMap { $0.exercise.name }.sorted(), ["Press", "Row"], "Each exercise once")
+        XCTAssertTrue(recap.highlights.allSatisfy { !$0.isRecord && $0.metric == .estimatedOneRepMax }, "Both read as Strength improved")
+        let pressRow = recap.highlights.first { $0.exercise.name == "Press" }
+        XCTAssertEqual(pressRow?.previous, 116_667, "Against the estimate it beat")
+        XCTAssertEqual(pressRow?.current, 126_667)
+        XCTAssertFalse(recap.celebrates(target: 0), "An estimate moving doesn't earn the confetti")
+    }
+
+    func testUnassistedAfterAssistedIsARecordAndAnImprovement() {
+        let pullUp = builder.createExercise(name: "Pull-up", muscleGroup: .back)
+        pullUp.primaryMetric = .weight
+        // −20 kg of help last week, none today: the biggest step up there is.
+        finishedWorkout(on: day(-7), [(pullUp, reps: 8, grams: -20000)])
+        let current = currentWorkout([(pullUp, reps: 8, grams: 0)])
+
+        let report = WorkoutProgressReport.compute(for: current, database: database)
+        XCTAssertEqual(report.exerciseRecords.first?.lead.metric, .weight)
+        XCTAssertEqual(report.exerciseRecords.first?.lead.value, 0)
+        XCTAssertEqual(report.exerciseRecords.first?.lead.previousBest, -20000)
+        XCTAssertEqual(report.trends.first?.metric, .weight, "Bodyweight after assistance is still a weight")
+        XCTAssertEqual(report.trends.first?.percentChange ?? 0, 100, accuracy: 0.001)
+        XCTAssertEqual(report.trends.first?.isImprovement, true)
+
+        let recap = WorkoutRecap.compute(for: current, database: database)
+        XCTAssertEqual(recap.highlights.first?.isRecord, true)
+        XCTAssertEqual(recap.highlights.first?.metric, .weight)
+        XCTAssertEqual(recap.highlights.first?.previous, -20000)
+        XCTAssertEqual(recap.highlights.first?.current, 0)
+    }
+
+    func testBodyweightIsOnlyAWeightAgainstAssistance() {
+        let pullUp = builder.createExercise(name: "Pull-up", muscleGroup: .back)
+        let dip = builder.createExercise(name: "Dip", muscleGroup: .chest)
+        pullUp.primaryMetric = .weight
+        dip.primaryMetric = .weight
+        finishedWorkout(on: day(-14), [(pullUp, reps: 8, grams: -20000), (dip, reps: 10, grams: 0)])
+        finishedWorkout(on: day(-7), [(pullUp, reps: 8, grams: 0), (dip, reps: 10, grams: 0)])
+        // Pull-up: unassisted again — a tie, not a second record. Dip: only ever bodyweight, so two
+        // more reps are a reps record and nothing about weight.
+        let current = currentWorkout([(pullUp, reps: 8, grams: 0), (dip, reps: 12, grams: 0)])
+
+        let report = WorkoutProgressReport.compute(for: current, database: database)
+
+        XCTAssertEqual(report.exerciseRecords.compactMap { $0.exercise.name }, ["Dip"])
+        XCTAssertEqual(report.exerciseRecords.first?.records.map(\.metric), [.repetitions])
+        let dipTrend = report.trends.first { $0.exercise.name == "Dip" }
+        XCTAssertEqual(dipTrend?.metric, .repetitions, "No weight to trend on, so the reps")
+        let pullUpTrend = report.trends.first { $0.exercise.name == "Pull-up" }
+        XCTAssertEqual(pullUpTrend?.isImprovement, false)
+    }
+
     func testRevealPhasesRunTopToBottom() {
         let phases: [FinishRevealPhase] = [.hidden, .hero, .heroFilled, .heroSettled, .achievements, .details, .done]
         XCTAssertEqual(phases, phases.sorted())

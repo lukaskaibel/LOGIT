@@ -203,6 +203,10 @@
 "measurements" = "Measurements";
 "min" = "min";
 "minimize" = "Minimize";
+"recorderSheetHandleLabel" = "Workout Actions";
+"recorderShowSummaryAction" = "Show Summary";
+"accessibilityExpanded" = "Expanded";
+"accessibilityCollapsed" = "Collapsed";
 "missing" = "Missing";
 "measurementsPromotionDescription" = "Track bodyweight, body fat, and body part measurements like arms, chest, and waist to clearly see your progress.";
 "month" = "Month";
@@ -491,7 +495,9 @@
 "streakFactHalfYear" = "Half a year";
 "streakFactYear" = "A full year";
 "streakFactTwoYears" = "Two years";
+"streakFactOneWeek" = "One week";
 "nextMilestone" = "Next Milestone";
+"beatYourBest" = "Beat Your Best";
 "streakToGoalOne" = "1 week to your next milestone";
 "streakToGoalMany" = "%d weeks to your next milestone";
 "streakAtBest" = "Your best streak yet";
@@ -921,6 +927,9 @@
 "highlightImprovedLabel" = "%@ improved";
 "exercisesCountOne" = "1 exercise";
 "exercisesCountMany" = "%d exercises";
+"setsCountOne" = "1 set";
+"setsCountMany" = "%d sets";
+"setsLoggedOfTotal" = "%1$d / %2$d sets";
 "workoutTrendInfo" = "Every exercise has a progress metric: the value it is measured by, such as weight or strength. The trend compares the best value this workout reached with your best from the four weeks before it — the same comparison the badges next to the exercises below show.";
 "workoutVolumeCompareInfo" = "Total volume (weight × reps of every set) compared with the last time you did this workout.";
 "improvedCount" = "%d improved";
@@ -999,6 +1008,7 @@
 "muscleFocusReplaceCustomTitle" = "Replace your custom targets?";
 "muscleFocusReplaceCustomMessage" = "The preset's targets replace the ones you set yourself.";
 "muscleFocusSetsPerWeekValue" = "%d sets per week";
+"muscleFocusSetsPerWeekValueOne" = "1 set per week";
 "muscleFocusNamesJoiner" = " & ";
 "muscleFocusPromptTileTitle" = "Choose a training focus";
 "muscleFocusPromptTileMessage" = "See which muscle groups to work on.";
@@ -1202,6 +1212,8 @@
 "overallStrengthShowAllLifts" = "Show all %d lifts";
 "overallStrengthAxisLeastDeclined" = "Least declined";
 "showLess" = "Show less";
+"finishHighlightsAllShownValue" = "All shown";
+"finishHighlightsSomeShownValue" = "%1$d of %2$d shown";
 "overallStrengthInfo" = "Overall Strength combines that into a single number. For every exercise, LOGIT takes your best in the selected timeframe and compares it with your best in the timeframe before, then averages all of those changes. The more sets you did of an exercise, the more it counts towards the result. Cardio and bodyweight sets carry no strength figure, so they are left out.";
 
 
@@ -1239,6 +1251,7 @@
 "lastTime" = "Last time";
 "previewWorkoutNote" = "Bench felt easy at 80 — go 82.5 next time. Keep the elbows tucked on overhead press.";
 "setsIncompleteWillNotBeSaved" = "%d sets incomplete — they won’t be saved.";
+"setIncompleteWillNotBeSaved" = "1 set incomplete — it won’t be saved.";
 
 // MARK: - Assisted Sets & Time Goals
 

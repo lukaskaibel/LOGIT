@@ -203,6 +203,10 @@
 "measurements" = "Medições";
 "min" = "min";
 "minimize" = "Minimizar";
+"recorderSheetHandleLabel" = "Ações do treino";
+"recorderShowSummaryAction" = "Mostrar resumo";
+"accessibilityExpanded" = "Expandido";
+"accessibilityCollapsed" = "Recolhido";
 "missing" = "Ausente";
 "measurementsPromotionDescription" = "Acompanhe o peso corporal, a gordura corporal e as medidas de partes do corpo, como braços, tórax e cintura, para ver claramente seu progresso.";
 "month" = "Mês";
@@ -491,7 +495,9 @@
 "streakFactHalfYear" = "Meio ano";
 "streakFactYear" = "Um ano inteiro";
 "streakFactTwoYears" = "Dois anos";
+"streakFactOneWeek" = "Uma semana";
 "nextMilestone" = "Próximo marco";
+"beatYourBest" = "Supere seu recorde";
 "streakToGoalOne" = "1 semana para o próximo marco";
 "streakToGoalMany" = "%d semanas para o próximo marco";
 "streakAtBest" = "Sua melhor sequência até agora";
@@ -921,6 +927,9 @@
 "highlightImprovedLabel" = "%@ melhorou";
 "exercisesCountOne" = "1 exercício";
 "exercisesCountMany" = "%d exercícios";
+"setsCountOne" = "1 série";
+"setsCountMany" = "%d séries";
+"setsLoggedOfTotal" = "%1$d / %2$d séries";
 "workoutTrendInfo" = "Cada exercício tem uma métrica de progresso: o valor pelo qual ele é medido, como o peso ou a força. A tendência compara o melhor valor alcançado neste treino com o seu melhor das quatro semanas anteriores — a mesma comparação mostrada nos emblemas ao lado dos exercícios abaixo.";
 "workoutVolumeCompareInfo" = "Volume total (peso × repetições de cada série) comparado com a última vez que você fez este treino.";
 "improvedCount" = "%d melhorados";
@@ -999,6 +1008,7 @@
 "muscleFocusReplaceCustomTitle" = "Substituir suas metas personalizadas?";
 "muscleFocusReplaceCustomMessage" = "As metas do modelo substituem as que você definiu.";
 "muscleFocusSetsPerWeekValue" = "%d séries por semana";
+"muscleFocusSetsPerWeekValueOne" = "1 série por semana";
 "muscleFocusNamesJoiner" = " e ";
 "muscleFocusPromptTileTitle" = "Escolha um foco de treino";
 "muscleFocusPromptTileMessage" = "Veja quais grupos musculares treinar.";
@@ -1202,6 +1212,8 @@
 "overallStrengthShowAllLifts" = "Ver todos os %d exercícios";
 "overallStrengthAxisLeastDeclined" = "Menor queda";
 "showLess" = "Ver menos";
+"finishHighlightsAllShownValue" = "Todos exibidos";
+"finishHighlightsSomeShownValue" = "%1$d de %2$d exibidos";
 "overallStrengthInfo" = "A força geral reúne tudo isso em um único número. Para cada exercício, o LOGIT pega o seu melhor valor no período selecionado e compara com o seu melhor no período anterior, depois tira a média de todas essas variações. Quanto mais séries você fez de um exercício, mais ele pesa no resultado. Séries de cardio e de peso corporal não têm valor de força e ficam de fora.";
 
 
@@ -1239,6 +1251,7 @@
 "lastTime" = "Da última vez";
 "previewWorkoutNote" = "O supino ficou fácil com 80 — na próxima, 82,5. Manter os cotovelos fechados no desenvolvimento.";
 "setsIncompleteWillNotBeSaved" = "%d séries incompletas — não serão salvas.";
+"setIncompleteWillNotBeSaved" = "1 série incompleta — não será salva.";
 
 // MARK: - Assisted Sets & Time Goals
 

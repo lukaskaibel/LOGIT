@@ -203,6 +203,10 @@
 "measurements" = "측정";
 "min" = "분";
 "minimize" = "최소화";
+"recorderSheetHandleLabel" = "운동 작업";
+"recorderShowSummaryAction" = "요약 보기";
+"accessibilityExpanded" = "펼침";
+"accessibilityCollapsed" = "접힘";
 "missing" = "누락";
 "measurementsPromotionDescription" = "체중, 체지방, 팔, 가슴, 허리 등 신체 부위 측정을 추적하여 진행 상황을 명확하게 확인하세요.";
 "month" = "월";
@@ -491,7 +495,9 @@
 "streakFactHalfYear" = "반년";
 "streakFactYear" = "꼬박 1년";
 "streakFactTwoYears" = "2년";
+"streakFactOneWeek" = "1주";
 "nextMilestone" = "다음 마일스톤";
+"beatYourBest" = "개인 최고 기록 경신";
 "streakToGoalOne" = "다음 마일스톤까지 1주";
 "streakToGoalMany" = "다음 마일스톤까지 %d주";
 "streakAtBest" = "역대 최고 연속 기록";
@@ -921,6 +927,9 @@
 "highlightImprovedLabel" = "%@ 향상";
 "exercisesCountOne" = "운동 1개";
 "exercisesCountMany" = "운동 %d개";
+"setsCountOne" = "1세트";
+"setsCountMany" = "%d세트";
+"setsLoggedOfTotal" = "%1$d / %2$d세트";
 "workoutTrendInfo" = "운동마다 진전 지표가 있습니다. 중량이나 근력처럼 그 운동을 평가하는 값입니다. 추세는 이번 워크아웃에서 도달한 최고 값을 직전 4주간의 최고 기록과 비교합니다. 아래 운동 옆에 붙은 배지와 같은 비교입니다.";
 "workoutVolumeCompareInfo" = "총 볼륨(각 세트의 중량 × 횟수)을 지난번 같은 워크아웃과 비교합니다.";
 "improvedCount" = "%d개 향상";
@@ -999,6 +1008,7 @@
 "muscleFocusReplaceCustomTitle" = "사용자화한 목표를 바꿀까요?";
 "muscleFocusReplaceCustomMessage" = "프리셋의 목표가 직접 설정한 목표를 대체합니다.";
 "muscleFocusSetsPerWeekValue" = "주당 %d세트";
+"muscleFocusSetsPerWeekValueOne" = "주당 1세트";
 "muscleFocusNamesJoiner" = " · ";
 "muscleFocusPromptTileTitle" = "트레이닝 초점 선택";
 "muscleFocusPromptTileMessage" = "어떤 근육 그룹을 운동할지 알려드려요.";
@@ -1202,6 +1212,8 @@
 "overallStrengthShowAllLifts" = "%d개 종목 모두 보기";
 "overallStrengthAxisLeastDeclined" = "가장 작은 감소";
 "showLess" = "간단히 보기";
+"finishHighlightsAllShownValue" = "모두 표시됨";
+"finishHighlightsSomeShownValue" = "%2$d개 중 %1$d개 표시";
 "overallStrengthInfo" = "전체 근력은 이를 하나의 숫자로 묶은 것입니다. 운동마다 선택한 기간의 최고값을 직전 기간의 최고값과 비교한 뒤, 그 변화들을 모두 평균합니다. 세트를 많이 한 운동일수록 결과에 더 크게 반영됩니다. 유산소와 맨몸 세트는 근력 값이 없으므로 포함되지 않습니다.";
 
 
@@ -1239,6 +1251,7 @@
 "lastTime" = "지난번";
 "previewWorkoutNote" = "벤치 80은 가벼웠음 — 다음엔 82.5로. 오버헤드 프레스는 팔꿈치를 붙일 것.";
 "setsIncompleteWillNotBeSaved" = "미완료 세트 %d개 — 저장되지 않습니다.";
+"setIncompleteWillNotBeSaved" = "미완료 세트 1개 — 저장되지 않습니다.";
 
 // MARK: - Assisted Sets & Time Goals
 

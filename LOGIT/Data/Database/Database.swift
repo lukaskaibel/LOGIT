@@ -427,7 +427,16 @@ public class Database: ObservableObject {
         discardUnsavedChanges()
         guard survivedRollback(workout) else { return }
         if wasAddedInEditor {
-            delete(workout, saveContext: true)
+            // Synchronously, unlike `delete(_:)`: the editor dismisses the moment this returns, and
+            // an enqueued delete landed a frame into the dismissal — History behind the sheet
+            // showed the discarded workout's card, and its count one higher, before both went.
+            context.performAndWait {
+                self.context.delete(workout)
+                // Publishes the delete now, so the list's fetch drops the row before the
+                // dismissal's first frame rather than at the end of this run loop.
+                self.context.processPendingChanges()
+            }
+            save()
             return
         }
         let idsOnOpen = Set(setGroupOrderOnOpen)

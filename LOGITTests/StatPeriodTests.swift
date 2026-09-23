@@ -475,6 +475,48 @@ final class MuscleFocusTests: XCTestCase {
         XCTAssertEqual(store.focus.workoutsPerWeek, 6)
     }
 
+    /// Full Body at a goal of 3, goal raised to 5, "Not Now": the picker checked Full Body but drew it
+    /// at goal-5 numbers, and "Use Full Body" quietly applied the rescale just declined.
+    func testConfirmingThePresetInForceKeepsTheTargetsKeptForAGoal() throws {
+        let (defaults, suite) = try makeDefaults("MuscleFocusKeptPreset", goal: 3)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let store = MuscleFocusStore(defaults: defaults)
+        store.apply(preset: .fullBody)
+        defaults.set(5, forKey: MuscleFocusStore.workoutGoalKey)
+        store.reloadWorkoutGoal()
+        store.keepTargetsForWorkoutGoal()
+        let kept = store.focus
+        XCTAssertEqual(kept.matchingPreset, .fullBody)
+
+        // The preset in force shows what is in force; every other one is sized for the goal.
+        XCTAssertEqual(store.focusOnChoosing(.fullBody), kept)
+        XCTAssertEqual(store.focusOnChoosing(.upperBody), MuscleFocusPreset.upperBody.focus(forWorkoutsPerWeek: 5))
+
+        // Confirming it keeps the targets and the "Not Now".
+        store.apply(preset: .fullBody)
+        XCTAssertEqual(store.focus, kept)
+        XCTAssertEqual(store.focus.workoutsPerWeek, 3)
+        XCTAssertNil(store.suggestedResizeGoal)
+
+        // The rescale is still where it was offered.
+        defaults.set(6, forKey: MuscleFocusStore.workoutGoalKey)
+        store.reloadWorkoutGoal()
+        store.resizeToWorkoutGoal()
+        XCTAssertEqual(store.focus, MuscleFocusPreset.fullBody.focus(forWorkoutsPerWeek: 6))
+    }
+
+    func testBeforeAnyChoiceEveryPresetIsSizedForTheGoal() throws {
+        let (defaults, suite) = try makeDefaults("MuscleFocusUnchosenPreset", goal: 5)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let store = MuscleFocusStore(defaults: defaults)
+        XCTAssertFalse(store.hasChosenFocus)
+        for preset in MuscleFocusPreset.allCases {
+            XCTAssertEqual(store.focusOnChoosing(preset), preset.focus(forWorkoutsPerWeek: 5), preset.rawValue)
+        }
+    }
+
     // MARK: Balance entries
 
     func testEntryVerdictsReadWholeWeeklySets() {
@@ -874,5 +916,59 @@ final class TrendWindowBinTests: XCTestCase {
         )
         // …and a viewport of nothing but rest days selects nothing.
         XCTAssertNil(TrendWindowBin.selectableIndex(at: TrendWindow.stripDate(forIndex: 4), in: bins, within: 4 ..< 5))
+    }
+}
+
+/// The goal the Workout Goal screen's chain chases, and what its one-week flag says.
+final class StreakMilestoneTests: XCTestCase {
+    func testTheNextMilestoneIsTheGoalWithoutAnEarlierStreak() {
+        XCTAssertEqual(StreakMilestone.target(current: 0, previousBest: 0).value, 1)
+        XCTAssertEqual(StreakMilestone.target(current: 2, previousBest: 0).value, 4)
+        XCTAssertFalse(StreakMilestone.target(current: 2, previousBest: 0).isBest)
+    }
+
+    /// Beating the best, not tying it: with a best of 6, a streak of 5 has 2 weeks to go, and the goal
+    /// is the week the chain marks "New record".
+    func testTheBestIsBeatenAtOneWeekPastIt() {
+        let goal = StreakMilestone.target(current: 5, previousBest: 6)
+        XCTAssertEqual(goal.value, 7)
+        XCTAssertTrue(goal.isBest)
+    }
+
+    /// Tied with the best, beating it is still ahead — the row stays until the record lands.
+    func testATiedStreakStillChasesTheBest() {
+        let goal = StreakMilestone.target(current: 6, previousBest: 6)
+        XCTAssertEqual(goal.value, 7)
+        XCTAssertTrue(goal.isBest)
+    }
+
+    /// Past the best, the next milestone takes over.
+    func testABeatenBestGivesWayToTheNextMilestone() {
+        let goal = StreakMilestone.target(current: 7, previousBest: 6)
+        XCTAssertEqual(goal.value, 12)
+        XCTAssertFalse(goal.isBest)
+    }
+
+    /// When beating the best lands on a milestone, the milestone is the goal (the record shares its row).
+    func testBeatingTheBestOnAMilestoneWeekIsThatMilestone() {
+        let goal = StreakMilestone.target(current: 2, previousBest: 3)
+        XCTAssertEqual(goal.value, 4)
+        XCTAssertFalse(goal.isBest)
+    }
+
+    /// "Your first week" only for a first-ever streak; after earlier streaks it is simply one week.
+    func testTheOneWeekFlagNamesAFirstStreakOnly() {
+        XCTAssertEqual(
+            StreakMilestone.fact(for: 1, isFirstStreak: true),
+            NSLocalizedString("streakFactFirstWeek", comment: "")
+        )
+        XCTAssertEqual(
+            StreakMilestone.fact(for: 1, isFirstStreak: false),
+            NSLocalizedString("streakFactOneWeek", comment: "")
+        )
+        XCTAssertEqual(
+            StreakMilestone.fact(for: 4, isFirstStreak: false),
+            StreakMilestone.fact(for: 4, isFirstStreak: true)
+        )
     }
 }

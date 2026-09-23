@@ -225,9 +225,14 @@ enum StreakMilestone {
     }
 
     /// A calendar meaning for a milestone ("a full quarter", "a full year"). Empty for off-ladder values.
-    static func fact(for weeks: Int) -> String {
+    ///
+    /// The one-week milestone is "your first week" only for someone who has never held a streak
+    /// before (`isFirstStreak`). Anyone whose earlier streaks ended has had a first week already, and
+    /// for them the flag simply marks one week.
+    static func fact(for weeks: Int, isFirstStreak: Bool) -> String {
         switch weeks {
-        case 1: return NSLocalizedString("streakFactFirstWeek", comment: "")
+        case 1:
+            return NSLocalizedString(isFirstStreak ? "streakFactFirstWeek" : "streakFactOneWeek", comment: "")
         case 4: return NSLocalizedString("streakFactMonth", comment: "")
         case 12: return NSLocalizedString("streakFactQuarter", comment: "")
         case 26: return NSLocalizedString("streakFactHalfYear", comment: "")
@@ -237,13 +242,19 @@ enum StreakMilestone {
         }
     }
 
-    /// The goal to chase: the next milestone by default, so there's always a near goal ahead — unless the
-    /// previous best falls between the current streak and that milestone, in which case the best is the
-    /// nearer goal worth beating first.
+    /// The goal to chase: the next milestone by default, so there's always a near goal ahead — unless
+    /// beating the previous best comes first, in which case that is the nearer goal.
+    ///
+    /// Beating, not matching: the goal is `previousBest + 1`, the week the streak becomes the longest
+    /// ever — exactly where the chain plants its "New record" mark. Counting down to the tie read
+    /// "1 to go" for a week that then passed with no record, and the record landed a week later.
+    /// When beating the best coincides with a milestone, the milestone is the goal and the record
+    /// shares its row.
     static func target(current: Int, previousBest: Int) -> (value: Int, isBest: Bool) {
         let next = next(after: current)
-        let bestIsNearer = previousBest > current && previousBest < next
-        return bestIsNearer ? (previousBest, true) : (next, false)
+        let beatsBest = previousBest + 1
+        let bestIsNearer = previousBest > 0 && beatsBest > current && beatsBest < next
+        return bestIsNearer ? (beatsBest, true) : (next, false)
     }
 }
 

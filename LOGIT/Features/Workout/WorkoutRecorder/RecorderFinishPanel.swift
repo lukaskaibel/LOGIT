@@ -71,6 +71,11 @@ final class RecorderFinishModel {
     private(set) var bursts: [ConfettiBurst] = []
     /// Bumped when this workout wins the week; the arc swells on it.
     private(set) var goalPulseCount = 0
+    /// The records whose number has rolled up from the best it beat, this reveal. Kept here, not on
+    /// the rows: a row folded away by Show less is a new view when Show more brings it back, and
+    /// with its own state it forgot the roll and played it again — confetti, haptic and all. A
+    /// record rolls once per reveal, whatever the rows do after.
+    private(set) var rolledRecordIDs: Set<WorkoutRecap.Highlight.ID> = []
 
     /// Measured by the hero, kept for the swell's origin.
     @ObservationIgnored var goalArcCenter: CGPoint?
@@ -85,6 +90,7 @@ final class RecorderFinishModel {
         phase = .hidden
         isStaged = false
         bursts = []
+        rolledRecordIDs = []
         hasPlayedCelebrationHaptic = false
     }
 
@@ -140,6 +146,12 @@ final class RecorderFinishModel {
         withAnimation(.smooth(duration: 0.5)) { phase = .details }
         guard await pause(0.6) else { return }
         phase = .done
+    }
+
+    /// Marks a record's number as rolled. True the first time only — the caller pops the confetti
+    /// on it — so a row that comes back finds its record already settled and stays still.
+    func markRecordRolled(_ id: WorkoutRecap.Highlight.ID) -> Bool {
+        rolledRecordIDs.insert(id).inserted
     }
 
     /// One record's pop: a small burst from its pill in its exercise's colour. The first of a reveal
@@ -470,7 +482,8 @@ private struct RecorderFinishAchievements: View {
 
 /// The highlights: one tile per exercise, records on top, then the improvements, capped with a
 /// "Show more" once the list runs long. Each row lands one after the other; a record's number rolls
-/// up from the best it beat and pops its confetti as it does.
+/// up from the best it beat and pops its confetti as it does — once. The rows Show more brings in
+/// arrive settled, however often it is toggled.
 struct RecorderFinishHighlightsSection: View {
     let recap: WorkoutRecap
     let model: RecorderFinishModel
@@ -530,7 +543,16 @@ struct RecorderFinishHighlightsSection: View {
                         value: isRevealed
                     )
                     .accessibilityIdentifier("finishHighlightsShowMore")
-                    .accessibilityValue(showsAll ? "all" : "capped")
+                    // What VoiceOver reads after the label — and what the UI tests check.
+                    .accessibilityValue(
+                        showsAll
+                            ? NSLocalizedString("finishHighlightsAllShownValue", comment: "")
+                            : String(
+                                format: NSLocalizedString("finishHighlightsSomeShownValue", comment: ""),
+                                shown.count,
+                                highlights.count
+                            )
+                    )
                 }
             }
         }
@@ -548,8 +570,13 @@ private struct RecorderFinishHighlightRow: View {
 
     private var isStaged: Bool { model.isStaged }
 
-    /// Whether a record's value has rolled up from the best it beat to the new one.
-    @State private var hasRolled = false
+    /// Whether a record's value has rolled up from the best it beat to the new one — on the model,
+    /// not in this row's state, so it survives the row being folded away and back.
+    private var hasRolled: Bool { model.rolledRecordIDs.contains(highlight.id) }
+    /// Whether this row is one of the reveal's cascade. The rows past the cap only ever arrive by
+    /// Show more, after the show — they come in settled: no roll, no confetti, no tap. The pop is
+    /// for a record being set, and by then it has been.
+    private var isInCascade: Bool { index < RecorderFinishHighlightsSection.collapsedCount }
     /// The number's centre on screen — where a record's confetti leaves from, since that is where
     /// the record is seen being set.
     @State private var valueCenter: CGPoint?
@@ -587,8 +614,9 @@ private struct RecorderFinishHighlightRow: View {
                 exercise: highlight.exercise,
                 previous: highlight.previous,
                 current: highlight.current,
-                // Staged, a record arrives on the best it beat and rolls up to the new one.
-                showsCurrent: !highlight.isRecord || hasRolled || !isStaged
+                // Staged, a record in the cascade arrives on the best it beat and rolls up to the
+                // new one.
+                showsCurrent: !highlight.isRecord || hasRolled || !isStaged || !isInCascade
             )
             .onGeometryChange(for: CGPoint.self) { proxy in
                 let frame = proxy.frame(in: .global)
@@ -615,15 +643,19 @@ private struct RecorderFinishHighlightRow: View {
         // animation: a numeric transition under `.delay` drops the old digits at once and only
         // holds back the new ones, and the frames showed a blank value for the whole delay.
         .task(id: isRevealed) {
-            guard highlight.isRecord, isRevealed, isStaged, !hasRolled else { return }
+            guard highlight.isRecord, isRevealed, isStaged, isInCascade, !hasRolled else { return }
             try? await Task.sleep(for: .seconds(rollDelay))
             guard !Task.isCancelled else { return }
-            withAnimation(.spring(duration: 0.6, bounce: 0.12)) { hasRolled = true }
+            let rolls = withAnimation(.spring(duration: 0.6, bounce: 0.12)) {
+                model.markRecordRolled(highlight.id)
+            }
+            guard rolls else { return }
             // The pop leaves the pill as the number climbs — the record, seen being set — in this
             // exercise's colour and no other.
             model.celebrateRecord(from: valueCenter, color: color)
         }
-        // Each record's own tap, so three records feel like three.
+        // Each record's own tap, so three records feel like three. On the change only: a row that
+        // comes back already rolled stays quiet.
         .sensoryFeedback(.impact(weight: .medium, intensity: 0.8), trigger: hasRolled) { _, rolled in rolled }
         .accessibilityElement(children: .combine)
     }
@@ -820,7 +852,9 @@ private struct RecorderFinishExercisesSection: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("finishExercisesToggle")
-            .accessibilityValue(isExpanded ? "expanded" : "collapsed")
+            .accessibilityValue(
+                NSLocalizedString(isExpanded ? "accessibilityExpanded" : "accessibilityCollapsed", comment: "")
+            )
 
             if isExpanded {
                 ForEach(workout.setGroups, id: \.objectID) { setGroup in
@@ -839,8 +873,17 @@ private struct RecorderFinishExercisesSection: View {
     }
 
     /// "8 exercises · 30 SETS · 17595 KG" — the count in words, the sums as units, like the caption.
+    ///
+    /// The sums are of the logged sets only: the bar below says the rest won't be saved, and a total
+    /// counting them would describe a workout End Workout isn't going to write. Summed here rather
+    /// than through `WorkoutStatMetric.rawValue(of:)`, which reads saved workouts, where every set
+    /// is a logged one.
     private var summary: some View {
         let count = workout.setGroups.count
+        let loggedSets = workout.sets.filter { $0.hasEntry }
+        func raw(_ metric: WorkoutStatMetric) -> Int {
+            metric == .sets ? loggedSets.count : getVolume(of: loggedSets)
+        }
         return HStack(spacing: 6) {
             Text(
                 count == 1
@@ -852,7 +895,7 @@ private struct RecorderFinishExercisesSection: View {
             ForEach([WorkoutStatMetric.sets, .volume], id: \.id) { metric in
                 Text("·").foregroundStyle(Color.tertiaryLabel)
                 UnitView(
-                    value: metric.formattedValue(fromRaw: metric.rawValue(of: workout)),
+                    value: metric.formattedValue(fromRaw: raw(metric)),
                     unit: metric.unit,
                     configuration: .extraSmall,
                     unitColor: .tertiaryLabel
@@ -888,10 +931,15 @@ private struct RecorderFinishExercisesSection: View {
                 .foregroundStyle(muscleGroups.weightedSpectrumGradientStyle())
             }
             Spacer(minLength: 0)
-            // "3 / 4 sets" only when something is missing; a complete group just says "4 sets".
+            // "3 / 4 sets" only when something is missing; a complete group just says "4 sets" —
+            // or "1 set". Whole phrases per locale, not a count glued to the "Sets" title
+            // lowercased: that read "1 sets", and German nouns keep their capital ("4 Sätze").
             Text(
-                (logged < total ? "\(logged) / \(total)" : "\(total)")
-                    + " " + NSLocalizedString("sets", comment: "").lowercased()
+                logged < total
+                    ? String(format: NSLocalizedString("setsLoggedOfTotal", comment: ""), logged, total)
+                    : total == 1
+                        ? NSLocalizedString("setsCountOne", comment: "")
+                        : String(format: NSLocalizedString("setsCountMany", comment: ""), total)
             )
             .font(.subheadline.weight(.semibold))
             .monospacedDigit()

@@ -78,11 +78,28 @@ final class MuscleFocusStore: ObservableObject {
         return workoutGoal
     }
 
+    /// What choosing `preset` would put in force — and so what the picker's tile for it shows, so the
+    /// tile and the commit can't disagree.
+    ///
+    /// **The preset already in force is the targets in force**, whatever goal they were sized for;
+    /// every other preset is sized for the goal as it stands. `matchingPreset` recognises Full Body
+    /// sized for 3 as Full Body under a goal of 5, which is what lets "Not Now" keep it. Drawn and
+    /// re-applied at the current goal instead, its tile was checked but showed goal-5 numbers, and
+    /// confirming it silently did the rescale the user had just declined. Rescaling stays where it is
+    /// offered: `resizeToWorkoutGoal`, the Muscle Groups card's "Update Targets".
+    func focusOnChoosing(_ preset: MuscleFocusPreset) -> MuscleFocus {
+        if hasChosenFocus, focus.matchingPreset == preset {
+            return focus
+        }
+        return preset.focus(forWorkoutsPerWeek: workoutsPerWeekToSizeFor)
+    }
+
     // MARK: - Mutations
 
-    /// Takes over a preset, sized for the current weekly goal.
+    /// Takes over a preset — sized for the current weekly goal, or, when it is the preset already in
+    /// force, kept as it is (see `focusOnChoosing`). Confirming it is still a choice and still commits.
     func apply(preset: MuscleFocusPreset) {
-        commit(preset.focus(forWorkoutsPerWeek: workoutsPerWeekToSizeFor))
+        commit(focusOnChoosing(preset))
     }
 
     /// Takes over targets set in the editor as a whole.

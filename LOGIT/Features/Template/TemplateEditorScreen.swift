@@ -52,6 +52,11 @@ struct TemplateEditorScreen: View {
     /// here because a nested sheet only survives the tray's dismiss/re-present cycle
     /// when its owning state lives outside the recycled tray content.
     @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
+    /// Set when an exercise created from the tray has been added: the tray folds back to its resting
+    /// row once the create sheet is *gone* (its `onDismiss`), not while it is still on top. Changing
+    /// the tray's detent under a nested sheet left it at full height with only the resting row in
+    /// it, and the next swipe down merely caught the two up.
+    @State private var collapsesTrayAfterCreate = false
     /// "Show Details" from the tray's context menus — host-owned for the same reason.
     @State private var exerciseDetailFromTray: Exercise?
     /// The set groups the template had when this editor opened. Cancel restores exactly this
@@ -193,7 +198,11 @@ struct TemplateEditorScreen: View {
                                 .padding()
                                 .frame(maxHeight: .infinity, alignment: .top)
                         }
-                        .sheet(item: $createExerciseRequest) { request in
+                        .sheet(item: $createExerciseRequest, onDismiss: {
+                            guard collapsesTrayAfterCreate else { return }
+                            collapsesTrayAfterCreate = false
+                            exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
+                        }) { request in
                             ExerciseEditScreen(
                                 onEditFinished: { exercise in
                                     UIImpactFeedbackGenerator(style: .soft).impactOccurred()
@@ -205,7 +214,7 @@ struct TemplateEditorScreen: View {
                                     withAnimation {
                                         scrollable.scrollTo(1, anchor: .bottom)
                                     }
-                                    exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
+                                    collapsesTrayAfterCreate = true
                                 },
                                 initialExerciseName: request.name,
                                 initialMuscleGroup: request.muscleGroup ?? .chest

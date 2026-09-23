@@ -645,21 +645,12 @@ struct WorkoutRecorderScreen: View {
                 }
             }
             // The grab handle sits on the sheet's bottom edge — the seam the panel unfolds from.
-            // It keeps its place while finishing (invisible), so the sheet's closed height never
-            // changes.
-            Capsule()
-                .fill(Color.secondaryLabel.opacity(0.5))
-                .frame(width: 36, height: 5)
-                .opacity(topSheet.isFinishing || exerciseSelectionPresentationDetent == .large ? 0 : 1)
-                // Finishing: ride the edge down, and only then go — it is what shows the header is
-                // the thing growing.
-                .animation(
-                    topSheet.isFinishing ? .easeOut(duration: 0.18).delay(0.32) : .easeIn(duration: 0.18),
-                    value: topSheet.isFinishing
-                )
-                .padding(.top, 12)
-                .contentShape(Rectangle())
-                .onTapGesture { toggleSheet() }
+            RecorderSheetHandle(
+                model: topSheet,
+                isHidden: exerciseSelectionPresentationDetent == .large,
+                onToggle: toggleSheet,
+                onShowSummary: { settleSheet(to: topSheet.openStop) }
+            )
         }
         .padding(.bottom, 10)
         // The whole sheet is one surface: taps between its controls must not fall through to the
@@ -951,10 +942,12 @@ struct WorkoutRecorderScreen: View {
         return VStack(spacing: 2) {
             if incompleteCount > 0 {
                 Label(
-                    String.localizedStringWithFormat(
-                        NSLocalizedString("setsIncompleteWillNotBeSaved", comment: ""),
-                        incompleteCount
-                    ),
+                    incompleteCount == 1
+                        ? NSLocalizedString("setIncompleteWillNotBeSaved", comment: "")
+                        : String.localizedStringWithFormat(
+                            NSLocalizedString("setsIncompleteWillNotBeSaved", comment: ""),
+                            incompleteCount
+                        ),
                     systemImage: "exclamationmark.circle.fill"
                 )
                 .font(.caption.weight(.semibold))
@@ -1069,13 +1062,16 @@ struct WorkoutRecorderScreen: View {
 
     // MARK: - Scroll metrics
 
-    /// Clearance under the last set group so it isn't hidden behind the exercise tray. The
-    /// breathing room past it lives in `RECORDER_LIST_SCROLL_SLACK`, outside the anchored
-    /// content, so the recorder still opens with the last set resting on the tray's edge.
+    /// Clearance under the last set group so it isn't hidden behind the exercise tray — or behind
+    /// the floating timer riding the tray's top edge, which used to sit over the last card's
+    /// Add Set and ••• buttons until the list was nudged. The breathing room past it lives in
+    /// `RECORDER_LIST_SCROLL_SLACK`, outside the anchored content, so the recorder still opens with
+    /// the last card resting just above the timer.
     private var listBottomClearance: CGFloat {
-        exerciseSelectionPresentationDetent == .medium
+        let tray = exerciseSelectionPresentationDetent == .medium
             ? (UIScreen.current?.bounds.height ?? 0) * 0.5
             : BOTTOM_SHEET_SMALL
+        return tray + KEYBOARD_TOOLBAR_HEIGHT + 10
     }
 
     /// Enough content for the actions stop to be scrolled away: the viewport plus that stop, so the
@@ -1334,12 +1330,59 @@ struct WorkoutRecorderScreen: View {
 // lives in its own workout-observing view: the recorder screen observes the recorder, not the
 // managed object, and these bodies must refresh on an edit without the screen re-rendering.
 
+/// The top sheet's grab handle. It keeps its place while finishing (invisible), so the sheet's
+/// closed height never changes.
+///
+/// Its own view because VoiceOver's value reads the reveal: in the recorder's body that read would
+/// re-render the whole screen on every frame of a drag or scroll. Here it re-renders one capsule.
+///
+/// VoiceOver's way into the sheet. The caption and the donut toggle it too, but only the handle says
+/// what it is: a button that opens Minimize and Finish, with the summary above them as a named
+/// action, since reaching it is otherwise a drag.
+private struct RecorderSheetHandle: View {
+    let model: RecorderTopSheetModel
+    /// Out of the way while the exercise tray covers the screen.
+    let isHidden: Bool
+    let onToggle: () -> Void
+    let onShowSummary: () -> Void
+
+    var body: some View {
+        Capsule()
+            .fill(Color.secondaryLabel.opacity(0.5))
+            .frame(width: 36, height: 5)
+            .opacity(model.isFinishing || isHidden ? 0 : 1)
+            // Finishing: ride the edge down, and only then go — it is what shows the header is
+            // the thing growing.
+            .animation(
+                model.isFinishing ? .easeOut(duration: 0.18).delay(0.32) : .easeIn(duration: 0.18),
+                value: model.isFinishing
+            )
+            .padding(.top, 12)
+            .contentShape(Rectangle())
+            .onTapGesture { onToggle() }
+            .accessibilityElement()
+            .accessibilityLabel(Text(NSLocalizedString("recorderSheetHandleLabel", comment: "")))
+            .accessibilityValue(Text(NSLocalizedString(
+                model.reveal > model.compactStop * 0.5 ? "accessibilityExpanded" : "accessibilityCollapsed",
+                comment: ""
+            )))
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { onToggle() }
+            .accessibilityAction(named: Text(NSLocalizedString("recorderShowSummaryAction", comment: ""))) {
+                guard !model.isFinishing else { return }
+                onShowSummary()
+            }
+            .accessibilityHidden(model.isFinishing || isHidden)
+    }
+}
+
 /// The compact row's set count.
 private struct RecorderSetCountText: View {
     @ObservedObject var workout: Workout
 
     var body: some View {
-        Text("\(workout.numberOfSets) \(NSLocalizedString("sets", comment: ""))")
+        let count = workout.numberOfSets
+        Text("\(count) \(NSLocalizedString(count == 1 ? "set" : "sets", comment: ""))")
     }
 }
 
@@ -1552,7 +1595,11 @@ private struct FloatingChronoControlsOverlay: View {
                 )
                 .transition(.scale(scale: 0.2).combined(with: .opacity))
             }
-            if chronograph.status == .paused {
+            // Stop stands down while a keyboard is up: parked in the accessory row beside Next and
+            // hide it made five controls in one row, and it sat over the field being typed into.
+            // Stopping is still one tap away in the chrono sheet the timer pill opens, and the
+            // button comes back as soon as the keyboard goes.
+            if chronograph.status == .paused, !isKeyboardVisible {
                 tracked(
                     WorkoutRecorderFloatingChronoTransportButton(
                         workoutRecorder: workoutRecorder,

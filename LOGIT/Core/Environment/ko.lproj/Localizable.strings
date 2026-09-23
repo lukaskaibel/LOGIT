@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "주간 목표를 달성해 연속 기록을 시작하세요";
+"streakFactFirstWeek" = "첫 주";
 "streakFactMonth" = "꼬박 한 달";
 "streakFactQuarter" = "꼬박 한 분기";
 "streakFactHalfYear" = "반년";
@@ -1033,8 +1034,9 @@
 "share" = "비중";
 "weekStreakSuffix" = "주 연속";
 "weeklyGoalAccessibility" = "주간 목표, %d/%d 운동";
-"weeklyGoalSubtitle" = "주 %d회 목표 중";
-"milestones" = "마일스톤";
+"workoutGoalPerWeek" = "주 %d회";
+"workoutGoalPerWeekOne" = "주 1회";
+"workoutGoalAboutInfo" = "운동 목표는 매주 하고 싶은 운동 횟수입니다. 목표를 달성한 주마다 연속 기록이 한 주씩 늘어나고, 달성하지 못한 주가 있으면 끊깁니다. 이번 주는 연속 기록을 끊지 않으며, 목표를 달성하는 순간 기록에 더해집니다.\n\n마일스톤은 연속 기록의 기념할 만한 길이입니다. 첫 주, 그리고 4주는 한 달, 12주는 한 분기, 26주는 반년, 52주는 1년, 104주는 2년입니다. 현재 연속 기록이 도달한 마일스톤은 도달한 주와 함께 목록에 표시되며, 연속 기록이 끊기면 처음부터 다시 시작합니다. 다음 마일스톤보다 개인 최고 기록이 더 가까우면 그 기록을 넘는 것이 먼저이며, 기록을 넘은 주는 새 기록으로 목록에 추가됩니다. 목표를 바꾸면 연속 기록이 새 횟수로 다시 계산됩니다.";
 "weeksToGo" = "%d주 남음";
 "bestStreakLabel" = "최고 · %d주";
 "monthWorkoutsCount" = "%d회";

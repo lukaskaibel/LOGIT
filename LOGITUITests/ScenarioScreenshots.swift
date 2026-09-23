@@ -105,9 +105,9 @@ final class ScenarioScreenshots: XCTestCase {
     // MARK: - Weekly goal screen
 
     /// The goal screen after the arc redesign: an arc carrying this week's count, the week's day
-    /// rings, one streak row, and the milestone ladder. The month calendar and the 52-week grid it
-    /// used to open with are gone (History already owns a ring calendar), and the ± toolbar button
-    /// went with them — the goal now lives in the line under the count, which is what this drives.
+    /// rings, the streak drawn as a chain with its milestones on it, and an About section. The
+    /// goal reads as the nav bar's subtitle and changes from the slider button in the toolbar — the
+    /// tappable "of your N-workout goal ›" line that used to sit in the arc is gone.
     func testWeeklyGoalScreen() {
         let app = launchApp(scenario: "many")
         let tabBar = app.tabBars.firstMatch
@@ -122,19 +122,18 @@ final class ScenarioScreenshots: XCTestCase {
         let goalButton = app.buttons["weeklyGoalTargetButton"]
         XCTAssertTrue(
             goalButton.waitForExistence(timeout: 5),
-            "Goal screen didn't show the goal line under the count"
+            "Goal screen didn't show the change-goal toolbar button"
         )
         XCTAssertTrue(
-            app.staticTexts["Milestones"].waitForExistence(timeout: 3),
-            "Milestone list missing from the goal screen"
+            app.staticTexts["Streak"].waitForExistence(timeout: 3),
+            "Streak chain missing from the goal screen"
         )
         attach(app, "goal_01_arc")
 
-        // The goal moved out of the toolbar and into the sentence under the count.
         goalButton.tap()
         XCTAssertTrue(
             app.buttons["Change Goal"].waitForExistence(timeout: 5),
-            "The goal line didn't open the target picker"
+            "The toolbar button didn't open the target picker"
         )
         attach(app, "goal_02_picker")
 

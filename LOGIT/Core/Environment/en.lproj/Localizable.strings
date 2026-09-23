@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Hit your weekly goal to start a streak";
+"streakFactFirstWeek" = "Your first week";
 "streakFactMonth" = "A full month";
 "streakFactQuarter" = "A full quarter";
 "streakFactHalfYear" = "Half a year";
@@ -1033,8 +1034,9 @@
 "share" = "Share";
 "weekStreakSuffix" = "week streak";
 "weeklyGoalAccessibility" = "Weekly goal, %d of %d workouts";
-"weeklyGoalSubtitle" = "of your %d-workout goal";
-"milestones" = "Milestones";
+"workoutGoalPerWeek" = "%d workouts a week";
+"workoutGoalPerWeekOne" = "1 workout a week";
+"workoutGoalAboutInfo" = "Your workout goal is how many workouts you want to do each week. Every week you reach it adds a week to your streak; a week that falls short ends it. The current week never breaks your streak — it counts as soon as you reach your goal.\n\nMilestones are streak lengths worth reaching: your first week, then 4 weeks for a month, 12 a quarter, 26 half a year, 52 a year and 104 two years. The ones your current streak has passed are listed with the week you reached them, and when a streak ends, the climb starts again from zero. If your longest streak is closer than the next milestone, beating it comes first, and the week you beat it joins the list as a new record. Changing your goal recounts your streak against the new number.";
 "weeksToGo" = "%d to go";
 "bestStreakLabel" = "Best · %d wks";
 "monthWorkoutsCount" = "%d workouts";

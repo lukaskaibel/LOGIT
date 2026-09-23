@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Alcanza tu objetivo semanal para iniciar una racha";
+"streakFactFirstWeek" = "Tu primera semana";
 "streakFactMonth" = "Un mes completo";
 "streakFactQuarter" = "Un trimestre completo";
 "streakFactHalfYear" = "Medio año";
@@ -1033,8 +1034,9 @@
 "share" = "Cuota";
 "weekStreakSuffix" = "semanas seguidas";
 "weeklyGoalAccessibility" = "Objetivo semanal, %d de %d entrenamientos";
-"weeklyGoalSubtitle" = "de tu objetivo de %d entrenamientos";
-"milestones" = "Hitos";
+"workoutGoalPerWeek" = "%d entrenamientos por semana";
+"workoutGoalPerWeekOne" = "1 entrenamiento por semana";
+"workoutGoalAboutInfo" = "Tu objetivo de entrenamiento es cuántos entrenamientos quieres hacer cada semana. Cada semana que lo cumples suma una semana a tu racha; una semana que se queda corta la termina. La semana actual nunca rompe tu racha: cuenta en cuanto cumples tu objetivo.\n\nLos hitos son duraciones de racha que vale la pena alcanzar: tu primera semana, luego 4 semanas para un mes, 12 un trimestre, 26 medio año, 52 un año y 104 dos años. Los que tu racha actual ya ha superado aparecen en la lista con la semana en que los alcanzaste, y cuando una racha termina, todo vuelve a empezar desde cero. Si tu racha más larga está más cerca que el próximo hito, superarla va primero, y la semana en que lo logras aparece en la lista como nuevo récord. Si cambias tu objetivo, tu racha se vuelve a contar con el nuevo número.";
 "weeksToGo" = "faltan %d";
 "bestStreakLabel" = "Mejor · %d sem";
 "monthWorkoutsCount" = "%d entrenamientos";

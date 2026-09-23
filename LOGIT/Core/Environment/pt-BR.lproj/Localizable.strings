@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Atinja sua meta semanal para iniciar uma sequência";
+"streakFactFirstWeek" = "Sua primeira semana";
 "streakFactMonth" = "Um mês inteiro";
 "streakFactQuarter" = "Um trimestre inteiro";
 "streakFactHalfYear" = "Meio ano";
@@ -1033,8 +1034,9 @@
 "share" = "Cota";
 "weekStreakSuffix" = "semanas seguidas";
 "weeklyGoalAccessibility" = "Meta semanal, %d de %d treinos";
-"weeklyGoalSubtitle" = "da sua meta de %d treinos";
-"milestones" = "Marcos";
+"workoutGoalPerWeek" = "%d treinos por semana";
+"workoutGoalPerWeekOne" = "1 treino por semana";
+"workoutGoalAboutInfo" = "Sua meta de treino é quantos treinos você quer fazer por semana. Cada semana em que você a cumpre soma uma semana à sua sequência; uma semana que fica abaixo a encerra. A semana atual nunca quebra sua sequência — ela conta assim que você cumpre a meta.\n\nMarcos são durações de sequência que valem a pena alcançar: sua primeira semana, depois 4 semanas para um mês, 12 um trimestre, 26 meio ano, 52 um ano e 104 dois anos. Os que sua sequência atual já passou aparecem na lista com a semana em que você os alcançou, e quando uma sequência termina, tudo recomeça do zero. Se sua sequência mais longa estiver mais perto que o próximo marco, superá-la vem primeiro, e a semana em que você consegue aparece na lista como novo recorde. Se você mudar sua meta, sua sequência é recalculada com o novo número.";
 "weeksToGo" = "faltam %d";
 "bestStreakLabel" = "Melhor · %d sem";
 "monthWorkoutsCount" = "%d treinos";

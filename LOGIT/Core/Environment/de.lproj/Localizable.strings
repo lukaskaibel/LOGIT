@@ -481,6 +481,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Erreiche dein Wochenziel, um eine Serie zu starten";
+"streakFactFirstWeek" = "Deine erste Woche";
 "streakFactMonth" = "Ein ganzer Monat";
 "streakFactQuarter" = "Ein ganzes Quartal";
 "streakFactHalfYear" = "Ein halbes Jahr";
@@ -1029,8 +1030,9 @@
 "share" = "Anteil";
 "weekStreakSuffix" = "Wochen-Streak";
 "weeklyGoalAccessibility" = "Wochenziel, %d von %d Workouts";
-"weeklyGoalSubtitle" = "von deinem Ziel: %d Workouts";
-"milestones" = "Meilensteine";
+"workoutGoalPerWeek" = "%d Workouts pro Woche";
+"workoutGoalPerWeekOne" = "1 Workout pro Woche";
+"workoutGoalAboutInfo" = "Dein Workout-Ziel ist die Anzahl an Workouts, die du jede Woche schaffen möchtest. Jede Woche, in der du es erreichst, verlängert deinen Streak um eine Woche; eine Woche, in der du es verfehlst, beendet ihn. Die laufende Woche beendet deinen Streak nie – sie zählt, sobald du dein Ziel erreichst.\n\nMeilensteine sind Streak-Längen, auf die es sich hinzuarbeiten lohnt: deine erste Woche, dann 4 Wochen für einen Monat, 12 ein Quartal, 26 ein halbes Jahr, 52 ein Jahr und 104 zwei Jahre. Die Meilensteine, die dein aktueller Streak schon erreicht hat, stehen mit der Woche in der Liste, in der du sie erreicht hast. Endet ein Streak, beginnt alles wieder bei null. Liegt dein längster Streak näher als der nächste Meilenstein, gilt es zuerst, ihn zu übertreffen – die Woche, in der du das schaffst, kommt als neuer Rekord in die Liste. Änderst du dein Ziel, wird dein Streak mit der neuen Zahl neu berechnet.";
 "weeksToGo" = "noch %d";
 "bestStreakLabel" = "Beste · %d Wo.";
 "monthWorkoutsCount" = "%d Workouts";

@@ -174,10 +174,11 @@ extension WeeklyGoalArc where Label == EmptyView {
 
 // MARK: - Streak milestones (shared)
 
-/// The weekly-streak milestone ladder — a month, quarter, half-year, year, two years — shared by the
-/// Summary hero and the Workout Goal screen so the two never disagree on what the next goal is.
+/// The weekly-streak milestone ladder — the first week, then a month, quarter, half-year, year, two
+/// years. The first week is a milestone too, so a new streak has a goal one week away and the chain on
+/// the Workout Goal screen always ends on a flag: the week the streak started.
 enum StreakMilestone {
-    static let all: [Int] = [4, 12, 26, 52, 104]
+    static let all: [Int] = [1, 4, 12, 26, 52, 104]
 
     /// The first milestone beyond `current`; once every milestone is passed, keep pulling a year ahead.
     static func next(after current: Int) -> Int {
@@ -187,6 +188,7 @@ enum StreakMilestone {
     /// A calendar meaning for a milestone ("a full quarter", "a full year"). Empty for off-ladder values.
     static func fact(for weeks: Int) -> String {
         switch weeks {
+        case 1: return NSLocalizedString("streakFactFirstWeek", comment: "")
         case 4: return NSLocalizedString("streakFactMonth", comment: "")
         case 12: return NSLocalizedString("streakFactQuarter", comment: "")
         case 26: return NSLocalizedString("streakFactHalfYear", comment: "")

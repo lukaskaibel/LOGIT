@@ -485,6 +485,7 @@
 
 // MARK: - Workout Goal screen
 "streakStartPrompt" = "Raggiungi il tuo obiettivo settimanale per iniziare una serie";
+"streakFactFirstWeek" = "La tua prima settimana";
 "streakFactMonth" = "Un mese intero";
 "streakFactQuarter" = "Un trimestre intero";
 "streakFactHalfYear" = "Mezzo anno";
@@ -1033,8 +1034,9 @@
 "share" = "Quota";
 "weekStreakSuffix" = "settimane di fila";
 "weeklyGoalAccessibility" = "Obiettivo settimanale, %d di %d allenamenti";
-"weeklyGoalSubtitle" = "del tuo obiettivo di %d allenamenti";
-"milestones" = "Traguardi";
+"workoutGoalPerWeek" = "%d allenamenti a settimana";
+"workoutGoalPerWeekOne" = "1 allenamento a settimana";
+"workoutGoalAboutInfo" = "Il tuo obiettivo di allenamento è il numero di allenamenti che vuoi fare ogni settimana. Ogni settimana in cui lo raggiungi aggiunge una settimana alla tua serie; una settimana in cui non ci arrivi la interrompe. La settimana in corso non interrompe mai la tua serie: conta non appena raggiungi l'obiettivo.\n\nI traguardi sono durate della serie da raggiungere: la tua prima settimana, poi 4 settimane per un mese, 12 un trimestre, 26 mezzo anno, 52 un anno e 104 due anni. Quelli che la tua serie attuale ha già superato sono elencati con la settimana in cui li hai raggiunti, e quando una serie finisce si riparte da zero. Se la tua serie più lunga è più vicina del prossimo traguardo, batterla viene prima, e la settimana in cui ci riesci compare nella lista come nuovo record. Se cambi obiettivo, la tua serie viene ricalcolata con il nuovo numero.";
 "weeksToGo" = "ancora %d";
 "bestStreakLabel" = "Migliore · %d sett";
 "monthWorkoutsCount" = "%d allenamenti";

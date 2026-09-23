@@ -45,9 +45,9 @@ struct WorkoutEditorScreen: View {
     @State private var createExerciseRequest: ExerciseSelectionScreen.AddExerciseRequest?
     @FocusState private var isNoteFieldFocused: Bool
     @State private var isRatingEffort = false
-    /// The set groups the workout had when this editor opened. Cancel restores exactly this
-    /// composition for an existing workout — see `discardChangesThatSurvivedRollback()`.
-    @State private var setGroupOrderOnOpen: [UUID] = []
+    /// The set groups this editor added. Cancel gives back exactly these for an existing workout —
+    /// see `Database.discardEditorChanges(to:wasAddedInEditor:setGroupsAddedInEditor:)`.
+    @State private var setGroupsAddedHere: Set<UUID> = []
 
     /// Top to bottom, not leading to trailing: the effort marker is a narrow, tall capsule, and a
     /// horizontal sweep would squeeze the whole spectrum into ~25pt.
@@ -181,11 +181,12 @@ struct WorkoutEditorScreen: View {
                         ExerciseSelectionScreen(
                             selectedExercise: nil,
                             setExercise: { exercise in
-                                database.newWorkoutSetGroup(
+                                let added = database.newWorkoutSetGroup(
                                     createFirstSetAutomatically: true,
                                     exercise: exercise,
                                     workout: workout
                                 )
+                                if let id = added.id { setGroupsAddedHere.insert(id) }
                             },
                             forSecondary: false,
                             currentWorkoutExercises: workout.exercises,
@@ -210,11 +211,12 @@ struct WorkoutEditorScreen: View {
                         .sheet(item: $createExerciseRequest) { request in
                             ExerciseEditScreen(
                                 onEditFinished: { exercise in
-                                    database.newWorkoutSetGroup(
+                                    let added = database.newWorkoutSetGroup(
                                         createFirstSetAutomatically: true,
                                         exercise: exercise,
                                         workout: workout
                                     )
+                                    if let id = added.id { setGroupsAddedHere.insert(id) }
                                     exerciseSelectionPresentationDetent = .height(BOTTOM_SHEET_SMALL)
                                 },
                                 initialExerciseName: request.name,
@@ -386,7 +388,7 @@ struct WorkoutEditorScreen: View {
                         database.discardEditorChanges(
                             to: workout,
                             wasAddedInEditor: isAddingNewWorkout,
-                            setGroupOrderOnOpen: setGroupOrderOnOpen
+                            setGroupsAddedInEditor: setGroupsAddedHere
                         )
                         dismiss()
                     }
@@ -400,7 +402,6 @@ struct WorkoutEditorScreen: View {
                 if workout.date == nil {
                     workout.date = .now
                 }
-                setGroupOrderOnOpen = workout.setGroups.compactMap { $0.id }
                 refreshOnChange()
                 exerciseSelectionPresentationDetent = workout.isEmpty ? .medium : .height(BOTTOM_SHEET_SMALL)
             }

@@ -18,17 +18,29 @@ import SwiftUI
 /// so the weeks can be compared before anything changes; the button is the commit. The numbers are
 /// sized for the user's weekly workout goal as it stands, and the lead says which goal that is.
 ///
-/// "Set targets manually" pushes the number editor for anyone who wants their own split. With custom
-/// targets in force no tile is selected and the button edits them instead; choosing a preset then
-/// asks first, since it replaces numbers the user set by hand.
+/// "Set targets manually" pushes the number editor, starting from the tile you're on. Its check saves
+/// the targets and closes the sheet, so setting them up by hand ends where it's done; going back keeps
+/// them here as a "Custom" tile, selected and waiting for the button like any other. Custom targets in
+/// force get that tile too, first and selected, so reopening the sheet shows what's in force above
+/// the alternatives: its button edits them, and choosing a preset instead asks first, since it
+/// replaces numbers the user set by hand.
 struct MuscleFocusPickerSheet: View {
     @EnvironmentObject private var store: MuscleFocusStore
     @Environment(\.dismiss) private var dismiss
 
-    /// The tile the user is on. Starts on the preset in force, and on nothing before any choice or
-    /// for custom targets: there is no default focus, so nothing is pre-picked for the user.
-    @State private var selection: MuscleFocusPreset?
+    /// One tile's worth of choice: the user's own targets, or a preset.
+    private enum Choice: Equatable {
+        case custom
+        case preset(MuscleFocusPreset)
+    }
+
+    /// The tile the user is on. Starts on what's in force — a preset's tile, or the custom one — and on
+    /// nothing before any choice: there is no default focus, so nothing is pre-picked for the user.
+    @State private var selection: Choice?
     @State private var hasLoadedSelection = false
+    /// Targets set up in the editor and not saved yet — its back button leaves them here rather than
+    /// dropping them.
+    @State private var draft: MuscleFocus?
     @State private var isShowingEditor = false
     @State private var isConfirmingReplace = false
     /// Whether the list is moving, and when it last was. A drag that starts on a tile carries the tile
@@ -43,11 +55,24 @@ struct MuscleFocusPickerSheet: View {
         store.hasChosenFocus && store.focus.matchingPreset == nil
     }
 
+    /// What the custom tile shows — targets still being set up, else the custom ones in force. Nil
+    /// hides the tile: without custom targets, "Set targets manually" is the way to them.
+    private var customFocus: MuscleFocus? {
+        draft ?? (hasCustomTargets ? store.focus : nil)
+    }
+
+    /// The custom tile holds targets that aren't in force yet, so its button saves them.
+    private var hasUnsavedDraft: Bool {
+        guard let draft else { return false }
+        return !store.hasChosenFocus || draft != store.focus
+    }
+
     private var goal: Int { store.workoutsPerWeekToSizeFor }
 
     /// One scale for every tile, so a taller pill means more sets wherever it stands.
     private var scaleMax: Int {
-        MuscleFocusPreset.allCases.map { $0.focus(forWorkoutsPerWeek: goal).highestTarget }.max() ?? 1
+        let presetMax = MuscleFocusPreset.allCases.map { $0.focus(forWorkoutsPerWeek: goal).highestTarget }.max() ?? 1
+        return max(presetMax, customFocus?.highestTarget ?? 0)
     }
 
     var body: some View {
@@ -56,8 +81,11 @@ struct MuscleFocusPickerSheet: View {
                 VStack(alignment: .leading, spacing: 10) {
                     header
                         .padding(.bottom, 10)
+                    if let customFocus {
+                        customTile(customFocus)
+                    }
                     ForEach(MuscleFocusPreset.allCases) { preset in
-                        tile(preset)
+                        presetTile(preset)
                     }
                 }
                 .padding(.horizontal)
@@ -85,18 +113,60 @@ struct MuscleFocusPickerSheet: View {
                 }
             }
             .navigationDestination(isPresented: $isShowingEditor) {
-                MuscleFocusScreen()
+                MuscleFocusScreen(focus: Binding(
+                    get: { draft ?? store.focus },
+                    set: { draft = $0 }
+                )) {
+                    if let draft {
+                        store.apply(focus: draft)
+                    }
+                    dismiss()
+                }
             }
         }
         .onAppear {
             guard !hasLoadedSelection else { return }
             hasLoadedSelection = true
-            selection = store.hasChosenFocus ? store.focus.matchingPreset : nil
+            selection = inForceChoice
         }
-        // The editor commits as it goes; coming back from it, the tiles say what it left behind.
-        .onChange(of: store.focus) { _, focus in
-            selection = focus.matchingPreset
+        .onChange(of: isShowingEditor) { _, isShowing in
+            if !isShowing {
+                settleDraft()
+            }
         }
+    }
+
+    /// The tile for what's in force, nil before any choice.
+    private var inForceChoice: Choice? {
+        guard store.hasChosenFocus else { return nil }
+        return store.focus.matchingPreset.map(Choice.preset) ?? .custom
+    }
+
+    /// Back from the editor: targets left as they are in force need no saving, targets that came out
+    /// as a preset's numbers are that preset, and anything else stays as the custom tile, selected.
+    private func settleDraft() {
+        guard let draft else { return }
+        if !hasUnsavedDraft {
+            self.draft = nil
+            selection = inForceChoice
+        } else if let preset = MuscleFocusPreset.allCases.first(where: { draft.hasSameTargets(as: $0.focus(forWorkoutsPerWeek: goal)) }) {
+            self.draft = nil
+            selection = .preset(preset)
+        } else {
+            selection = .custom
+        }
+    }
+
+    /// Opens the editor on the tile you're on: the custom targets, a preset's numbers to adjust, or —
+    /// with nothing picked — the week the app would measure against anyway.
+    private func openEditor() {
+        switch selection {
+        case .preset(let preset):
+            draft = preset.focus(forWorkoutsPerWeek: goal)
+        case .custom, nil:
+            draft = customFocus ?? store.focus
+        }
+        isShowingEditor = true
     }
 
     // MARK: - Header
@@ -128,26 +198,46 @@ struct MuscleFocusPickerSheet: View {
 
     // MARK: - Tiles
 
-    /// One area: its name and what it raises, over its week as pills. The selected tile takes the
+    private func presetTile(_ preset: MuscleFocusPreset) -> some View {
+        tile(
+            .preset(preset),
+            title: preset.title,
+            summary: preset.summary,
+            focus: preset.focus(forWorkoutsPerWeek: goal),
+            identifier: "muscleFocusPreset_\(preset.rawValue)"
+        )
+    }
+
+    private func customTile(_ focus: MuscleFocus) -> some View {
+        tile(
+            .custom,
+            title: NSLocalizedString("muscleFocusCustom", comment: ""),
+            summary: NSLocalizedString("muscleFocusCustomSummary", comment: ""),
+            focus: focus,
+            identifier: "muscleFocusCustomTile"
+        )
+    }
+
+    /// One choice: its name and what it raises, over its week as pills. The selected tile takes the
     /// accent as its fill, name and check — the way iOS marks a chosen option — rather than an
     /// outline, which reads as a focus ring.
-    private func tile(_ preset: MuscleFocusPreset) -> some View {
-        let isSelected = selection == preset
+    private func tile(_ choice: Choice, title: String, summary: String, focus: MuscleFocus, identifier: String) -> some View {
+        let isSelected = selection == choice
         return Button {
             guard !isScrolling, Date.now.timeIntervalSince(lastScrolled) > 0.25 else { return }
             withAnimation(.snappy(duration: 0.2)) {
-                selection = preset
+                selection = choice
             }
         } label: {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top, spacing: 10) {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(preset.title)
+                        Text(title)
                             .font(.system(.headline, design: .rounded, weight: .bold))
                             .foregroundStyle(isSelected ? Color.accentColor : Color.label)
                         // Two lines reserved on every tile, so the pills line up down the sheet
                         // whichever description wraps.
-                        Text(preset.summary)
+                        Text(summary)
                             .font(.subheadline)
                             .foregroundStyle(isSelected ? Color.accentColor.opacity(0.8) : Color.secondaryLabel)
                             .lineLimit(2, reservesSpace: true)
@@ -164,7 +254,7 @@ struct MuscleFocusPickerSheet: View {
                     .frame(width: 22, height: 22)
                     .opacity(isSelected ? 1 : 0)
                 }
-                MuscleFocusPillChart(focus: preset.focus(forWorkoutsPerWeek: goal), scaleMax: scaleMax)
+                MuscleFocusPillChart(focus: focus, scaleMax: scaleMax)
             }
             .padding(CELL_PADDING)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -176,34 +266,28 @@ struct MuscleFocusPickerSheet: View {
         }
         .buttonStyle(TileButtonStyle())
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(preset.title))
-        .accessibilityHint(Text(preset.summary))
+        .accessibilityLabel(Text(title))
+        .accessibilityHint(Text(summary))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-        .accessibilityIdentifier("muscleFocusPreset_\(preset.rawValue)")
+        .accessibilityIdentifier(identifier)
     }
 
     // MARK: - Actions
 
-    /// The commit, pinned under the tiles. On a preset it takes that preset; on custom targets it
-    /// opens them instead, and the manual link would only repeat it. Before anything is picked there
-    /// is nothing to commit, so only the manual way in shows — the tiles are the call to action.
+    /// The commit, pinned under the tiles. On a preset it takes that preset; on the custom tile it
+    /// edits the targets in force, or saves ones still being set up. Before anything is picked there
+    /// is nothing to commit, so only the manual way in shows — the tiles are the call to action. While
+    /// the custom tile is on screen it is the manual way in, so the link doesn't repeat it.
     private var actions: some View {
         VStack(spacing: 4) {
-            if !hasCustomTargets, selection == nil {
+            switch selection {
+            case nil:
+                manualButton
+            case .preset(let preset):
                 Button {
-                    isShowingEditor = true
+                    commit(preset)
                 } label: {
-                    Text(NSLocalizedString("muscleFocusSetManually", comment: ""))
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity)
-                }
-                .accessibilityIdentifier("muscleFocusManualButton")
-            } else if let selection {
-                Button {
-                    commit(selection)
-                } label: {
-                    Text(String(format: NSLocalizedString("muscleFocusUsePreset", comment: ""), selection.title))
+                    Text(String(format: NSLocalizedString("muscleFocusUsePreset", comment: ""), preset.title))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                 }
@@ -214,7 +298,7 @@ struct MuscleFocusPickerSheet: View {
                     NSLocalizedString("muscleFocusReplaceCustomTitle", comment: ""),
                     isPresented: $isConfirmingReplace,
                     titleVisibility: .visible,
-                    presenting: selection
+                    presenting: preset
                 ) { preset in
                     Button(String(format: NSLocalizedString("muscleFocusUsePreset", comment: ""), preset.title), role: .destructive) {
                         apply(preset)
@@ -223,27 +307,55 @@ struct MuscleFocusPickerSheet: View {
                 } message: { _ in
                     Text(NSLocalizedString("muscleFocusReplaceCustomMessage", comment: ""))
                 }
-                Button {
-                    isShowingEditor = true
-                } label: {
-                    Text(NSLocalizedString("muscleFocusSetManually", comment: ""))
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity)
+                if customFocus == nil {
+                    manualButton
                 }
-                .accessibilityIdentifier("muscleFocusManualButton")
-            } else {
-                Button {
-                    isShowingEditor = true
-                } label: {
-                    Text(NSLocalizedString("muscleFocusEditTargets", comment: ""))
+            case .custom:
+                if hasUnsavedDraft, let draft {
+                    Button {
+                        store.apply(focus: draft)
+                        dismiss()
+                    } label: {
+                        Text(NSLocalizedString("muscleFocusUseCustom", comment: ""))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .accessibilityIdentifier("muscleFocusCommitButton")
+                    Button {
+                        openEditor()
+                    } label: {
+                        Text(NSLocalizedString("muscleFocusEditTargets", comment: ""))
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .accessibilityIdentifier("muscleFocusManualButton")
+                } else {
+                    Button {
+                        openEditor()
+                    } label: {
+                        Text(NSLocalizedString("muscleFocusEditTargets", comment: ""))
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .accessibilityIdentifier("muscleFocusCommitButton")
                 }
-                .buttonStyle(PrimaryButtonStyle())
-                .accessibilityIdentifier("muscleFocusCommitButton")
             }
         }
         .padding(.horizontal)
         .padding(.top, 8)
+    }
+
+    private var manualButton: some View {
+        Button {
+            openEditor()
+        } label: {
+            Text(NSLocalizedString("muscleFocusSetManually", comment: ""))
+                .font(.subheadline.weight(.semibold))
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+        }
+        .accessibilityIdentifier("muscleFocusManualButton")
     }
 
     private func commit(_ preset: MuscleFocusPreset) {

@@ -967,6 +967,7 @@
 "muscleFocusPreset_upperBody" = "Parte superior";
 "muscleFocusPreset_lowerBody" = "Parte inferior";
 "muscleFocusCustom" = "Personalizado";
+"muscleFocusCustomSummary" = "Suas próprias séries semanais, grupo a grupo.";
 "setsPerWeekTitle" = "Séries por semana";
 "muscleFocusWeeklyTotal" = "%d séries no total";
 "muscleFocusTargetsFooter" = "Quantas séries cada grupo muscular deve receber por semana. Coloque um grupo em 0 para deixá-lo fora do seu equilíbrio.";
@@ -994,6 +995,7 @@
 "muscleFocusPickerLeadNoGoal" = "Metas semanais de séries para cada grupo muscular, pensadas para %d treinos por semana.";
 "muscleFocusUsePreset" = "Usar %@";
 "muscleFocusSetManually" = "Definir metas manualmente";
+"muscleFocusUseCustom" = "Usar metas personalizadas";
 "muscleFocusReplaceCustomTitle" = "Substituir suas metas personalizadas?";
 "muscleFocusReplaceCustomMessage" = "As metas do modelo substituem as que você definiu.";
 "muscleFocusSetsPerWeekValue" = "%d séries por semana";

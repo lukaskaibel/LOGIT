@@ -967,6 +967,7 @@
 "muscleFocusPreset_upperBody" = "상체";
 "muscleFocusPreset_lowerBody" = "하체";
 "muscleFocusCustom" = "사용자화";
+"muscleFocusCustomSummary" = "부위별로 직접 정한 주간 세트 수.";
 "setsPerWeekTitle" = "주당 세트 수";
 "muscleFocusWeeklyTotal" = "총 %d세트";
 "muscleFocusTargetsFooter" = "각 근육 그룹에 주당 몇 세트를 할지 정합니다. 0으로 설정하면 균형에서 제외됩니다.";
@@ -994,6 +995,7 @@
 "muscleFocusPickerLeadNoGoal" = "주 %d회 운동을 기준으로 한 근육 그룹별 주간 세트 목표입니다.";
 "muscleFocusUsePreset" = "%@ 사용";
 "muscleFocusSetManually" = "목표 직접 설정";
+"muscleFocusUseCustom" = "사용자화 목표 사용";
 "muscleFocusReplaceCustomTitle" = "사용자화한 목표를 바꿀까요?";
 "muscleFocusReplaceCustomMessage" = "프리셋의 목표가 직접 설정한 목표를 대체합니다.";
 "muscleFocusSetsPerWeekValue" = "주당 %d세트";

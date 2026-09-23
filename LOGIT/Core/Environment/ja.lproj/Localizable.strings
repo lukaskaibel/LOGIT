@@ -967,6 +967,7 @@
 "muscleFocusPreset_upperBody" = "上半身";
 "muscleFocusPreset_lowerBody" = "下半身";
 "muscleFocusCustom" = "カスタム";
+"muscleFocusCustomSummary" = "部位ごとに自分で決めた週のセット数。";
 "setsPerWeekTitle" = "週あたりのセット数";
 "muscleFocusWeeklyTotal" = "合計 %d セット";
 "muscleFocusTargetsFooter" = "各筋肉グループに週何セット行うかを設定します。0にするとバランスの対象から外れます。";
@@ -994,6 +995,7 @@
 "muscleFocusPickerLeadNoGoal" = "週%d回のトレーニングを想定した、筋肉グループごとの週間セット目標です。";
 "muscleFocusUsePreset" = "「%@」を使用";
 "muscleFocusSetManually" = "目標を手動で設定";
+"muscleFocusUseCustom" = "カスタム目標を使用";
 "muscleFocusReplaceCustomTitle" = "カスタム目標を置き換えますか？";
 "muscleFocusReplaceCustomMessage" = "プリセットの目標が、自分で設定した目標に置き換わります。";
 "muscleFocusSetsPerWeekValue" = "週%dセット";

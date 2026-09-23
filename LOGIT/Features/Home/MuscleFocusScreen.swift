@@ -16,10 +16,14 @@ import SwiftUI
 /// never has to move because another's did. Presets are chosen in the picker one level up; any change
 /// here makes the focus "Custom", which the title says. Setting a group to 0 takes it out of the focus.
 ///
-/// Commits on every change through the `MuscleFocusStore`, so Muscle Groups and the Summary's Balance
-/// tile update live. Free — it's configuration, not analytics.
+/// Edits the picker's draft, not the targets in force: the check in the top-right corner saves them
+/// and closes the whole sheet, so the setup ends here rather than back among the tiles. Going back
+/// instead leaves them in the picker as its "Custom" tile, unsaved. Free — it's configuration, not
+/// analytics.
 struct MuscleFocusScreen: View {
-    @EnvironmentObject private var store: MuscleFocusStore
+    @Binding var focus: MuscleFocus
+    /// Saves the targets and closes the sheet.
+    let onDone: () -> Void
 
     private static let order = MuscleFocus.displayOrder
 
@@ -38,12 +42,25 @@ struct MuscleFocusScreen: View {
         .scrollContentBackground(.hidden)
         .background(Color.background)
         .contentMargins(.bottom, SCROLLVIEW_BOTTOM_PADDING, for: .scrollContent)
-        .animation(.snappy(duration: 0.3), value: store.focus)
+        .animation(.snappy(duration: 0.3), value: focus)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(NSLocalizedString("trainingFocus", comment: ""))
                     .font(.headline)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                // The system glyph is white, which disappears on the lime accent — dark like the
+                // primary button's label instead.
+                Button(role: .confirm) {
+                    onDone()
+                } label: {
+                    Image(systemName: "checkmark")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.background)
+                }
+                .accessibilityLabel(Text(NSLocalizedString("done", comment: "")))
+                .accessibilityIdentifier("muscleFocusEditorDone")
             }
         }
     }
@@ -56,12 +73,12 @@ struct MuscleFocusScreen: View {
     private var focusSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 14) {
-                Text(store.focus.matchingPreset?.title ?? NSLocalizedString("muscleFocusCustom", comment: ""))
+                Text(focus.matchingPreset?.title ?? NSLocalizedString("muscleFocusCustom", comment: ""))
                     .font(.system(.title2, design: .rounded, weight: .bold))
                     .foregroundStyle(Color.label)
                     .contentTransition(.opacity)
-                MuscleFocusPillChart(focus: store.focus, scaleMax: max(store.focus.highestTarget, 1))
-                Text(String(format: NSLocalizedString("muscleFocusWeeklyTotal", comment: ""), store.focus.weeklyTotal))
+                MuscleFocusPillChart(focus: focus, scaleMax: max(focus.highestTarget, 1))
+                Text(String(format: NSLocalizedString("muscleFocusWeeklyTotal", comment: ""), focus.weeklyTotal))
                     .font(.subheadline)
                     .foregroundStyle(Color.secondaryLabel)
                     .monospacedDigit()
@@ -106,7 +123,7 @@ struct MuscleFocusScreen: View {
     /// once, in the section header, rather than beside eight numbers. A group at 0 gives up its colour
     /// on the name and the number — the tile saying it is out of the focus.
     private func targetTile(_ group: MuscleGroup) -> some View {
-        let isExcluded = store.focus.isExcluded(group)
+        let isExcluded = focus.isExcluded(group)
         return VStack(alignment: .leading, spacing: 12) {
             // Muscle names carry their colour themselves — bold, rounded, no identity dot.
             Text(group.description)
@@ -114,7 +131,7 @@ struct MuscleFocusScreen: View {
                 .foregroundStyle(isExcluded ? Color.secondaryLabel : group.color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
-            MuscleTargetControl(group: group, spread: true)
+            MuscleTargetControl(group: group, focus: $focus, spread: true)
                 .accessibilityIdentifier("muscleTargetControl_\(group.rawValue)")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -138,13 +155,15 @@ struct MuscleFocusScreen: View {
 ///
 /// One accessibility element, adjustable: VoiceOver reads "Legs, 10 sets per week" and swipes up or
 /// down to change it.
+///
+/// Sets the focus it's bound to: the editor's draft, or — in the popover — the store's
+/// `committingFocus`, which saves each step.
 struct MuscleTargetControl: View {
     let group: MuscleGroup
+    @Binding var focus: MuscleFocus
     /// Stretches across the available width — minus at the leading edge, the number centred, plus at
     /// the trailing edge — for a tile. Off keeps the three together, for the end of a row.
     var spread: Bool = false
-
-    @EnvironmentObject private var store: MuscleFocusStore
 
     /// Counts every press of minus or plus, held repeats included — the trigger for the selection tick.
     /// Keyed to presses rather than to the value, so a preset changing eight targets at once doesn't
@@ -154,8 +173,8 @@ struct MuscleTargetControl: View {
     private static let buttonSize: CGFloat = 36
 
     var body: some View {
-        let target = store.focus.target(for: group)
-        let lower = store.focus.minimumTarget(for: group)
+        let target = focus.target(for: group)
+        let lower = focus.minimumTarget(for: group)
         let upper = MuscleFocus.targetRange.upperBound
         return HStack(spacing: spread ? 0 : 12) {
             stepButton("minus", enabled: target > lower) { set(target - 1) }
@@ -189,7 +208,7 @@ struct MuscleTargetControl: View {
 
     private func set(_ value: Int) {
         withAnimation(.snappy(duration: 0.25)) {
-            store.setTarget(value, for: group)
+            focus.setTarget(value, for: group)
         }
     }
 
@@ -212,10 +231,19 @@ struct MuscleTargetControl: View {
     }
 }
 
+extension MuscleFocusStore {
+    /// The focus as a binding that saves every change — for a target control that commits as it goes.
+    var committingFocus: Binding<MuscleFocus> {
+        Binding(get: { self.focus }, set: { self.apply(focus: $0) })
+    }
+}
+
 private struct PreviewWrapperView: View {
+    @State private var focus = MuscleFocus.default
+
     var body: some View {
         NavigationStack {
-            MuscleFocusScreen()
+            MuscleFocusScreen(focus: $focus) {}
         }
     }
 }

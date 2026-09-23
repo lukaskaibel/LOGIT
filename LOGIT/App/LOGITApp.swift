@@ -19,31 +19,32 @@ struct LOGIT: App {
 
     @AppStorage("setupDone") var setupDone: Bool = false
 
-    @Environment(\.scenePhase) private var scenePhase
-
     // MARK: - State
 
-    @StateObject private var database: Database
-    @StateObject private var templateService: TemplateService
-    @StateObject private var measurementController: MeasurementEntryController
-    @StateObject private var purchaseManager = PurchaseManager()
-    @StateObject private var networkMonitor = NetworkMonitor()
-    /// Held, not observed: the scene only hands the store down, and every view that shows a target
-    /// observes it itself. As a `@StateObject`, each target change re-ran this whole body, and the
-    /// TabView pushed its items to UIKit again. A push while a popover has the window's tint dimmed
-    /// (a target edited in Muscle Groups' popover) left the unselected tabs in the accent colour
-    /// after the popover closed.
+    // Held, not observed: this body only hands the objects down, and every view that shows their
+    // data observes them itself. As `@StateObject`s, any publish re-ran the whole body (a Cancel's
+    // rollback, a rest running out, a StoreKit response), and the TabView pushed its items to
+    // UIKit again. A push while a sheet, a confirmation dialog or a popover has the tab bar's tint
+    // dimmed left the unselected tabs in the accent colour after it closed. The same goes for the
+    // scene phase, which is why the body doesn't read it either. What the scene does react to
+    // lives in views of its own below: `StartOrCurrentWorkoutButton` (the recorder),
+    // `SaveFailedAlert` (the database) and `ImportBodyWeightOnForeground` (the scene phase).
+    @State private var database: Database
+    @State private var templateService: TemplateService
+    @State private var measurementController: MeasurementEntryController
+    @State private var purchaseManager = PurchaseManager()
+    @State private var networkMonitor = NetworkMonitor()
     @State private var muscleFocusStore = MuscleFocusStore()
-    @StateObject private var workoutRecorder: WorkoutRecorder
-    @StateObject private var workoutLiveActivityManager: WorkoutLiveActivityManager
-    @StateObject private var muscleGroupService: MuscleGroupService
-    @StateObject private var homeNavigationCoordinator = HomeNavigationCoordinator()
-    @StateObject private var chronograph: Chronograph
-    @StateObject private var defaultExerciseService: DefaultExerciseService
-    @StateObject private var defaultTemplateService: DefaultTemplateService
-    @StateObject private var exerciseSuggestionService: ExerciseSuggestionService
-    @StateObject private var healthKitSyncManager: HealthKitSyncManager
-    @StateObject private var bodyMeasurementSyncManager: BodyMeasurementSyncManager
+    @State private var workoutRecorder: WorkoutRecorder
+    @State private var workoutLiveActivityManager: WorkoutLiveActivityManager
+    @State private var muscleGroupService: MuscleGroupService
+    @State private var homeNavigationCoordinator = HomeNavigationCoordinator()
+    @State private var chronograph: Chronograph
+    @State private var defaultExerciseService: DefaultExerciseService
+    @State private var defaultTemplateService: DefaultTemplateService
+    @State private var exerciseSuggestionService: ExerciseSuggestionService
+    @State private var healthKitSyncManager: HealthKitSyncManager
+    @State private var bodyMeasurementSyncManager: BodyMeasurementSyncManager
 
     @State private var selectedTab: TabType = .home
     @State private var isShowingWelcome = false
@@ -112,7 +113,7 @@ struct LOGIT: App {
         }
 
         let bodyMeasurementSyncManager = BodyMeasurementSyncManager(database: database)
-        _bodyMeasurementSyncManager = StateObject(wrappedValue: bodyMeasurementSyncManager)
+        _bodyMeasurementSyncManager = State(initialValue: bodyMeasurementSyncManager)
         let measurementController = MeasurementEntryController(
             database: database, bodyMeasurementSync: bodyMeasurementSyncManager
         )
@@ -129,27 +130,26 @@ struct LOGIT: App {
             scenario.seedAfterDefaultContentLoaded(database: database)
         }
 
-        _database = StateObject(wrappedValue: database)
-        _templateService = StateObject(wrappedValue: TemplateService(database: database))
-        _measurementController = StateObject(wrappedValue: measurementController)
+        _database = State(initialValue: database)
+        _templateService = State(initialValue: TemplateService(database: database))
+        _measurementController = State(initialValue: measurementController)
         let healthKitSyncManager = HealthKitSyncManager()
-        _healthKitSyncManager = StateObject(wrappedValue: healthKitSyncManager)
+        _healthKitSyncManager = State(initialValue: healthKitSyncManager)
         let workoutRecorder = WorkoutRecorder(database: database, healthKitSync: healthKitSyncManager)
-        _workoutRecorder = StateObject(wrappedValue: workoutRecorder)
+        _workoutRecorder = State(initialValue: workoutRecorder)
         let chronograph = Chronograph()
-        _chronograph = StateObject(wrappedValue: chronograph)
-        _workoutLiveActivityManager = StateObject(
-            wrappedValue: WorkoutLiveActivityManager(
+        _chronograph = State(initialValue: chronograph)
+        _workoutLiveActivityManager = State(
+            initialValue: WorkoutLiveActivityManager(
                 workoutRecorder: workoutRecorder,
                 database: database,
                 chronograph: chronograph
             )
         )
-        _muscleGroupService = StateObject(wrappedValue: MuscleGroupService())
-        _homeNavigationCoordinator = StateObject(wrappedValue: HomeNavigationCoordinator())
-        _defaultExerciseService = StateObject(wrappedValue: defaultExerciseService)
-        _defaultTemplateService = StateObject(wrappedValue: defaultTemplateService)
-        _exerciseSuggestionService = StateObject(wrappedValue: ExerciseSuggestionService(database: database))
+        _muscleGroupService = State(initialValue: MuscleGroupService())
+        _defaultExerciseService = State(initialValue: defaultExerciseService)
+        _defaultTemplateService = State(initialValue: defaultTemplateService)
+        _exerciseSuggestionService = State(initialValue: ExerciseSuggestionService(database: database))
 
         UserDefaults.standard.register(defaults: [
             "weightUnit": WeightUnit.defaultFromLocale.rawValue,
@@ -198,8 +198,11 @@ struct LOGIT: App {
                 }
                 .tabBarMinimizeBehavior(.onScrollDown)
                 .tabViewBottomAccessory {
-                    startAndCurrentWorkoutButton
-                        .frame(maxWidth: .infinity)
+                    StartOrCurrentWorkoutButton(
+                        isShowingStartWorkoutSheet: $isShowingStartWorkoutSheet,
+                        showWorkoutRecorder: showWorkoutRecorder
+                    )
+                    .frame(maxWidth: .infinity)
                 }
                 // Anchored on the TabView (stable for the app's lifetime) rather than
                 // inside the accessory: TabView re-hosts the accessory content at
@@ -232,13 +235,10 @@ struct LOGIT: App {
                     FirstStartScreen()
                         .interactiveDismissDisabled()
                 }
-                .onChange(of: scenePhase) { _, phase in
-                    // Weight logged elsewhere (Health app, a smart scale) arrives when the
-                    // user comes back to LOGIT. The anchored query only fetches what changed,
-                    // so this stays cheap on every foreground.
-                    guard phase == .active, shouldImportBodyWeight else { return }
-                    Task { await bodyMeasurementSyncManager.importFromHealth() }
-                }
+                .modifier(ImportBodyWeightOnForeground(
+                    bodyMeasurementSyncManager: bodyMeasurementSyncManager,
+                    isEnabled: shouldImportBodyWeight
+                ))
                 .task {
                     if !setupDone {
                         isShowingWelcome = true
@@ -429,17 +429,7 @@ struct LOGIT: App {
                 } message: {
                     Text(importErrorMessage)
                 }
-                // Persisting to disk failed even after the retry: without this, the data loss
-                // would be silent — the UI keeps showing the in-memory objects until the app is
-                // relaunched, and only then does the user find their workout gone.
-                .alert(
-                    NSLocalizedString("saveFailedTitle", comment: ""),
-                    isPresented: $database.lastSaveFailed
-                ) {
-                    Button(NSLocalizedString("ok", comment: ""), role: .cancel) {}
-                } message: {
-                    Text(NSLocalizedString("saveFailedMessage", comment: ""))
-                }
+                .modifier(SaveFailedAlert(database: database))
         }
     }
 
@@ -463,117 +453,6 @@ struct LOGIT: App {
 
     func testFirstStart() {
         UserDefaults.standard.set(false, forKey: "setupDone")
-    }
-
-    private var startAndCurrentWorkoutButton: some View {
-        if #available(iOS 26.0, *) {
-            if let workout = workoutRecorder.workout {
-                AnyView(
-                    Button {
-                        showWorkoutRecorder()
-                    } label: {
-                        CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
-                            .frame(maxWidth: .infinity)
-                            // Make the whole pill tappable, not just the name/timer:
-                            // the label's gaps and the maxWidth fill aren't hit-testable
-                            // without an explicit content shape.
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(TileButtonStyle())
-                    .gesture(
-                        DragGesture()
-                            .onChanged { dragValue in
-                                if dragValue.translation.height < 0 {
-                                    showWorkoutRecorder()
-                                }
-                            }
-                    )
-                )
-            } else {
-                AnyView(
-                    Button {
-                        isShowingStartWorkoutSheet = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "play.fill")
-                            Text(NSLocalizedString("startWorkout", comment: ""))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .fontWeight(.semibold)
-                        .contentShape(Rectangle())
-                    }
-                    .tint(Color.label)
-                    .sheet(isPresented: $isShowingStartWorkoutSheet) {
-                        WorkoutStartSheet()
-                    }
-                )
-            }
-        } else {
-            AnyView(
-                ZStack {
-                    Rectangle()
-                        .fill(.bar)
-                        .frame(height: 140)
-                        .mask {
-                            VStack(spacing: 0) {
-                                LinearGradient(colors: [Color.black.opacity(0),
-                                                        Color.black],
-                                               startPoint: .top,
-                                               endPoint: .bottom)
-                                    .frame(height: 45)
-
-                                Rectangle()
-                            }
-                        }
-                    if let workout = workoutRecorder.workout {
-                        Button {
-                            showWorkoutRecorder()
-                        } label: {
-                            CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
-                                .frame(maxWidth: .infinity)
-                                .background(.regularMaterial)
-                                .clipShape(RoundedRectangle(cornerRadius: 15))
-                                .shadow(radius: 10)
-                                .padding(.horizontal, 12)
-                                .padding(.bottom, 5)
-                        }
-                        .buttonStyle(TileButtonStyle())
-                        .gesture(
-                            DragGesture()
-                                .onChanged { dragValue in
-                                    if dragValue.translation.height < 0 {
-                                        showWorkoutRecorder()
-                                    }
-                                }
-                        )
-                        .transition(.move(edge: .bottom))
-                    } else {
-                        Button {
-                            isShowingStartWorkoutSheet = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "play.fill")
-                                Text(NSLocalizedString("startWorkout", comment: ""))
-                            }
-                            .frame(maxWidth: .infinity)
-                            .fontWeight(.semibold)
-                            .padding()
-                            .background(.regularMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: 15))
-                            .shadow(radius: 10)
-                            .padding(.horizontal, 12)
-                            .padding(.bottom, 5)
-                        }
-                        .tint(Color.label)
-                        .sheet(isPresented: $isShowingStartWorkoutSheet) {
-                            WorkoutStartSheet()
-                        }
-                    }
-                }
-                .frame(maxHeight: .infinity, alignment: .bottom)
-                .edgesIgnoringSafeArea(.bottom)
-            )
-        }
     }
 
     /// The recorder screen as presented by Transmission. The presentation hosts it in
@@ -716,6 +595,168 @@ struct LOGIT: App {
                 }
             }
         }
+    }
+}
+
+// MARK: - Supporting Views
+
+/// The tab bar's accessory: the running workout's pill, or Start Workout. A view of its own so
+/// that it alone observes the recorder, not the scene body that hosts the TabView (see the
+/// scene's state).
+private struct StartOrCurrentWorkoutButton: View {
+    @EnvironmentObject private var workoutRecorder: WorkoutRecorder
+
+    @Binding var isShowingStartWorkoutSheet: Bool
+    let showWorkoutRecorder: () -> Void
+
+    var body: some View {
+        if #available(iOS 26.0, *) {
+            if let workout = workoutRecorder.workout {
+                AnyView(
+                    Button {
+                        showWorkoutRecorder()
+                    } label: {
+                        CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
+                            .frame(maxWidth: .infinity)
+                            // Make the whole pill tappable, not just the name/timer:
+                            // the label's gaps and the maxWidth fill aren't hit-testable
+                            // without an explicit content shape.
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(TileButtonStyle())
+                    .gesture(
+                        DragGesture()
+                            .onChanged { dragValue in
+                                if dragValue.translation.height < 0 {
+                                    showWorkoutRecorder()
+                                }
+                            }
+                    )
+                )
+            } else {
+                AnyView(
+                    Button {
+                        isShowingStartWorkoutSheet = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "play.fill")
+                            Text(NSLocalizedString("startWorkout", comment: ""))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .fontWeight(.semibold)
+                        .contentShape(Rectangle())
+                    }
+                    .tint(Color.label)
+                    .sheet(isPresented: $isShowingStartWorkoutSheet) {
+                        WorkoutStartSheet()
+                    }
+                )
+            }
+        } else {
+            AnyView(
+                ZStack {
+                    Rectangle()
+                        .fill(.bar)
+                        .frame(height: 140)
+                        .mask {
+                            VStack(spacing: 0) {
+                                LinearGradient(colors: [Color.black.opacity(0),
+                                                        Color.black],
+                                               startPoint: .top,
+                                               endPoint: .bottom)
+                                    .frame(height: 45)
+
+                                Rectangle()
+                            }
+                        }
+                    if let workout = workoutRecorder.workout {
+                        Button {
+                            showWorkoutRecorder()
+                        } label: {
+                            CurrentWorkoutView(workoutName: workout.name, workoutDate: workout.date)
+                                .frame(maxWidth: .infinity)
+                                .background(.regularMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 15))
+                                .shadow(radius: 10)
+                                .padding(.horizontal, 12)
+                                .padding(.bottom, 5)
+                        }
+                        .buttonStyle(TileButtonStyle())
+                        .gesture(
+                            DragGesture()
+                                .onChanged { dragValue in
+                                    if dragValue.translation.height < 0 {
+                                        showWorkoutRecorder()
+                                    }
+                                }
+                        )
+                        .transition(.move(edge: .bottom))
+                    } else {
+                        Button {
+                            isShowingStartWorkoutSheet = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "play.fill")
+                                Text(NSLocalizedString("startWorkout", comment: ""))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .fontWeight(.semibold)
+                            .padding()
+                            .background(.regularMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 15))
+                            .shadow(radius: 10)
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 5)
+                        }
+                        .tint(Color.label)
+                        .sheet(isPresented: $isShowingStartWorkoutSheet) {
+                            WorkoutStartSheet()
+                        }
+                    }
+                }
+                .frame(maxHeight: .infinity, alignment: .bottom)
+                .edgesIgnoringSafeArea(.bottom)
+            )
+        }
+    }
+}
+
+/// Persisting to disk failed even after the retry: without this, the data loss would be silent —
+/// the UI keeps showing the in-memory objects until the app is relaunched, and only then does the
+/// user find their workout gone. A modifier of its own so that it alone observes the database, not
+/// the scene body.
+private struct SaveFailedAlert: ViewModifier {
+    @ObservedObject var database: Database
+
+    func body(content: Content) -> some View {
+        content
+            .alert(
+                NSLocalizedString("saveFailedTitle", comment: ""),
+                isPresented: $database.lastSaveFailed
+            ) {
+                Button(NSLocalizedString("ok", comment: ""), role: .cancel) {}
+            } message: {
+                Text(NSLocalizedString("saveFailedMessage", comment: ""))
+            }
+    }
+}
+
+/// Weight logged elsewhere (Health app, a smart scale) arrives when the user comes back to LOGIT.
+/// The anchored query only fetches what changed, so this stays cheap on every foreground. A
+/// modifier of its own so that the scene body doesn't depend on the scene phase: it used to re-run
+/// on every trip to the background and back, dialogs still open included.
+private struct ImportBodyWeightOnForeground: ViewModifier {
+    @Environment(\.scenePhase) private var scenePhase
+
+    let bodyMeasurementSyncManager: BodyMeasurementSyncManager
+    let isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active, isEnabled else { return }
+                Task { await bodyMeasurementSyncManager.importFromHealth() }
+            }
     }
 }
 

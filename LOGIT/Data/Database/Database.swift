@@ -463,15 +463,25 @@ public class Database: ObservableObject {
         wasAddedInEditor: Bool,
         setGroupsAddedInEditor: Set<UUID>
     ) {
+        // Read before the rollback, which can take back the set groups that are the template's only
+        // route to its exercises.
+        let flaggedExercises = wasAddedInEditor ? template.exercises.filter { isTemporaryObject($0) } : []
         discardUnsavedChanges()
         if wasAddedInEditor {
             // A template built here is flagged temporary from the moment it is created, and an
-            // imported or scanned one flags its exercises alongside it — so this is the cleanup
-            // that reaches all of them, and it is the same one the import sheets run on dismiss.
-            // Rows the rollback already took back simply aren't found and are skipped; either way
-            // the flag list is cleared, which matters because it lives in UserDefaults and would
-            // otherwise keep the ids for the life of the install.
-            deleteAllTemporaryObjects()
+            // imported or scanned one flags the exercises it invented alongside it. Only those go:
+            // the flag list is shared, and a workout started from a scanned template keeps its own
+            // template and exercises on it until the workout ends, so clearing the whole list
+            // would delete them out from under the recorder.
+            if survivedRollback(template) {
+                delete(template)
+            }
+            unflagAsTemporary(template)
+            for exercise in flaggedExercises
+            where survivedRollback(exercise) && !isInUse(exercise, outside: template) {
+                delete(exercise)
+                unflagAsTemporary(exercise)
+            }
             save()
             return
         }
@@ -486,6 +496,14 @@ public class Database: ObservableObject {
         }
         addedHere.forEach { delete($0) }
         save()
+    }
+
+    /// Whether any workout, or any template other than `template`, trains `exercise`. Such an
+    /// exercise belongs to that owner now, flag or not, so a cancelled template must not take it.
+    private func isInUse(_ exercise: Exercise, outside template: Template) -> Bool {
+        let workoutSetGroups = exercise.setGroups_ as? Set<WorkoutSetGroup> ?? []
+        let templateSetGroups = exercise.templateSetGroups_ as? Set<TemplateSetGroup> ?? []
+        return !workoutSetGroups.isEmpty || templateSetGroups.contains { $0.workout != template }
     }
 
     /// Whether `object` is still a live row after a rollback — i.e. something saved the context

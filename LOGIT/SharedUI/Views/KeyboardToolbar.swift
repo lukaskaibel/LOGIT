@@ -73,6 +73,35 @@ struct KeyboardToolbarGroup<Content: View>: View {
 /// recorder's live timer button) has to match to sit level with them.
 let KEYBOARD_TOOLBAR_HEIGHT: CGFloat = 46
 
+// MARK: - Scrolling a field clear of the row
+
+/// The id of a set field's keyboard scroll target — see `keyboardScrollTarget(_:)`.
+struct KeyboardScrollTarget: Hashable {
+    let index: IntegerField.Index
+}
+
+/// How far below a field its scroll target reaches: the row of capsules and the gap it keeps
+/// from the keys, plus a little air so the field doesn't sit flush on the capsules.
+let KEYBOARD_ROW_SCROLL_CLEARANCE: CGFloat = KEYBOARD_TOOLBAR_HEIGHT + 18
+
+extension View {
+    /// Tags this field with a scroll target that runs `KEYBOARD_ROW_SCROLL_CLEARANCE` below it, so
+    /// scrolling to the target's bottom leaves the field above the accessory row, not under it.
+    ///
+    /// The field's own frame isn't enough to scroll to. Scrolling it to the bottom of the visible
+    /// area puts it on the keyboard's top edge, and the row floats above that edge — on iOS 27 the
+    /// keyboard's reported frame no longer includes the row at all, so the last set's fields ended
+    /// up entirely under Next and hide. A separate id keeps the field's own `.id(index)` identity
+    /// untouched.
+    func keyboardScrollTarget(_ index: IntegerField.Index) -> some View {
+        background {
+            Color.clear
+                .id(KeyboardScrollTarget(index: index))
+                .padding(.bottom, -KEYBOARD_ROW_SCROLL_CLEARANCE)
+        }
+    }
+}
+
 // MARK: - Buttons
 
 /// One icon action in the keyboard capsule — hide the keyboard, edit the set's rest, flip a

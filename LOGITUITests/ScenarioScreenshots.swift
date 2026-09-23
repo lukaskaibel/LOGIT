@@ -1696,6 +1696,40 @@ final class ScenarioScreenshots: XCTestCase {
         attach(app, "recorder_17_finish_highlights_all")
     }
 
+    /// The workout's name keeps its size on the finish panel and can still be renamed there.
+    func testFinishPanelTitleIsEditable() {
+        let app = launchApp(scenario: "stress", extraArguments: ["-UITEST_SHOW_RECORDER", "1", "-workoutPerWeekTarget", "2"])
+        let traySearchField = app.textFields.matching(
+            NSPredicate(format: "identifier == 'exerciseSelectionSearchField'")
+        ).firstMatch
+        XCTAssertTrue(traySearchField.waitForExistence(timeout: 25), "Recorder/tray never presented")
+        waitABit(3)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.081)).tap()
+        waitABit(2)
+        let expandedTitleHeight = app.textFields["recorderTitleField"].firstMatch.frame.height
+        app.buttons["Finish"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["finishPanelEndWorkout"].firstMatch.waitForExistence(timeout: 8))
+        waitABit(6)
+
+        let title = app.textFields["recorderTitleField"].firstMatch
+        XCTAssertTrue(title.exists, "The title field is missing on the finish panel")
+        XCTAssertEqual(title.frame.height, expandedTitleHeight, accuracy: 1, "The title should not grow when finishing")
+        attach(app, "recorder_18_finish_title")
+        let restingTitleY = title.frame.minY
+        title.tap()
+        waitABit(1)
+        XCTAssertEqual(title.frame.minY, restingTitleY, accuracy: 1, "The keyboard should not push the title off screen")
+        title.typeText(" Renamed")
+        attach(app, "recorder_19_finish_title_editing")
+        app.keyboards.buttons["done"].firstMatch.tap()
+        waitABit(1)
+        XCTAssertTrue(
+            (title.value as? String ?? "").hasSuffix(" Renamed"),
+            "The title should be editable from the finish panel, got \(title.value ?? "nil")"
+        )
+        XCTAssertTrue(app.buttons["finishPanelEndWorkout"].firstMatch.exists, "Renaming should not leave the finish panel")
+    }
+
     // MARK: - Exercise editor (measurement builder)
 
     /// The redesigned exercise editor: measurement type is composed from four tracked-field

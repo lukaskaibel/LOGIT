@@ -164,7 +164,12 @@ struct WorkoutRecorderScreen: View {
                 // of it.
                 RecorderCelebrationOverlay(model: finishModel)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            // `minHeight: 0` lets the frame take the height it is offered even when the content
+            // is taller. The finish panel is sized from this very measurement, so without it the
+            // frame kept the old height when the keyboard came up for renaming, the screen shrank
+            // around it, and the oversized content was centred — the title slid half a keyboard
+            // up and out of sight. Now the container shrinks, the panel follows and the title stays.
+            .frame(maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .top)
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
                 topSheet.containerDidMeasure(height)
             }

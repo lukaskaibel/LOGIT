@@ -5,6 +5,7 @@
 //  Created by Lukas Kaibel on 21.09.26.
 //
 
+import ColorfulX
 import Observation
 import SwiftUI
 
@@ -599,6 +600,14 @@ private struct RecorderFinishHighlightRow: View {
         .padding(.horizontal, CELL_PADDING)
         .padding(.vertical, 12)
         .translucentTileStyle()
+        // A record glows faintly in its exercise's colour — the screen's own muscle wash, in one
+        // hue, so it pools in soft patches rather than lying flat. An improvement stays plain: the
+        // records are the bigger news and should read that way before a word is read.
+        .background {
+            if highlight.isRecord {
+                RecordTileGlow(color: color)
+            }
+        }
         .opacity(isRevealed ? 1 : 0)
         .offset(y: isRevealed ? 0 : 14)
         .animation(isStaged ? .spring(duration: 0.5, bounce: 0.18).delay(rowDelay) : nil, value: isRevealed)
@@ -617,6 +626,24 @@ private struct RecorderFinishHighlightRow: View {
         // Each record's own tap, so three records feel like three.
         .sensoryFeedback(.impact(weight: .medium, intensity: 0.8), trigger: hasRolled) { _, rolled in rolled }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// The wash behind a record's tile: the same drifting-blob gradient as the screen's background,
+/// fed one colour at a few depths with dark gaps between, so it lands as soft patches of the
+/// exercise's colour rather than a flat fill. Still, and faint — a tint, not a card colour.
+private struct RecordTileGlow: View {
+    let color: Color
+
+    var body: some View {
+        ColorfulView(
+            color: [color, .black, color.mix(with: .white, by: 0.25), .black, color.mix(with: .black, by: 0.3)],
+            speed: .constant(0)
+        )
+        .opacity(0.32)
+        .clipShape(.rect(cornerRadius: 30))
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 

@@ -93,9 +93,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to the camera to scan workouts.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>LOGIT reads your body weight from Apple Health so weight you log elsewhere shows up in LOGIT and is used for calorie estimates.</string>
+	<string>LOGIT reads your body weight, body fat and height from Apple Health, so measurements you log elsewhere show up in LOGIT, and your weight and height feed your BMI and calorie estimates.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>LOGIT saves your finished workouts and body weight to Apple Health so they appear alongside your other activity.</string>
+	<string>LOGIT saves your finished workouts with their effort rating, and your body weight and body fat, to Apple Health, so they appear alongside your other activity.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

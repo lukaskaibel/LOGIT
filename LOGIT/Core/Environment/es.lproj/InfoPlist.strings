@@ -1,0 +1,5 @@
+/* The Apple Health permission sheet's two explanations. Info.plist carries the English
+   fallback; keep both in step with what BodyMeasurementSyncManager and HealthKitSyncManager
+   actually read and write. */
+"NSHealthShareUsageDescription" = "LOGIT lee tu peso corporal, tu grasa corporal y tu altura de Apple Salud, para que las medidas que registras en otras apps aparezcan en LOGIT y tu peso y tu altura se usen para el IMC y la estimación de calorías.";
+"NSHealthUpdateUsageDescription" = "LOGIT guarda en Apple Salud tus entrenamientos terminados con su esfuerzo, además de tu peso y tu grasa corporal, para que aparezcan junto al resto de tu actividad.";

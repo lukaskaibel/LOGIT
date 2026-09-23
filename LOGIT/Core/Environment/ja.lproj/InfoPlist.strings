@@ -1,0 +1,5 @@
+/* The Apple Health permission sheet's two explanations. Info.plist carries the English
+   fallback; keep both in step with what BodyMeasurementSyncManager and HealthKitSyncManager
+   actually read and write. */
+"NSHealthShareUsageDescription" = "LOGITはAppleヘルスケアから体重・体脂肪・身長を読み取ります。ほかのアプリで記録した値をLOGITに表示し、体重と身長をBMIと消費カロリーの推定に使います。";
+"NSHealthUpdateUsageDescription" = "LOGITは完了したワークアウトとその運動強度、体重・体脂肪をAppleヘルスケアに保存し、ほかのアクティビティと一緒に表示できるようにします。";

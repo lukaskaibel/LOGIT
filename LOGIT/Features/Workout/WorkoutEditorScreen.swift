@@ -423,8 +423,8 @@ struct WorkoutEditorScreen: View {
                 KeyboardToolbarGroup {
                     // Leading of Next, so the capsule grows away from the edge — see the
                     // recorder's copy.
-                    if let assistedSet = focusedWeightSet {
-                        KeyboardAssistedButton(workoutSet: assistedSet)
+                    if let focused = focusedWeightEntry {
+                        KeyboardAssistedButton(entry: focused.entry, workoutSet: focused.set)
                     }
                     KeyboardToolbarTextButton(
                         title: NSLocalizedString("next", comment: ""),
@@ -448,16 +448,13 @@ struct WorkoutEditorScreen: View {
         }
     }
 
-    /// The focused set, but only while the field with the keyboard is its *weight* — see the
-    /// recorder's `focusedWeightSet`, which this mirrors.
-    private var focusedWeightSet: WorkoutSet? {
+    /// The entry whose *weight* has the keyboard, with its set — see the recorder's
+    /// `focusedWeightEntry`, which this mirrors.
+    private var focusedWeightEntry: (entry: SetEntry, set: WorkoutSet)? {
         guard let focusedIndex = focusedIntegerFieldIndex,
-              let workoutSet = workout.sets.first(where: { $0.id == focusedIndex.setID }),
-              let entry = workoutSet.entryValues.value(at: focusedIndex.secondary),
-              entry.type.weightFieldIndex == focusedIndex.tertiary,
-              workoutSet.entryValues.contains(where: { $0.type.usesWeight && $0.weight != 0 })
+              let workoutSet = workout.sets.first(where: { $0.id == focusedIndex.setID })
         else { return nil }
-        return workoutSet
+        return SetFieldNavigation.weightEntry(at: focusedIndex, in: workoutSet)
     }
 
     // MARK: - Computed Properties

@@ -30,27 +30,35 @@ extension TemplateSetEntry: SetEntryFieldsEditable {}
 /// The keyboard accessory's ± — the number pad has no minus key, and assistance is stored as a
 /// negative weight, so this is the only way to type one.
 ///
-/// A view of its own because it has to *observe* the set: flipping the sign mutates entries rather
-/// than the set, and without something watching, the button would change the weights and go on
-/// drawing itself un-latched.
+/// It flips the one value being typed, never the rest of the set: a superset's other exercise has
+/// weights of its own, and a drop set may run from added weight to assistance partway through. The
+/// menus are where a whole exercise flips at once.
+///
+/// A view of its own because it has to *observe* the entry. The toolbar that places it is drawn by
+/// a screen that doesn't redraw on a keystroke, so the button decides for itself whether there is a
+/// number to flip yet — which is what lets it arrive with the first digit. 0 is bodyweight, never
+/// "assisted by zero", so an empty field shows no ±.
 struct KeyboardAssistedButton: View {
-    @ObservedObject var workoutSet: WorkoutSet
+    @ObservedObject var entry: SetEntry
+    let workoutSet: WorkoutSet
 
     var body: some View {
-        KeyboardToolbarIconButton(
-            systemImage: workoutSet.isAssisted ? "plusminus.circle.fill" : "plusminus.circle",
-            accessibilityLabel: NSLocalizedString("assisted", comment: ""),
-            isOn: workoutSet.isAssisted
-        ) {
-            withAnimation(.interactiveSpring()) {
-                workoutSet.setAssisted(!workoutSet.isAssisted)
-                // The entries changed, not the set — the cells need telling, exactly as the set's
-                // own context-menu toggle does.
-                workoutSet.objectWillChange.send()
-                workoutSet.setGroup?.objectWillChange.send()
+        if entry.weight != 0 {
+            KeyboardToolbarIconButton(
+                systemImage: entry.weight < 0 ? "plusminus.circle.fill" : "plusminus.circle",
+                accessibilityLabel: NSLocalizedString("assisted", comment: ""),
+                isOn: entry.weight < 0
+            ) {
+                withAnimation(.interactiveSpring()) {
+                    entry.weight = -entry.weight
+                    // The entry changed, not the set — the cells need telling, exactly as the set's
+                    // own context-menu toggle does.
+                    workoutSet.objectWillChange.send()
+                    workoutSet.setGroup?.objectWillChange.send()
+                }
             }
+            .accessibilityIdentifier("keyboardAssisted")
         }
-        .accessibilityIdentifier("keyboardAssisted")
     }
 }
 
@@ -71,6 +79,19 @@ extension TemplateSet: SetFieldNavigable {}
 /// the other half of a superset, which is the next thing performed — and only then to the next
 /// set. `SetEntryFieldsRow` decides which field a position means; this decides the order.
 enum SetFieldNavigation {
+    /// The entry whose weight field `index` points at, or nil when it points at any other field
+    /// (reps, a duration, a distance) — the one field the keyboard's ± belongs to.
+    static func weightEntry(
+        at index: IntegerField.Index, in workoutSet: WorkoutSet
+    ) -> (entry: SetEntry, set: WorkoutSet)? {
+        guard workoutSet.id == index.setID,
+              workoutSet.entries.indices.contains(index.secondary)
+        else { return nil }
+        let entry = workoutSet.entries[index.secondary]
+        guard entry.type.weightFieldIndex == index.tertiary else { return nil }
+        return (entry: entry, set: workoutSet)
+    }
+
     /// The field after `index`, or nil at the last field of the last set.
     static func index<S: SetFieldNavigable>(
         after index: IntegerField.Index,

@@ -370,6 +370,16 @@ struct WorkoutSetGroupCell: View {
         .supersetLaneViewport(bleed: laneBleed)
     }
 
+    /// Which exercise the group's Assisted toggle flips: in a superset, the lane on screen, so the
+    /// partner's weights are never touched; `nil` for a group that trains one exercise.
+    private var assistedMenuExercise: Exercise? {
+        guard setGroup.setType == .superSet else { return nil }
+        let currentID = visibleExerciseID ?? pagedExerciseID
+        return [setGroup.exercise, setGroup.secondaryExercise]
+            .compactMap { $0 }
+            .first { $0.objectID == currentID } ?? setGroup.exercise
+    }
+
     /// Which lane fills the card, for the dot indicator — nothing reported yet is the first.
     private func laneIndex(in exercises: [Exercise]) -> Int {
         guard
@@ -446,7 +456,7 @@ struct WorkoutSetGroupCell: View {
                         // The minus in the weight column says what the number is; this says what
                         // it means. Shown only while the whole exercise is on the machine — a drop
                         // set that crosses zero is neither assisted nor unassisted as a whole.
-                        if setGroup.isAssisted {
+                        if setGroup.isAssisted(for: setGroup.setType == .superSet ? setGroup.exercise : nil) {
                             AssistedTag(color: setGroup.exercise?.muscleGroup?.color ?? .accentColor)
                         }
                         Spacer()
@@ -673,13 +683,16 @@ struct WorkoutSetGroupCell: View {
                 Section {
                     Button {
                         withAnimation(.interactiveSpring()) {
-                            setGroup.setAssisted(!setGroup.isAssisted)
+                            setGroup.setAssisted(
+                                !setGroup.isAssisted(for: assistedMenuExercise),
+                                for: assistedMenuExercise
+                            )
                             setGroup.objectWillChange.send()
                         }
                     } label: {
                         Label(
                             NSLocalizedString("assisted", comment: ""),
-                            systemImage: setGroup.isAssisted ? "checkmark" : "plusminus.circle"
+                            systemImage: setGroup.isAssisted(for: assistedMenuExercise) ? "checkmark" : "plusminus.circle"
                         )
                     }
                 } header: {
@@ -946,7 +959,8 @@ private struct SupersetExerciseLane: View {
                     HStack {
                         Text(exercise.muscleGroup?.description ?? "")
                             .foregroundColor(exercise.muscleGroup?.color ?? .accentColor)
-                        if setGroup.isAssisted {
+                        // Per lane: a superset's two exercises are each assisted or not.
+                        if setGroup.isAssisted(for: exercise) {
                             AssistedTag(color: exercise.muscleGroup?.color ?? .accentColor)
                         }
                         Spacer()

@@ -34,8 +34,8 @@ extension WorkoutRecorderScreen {
                 // loses a number, and the row is trailing-aligned, so the capsule grows away from
                 // the edge and neither Next nor hide — the buttons you tap sixty times a workout —
                 // moves under your thumb.
-                if let assistedSet = focusedWeightSet {
-                    KeyboardAssistedButton(workoutSet: assistedSet)
+                if let focused = focusedWeightEntry {
+                    KeyboardAssistedButton(entry: focused.entry, workoutSet: focused.set)
                 }
                 KeyboardToolbarTextButton(
                     title: NSLocalizedString("next", comment: ""),
@@ -58,19 +58,17 @@ extension WorkoutRecorderScreen {
         }
     }
 
-    /// The focused set, but only while the field with the keyboard is its *weight* — the ± acts on
-    /// the weight's sign, so it has no business appearing over a reps or duration pad.
+    /// The entry whose *weight* has the keyboard, with its set — the ± acts on the weight's sign,
+    /// so it has no business appearing over a reps or duration pad.
     ///
-    /// Nil until the field actually holds a number, because a sign flip needs something to flip:
-    /// 0 is bodyweight, never "assisted by zero". So the ± arrives with the first digit, the way a
+    /// Deliberately not gated on the field holding a number: this is read by the recorder's body,
+    /// which a keystroke doesn't redraw. `KeyboardAssistedButton` observes the entry and shows
+    /// itself once there is something to flip, so the ± arrives with the first digit, the way a
     /// calculator's does — you type the weight, then say it was help rather than load.
-    var focusedWeightSet: WorkoutSet? {
+    var focusedWeightEntry: (entry: SetEntry, set: WorkoutSet)? {
         guard let focusedIndex = focusedIntegerFieldIndex,
-              let workoutSet = selectedWorkoutSet,
-              let entry = workoutSet.entryValues.value(at: focusedIndex.secondary),
-              entry.type.weightFieldIndex == focusedIndex.tertiary,
-              workoutSet.entryValues.contains(where: { $0.type.usesWeight && $0.weight != 0 })
+              let workoutSet = selectedWorkoutSet
         else { return nil }
-        return workoutSet
+        return SetFieldNavigation.weightEntry(at: focusedIndex, in: workoutSet)
     }
 }

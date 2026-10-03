@@ -19,13 +19,16 @@ struct ExerciseCell: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(exercise.displayName)
-                .font(.body.weight(.bold))
-                .foregroundColor(.primary)
-            Text(exercise.muscleGroup?.description ?? "")
-                .font(.system(.footnote, design: .rounded, weight: .bold))
-                .foregroundStyle(exercise.muscleGroup?.color.gradient ?? Color.primary.gradient)
+        HStack(spacing: 12) {
+            ExerciseAnimationIcon(exercise: exercise)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(exercise.displayName)
+                    .font(.body.weight(.bold))
+                    .foregroundColor(.primary)
+                Text(exercise.muscleGroup?.description ?? "")
+                    .font(.system(.footnote, design: .rounded, weight: .bold))
+                    .foregroundStyle(exercise.muscleGroup?.color.gradient ?? Color.primary.gradient)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

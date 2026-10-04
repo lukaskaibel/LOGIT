@@ -289,7 +289,7 @@ struct MeasurementDetailScreen: View {
                     Spacer()
                     DecimalField(
                         placeholder: 0,
-                        value: $newEntryValue,
+                        value: $newEntryValue.untracked,
                         maxDigits: 4,
                         decimalPlaces: 1,
                         index: Self.newEntryFieldIndex,

@@ -73,7 +73,6 @@ struct WorkoutRecorderScreen: View {
 
     @State var isShowingChronoSheet = false
     @State private var didAppear = false
-    @State private var progress: Float = 0
     @State private var cancellables: [AnyCancellable] = []
 
     /// The top sheet: the compact row, the panel hanging from it, and finishing. See
@@ -89,8 +88,6 @@ struct WorkoutRecorderScreen: View {
     /// The finish bar's height, so the finish content can scroll clear of it.
     @State private var finishBarHeight: CGFloat = 0
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
-    @State private var isShowingDetailsSheet = false
-    @State private var isShowingExerciseSelectionSheet = false
     @State var isShowingReorderSheet = false
     @State private var selectedRestDurationSet: WorkoutSet?
     @State private var exerciseForDetailSheet: Exercise?
@@ -108,22 +105,17 @@ struct WorkoutRecorderScreen: View {
     /// overlay consumes it, so only that child observes it.
     @State private var sheetGeometry = RecorderSheetGeometry()
 
+    /// The set field with the keyboard. Never read by this screen's body: a focus move would
+    /// re-render the whole recorder. The fields hear about it through `fieldFocusRelay`, and the
+    /// keyboard row (`RecorderKeyboardFieldControls`) is the one view that observes it.
     @State var focusedIntegerFieldIndex: IntegerField.Index?
+    @State private var fieldFocusRelay = SetFieldFocusRelay()
 
     @State private var enteredRepetitionSetIDs: Set<UUID> = []
 
-    // Dragging the recorder down from the set list: only a pull that starts on a list already
-    // resting at its top picks the recorder up; the driver moves it with the finger.
+    /// True while a pull on the set list is dragging the recorder down (see
+    /// `RecorderListDragGesture`) — the list stops scrolling for it.
     @State private var listDragActive = false
-    @State private var listDragBaseline: CGFloat = 0
-    /// The current list gesture was judged not to be a recorder drag (it started scrolled
-    /// down, or went up or sideways first) — it stays a scroll until the finger lifts.
-    @State private var listDragDeclined = false
-    @GestureState private var listGestureIsLive = false
-    /// Translation at which a drag on a fully extended header picked the recorder up
-    /// (non-nil while that drag is in flight).
-    @State private var headerDismissBaseline: CGFloat?
-    @GestureState private var sheetGestureIsLive = false
 
     @FocusState var isFocusingTitleTextfield: Bool
     /// The workout note's focus. While it is up the set list stops scrolling, and the sheet ignores
@@ -224,28 +216,6 @@ struct WorkoutRecorderScreen: View {
             .onChange(of: isFocusingTitleTextfield) {
                 if isFocusingTitleTextfield { focusedIntegerFieldIndex = nil }
             }
-            // A cancelled gesture never reaches `onEnded`: put the recorder back and forget
-            // the drag. Deferred a tick so a regular end, which also resets the gesture state,
-            // has run first and this finds nothing left to do.
-            .onChange(of: listGestureIsLive) {
-                guard !listGestureIsLive else { return }
-                DispatchQueue.main.async {
-                    listDragDeclined = false
-                    guard listDragActive else { return }
-                    listDragActive = false
-                    recorderDragDriver.dragCancelled()
-                }
-            }
-            .onChange(of: sheetGestureIsLive) {
-                guard !sheetGestureIsLive else { return }
-                DispatchQueue.main.async {
-                    guard headerDismissBaseline != nil else { return }
-                    headerDismissBaseline = nil
-                    topSheet.dragStart = nil
-                    topSheet.isDragging = false
-                    recorderDragDriver.dragCancelled()
-                }
-            }
             .toolbar(.hidden, for: .navigationBar)
             .toolbar {
                 KeyboardToolbarItem(onRowBottom: { sheetGeometry.keyboardRowBottomY = $0 }) {
@@ -257,10 +227,19 @@ struct WorkoutRecorderScreen: View {
                         case .stop: stopChronograph()
                         }
                     }
-                    keyboardToolbarContent
+                    RecorderKeyboardFieldControls(
+                        focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                        workout: workoutRecorder.workout
+                    )
                 }
             }
         }
+        .relaysSetFieldFocus($focusedIntegerFieldIndex, through: fieldFocusRelay)
+        // The rest clock for the set rows, as references they read rather than objects they observe.
+        .environment(
+            \.recorderRestContext,
+            RecorderRestContext(workoutRecorder: workoutRecorder, chronograph: chronograph)
+        )
         .onAppear {
             // onAppear called twice because of bug
             if !didAppear {
@@ -324,7 +303,7 @@ struct WorkoutRecorderScreen: View {
                     VStack {
                         WorkoutSetGroupList(
                             workout: workout,
-                            focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                            focusedIntegerFieldIndex: $focusedIntegerFieldIndex.untracked,
                             canReorder: true,
                             showDetailAsSheet: true,
                             onTapRestDuration: { selectedRestDurationSet = $0 },
@@ -361,9 +340,9 @@ struct WorkoutRecorderScreen: View {
                         // Constant: the sheet floats over the list, so nothing here tracks it.
                         // Outside the placeholder, which replaces the content wholesale.
                         .padding(.top, listTopInset)
-                        .onChange(of: focusedIntegerFieldIndex) {
+                        .onSetFieldFocusChange(fieldFocusRelay) { focusedIndex in
                             if isKbdTest || ProcessInfo.processInfo.arguments.contains("-UITEST_NO_SCROLLTO") { return }
-                            if let id = focusedIntegerFieldIndex {
+                            if let id = focusedIndex {
                                 withAnimation(.easeOut(duration: 0.25)) {
                                     // The field's keyboard target, not the field: it reaches below
                                     // the field by the accessory row, so the field lands above it.
@@ -432,17 +411,14 @@ struct WorkoutRecorderScreen: View {
             // owns the screen.
             .scrollDisabled(listDragActive || isNoteFieldFocused || topSheet.isFinishing)
             // The whole set list is a handle for dragging the recorder down, once it rests at
-            // its top. Simultaneous so taps, scrolling and context menus keep working; the gate
-            // below only latches on a pull that starts at the top and heads down.
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 12, coordinateSpace: .global)
-                    .updating($listGestureIsLive) { _, isLive, _ in isLive = true }
-                    .onChanged { value in
-                        handleListDragChanged(value)
-                    }
-                    .onEnded { value in
-                        handleListDragEnded(value)
-                    }
+            // its top.
+            .modifier(
+                RecorderListDragGesture(
+                    scrollTracker: scrollTracker,
+                    topSheet: topSheet,
+                    dragDriver: recorderDragDriver,
+                    isDraggingRecorder: $listDragActive
+                )
             )
             // The tray only presents once the recorder's morph has landed and
             // hides while the card is being dragged: a presented child sheet
@@ -458,84 +434,30 @@ struct WorkoutRecorderScreen: View {
                 },
                 set: { _ in }  // interactive dismissal is disabled below
             )) {
-                NavigationStack {
-                    ExerciseSelectionScreen(
-                            selectedExercise: nil,
-                            setExercise: { exercise in
-                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                                withAnimation {
-                                    workoutRecorder.addSetGroup(with: exercise)
-                                    proxy.scrollTo(1, anchor: .bottom)
-                                }
-                            },
-                            forSecondary: false,
-                            currentWorkoutExercises: workout.exercises,
-                            supersetPrimaryExercise: nil,
-                            presentationDetentSelection: $exerciseSelectionPresentationDetent
-                        )
-                        .toolbar(.hidden, for: .navigationBar)
-                        .sheet(isPresented: $isShowingChronoSheet) {
-                            TimerStopwatchView(chronograph: chronograph)
-                                .presentationDetents([.fraction(0.88)])
-                                .presentationDragIndicator(.visible)
+                RecorderExerciseTray(
+                    workout: workout,
+                    chronograph: chronograph,
+                    purchaseManager: purchaseManager,
+                    networkMonitor: networkMonitor,
+                    detent: $exerciseSelectionPresentationDetent,
+                    isShowingChronoSheet: $isShowingChronoSheet,
+                    selectedRestDurationSet: $selectedRestDurationSet,
+                    isShowingReorderSheet: $isShowingReorderSheet,
+                    exerciseForDetailSheet: $exerciseForDetailSheet,
+                    scrollToRecentAttempts: $scrollToRecentAttempts,
+                    exerciseDetailAutoMetric: $exerciseDetailAutoMetric,
+                    metricInfoSetGroup: $metricInfoSetGroup,
+                    metricInfoExercise: $metricInfoExercise,
+                    metricInfoSourceRect: $metricInfoSourceRect,
+                    onAddExercise: { exercise in
+                        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        withAnimation {
+                            workoutRecorder.addSetGroup(with: exercise)
+                            proxy.scrollTo(1, anchor: .bottom)
                         }
-                        .sheet(item: $selectedRestDurationSet) { workoutSet in
-                            RestDurationEditorSheet(workoutSet: workoutSet)
-                                .presentationDetents([.fraction(0.65)])
-                                .padding()
-                                .frame(maxHeight: .infinity, alignment: .top)
-                        }
-                        .sheet(isPresented: $isShowingDetailsSheet) {
-                            if let workout = workoutRecorder.workout {
-                                WorkoutDetailSheet(workout: workout, progress: progress)
-                                    .padding()
-                                    .presentationDetents([.fraction(0.4)])
-                            }
-                        }
-                        .sheet(isPresented: $isShowingReorderSheet) {
-                            reorderSetGroupsSheet(for: workout)
-                        }
-                        .sheet(item: $exerciseForDetailSheet) { exercise in
-                            NavigationStack {
-                                ExerciseDetailScreen(
-                                    exercise: exercise,
-                                    isShowingAsSheet: true,
-                                    scrollToRecentAttempts: scrollToRecentAttempts,
-                                    autoOpenMetric: exerciseDetailAutoMetric
-                                )
-                            }
-                            .presentationDragIndicator(.visible)
-                        }
-                        // Presents the metric-info popover from the exercise sheet's view
-                        // controller (not the badge's) so the persistent exercise sheet
-                        // isn't torn down. See `metricInfoRequest`.
-                        .background(
-                            MetricInfoPopoverPresenter(
-                                setGroup: metricInfoSetGroup,
-                                exercise: metricInfoExercise,
-                                anchorRect: metricInfoSourceRect,
-                                purchaseManager: purchaseManager,
-                                networkMonitor: networkMonitor,
-                                onDismiss: {
-                                    metricInfoSetGroup = nil
-                                    metricInfoExercise = nil
-                                    metricInfoSourceRect = nil
-                                },
-                                onOpenDetail: { exercise, metric in
-                                    // Close the popover first; presenting the detail
-                                    // sheet mid-dismissal would cancel one of the two.
-                                    metricInfoSetGroup = nil
-                                    metricInfoExercise = nil
-                                    metricInfoSourceRect = nil
-                                    scrollToRecentAttempts = false
-                                    exerciseDetailAutoMetric = metric
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                        exerciseForDetailSheet = exercise
-                                    }
-                                }
-                            )
-                        )
-                }
+                    }
+                )
+                .equatable()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onGeometryChange(for: CGFloat.self) {
                     max($0.size.height, 0)
@@ -598,13 +520,6 @@ struct WorkoutRecorderScreen: View {
         )
         .allowsHitTesting(!topSheet.isFinishing)
         .accessibilityHidden(topSheet.isFinishing)
-        .onAppear {
-            updateProgress()
-        }
-        .onReceive(workoutRecorder.workout?.objectWillChange ?? ObservableObjectPublisher()) {
-            if ProcessInfo.processInfo.arguments.contains("-UITEST_MINIMAL") { return }
-            updateProgress()
-        }
         .onReceive(
             NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: database.context)
                 .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
@@ -658,7 +573,14 @@ struct WorkoutRecorderScreen: View {
         // The whole sheet is one surface: taps between its controls must not fall through to the
         // rows it covers, and a drag anywhere on it moves its edge.
         .contentShape(Rectangle())
-        .simultaneousGesture(sheetDragGesture)
+        .modifier(
+            RecorderSheetDragGesture(
+                topSheet: topSheet,
+                scrollTracker: scrollTracker,
+                dragDriver: recorderDragDriver,
+                onSettle: settleSheet(to:)
+            )
+        )
     }
 
     /// The always-visible header row, laid out like a `WorkoutCell`: elapsed time and set count
@@ -746,65 +668,6 @@ struct WorkoutRecorderScreen: View {
     }
 
     // MARK: - Sheet gestures
-
-    /// A finger on the sheet moves its edge 1:1, wherever the list is; release snaps to the nearest
-    /// stop, or the next one in the direction of a fling. Pulling down on a sheet that is already
-    /// all the way out while the list rests at its top has nothing left to open, so that pull
-    /// drags the whole recorder down instead (decided at its first movement, for the whole
-    /// gesture). Measured globally: while the recorder is being dragged, the header moves with it.
-    private var sheetDragGesture: some Gesture {
-        DragGesture(minimumDistance: 10, coordinateSpace: .global)
-            .updating($sheetGestureIsLive) { _, isLive, _ in isLive = true }
-            .onChanged { value in
-                // Finishing has its own handles (the title row and the bar), and minimising behind
-                // a half-finished workout would be a trap.
-                guard !topSheet.isFinishing else { return }
-                let translation = value.translation.height
-                if topSheet.dragStart == nil {
-                    topSheet.dragStart = .init(
-                        reveal: topSheet.reveal,
-                        scrollOffset: scrollTracker.offset,
-                        wasFullyOpen: topSheet.reveal >= topSheet.openStop - 1
-                    )
-                    topSheet.isDragging = true
-                }
-                guard let start = topSheet.dragStart else { return }
-                if headerDismissBaseline == nil,
-                   start.isFirstChange,
-                   translation > abs(value.translation.width),
-                   start.scrollOffset <= 2,
-                   start.wasFullyOpen,
-                   recorderDragDriver.canBeginDrag
-                {
-                    headerDismissBaseline = translation
-                    dismissKeyboard()
-                }
-                topSheet.dragStart?.isFirstChange = false
-                if let baseline = headerDismissBaseline {
-                    recorderDragDriver.dragChanged(translation: translation - baseline)
-                    return
-                }
-                topSheet.reveal = RecorderTopSheetModel.rubberBand(
-                    start.reveal + translation,
-                    upper: topSheet.openStop
-                )
-            }
-            .onEnded { value in
-                guard !topSheet.isFinishing, let start = topSheet.dragStart else { return }
-                topSheet.dragStart = nil
-                if let baseline = headerDismissBaseline {
-                    headerDismissBaseline = nil
-                    topSheet.isDragging = false
-                    recorderDragDriver.dragEnded(
-                        translation: value.translation.height - baseline,
-                        velocity: value.velocity.height
-                    )
-                    return
-                }
-                let released = min(max(start.reveal + value.translation.height, 0), topSheet.openStop)
-                settleSheet(to: topSheet.stop(nearestTo: released, velocity: value.velocity.height))
-            }
-    }
 
     /// While finishing: pull the title row up to close the finish panel (Continue), the inverse of the
     /// edge travelling down. Deliberately only the title row — an upward swipe near the bottom of the
@@ -1030,48 +893,6 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
-    @ViewBuilder
-    private func reorderSetGroupsSheet(for workout: Workout) -> some View {
-        NavigationStack {
-            List {
-                ForEach(workout.setGroups) { setGroup in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(setGroup.exercise?.displayName ?? "")
-                            if (setGroup.sets.first as? SuperSet) != nil,
-                               let secondaryExercise = setGroup.secondaryExercise {
-                                HStack {
-                                    Image(systemName: "arrow.turn.down.right")
-                                    Text(secondaryExercise.displayName)
-                                }
-                            }
-                        }
-                    }
-                }
-                .onDelete {
-                    workout.setGroups.remove(atOffsets: $0)
-                    workout.setGroups.forEach { $0.objectWillChange.send() }
-                }
-                .onMove { source, destination in
-                    workout.setGroups.move(fromOffsets: source, toOffset: destination)
-                    workout.setGroups.forEach { $0.objectWillChange.send() }
-                }
-            }
-            .environment(\.editMode, .constant(.active))
-            .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isShowingReorderSheet = false
-                    } label: {
-                        Text(NSLocalizedString("done", comment: ""))
-                    }
-                }
-            }
-        }
-    }
-
     // MARK: - Scroll metrics
 
     /// Clearance under the last set group so it isn't hidden behind the exercise tray — or behind
@@ -1094,63 +915,10 @@ struct WorkoutRecorderScreen: View {
         return listViewportHeight + topSheet.actionsHeight
     }
 
-    // MARK: - List drag
-
-    /// Decides at the gesture's first movement whether it drags the recorder: only when the list
-    /// was resting at its top when the finger landed and the pull heads down. Anything else stays
-    /// a scroll until the finger lifts — so a swipe that scrolls the list back to its top can
-    /// never carry on into moving the recorder. Once picked up, the recorder follows the finger
-    /// from where it latched (so it doesn't jump) and is only decided on release.
-    private func handleListDragChanged(_ value: DragGesture.Value) {
-        guard !listDragDeclined else { return }
-        if !listDragActive {
-            // Before the scroll view has reacted, the live offset still is the touch-down offset.
-            let offsetAtTouch = scrollTracker.isTouched ? scrollTracker.offsetAtTouch : scrollTracker.offset
-            guard offsetAtTouch <= 2,
-                  value.translation.height > abs(value.translation.width),
-                  !topSheet.isFinishing,
-                  recorderDragDriver.canBeginDrag
-            else {
-                listDragDeclined = true
-                return
-            }
-            listDragActive = true
-            listDragBaseline = value.translation.height
-            dismissKeyboard()
-        }
-        recorderDragDriver.dragChanged(translation: value.translation.height - listDragBaseline)
-    }
-
-    private func handleListDragEnded(_ value: DragGesture.Value) {
-        listDragDeclined = false
-        guard listDragActive else { return }
-        listDragActive = false
-        recorderDragDriver.dragEnded(
-            translation: value.translation.height - listDragBaseline,
-            velocity: value.velocity.height
-        )
-    }
-
     // MARK: - Supporting Methods / Computed Properties
 
     private var workoutName: Binding<String> {
         Binding(get: { workoutRecorder.workout?.name ?? "" }, set: { workoutRecorder.workout?.name = $0 })
-    }
-
-    private func updateProgress() {
-        let newProgress: Float
-        if let workout = workoutRecorder.workout {
-            let sets = workout.sets
-            let completedSets = sets.filter { $0.hasEntry }.count
-            newProgress = sets.isEmpty ? 0 : Float(completedSets) / Float(sets.count)
-        } else {
-            newProgress = 0
-        }
-        // Writing an unchanged @State still invalidates the screen body —
-        // and most keystrokes don't move the completed-sets ratio.
-        if progress != newProgress {
-            progress = newProgress
-        }
     }
 
     private func checkForNewSetEntries() {
@@ -1272,31 +1040,9 @@ struct WorkoutRecorderScreen: View {
         }
     }
 
-    private var progressInWorkout: Float {
-        guard let workout = workoutRecorder.workout, workout.setGroups.count > 0 else { return 0 }
-        return Float((workout.sets.filter { $0.hasEntry }).count) / Float(workout.sets.count)
-    }
-
-    func indexInSetGroup(for workoutSet: WorkoutSet) -> Int? {
-        guard let workout = workoutRecorder.workout else { return nil }
-        for setGroup in workout.setGroups {
-            if let index = setGroup.index(of: workoutSet) {
-                return index
-            }
-        }
-        return nil
-    }
-
     var selectedWorkoutSet: WorkoutSet? {
         guard let focusedIndex = focusedIntegerFieldIndex else { return nil }
         return workoutRecorder.workout?.sets.first { $0.id == focusedIndex.setID }
-    }
-
-    /// Where the keyboard's Next button goes from the focused field — see `SetFieldNavigation`.
-    func nextIntegerFieldIndex() -> IntegerField.Index? {
-        guard let workout = workoutRecorder.workout, let focusedIndex = focusedIntegerFieldIndex
-        else { return nil }
-        return SetFieldNavigation.index(after: focusedIndex, in: workout.sets)
     }
 
     // MARK: - Autosave
@@ -1333,6 +1079,325 @@ struct WorkoutRecorderScreen: View {
                     self.database.save()
                 },
         ]
+    }
+}
+
+// MARK: - Exercise tray
+
+/// The persistent exercise tray, and every sheet the recorder presents from it.
+///
+/// Its own `Equatable` view because the recorder re-renders for plenty that has nothing to do with
+/// the tray — the header, the rest timer, the keyboard — and each of those passes used to rebuild
+/// the tray's whole content along with it. Compared by the objects it is built from; everything
+/// that changes while it is up arrives through its bindings and the workout it observes, both of
+/// which re-render it directly, whatever this comparison says.
+private struct RecorderExerciseTray: View, Equatable {
+    /// Observed for the exercises it suggests around: adding or removing a group changes them.
+    @ObservedObject var workout: Workout
+    let chronograph: Chronograph
+    /// Re-injected into the metric-info popover's `UIHostingController` (environment objects don't
+    /// cross the UIKit bridge): the panel's Pro gate reads `purchaseManager`, and the upgrade
+    /// screen it can present needs both.
+    let purchaseManager: PurchaseManager
+    let networkMonitor: NetworkMonitor
+    @Binding var detent: PresentationDetent
+    @Binding var isShowingChronoSheet: Bool
+    @Binding var selectedRestDurationSet: WorkoutSet?
+    @Binding var isShowingReorderSheet: Bool
+    @Binding var exerciseForDetailSheet: Exercise?
+    @Binding var scrollToRecentAttempts: Bool
+    /// When the exercise-detail sheet is opened from the metric popover, the metric whose chart
+    /// screen it should jump to; nil for the regular name/previous-set entry points.
+    @Binding var exerciseDetailAutoMetric: ExercisePrimaryMetric?
+    @Binding var metricInfoSetGroup: WorkoutSetGroup?
+    /// The tapped badge's subject exercise — each superset page has its own badge.
+    @Binding var metricInfoExercise: Exercise?
+    @Binding var metricInfoSourceRect: CGRect?
+    let onAddExercise: (Exercise) -> Void
+
+    static func == (lhs: RecorderExerciseTray, rhs: RecorderExerciseTray) -> Bool {
+        lhs.workout === rhs.workout
+            && lhs.chronograph === rhs.chronograph
+            && lhs.purchaseManager === rhs.purchaseManager
+            && lhs.networkMonitor === rhs.networkMonitor
+    }
+
+    var body: some View {
+        NavigationStack {
+            ExerciseSelectionScreen(
+                selectedExercise: nil,
+                setExercise: onAddExercise,
+                forSecondary: false,
+                currentWorkoutExercises: workout.exercises,
+                supersetPrimaryExercise: nil,
+                presentationDetentSelection: $detent
+            )
+            .toolbar(.hidden, for: .navigationBar)
+            .sheet(isPresented: $isShowingChronoSheet) {
+                TimerStopwatchView(chronograph: chronograph)
+                    .presentationDetents([.fraction(0.88)])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(item: $selectedRestDurationSet) { workoutSet in
+                RestDurationEditorSheet(workoutSet: workoutSet)
+                    .presentationDetents([.fraction(0.65)])
+                    .padding()
+                    .frame(maxHeight: .infinity, alignment: .top)
+            }
+            .sheet(isPresented: $isShowingReorderSheet) {
+                reorderSetGroupsSheet
+            }
+            .sheet(item: $exerciseForDetailSheet) { exercise in
+                NavigationStack {
+                    ExerciseDetailScreen(
+                        exercise: exercise,
+                        isShowingAsSheet: true,
+                        scrollToRecentAttempts: scrollToRecentAttempts,
+                        autoOpenMetric: exerciseDetailAutoMetric
+                    )
+                }
+                .presentationDragIndicator(.visible)
+            }
+            // Presents the metric-info popover from the exercise sheet's view
+            // controller (not the badge's) so the persistent exercise sheet
+            // isn't torn down. See `metricInfoRequest`.
+            .background(
+                MetricInfoPopoverPresenter(
+                    setGroup: metricInfoSetGroup,
+                    exercise: metricInfoExercise,
+                    anchorRect: metricInfoSourceRect,
+                    purchaseManager: purchaseManager,
+                    networkMonitor: networkMonitor,
+                    onDismiss: {
+                        metricInfoSetGroup = nil
+                        metricInfoExercise = nil
+                        metricInfoSourceRect = nil
+                    },
+                    onOpenDetail: { exercise, metric in
+                        // Close the popover first; presenting the detail
+                        // sheet mid-dismissal would cancel one of the two.
+                        metricInfoSetGroup = nil
+                        metricInfoExercise = nil
+                        metricInfoSourceRect = nil
+                        scrollToRecentAttempts = false
+                        exerciseDetailAutoMetric = metric
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            exerciseForDetailSheet = exercise
+                        }
+                    }
+                )
+            )
+        }
+    }
+
+    private var reorderSetGroupsSheet: some View {
+        NavigationStack {
+            List {
+                ForEach(workout.setGroups) { setGroup in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(setGroup.exercise?.displayName ?? "")
+                            if (setGroup.sets.first as? SuperSet) != nil,
+                               let secondaryExercise = setGroup.secondaryExercise {
+                                HStack {
+                                    Image(systemName: "arrow.turn.down.right")
+                                    Text(secondaryExercise.displayName)
+                                }
+                            }
+                        }
+                    }
+                }
+                .onDelete {
+                    workout.setGroups.remove(atOffsets: $0)
+                    workout.setGroups.forEach { $0.objectWillChange.send() }
+                }
+                .onMove { source, destination in
+                    workout.setGroups.move(fromOffsets: source, toOffset: destination)
+                    workout.setGroups.forEach { $0.objectWillChange.send() }
+                }
+            }
+            .environment(\.editMode, .constant(.active))
+            .navigationTitle(NSLocalizedString("reorderExercises", comment: ""))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isShowingReorderSheet = false
+                    } label: {
+                        Text(NSLocalizedString("done", comment: ""))
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Gestures
+
+/// The set list as a handle for dragging the recorder down, once it rests at its top.
+///
+/// Simultaneous so taps, scrolling and context menus keep working; it only latches on a pull that
+/// starts on a list already resting at its top and heads down — decided at the gesture's first
+/// movement, for the whole gesture, so a swipe that scrolls the list back to its top can never
+/// carry on into moving the recorder. Once picked up, the recorder follows the finger from where
+/// it latched (so it doesn't jump) and is only decided on release.
+///
+/// A modifier of its own because its bookkeeping changes at the start and end of every scroll:
+/// held by the recorder, each of those re-rendered the whole screen.
+private struct RecorderListDragGesture: ViewModifier {
+    let scrollTracker: RecorderScrollTracker
+    let topSheet: RecorderTopSheetModel
+    let dragDriver: WorkoutRecorderDragDriver
+    /// Whether the gesture is moving the recorder — the list stops scrolling meanwhile.
+    @Binding var isDraggingRecorder: Bool
+
+    @GestureState private var gestureIsLive = false
+    @State private var baseline: CGFloat = 0
+    /// The current gesture was judged not to be a recorder drag (it started scrolled down, or
+    /// went up or sideways first) — it stays a scroll until the finger lifts.
+    @State private var isDeclined = false
+
+    func body(content: Content) -> some View {
+        content
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 12, coordinateSpace: .global)
+                    .updating($gestureIsLive) { _, isLive, _ in isLive = true }
+                    .onChanged(changed)
+                    .onEnded(ended)
+            )
+            // A cancelled gesture never reaches `onEnded`: put the recorder back and forget
+            // the drag. Deferred a tick so a regular end, which also resets the gesture state,
+            // has run first and this finds nothing left to do.
+            .onChange(of: gestureIsLive) {
+                guard !gestureIsLive else { return }
+                DispatchQueue.main.async {
+                    isDeclined = false
+                    guard isDraggingRecorder else { return }
+                    isDraggingRecorder = false
+                    dragDriver.dragCancelled()
+                }
+            }
+    }
+
+    private func changed(_ value: DragGesture.Value) {
+        guard !isDeclined else { return }
+        if !isDraggingRecorder {
+            // Before the scroll view has reacted, the live offset still is the touch-down offset.
+            let offsetAtTouch = scrollTracker.isTouched ? scrollTracker.offsetAtTouch : scrollTracker.offset
+            guard offsetAtTouch <= 2,
+                  value.translation.height > abs(value.translation.width),
+                  !topSheet.isFinishing,
+                  dragDriver.canBeginDrag
+            else {
+                isDeclined = true
+                return
+            }
+            isDraggingRecorder = true
+            baseline = value.translation.height
+            dismissKeyboard()
+        }
+        dragDriver.dragChanged(translation: value.translation.height - baseline)
+    }
+
+    private func ended(_ value: DragGesture.Value) {
+        isDeclined = false
+        guard isDraggingRecorder else { return }
+        isDraggingRecorder = false
+        dragDriver.dragEnded(
+            translation: value.translation.height - baseline,
+            velocity: value.velocity.height
+        )
+    }
+}
+
+/// A finger on the top sheet moves its edge 1:1, wherever the list is; release snaps to the nearest
+/// stop, or the next one in the direction of a fling. Pulling down on a sheet that is already all
+/// the way out while the list rests at its top has nothing left to open, so that pull drags the
+/// whole recorder down instead (decided at its first movement, for the whole gesture). Measured
+/// globally: while the recorder is being dragged, the header moves with it.
+///
+/// A modifier of its own for the same reason as `RecorderListDragGesture`.
+private struct RecorderSheetDragGesture: ViewModifier {
+    let topSheet: RecorderTopSheetModel
+    let scrollTracker: RecorderScrollTracker
+    let dragDriver: WorkoutRecorderDragDriver
+    /// Brings the sheet to rest at a stop (see `WorkoutRecorderScreen.settleSheet(to:)`).
+    let onSettle: (CGFloat) -> Void
+
+    @GestureState private var gestureIsLive = false
+    /// Translation at which a drag on a fully extended header picked the recorder up (non-nil
+    /// while that drag is in flight).
+    @State private var dismissBaseline: CGFloat?
+
+    func body(content: Content) -> some View {
+        content
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 10, coordinateSpace: .global)
+                    .updating($gestureIsLive) { _, isLive, _ in isLive = true }
+                    .onChanged(changed)
+                    .onEnded(ended)
+            )
+            .onChange(of: gestureIsLive) {
+                guard !gestureIsLive else { return }
+                DispatchQueue.main.async {
+                    guard dismissBaseline != nil else { return }
+                    dismissBaseline = nil
+                    topSheet.dragStart = nil
+                    topSheet.isDragging = false
+                    dragDriver.dragCancelled()
+                }
+            }
+    }
+
+    private func changed(_ value: DragGesture.Value) {
+        // Finishing has its own handles (the title row and the bar), and minimising behind
+        // a half-finished workout would be a trap.
+        guard !topSheet.isFinishing else { return }
+        let translation = value.translation.height
+        if topSheet.dragStart == nil {
+            topSheet.dragStart = .init(
+                reveal: topSheet.reveal,
+                scrollOffset: scrollTracker.offset,
+                wasFullyOpen: topSheet.reveal >= topSheet.openStop - 1
+            )
+            topSheet.isDragging = true
+        }
+        guard let start = topSheet.dragStart else { return }
+        if dismissBaseline == nil,
+           start.isFirstChange,
+           translation > abs(value.translation.width),
+           start.scrollOffset <= 2,
+           start.wasFullyOpen,
+           dragDriver.canBeginDrag
+        {
+            dismissBaseline = translation
+            dismissKeyboard()
+        }
+        topSheet.dragStart?.isFirstChange = false
+        if let baseline = dismissBaseline {
+            dragDriver.dragChanged(translation: translation - baseline)
+            return
+        }
+        topSheet.reveal = RecorderTopSheetModel.rubberBand(
+            start.reveal + translation,
+            upper: topSheet.openStop
+        )
+    }
+
+    private func ended(_ value: DragGesture.Value) {
+        guard !topSheet.isFinishing, let start = topSheet.dragStart else { return }
+        topSheet.dragStart = nil
+        if let baseline = dismissBaseline {
+            dismissBaseline = nil
+            topSheet.isDragging = false
+            dragDriver.dragEnded(
+                translation: value.translation.height - baseline,
+                velocity: value.velocity.height
+            )
+            return
+        }
+        let released = min(max(start.reveal + value.translation.height, 0), topSheet.openStop)
+        onSettle(topSheet.stop(nearestTo: released, velocity: value.velocity.height))
     }
 }
 
@@ -1587,7 +1652,8 @@ private struct FloatingChronoControlsOverlay: View {
                     chronograph: chronograph,
                     workoutRecorder: workoutRecorder,
                     action: onOpenChronoSheet
-                ),
+                )
+                .equatable(),
                 as: .timer
             )
             // Running: pause. Paused: play, and only then stop beside it. The same in both
@@ -1727,18 +1793,38 @@ struct WorkoutMuscleGroupChart: View {
     var body: some View {
         let sets = workout.sets   // Assuming this is an ordered relationship
         if !sets.isEmpty {
-            Chart {
-                ForEach(muscleGroupService.getMuscleGroupOccurances(in: sets), id: \.0) { occ in
-                    SectorMark(
-                        angle: .value("Value", occ.1),
-                        innerRadius: .ratio(0.65),
-                        angularInset: 1
-                    )
-                    .foregroundStyle(occ.0.color.gradient)
-                }
-            }
-            .frame(width: 40, height: 40)
+            MuscleGroupDonut(
+                occurrences: muscleGroupService.getMuscleGroupOccurances(in: sets)
+                    .map { MuscleGroupDonut.Slice(muscleGroup: $0.0, count: $0.1) }
+            )
+            .equatable()
         }
+    }
+}
+
+/// The donut itself, redrawn only when its slices change. The recorder re-announces the workout
+/// after every edit, and a typed weight or rep count never moves a slice — so the chart's layout
+/// and drawing, the expensive part, is skipped for all of them.
+private struct MuscleGroupDonut: View, Equatable {
+    struct Slice: Equatable {
+        let muscleGroup: MuscleGroup
+        let count: Int
+    }
+
+    let occurrences: [Slice]
+
+    var body: some View {
+        Chart {
+            ForEach(occurrences, id: \.muscleGroup) { slice in
+                SectorMark(
+                    angle: .value("Value", slice.count),
+                    innerRadius: .ratio(0.65),
+                    angularInset: 1
+                )
+                .foregroundStyle(slice.muscleGroup.color.gradient)
+            }
+        }
+        .frame(width: 40, height: 40)
     }
 }
 

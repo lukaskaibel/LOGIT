@@ -7,7 +7,14 @@
 
 import SwiftUI
 
-struct WorkoutRecorderFloatingTimerButton: View {
+/// `Equatable` on the objects it shows: the overlay that places it re-renders on every frame the
+/// tray or the keyboard moves, and none of those frames changes the button. Its own observations —
+/// the chronograph, the recorder, the two settings — still redraw it whenever they change.
+struct WorkoutRecorderFloatingTimerButton: View, Equatable {
+    static func == (lhs: WorkoutRecorderFloatingTimerButton, rhs: WorkoutRecorderFloatingTimerButton) -> Bool {
+        lhs.chronograph === rhs.chronograph && lhs.workoutRecorder === rhs.workoutRecorder
+    }
+
     @ObservedObject var chronograph: Chronograph
     @ObservedObject var workoutRecorder: WorkoutRecorder
     @AppStorage("lastTimerDuration") private var lastTimerDuration: Int = 30

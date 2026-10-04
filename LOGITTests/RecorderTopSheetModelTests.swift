@@ -359,13 +359,13 @@ final class WorkoutRecapTests: XCTestCase {
         XCTAssertNotEqual(first.celebrationKey(target: 3), changed.celebrationKey(target: 3))
     }
 
-    func testTheCascadeLandsRowsOneAfterAnother() {
-        XCTAssertEqual(FinishRevealTiming.total(rowCount: 0), 0)
+    func testRowsLandTopToBottomAndRecordsCountInTurn() {
         XCTAssertGreaterThan(FinishRevealTiming.rowDelay(index: 2), FinishRevealTiming.rowDelay(index: 1))
+        XCTAssertGreaterThan(FinishRevealTiming.countStart(index: 1), FinishRevealTiming.countStart(index: 0))
         XCTAssertGreaterThan(
-            FinishRevealTiming.total(rowCount: 3),
-            FinishRevealTiming.rowDelay(index: 2) + FinishRevealTiming.rollAfterRow,
-            "The cascade ends after the last row has landed and rolled"
+            FinishRevealTiming.countStart(index: 0),
+            FinishRevealTiming.rowDelay(index: RecorderFinishHighlightsSection.collapsedCount - 1),
+            "A record starts counting once every row is on its way in"
         )
     }
 
@@ -456,7 +456,70 @@ final class WorkoutRecapTests: XCTestCase {
     }
 
     func testRevealPhasesRunTopToBottom() {
-        let phases: [FinishRevealPhase] = [.hidden, .hero, .heroFilled, .heroSettled, .achievements, .details, .done]
+        let phases: [FinishRevealPhase] = [.hidden, .hero, .heroFilled, .heroSettled, .done]
         XCTAssertEqual(phases, phases.sorted())
+    }
+}
+
+// MARK: - Record count
+
+/// The steps a record's number counts through on the finish panel: round numbers in the unit on
+/// screen, from the best it beat to the new one, never more than a handful.
+final class RecordCountTests: XCTestCase {
+    private var database: Database!
+    private var builder: TestDataBuilder!
+    private var userDefaultsHelper: UserDefaultsTestHelper!
+
+    override func setUp() {
+        super.setUp()
+        database = Database(inMemory: true)
+        builder = TestDataBuilder(database: database)
+        userDefaultsHelper = UserDefaultsTestHelper()
+        userDefaultsHelper.setTestValue(WeightUnit.kg.rawValue, forKey: "weightUnit")
+    }
+
+    override func tearDown() {
+        userDefaultsHelper.restoreAll()
+        database = nil
+        builder = nil
+        super.tearDown()
+    }
+
+    private func steps(_ previous: Int, _ current: Int, _ metric: ExercisePrimaryMetric) -> [Int] {
+        RecordCount.values(from: previous, to: current, metric: metric, exercise: builder.createExercise())
+    }
+
+    func testAFiveKiloRecordCountsInWholeKilos() {
+        XCTAssertEqual(steps(100_000, 105_000, .weight), [100_000, 101_000, 102_000, 103_000, 104_000, 105_000])
+    }
+
+    func testATenKiloRecordCountsInTwos() {
+        XCTAssertEqual(steps(140_000, 150_000, .weight), [140_000, 142_000, 144_000, 146_000, 148_000, 150_000])
+    }
+
+    func testASmallRecordCountsInQuartersFromWhereItStood() {
+        XCTAssertEqual(steps(123_750, 125_000, .weight), [123_750, 124_000, 124_250, 124_500, 124_750, 125_000])
+    }
+
+    func testRepetitionsCountOneByOne() {
+        XCTAssertEqual(steps(12, 14, .repetitions), [12, 13, 14])
+    }
+
+    func testAHugeGainStillTakesAHandfulOfSteps() {
+        let values = steps(20_000, 300_000, .weight)
+        XCTAssertLessThanOrEqual(values.count, 14)
+        XCTAssertEqual(values.first, 20_000)
+        XCTAssertEqual(values.last, 300_000)
+        XCTAssertEqual(values, values.sorted(), "The count only ever climbs")
+    }
+
+    func testAClimbOfAStepOrTwoIsQuicker() {
+        XCTAssertLessThan(RecordCount.duration(steps: 1), RecordCount.duration(steps: 5))
+        XCTAssertEqual(RecordCount.duration(steps: 5), 0.9, accuracy: 0.001)
+        XCTAssertEqual(RecordCount.time(ofStep: 5, of: 5), RecordCount.duration(steps: 5), accuracy: 0.001)
+        XCTAssertLessThan(
+            RecordCount.time(ofStep: 1, of: 5), RecordCount.time(ofStep: 5, of: 5) - RecordCount.time(ofStep: 4, of: 5),
+            "Quick at first, slowing into the new best"
+        )
     }
 }

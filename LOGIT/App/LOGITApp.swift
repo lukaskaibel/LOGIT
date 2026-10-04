@@ -226,8 +226,8 @@ struct LOGIT: App {
                 .environmentObject(exerciseSuggestionService)
                 .environmentObject(healthKitSyncManager)
                 .environmentObject(bodyMeasurementSyncManager)
-                .environment(\.goHome) { selectedTab = .home }
-                .environment(\.presentWorkoutRecorder, showWorkoutRecorder)
+                .environment(\.goHome, EnvironmentAction("goHome") { selectedTab = .home })
+                .environment(\.presentWorkoutRecorder, EnvironmentAction("presentWorkoutRecorder", action: showWorkoutRecorder))
                 .sheet(isPresented: $isShowingWelcome) {
                     FirstStartScreen()
                         .interactiveDismissDisabled()
@@ -483,8 +483,8 @@ struct LOGIT: App {
             .environmentObject(healthKitSyncManager)
             .environmentObject(bodyMeasurementSyncManager)
             .environment(\.managedObjectContext, database.context)
-            .environment(\.goHome) { selectedTab = .home }
-            .environment(\.dismissWorkoutRecorder) { dismissWorkoutRecorder() }
+            .environment(\.goHome, EnvironmentAction("goHome") { selectedTab = .home })
+            .environment(\.dismissWorkoutRecorder, EnvironmentAction("dismissWorkoutRecorder") { dismissWorkoutRecorder() })
             .environment(\.workoutRecorderIsSettled, recorderIsSettled)
             .environment(\.workoutRecorderDragDriver, recorderDragDriver)
             // The old cover ignored the keyboard at container level; the recorder
@@ -758,30 +758,56 @@ private struct ImportBodyWeightOnForeground: ViewModifier {
 
 // MARK: - EnvironmentValues/Keys
 
+/// An action handed down through the environment that compares by its name, not by identity.
+///
+/// The recorder is hosted by Transmission, which rebuilds the recorder's root view — and with it a
+/// fresh closure for each of these — whenever something is presented over it: the timer sheet, a
+/// menu, a popover. As plain closures every rebuild counted as a change, and the entire recorder
+/// re-rendered under every sheet and menu it opened. Two actions with the same name are the same
+/// action, so a rebuild leaves the recorder alone. The closure a view holds may be from an earlier
+/// rebuild; that is fine because these only reach state the scene keeps in `@State` storage.
+struct EnvironmentAction: Equatable {
+    let name: String
+    private let action: () -> Void
+
+    init(_ name: String, action: @escaping () -> Void) {
+        self.name = name
+        self.action = action
+    }
+
+    func callAsFunction() {
+        action()
+    }
+
+    static func == (lhs: EnvironmentAction, rhs: EnvironmentAction) -> Bool {
+        lhs.name == rhs.name
+    }
+}
+
 struct GoHomeKey: EnvironmentKey {
-    static let defaultValue: () -> Void = {}
+    static let defaultValue = EnvironmentAction("goHome") {}
 }
 
 struct PresentWorkoutRecorderKey: EnvironmentKey {
-    static let defaultValue: () -> Void = {}
+    static let defaultValue = EnvironmentAction("presentWorkoutRecorder") {}
 }
 
 struct DismissWorkoutRecorderKey: EnvironmentKey {
-    static let defaultValue: () -> Void = {}
+    static let defaultValue = EnvironmentAction("dismissWorkoutRecorder") {}
 }
 
 extension EnvironmentValues {
-    var goHome: () -> Void {
+    var goHome: EnvironmentAction {
         get { self[GoHomeKey.self] }
         set { self[GoHomeKey.self] = newValue }
     }
 
-    var presentWorkoutRecorder: () -> Void {
+    var presentWorkoutRecorder: EnvironmentAction {
         get { self[PresentWorkoutRecorderKey.self] }
         set { self[PresentWorkoutRecorderKey.self] = newValue }
     }
 
-    var dismissWorkoutRecorder: () -> Void {
+    var dismissWorkoutRecorder: EnvironmentAction {
         get { self[DismissWorkoutRecorderKey.self] }
         set { self[DismissWorkoutRecorderKey.self] = newValue }
     }

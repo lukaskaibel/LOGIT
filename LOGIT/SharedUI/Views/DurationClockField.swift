@@ -27,22 +27,21 @@ import SwiftUI
 /// The value is milliseconds, like everywhere else since model v11; only whole seconds are typed
 /// here. `DecimalField` remains the field for holds and sprints, where hundredths matter.
 ///
-/// Unlike its two siblings this declares no `@EnvironmentObject var database` — `DecimalField`
-/// and `IntegerField` both do and neither uses it, which is a crash waiting for the first call
-/// site that forgets to inject one.
 struct DurationClockField: View {
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
-    @Environment(\.isIntegerFieldFocusSuppressed) private var isFocusSuppressed: Bool
+    @Environment(\.setFieldFocusRelay) private var focusRelay
+    @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverEnabled
 
     // MARK: - Parameters
 
     /// The template's planned duration, shown as the prompt while the field is empty.
     let placeholder: Int64
-    @Binding var value: Int64
+    /// Untracked — see `IntegerField.value`.
+    @UntrackedBinding var value: Int64
     let index: IntegerField.Index
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     var trend: SetValueComparison? = nil
     var trendText: String = ""
     var trendColor: Color = .accentColor
@@ -57,6 +56,9 @@ struct DurationClockField: View {
     /// Pinned to the end of `digits` while editing — see `pinCaretToEnd()`.
     @State private var selection: TextSelection?
     @FocusState private var isFocused: Bool
+    /// Whether the invisible text field is in place — only while this field has the keyboard, or is
+    /// about to get it. See `SetFieldRestingText`.
+    @State private var isEditing = false
 
     // MARK: - Body
 
@@ -66,26 +68,35 @@ struct DurationClockField: View {
                 if canEdit {
                     Text(isEmpty ? promptText : reading)
                         .foregroundStyle(readingColor)
-                        .accessibilityHidden(true)
+                        // At rest the clock stands in for the field, as the other set fields' text
+                        // does (see `SetFieldRestingText`); while typing, the field speaks for it.
+                        .accessibilityRepresentation {
+                            TextField("", text: .constant(isEmpty ? promptText : reading))
+                        }
+                        .accessibilityHidden(isEditing || isVoiceOverEnabled)
                         .overlay {
-                            TextField("", text: $digits, selection: $selection)
-                                .focused($isFocused)
-                                .keyboardType(.numberPad)
-                                // Invisible: the clock drawn beneath is the reading. Trailing, so
-                                // the buffer ends where the clock ends and the caret sits just
-                                // after its last digit — "3215" is narrower than "32:15", and
-                                // centered it would put the caret on top of the 5.
-                                .foregroundStyle(Color.clear)
-                                .multilineTextAlignment(.trailing)
-                                .onChange(of: digits) { _, newDigits in
-                                    handleTyping(newDigits)
-                                }
-                                .onChange(of: selection) { _, _ in
-                                    pinCaretToEnd()
-                                }
-                                // Reports the clock, not the raw buffer: it is what the screen
-                                // shows, and "3215" would be read out as three thousand-odd.
-                                .accessibilityValue(Text(isEmpty ? promptText : reading))
+                            if isEditing || isVoiceOverEnabled {
+                                TextField("", text: $digits, selection: $selection)
+                                    .focused($isFocused)
+                                    .keyboardType(.numberPad)
+                                    // Invisible: the clock drawn beneath is the reading. Trailing,
+                                    // so the buffer ends where the clock ends and the caret sits
+                                    // just after its last digit — "3215" is narrower than "32:15",
+                                    // and centered it would put the caret on top of the 5.
+                                    .foregroundStyle(Color.clear)
+                                    .multilineTextAlignment(.trailing)
+                                    .onChange(of: digits) { _, newDigits in
+                                        handleTyping(newDigits)
+                                    }
+                                    .onChange(of: selection) { _, _ in
+                                        pinCaretToEnd()
+                                    }
+                                    // Reports the clock, not the raw buffer: it is what the screen
+                                    // shows, and "3215" would be read out as three thousand-odd.
+                                    .accessibilityValue(Text(isEmpty ? promptText : reading))
+                                    .onAppear { if isEditing { isFocused = true } }
+                                    .transition(.identity)
+                            }
                         }
                 } else {
                     Text(reading)
@@ -107,22 +118,16 @@ struct DurationClockField: View {
         .fixedSize()
         .onAppear {
             digits = seededDigits
+            if focusRelay?.current == index { beginEditing() }
         }
-        .onChange(of: focusedIntegerFieldIndex) { _, newValue in
-            guard !isFocusSuppressed else { return }
-            let shouldBeFocused = newValue == index
-            guard isFocused != shouldBeFocused else { return }
-            if shouldBeFocused {
-                // Set focus directly - don't resign first responder first
-                isFocused = true
-            } else if newValue == nil && isFocused {
-                isFocused = false
+        .onSetFieldFocusChange(focusRelay) { newValue in
+            switch SetFieldFocusMove(to: newValue, for: index, isFocused: isFocused) {
+            case .claim: beginEditing()
+            case .release: isFocused = false
+            case .none: break
             }
-            // When transferring to another field, don't explicitly set isFocused = false;
-            // the new field's focus will take over
         }
         .onChange(of: isFocused) { _, newValue in
-            guard !isFocusSuppressed else { return }
             if newValue {
                 UISelectionFeedbackGenerator().selectionChanged()
                 if focusedIntegerFieldIndex != index {
@@ -135,6 +140,10 @@ struct DurationClockField: View {
                 selection = nil
                 let seeded = seededDigits
                 if seeded != digits { digits = seeded }
+                // Text again once the unfocus spring has settled — see `SetFieldRestingText.swapDelay`.
+                DispatchQueue.main.asyncAfter(deadline: .now() + SetFieldRestingText.swapDelay) {
+                    if !isFocused { isEditing = false }
+                }
             }
         }
         .onChange(of: value) { _, _ in
@@ -161,11 +170,20 @@ struct DurationClockField: View {
         .frame(minWidth: 100, alignment: .trailing)
         .fixedSize(horizontal: true, vertical: false)
         .onTapGesture {
-            guard !isFocusSuppressed else { return }
-            isFocused = true
+            beginEditing()
         }
         .id(index)
         .keyboardScrollTarget(index)
+    }
+
+    /// Puts the text field in place and gives it the keyboard — see `IntegerField.beginEditing`.
+    private func beginEditing() {
+        guard canEdit else { return }
+        if isEditing || isVoiceOverEnabled {
+            isFocused = true
+        } else {
+            isEditing = true
+        }
     }
 
     // MARK: - Computed Properties

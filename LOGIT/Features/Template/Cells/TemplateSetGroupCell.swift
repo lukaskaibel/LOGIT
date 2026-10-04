@@ -16,13 +16,14 @@ struct TemplateSetGroupCell: View {
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
+    @Environment(\.setFieldFocusRelay) private var focusRelay
     @EnvironmentObject var database: Database
 
     // MARK: - Parameters
 
     @ObservedObject var setGroup: TemplateSetGroup
 
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     @Binding var sheetType: TemplateEditorScreen.SheetType?
     @Binding var isReordering: Bool
 
@@ -243,7 +244,7 @@ struct TemplateSetGroupCell: View {
             guard let onScreen = visible.first else { return }
             visibleExerciseID = onScreen
         }
-        .onChange(of: focusedIntegerFieldIndex) { _, newValue in
+        .onSetFieldFocusChange(focusRelay) { newValue in
             autopageIfNeeded(for: newValue, exercises: exercises)
         }
         .supersetLaneViewport(bleed: laneBleed)
@@ -570,7 +571,7 @@ private struct TemplateSupersetExerciseLane: View {
     @ObservedObject var setGroup: TemplateSetGroup
     let exercise: Exercise
     let isPrimaryLane: Bool
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     let supplementaryText: String?
     let showDetailAsSheet: Bool
     let onTapRestDuration: ((TemplateSet) -> Void)?

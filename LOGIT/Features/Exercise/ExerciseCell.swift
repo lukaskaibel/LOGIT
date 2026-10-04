@@ -8,13 +8,9 @@
 import SwiftUI
 
 struct ExerciseCell: View {
-    // MARK: - Environment
-
-    @EnvironmentObject var database: Database
-
     // MARK: - Parameters
 
-    @StateObject var exercise: Exercise
+    @ObservedObject var exercise: Exercise
 
     // MARK: - Body
 

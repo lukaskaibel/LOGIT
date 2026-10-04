@@ -7,26 +7,32 @@
 
 import SwiftUI
 
-extension WorkoutRecorderScreen {
-    /// The recorder's keyboard accessory: the keyboard's own controls, trailing, under the thumb.
-    ///
-    /// Hide sits at the very edge and Next inboard of it — the order iOS itself uses, where the
-    /// control that puts the keyboard away is the last thing in the bar. Next stands in for the
-    /// return key a number pad hasn't got, carrying the session from reps to weight to the next
-    /// set's reps, the order the sets are actually filled in. A note or the workout's title brings
-    /// hide alone.
-    ///
-    /// The ± joins Next only while a *weight* field has the keyboard, which is the one moment the
-    /// pad's missing minus key is a problem: assistance is stored as a negative weight, and there
-    /// is no other way to type one. Two capsules, two jobs: what acts on the field, then what
-    /// dismisses the keyboard.
-    ///
-    /// The rest timer is deliberately *not* in here. It stays the floating control it always was
-    /// and slides to the leading edge of this row when a keyboard opens (see
-    /// `FloatingChronoControlsOverlay`), which keeps it one view that moves rather than two copies
-    /// handing off.
-    @ViewBuilder
-    var keyboardToolbarContent: some View {
+/// The recorder's keyboard accessory: the keyboard's own controls, trailing, under the thumb.
+///
+/// Hide sits at the very edge and Next inboard of it — the order iOS itself uses, where the
+/// control that puts the keyboard away is the last thing in the bar. Next stands in for the
+/// return key a number pad hasn't got, carrying the session from reps to weight to the next
+/// set's reps, the order the sets are actually filled in. A note or the workout's title brings
+/// hide alone.
+///
+/// The ± joins Next only while a *weight* field has the keyboard, which is the one moment the
+/// pad's missing minus key is a problem: assistance is stored as a negative weight, and there
+/// is no other way to type one. Two capsules, two jobs: what acts on the field, then what
+/// dismisses the keyboard.
+///
+/// The rest timer is deliberately *not* in here. It stays the floating control it always was
+/// and slides to the leading edge of this row when a keyboard opens (see
+/// `FloatingChronoControlsOverlay`), which keeps it one view that moves rather than two copies
+/// handing off.
+///
+/// Its own view because it is the one place in the recorder that follows the focused field:
+/// held here, a move from field to field re-renders these capsules and nothing else. Read by the
+/// recorder's own body, the same move re-rendered the whole screen.
+struct RecorderKeyboardFieldControls: View {
+    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    let workout: Workout?
+
+    var body: some View {
         if focusedIntegerFieldIndex != nil {
             let nextIndex = nextIntegerFieldIndex()
             KeyboardToolbarGroup {
@@ -58,16 +64,22 @@ extension WorkoutRecorderScreen {
         }
     }
 
+    /// Where the keyboard's Next button goes from the focused field — see `SetFieldNavigation`.
+    private func nextIntegerFieldIndex() -> IntegerField.Index? {
+        guard let workout, let focusedIndex = focusedIntegerFieldIndex else { return nil }
+        return SetFieldNavigation.index(after: focusedIndex, in: workout.sets)
+    }
+
     /// The entry whose *weight* has the keyboard, with its set — the ± acts on the weight's sign,
     /// so it has no business appearing over a reps or duration pad.
     ///
-    /// Deliberately not gated on the field holding a number: this is read by the recorder's body,
-    /// which a keystroke doesn't redraw. `KeyboardAssistedButton` observes the entry and shows
-    /// itself once there is something to flip, so the ± arrives with the first digit, the way a
-    /// calculator's does — you type the weight, then say it was help rather than load.
-    var focusedWeightEntry: (entry: SetEntry, set: WorkoutSet)? {
+    /// Deliberately not gated on the field holding a number: a keystroke doesn't redraw this row.
+    /// `KeyboardAssistedButton` observes the entry and shows itself once there is something to
+    /// flip, so the ± arrives with the first digit, the way a calculator's does — you type the
+    /// weight, then say it was help rather than load.
+    private var focusedWeightEntry: (entry: SetEntry, set: WorkoutSet)? {
         guard let focusedIndex = focusedIntegerFieldIndex,
-              let workoutSet = selectedWorkoutSet
+              let workoutSet = workout?.sets.first(where: { $0.id == focusedIndex.setID })
         else { return nil }
         return SetFieldNavigation.weightEntry(at: focusedIndex, in: workoutSet)
     }

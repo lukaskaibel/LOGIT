@@ -31,6 +31,8 @@ struct WorkoutEditorScreen: View {
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isRenamingWorkout = false
     @State private var focusedIntegerFieldIndex: IntegerField.Index?
+    /// Hands focus moves to the set fields — see `SetFieldFocusRelay`.
+    @State private var fieldFocusRelay = SetFieldFocusRelay()
     @State private var isEditingStartEndDate = false
     @State private var selectedRestDurationSet: WorkoutSet?
     @State private var isShowingReorderSheet = false
@@ -147,7 +149,7 @@ struct WorkoutEditorScreen: View {
                         VStack(spacing: CELL_SPACING) {
                             WorkoutSetGroupList(
                                 workout: workout,
-                                focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                                focusedIntegerFieldIndex: $focusedIntegerFieldIndex.untracked,
                                 canReorder: true,
                                 reduceShadow: true,
                                 showDetailAsSheet: true,
@@ -415,6 +417,7 @@ struct WorkoutEditorScreen: View {
                 exerciseSelectionPresentationDetent = workout.isEmpty ? .medium : .height(BOTTOM_SHEET_SMALL)
             }
         }
+        .relaysSetFieldFocus($focusedIntegerFieldIndex, through: fieldFocusRelay)
     }
 
     // MARK: - Keyboard Toolbar

@@ -128,7 +128,7 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
     @ObservedObject var entry: Entry
     let setID: UUID
     let secondaryIndex: Int
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     /// Like-for-like entry from the reference set (same position in the previous workout).
     /// Callers pass nil when the types don't match — a one-off timed set must not be compared
     /// against a reps entry.
@@ -201,7 +201,7 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
         let delta = repsDelta(current: entry.repetitions, previous: reference?.repetitions)
         return IntegerField(
             placeholder: placeholder?.repetitions ?? 0,
-            value: $entry.repetitions,
+            value: $entry.repetitions.untracked,
             maxDigits: 4,
             index: fieldIndex(tertiary),
             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
@@ -231,7 +231,7 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
                     let stored = convertWeightForStoring(abs($0))
                     entry.weight = recordsAssistance ? -stored : stored
                 }
-            ),
+            ).untracked,
             maxDigits: 4,
             // Match the input precision to what integer-gram storage can round-trip:
             // 3 decimals in kg (exact), 2 in lbs (a third decimal is below 1 g resolution).
@@ -278,7 +278,7 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
                 value: Binding(
                     get: { Double(entry.durationMs) / 1000 },
                     set: { entry.durationMs = Int64(($0 * 1000).rounded()) }
-                ),
+                ).untracked,
                 maxDigits: 4,
                 decimalPlaces: DURATION_DECIMAL_PLACES,
                 index: fieldIndex(tertiary),
@@ -296,7 +296,7 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
                 value: Binding(
                     get: { entry.durationMs },
                     set: { entry.durationMs = $0 }
-                ),
+                ).untracked,
                 index: fieldIndex(tertiary),
                 focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                 trend: delta.comparison,
@@ -323,7 +323,7 @@ struct SetEntryFieldsRow<Entry: SetEntryFieldsEditable>: View {
             value: Binding(
                 get: { convertDistanceForDisplayingDecimal(entry.distanceMm, style: style) },
                 set: { entry.distanceMm = convertDistanceForStoring($0, style: style) }
-            ),
+            ).untracked,
             // 5 integer digits in the short scale, not 4: a 10 km run in meters is a
             // five-digit entry.
             maxDigits: style == .short ? 5 : 4,

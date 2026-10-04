@@ -5,6 +5,8 @@
 //  Tests for non-AI dependent services
 //
 
+import Combine
+import SwiftUI
 import XCTest
 
 @testable import LOGIT
@@ -2224,5 +2226,173 @@ final class AutoRestTests: XCTestCase {
         defaults.set(RestRecordingMode.fullDuration.rawValue, forKey: AutoRestSettings.recordingModeKey)
         XCTAssertEqual(AutoRestSettings.recordingMode(in: defaults), .fullDuration)
         defaults.removePersistentDomain(forName: suite)
+    }
+}
+
+// MARK: - ExerciseSuggestionService Tests
+
+/// The tray asks for suggestions on every render, so the service keeps the history it scores and
+/// its last answer. These guard that the kept copy never goes stale: whatever changes the history
+/// shows up in the next suggestions, while edits to the workout being recorded don't throw it away.
+final class ExerciseSuggestionServiceTests: XCTestCase {
+
+    private var database: Database!
+    private var service: ExerciseSuggestionService!
+    private var bench: Exercise!
+    private var row: Exercise!
+    private var curl: Exercise!
+    private var squat: Exercise!
+
+    override func setUp() {
+        super.setUp()
+        database = Database(inMemory: true)
+        service = ExerciseSuggestionService(database: database)
+        bench = database.newExercise(name: "Bench", muscleGroup: .chest)
+        row = database.newExercise(name: "Row", muscleGroup: .back)
+        curl = database.newExercise(name: "Curl", muscleGroup: .biceps)
+        squat = database.newExercise(name: "Squat", muscleGroup: .legs)
+    }
+
+    override func tearDown() {
+        service = nil
+        database = nil
+        super.tearDown()
+    }
+
+    private var allExercises: [Exercise] { [bench, row, curl, squat] }
+
+    /// A finished workout performing `exercises` in order, `daysAgo` days back.
+    @discardableResult
+    private func completedWorkout(_ exercises: [Exercise], daysAgo: Int) -> Workout {
+        let workout = database.newWorkout(
+            name: "History",
+            date: Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now)!
+        )
+        // Explicit, as finishing a recorded workout leaves it: a fresh row's flag is NULL, which
+        // the service's `isCurrentWorkout == NO` doesn't match.
+        workout.isCurrentWorkout = false
+        for exercise in exercises {
+            database.newWorkoutSetGroup(exercise: exercise, workout: workout)
+        }
+        database.context.processPendingChanges()
+        return workout
+    }
+
+    private func currentWorkout(_ exercises: [Exercise]) -> Workout {
+        let workout = database.newWorkout(name: "Now")
+        workout.isCurrentWorkout = true
+        for exercise in exercises {
+            database.newWorkoutSetGroup(exercise: exercise, workout: workout)
+        }
+        database.context.processPendingChanges()
+        return workout
+    }
+
+    func testSuggestsWhatHistoryFollowsWith() {
+        for day in 1 ... 6 { completedWorkout([bench, row], daysAgo: day) }
+        let current = currentWorkout([bench])
+
+        let suggestions = service.suggestedExercises(
+            currentWorkoutExercises: current.exercises, allExercises: allExercises
+        )
+
+        XCTAssertEqual(suggestions.first, row)
+    }
+
+    func testAFinishedWorkoutChangesTheNextSuggestions() {
+        for day in 1 ... 6 { completedWorkout([bench, row], daysAgo: day + 10) }
+        let current = currentWorkout([bench])
+        XCTAssertEqual(
+            service.suggestedExercises(currentWorkoutExercises: current.exercises, allExercises: allExercises).first,
+            row
+        )
+
+        // Recent history now follows the bench with curls — the kept history must not hide them.
+        for day in 1 ... 8 { completedWorkout([bench, curl], daysAgo: day) }
+
+        XCTAssertEqual(
+            service.suggestedExercises(currentWorkoutExercises: current.exercises, allExercises: allExercises).first,
+            curl
+        )
+    }
+
+    func testFinishingTheRecordedWorkoutCountsAsHistory() {
+        for day in 1 ... 4 { completedWorkout([bench, row], daysAgo: day) }
+        let current = currentWorkout([squat, curl])
+        // Four finished workouts aren't enough to suggest anything yet.
+        XCTAssertTrue(
+            service.suggestedExercises(currentWorkoutExercises: [bench], allExercises: allExercises).isEmpty
+        )
+
+        current.isCurrentWorkout = false
+        database.context.processPendingChanges()
+
+        XCTAssertFalse(
+            service.suggestedExercises(currentWorkoutExercises: [bench], allExercises: allExercises).isEmpty,
+            "the fifth finished workout should unlock suggestions"
+        )
+    }
+
+    func testEditingTheRecordedWorkoutFollowsItsExercises() {
+        for day in 1 ... 6 { completedWorkout([bench, row, curl], daysAgo: day) }
+        let current = currentWorkout([bench])
+        XCTAssertEqual(
+            service.suggestedExercises(currentWorkoutExercises: current.exercises, allExercises: allExercises).first,
+            row
+        )
+
+        database.newWorkoutSetGroup(exercise: row, workout: current)
+        database.context.processPendingChanges()
+
+        XCTAssertEqual(
+            service.suggestedExercises(currentWorkoutExercises: current.exercises, allExercises: allExercises).first,
+            curl,
+            "with the row logged, what follows it comes next"
+        )
+    }
+}
+
+// MARK: - Set field focus
+
+final class SetFieldFocusTests: XCTestCase {
+    private let field = IntegerField.Index(setID: UUID(), secondary: 0, tertiary: 1)
+    private let other = IntegerField.Index(setID: UUID())
+
+    func testAFieldClaimsTheKeyboardWhenItBecomesTheTarget() {
+        XCTAssertEqual(SetFieldFocusMove(to: field, for: field, isFocused: false), .claim)
+        XCTAssertEqual(SetFieldFocusMove(to: field, for: field, isFocused: true), .none)
+    }
+
+    func testAFieldLetsTheNextOneTakeTheKeyboardOver() {
+        // Resigning here would drop the keyboard between two fields; the new field taking first
+        // responder is what ends this one's.
+        XCTAssertEqual(SetFieldFocusMove(to: other, for: field, isFocused: true), .none)
+    }
+
+    func testAFieldGivesTheKeyboardUpWhenItIsPutAway() {
+        XCTAssertEqual(SetFieldFocusMove(to: nil, for: field, isFocused: true), .release)
+        XCTAssertEqual(SetFieldFocusMove(to: nil, for: field, isFocused: false), .none)
+    }
+
+    func testTheRelayRemembersTheLastMoveForFieldsThatAppearLater() {
+        let relay = SetFieldFocusRelay()
+        var received: [IntegerField.Index?] = []
+        let subscription = relay.changes.sink { received.append($0) }
+        relay.announce(field)
+        relay.announce(nil)
+        XCTAssertEqual(received, [field, nil])
+        XCTAssertNil(relay.current)
+        relay.announce(other)
+        XCTAssertEqual(relay.current, other)
+        subscription.cancel()
+    }
+
+    func testAnUntrackedBindingReadsAndWritesItsSource() {
+        var stored = 3
+        let binding = Binding(get: { stored }, set: { stored = $0 }).untracked
+        XCTAssertEqual(binding.wrappedValue, 3)
+        binding.wrappedValue = 7
+        XCTAssertEqual(stored, 7)
+        XCTAssertEqual(UntrackedBinding.constant(5).wrappedValue, 5)
     }
 }

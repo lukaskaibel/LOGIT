@@ -86,22 +86,11 @@ extension Database {
 
     private func mergeDuplicatesOnViewContext(identity: DuplicateMergeIdentity) {
         let context = self.context
-        context.perform { [weak self] in
+        context.perform {
             // The merge saves this context, which must only ever commit the merge's own changes.
             guard !context.hasChanges else { return }
-            let undoManager = context.undoManager
-            undoManager?.disableUndoRegistration()
-            let merged = Self.performDuplicateMerge(in: context, identity: identity)
+            _ = Self.performDuplicateMerge(in: context, identity: identity)
             context.processPendingChanges()
-            undoManager?.enableUndoRegistration()
-            if merged.exercises + merged.templates > 0 {
-                // An undo step recorded against a merged-away copy would reach for a deleted
-                // object. Losing the undo history once is the safe trade.
-                undoManager?.removeAllActions()
-            }
-            // A failed merge's rollback clears the undo stack too.
-            self?.canUndo = undoManager?.canUndo ?? false
-            self?.canRedo = undoManager?.canRedo ?? false
         }
     }
 

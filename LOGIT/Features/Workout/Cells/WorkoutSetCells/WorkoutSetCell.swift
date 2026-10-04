@@ -7,18 +7,40 @@
 
 import SwiftUI
 
-struct WorkoutSetCell: View {
+/// `Equatable`: the card around it re-renders whenever anything about the group changes — its
+/// place in the workout, its badge, a set added to it — and every set row re-rendered along with it,
+/// fields and all. A row only changes with its own set (which it observes) or what is compared here.
+struct WorkoutSetCell: View, Equatable {
+    static func == (lhs: WorkoutSetCell, rhs: WorkoutSetCell) -> Bool {
+        lhs.workoutSet === rhs.workoutSet
+            && lhs.referenceSet === rhs.referenceSet
+            && lhs.visibleExercise === rhs.visibleExercise
+            && lhs.database === rhs.database
+            && lhs.positionInGroup == rhs.positionInGroup
+            && (lhs.onEditRestDuration == nil) == (rhs.onEditRestDuration == nil)
+            && (lhs.onTapPreviousSet == nil) == (rhs.onTapPreviousSet == nil)
+    }
+
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
-    @EnvironmentObject var database: Database
-    @EnvironmentObject var workoutRecorder: WorkoutRecorder
+    /// The recorder, for the template a set was started from — read, never observed: the set's
+    /// placeholders don't change once it exists, and observing the recorder re-rendered every set
+    /// row whenever a rest started or stopped.
+    @Environment(\.recorderRestContext) private var recorderContext
 
     // MARK: - Parameters
 
+    /// Passed in rather than observed: the database announces every set deletion, which re-rendered
+    /// every set row in the workout. The row only needs it for its menu's actions.
+    let database: Database
     @ObservedObject var workoutSet: WorkoutSet
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     let referenceSet: WorkoutSet?
+    /// Where the set sits in its group — the number it shows. Handed in by the card, which knows it
+    /// anyway, so that a set inserted or removed above this one renumbers it (the set itself doesn't
+    /// change, so observing it wouldn't). Nil works it out from the group.
+    let positionInGroup: Int?
     /// When set, only the entries owned by this exercise render — the superset pager shows one
     /// exercise's card per page. The entries keep their original positions in the set's entry
     /// array so the keyboard-focus indices stay identical to the stacked layout.
@@ -31,16 +53,20 @@ struct WorkoutSetCell: View {
     @State private var isEditingRestDuration = false
 
     init(
+        database: Database,
         workoutSet: WorkoutSet,
-        focusedIntegerFieldIndex: Binding<IntegerField.Index?>,
+        focusedIntegerFieldIndex: UntrackedBinding<IntegerField.Index?>,
         referenceSet: WorkoutSet? = nil,
+        positionInGroup: Int? = nil,
         visibleExercise: Exercise? = nil,
         onEditRestDuration: (() -> Void)? = nil,
         onTapPreviousSet: ((Exercise) -> Void)? = nil
     ) {
+        self.database = database
         self.workoutSet = workoutSet
         _focusedIntegerFieldIndex = focusedIntegerFieldIndex
         self.referenceSet = referenceSet
+        self.positionInGroup = positionInGroup
         self.visibleExercise = visibleExercise
         self.onEditRestDuration = onEditRestDuration
         self.onTapPreviousSet = onTapPreviousSet
@@ -52,6 +78,10 @@ struct WorkoutSetCell: View {
         Group {
             if canEdit {
                 content
+                    // The whole row opens the menu, not only its numbers: a long press anywhere on
+                    // the set is how its actions are reached. (Each row used to sit in a one-row
+                    // `List` for its swipe action, and the list's cell made the row hittable.)
+                    .contentShape(Rectangle())
                     .contextMenu {
                         contextMenuContent
                     }
@@ -124,7 +154,7 @@ struct WorkoutSetCell: View {
         if let setID = workoutSet.id {
             let referenceValues = referenceSet?.entryValues ?? []
             let placeholderValues =
-                workoutRecorder.templateSet(for: workoutSet)?.entryValues ?? []
+                recorderContext?.workoutRecorder.templateSet(for: workoutSet)?.entryValues ?? []
             VStack(spacing: 0) {
                 ForEach(
                     visibleIndexedEntries, id: \.element.objectID
@@ -361,7 +391,8 @@ struct WorkoutSetCell: View {
     // MARK: - Supporting Methods
 
     private var indexInSetGroup: Int? {
-        workoutSet.setGroup?.sets.firstIndex(of: workoutSet)
+        if let positionInGroup { return positionInGroup }
+        return workoutSet.setGroup?.sets.firstIndex(of: workoutSet)
     }
 
 }
@@ -466,6 +497,7 @@ private struct PreviewWrapperView: View {
                 .foregroundStyle(.secondary)
 
             WorkoutSetCell(
+                database: database,
                 workoutSet: workoutSet,
                 focusedIntegerFieldIndex: .constant(nil)
             )

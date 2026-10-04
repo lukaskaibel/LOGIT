@@ -14,22 +14,22 @@ struct WorkoutSetGroupCell: View {
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
-    @EnvironmentObject var database: Database
+    @Environment(\.setFieldFocusRelay) private var focusRelay
 
     // MARK: - Parameters
 
+    /// Passed in by the list rather than observed: the database announces every set deletion, and
+    /// observing it re-rendered every card in the workout for each one. The card only needs it for
+    /// its actions.
+    let database: Database
     @ObservedObject var setGroup: WorkoutSetGroup
 
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     @Binding var isReordering: Bool
 
     let supplementaryText: String?
     var showDetailAsSheet: Bool = false
     var showPendingRestInTertiary: Bool = false
-    /// Whether any set field is currently focused, passed as a plain value (instead of reading
-    /// `focusedIntegerFieldIndex` here) so this cell's body doesn't re-run for every focus move
-    /// between fields — only for the keyboard appearing or disappearing.
-    var isFieldFocused: Bool = false
     /// Position of this group in the workout, passed by `WorkoutSetGroupList` so it is part of
     /// this cell's `Equatable` inputs: with body skipping, deleting or reordering *another*
     /// group must still refresh this cell's header number. Nil when the cell is used standalone
@@ -199,7 +199,8 @@ struct WorkoutSetGroupCell: View {
     }
 
     private func standardCardBody(previousSetGroup: WorkoutSetGroup?) -> some View {
-        VStack(spacing: CELL_PADDING) {
+        let orderedSets = setGroup.sets
+        return VStack(spacing: CELL_PADDING) {
             header
                 .padding([.top, .horizontal], CELL_PADDING)
 
@@ -212,18 +213,19 @@ struct WorkoutSetGroupCell: View {
                             isReordering: .constant(false)
                         ) { workoutSet in
                             VStack(spacing: CELL_SPACING) {
+                                let position = orderedSets.firstIndex(of: workoutSet)
                                 WorkoutSetCell(
+                                    database: database,
                                     workoutSet: workoutSet,
                                     focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                                    referenceSet: referenceSet(
-                                        for: workoutSet,
-                                        in: previousSetGroup
-                                    ),
+                                    referenceSet: position.flatMap { previousSetGroup?.sets.value(at: $0) },
+                                    positionInGroup: position,
                                     onEditRestDuration: onTapRestDuration.map { callback in
                                         { callback(workoutSet) }
                                     },
                                     onTapPreviousSet: onTapPreviousSet
                                 )
+                                .equatable()
                                 .contentShape(Rectangle())
                                 .background(
                                     RoundedRectangle(cornerRadius: 15)
@@ -268,7 +270,6 @@ struct WorkoutSetGroupCell: View {
                     setGroup: setGroup,
                     subjectExercise: setGroup.exercise,
                     workout: workout,
-                    isEditing: isFieldFocused,
                     onTapBadge: onTapMetricBadge
                 )
                 // The badge floats here without claiming layout space; feed its width back so the
@@ -333,6 +334,7 @@ struct WorkoutSetGroupCell: View {
             HStack(alignment: .top, spacing: SetGroupThread.laneSpacing) {
                 ForEach(exercises, id: \.objectID) { exercise in
                     SupersetExerciseLane(
+                        database: database,
                         setGroup: setGroup,
                         exercise: exercise,
                         isPrimaryLane: exercise == setGroup.exercise,
@@ -341,7 +343,6 @@ struct WorkoutSetGroupCell: View {
                         supplementaryText: supplementaryText,
                         showDetailAsSheet: showDetailAsSheet,
                         showPendingRestInTertiary: showPendingRestInTertiary,
-                        isFieldFocused: isFieldFocused,
                         onTapRestDuration: onTapRestDuration,
                         onTapPreviousSet: onTapPreviousSet,
                         onTapExerciseName: onTapExerciseName,
@@ -364,7 +365,7 @@ struct WorkoutSetGroupCell: View {
             guard let onScreen = visible.first else { return }
             visibleExerciseID = onScreen
         }
-        .onChange(of: focusedIntegerFieldIndex) { _, newValue in
+        .onSetFieldFocusChange(focusRelay) { newValue in
             autopageIfNeeded(for: newValue, exercises: exercises)
         }
         .supersetLaneViewport(bleed: laneBleed)
@@ -817,42 +818,25 @@ struct WorkoutSetGroupCell: View {
         if let id = setGroup.secondaryExercise?.id { ids.insert(id) }
         return ids
     }
-
-    private func referenceSet(
-        for workoutSet: WorkoutSet,
-        in previousSetGroup: WorkoutSetGroup?
-    ) -> WorkoutSet? {
-        guard
-            let index = setGroup.sets.firstIndex(of: workoutSet),
-            let previousSetGroup
-        else { return nil }
-
-        return previousSetGroup.sets.value(at: index)
-    }
 }
 
 /// Lets SwiftUI skip this cell's body when a parent re-render didn't change what it draws. The
-/// recorder screen re-renders for reasons that don't concern individual cells (focus moves
-/// between fields, timer state, progress), and without this every such pass re-ran every cell.
-/// The comparison deliberately ignores the callback closures (their behavior is stable across
-/// renders) and the bindings (views reading a binding's value re-render on its changes on their
-/// own). Set-level edits still re-render instantly through the cell's `@ObservedObject setGroup`
-/// and the set cells' own observed sets, which bypass this check entirely.
+/// recorder screen re-renders for reasons that don't concern individual cells (timer state, the
+/// tray, the header), and without this every such pass re-ran every cell. The comparison
+/// deliberately ignores the callback closures (their behavior is stable across renders) and the
+/// bindings. Keyboard focus never re-renders a cell at all: the fields, the superset pager and
+/// the badge each hear about focus moves from the `SetFieldFocusRelay` themselves. Set-level
+/// edits still re-render instantly through the cell's `@ObservedObject setGroup` and the set
+/// cells' own observed sets, which bypass this check entirely.
 extension WorkoutSetGroupCell: Equatable {
     static func == (lhs: WorkoutSetGroupCell, rhs: WorkoutSetGroupCell) -> Bool {
         lhs.setGroup === rhs.setGroup
+            && lhs.database === rhs.database
             && lhs.supplementaryText == rhs.supplementaryText
             && lhs.showDetailAsSheet == rhs.showDetailAsSheet
             && lhs.showPendingRestInTertiary == rhs.showPendingRestInTertiary
-            && lhs.isFieldFocused == rhs.isFieldFocused
             && lhs.indexInWorkout == rhs.indexInWorkout
             && lhs.groupCount == rhs.groupCount
-            // Superset cells DO re-render on focus moves (unlike everything else, which only
-            // cares whether the keyboard is up): their pager auto-pages to the exercise that
-            // owns the newly-focused field, and a skipped body would leave that `onChange`
-            // holding a stale focus value. Bounded cost — a workout has at most a few supersets.
-            && (lhs.setGroup.setType != .superSet
-                || lhs.focusedIntegerFieldIndex == rhs.focusedIntegerFieldIndex)
     }
 }
 
@@ -863,17 +847,16 @@ extension WorkoutSetGroupCell: Equatable {
 /// the action bar all belong to the GROUP and are drawn once by the cell around the pager.
 private struct SupersetExerciseLane: View {
     @Environment(\.canEdit) var canEdit: Bool
-    @EnvironmentObject var database: Database
 
+    let database: Database
     @ObservedObject var setGroup: WorkoutSetGroup
     let exercise: Exercise
     let isPrimaryLane: Bool
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     let previousSetGroup: WorkoutSetGroup?
     let supplementaryText: String?
     let showDetailAsSheet: Bool
     let showPendingRestInTertiary: Bool
-    let isFieldFocused: Bool
     let onTapRestDuration: ((WorkoutSet) -> Void)?
     let onTapPreviousSet: ((Exercise) -> Void)?
     let onTapExerciseName: ((Exercise) -> Void)?
@@ -892,18 +875,21 @@ private struct SupersetExerciseLane: View {
             header
                 .padding([.top, .horizontal], CELL_PADDING)
             VStack(spacing: CELL_SPACING) {
-                ForEach(setGroup.sets, id: \.objectID) { workoutSet in
+                ForEach(Array(setGroup.sets.enumerated()), id: \.element.objectID) { position, workoutSet in
                     VStack(spacing: CELL_SPACING) {
                         WorkoutSetCell(
+                            database: database,
                             workoutSet: workoutSet,
                             focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
-                            referenceSet: referenceSet(for: workoutSet),
+                            referenceSet: previousSetGroup?.sets.value(at: position),
+                            positionInGroup: position,
                             visibleExercise: exercise,
                             onEditRestDuration: onTapRestDuration.map { callback in
                                 { callback(workoutSet) }
                             },
                             onTapPreviousSet: onTapPreviousSet
                         )
+                        .equatable()
                         .contentShape(Rectangle())
                         .background(
                             RoundedRectangle(cornerRadius: 15)
@@ -989,7 +975,6 @@ private struct SupersetExerciseLane: View {
                 setGroup: setGroup,
                 subjectExercise: exercise,
                 workout: workout,
-                isEditing: isFieldFocused,
                 onTapBadge: onTapMetricBadge
             )
             .onGeometryChange(for: CGFloat.self) { proxy in
@@ -1009,16 +994,6 @@ private struct SupersetExerciseLane: View {
         let inset = exerciseNameTrailingInset
         guard inset > 0, nameSlotWidth > 0 else { return nil }
         return max(40, nameSlotWidth - inset)
-    }
-
-    /// Same position-matched reference as the cell's; the set cell then matches the entry within
-    /// it by exercise (see `WorkoutSetCell.reference(for:at:in:)`).
-    private func referenceSet(for workoutSet: WorkoutSet) -> WorkoutSet? {
-        guard
-            let index = setGroup.sets.firstIndex(of: workoutSet),
-            let previousSetGroup
-        else { return nil }
-        return previousSetGroup.sets.value(at: index)
     }
 }
 
@@ -1094,29 +1069,48 @@ private final class ExerciseHistoryBestsCache: @unchecked Sendable {
         lock.unlock()
     }
 
+    /// Objects seen belonging to the workout being recorded, so their deletion can be told apart
+    /// from a deletion in the history: a deleted object's relationships are already severed by the
+    /// time the change is announced. Weak, so it never keeps a deleted row alive.
+    private let currentWorkoutMembers = NSHashTable<NSManagedObject>.weakObjects()
+    /// Every object a change notification has shown so far. One deleted without ever having been
+    /// shown was created and removed within a single event — replacing a new set's entries does
+    /// that — so no computation can have seen it.
+    private let seenObjects = NSHashTable<NSManagedObject>.weakObjects()
+    /// An exercise's own bookkeeping of its relationships, rewritten whenever a set group is added
+    /// to it — like the relationships themselves, a change here says nothing about history.
+    private static let exerciseRelationshipBookkeeping: Set<String> = [
+        "setGroupOrder", "templateSetGroupOrder",
+    ]
+
     /// The context-change notification arrives on the posting context's queue. Background
     /// contexts (CloudKit imports) always concern history, so they invalidate wholesale.
     /// Main-context changes are inspected on their own (main) queue: edits confined to the
-    /// workout currently being recorded (typing a set value, adding a set) don't touch prior
-    /// history and keep the cache.
+    /// workout currently being recorded (typing a set value, adding or removing a set) don't touch
+    /// prior history and keep the cache.
     @objc private func contextObjectsDidChange(_ notification: Notification) {
         guard Thread.isMainThread else {
             invalidateAll()
             return
         }
-        lock.lock()
-        let isEmpty = values.isEmpty
-        lock.unlock()
-        guard !isEmpty else { return }
-
         let changeKeys = [
             NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey,
         ]
+        var invalidates = false
         for changeKey in changeKeys {
             guard let objects = notification.userInfo?[changeKey] as? Set<NSManagedObject> else {
                 continue
             }
             for object in objects {
+                if changeKey == NSDeletedObjectsKey {
+                    // Gone from the workout being recorded — never part of the history.
+                    if currentWorkoutMembers.contains(object) { continue }
+                    // Created and deleted within one event: nothing ever read it.
+                    if object.objectID.isTemporaryID, !seenObjects.contains(object) { continue }
+                    invalidates = true
+                    continue
+                }
+                seenObjects.add(object)
                 let workout: Workout?
                 switch object {
                 case let workoutSet as WorkoutSet:
@@ -1129,19 +1123,37 @@ private final class ExerciseHistoryBestsCache: @unchecked Sendable {
                     workout = setGroup.workout
                 case let changedWorkout as Workout:
                     workout = changedWorkout
-                case is Exercise:
-                    invalidateAll()
-                    return
+                case let exercise as Exercise:
+                    // Every entry or set group pointing at an exercise updates the exercise's side
+                    // of that relationship too — adding a set to the workout being recorded used
+                    // to throw the whole cache away through it, and the next render re-scanned
+                    // every exercise's history. The rows on the other side report themselves, so
+                    // only a change to the exercise's own attributes (or one that can't be read)
+                    // counts.
+                    let changedKeys: [String] = changeKey == NSUpdatedObjectsKey
+                        ? Array(exercise.changedValues().keys)
+                        : []
+                    let relationships = exercise.entity.relationshipsByName
+                    let isHistoryRelevant = { (key: String) in
+                        relationships[key] == nil && !Self.exerciseRelationshipBookkeeping.contains(key)
+                    }
+                    if changedKeys.isEmpty || changedKeys.contains(where: isHistoryRelevant) {
+                        invalidates = true
+                    }
+                    continue
                 default:
                     continue
                 }
-                // Anything not clearly confined to the in-progress workout — including
-                // deletions, whose relationships are already severed — invalidates.
-                guard let workout, !workout.isDeleted, workout.isCurrentWorkout else {
-                    invalidateAll()
-                    return
+                // Anything not clearly confined to the in-progress workout invalidates.
+                if let workout, !workout.isDeleted, workout.isCurrentWorkout {
+                    currentWorkoutMembers.add(object)
+                } else {
+                    invalidates = true
                 }
             }
+        }
+        if invalidates {
+            invalidateAll()
         }
     }
 }
@@ -1281,15 +1293,19 @@ private struct MetricBadgeView: View {
     /// The exercise this badge scores — each superset lane shows its own badge; nil falls back
     /// to the group's primary exercise.
     let subjectExercise: Exercise?
-    /// Observed so the badge re-renders on every recorder change. Editing a set mutates the set —
-    /// and, via the recorder's autosave, the workout — but NOT this set group, so without observing
-    /// the workout the badge would never re-evaluate while the user types, and live values plus PR
-    /// peeks would stall. This mirrors how `WorkoutSetGroupList` already observes the workout.
-    @ObservedObject var workout: Workout
-    /// True while any set field is being edited (keyboard up). Focusing a field scrolls it above the
+    /// The workout the group belongs to. Deliberately not observed: the recorder re-announces the
+    /// workout after every edit anywhere in it, and every badge in the workout re-rendered for each
+    /// one. The badge follows its own group's values instead — see `valuesVersion`.
+    let workout: Workout
+    /// Bumped whenever one of this group's own sets or entries changes. Typing a value changes an
+    /// entry, not the set group, so without this the badge would never re-evaluate while the user
+    /// types, and live values and record peeks would stall.
+    @State private var valuesVersion = 0
+    /// Where the keyboard is. While any set field is being edited, focusing it scrolls it above the
     /// keyboard, which often pushes this badge out of view — so peeks found mid-edit are deferred
-    /// until editing ends and the badge is back on screen.
-    let isEditing: Bool
+    /// until editing ends and the badge is back on screen. Heard as an event rather than passed in,
+    /// so the keyboard coming and going re-renders no card.
+    @Environment(\.setFieldFocusRelay) private var focusRelay
     /// Set by the workout recorder. There the badge sits behind a persistent sheet, so presenting its
     /// own popover/sheet would tear that sheet down — instead the tap is routed up and the recorder
     /// presents the panel from the sheet's own context. Nil elsewhere, where the popover is fine.
@@ -1324,13 +1340,11 @@ private struct MetricBadgeView: View {
         setGroup: WorkoutSetGroup,
         subjectExercise: Exercise? = nil,
         workout: Workout,
-        isEditing: Bool,
         onTapBadge: ((WorkoutSetGroup, Exercise?, CGRect) -> Void)? = nil
     ) {
         _setGroup = ObservedObject(wrappedValue: setGroup)
         self.subjectExercise = subjectExercise
-        _workout = ObservedObject(wrappedValue: workout)
-        self.isEditing = isEditing
+        self.workout = workout
         self.onTapBadge = onTapBadge
         // Resolve the committed metric up front so the very first render already evaluates the right
         // metric: the idle/empty decision below shouldn't wait on `onAppear`, and it spares a
@@ -1341,6 +1355,7 @@ private struct MetricBadgeView: View {
     }
 
     var body: some View {
+        let _ = valuesVersion
         let accent = exercise?.muscleGroup?.color ?? .accentColor
         let displayed = displayedMetric
         let sessionBest = comparison.sessionBest(displayed)
@@ -1405,12 +1420,20 @@ private struct MetricBadgeView: View {
                     .onAppear {
                         primaryMetric = exercise?.primaryMetric ?? .defaultMetric
                         peek.seed(prSnapshot())
-                        peek.setEditing(isEditing)
+                        peek.setEditing(focusRelay?.current != nil)
                     }
             }
         }
-        .onChange(of: isEditing) { _, editing in
-            peek.setEditing(editing)
+        .onSetFieldFocusChange(focusRelay) { focused in
+            peek.setEditing(focused != nil)
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: .NSManagedObjectContextObjectsDidChange,
+                object: setGroup.managedObjectContext
+            )
+        ) { notification in
+            if Self.notification(notification, touches: setGroup) { valuesVersion &+= 1 }
         }
         .onChange(of: prSignature) { _, _ in
             peek.update(
@@ -1440,6 +1463,25 @@ private struct MetricBadgeView: View {
                 primaryMetric = current
             }
         }
+    }
+
+    /// Whether a context change edited one of `setGroup`'s sets or entries. Removing a set changes
+    /// the group itself, which the badge observes directly.
+    private static func notification(_ notification: Notification, touches setGroup: WorkoutSetGroup) -> Bool {
+        for key in [NSInsertedObjectsKey, NSUpdatedObjectsKey] {
+            guard let objects = notification.userInfo?[key] as? Set<NSManagedObject> else { continue }
+            for object in objects {
+                switch object {
+                case let entry as SetEntry where entry.workoutSet?.setGroup === setGroup:
+                    return true
+                case let workoutSet as WorkoutSet where workoutSet.setGroup === setGroup:
+                    return true
+                default:
+                    continue
+                }
+            }
+        }
+        return false
     }
 
     // MARK: - Pill rendering
@@ -1732,6 +1774,8 @@ private final class MetricPeekController: ObservableObject {
 }
 
 private struct PreviewWrapperView: View {
+    @EnvironmentObject private var database: Database
+
     var body: some View {
         FetchRequestWrapper(
             Workout.self,
@@ -1741,6 +1785,7 @@ private struct PreviewWrapperView: View {
                 ScrollView {
                     VStack {
                         WorkoutSetGroupCell(
+                            database: database,
                             setGroup: workouts.first!.setGroups.first!,
                             focusedIntegerFieldIndex: .constant(nil),
                             isReordering: .constant(false),
@@ -1748,6 +1793,7 @@ private struct PreviewWrapperView: View {
                         )
                         .padding()
                         WorkoutSetGroupCell(
+                            database: database,
                             setGroup: workouts.first!.setGroups.first!,
                             focusedIntegerFieldIndex: .constant(nil),
                             isReordering: .constant(true),
@@ -1755,6 +1801,7 @@ private struct PreviewWrapperView: View {
                         )
                         .padding()
                         WorkoutSetGroupCell(
+                            database: database,
                             setGroup: workouts.first!.setGroups.first!,
                             focusedIntegerFieldIndex: .constant(nil),
                             isReordering: .constant(false),

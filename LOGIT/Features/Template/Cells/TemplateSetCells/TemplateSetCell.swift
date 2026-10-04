@@ -16,7 +16,7 @@ struct TemplateSetCell: View {
     // MARK: - Parameters
 
     @ObservedObject var templateSet: TemplateSet
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     /// When set, only the entries owned by this exercise render — the superset pager shows one
     /// exercise's card per page. The entries keep their original positions in the set's entry
     /// array so the keyboard-focus indices stay identical to the stacked layout.
@@ -29,6 +29,10 @@ struct TemplateSetCell: View {
         Group {
             if canEdit {
                 content
+                    // The whole row opens the menu, not only its numbers: a long press anywhere on
+                    // the set is how its actions are reached. (Each row used to sit in a one-row
+                    // `List` for its swipe action, and the list's cell made the row hittable.)
+                    .contentShape(Rectangle())
                     .contextMenu {
                         contextMenuContent
                     }

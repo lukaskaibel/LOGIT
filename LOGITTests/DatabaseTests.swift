@@ -165,10 +165,12 @@ final class DatabaseTests: XCTestCase {
         XCTAssertFalse(setGroup.sets.contains(set1), "Deleted set should not be in array")
     }
 
-    // MARK: - Undo/Redo Tests
+    // MARK: - Undo
 
-    func testUndoManagerExists() {
-        XCTAssertNotNil(database.context.undoManager, "Database context should have an undo manager")
+    /// Nothing in the app offers undo, and an undo manager on the view context recorded a step for
+    /// every edit — every keystroke in the recorder — for the life of the app.
+    func testViewContextKeepsNoUndoHistory() {
+        XCTAssertNil(database.context.undoManager, "The view context shouldn't record undo steps")
     }
 
     // MARK: - Edge Cases

@@ -11,21 +11,29 @@ struct ChronographView<Content: View>: View {
     @ObservedObject var chronograph: Chronograph
     let content: (_ remainingSeconds: Double) -> Content
 
-    private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
-
-    @State private var seconds: Double = 120
-
     var body: some View {
-        content(seconds)
-            .onAppear {
-                seconds = chronograph.seconds
-            }
-            .onReceive(timer) { _ in
-                seconds = chronograph.seconds
-            }
-            .onReceive(chronograph.objectWillChange) { _ in
-                seconds = chronograph.seconds
-            }
+        // Ticks ten times a second while the clock runs, and not at all otherwise: a paused or idle
+        // chronograph shows nothing that moves, and the timer this replaces re-rendered the floating
+        // button ten times a second for the whole workout, keeping the main thread awake for nothing.
+        // Starting, stopping and adjusting the clock all publish, which redraws it straight away.
+        TimelineView(ChronographTicks(isRunning: chronograph.status == .running)) { _ in
+            content(chronograph.seconds)
+        }
+    }
+}
+
+/// Every tenth of a second while running; a single entry — no ticks — otherwise.
+private struct ChronographTicks: TimelineSchedule {
+    let isRunning: Bool
+
+    func entries(from startDate: Date, mode _: TimelineScheduleMode) -> AnyIterator<Date> {
+        var next: Date? = startDate
+        let isRunning = isRunning
+        return AnyIterator {
+            guard let current = next else { return nil }
+            next = isRunning ? current.addingTimeInterval(0.1) : nil
+            return current
+        }
     }
 }
 

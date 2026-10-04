@@ -2503,6 +2503,59 @@ final class ScenarioScreenshots: XCTestCase {
         }
     }
 
+    /// Swipe-to-delete on a set row. The rows used to borrow a one-row `List` each for the swipe
+    /// action; they now carry their own pan, so this guards both ways in: a partial swipe opens the
+    /// row on its Delete capsule and a tap on it deletes the set, and a swipe carried past the
+    /// middle of the row deletes on release. The header's set count is the witness — 30 sets in the
+    /// stress workout, then 29, then 28 — and a vertical drag over a row must still scroll.
+    func testRecorderSetSwipeToDelete() {
+        let app = launchApp(
+            scenario: "stress",
+            extraArguments: ["-UITEST_SHOW_RECORDER", "1", "-UITEST_NO_SHEET", "1"]
+        )
+        let nameField = app.textFields.matching(NSPredicate(format: "value == 'Push Day'")).firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 60), "Recorder never presented")
+        waitABit(2)
+
+        func setCount() -> Int? {
+            let caption = app.staticTexts.matching(NSPredicate(format: "label ENDSWITH[c] ' Sets'")).firstMatch
+            guard caption.waitForExistence(timeout: 3) else { return nil }
+            return Int(caption.label.split(separator: " ").first ?? "")
+        }
+        func lowestRowY() -> CGFloat? {
+            let height = app.frame.height
+            return app.textFields.allElementsBoundByIndex
+                .filter { !["recorderTitleField", "workoutNoteField"].contains($0.identifier) && $0.frame.midY > height * 0.3 && $0.frame.midY < height * 0.85 }
+                .map(\.frame.midY)
+                .max()
+        }
+        let before = setCount()
+        XCTAssertNotNil(before, "No set count in the header")
+        attach(app, "swipe_01_before")
+
+        // A partial swipe leaves the row open on its Delete capsule.
+        guard let rowY = lowestRowY() else { XCTFail("No set row on screen"); return }
+        let width = app.frame.width
+        let origin = app.coordinate(withNormalizedOffset: .zero)
+        origin.withOffset(CGVector(dx: width * 0.8, dy: rowY))
+            .press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: width * 0.55, dy: rowY)), withVelocity: 300, thenHoldForDuration: 0.1)
+        let deleteButton = app.buttons["swipeToDeleteButton"].firstMatch
+        XCTAssertTrue(deleteButton.waitForExistence(timeout: 3), "The row didn't open on its Delete capsule")
+        attach(app, "swipe_02_open")
+        deleteButton.tap()
+        waitABit(2)
+        XCTAssertEqual(setCount(), before.map { $0 - 1 }, "Tapping Delete didn't delete the set")
+        attach(app, "swipe_03_deleted")
+
+        // A swipe carried past the middle of the row deletes on release.
+        guard let nextRowY = lowestRowY() else { XCTFail("No set row left on screen"); return }
+        origin.withOffset(CGVector(dx: width * 0.9, dy: nextRowY))
+            .press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: width * 0.05, dy: nextRowY)), withVelocity: 1200, thenHoldForDuration: 0)
+        waitABit(2)
+        XCTAssertEqual(setCount(), before.map { $0 - 2 }, "A full swipe didn't delete the set")
+        attach(app, "swipe_04_full_swipe_deleted")
+    }
+
     /// The template editor's keyboard accessory: the planned rest (⏱) on the leading edge, Next
     /// and hide on the trailing one, hide at the very edge. A number pad has no return key, so
     /// this row is the only way to move on or put the keyboard away. Asserts the row is up over a

@@ -658,8 +658,7 @@ final class DuplicateMergeTests: XCTestCase {
     }
 
     /// The merge saves the view context, so it never runs under unsaved edits — it would commit
-    /// them, or delete an object an editor holds. It runs once they're saved, and drops the undo
-    /// history, whose steps could reach for a merged-away copy.
+    /// them, or delete an object an editor holds. It runs once they're saved.
     func testMergeWaitsForUnsavedEditsInTheViewContext() throws {
         let (first, _) = makeCopies(of: "_default.exercise.squat")
         let id = first.id!
@@ -672,11 +671,9 @@ final class DuplicateMergeTests: XCTestCase {
         XCTAssertTrue(database.context.hasChanges, "and the edit is still pending, not committed")
 
         try database.context.save()
-        XCTAssertEqual(database.context.undoManager?.canUndo, true)
         database.mergeDuplicates()
         drainMainQueue()
         XCTAssertEqual(exercises(withID: id).count, 1)
-        XCTAssertEqual(database.context.undoManager?.canUndo, false)
     }
 
     // MARK: Templates

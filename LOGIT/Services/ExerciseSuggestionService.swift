@@ -26,10 +26,43 @@ final class ExerciseSuggestionService: ObservableObject {
 
     private let database: Database
 
+    /// Every completed workout as the scorers read it — its exercises in order, and its date —
+    /// oldest first, plus how many completed workouts there are in all. Built on first use and
+    /// kept until a completed workout changes (see `contextObjectsDidChange`).
+    ///
+    /// The exercise tray asks for suggestions on every render, and the recorder renders it after
+    /// most interactions. Rebuilding this meant fetching every finished workout and walking each
+    /// one's set groups on the main thread each time — the single biggest stall behind the
+    /// recorder's small hangs, and the worse the longer the history. Nothing in it can change
+    /// while a workout is being recorded, so it is read once.
+    private var history: (sequences: [(elements: [UUID], date: Date)], completedCount: Int)?
+
+    /// The last answer, for the exercises it was asked about: the tray asks again with the same
+    /// workout far more often than the workout changes.
+    private var lastSuggestion: (context: [UUID], historyGeneration: Int, result: [UUID])?
+
+    /// Bumped whenever `history` is dropped, so a remembered answer from before can't outlive it.
+    private var historyGeneration = 0
+
+    private var contextObserver: NSObjectProtocol?
+
     // MARK: - Init
 
     init(database: Database) {
         self.database = database
+        contextObserver = NotificationCenter.default.addObserver(
+            forName: .NSManagedObjectContextObjectsDidChange,
+            object: nil,
+            queue: nil
+        ) { [weak self] notification in
+            self?.contextObjectsDidChange(notification)
+        }
+    }
+
+    deinit {
+        if let contextObserver {
+            NotificationCenter.default.removeObserver(contextObserver)
+        }
     }
 
     // MARK: - Public API
@@ -38,21 +71,50 @@ final class ExerciseSuggestionService: ObservableObject {
         currentWorkoutExercises: [Exercise],
         allExercises: [Exercise]
     ) -> [Exercise] {
-        let completedWorkouts = fetchCompletedWorkouts()
-        guard completedWorkouts.count >= Self.minWorkoutsRequired else { return [] }
+        let history = completedWorkoutHistory()
+        guard history.completedCount >= Self.minWorkoutsRequired else { return [] }
 
-        let excludedIDs = Set(currentWorkoutExercises.compactMap(\.id))
-        let position = currentWorkoutExercises.count
+        // Exercises without an id still count towards the position, as they always have.
+        let context = currentWorkoutExercises.compactMap(\.id)
+        let suggestedIDs: [UUID]
+        if let lastSuggestion,
+           lastSuggestion.historyGeneration == historyGeneration,
+           lastSuggestion.context == context,
+           context.count == currentWorkoutExercises.count
+        {
+            suggestedIDs = lastSuggestion.result
+        } else {
+            suggestedIDs = scoreSuggestions(
+                context: context,
+                position: currentWorkoutExercises.count,
+                sequences: history.sequences
+            )
+            lastSuggestion = (context, historyGeneration, suggestedIDs)
+        }
+
+        let exerciseByID = Dictionary(
+            allExercises.compactMap { e in e.id.map { ($0, e) } },
+            uniquingKeysWith: { first, _ in first }
+        )
+        return suggestedIDs.compactMap { exerciseByID[$0] }
+    }
+
+    private func scoreSuggestions(
+        context: [UUID],
+        position: Int,
+        sequences: [(elements: [UUID], date: Date)]
+    ) -> [UUID] {
+        let excludedIDs = Set(context)
 
         let withinWorkoutScores = scoreWithinWorkout(
-            currentWorkoutExercises: currentWorkoutExercises,
-            completedWorkouts: completedWorkouts,
+            context: context,
+            sequences: sequences,
             excluding: excludedIDs
         )
 
         let crossWorkoutScores = scoreCrossWorkoutPosition(
             position: position,
-            completedWorkouts: completedWorkouts,
+            sequences: sequences,
             excluding: excludedIDs
         )
 
@@ -63,13 +125,7 @@ final class ExerciseSuggestionService: ObservableObject {
             crossWeight: Self.crossWorkoutWeight
         )
 
-        let exerciseByID = Dictionary(
-            allExercises.compactMap { e in e.id.map { ($0, e) } },
-            uniquingKeysWith: { first, _ in first }
-        )
-
-        return filterByThreshold(combined)
-            .compactMap { exerciseByID[$0.0] }
+        return filterByThreshold(combined).map(\.0)
     }
 
     func suggestedSupersetPartners(
@@ -127,8 +183,7 @@ final class ExerciseSuggestionService: ObservableObject {
                 for i in 0..<elements.count - 1 {
                     let windowEnd = i + k
                     guard windowEnd < elements.count else { break }
-                    let candidate = Array(elements[i..<windowEnd])
-                    if candidate == contextWindow {
+                    if elements[i..<windowEnd].elementsEqual(contextWindow) {
                         let nextID = elements[windowEnd]
                         guard !excluding.contains(nextID) else { continue }
                         scores[nextID, default: 0] += decayWeight * orderWeight
@@ -143,18 +198,11 @@ final class ExerciseSuggestionService: ObservableObject {
     // MARK: - Signal A: Within-Workout Markov
 
     private func scoreWithinWorkout(
-        currentWorkoutExercises: [Exercise],
-        completedWorkouts: [Workout],
+        context: [UUID],
+        sequences: [(elements: [UUID], date: Date)],
         excluding: Set<UUID>
     ) -> [(UUID, Double)] {
-        guard !currentWorkoutExercises.isEmpty else { return [] }
-
-        let context = currentWorkoutExercises.compactMap(\.id)
-        let sequences: [(elements: [UUID], date: Date)] = completedWorkouts.compactMap { workout in
-            let exerciseIDs = workout.setGroups.compactMap(\.exercise?.id)
-            guard !exerciseIDs.isEmpty, let date = workout.date else { return nil }
-            return (exerciseIDs, date)
-        }
+        guard !context.isEmpty else { return [] }
 
         return Self.scoreNextElements(
             context: context,
@@ -169,14 +217,12 @@ final class ExerciseSuggestionService: ObservableObject {
 
     private func scoreCrossWorkoutPosition(
         position: Int,
-        completedWorkouts: [Workout],
+        sequences: [(elements: [UUID], date: Date)],
         excluding: Set<UUID>
     ) -> [(UUID, Double)] {
         // Build the sequence of exercises at this position across workouts
         var positionSequenceEntries: [(exerciseID: UUID, date: Date)] = []
-        for workout in completedWorkouts {
-            let exerciseIDs = workout.setGroups.compactMap(\.exercise?.id)
-            guard position < exerciseIDs.count, let date = workout.date else { continue }
+        for (exerciseIDs, date) in sequences where position < exerciseIDs.count {
             positionSequenceEntries.append((exerciseIDs[position], date))
         }
 
@@ -200,8 +246,7 @@ final class ExerciseSuggestionService: ObservableObject {
             guard upperBound >= 0 else { continue }
 
             for i in 0...upperBound {
-                let candidate = Array(fullSequence[i..<(i + k)])
-                guard candidate == contextWindow else { continue }
+                guard fullSequence[i..<(i + k)].elementsEqual(contextWindow) else { continue }
                 let nextIndex = i + k
                 guard nextIndex < fullSequence.count else { continue }
                 let nextID = fullSequence[nextIndex]
@@ -295,6 +340,56 @@ final class ExerciseSuggestionService: ObservableObject {
     }
 
     // MARK: - Data Fetching
+
+    private func completedWorkoutHistory() -> (sequences: [(elements: [UUID], date: Date)], completedCount: Int) {
+        if let history { return history }
+        let completedWorkouts = fetchCompletedWorkouts()
+        let sequences: [(elements: [UUID], date: Date)] = completedWorkouts.compactMap { workout in
+            let exerciseIDs = workout.setGroups.compactMap(\.exercise?.id)
+            guard !exerciseIDs.isEmpty, let date = workout.date else { return nil }
+            return (exerciseIDs, date)
+        }
+        let built = (sequences, completedWorkouts.count)
+        history = built
+        return built
+    }
+
+    private func invalidateHistory() {
+        history = nil
+        lastSuggestion = nil
+        historyGeneration += 1
+    }
+
+    /// Drops the history when a *completed* workout changes — finishing one, editing or deleting
+    /// one from the history, a sync arriving. Edits to the workout being recorded (every keystroke
+    /// in the recorder) can't change it, so they keep it.
+    private func contextObjectsDidChange(_ notification: Notification) {
+        // Other contexts are CloudKit imports and the like: assume they touched history.
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in self?.invalidateHistory() }
+            return
+        }
+        guard history != nil else { return }
+        let keys = [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey]
+        for key in keys {
+            guard let objects = notification.userInfo?[key] as? Set<NSManagedObject> else { continue }
+            for object in objects {
+                let workout: Workout?
+                switch object {
+                case let changedWorkout as Workout:
+                    workout = changedWorkout
+                case let setGroup as WorkoutSetGroup:
+                    workout = setGroup.workout
+                default:
+                    continue
+                }
+                guard let workout, !workout.isDeleted, workout.isCurrentWorkout else {
+                    invalidateHistory()
+                    return
+                }
+            }
+        }
+    }
 
     private func fetchCompletedWorkouts() -> [Workout] {
         let workouts = database.fetch(

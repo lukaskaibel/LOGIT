@@ -62,99 +62,118 @@ struct ExerciseSelectionScreen: View {
     // MARK: - Body
 
     var body: some View {
-        FetchRequestWrapper(
-            Exercise.self,
-            sortDescriptors: [SortDescriptor(\.name)],
-            predicate: ExercisePredicateFactory.getExercises(
-                nameIncluding: "",
-                withMuscleGroup: selectedMuscleGroup
-            )
-        ) { allExercises in
-            let exercises = FuzzySearchService.shared.searchExercises(searchedText, in: allExercises)
-            let sortedExercises = searchedText.isEmpty 
-                ? exercises.sorted { $0.displayName.localizedCompare($1.displayName) == .orderedAscending }
-                : exercises // Keep fuzzy search order when searching
-            let groupedExercises = Dictionary(grouping: sortedExercises, by: {
-                $0.displayNameFirstLetter
-            }).sorted { $0.key < $1.key }
-            let isSearching = !searchedText.isEmpty
-            let suggestedExercises: [Exercise] = {
-                if forSecondary, let primary = supersetPrimaryExercise {
-                    return exerciseSuggestionService.suggestedSupersetPartners(
-                        forPrimary: primary,
-                        currentWorkoutExercises: currentWorkoutExercises,
-                        allExercises: Array(allExercises)
-                    )
-                } else {
-                    return exerciseSuggestionService.suggestedExercises(
-                        currentWorkoutExercises: currentWorkoutExercises,
-                        allExercises: Array(allExercises)
-                    )
-                }
-            }()
-            let isSmallDetent = presentationDetentSelection == .height(BOTTOM_SHEET_SMALL)
-            VStack(spacing: 0) {
-                searchRow(isSmallDetent: isSmallDetent)
-                    .padding(.horizontal)
-                    .padding(.top)
-                    .padding(.bottom, 12)
-                if !isSmallDetent {
-                    VStack(spacing: 12) {
-                        MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
-                        exerciseList(
-                            exercises: exercises,
-                            sortedExercises: sortedExercises,
-                            groupedExercises: groupedExercises,
-                            suggestedExercises: suggestedExercises,
-                            isSearching: isSearching
+        let isSmallDetent = presentationDetentSelection == .height(BOTTOM_SHEET_SMALL)
+        VStack(spacing: 0) {
+            searchRow(isSmallDetent: isSmallDetent)
+                .padding(.horizontal)
+                .padding(.top)
+                .padding(.bottom, 12)
+            // Collapsed, the tray is only its search row, so nothing behind the list is fetched
+            // or computed until it opens: the recorder renders this screen after most of its
+            // interactions, and the library's sort, search and suggestions were all being worked
+            // out there each time just to be thrown away.
+            if !isSmallDetent {
+                VStack(spacing: 12) {
+                    MuscleGroupSelector(selectedMuscleGroup: $selectedMuscleGroup)
+                    FetchRequestWrapper(
+                        Exercise.self,
+                        sortDescriptors: [SortDescriptor(\.name)],
+                        predicate: ExercisePredicateFactory.getExercises(
+                            nameIncluding: "",
+                            withMuscleGroup: selectedMuscleGroup
                         )
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                isShowingNoExercisesTip = exercises.isEmpty
-            }
-            .onChange(of: textFieldIsFocused) { _, newValue in
-                if newValue {
-                    withAnimation {
-                        presentationDetentSelection = .large
-                    }
-                }
-            }
-            .onChange(of: presentationDetentSelection) { _, newValue in
-                if newValue != .large {
-                    textFieldIsFocused = false
-                }
-                if newValue == .height(BOTTOM_SHEET_SMALL) {
-                    searchedText = ""
-                }
-            }
-            .sheet(item: $selectedExerciseForDetail) { exercise in
-                NavigationStack {
-                    ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
-                }
-                .presentationDragIndicator(.visible)
-            }
-            .sheet(item: $sheetType) { type in
-                switch type {
-                case .addExercise:
-                    ExerciseEditScreen(
-                        onEditFinished: {
-                            setExercise($0)
-                            presentationDetentSelection = .height(BOTTOM_SHEET_SMALL)
-                        },
-                        initialExerciseName: searchedText.trimmingCharacters(in: .whitespacesAndNewlines).capitalized,
-                        initialMuscleGroup: selectedMuscleGroup ?? .chest
-                    )
-                case let .exerciseDetail(exercise):
-                    NavigationStack {
-                        ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
+                    ) { allExercises in
+                        expandedContent(allExercises: allExercises)
                     }
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: textFieldIsFocused) { _, newValue in
+            if newValue {
+                withAnimation {
+                    presentationDetentSelection = .large
+                }
+            }
+        }
+        .onChange(of: presentationDetentSelection) { _, newValue in
+            if newValue != .large {
+                textFieldIsFocused = false
+            }
+            if newValue == .height(BOTTOM_SHEET_SMALL) {
+                searchedText = ""
+            }
+        }
+        .sheet(item: $selectedExerciseForDetail) { exercise in
+            NavigationStack {
+                ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
+            }
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(item: $sheetType) { type in
+            switch type {
+            case .addExercise:
+                ExerciseEditScreen(
+                    onEditFinished: {
+                        setExercise($0)
+                        presentationDetentSelection = .height(BOTTOM_SHEET_SMALL)
+                    },
+                    initialExerciseName: searchedText.trimmingCharacters(in: .whitespacesAndNewlines).capitalized,
+                    initialMuscleGroup: selectedMuscleGroup ?? .chest
+                )
+            case let .exerciseDetail(exercise):
+                NavigationStack {
+                    ExerciseDetailScreen(exercise: exercise, isShowingAsSheet: true)
+                }
+            }
+        }
+    }
+
+    /// The open tray's list: the library searched, sorted and grouped, with the suggestions on top.
+    @ViewBuilder
+    private func expandedContent(allExercises: [Exercise]) -> some View {
+        let exercises = FuzzySearchService.shared.searchExercises(searchedText, in: allExercises)
+        let sortedExercises = searchedText.isEmpty
+            ? Self.sortedByDisplayName(exercises)
+            : exercises // Keep fuzzy search order when searching
+        let groupedExercises = Dictionary(grouping: sortedExercises, by: {
+            $0.displayNameFirstLetter
+        }).sorted { $0.key < $1.key }
+        let isSearching = !searchedText.isEmpty
+        let suggestedExercises: [Exercise] = {
+            if forSecondary, let primary = supersetPrimaryExercise {
+                return exerciseSuggestionService.suggestedSupersetPartners(
+                    forPrimary: primary,
+                    currentWorkoutExercises: currentWorkoutExercises,
+                    allExercises: allExercises
+                )
+            } else {
+                return exerciseSuggestionService.suggestedExercises(
+                    currentWorkoutExercises: currentWorkoutExercises,
+                    allExercises: allExercises
+                )
+            }
+        }()
+        exerciseList(
+            exercises: exercises,
+            sortedExercises: sortedExercises,
+            groupedExercises: groupedExercises,
+            suggestedExercises: suggestedExercises,
+            isSearching: isSearching
+        )
+        .onAppear {
+            isShowingNoExercisesTip = exercises.isEmpty
+        }
+    }
+
+    /// Alphabetical by the name on screen. Each name is looked up once rather than twice per
+    /// comparison — a built-in exercise's name is a localization lookup.
+    private static func sortedByDisplayName(_ exercises: [Exercise]) -> [Exercise] {
+        exercises
+            .map { (exercise: $0, name: $0.displayName) }
+            .sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+            .map(\.exercise)
     }
 
     // MARK: - Presentation

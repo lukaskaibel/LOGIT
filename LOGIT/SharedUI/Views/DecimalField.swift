@@ -12,13 +12,14 @@ struct DecimalField: View {
     // MARK: - Environment
 
     @Environment(\.canEdit) var canEdit: Bool
-    @EnvironmentObject var database: Database
-    @Environment(\.isIntegerFieldFocusSuppressed) private var isFocusSuppressed: Bool
+    @Environment(\.setFieldFocusRelay) private var focusRelay
+    @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverEnabled
 
     // MARK: - Parameters
 
     let placeholder: Double
-    @Binding var value: Double
+    /// Untracked — see `IntegerField.value`.
+    @UntrackedBinding var value: Double
     let maxDigits: Int?
     let decimalPlaces: Int
     /// Whether a leading "-" survives `filterInput`. Only a weight can be negative — assistance is
@@ -27,7 +28,7 @@ struct DecimalField: View {
     /// type one, and a negative duration used to land as a permanent "fastest" record at 0:00.
     var allowsNegative: Bool = false
     let index: IntegerField.Index
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     var unit: String? = "kg"
     var trend: SetValueComparison? = nil
     var trendText: String = ""
@@ -39,13 +40,15 @@ struct DecimalField: View {
 
     @State private var valueString: String = ""
     @FocusState private var isFocused: Bool
+    /// Whether a real text field is in place — see `SetFieldRestingText`.
+    @State private var isEditing = false
 
     // MARK: - Body
 
     var body: some View {
         HStack(alignment: .lastTextBaseline, spacing: 0) {
             Group {
-                if canEdit {
+                if canEdit && (isEditing || isVoiceOverEnabled) {
                     TextField(
                         formatNumber(placeholder),
                         text: $valueString,
@@ -63,6 +66,10 @@ struct DecimalField: View {
                     }
                     .foregroundStyle(isFocused ? Color.black : Color.white)
                     .keyboardType(.decimalPad)
+                    .onAppear { if isEditing { isFocused = true } }
+                    .transition(.identity)
+                } else if canEdit {
+                    SetFieldRestingText(text: valueString, prompt: formatNumber(placeholder))
                 } else {
                     Text(valueString)
                         .foregroundColor(isEmpty ? .placeholder : .primary)
@@ -77,25 +84,17 @@ struct DecimalField: View {
         }
         .fixedSize()
         .onAppear {
-            valueString = formatNumber(value)
+            valueString = text(for: value)
+            if focusRelay?.current == index { beginEditing() }
         }
-        .onChange(of: focusedIntegerFieldIndex) { _, newValue in
-            guard !isFocusSuppressed else { return }
-            let shouldBeFocused = newValue == index
-            guard isFocused != shouldBeFocused else { return }
-            if shouldBeFocused {
-                // Set focus directly - don't resign first responder first
-                // This allows UIKit to handle the responder chain transfer smoothly
-                isFocused = true
-            } else if newValue == nil && isFocused {
-                // Explicitly dismiss keyboard when focusedIntegerFieldIndex is set to nil
-                isFocused = false
+        .onSetFieldFocusChange(focusRelay) { newValue in
+            switch SetFieldFocusMove(to: newValue, for: index, isFocused: isFocused) {
+            case .claim: beginEditing()
+            case .release: isFocused = false
+            case .none: break
             }
-            // When transferring to another field (newValue != nil && newValue != index),
-            // don't explicitly set isFocused = false; the new field's focus will take over
         }
         .onChange(of: isFocused) { _, newValue in
-            guard !isFocusSuppressed else { return }
             if newValue {
                 UISelectionFeedbackGenerator().selectionChanged()
                 // Only update binding if we're gaining focus and not already set
@@ -105,9 +104,13 @@ struct DecimalField: View {
             } else {
                 // Losing focus – sync valueString with the canonical stored value
                 // so the display shows the clean round-tripped number.
-                let formatted = formatNumber(value)
+                let formatted = text(for: value)
                 if formatted != valueString {
                     valueString = formatted
+                }
+                // Text again once the unfocus spring has settled — see `SetFieldRestingText.swapDelay`.
+                DispatchQueue.main.asyncAfter(deadline: .now() + SetFieldRestingText.swapDelay) {
+                    if !isFocused { isEditing = false }
                 }
             }
         }
@@ -124,7 +127,7 @@ struct DecimalField: View {
                 syncSignWhileTyping(of: newValue)
                 return
             }
-            let formatted = formatNumber(newValue)
+            let formatted = text(for: newValue)
             if formatted != valueString {
                 valueString = formatted
             }
@@ -146,11 +149,27 @@ struct DecimalField: View {
         .frame(minWidth: 100, alignment: .trailing)
         .fixedSize(horizontal: true, vertical: false)
         .onTapGesture {
-            guard !isFocusSuppressed else { return }
-            isFocused = true
+            beginEditing()
         }
         .id(index)
         .keyboardScrollTarget(index)
+    }
+
+    /// The text for `value`. An editable field leaves zero empty, so its prompt shows — what the
+    /// text field's own input filter does to a "0", done here because at rest there is no text
+    /// field to do it.
+    private func text(for value: Double) -> String {
+        canEdit && value == 0 ? "" : formatNumber(value)
+    }
+
+    /// Puts the real text field in place and gives it the keyboard — see `IntegerField.beginEditing`.
+    private func beginEditing() {
+        guard canEdit else { return }
+        if isEditing || isVoiceOverEnabled {
+            isFocused = true
+        } else {
+            isEditing = true
+        }
     }
 
     // MARK: - Computed Properties

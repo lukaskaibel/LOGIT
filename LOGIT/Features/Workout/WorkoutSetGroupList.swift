@@ -15,7 +15,7 @@ struct WorkoutSetGroupList: View, Equatable {
     // MARK: - Parameters
 
     @ObservedObject var workout: Workout
-    @Binding var focusedIntegerFieldIndex: IntegerField.Index?
+    @UntrackedBinding var focusedIntegerFieldIndex: IntegerField.Index?
     let canReorder: Bool
     var reduceShadow: Bool = false
     var showDetailAsSheet: Bool = false
@@ -40,12 +40,12 @@ struct WorkoutSetGroupList: View, Equatable {
             ForEach(indexedGroups, id: \.setGroup.id) { entry in
                 VStack(spacing: 0) {
                     WorkoutSetGroupCell(
+                        database: database,
                         setGroup: entry.setGroup,
                         focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
                         isReordering: $isReordering,
                         supplementaryText: nil,
                         showDetailAsSheet: showDetailAsSheet,
-                        isFieldFocused: focusedIntegerFieldIndex != nil,
                         indexInWorkout: entry.index,
                         groupCount: indexedGroups.count,
                         onTapRestDuration: onTapRestDuration,
@@ -98,11 +98,10 @@ struct WorkoutSetGroupList: View, Equatable {
     }
 
     /// Lets SwiftUI skip re-running the list body when a parent re-render didn't change its
-    /// inputs (the recorder screen re-renders for progress, timer, and sheet reasons that don't
-    /// concern the list). Ignores the callback closures (stable behavior across renders) and the
-    /// focus binding — the list reads the binding's value in `body`, so focus changes re-render
-    /// it through that dependency regardless of this comparison. Structural changes re-render
-    /// through the `@ObservedObject workout`.
+    /// inputs (the recorder screen re-renders for timer, tray and sheet reasons that don't concern
+    /// the list). Ignores the callback closures (stable behavior across renders) and the focus
+    /// binding, which no view on the way to the fields follows (see `SetFieldFocusRelay`).
+    /// Structural changes re-render through the `@ObservedObject workout`.
     static func == (lhs: WorkoutSetGroupList, rhs: WorkoutSetGroupList) -> Bool {
         lhs.workout === rhs.workout
             && lhs.canReorder == rhs.canReorder

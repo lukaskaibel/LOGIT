@@ -5,24 +5,68 @@
 //  Created by Lukas Kaibel on 12.03.26.
 //
 
+import Combine
 import SwiftUI
+
+/// The workout recorder's rest clock, for the views in its set list that read it.
+///
+/// Handed down through the environment as plain references rather than observed objects: the
+/// recorder and the chronograph publish on every rest start, stop, pause and adjustment, and each
+/// set row observing them re-rendered the whole list on each of those — for a timer that concerns
+/// one row. The views here subscribe to exactly the change they show instead.
+struct RecorderRestContext: Equatable {
+    let workoutRecorder: WorkoutRecorder
+    let chronograph: Chronograph
+
+    static func == (lhs: RecorderRestContext, rhs: RecorderRestContext) -> Bool {
+        lhs.workoutRecorder === rhs.workoutRecorder && lhs.chronograph === rhs.chronograph
+    }
+
+    /// Whether `workoutSet`'s rest is the one on the clock, re-announced as the rest moves on.
+    func restIsActive(for workoutSet: WorkoutSet) -> AnyPublisher<Bool, Never> {
+        workoutRecorder.$activeRestTimerSet
+            .combineLatest(chronograph.$status)
+            .map { activeSet, status in
+                activeSet?.objectID == workoutSet.objectID && (status == .running || status == .paused)
+            }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
+    }
+}
+
+private struct RecorderRestContextKey: EnvironmentKey {
+    static let defaultValue: RecorderRestContext? = nil
+}
+
+extension EnvironmentValues {
+    /// Set by the recorder; nil everywhere a workout isn't being recorded.
+    var recorderRestContext: RecorderRestContext? {
+        get { self[RecorderRestContextKey.self] }
+        set { self[RecorderRestContextKey.self] = newValue }
+    }
+}
 
 /// Shows a live countdown or a static rest label between sets during workout recording.
 struct RestTimerBetweenSetsView: View {
-    @EnvironmentObject var chronograph: Chronograph
-    @EnvironmentObject var workoutRecorder: WorkoutRecorder
+    @Environment(\.recorderRestContext) private var restContext
 
     @ObservedObject var workoutSet: WorkoutSet
     var showPendingRestInTertiary: Bool = false
     var onTapActiveTimer: (() -> Void)? = nil
     var onTapRestDuration: (() -> Void)? = nil
 
-    @ViewBuilder
+    @State private var isTimerActiveForThisSet = false
+
     var body: some View {
-        if isTimerActiveForThisSet {
-            activeTimerLabel
-        } else if workoutSet.restDurationSeconds > 0 {
-            staticRestLabel
+        Group {
+            if isTimerActiveForThisSet, let restContext {
+                activeTimerLabel(chronograph: restContext.chronograph)
+            } else if workoutSet.restDurationSeconds > 0 {
+                staticRestLabel
+            }
+        }
+        .onReceive(restContext?.restIsActive(for: workoutSet) ?? Just(false).eraseToAnyPublisher()) { isActive in
+            if isTimerActiveForThisSet != isActive { isTimerActiveForThisSet = isActive }
         }
     }
 
@@ -46,11 +90,6 @@ struct RestTimerBetweenSetsView: View {
         }
     }
 
-    private var isTimerActiveForThisSet: Bool {
-        workoutRecorder.activeRestTimerSet?.objectID == workoutSet.objectID
-            && (chronograph.status == .running || chronograph.status == .paused)
-    }
-
     private var activeTimerTint: Color {
         workoutSet.exercise?.muscleGroup?.color ?? .accentColor
     }
@@ -60,7 +99,7 @@ struct RestTimerBetweenSetsView: View {
     }
 
     @ViewBuilder
-    private var activeTimerLabel: some View {
+    private func activeTimerLabel(chronograph: Chronograph) -> some View {
         let label = ChronographView(chronograph: chronograph) { seconds in
             HStack(spacing: 4) {
                 let displayedSeconds = max(0, Int(seconds.rounded(.down)))

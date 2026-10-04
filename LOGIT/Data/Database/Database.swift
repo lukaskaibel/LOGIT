@@ -62,8 +62,6 @@ public class Database: ObservableObject {
 
     // MARK: - Properties
 
-    @Published var canUndo: Bool = false
-    @Published var canRedo: Bool = false
     /// Set when persisting to disk failed even after retrying. The app shows an alert for it:
     /// a failed save means everything still on screen is memory-only and would vanish with the
     /// next relaunch, so the user must know — silently swallowing it loses their training data.
@@ -133,8 +131,9 @@ public class Database: ObservableObject {
         container.viewContext.automaticallyMergesChangesFromParent = true
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
-        container.viewContext.undoManager = UndoManager()
-        observeUndoManager()
+        // No undo manager: nothing in the app offers undo, and one on the view context recorded an
+        // undo step for every change — every keystroke in the recorder — and kept all of them for
+        // as long as the app ran.
 
         // Materialize SetEntry rows for legacy-shaped sets (pre-v8 store data now, old-version
         // devices' sync arrivals forever after). Throwaway stores start empty and previews seed
@@ -568,39 +567,6 @@ public class Database: ObservableObject {
 
     func managedObjectID(forURIRepresentation url: URL) -> NSManagedObjectID? {
         container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: url)
-    }
-
-    // MARK: - UndoManager
-
-    func undo() {
-        guard let undoManager = context.undoManager, undoManager.canUndo else { return }
-        context.perform {
-            undoManager.undo()
-        }
-    }
-
-    func redo() {
-        guard let undoManager = context.undoManager, undoManager.canRedo else { return }
-        context.perform {
-            undoManager.redo()
-        }
-    }
-
-    private func observeUndoManager() {
-        guard let undoManager = context.undoManager else { return }
-
-        NotificationCenter.default.addObserver(forName: .NSUndoManagerCheckpoint, object: undoManager, queue: .main) { _ in
-            if self.canUndo != undoManager.canUndo {
-                DispatchQueue.main.async {
-                    self.canUndo = undoManager.canUndo
-                }
-            }
-            if self.canRedo != undoManager.canRedo {
-                DispatchQueue.main.async {
-                    self.canRedo = undoManager.canRedo
-                }
-            }
-        }
     }
 
     // MARK: - Temporary Objects

@@ -44,6 +44,8 @@ struct TemplateEditorScreen: View {
     @State private var exerciseSelectionPresentationDetent: PresentationDetent = .medium
     @State private var isRenamingTemplate = false
     @State private var focusedIntegerFieldIndex: IntegerField.Index?
+    /// Hands focus moves to the set fields — see `SetFieldFocusRelay`.
+    @State private var fieldFocusRelay = SetFieldFocusRelay()
     @FocusState private var isFocusingRenameTemplateField: Bool
     /// Whether the persistent exercise tray lets touches through to the editor behind it.
     /// Driven by `hasNestedTraySheet` with an asymmetric delay — see that property's docs.
@@ -132,7 +134,7 @@ struct TemplateEditorScreen: View {
                                 VStack(spacing: 0) {
                                     TemplateSetGroupCell(
                                         setGroup: setGroup,
-                                        focusedIntegerFieldIndex: $focusedIntegerFieldIndex,
+                                        focusedIntegerFieldIndex: $focusedIntegerFieldIndex.untracked,
                                         sheetType: $sheetType,
                                         isReordering: .constant(false),
                                         supplementaryText: nil,
@@ -354,6 +356,7 @@ struct TemplateEditorScreen: View {
             }
             .scrollDismissesKeyboard(.immediately)
         }
+        .relaysSetFieldFocus($focusedIntegerFieldIndex, through: fieldFocusRelay)
     }
 
     // MARK: - Keyboard Toolbar

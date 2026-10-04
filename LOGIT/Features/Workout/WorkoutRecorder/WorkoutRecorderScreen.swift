@@ -789,13 +789,15 @@ struct WorkoutRecorderScreen: View {
         }
         // The recap is computed off the back of the travel, not into it: `WorkoutRecap.compute` walks
         // every exercise's whole history on the view context's queue, and running it inline stutters
-        // the panel's expansion. Once the spring has landed, the reveal plays from the top.
+        // the panel's expansion. By 350 ms the spring has covered ~97% of its travel, so the ~45 ms
+        // the walk takes on two years of dense history lands on the last few points of it, and the
+        // reveal plays from the top without the panel sitting empty for long.
         //
         // Always computed, even with a recap still in hand: a panel reopened before Continue's spring
         // landed keeps it (see `endFinishing`), and Continue may have cut its reveal off mid-beat.
         // Revealing it again is cheap on the eye — an unchanged workout shows its settled panel at once.
         .task {
-            try? await Task.sleep(for: .milliseconds(450))
+            try? await Task.sleep(for: .milliseconds(350))
             guard !Task.isCancelled, topSheet.isFinishing else { return }
             let recap = WorkoutRecap.compute(for: workout, database: database)
             await finishModel.reveal(

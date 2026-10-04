@@ -12,43 +12,106 @@ import SwiftUI
 
 // MARK: - The reveal
 
-/// The finish panel arrives in beats, top to bottom, so each answer lands on its own instead of the
-/// whole screen at once: the week, then what moved it, then the rest.
+/// The finish panel arrives in one movement: every section at once, top to bottom, the records still
+/// plain rows on the best they beat and the week as it stood before. Then only the numbers move —
+/// the week takes this workout, and each record counts up to its new best and becomes a record as it
+/// lands. Nothing is held back for a beat of its own; a reveal that makes you watch it stops being a
+/// reward.
 enum FinishRevealPhase: Int, Comparable {
     /// Nothing to show yet — the sheet is still travelling to the floor while the recap is computed.
     case hidden
-    /// The goal hero, holding the week as it stood *before* this workout.
+    /// Everything on screen, the goal hero holding the week as it stood *before* this workout.
     case hero
-    /// The week moves: the arc sweeps on, the count rolls up, today's ring draws in.
+    /// The week moves: today's dot pops in, the arc sweeps on, the count punches up.
     case heroFilled
-    /// The hero's verdict — "1 workout to go", "Goal reached" — and the celebration if the week was won.
+    /// The hero's verdict — "1 workout to go", "Goal reached" — and the swell if the week was won.
     case heroSettled
-    /// The highlights: records, then improvements.
-    case achievements
-    /// Effort and note, the totals, the exercises.
-    case details
     case done
 
     static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
 }
 
-/// The beat of the highlight rows: one, two, three — close enough to read as one cascade, far
-/// enough apart to count.
-enum FinishRevealTiming {
-    /// The first row's head start after its section is revealed.
-    static let rowLead = 0.15
-    /// Row to row.
-    static let rowStagger = 0.22
-    /// A record's number climbs this long after its row has landed.
-    static let rollAfterRow = 0.3
+/// How a record's number climbs from the best it beat to the new one: an odometer through round
+/// steps, quick at first and slowing into the new best.
+enum RecordCount {
+    /// The values the number passes through: round steps in the unit on screen — whole kilos,
+    /// quarter kilos for a small gain, single reps — so every frame of the count shows a number
+    /// someone could have lifted, never "101.234 kg". Raw stored values, first the previous best,
+    /// last the new one; at most 14 in all.
+    static func values(from previous: Int, to current: Int, metric: ExercisePrimaryMetric, exercise: Exercise) -> [Int] {
+        guard current > previous else { return [current] }
+        let toDisplay: (Int) -> Double
+        let toRaw: (Double) -> Int
+        let niceSteps: [Double]
+        switch metric {
+        case .weight, .estimatedOneRepMax:
+            toDisplay = { convertWeightForDisplayingDecimal($0) }
+            toRaw = { Int(convertWeightForStoring($0)) }
+            niceSteps = [0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100]
+        case .repetitions:
+            toDisplay = { Double($0) }
+            toRaw = { Int($0.rounded()) }
+            niceSteps = [1, 2, 5, 10, 25, 50, 100]
+        case .duration:
+            toDisplay = { Double($0) / 1000 }
+            toRaw = { Int(($0 * 1000).rounded()) }
+            niceSteps = [0.01, 0.05, 0.1, 0.25, 0.5, 1, 5, 10, 15, 30, 60, 300, 600]
+        case .distance:
+            let style = exercise.distanceStyle
+            toDisplay = { convertDistanceForDisplayingDecimal(Int64($0), style: style) }
+            toRaw = { Int(convertDistanceForStoring($0, style: style)) }
+            niceSteps = [0.01, 0.05, 0.1, 0.25, 0.5, 1, 5, 10, 50, 100, 500, 1000]
+        }
+        let from = toDisplay(previous)
+        let to = toDisplay(current)
+        // The finest round step that still gets there in eight: 100 → 105 kg climbs in whole
+        // kilos, not in halves — few enough that each one can be read as it rolls past.
+        let step = niceSteps.first { (to - from) / $0 <= 8 } ?? niceSteps.last!
+        var values = [previous]
+        var multiple = (from / step).rounded(.down) + 1
+        while multiple * step < to - step * 0.001 {
+            values.append(toRaw(multiple * step))
+            multiple += 1
+        }
+        values.append(current)
+        // A gain beyond even the coarsest step: keep evenly spaced ones, ends included.
+        if values.count > 14 {
+            let last = values.count - 1
+            values = (0 ..< 14).map { values[Int((Double($0) / 13 * Double(last)).rounded())] }
+        }
+        return values
+    }
 
-    /// When row `index` lands, after the highlights phase.
+    /// How long the climb takes, start to new best: about a second — long enough to watch the
+    /// number move, short enough that the old one doesn't linger. A climb of a step or two is
+    /// quicker: one rep more shouldn't sit on the old number for a second before it moves.
+    static func duration(steps: Int) -> Double {
+        min(0.9, 0.3 + 0.25 * Double(steps))
+    }
+
+    /// When step `step` of `steps` shows, from the start of the climb: an ease-out, so the steps
+    /// come quickly and slow into the new best — on a 1.5 power, not a square, with which the last
+    /// step sat for 0.4 s and read as the count stalling.
+    static func time(ofStep step: Int, of steps: Int) -> Double {
+        let fraction = Double(step) / Double(max(steps, 1))
+        return duration(steps: steps) * (1 - pow(1 - fraction, 1 / 1.5))
+    }
+}
+
+/// The beat of the reveal: the rows land a hair apart, so the list arrives as one movement top to
+/// bottom; the records then take their turns counting, a beat apart.
+enum FinishRevealTiming {
+    /// The first row's head start after the reveal.
+    static let rowLead = 0.06
+    /// Row to row.
+    static let rowStagger = 0.035
+
+    /// When row `index` lands, after the reveal.
     static func rowDelay(index: Int) -> Double { rowLead + Double(index) * rowStagger }
 
-    /// How long the whole cascade takes, from the highlights phase to the last row at rest.
-    static func total(rowCount: Int) -> Double {
-        rowCount == 0 ? 0 : rowDelay(index: rowCount - 1) + rollAfterRow + 0.5
-    }
+    /// When record `index` starts counting up, after the reveal: with the week moving, so the old
+    /// best is up for less than half a second, and each record a beat after the one above.
+    static func countStart(index: Int) -> Double { 0.45 + Double(index) * 0.15 }
 }
 
 /// The finish panel's state: the recap, how far the reveal has got, and the celebration.
@@ -64,8 +127,8 @@ final class RecorderFinishModel {
     /// Whether the phases are being played out beat by beat. False when the panel reopens on a
     /// recap it has already shown, or with Reduce Motion — everything then arrives at once.
     private(set) var isStaged = false
-    /// The confetti fired this reveal — one small burst per personal record, from its pill, in that
-    /// exercise's colour, as its number climbs. Records only: the week's goal has its own small moment
+    /// The confetti fired this reveal — one burst per personal record, from its number, in that
+    /// exercise's colour, as the number climbs. Records only: the week's goal has its own small moment
     /// (the arc closing, swelling once, the verdict springing in) and keeps it small, so that the
     /// confetti stays the sign of a number nobody had lifted before.
     private(set) var bursts: [ConfettiBurst] = []
@@ -85,6 +148,10 @@ final class RecorderFinishModel {
     /// settled panel at once: the show is for the moment something happened, not for every look.
     @ObservationIgnored private var lastRevealedKey: String?
 
+    /// Whether the sections are on screen — all of them from the first beat; only the week's and the
+    /// records' own moments are still to come.
+    var isOnScreen: Bool { phase >= .hero }
+
     func reset() {
         recap = nil
         phase = .hidden
@@ -96,10 +163,11 @@ final class RecorderFinishModel {
 
     /// Plays the reveal. Runs inside the panel's `.task`, so Continue cancels it mid-beat.
     ///
-    /// The timings are the choreography: the hero comes in holding last week's-worth of progress, the
-    /// arc takes the new workout (count rolling, a light tick as it lands), a won week closes before
-    /// it says so and fires the celebration, then records land (the celebration, if it was theirs),
-    /// then everything else settles in together.
+    /// The timings are the choreography: the whole panel comes in, holding the week as it was; 0.3 s
+    /// later the week takes the new workout — today's dot pops, the arc sweeps, the count punches up
+    /// with a tick — and a won week says so (and swells) once its arc has closed. The records count
+    /// up on their own clock meanwhile (see `RecorderFinishHighlightRow`), each landing with its
+    /// confetti.
     func reveal(_ recap: WorkoutRecap, target: Int, reduceMotion: Bool) async {
         let key = recap.celebrationKey(target: target)
         let isFresh = key != lastRevealedKey
@@ -123,28 +191,16 @@ final class RecorderFinishModel {
         // the recap they'd be inserted already revealed, and the hero would pop in on one frame.
         guard await pause(0.05) else { return }
 
-        withAnimation(.smooth(duration: 0.45)) { phase = .hero }
-        guard await pause(0.42) else { return }
+        withAnimation(.spring(duration: 0.45, bounce: 0.12)) { phase = .hero }
+        guard await pause(0.3) else { return }
 
-        withAnimation(.spring(duration: 0.8, bounce: 0.12)) { phase = .heroFilled }
-        // A won week waits for its arc to close before saying so.
-        guard await pause(goalWon ? 0.62 : 0.45) else { return }
+        withAnimation(.spring(duration: 0.45, bounce: 0.25)) { phase = .heroFilled }
+        // A won week waits for its arc to close before saying so; any other verdict comes at once.
+        guard await pause(goalWon ? 0.25 : 0.1) else { return }
 
-        withAnimation(.spring(duration: 0.5, bounce: 0.3)) { phase = .heroSettled }
+        withAnimation(.spring(duration: 0.35, bounce: 0.35)) { phase = .heroSettled }
         if goalWon { goalPulseCount += 1 }
-        guard await pause(goalWon ? 0.45 : 0.22) else { return }
-
-        withAnimation(.spring(duration: 0.55, bounce: 0.15)) { phase = .achievements }
-        let cascade = FinishRevealTiming.total(
-            rowCount: min(recap.highlights.count, RecorderFinishHighlightsSection.collapsedCount)
-        )
-        // The records fire their own confetti, each from its pill as its number climbs (see
-        // `RecorderFinishHighlightRow`); nothing to fire from here.
-        _ = celebrates
-        guard await pause(max(cascade, 0.2)) else { return }
-
-        withAnimation(.smooth(duration: 0.5)) { phase = .details }
-        guard await pause(0.6) else { return }
+        guard await pause(0.8) else { return }
         phase = .done
     }
 
@@ -154,12 +210,12 @@ final class RecorderFinishModel {
         rolledRecordIDs.insert(id).inserted
     }
 
-    /// One record's pop: a small burst from its pill in its exercise's colour. The first of a reveal
-    /// carries the celebration haptic; the rest each get a tap from their own row, so three records
-    /// feel like three and not like one long buzz.
-    func celebrateRecord(from origin: CGPoint?, color: Color) {
+    /// One record's pop: a small fountain out of its number in its exercise's colour. The first of
+    /// a reveal carries the celebration haptic; the rest each get a tap from their own row, so three
+    /// records feel like three and not like one long buzz.
+    func celebrateRecord(from origin: CGRect?, color: Color) {
         burstCount += 1
-        bursts.append(ConfettiBurst(id: burstCount, origin: origin, colors: [color, color.mix(with: .white, by: 0.4)], scale: 0.36))
+        bursts.append(ConfettiBurst(id: burstCount, origin: origin, colors: [color, color.mix(with: .white, by: 0.4)]))
         if !hasPlayedCelebrationHaptic {
             hasPlayedCelebrationHaptic = true
             CelebrationHaptics.shared.play()
@@ -176,7 +232,7 @@ final class RecorderFinishModel {
 private struct FinishReveal: ViewModifier {
     let isRevealed: Bool
     var rise: CGFloat = 16
-    /// Seconds after the phase turns before this one moves — how the improvements wait for the records.
+    /// Seconds after the phase turns before this one moves — how the lower sections follow the rows.
     var delay: Double = 0
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -185,7 +241,7 @@ private struct FinishReveal: ViewModifier {
         content
             .opacity(isRevealed ? 1 : 0)
             .offset(y: isRevealed || reduceMotion ? 0 : rise)
-            .animation(delay > 0 ? .spring(duration: 0.55, bounce: 0.15).delay(delay) : nil, value: isRevealed)
+            .animation(delay > 0 ? .spring(duration: 0.4, bounce: 0.2).delay(delay) : nil, value: isRevealed)
             .allowsHitTesting(isRevealed)
     }
 }
@@ -206,12 +262,14 @@ struct RecorderFinishPanelContent: View {
         VStack(spacing: SECTION_SPACING) {
             if let recap = model.recap {
                 RecorderFinishGoalHero(workout: workout, recap: recap, model: model)
-                    .modifier(FinishReveal(isRevealed: model.phase >= .hero))
+                    .modifier(FinishReveal(isRevealed: model.isOnScreen))
                 RecorderFinishAchievements(recap: recap, model: model)
+                // These come in with everything else, a step behind the rows above them, so the panel
+                // fills top to bottom in one movement.
                 RecorderFinishEffortNoteRow(workout: workout)
-                    .modifier(FinishReveal(isRevealed: model.phase >= .details))
+                    .modifier(FinishReveal(isRevealed: model.isOnScreen, delay: model.isStaged ? 0.14 : 0))
                 RecorderFinishExercisesSection(workout: workout, scrollProxy: scrollProxy)
-                    .modifier(FinishReveal(isRevealed: model.phase >= .details, rise: 24))
+                    .modifier(FinishReveal(isRevealed: model.isOnScreen, rise: 24, delay: model.isStaged ? 0.18 : 0))
             }
         }
     }
@@ -240,7 +298,7 @@ private struct RecorderFinishGoalHero: View {
     private var isFilled: Bool { model.phase >= .heroFilled }
     private var isSettled: Bool { model.phase >= .heroSettled }
 
-    /// The strip gets this workout the moment the arc does, so its day ring draws in with the sweep.
+    /// The strip gets this workout the moment the arc does, so its day's dot pops in with the sweep.
     private var stripWorkouts: [Workout] {
         isFilled ? recap.weekWorkouts + [workout] : recap.weekWorkouts
     }
@@ -263,7 +321,7 @@ private struct RecorderFinishGoalHero: View {
     // MARK: With a goal
 
     /// The week is the hero, not a gauge: the shape the Summary's weekly-goal tile had. The verdict on
-    /// the header line, seven day rings with today's drawing in, the week's own ring at pill size with
+    /// the header line, seven days with today's dot popping in, the week's own ring at pill size with
     /// the count inside at the end of the row. It reads left to right in the order it animates. The
     /// streak isn't repeated here: it lives on the goal screen, and this card is about the week.
     private func goalCard(_ goal: WorkoutRecap.Goal) -> some View {
@@ -284,7 +342,8 @@ private struct RecorderFinishGoalHero: View {
                     target: goal.target,
                     showsCompletionRing: false,
                     weekOf: recap.workoutDate,
-                    showsTodaysWorkout: true
+                    showsTodaysWorkout: true,
+                    style: .dots
                 )
                 Rectangle()
                     .fill(Color.fill)
@@ -294,16 +353,27 @@ private struct RecorderFinishGoalHero: View {
                         // A zero week still shows its starting dot, as the Summary's pill does.
                         progress: max(isFilled ? goal.progressAfter : goal.progressBefore, 0.005),
                         lineWidth: Self.arcLineWidth,
-                        // Slower than the arc's default: here the sweep *is* the moment.
-                        animation: .spring(duration: 0.85, bounce: 0.12)
+                        // Quick, with a little overshoot: the sweep is a push, not a crawl.
+                        animation: .spring(duration: 0.5, bounce: 0.3)
                     )
                     .frame(width: Self.arcSize, height: Self.arcSize)
-                    // The week won: the ring swells once as the verdict springs in.
+                    // Every workout: the ring swells a little as it takes it.
+                    .keyframeAnimator(initialValue: 1.0, trigger: punch) { content, scale in
+                        content.scaleEffect(scale)
+                    } keyframes: { _ in
+                        SpringKeyframe(1.14, duration: 0.14, spring: .snappy)
+                        SpringKeyframe(1.0, duration: 0.5, spring: .bouncy)
+                    }
+                    // The week won: it swells again, harder, as the verdict springs in, and a ring of
+                    // the accent runs out from it.
                     .keyframeAnimator(initialValue: 1.0, trigger: goalPulse) { content, scale in
                         content.scaleEffect(scale)
                     } keyframes: { _ in
-                        SpringKeyframe(1.18, duration: 0.16, spring: .snappy)
-                        SpringKeyframe(1.0, duration: 0.7, spring: .bouncy)
+                        SpringKeyframe(1.3, duration: 0.14, spring: .snappy)
+                        SpringKeyframe(1.0, duration: 0.55, spring: .bouncy)
+                    }
+                    .background {
+                        RippleRing(style: Color.accentColor, trigger: goalPulse, lineWidth: 2, reach: 2.3)
                     }
                     .onGeometryChange(for: CGPoint.self) { proxy in
                         let frame = proxy.frame(in: .global)
@@ -316,6 +386,13 @@ private struct RecorderFinishGoalHero: View {
                         .monospacedDigit()
                         .foregroundStyle(isMet && isFilled ? Color.accentColor : Color.label)
                         .contentTransition(.numericText(value: Double(count)))
+                        // The count lands with a punch: it jumps past the arc and drops back in.
+                        .keyframeAnimator(initialValue: 1.0, trigger: punch) { content, scale in
+                            content.scaleEffect(scale)
+                        } keyframes: { _ in
+                            SpringKeyframe(1.55, duration: 0.15, spring: .snappy)
+                            SpringKeyframe(1.0, duration: 0.5, spring: .bouncy)
+                        }
                 }
                 // Half of the arc's empty bottom band comes back, the Summary pill's own compromise.
                 .padding(.bottom, -WeeklyGoalArc<EmptyView>.bottomInset(size: Self.arcSize, lineWidth: Self.arcLineWidth) / 2)
@@ -325,9 +402,9 @@ private struct RecorderFinishGoalHero: View {
         .padding(CELL_PADDING)
         .frame(maxWidth: .infinity)
         .translucentTileStyle()
-        // One light tick as the count rolls over — the week moving, felt as well as seen — and the
+        // A firm tick as the count punches up — the week moving, felt as well as seen — and the
         // system's own "done" when this workout is the one that wins it.
-        .sensoryFeedback(.impact(weight: .light, intensity: 0.9), trigger: count)
+        .sensoryFeedback(.impact(weight: .medium, intensity: 0.85), trigger: count)
         .sensoryFeedback(.success, trigger: isSettled && goal.isReachedByThisWorkout && model.isStaged) { _, won in won }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
@@ -338,6 +415,8 @@ private struct RecorderFinishGoalHero: View {
     }
 
     private var goalPulse: Int { model.goalPulseCount }
+    /// Flips when the week takes this workout, staged only: a settled panel arrives at rest.
+    private var punch: Bool { isFilled && model.isStaged }
 
     /// "1 workout to go" in grey, "Goal reached" with its check in the accent — the header line's
     /// trailing half, so the card's first line already says how the week stands.
@@ -346,7 +425,7 @@ private struct RecorderFinishGoalHero: View {
         return HStack(spacing: 5) {
             if isMet {
                 Image(systemName: "checkmark.circle.fill")
-                    .symbolEffect(.bounce, options: .speed(0.8), value: isSettled)
+                    .symbolEffect(.bounce, options: .speed(1.2), value: isSettled)
             }
             Text(verdictText(goal))
         }
@@ -355,7 +434,7 @@ private struct RecorderFinishGoalHero: View {
         .lineLimit(1)
         .minimumScaleFactor(0.8)
         .opacity(isSettled ? 1 : 0)
-        .scaleEffect(isSettled ? 1 : 0.94, anchor: .trailing)
+        .scaleEffect(isSettled ? 1 : 0.86, anchor: .trailing)
     }
 
     private func verdictText(_ goal: WorkoutRecap.Goal) -> String {
@@ -389,6 +468,12 @@ private struct RecorderFinishGoalHero: View {
                             .monospacedDigit()
                             .foregroundStyle(Color.label)
                             .contentTransition(.numericText(value: Double(count)))
+                            .keyframeAnimator(initialValue: 1.0, trigger: punch) { content, scale in
+                                content.scaleEffect(scale, anchor: .bottom)
+                            } keyframes: { _ in
+                                SpringKeyframe(1.25, duration: 0.15, spring: .snappy)
+                                SpringKeyframe(1.0, duration: 0.5, spring: .bouncy)
+                            }
                         Text(NSLocalizedString(count == 1 ? "workout" : "workouts", comment: ""))
                             .font(.headline)
                             .textCase(.uppercase)
@@ -418,13 +503,14 @@ private struct RecorderFinishGoalHero: View {
                 target: 0,
                 showsCompletionRing: false,
                 weekOf: recap.workoutDate,
-                showsTodaysWorkout: true
+                showsTodaysWorkout: true,
+                style: .dots
             )
         }
         .padding(CELL_PADDING + 2)
         .frame(maxWidth: .infinity)
         .translucentTileStyle()
-        .sensoryFeedback(.impact(weight: .light, intensity: 0.9), trigger: count)
+        .sensoryFeedback(.impact(weight: .medium, intensity: 0.85), trigger: count)
     }
 }
 
@@ -439,7 +525,7 @@ private struct RecorderFinishAchievements: View {
     let model: RecorderFinishModel
 
     var body: some View {
-        let isRevealed = model.phase >= .achievements
+        let isRevealed = model.isOnScreen
         if !recap.highlights.isEmpty {
             RecorderFinishHighlightsSection(recap: recap, model: model, isRevealed: isRevealed)
         } else if recap.firstSessionCount > 0 {
@@ -500,7 +586,7 @@ struct RecorderFinishHighlightsSection: View {
                 .foregroundStyle(Color.label)
                 .font(.title3.weight(.bold))
                 .padding(.leading)
-                .modifier(FinishReveal(isRevealed: isRevealed))
+                .modifier(FinishReveal(isRevealed: isRevealed, delay: model.isStaged ? 0.04 : 0))
                 // On the header rather than the section: a container's identifier would overwrite
                 // the rows' and the Show More button's own.
                 .accessibilityIdentifier("finishHighlights")
@@ -560,8 +646,12 @@ struct RecorderFinishHighlightsSection: View {
 }
 
 /// One highlight: the kind and metric in the exercise's colour above the name — "Weight PR",
-/// "Strength improved" — and the pill with the number on the right: the trophy for a record, the
-/// arrow for an improvement.
+/// "Strength improved" — and the number on the right: the trophy for a record, the arrow for an
+/// improvement.
+///
+/// A record arrives as a plain row — grey trophy outline, "Weight", the best it beat in grey, no
+/// wash — and only becomes a record when its number reaches the new best: so the old value is never
+/// dressed up as the record it isn't.
 private struct RecorderFinishHighlightRow: View {
     let highlight: WorkoutRecap.Highlight
     let index: Int
@@ -577,30 +667,42 @@ private struct RecorderFinishHighlightRow: View {
     /// Show more, after the show — they come in settled: no roll, no confetti, no tap. The pop is
     /// for a record being set, and by then it has been.
     private var isInCascade: Bool { index < RecorderFinishHighlightsSection.collapsedCount }
-    /// The number's centre on screen — where a record's confetti leaves from, since that is where
-    /// the record is seen being set.
-    @State private var valueCenter: CGPoint?
+    /// Whether the row shows its record (or is an improvement, which has nothing to wait for).
+    private var isSet: Bool { !highlight.isRecord || hasRolled || !isStaged || !isInCascade }
+    /// The number's frame on screen — what a record's confetti leaves, since that is where the
+    /// record is seen being set.
+    @State private var valueFrame: CGRect?
+    /// How far a record's count has got: an index into its steps.
+    @State private var step = 0
 
-    /// Rows land one, two, three; a record's value rolls once its own row has landed.
+    /// The rows land a hair apart, top to bottom.
     private var rowDelay: Double { FinishRevealTiming.rowDelay(index: index) }
-    private var rollDelay: Double { rowDelay + FinishRevealTiming.rollAfterRow }
 
     var body: some View {
         let color = highlight.exercise.muscleGroup?.color ?? .accentColor
+        let steps = highlight.isRecord
+            ? RecordCount.values(
+                from: highlight.previous, to: highlight.current, metric: highlight.metric, exercise: highlight.exercise
+            )
+            : [highlight.current]
         HStack(spacing: 12) {
             // The mark of what happened, leading and large: a trophy for a record, an arrow for a
             // gain. It carries the exercise's colour, so the row is read at a glance and the number
-            // at the other end is left to be just a number.
-            Image(systemName: highlight.isRecord ? "trophy.fill" : "arrow.up")
+            // at the other end is left to be just a number. A record still on its way shows the
+            // trophy's outline in grey, and fills it as it lands.
+            Image(systemName: highlight.isRecord ? (isSet ? "trophy.fill" : "trophy") : "arrow.up")
                 .font(.title3.weight(.semibold))
-                .foregroundStyle(color)
+                .foregroundStyle(isSet ? color : Color.tertiaryLabel)
+                .contentTransition(.symbolEffect(.replace))
+                .symbolEffect(.bounce, value: isSet)
                 // A fixed slot, so the names line up down the list however wide the symbol is.
                 .frame(width: 26)
             VStack(alignment: .leading, spacing: 1) {
-                Text(highlight.label)
+                Text(isSet ? highlight.label : highlight.metric.title)
                     .font(.system(.footnote, design: .rounded, weight: .bold))
-                    .foregroundStyle(color)
+                    .foregroundStyle(isSet ? color : Color.secondaryLabel)
                     .lineLimit(1)
+                    .contentTransition(.interpolate)
                 Text(highlight.exercise.displayName)
                     .font(.body.weight(.semibold))
                     .foregroundStyle(Color.label)
@@ -614,15 +716,14 @@ private struct RecorderFinishHighlightRow: View {
                 exercise: highlight.exercise,
                 previous: highlight.previous,
                 current: highlight.current,
-                // Staged, a record in the cascade arrives on the best it beat and rolls up to the
-                // new one.
-                showsCurrent: !highlight.isRecord || hasRolled || !isStaged || !isInCascade
+                steps: steps,
+                step: step,
+                isSet: isSet
             )
-            .onGeometryChange(for: CGPoint.self) { proxy in
-                let frame = proxy.frame(in: .global)
-                return CGPoint(x: frame.midX, y: frame.midY)
-            } action: { center in
-                valueCenter = center
+            .onGeometryChange(for: CGRect.self) { proxy in
+                proxy.frame(in: .global)
+            } action: { frame in
+                valueFrame = frame
             }
         }
         .padding(.horizontal, CELL_PADDING)
@@ -630,34 +731,55 @@ private struct RecorderFinishHighlightRow: View {
         .translucentTileStyle()
         // A record glows faintly in its exercise's colour — the screen's own muscle wash, in one
         // hue, so it pools in soft patches rather than lying flat. An improvement stays plain: the
-        // records are the bigger news and should read that way before a word is read.
+        // records are the bigger news and should read that way before a word is read. The wash
+        // comes with the record: it fades in as the number lands.
         .background {
             if highlight.isRecord {
                 RecordTileGlow(color: color)
+                    .opacity(isSet ? 1 : 0)
             }
         }
         .opacity(isRevealed ? 1 : 0)
-        .offset(y: isRevealed ? 0 : 14)
-        .animation(isStaged ? .spring(duration: 0.5, bounce: 0.18).delay(rowDelay) : nil, value: isRevealed)
+        .offset(y: isRevealed ? 0 : 12)
+        .scaleEffect(isRevealed ? 1 : 0.94)
+        .animation(isStaged ? .spring(duration: 0.4, bounce: 0.25).delay(rowDelay) : nil, value: isRevealed)
         // The roll is its own moment, flipped when it comes rather than scheduled with a delayed
         // animation: a numeric transition under `.delay` drops the old digits at once and only
         // holds back the new ones, and the frames showed a blank value for the whole delay.
         .task(id: isRevealed) {
             guard highlight.isRecord, isRevealed, isStaged, isInCascade, !hasRolled else { return }
-            try? await Task.sleep(for: .seconds(rollDelay))
+            try? await Task.sleep(for: .seconds(FinishRevealTiming.countStart(index: index)))
             guard !Task.isCancelled else { return }
-            let rolls = withAnimation(.spring(duration: 0.6, bounce: 0.12)) {
+            await countUp(through: steps)
+            guard !Task.isCancelled else { return }
+            let rolls = withAnimation(.spring(duration: 0.45, bounce: 0.2)) {
                 model.markRecordRolled(highlight.id)
             }
             guard rolls else { return }
-            // The pop leaves the pill as the number climbs — the record, seen being set — in this
-            // exercise's colour and no other.
-            model.celebrateRecord(from: valueCenter, color: color)
+            // The pop leaves the number as it climbs — the record, seen being set — in this
+            // exercise's colour and no other — once the number has sprung forward, so it is seen
+            // leaving it.
+            try? await Task.sleep(for: .milliseconds(100))
+            model.celebrateRecord(from: valueFrame, color: color)
         }
         // Each record's own tap, so three records feel like three. On the change only: a row that
         // comes back already rolled stays quiet.
         .sensoryFeedback(.impact(weight: .medium, intensity: 0.8), trigger: hasRolled) { _, rolled in rolled }
         .accessibilityElement(children: .combine)
+    }
+
+    /// Rolls the number up through `steps` on the count's curve, short of the last one: that is the
+    /// record itself, which the caller sets.
+    private func countUp(through steps: [Int]) async {
+        let last = steps.count - 1
+        guard last > 0 else { return }
+        let start = ContinuousClock.now
+        for index in 1 ..< last {
+            try? await Task.sleep(until: start + .seconds(RecordCount.time(ofStep: index, of: last)), clock: .continuous)
+            guard !Task.isCancelled else { return }
+            withAnimation(.snappy(duration: 0.16)) { step = index }
+        }
+        try? await Task.sleep(until: start + .seconds(RecordCount.duration(steps: last)), clock: .continuous)
     }
 }
 
@@ -685,14 +807,29 @@ private struct RecordTileGlow: View {
 /// Weight, reps, time and distance show the value itself — a number that was on the bar. Strength is
 /// an estimate, so it shows the percent it moved instead, the way the set-group cell's badge does; a
 /// "125 kg" for a derived figure invites reading it as a lift that happened.
+///
+/// A record counts up to it: grey on the best it beat, rolling through round steps, coloured as it
+/// lands.
 private struct FinishHighlightValue: View {
     let color: Color
     let metric: ExercisePrimaryMetric
     let exercise: Exercise
     let previous: Int
     let current: Int
-    /// While false the value still reads as the old one, so flipping it rolls the number up.
-    let showsCurrent: Bool
+    /// The values the count passes through, from the previous best to the new one.
+    let steps: [Int]
+    /// The step the count has reached.
+    let step: Int
+    /// Whether the record has landed: the new value, in colour, springing forward on the change.
+    let isSet: Bool
+
+    private var shown: Int {
+        if isSet || steps.isEmpty { return current }
+        return steps[min(max(step, 0), steps.count - 1)]
+    }
+
+    /// Grey before the record, the exercise's colour once it is set.
+    private var tint: Color { isSet ? color : Color.secondaryLabel }
 
     private var percent: Double {
         guard previous != 0 else { return 0 }
@@ -702,11 +839,11 @@ private struct FinishHighlightValue: View {
     var body: some View {
         Group {
             if metric == .estimatedOneRepMax {
-                Text(min(abs(showsCurrent ? percent : 0), 9.99), format: .percent.precision(.fractionLength(0)))
+                Text(min(abs(isSet ? percent : 0), 9.99), format: .percent.precision(.fractionLength(0)))
                     .font(.system(.title3, design: .rounded, weight: .bold))
                     .monospacedDigit()
-                    .foregroundStyle(color)
-                    .contentTransition(.numericText(value: showsCurrent ? percent : 0))
+                    .foregroundStyle(tint)
+                    .contentTransition(.numericText(value: isSet ? percent : 0))
             } else {
                 // Laid out at the new value's width from the first frame: the old digits roll
                 // inside that slot, so the row never changes width mid-roll and the exercise name
@@ -714,15 +851,46 @@ private struct FinishHighlightValue: View {
                 value(current)
                     .hidden()
                     .overlay(alignment: .trailing) {
-                        value(showsCurrent ? current : previous)
-                            .foregroundStyle(color)
+                        value(shown)
+                            .foregroundStyle(tint)
                             .fixedSize()
-                            .contentTransition(.numericText(value: Double(showsCurrent ? current : previous)))
+                            .contentTransition(.numericText(value: Double(shown)))
                     }
+            }
+        }
+        // The record, set: as it lands on the new best the number springs forward — a touch bigger,
+        // lifted, lit in its colour — holds there a beat while the celebration leaves it, and sinks
+        // back into the row.
+        .keyframeAnimator(initialValue: Lift(), trigger: isSet) { content, lift in
+            content
+                .shadow(color: color.opacity(0.75 * lift.glow), radius: 9 * lift.glow)
+                .scaleEffect(lift.scale)
+                .offset(y: lift.rise)
+        } keyframes: { _ in
+            KeyframeTrack(\.scale) {
+                SpringKeyframe(1.14, duration: 0.14, spring: .snappy)
+                LinearKeyframe(1.14, duration: 0.2)
+                SpringKeyframe(1.0, duration: 0.45, spring: .bouncy)
+            }
+            KeyframeTrack(\.rise) {
+                SpringKeyframe(-3, duration: 0.14, spring: .snappy)
+                LinearKeyframe(-3, duration: 0.2)
+                SpringKeyframe(0, duration: 0.45, spring: .smooth)
+            }
+            KeyframeTrack(\.glow) {
+                LinearKeyframe(1, duration: 0.12)
+                LinearKeyframe(1, duration: 0.22)
+                LinearKeyframe(0, duration: 0.45)
             }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
+    }
+
+    private struct Lift {
+        var scale: CGFloat = 1
+        var rise: CGFloat = 0
+        var glow: Double = 0
     }
 
     private func value(_ base: Int) -> some View {
@@ -954,7 +1122,7 @@ private struct RecorderFinishExercisesSection: View {
 // MARK: - Celebration
 
 /// The confetti, over the whole recorder — the panel clips to its own edge, and a burst has to be free
-/// to fall through everything below its pill. Observes only the bursts, so one re-renders nothing else.
+/// to fly out over everything around its number. Observes only the bursts, so one re-renders nothing else.
 struct RecorderCelebrationOverlay: View {
     let model: RecorderFinishModel
 

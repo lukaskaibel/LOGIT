@@ -80,31 +80,6 @@ def video(keys):
         print('video', k, n, f'{time.time() - t0:.1f}s')
 
 
-APP = os.path.join(HERE, '..', '..', 'LOGIT', 'Resources', 'ExerciseAnimations')
-
-
-def app(keys, force=False):
-    """The clip the app bundles, one per exercise: <key>.mov, transparent HEVC at 30 fps, 288 px,
-    cropped tight to the figure. It shows at 96 pt beside the detail screen's title (pixel for
-    pixel on a 3x screen) and at 48 pt in the exercise cells (exactly half). Existing clips are
-    kept unless --force, so an interrupted run resumes."""
-    os.makedirs(APP, exist_ok=True)
-    failed = []
-    for k in keys:
-        t0 = time.time()
-        clip = os.path.join(APP, f'{k}.mov')
-        try:
-            if force or not os.path.exists(clip):
-                write_video(k, clip, px=288, mode='icon', fps=30, alpha=True, quality=0.6, alpha_quality=0.8)
-        except Exception as e:  # one broken exercise must not stop the batch
-            failed.append(k)
-            print('app', k, 'FAILED', e, flush=True)
-            continue
-        print('app', k, f'{os.path.getsize(clip) // 1024} KB', f'{time.time() - t0:.1f}s', flush=True)
-    if failed:
-        print('failed:', ' '.join(failed))
-
-
 def web(keys, px=360):
     """Small opaque loops for sharing on the web: out/web/<key>.mp4 (H.264 on the card colour,
     30 fps) plus a JPEG poster of the first frame, and out/web/index.json with names and groups."""
@@ -285,9 +260,6 @@ if __name__ == '__main__':
         print(path)
     elif cmd == 'video':
         video(pick(args))
-    elif cmd == 'app':
-        force = '--force' in args
-        app(pick([a for a in args if a != '--force']), force=force)
     elif cmd == 'web':
         web(pick(args))
     elif cmd == 'clip':

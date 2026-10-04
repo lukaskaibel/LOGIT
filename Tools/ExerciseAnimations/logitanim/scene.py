@@ -1,6 +1,5 @@
 """Exercise registry, frame composition, framing and video output."""
 import math
-import os
 import subprocess
 
 import numpy as np
@@ -233,19 +232,6 @@ class Exercise:
         self.paint(cv, t, pal, floor=(mode != 'icon'))
         return cv.to_uint8()
 
-    def render_rgba(self, t, px, mode='icon', pal=PAL):
-        """Transparent frame: paint on black and on white and recover alpha."""
-        black = np.zeros(3, np.float32)
-        white = np.ones(3, np.float32)
-        a = self.canvas_for(px, mode, pal, bg=black)
-        self.paint(a, t, pal, knock=black, floor=(mode != 'icon'))
-        b = self.canvas_for(px, mode, pal, bg=white)
-        self.paint(b, t, pal, knock=white, floor=(mode != 'icon'))
-        alpha = 1.0 - np.clip((b.img - a.img).mean(axis=2), 0, 1)
-        col = np.where(alpha[..., None] > 1e-4, a.img / np.maximum(alpha[..., None], 1e-4), 0)
-        out = np.concatenate([np.clip(col, 0, 1), alpha[..., None]], axis=2)
-        return (out * 255 + 0.5).astype(np.uint8)
-
 
 def exercise(key, group, camera='side', muscles=None, floor=True, near_arm_behind=False):
     """Decorator: the function returns (pose_fn, phase, equip_fn)."""
@@ -277,44 +263,20 @@ def _frame_rgb(i):
     return _EX.render(i / fps, px, mode).tobytes()
 
 
-def _frame_rgba(i):
-    px, mode, fps = _ARGS
-    return _EX.render_rgba(i / fps, px, mode).tobytes()
-
-
-ENCODER = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'out', 'bin', 'encode_alpha')
-ENCODER_SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'encode_alpha.swift')
-
-
-def alpha_encoder():
-    """The AVFoundation HEVC-with-alpha encoder (encode_alpha.swift), compiled on first use."""
-    if not os.path.exists(ENCODER) or os.path.getmtime(ENCODER) < os.path.getmtime(ENCODER_SRC):
-        os.makedirs(os.path.dirname(ENCODER), exist_ok=True)
-        subprocess.run(['swiftc', '-O', '-suppress-warnings', '-o', ENCODER, ENCODER_SRC], check=True)
-    return ENCODER
-
-
-def write_video(key, path, px=VIDEO_PX, mode='full', fps=FPS, alpha=False, workers=12, quality=0.6,
-                alpha_quality=0.8, crf=14):
-    """alpha=True: transparent HEVC (.mov) through AVFoundation, tagged sRGB so iOS shows the
-    palette exactly. Otherwise H.264 on the palette's background for review and the web."""
+def write_video(key, path, px=VIDEO_PX, mode='full', fps=FPS, workers=12, crf=14):
+    """H.264 on the palette's background, for review and the web (the app draws live from rigs)."""
     from multiprocessing import Pool
     ex = REGISTRY[key]()
     n = int(round(ex.duration * fps))
-    if alpha:
-        cmd = [alpha_encoder(), path, str(px), str(px), str(fps), str(quality), str(alpha_quality)]
-        fn = _frame_rgba
-    else:
-        cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{px}x{px}',
-               '-r', str(fps), '-i', '-', '-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p',
-               '-c:v', 'libx264', '-preset', 'slow', '-crf', str(crf), '-tune', 'animation',
-               '-x264-params', 'colorprim=bt709:transfer=iec61966-2-1:colormatrix=bt709',
-               '-profile:v', 'high', '-colorspace', 'bt709', '-color_primaries', 'bt709',
-               '-color_trc', 'iec61966-2-1', '-color_range', 'tv', '-movflags', '+faststart', path]
-        fn = _frame_rgb
+    cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{px}x{px}',
+           '-r', str(fps), '-i', '-', '-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p',
+           '-c:v', 'libx264', '-preset', 'slow', '-crf', str(crf), '-tune', 'animation',
+           '-x264-params', 'colorprim=bt709:transfer=iec61966-2-1:colormatrix=bt709',
+           '-profile:v', 'high', '-colorspace', 'bt709', '-color_primaries', 'bt709',
+           '-color_trc', 'iec61966-2-1', '-color_range', 'tv', '-movflags', '+faststart', path]
     ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     with Pool(workers, initializer=_init, initargs=(key, (px, mode, fps))) as pool:
-        for buf in pool.imap(fn, range(n), chunksize=4):
+        for buf in pool.imap(_frame_rgb, range(n), chunksize=4):
             ff.stdin.write(buf)
     ff.stdin.close()
     if ff.wait() != 0:

@@ -1,35 +1,29 @@
 # LOGIT exercise animations
 
 One minimal character, drawn from a single spec, performs every default exercise.
-Everything is Python (numpy + ffmpeg), plus a small Swift encoder for the app's transparent clips.
-Output: looping videos for the app.
+Everything is Python (numpy + ffmpeg). Output: a baked rig per exercise that the app draws live with
+Metal, plus review and sharing videos.
 
 ```
 python3 build.py sheet <keys|all>          # key frames per exercise -> out/sheets/<key>.png (+ all.png for several)
 python3 build.py video <keys|all>          # 1080 px review videos -> out/full/<key>.mp4
-python3 build.py app [--force] <keys|all>  # the app's clips -> LOGIT/Resources/ExerciseAnimations/
+python3 build.py rig <keys|all>            # the app's baked rigs -> LOGIT/Resources/ExerciseRigs/
+python3 build.py turn <keys>               # an exercise from eight angles, for review -> out/turn/
+python3 build.py clip <keys|all>           # what passes through what, in 3D
 python3 build.py web <keys|all>            # small H.264 loops + posters for sharing -> out/web/
 python3 build.py check                     # which default exercises still have no definition
 python3 build.py jumps <keys>              # largest frame-to-frame jump of the muscle highlight
 ```
 
-## The app's clips
+## In the app
 
-`build.py app` writes one transparent HEVC loop per exercise, `<key>.mov`, into
-`LOGIT/Resources/ExerciseAnimations/` (a folder reference in the Xcode project): 288 px, 30 fps,
-cropped tight to the figure with no floor. The app shows it at 96 pt beside the title of the
-exercise detail screen (pixel for pixel on a 3x screen) and at 48 pt, bare, left of the name in the
-exercise cells (exactly half). Both sit on the app's dark card and background colours, so the clip
-uses the standard palette.
+The app draws every figure live with Metal from its rig (below). At 96 pt beside the title of the
+exercise detail screen and 48 pt, bare, left of the name in the exercise cells, it shows the
+exercise from its own camera, cropped tight to the figure (`canvas_for(mode='icon')`: the content
+box the rig carries) with no floor, at 30 fps. The Instructions sheet shows it turnable.
+`ExerciseAnimationView.swift` finds an exercise's rig by its library key (`_default.exercise.<key>`).
 
-They are encoded by `encode_alpha.swift` (compiled into `out/bin/` on first use) through
-AVFoundation, tagged BT.709 with the sRGB transfer function. Don't switch back to ffmpeg's
-`hevc_videotoolbox` for these: it leaves alpha clips untagged, and iOS then decodes them as BT.709
-gamma, which lifts the dark greys by about 8 levels. Existing clips are kept unless `--force`, so an
-interrupted batch resumes. `ExerciseAnimationView.swift` looks clips up by the exercise's library
-key (`_default.exercise.<key>`).
-
-## Live 3D (prototype)
+## Live 3D
 
 The figure is solved in 3D; only the drawing is flattened for one camera. `logitanim/view3d.py`
 draws the same scene from any camera (yaw round the vertical, pitch above the horizon) by per-pixel

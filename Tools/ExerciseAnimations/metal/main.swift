@@ -2,7 +2,7 @@
 // ExerciseRig.swift, ExerciseFigureScene.swift, ExerciseFigureShaders.swift), built for macOS
 // by metal/run.sh. Renders frames to PNG on the card colour and times the GPU.
 //
-//   harness <file.rig> <out.png> <time> <yaw> <pitch> <px> <originX> <originY> <scale> [repeat]
+//   harness <file.rig> <out.png> <time> <yaw> <pitch> <px> <originX> <originY> <scale> [repeat] [nofloor]
 //
 // origin/scale place the world on the canvas exactly as sdf.Canvas does (pixels of the world
 // origin, pixels per cm), so the output lines up with the Python renders pixel for pixel.
@@ -33,6 +33,7 @@ let px = Int(args[6])!
 let origin = SIMD2<Float>(Float(args[7])!, Float(args[8])!)
 let scale = Float(args[9])!
 let repeats = args.count > 10 ? Int(args[10])! : 1
+let showsFloor = !(args.count > 11 && args[11] == "nofloor")     // the small looping figure has none
 
 let loadStart = CFAbsoluteTimeGetCurrent()
 guard let data = try? Data(contentsOf: rigURL), let rig = ExerciseRig(data: data) else {
@@ -79,7 +80,7 @@ for i in 0 ..< repeats {
     let t0 = CFAbsoluteTimeGetCurrent()
     // time the frames leading up to `time`, so the last one rendered (and saved) is `time` itself
     let pose = rig.pose(at: time - Double(repeats - 1 - i) / 30.0)
-    frame = FigureScene.build(rig: rig, pose: pose, camera: FigureCamera(yaw: yaw, pitch: pitch))
+    frame = FigureScene.build(rig: rig, pose: pose, camera: FigureCamera(yaw: yaw, pitch: pitch), floor: showsFloor)
     var uniforms = Uniforms(origin: origin, scale: scale, primCount: UInt32(frame.prims.count))
     cpuTotal += CFAbsoluteTimeGetCurrent() - t0
 

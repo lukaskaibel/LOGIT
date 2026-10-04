@@ -102,8 +102,9 @@ enum FigureScene {
     static let torsoRound: Float = 3.0
     static let torsoDepthScale: Float = 0.5
 
+    /// `floor: false` leaves out the floor line, as the small looping figure has none.
     static func build(rig: ExerciseRig, pose: ExerciseRig.Pose, camera cam: FigureCamera,
-                      muscles: Bool = true) -> FigureFrame {
+                      muscles: Bool = true, floor showsFloor: Bool = true) -> FigureFrame {
         var out = FigureFrame()
         let fig = rig.palette["fig"] ?? SIMD3(0.96, 0.96, 0.97)
         let pelvis = pose.joint("pelvis")
@@ -230,7 +231,7 @@ enum FigureScene {
         }
 
         // the floor: a thin disc, a line side-on and an ellipse from above
-        if let floor = rig.floor {
+        if showsFloor, let floor = rig.floor {
             var prim = FigurePrim()
             let c = cam.p(floor.center)
             let s = abs(sin(cam.pitch * .pi / 180))

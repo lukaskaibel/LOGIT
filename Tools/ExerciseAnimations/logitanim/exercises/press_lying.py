@@ -171,8 +171,35 @@ def db_press(key, group, muscles, pitch=-90.0, bench='flat', floor=False, top_z=
 db_press('dumbbellBenchPress', 'chest', ['pecs'])
 db_press('inclinedDumbbellBenchPress', 'chest', ['pecs'], pitch=-54.0, bench='incline', low_along=39.0)
 db_press('dumbbellFloorPress', 'chest', ['pecs'], floor=True, low_out=8.0, low_z=40.0)
-db_press('tatePress', 'triceps', ['triceps'], top_z=26.0, low_z=30.0, low_along=34.0, low_out=19.0,
-         pole=(0.0, 0.2, 1.0))
+
+
+@exercise('tatePress', 'triceps', 'side', muscles=['triceps'])
+def tate_press():
+    """The upper arms hold still, pointing up and out (elbows flared) and a little towards the feet,
+    as the library's instructions say. Only the forearms fold, in towards each other across the
+    body, and the handles turn with the hands: the dumbbells' inner heads dip and meet above the
+    chest, where the rep stops (with the upper arms still, the dumbbells can't reach the chest)."""
+    base = lying(-90.0)
+    S = solve(base).p['shoulderR']
+    E = S + unit(v3(0.18, 0.84, 0.50)) * UPPER           # the elbow: it stays put
+    fold = math.radians(55.0)                               # forearms vertical -> inner heads meet
+
+    def forearm(u):
+        th = fold * u
+        return v3(0.0, math.cos(th), -math.sin(th)), v3(0.0, math.sin(th), math.cos(th))
+
+    def pose(u):
+        d, _ = forearm(u)
+        p = dict(base)
+        # the pole along the upper arm makes the IK put the elbow exactly at E
+        p.update(both(E + d * FORE, list(E - S)))
+        return p
+
+    def equip(J, v, u):
+        _, a = forearm(u)
+        return bench_flat(v) + dumbbells(v, J, axes={'R': a, 'L': mirror(a)})
+
+    return pose, rep_down_first(1.6, 1.25, top=0.45, bottom=0.2), equip
 
 
 # Flyes open the arms sideways, straight at a side camera, where the arc foreshortens and the arm

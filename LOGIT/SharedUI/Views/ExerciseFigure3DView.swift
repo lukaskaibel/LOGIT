@@ -20,7 +20,7 @@ struct ExerciseFigure3DView: View {
 
     var body: some View {
         if let key = ExerciseAnimationLibrary.key(for: exercise), let rig = ExerciseRig.named(key) {
-            FigureMetalView(rig: rig, yaw: rig.yaw + yawOffset, pitch: pitch, playing: !reduceMotion)
+            FigureMetalView(rig: rig, framing: .orbit(yaw: rig.yaw + yawOffset, pitch: pitch), playing: !reduceMotion)
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 2)
@@ -45,16 +45,25 @@ struct ExerciseFigure3DView: View {
     }
 
     static func has(_ exercise: Exercise?) -> Bool {
-        ExerciseAnimationLibrary.key(for: exercise).map(ExerciseRig.has(key:)) ?? false
+        ExerciseAnimationLibrary.hasAnimation(for: exercise)
     }
 }
 
 // MARK: - Metal view
 
-private struct FigureMetalView: UIViewRepresentable {
+/// How a figure is framed.
+enum FigureFraming: Equatable {
+    /// Turnable: the camera at any angle, the scale fixed so everything the exercise sweeps through
+    /// stays in frame from every side; with the floor, at 60 fps.
+    case orbit(yaw: Float, pitch: Float)
+    /// The small looping figure: the exercise's own camera, cropped tight to the figure the way the
+    /// offline clips were (its 2D content box); no floor, 30 fps.
+    case icon
+}
+
+struct FigureMetalView: UIViewRepresentable {
     let rig: ExerciseRig
-    let yaw: Float
-    let pitch: Float
+    let framing: FigureFraming
     let playing: Bool
 
     func makeUIView(context: Context) -> MTKView {
@@ -65,7 +74,6 @@ private struct FigureMetalView: UIViewRepresentable {
         view.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
         view.colorPixelFormat = .bgra8Unorm
         view.framebufferOnly = true
-        view.preferredFramesPerSecond = 60
         view.isUserInteractionEnabled = false
         view.delegate = context.coordinator
         return view
@@ -74,9 +82,9 @@ private struct FigureMetalView: UIViewRepresentable {
     func updateUIView(_ view: MTKView, context: Context) {
         let renderer = context.coordinator
         renderer.rig = rig
-        renderer.yaw = yaw
-        renderer.pitch = pitch
+        renderer.framing = framing
         renderer.playing = playing
+        view.preferredFramesPerSecond = framing == .icon ? 30 : 60
         view.isPaused = !playing
         view.enableSetNeedsDisplay = !playing
         if !playing {
@@ -85,7 +93,7 @@ private struct FigureMetalView: UIViewRepresentable {
     }
 
     func makeCoordinator() -> ExerciseFigureRenderer {
-        ExerciseFigureRenderer(rig: rig)
+        ExerciseFigureRenderer(rig: rig, framing: framing)
     }
 }
 
@@ -117,10 +125,17 @@ final class ExerciseFigureMetal {
 
 final class ExerciseFigureRenderer: NSObject, MTKViewDelegate {
     var rig: ExerciseRig
-    var yaw: Float = 0
-    var pitch: Float = 0
+    var framing: FigureFraming
     var playing = true
     private let start = CACurrentMediaTime()
+
+    /// A screen of exercise cells draws a dozen of these at once, so a frame's data goes into
+    /// buffers reused round a small ring rather than into new ones; a frame whose slot is still
+    /// with the GPU is skipped rather than waited for.
+    private static let slotCount = 3
+    private var slots: [[MTLBuffer?]] = Array(repeating: Array(repeating: nil, count: 4), count: slotCount)
+    private var slot = 0
+    private let inFlight = DispatchSemaphore(value: slotCount)
 
     private struct Uniforms {
         var origin: SIMD2<Float>
@@ -128,8 +143,9 @@ final class ExerciseFigureRenderer: NSObject, MTKViewDelegate {
         var primCount: UInt32
     }
 
-    init(rig: ExerciseRig) {
+    init(rig: ExerciseRig, framing: FigureFraming) {
         self.rig = rig
+        self.framing = framing
     }
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
@@ -137,44 +153,77 @@ final class ExerciseFigureRenderer: NSObject, MTKViewDelegate {
     func draw(in view: MTKView) {
         let metal = ExerciseFigureMetal.shared
         guard let device = metal.device, let queue = metal.queue, let pipeline = metal.pipeline,
-              let pass = view.currentRenderPassDescriptor, let drawable = view.currentDrawable else { return }
+              inFlight.wait(timeout: .now()) == .success else { return }
+        guard let pass = view.currentRenderPassDescriptor, let drawable = view.currentDrawable,
+              let cmd = queue.makeCommandBuffer() else {
+            inFlight.signal()
+            return
+        }
         let time = playing ? CACurrentMediaTime() - start : 0
-        let camera = FigureCamera(yaw: yaw, pitch: pitch)
-        let frame = FigureScene.build(rig: rig, pose: rig.pose(at: time), camera: camera)
-
-        // the same scale at every angle: everything the exercise sweeps through stays in frame
         let size = SIMD2<Float>(Float(view.drawableSize.width), Float(view.drawableSize.height))
-        let center = (rig.boundsMin + rig.boundsMax) / 2
-        let half = (rig.boundsMax - rig.boundsMin) / 2
-        let radius = (half.x * half.x + half.z * half.z).squareRoot()
-        let ph = abs(pitch) * .pi / 180
-        let halfHeight = half.y * cos(ph) + radius * sin(ph)
-        let scale = min(size.x / (2 * radius * 1.04), size.y / (2 * halfHeight * 1.06))
-        let c2 = camera.p(center)
-        var uniforms = Uniforms(origin: SIMD2(size.x / 2 - c2.x * scale, size.y / 2 + c2.y * scale), scale: scale,
-                                primCount: UInt32(frame.prims.count))
+        let camera: FigureCamera
+        let origin: SIMD2<Float>
+        let scale: Float
+        switch framing {
+        case let .orbit(yaw, pitch):
+            // the same scale at every angle: everything the exercise sweeps through stays in frame
+            camera = FigureCamera(yaw: yaw, pitch: pitch)
+            let center = (rig.boundsMin + rig.boundsMax) / 2
+            let half = (rig.boundsMax - rig.boundsMin) / 2
+            let radius = (half.x * half.x + half.z * half.z).squareRoot()
+            let ph = abs(pitch) * .pi / 180
+            let halfHeight = half.y * cos(ph) + radius * sin(ph)
+            scale = min(size.x / (2 * radius * 1.04), size.y / (2 * halfHeight * 1.06))
+            let c2 = camera.p(center)
+            origin = SIMD2(size.x / 2 - c2.x * scale, size.y / 2 + c2.y * scale)
+        case .icon:
+            // Exercise.canvas_for(mode='icon') in Tools/ExerciseAnimations: the content box, its
+            // sides pulled in 2 cm, fitted with 6% to spare
+            camera = FigureCamera(yaw: rig.yaw, pitch: rig.pitch)
+            let box = rig.contentBox
+            let x0 = box.x + 2, x1 = box.z - 2
+            let side = max(x1 - x0, box.w - box.y) * 1.06
+            scale = min(size.x, size.y) / max(side, 1)
+            origin = SIMD2(size.x / 2 - (x0 + x1) / 2 * scale, size.y / 2 + (box.y + box.w) / 2 * scale)
+        }
+        let frame = FigureScene.build(rig: rig, pose: rig.pose(at: time), camera: camera, floor: framing != .icon)
+        var uniforms = Uniforms(origin: origin, scale: scale, primCount: UInt32(frame.prims.count))
 
+        let buffers = [fill(0, frame.prims, device), fill(1, frame.verts, device),
+                       fill(2, frame.overlays, device), fill(3, frame.aux, device)]
+        slot = (slot + 1) % Self.slotCount
         pass.colorAttachments[0].loadAction = .clear
         pass.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
-        guard let cmd = queue.makeCommandBuffer(), let enc = cmd.makeRenderCommandEncoder(descriptor: pass) else { return }
+        guard let enc = cmd.makeRenderCommandEncoder(descriptor: pass) else {
+            inFlight.signal()
+            return
+        }
         enc.setRenderPipelineState(pipeline)
         enc.setFragmentBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: 0)
-        enc.setFragmentBuffer(Self.buffer(frame.prims, device: device), offset: 0, index: 1)
-        enc.setFragmentBuffer(Self.buffer(frame.verts, device: device), offset: 0, index: 2)
-        enc.setFragmentBuffer(Self.buffer(frame.overlays, device: device), offset: 0, index: 3)
-        enc.setFragmentBuffer(Self.buffer(frame.aux, device: device), offset: 0, index: 4)
+        for (i, buffer) in buffers.enumerated() {
+            enc.setFragmentBuffer(buffer, offset: 0, index: i + 1)
+        }
         enc.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
         enc.endEncoding()
+        let semaphore = inFlight
+        cmd.addCompletedHandler { _ in semaphore.signal() }
         cmd.present(drawable)
         cmd.commit()
     }
 
-    private static func buffer<T>(_ array: [T], device: MTLDevice) -> MTLBuffer? {
+    /// The current slot's buffer `index`, grown when the frame needs more room, holding `array`.
+    private func fill<T>(_ index: Int, _ array: [T], _ device: MTLDevice) -> MTLBuffer? {
         array.withUnsafeBytes { raw in
-            guard let base = raw.baseAddress, raw.count > 0 else {
-                return device.makeBuffer(length: 16, options: .storageModeShared)
+            let length = max(raw.count, 16)
+            if (slots[slot][index]?.length ?? 0) < length {
+                slots[slot][index] = device.makeBuffer(length: max(length, 2 * (slots[slot][index]?.length ?? 0)),
+                                                       options: .storageModeShared)
             }
-            return device.makeBuffer(bytes: base, length: raw.count, options: .storageModeShared)
+            guard let buffer = slots[slot][index] else { return nil }
+            if let base = raw.baseAddress, raw.count > 0 {
+                buffer.contents().copyMemory(from: base, byteCount: raw.count)
+            }
+            return buffer
         }
     }
 }

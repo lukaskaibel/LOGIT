@@ -12,31 +12,31 @@ import Vortex
 
 // MARK: - Confetti
 
-/// One burst of confetti to fire: where from, in what colours, how big.
+/// One burst of confetti to fire: from what, in what colours.
 struct ConfettiBurst: Identifiable, Equatable {
     let id: Int
-    /// Global coordinates. Nil fires from the top third of the screen.
-    let origin: CGPoint?
+    /// The frame of the thing it leaves, in global coordinates — the pieces are born across all of
+    /// it, so the burst reads as coming out of that thing rather than out of a point near it. Nil
+    /// fires from the top third of the screen.
+    let origin: CGRect?
     let colors: [Color]
-    /// 1 is the full-screen fountain; the finish panel's per-record pops run at about a third.
-    var scale: Double = 1
 }
 
-/// Bursts of confetti fired from points on screen and left to fall out of the bottom of it.
+/// Small bursts of confetti fired out of things on screen, dissolving where they hang.
 ///
-/// **Earned, never routine.** The finish panel fires one from each personal record's pill, in that
-/// exercise's colour, as its number climbs — not for every finished workout, and not for the week.
+/// **Earned, never routine.** The finish panel fires one from each personal record's number, in that
+/// exercise's colour, as it climbs — not for every finished workout, and not for the week.
 /// A reward that arrives every time stops meaning anything, and one that arrives for something real
 /// keeps meaning it.
 ///
-/// **Physics.** A burst is a fountain, not a rain: pieces leave the thing they celebrate, fan out
-/// above it and drift down through everything below. Tuned offline against Vortex's own integration
-/// (at full scale ~97% of pieces stay on screen and the last leave the bottom edge after about
-/// 3.5 s): a stiff launch, heavy air drag, so the pieces stop rising quickly and then fall at a slow,
-/// fluttering terminal speed instead of accelerating like stones. Smaller bursts launch slower and
-/// with fewer pieces, so a record's pop stays around its own tile.
+/// **Small, and tied to its number.** A burst is a small fountain of pieces born across the number
+/// itself, not a screenful from somewhere near it: a screen-wide explosion read as the app losing
+/// it, and pieces raining down through the rows below no longer said which number they were for.
+/// Tuned offline against Vortex's own integration: the pieces rise about 100 pt in a narrow fan,
+/// turn over and fall back, shrinking to nothing over their 1.4 s life, so the burst dissolves
+/// around its number rather than falling out of the bottom of the screen.
 ///
-/// **Only while it's falling.** Vortex draws with a `TimelineView` that ticks as long as it is in the
+/// **Only while it's alive.** Vortex draws with a `TimelineView` that ticks as long as it is in the
 /// tree, particles or not, so each burst lives in its own view that is removed once its pieces are
 /// gone — no idle 120 Hz timeline behind the rest of the session.
 struct CelebrationConfetti: View {
@@ -47,9 +47,6 @@ struct CelebrationConfetti: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var mounted: [Mounted] = []
     @State private var seen: Set<Int> = []
-
-    /// How long a burst stays mounted: the system's lifespan plus a little, so nothing is cut off.
-    static let burstDuration: Duration = .seconds(5.2)
 
     private struct Mounted: Identifiable {
         let id: Int
@@ -70,18 +67,21 @@ struct CelebrationConfetti: View {
                 let frame = proxy.frame(in: .global)
                 for burst in bursts where !seen.contains(burst.id) {
                     seen.insert(burst.id)
-                    let point = burst.origin ?? CGPoint(x: frame.midX, y: frame.minY + frame.height * 0.3)
-                    let unit = SIMD2(
-                        Double((point.x - frame.minX) / max(frame.width, 1)),
-                        Double((point.y - frame.minY) / max(frame.height, 1))
+                    let origin = burst.origin
+                        ?? CGRect(x: frame.midX, y: frame.minY + frame.height * 0.3, width: 0, height: 0)
+                    let width = max(frame.width, 1)
+                    let height = max(frame.height, 1)
+                    let system = Self.system(
+                        at: SIMD2(Double((origin.midX - frame.minX) / width), Double((origin.midY - frame.minY) / height)),
+                        // Vortex's box spreads half its size each way, so this covers the number.
+                        across: SIMD2(Double(origin.width / width), Double(origin.height / height)),
+                        colors: resolve(burst.colors)
                     )
-                    mounted.append(Mounted(
-                        id: burst.id,
-                        system: Self.system(at: unit, colors: resolve(burst.colors), scale: burst.scale)
-                    ))
+                    mounted.append(Mounted(id: burst.id, system: system))
                     let id = burst.id
                     Task { @MainActor in
-                        try? await Task.sleep(for: Self.burstDuration)
+                        // The lifespan plus a little, so nothing is cut off.
+                        try? await Task.sleep(for: .seconds(system.lifespan + 0.4))
                         mounted.removeAll { $0.id == id }
                     }
                 }
@@ -124,39 +124,76 @@ struct CelebrationConfetti: View {
         }
     }
 
-    /// One burst, emitted over its first few frames: Vortex's `burst()` is only reachable through a
+    /// One burst, emitted over its first frames: Vortex's `burst()` is only reachable through a
     /// proxy that isn't wired up until after the first layout pass, so the system instead emits at a
-    /// rate it can only sustain for ~50 ms before `emissionLimit` stops it — which also reads more
-    /// like a real cannon than every piece leaving in the same frame.
-    static func system(at position: SIMD2<Double>, colors: [VortexSystem.Color], scale: Double = 1) -> VortexSystem {
-        // A small burst lives shorter: it has less height to fall through before it is out of the way.
-        let lifespan = 2.6 + 2.4 * scale
+    /// rate it can only sustain for ~10 ms before `emissionLimit` stops it.
+    static func system(at position: SIMD2<Double>, across size: SIMD2<Double>, colors: [VortexSystem.Color]) -> VortexSystem {
+        let lifespan = 1.4
         return VortexSystem(
             tags: ["strip", "strip", "square", "dot"],
             position: position,
-            // A puff rather than a point: born on one spot, the first frames drew a solid blob. A
-            // small burst keeps a floor on its spawn width for the same reason — a pill is wider
-            // than a third of the big burst's box.
-            shape: .box(width: max(0.14 * scale, 0.1), height: max(0.04 * scale, 0.02)),
-            birthRate: 3200,
-            emissionLimit: max(Int(170 * scale), 24),
+            shape: .box(width: size.x, height: size.y),
+            birthRate: 3000,
+            emissionLimit: 26,
             lifespan: lifespan,
-            // Launch speed falls with the square root of the scale, so a third-size burst still
-            // rises about a third of the way — height goes with speed squared.
-            speed: 1.3 * scale.squareRoot(),
-            speedVariation: 0.7 * scale.squareRoot(),
-            // Straight up, fanned 50° either side.
-            angleRange: .degrees(100),
-            // Gravity, in screen heights per second squared.
-            acceleration: [0, 1.2],
-            // Vortex scales damping by the lifespan: this is 3.8/s of drag, which caps the fall at
-            // ~0.32 screen heights per second — a drift, not a drop.
-            dampingFactor: 3.8 * lifespan,
+            // About 100 pt up before it turns over (screen heights per second).
+            speed: 0.9,
+            speedVariation: 0.5,
+            // Straight up, fanned 35° either side.
+            angleRange: .degrees(70),
+            acceleration: [0, 1.6],
+            // Vortex scales damping by the lifespan: this is 5/s of drag.
+            dampingFactor: 5 * lifespan,
             angularSpeedVariation: [9, 9, 7],
             colors: .random(colors),
-            size: 0.9 * (0.75 + 0.25 * scale),
-            sizeVariation: 0.5
+            size: 0.6,
+            sizeVariation: 0.3,
+            // Shrinks to nothing over its life: the burst dissolves instead of raining down.
+            sizeMultiplierAtDeath: 0
         )
+    }
+}
+
+// MARK: - Ripple
+
+/// A ring that runs out from a mark and fades each time `trigger` changes — the mark landing with a
+/// push. Laid behind the mark at its size (`.background { RippleRing(…) }`); invisible at rest.
+struct RippleRing<Style: ShapeStyle>: View {
+    let style: Style
+    let trigger: Int
+    var lineWidth: CGFloat = 2.5
+    /// How far it runs, as a multiple of the mark's size.
+    var reach: CGFloat = 2.1
+    /// Held back this long, so it can leave the mark as the mark reaches its full size.
+    var delay: Double = 0
+
+    private struct Wave {
+        var scale: CGFloat = 1
+        var opacity: Double = 0
+    }
+
+    var body: some View {
+        Circle()
+            .strokeBorder(style, lineWidth: lineWidth)
+            .keyframeAnimator(initialValue: Wave(), trigger: trigger) { ring, wave in
+                ring.scaleEffect(wave.scale).opacity(wave.opacity)
+            } keyframes: { _ in
+                KeyframeTrack(\.scale) {
+                    MoveKeyframe(1)
+                    LinearKeyframe(1, duration: max(delay, 0.001))
+                    SpringKeyframe(reach, duration: 0.45, spring: .smooth(duration: 0.45))
+                }
+                KeyframeTrack(\.opacity) {
+                    MoveKeyframe(0)
+                    LinearKeyframe(0, duration: max(delay, 0.001))
+                    MoveKeyframe(0.9)
+                    // Gone by the time it is out: a ring that stops and then fades reads as a circle
+                    // left behind, not as a wave.
+                    LinearKeyframe(0, duration: 0.32)
+                }
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 }
 

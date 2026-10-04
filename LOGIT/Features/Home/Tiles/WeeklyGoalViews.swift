@@ -37,8 +37,18 @@ struct WeeklyGoalStrip: View {
     /// letter stays accent-coloured either way). The goal screen marks today as *today*; the finish
     /// panel marks it as the day that just got its workout — the ring drawing in is the week moving.
     var showsTodaysWorkout: Bool = false
+    var style: Style = .rings
+
+    enum Style {
+        /// A muscle ring around the letter of each day with a workout — the calendar's own mark.
+        case rings
+        /// A filled dot under the letter of each day with a workout, its muscle colours pooling into
+        /// one another; a rest day is just its letter. Today's dot pops in when it gets its workout.
+        case dots
+    }
 
     @EnvironmentObject private var muscleGroupService: MuscleGroupService
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let calendar = Calendar.current
 
     var body: some View {
@@ -60,13 +70,25 @@ struct WeeklyGoalStrip: View {
         return (0 ..< 7).map { calendar.date(byAdding: .day, value: $0, to: start) ?? start }
     }
 
+    @ViewBuilder
     private func dayCircle(_ day: Date) -> some View {
+        switch style {
+        case .rings: dayRing(day)
+        case .dots: dayDot(day)
+        }
+    }
+
+    private func centerLabel(_ day: Date) -> String {
+        showsDate
+            ? "\(calendar.component(.day, from: day))"
+            : day.formatted(.dateTime.weekday(.narrow))
+    }
+
+    private func dayRing(_ day: Date) -> some View {
         let isToday = calendar.isDateInToday(day)
         let occurrences = muscleGroupService.getMuscleGroupOccurances(in: dayWorkouts(on: day))
         let hasWorkout = !occurrences.isEmpty
-        let centerLabel = showsDate
-            ? "\(calendar.component(.day, from: day))"
-            : day.formatted(.dateTime.weekday(.narrow))
+        let centerLabel = centerLabel(day)
         return ZStack {
             if isToday && !(showsTodaysWorkout && hasWorkout) {
                 Circle()
@@ -83,6 +105,36 @@ struct WeeklyGoalStrip: View {
             Text(centerLabel)
                 .font(.system(size: 13, weight: (isToday || hasWorkout) ? .bold : .semibold))
                 .foregroundStyle(isToday ? Color.accentColor : (hasWorkout ? Color.primary : Color.secondaryLabel))
+        }
+        .frame(width: 34, height: 34)
+        .frame(maxWidth: .infinity)
+    }
+
+    private func dayDot(_ day: Date) -> some View {
+        let isToday = calendar.isDateInToday(day)
+        let workouts = dayWorkouts(on: day)
+        let occurrences = muscleGroupService.getMuscleGroupOccurances(in: workouts)
+        let hasWorkout = !occurrences.isEmpty
+        let pops = isToday && showsTodaysWorkout && !reduceMotion
+        return ZStack {
+            if hasWorkout {
+                MuscleColorDot(occurrences: occurrences)
+                    .frame(width: 30, height: 30)
+                    .modifier(DotPop(isEnabled: pops, workoutCount: workouts.count, colors: occurrences.map { $0.0.color }))
+                    .accessibilityHidden(true)
+                    // Today's dot, arriving: it springs up from a speck, past its size and back.
+                    .transition(
+                        pops
+                            ? AnyTransition.scale(scale: 0.1).combined(with: .opacity)
+                                .animation(.spring(duration: 0.42, bounce: 0.5))
+                            : .identity
+                    )
+            }
+            Text(centerLabel(day))
+                .font(.system(size: 13, weight: (isToday || hasWorkout) ? .bold : .semibold))
+                // Dark on a dot — every muscle colour is a light pastel — and the accent marks today
+                // only while it has no dot to sit on.
+                .foregroundStyle(hasWorkout ? Color.black.opacity(0.8) : (isToday ? Color.accentColor : Color.secondaryLabel))
         }
         .frame(width: 34, height: 34)
         .frame(maxWidth: .infinity)
@@ -152,6 +204,100 @@ private struct RingDrawIn: ViewModifier {
             .onAppear {
                 guard isEnabled else { return }
                 withAnimation(.easeOut(duration: 0.6)) { drawn = true }
+            }
+    }
+}
+
+/// A day's dot: filled with the day's muscle colours the way the screens' `ColorfulView` washes are —
+/// each colour welling up from its own side and pooling into the next, not a linear blend — with a
+/// lighter and a darker shade mixed in, so a one-group day still has depth.
+///
+/// Soft radial pools over a base rather than a `MeshGradient`: the first mesh drawn in a session
+/// stalled the main thread for ~450 ms (measured on the finish panel, where that first draw is the
+/// moment the week moves), and at this size the pools read the same.
+struct MuscleColorDot: View {
+    let occurrences: [(MuscleGroup, Int)]
+
+    /// Where the pools well up: the corners across the diagonals first, so two groups land on
+    /// opposite sides rather than side by side, then one just off the middle.
+    private static let centers: [UnitPoint] = [
+        UnitPoint(x: 0.1, y: 0.1), UnitPoint(x: 0.9, y: 0.9), UnitPoint(x: 0.92, y: 0.12),
+        UnitPoint(x: 0.1, y: 0.9), UnitPoint(x: 0.55, y: 0.45),
+    ]
+    /// Each pool's shade — towards white when positive, towards black when negative.
+    private static let shades: [Double] = [0.3, -0.15, 0.05, 0.15, 0.12]
+
+    var body: some View {
+        let colors = poolColors
+        ZStack {
+            colors[0].mix(with: colors[1], by: 0.5)
+            ForEach(colors.indices, id: \.self) { index in
+                EllipticalGradient(
+                    colors: [colors[index], colors[index].opacity(0)],
+                    center: Self.centers[index],
+                    startRadiusFraction: 0,
+                    endRadiusFraction: index == Self.centers.count - 1 ? 0.4 : 0.6
+                )
+            }
+        }
+        .clipShape(Circle())
+    }
+
+    /// The pools' colours, shared out by the groups' set counts: each pool goes to the group
+    /// furthest behind its share, so the bigger group takes more of the dot and none is left out.
+    private var poolColors: [Color] {
+        guard !occurrences.isEmpty else { return Array(repeating: Color.fill, count: Self.centers.count) }
+        let total = Double(max(occurrences.reduce(0) { $0 + $1.1 }, 1))
+        var dealt = Array(repeating: 0, count: occurrences.count)
+        return Self.centers.indices.map { turn in
+            func lag(_ index: Int) -> Double {
+                Double(occurrences[index].1) / total * Double(turn + 1) - Double(dealt[index])
+            }
+            let index = occurrences.indices.max { lag($0) < lag($1) } ?? 0
+            dealt[index] += 1
+            let base = occurrences[index].0.color
+            let shade = Self.shades[turn]
+            return shade >= 0 ? base.mix(with: .white, by: shade) : base.mix(with: .black, by: -shade)
+        }
+    }
+}
+
+/// Today's dot, landing with a push: a ripple in its own colours runs out from it as it arrives, and
+/// a dot that was already there — a second workout today — punches up once before the ripple.
+private struct DotPop: ViewModifier {
+    let isEnabled: Bool
+    let workoutCount: Int
+    let colors: [Color]
+
+    @State private var ripples = 0
+    @State private var punches = 0
+
+    func body(content: Content) -> some View {
+        content
+            .keyframeAnimator(initialValue: 1.0, trigger: punches) { content, scale in
+                content.scaleEffect(scale)
+            } keyframes: { _ in
+                SpringKeyframe(1.22, duration: 0.14, spring: .snappy)
+                SpringKeyframe(1.0, duration: 0.45, spring: .bouncy)
+            }
+            .background {
+                if isEnabled {
+                    // Leaves the dot as the dot reaches its full size.
+                    RippleRing(
+                        style: AngularGradient(colors: colors + colors.prefix(1), center: .center),
+                        trigger: ripples,
+                        delay: 0.1
+                    )
+                }
+            }
+            .onAppear {
+                guard isEnabled else { return }
+                ripples += 1
+            }
+            .onChange(of: workoutCount) { old, new in
+                guard isEnabled, new > old else { return }
+                punches += 1
+                ripples += 1
             }
     }
 }

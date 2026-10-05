@@ -1537,6 +1537,24 @@ final class ScenarioScreenshots: XCTestCase {
         let tile = app.buttons["effortTile"].firstMatch
         XCTAssertTrue(tile.waitForExistence(timeout: 30), "Effort tile missing on the workout detail")
         waitABit(2)
+
+        // The deep link opens the preview arm day, which the marketing dataset rates (the App
+        // Store detail shot shows it). Take that rating back the only way the UI offers — Skip at
+        // the bottom of the description list — so the flow below starts from an unrated workout.
+        XCTAssertNotEqual(tile.label, "Add Effort", "The preview arm day should arrive rated")
+        attach(app, "effort_00_detail_tile_seeded")
+        tile.tap()
+        let seededInfo = app.buttons["effortDescriptionsButton"].firstMatch
+        XCTAssertTrue(seededInfo.waitForExistence(timeout: 5), "Info button missing on the rated capsule")
+        seededInfo.tap()
+        let skip = app.buttons["effortSkip"].firstMatch
+        XCTAssertTrue(skip.waitForExistence(timeout: 5), "Skip missing from the description list")
+        for _ in 0 ..< 6 where !skip.isHittable {
+            app.swipeUp()
+        }
+        skip.tap()
+        waitABit(2)
+
         // Unrated, the tile is an invitation rather than a hidden row.
         XCTAssertEqual(tile.label, "Add Effort", "Unrated tile should offer Add Effort")
         attach(app, "effort_01_detail_tile_unrated")

@@ -17,6 +17,7 @@ struct ExerciseDetailScreen: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject var database: Database
+    @ScaledMetric(relativeTo: .largeTitle) private var headerAnimationSize: CGFloat = 96
 
     // MARK: - State
 
@@ -472,16 +473,38 @@ struct ExerciseDetailScreen: View {
         .buttonStyle(TileButtonStyle())
     }
 
+    /// Title and muscle group, with a built-in exercise performed by the app's figure to their
+    /// right. The title gets a third line (and may shrink a little) because the figure narrows its
+    /// column; at accessibility sizes the figure moves below the text instead. Tapping the figure
+    /// opens the Instructions sheet, as the info button does, where the same figure turns in 3D.
     private var header: some View {
-        VStack(alignment: .leading) {
-            Text(exercise.displayName)
-                .screenHeaderStyle()
-                .lineLimit(2)
-            Text(exercise.muscleGroup?.description.capitalized ?? "")
-                .screenHeaderSecondaryStyle()
-                .foregroundStyle((exercise.muscleGroup?.color ?? .clear).gradient)
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
+        return layout {
+            VStack(alignment: .leading) {
+                Text(exercise.displayName)
+                    .screenHeaderStyle()
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.8)
+                Text(exercise.muscleGroup?.description.capitalized ?? "")
+                    .screenHeaderSecondaryStyle()
+                    .foregroundStyle((exercise.muscleGroup?.color ?? .clear).gradient)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            if ExerciseAnimationLibrary.hasAnimation(for: exercise) {
+                Button {
+                    isShowingInstructions = true
+                } label: {
+                    ExerciseAnimationView(exercise: exercise)
+                        .frame(width: headerAnimationSize, height: headerAnimationSize)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(TileButtonStyle())
+                .accessibilityLabel(Text(NSLocalizedString("instructions", comment: "")))
+                .accessibilityIdentifier("exerciseHeaderFigure")
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
 }
@@ -522,6 +545,14 @@ struct ExerciseInstructionsSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
+                    // the exercise in 3D above its steps: drag to look at it from any side
+                    if ExerciseFigure3DView.has(exercise) {
+                        ExerciseFigure3DView(exercise: exercise)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 280)
+                            .padding(.top, 4)
+                            .padding(.bottom, 8)
+                    }
                     if let instructions = exercise.instructions, !instructions.isEmpty {
                         ForEach(Array(instructions.enumerated()), id: \.offset) { index, instruction in
                             HStack(alignment: .top, spacing: 16) {

@@ -1,5 +1,5 @@
 {
- "version": 9,
+ "version": 10,
  "exercises": [
   {
    "id": "default_001",
@@ -6903,7 +6903,7 @@
    "nameKey": "_default.exercise.dumbbellPullover",
    "muscleGroup": "chest",
    "instructions": [
-    "Lie on a flat bench with only your upper back supported and feet flat on the floor.",
+    "Lie along a flat bench with your head at one end and your feet flat on the floor.",
     "Hold a single dumbbell with both hands above your chest, arms extended.",
     "Lower the weight in an arc behind your head while keeping a slight bend in your elbows.",
     "Feel a stretch through your chest and lats at the bottom.",
@@ -6912,7 +6912,7 @@
    ],
    "localizedInstructions": {
     "de": [
-     "Legen Sie sich auf eine flache Bank, stützen Sie nur Ihren oberen Rücken ab und stellen Sie die Füße flach auf den Boden.",
+     "Legen Sie sich längs auf eine flache Bank, den Kopf an einem Ende, und stellen Sie die Füße flach auf den Boden.",
      "Halten Sie eine einzelne Hantel mit beiden Händen über Ihrer Brust und strecken Sie die Arme aus.",
      "Senken Sie das Gewicht in einem Bogen hinter Ihren Kopf, während Sie die Ellbogen leicht beugen.",
      "Spüren Sie eine Dehnung durch Ihre Brust und Ihren Latissimus unten.",
@@ -6920,7 +6920,7 @@
      "Halten Sie Ihre Hüften die ganze Zeit über stabil und den Rumpf angespannt."
     ],
     "es": [
-     "Acuéstese en un banco plano con solo la parte superior de la espalda apoyada y los pies apoyados en el suelo.",
+     "Acuéstese a lo largo de un banco plano con la cabeza en un extremo y los pies apoyados en el suelo.",
      "Sostenga una sola mancuerna con ambas manos sobre el pecho y con los brazos extendidos.",
      "Baje el peso formando un arco detrás de la cabeza mientras mantiene una ligera flexión de los codos.",
      "Siente un estiramiento a través de tu pecho y dorsales en la parte inferior.",
@@ -6928,7 +6928,7 @@
      "Mantenga las caderas estables y el núcleo comprometido en todo momento."
     ],
     "fr": [
-     "Allongez-vous sur un banc plat avec seulement le haut du dos soutenu et les pieds à plat sur le sol.",
+     "Allongez-vous dans la longueur d'un banc plat, la tête à une extrémité et les pieds à plat sur le sol.",
      "Tenez un seul haltère avec les deux mains au-dessus de votre poitrine, les bras tendus.",
      "Abaissez le poids en arc de cercle derrière votre tête tout en gardant les coudes légèrement pliés.",
      "Sentez un étirement dans votre poitrine et vos dorsaux en bas.",
@@ -6936,7 +6936,7 @@
      "Gardez vos hanches stables et votre tronc engagé tout au long."
     ],
     "pt-BR": [
-     "Deite-se em um banco plano com apenas a parte superior das costas apoiada e os pés apoiados no chão.",
+     "Deite-se ao longo de um banco plano com a cabeça em uma das extremidades e os pés apoiados no chão.",
      "Segure um único haltere com as duas mãos acima do peito e os braços estendidos.",
      "Abaixe o peso em um arco atrás da cabeça, mantendo uma ligeira flexão nos cotovelos.",
      "Sinta um alongamento no peito e na parte inferior.",
@@ -6944,7 +6944,7 @@
      "Mantenha os quadris estáveis ​​e o núcleo engajado o tempo todo."
     ],
     "ja": [
-     "平らなベンチに横になり、背中上部のみを支え、足を床に平らに置きます。",
+     "平らなベンチに縦向きに仰向けになり、頭をベンチの一端に置き、足を床に平らに置きます。",
      "1 つのダンベルを両手で胸の上に持ち、腕を伸ばします。",
      "肘を軽く曲げたまま、頭の後ろで弧を描くようにウェイトを下げます。",
      "胸と広背筋の下部が伸びているのを感じてください。",
@@ -6952,7 +6952,7 @@
      "腰を安定させ、体幹を全体的に引き締めてください。"
     ],
     "ko": [
-     "등 위쪽만 지지하고 발을 바닥에 편평하게 대고 플랫 벤치에 눕습니다.",
+     "플랫 벤치에 길게 누워 머리를 벤치 한쪽 끝에 두고 발을 바닥에 편평하게 댑니다.",
      "양손으로 가슴 위에 덤벨 하나를 들고 팔을 쭉 뻗습니다.",
      "팔꿈치를 약간 구부린 상태에서 머리 뒤로 호를 그리며 무게를 낮추십시오.",
      "가슴과 광배근이 스트레칭되는 것을 느껴보세요.",
@@ -6960,7 +6960,7 @@
      "엉덩이를 안정적으로 유지하고 코어를 전체적으로 유지하십시오."
     ],
     "it": [
-     "Sdraiati su una panca piana con solo la parte superiore della schiena supportata e i piedi appoggiati sul pavimento.",
+     "Sdraiati lungo una panca piana con la testa a un'estremità e i piedi appoggiati sul pavimento.",
      "Tieni un singolo manubrio con entrambe le mani sopra il petto, le braccia tese.",
      "Abbassa il peso descrivendo un arco dietro la testa mantenendo una leggera piegatura dei gomiti.",
      "Senti un allungamento attraverso il petto e i dorsali nella parte inferiore.",

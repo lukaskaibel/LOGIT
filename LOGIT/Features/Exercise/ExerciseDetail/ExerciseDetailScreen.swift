@@ -475,7 +475,8 @@ struct ExerciseDetailScreen: View {
 
     /// Title and muscle group, with a built-in exercise performed by the app's figure to their
     /// right. The title gets a third line (and may shrink a little) because the figure narrows its
-    /// column; at accessibility sizes the figure moves below the text instead.
+    /// column; at accessibility sizes the figure moves below the text instead. Tapping the figure
+    /// opens the Instructions sheet, as the info button does, where the same figure turns in 3D.
     private var header: some View {
         let layout = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
@@ -492,8 +493,16 @@ struct ExerciseDetailScreen: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             if ExerciseAnimationLibrary.hasAnimation(for: exercise) {
-                ExerciseAnimationView(exercise: exercise)
-                    .frame(width: headerAnimationSize, height: headerAnimationSize)
+                Button {
+                    isShowingInstructions = true
+                } label: {
+                    ExerciseAnimationView(exercise: exercise)
+                        .frame(width: headerAnimationSize, height: headerAnimationSize)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(TileButtonStyle())
+                .accessibilityLabel(Text(NSLocalizedString("instructions", comment: "")))
+                .accessibilityIdentifier("exerciseHeaderFigure")
             }
         }
     }

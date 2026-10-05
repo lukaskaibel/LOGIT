@@ -396,14 +396,15 @@ struct StrengthScreen: View {
         return progress.bests.filter { $0.muscleGroup == selectedGroup }
     }
 
-    /// The exercise-cell anatomy — name over its muscle group in the group's colour — with the value
-    /// trailing. The colour lives in the muscle-group line the way it does everywhere else in the
-    /// app, so the row needs no separate dot to carry identity.
+    /// The exercise-cell anatomy — the exercise's looping figure, then its name over its muscle group
+    /// in the group's colour — with the value trailing. The colour lives in the muscle-group line the
+    /// way it does everywhere else in the app, so the row needs no separate dot to carry identity.
     ///
     /// Each row states "Strength" itself: the section header says which lifts these are, not what the
     /// number is, and a column of bare weights beside exercise names reads as *lifted* weight.
     private func bestRow(_ best: StrengthProgress.ExerciseBest) -> some View {
         HStack(alignment: .center, spacing: 12) {
+            ExerciseAnimationIcon(exercise: best.exercise)
             VStack(alignment: .leading, spacing: 0) {
                 Text(best.exercise.displayName)
                     .font(.body.weight(.bold))

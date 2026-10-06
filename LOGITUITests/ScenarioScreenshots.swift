@@ -2549,6 +2549,11 @@ final class ScenarioScreenshots: XCTestCase {
         }
         let before = setCount()
         XCTAssertNotNil(before, "No set count in the header")
+        // The stress recorder is still busy for a few seconds after it appears. A swipe made then
+        // reaches the row late, its pan gives up on what looks like a resting finger (it steps
+        // aside for the context menu after 0.2 s), and the row never opens. Swiping about 2 s in
+        // failed in the nightly run and locally; about 7 s in, the same swipe opens the row.
+        waitABit(5)
         attach(app, "swipe_01_before")
 
         // A partial swipe leaves the row open on its Delete capsule.

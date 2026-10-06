@@ -117,11 +117,17 @@ final class LOGITScreenshots: XCTestCase {
         snapshot("06_Streak")
     }
 
-    /// A single exercise's progress: metric tiles, chart and personal records.
-    func test07ExerciseDetail() {
-        launch(["-UITEST_DEEPLINK", "exerciseDetail"])
+    /// An exercise in 3D: the bench press's Instructions sheet, its figure turned to a three-quarter
+    /// view from above over the first steps, the exercise's detail behind it.
+    func test07ExerciseIn3D() {
+        launch(["-UITEST_DEEPLINK", "exerciseIn3D"])
         waitForPushedScreen()
-        snapshot("07_ExerciseDetail")
+        XCTAssertTrue(
+            app.descendants(matching: .any)["exerciseFigure3D"].firstMatch.waitForExistence(timeout: 10),
+            "The Instructions sheet with the 3D figure never opened"
+        )
+        waitABit(2)
+        snapshot("07_ExerciseIn3D")
     }
 
     /// Lock Screen composition of the real Live Activity: the rest timer and a set being logged.

@@ -5,6 +5,7 @@ Treine com um plano, registre cada série em segundos e veja seu progresso real 
 Registre e planeje
 · Registre treinos rapidamente e mantenha a consistência
 · Crie sua própria biblioteca de exercícios
+· Veja como se fazem os 208 exercícios integrados, com figuras animadas que você pode girar em 3D
 · Salve modelos — ou comece com modelos prontos
 · Registre supersets e drop sets para superar seus limites
 · Registre peso, repetições, duração ou distância, conforme o exercício

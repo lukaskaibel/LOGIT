@@ -1,30 +1,13 @@
-LOGIT 5.2 changes how a workout ends, gives your training a focus, and adds more ways to log what you do.
+LOGIT 5.3 shows you how every exercise is done, now in 3D, and makes the recorder fast.
 
-A new recorder
-The workout header is now a sheet that floats over your sets. Pull it down for Minimize and Finish, and further for your stats and a note. Pulling the whole recorder down now follows your finger, so a quick swipe never minimizes it by accident.
+See every exercise
+All 208 built-in exercises are now performed by an animated figure, with the muscles they work highlighted. You'll see it in the exercise list, when you add an exercise to a workout, on Overall Strength and on every exercise's page. Tap it there to open the instructions, then turn the figure to see the movement from any side.
 
-Finish strong
-Finishing a workout shows what it achieved: your weekly goal filling up, then your new personal records and improvements. Rate your effort on the same scale as Apple Fitness (the rating goes to Apple Health too) and add a note to remember the session.
+A faster recorder
+The recorder no longer stalls after a tap. Closing a sheet, opening the exercise list, adding an exercise and deleting a set are now several times faster, even with years of history.
 
-Training Focus
-Muscle balance targets are now sets per week for each muscle group. Pick a focus, such as Full Body, Upper Body, Lower Body, Arms & Shoulders or Cardio, and LOGIT sizes the targets to your week. The Summary names the groups you're behind on, and tapping a bar shows its target and the exercises behind it.
-
-More ways to log
-Assisted sets, time goals that aim longer or faster, and durations typed as 32:15 instead of 1935. Choose the time format per exercise.
-
-Apple Health
-Body fat now syncs both ways with Health, and adding your height in Settings gives you your BMI.
-
-On your Lock Screen
-The Live Activity now looks like the recorder: the set you're logging, or your rest timer, and nothing else.
-
-More in 5.2
-· Search understands dates: try a month, a weekday or "last week"
-· Clearer explanations on every metric screen, and e1RM is now called Strength
-· Drop sets now sync across your devices with iCloud
-· Exercises and templates that iCloud duplicated are merged back into one, keeping every set
-· Cancel now really discards a workout
-· A floating keyboard bar with Next
-· Fixes for a crash in History and for tab icons that stayed tinted
+More in 5.3
+· The end of a workout arrives in one smooth movement, and new records count up to their best
+· Press and hold anywhere on a set to open its menu
 
 Thanks for training with LOGIT. Keep it up!

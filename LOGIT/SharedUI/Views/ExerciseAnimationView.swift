@@ -26,7 +26,8 @@ struct ExerciseAnimationView: View {
                 .aspectRatio(1, contentMode: .fit)
                 .overlay {
                     if isOnScreen, let rig = ExerciseRig.named(key) {
-                        FigureMetalView(rig: rig, framing: .icon, playing: !reduceMotion)
+                        // screenshots hold the loop's first frame, so every locale captures the same pose
+                        FigureMetalView(rig: rig, framing: .icon, playing: !reduceMotion && !ScreenshotFixtures.isEnabled)
                     }
                 }
                 .onScrollVisibilityChange(threshold: 0.01) { isOnScreen = $0 }

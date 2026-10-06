@@ -1,1 +1,1 @@
-LOGIT 5.2 : un enregistreur qui flotte sur tes séries, effort et notes à chaque séance, une Orientation qui montre où tu es en retard, et plus de façons d'enregistrer.
+LOGIT 5.3 : chaque exercice intégré réalisé par une silhouette animée que tu peux faire pivoter en 3D, et un enregistreur qui répond sans attendre.

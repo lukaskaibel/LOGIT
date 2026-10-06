@@ -14,13 +14,16 @@ struct ExerciseFigure3DView: View {
     let exercise: Exercise?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var yawOffset: Float = 0
-    @State private var pitch: Float = 8
+    // App Store shot 07 starts on a three-quarter view from above, to show it's 3D
+    @State private var yawOffset: Float = ScreenshotFixtures.opensExerciseIn3D ? 45 : 0
+    @State private var pitch: Float = ScreenshotFixtures.opensExerciseIn3D ? 22 : 8
     @State private var dragStart: (yaw: Float, pitch: Float)?
 
     var body: some View {
         if let key = ExerciseAnimationLibrary.key(for: exercise), let rig = ExerciseRig.named(key) {
-            FigureMetalView(rig: rig, framing: .orbit(yaw: rig.yaw + yawOffset, pitch: pitch), playing: !reduceMotion)
+            // screenshots hold the loop's first frame, so every locale captures the same pose
+            FigureMetalView(rig: rig, framing: .orbit(yaw: rig.yaw + yawOffset, pitch: pitch),
+                            playing: !reduceMotion && !ScreenshotFixtures.isEnabled)
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 2)

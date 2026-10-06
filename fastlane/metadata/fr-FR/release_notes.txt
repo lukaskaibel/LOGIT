@@ -1,30 +1,13 @@
-LOGIT 5.2 change la façon dont une séance se termine, donne une orientation à ton entraînement et ajoute de nouvelles façons d'enregistrer ce que tu fais.
+LOGIT 5.3 te montre comment se fait chaque exercice, désormais en 3D, et rend l'enregistreur rapide.
 
-Un nouvel enregistreur
-L'en-tête de la séance est désormais une feuille qui flotte au-dessus de tes séries. Tire-la vers le bas pour Réduire et Terminer, et encore plus bas pour tes statistiques et une note. Quand tu tires l'enregistreur entier vers le bas, il suit maintenant ton doigt : un geste rapide ne le réduit plus par erreur.
+Vois chaque exercice
+Les 208 exercices intégrés sont désormais réalisés par une silhouette animée, avec les muscles sollicités mis en évidence. Tu la vois dans la liste des exercices, quand tu ajoutes un exercice à une séance, dans Force globale et sur la page de chaque exercice. Touche-la pour ouvrir les instructions, puis fais pivoter la silhouette pour voir le mouvement sous tous les angles.
 
-Finir en beauté
-Quand tu termines une séance, tu vois ce qu'elle a apporté : ton objectif hebdomadaire qui se remplit, puis tes nouveaux records personnels et tes progrès. Évalue ton effort sur la même échelle qu'Apple Fitness (l'évaluation est aussi envoyée à Apple Santé) et ajoute une note pour te souvenir de la séance.
+Un enregistreur plus rapide
+L'enregistreur ne se fige plus après chaque toucher. Fermer une feuille, ouvrir la liste des exercices, ajouter un exercice et supprimer une série est désormais plusieurs fois plus rapide, même avec des années d'historique.
 
-Orientation de l'entraînement
-Les objectifs d'équilibre musculaire sont désormais des séries par semaine pour chaque groupe musculaire. Choisis une orientation, comme Corps entier, Haut du corps, Bas du corps, Bras et épaules ou Cardio, et LOGIT dimensionne les objectifs selon ta semaine. Le Résumé indique les groupes sur lesquels tu es en retard, et toucher une barre affiche son objectif et les exercices qui y contribuent.
-
-Plus de façons d'enregistrer
-Séries assistées, objectifs de temps pour tenir plus longtemps ou aller plus vite, et durées saisies en 32:15 au lieu de 1935. Choisis le format de temps pour chaque exercice.
-
-Apple Santé
-La graisse corporelle se synchronise désormais dans les deux sens avec Santé, et ta taille dans les Réglages te donne ton IMC.
-
-Sur ton écran verrouillé
-L'Activité en direct ressemble désormais à l'enregistreur : la série que tu enregistres, ou ton repos, et rien d'autre.
-
-Aussi dans la 5.2
-· La recherche comprend les dates : essaie un mois, un jour de la semaine ou « la semaine dernière »
-· Des explications plus claires sur chaque écran de mesure, et l'e1RM s'appelle désormais Force
-· Les séries dégressives se synchronisent désormais entre tes appareils avec iCloud
-· Les exercices et modèles dupliqués par iCloud sont de nouveau réunis en un seul, sans perdre aucune série
-· Annuler supprime désormais vraiment une séance
-· Une barre de clavier flottante avec Suivant
-· Corrections d'un plantage dans l'Historique et d'icônes d'onglets qui restaient colorées
+Aussi dans la 5.3
+· La fin d'une séance arrive en un seul mouvement fluide, et les nouveaux records montent jusqu'à leur meilleure valeur
+· Appuie longuement n'importe où sur une série pour ouvrir son menu
 
 Merci de t'entraîner avec LOGIT. Continue comme ça !

@@ -545,11 +545,13 @@ struct ExerciseInstructionsSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    // the exercise in 3D above its steps: drag to look at it from any side
+                    // the exercise in 3D above its steps: drag to look at it from any side. At most
+                    // 280 pt, and short enough that the first step still shows below it in the
+                    // half-height sheet (on an iPhone SE the figure alone would fill it)
                     if ExerciseFigure3DView.has(exercise) {
                         ExerciseFigure3DView(exercise: exercise)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 280)
+                            .containerRelativeFrame(.vertical) { length, _ in min(280, max(160, length - 84)) }
                             .padding(.top, 4)
                             .padding(.bottom, 8)
                     }

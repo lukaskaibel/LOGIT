@@ -1,30 +1,13 @@
-LOGIT 5.2 verändert, wie ein Workout endet, gibt deinem Training einen Fokus und bringt neue Arten, dein Training aufzuzeichnen.
+LOGIT 5.3 zeigt dir, wie jede Übung geht – jetzt in 3D – und macht den Recorder schnell.
 
-Ein neuer Recorder
-Der Workout-Header ist jetzt ein Sheet, das über deinen Sätzen schwebt. Zieh ihn herunter für Minimieren und Beenden, weiter für deine Statistiken und eine Notiz. Wenn du den ganzen Recorder herunterziehst, folgt er jetzt deinem Finger – ein kurzes Wischen minimiert ihn nicht mehr aus Versehen.
+Jede Übung sehen
+Alle 208 eingebauten Übungen werden jetzt von einer animierten Figur vorgemacht, die beanspruchten Muskeln hervorgehoben. Du siehst sie in der Übungsliste, wenn du einem Workout eine Übung hinzufügst, in der Gesamtkraft und auf der Seite jeder Übung. Tippe dort darauf, um die Anleitung zu öffnen, und dreh die Figur, um die Bewegung von jeder Seite zu sehen.
 
-Stark abschließen
-Beim Beenden siehst du, was das Workout gebracht hat: dein Wochenziel, das sich füllt, dann deine neuen persönlichen Rekorde und Verbesserungen. Bewerte deine Anstrengung auf derselben Skala wie Apple Fitness (die Bewertung landet auch in Apple Health) und halte die Einheit mit einer Notiz fest.
+Ein schnellerer Recorder
+Der Recorder stockt nach einem Tippen nicht mehr. Ein Sheet schließen, die Übungsliste öffnen, eine Übung hinzufügen und einen Satz löschen geht jetzt um ein Vielfaches schneller, auch mit jahrelangem Verlauf.
 
-Trainingsfokus
-Die Ziele der Muskel-Balance sind jetzt Sätze pro Woche für jede Muskelgruppe. Wähle einen Fokus wie Ganzkörper, Oberkörper, Unterkörper, Arme & Schultern oder Cardio, und LOGIT passt die Ziele an deine Woche an. Die Übersicht nennt die Gruppen, bei denen du im Rückstand bist, und ein Tipp auf einen Balken zeigt sein Ziel und die Übungen dahinter.
-
-Neue Arten aufzuzeichnen
-Assistierte Sätze, Zeitziele für länger oder schneller und Zeiten, die du als 32:15 statt 1935 eingibst. Das Zeitformat wählst du pro Übung.
-
-Apple Health
-Körperfett synchronisiert jetzt in beide Richtungen mit Health, und mit deiner Körpergröße in den Einstellungen bekommst du deinen BMI.
-
-Auf deinem Sperrbildschirm
-Die Live-Aktivität sieht jetzt aus wie der Recorder: der Satz, den du gerade aufzeichnest, oder deine Pause – sonst nichts.
-
-Mehr in 5.2
-· Die Suche versteht Datumsangaben: probier einen Monat, einen Wochentag oder „letzte Woche“
-· Verständlichere Erklärungen auf allen Metrik-Screens, und e1RM heißt jetzt Kraft
-· Drop-Sets synchronisieren jetzt per iCloud zwischen deinen Geräten
-· Übungen und Vorlagen, die iCloud doppelt angelegt hat, werden wieder zu einer zusammengeführt – jeder Satz bleibt erhalten
-· Abbrechen verwirft ein Workout jetzt wirklich
-· Eine schwebende Tastaturleiste mit Weiter
-· Behoben: ein Absturz im Verlauf und Tab-Symbole, die eingefärbt blieben
+Mehr in 5.3
+· Das Ende eines Workouts erscheint in einer einzigen flüssigen Bewegung, und neue Rekorde zählen bis zu ihrem Bestwert hoch
+· Halte einen Satz an beliebiger Stelle gedrückt, um sein Menü zu öffnen
 
 Danke, dass du mit LOGIT trainierst. Bleib dran!

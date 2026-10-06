@@ -194,6 +194,12 @@ struct ExerciseDetailScreen: View {
             .sheet(isPresented: $isShowingInstructions) {
                 ExerciseInstructionsSheet(exercise: exercise)
             }
+            .task {
+                // App Store shot 07: once pushed, open the sheet with the figure in 3D
+                guard ScreenshotFixtures.opensExerciseIn3D else { return }
+                try? await Task.sleep(for: .seconds(1))
+                isShowingInstructions = true
+            }
             .sheet(isPresented: $isShowingMergingSheet) {
                 ExerciseMergingSheet(exercise: exercise) { targetExercise in
                     if targetExercise != exercise {

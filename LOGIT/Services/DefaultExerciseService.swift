@@ -102,6 +102,17 @@ class DefaultExerciseService: ObservableObject {
         libraryIDsByNameKey[nameKey]
     }
 
+    /// The bundled library's steps for the exercise stored under this `_default.` name key, in the
+    /// app's language — for the screenshot fixtures, whose exercises aren't the library's own.
+    static func libraryInstructions(forNameKey nameKey: String) -> [String]? {
+        guard let url = Bundle.main.url(forResource: "default_exercises", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let library = try? JSONDecoder().decode(DefaultExerciseData.self, from: data)
+        else { return nil }
+        let locale = Bundle.main.preferredLocalizations.first ?? Locale.current.identifier
+        return library.exercises.first { $0.nameKey == nameKey }?.instructions(for: locale)
+    }
+
     private static let libraryIDsByNameKey: [String: UUID] = {
         guard let url = Bundle.main.url(forResource: "default_exercises", withExtension: "json"),
               let data = try? Data(contentsOf: url),

@@ -1,30 +1,13 @@
-LOGIT 5.2 cambia cómo termina un entrenamiento, da un enfoque a tu entrenamiento y añade más formas de registrar lo que haces.
+LOGIT 5.3 te enseña cómo se hace cada ejercicio, ahora en 3D, y hace que el grabador vaya rápido.
 
-Un grabador nuevo
-La cabecera del entrenamiento es ahora una hoja que flota sobre tus series. Deslízala hacia abajo para Minimizar y Finalizar, y un poco más para ver tus estadísticas y una nota. Al bajar el grabador entero, ahora sigue a tu dedo, así que un gesto rápido ya no lo minimiza sin querer.
+Mira cada ejercicio
+Ahora una figura animada realiza los 208 ejercicios integrados, con los músculos que trabajan resaltados. La verás en la lista de ejercicios, al añadir un ejercicio a un entrenamiento, en Fuerza general y en la página de cada ejercicio. Tócala ahí para abrir las instrucciones y gira la figura para ver el movimiento desde cualquier lado.
 
-Termina con fuerza
-Al finalizar un entrenamiento verás lo que has conseguido: tu objetivo semanal llenándose y, después, tus nuevos récords personales y mejoras. Valora tu esfuerzo con la misma escala que Apple Fitness (la valoración también llega a Apple Salud) y añade una nota para recordar la sesión.
+Un grabador más rápido
+El grabador ya no se atasca después de cada toque. Cerrar una hoja, abrir la lista de ejercicios, añadir un ejercicio y borrar una serie es ahora varias veces más rápido, incluso con años de historial.
 
-Enfoque del entrenamiento
-Los objetivos de equilibrio muscular son ahora series por semana para cada grupo muscular. Elige un enfoque, como Cuerpo completo, Tren superior, Tren inferior, Brazos y hombros o Cardio, y LOGIT ajusta los objetivos a tu semana. El Resumen indica los grupos en los que vas por detrás, y al tocar una barra ves su objetivo y los ejercicios que hay detrás.
-
-Más formas de registrar
-Series asistidas, objetivos de tiempo para durar más o ir más rápido, y tiempos que escribes como 32:15 en lugar de 1935. Elige el formato de tiempo para cada ejercicio.
-
-Apple Salud
-La grasa corporal se sincroniza ahora en ambos sentidos con Salud, y al añadir tu altura en Ajustes obtienes tu IMC.
-
-En tu pantalla bloqueada
-La Actividad en vivo se parece ahora al grabador: la serie que estás registrando o tu descanso, y nada más.
-
-Más en 5.2
-· La búsqueda entiende fechas: prueba con un mes, un día de la semana o «la semana pasada»
-· Explicaciones más claras en cada pantalla de métricas, y el e1RM se llama ahora Fuerza
-· Las series descendentes se sincronizan ahora entre tus dispositivos con iCloud
-· Los ejercicios y plantillas que iCloud había duplicado vuelven a unirse en uno, sin perder ninguna serie
-· Cancelar descarta ahora de verdad un entrenamiento
-· Una barra de teclado flotante con Siguiente
-· Correcciones de un cierre inesperado en el Historial y de iconos de pestañas que se quedaban coloreados
+Más en 5.3
+· El final de un entrenamiento llega en un solo movimiento fluido, y los nuevos récords suben hasta su mejor marca
+· Mantén pulsada cualquier parte de una serie para abrir su menú
 
 Gracias por entrenar con LOGIT. ¡Sigue así!

@@ -30,6 +30,12 @@ enum ScreenshotFixtures {
         return args.contains("-UITEST_SHOW_RECORDER") || args.contains("UITEST_SHOW_RECORDER")
     }
 
+    /// Shot 07 (`-UITEST_DEEPLINK exerciseIn3D`): the exercise detail opens its Instructions sheet,
+    /// and the sheet's 3D figure starts turned to a three-quarter view from above.
+    static var opensExerciseIn3D: Bool {
+        isEnabled && deepLinkTarget == "exerciseIn3D"
+    }
+
     /// When set, LOGITApp swaps its entire root view for the
     /// `LiveActivityShowcaseView` marketing mockup. The real app never needs
     /// this; it exists purely so fastlane can capture a Lock Screen-style

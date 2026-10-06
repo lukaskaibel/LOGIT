@@ -322,6 +322,16 @@ struct HomeScreen: View {
             if let exercise = screenshotFixtureExercise(named: "previewBenchPress") {
                 homeNavigationCoordinator.path = [.exercise(exercise)]
             }
+        case "exerciseIn3D":
+            // The bench press in 3D over its steps (the detail opens the sheet itself, see
+            // `ScreenshotFixtures.opensExerciseIn3D`). The fixture's exercise isn't the library's,
+            // so it borrows the library's steps in the screenshot's language.
+            if let exercise = screenshotFixtureExercise(named: "previewBenchPress") {
+                exercise.instructions = DefaultExerciseService.libraryInstructions(
+                    forNameKey: "_default.exercise.barbellBenchPress"
+                )
+                homeNavigationCoordinator.path = [.exercise(exercise)]
+            }
         case "workoutDetail":
             if let workout = screenshotFixtureWorkout(named: "previewArmDay", in: workouts) {
                 homeNavigationCoordinator.path = [.workout(workout)]

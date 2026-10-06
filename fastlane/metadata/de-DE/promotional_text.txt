@@ -1,1 +1,1 @@
-LOGIT 5.2: ein Recorder, der über den Sätzen schwebt, Anstrengung und Notizen für jedes Workout, ein Trainingsfokus, der Rückstände zeigt, und neue Arten aufzuzeichnen.
+LOGIT 5.3: jede eingebaute Übung, vorgemacht von einer animierten Figur, die du in 3D drehen kannst, und ein Recorder, der bei jedem Tippen mithält.

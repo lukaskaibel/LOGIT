@@ -5,6 +5,7 @@ Entrena con un plan, registra cada serie en segundos y mira cómo se construye t
 Registra y planifica
 · Registra tus workouts rápido y mantén la constancia
 · Crea tu propia biblioteca de ejercicios
+· Mira cómo se hacen los 208 ejercicios integrados, con figuras animadas que puedes girar en 3D
 · Guarda plantillas o empieza con las que ya vienen listas
 · Registra superseries y drop sets para superar tus límites
 · Registra peso, repeticiones, duración o distancia, según el ejercicio

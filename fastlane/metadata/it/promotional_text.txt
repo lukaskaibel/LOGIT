@@ -1,1 +1,1 @@
-LOGIT 5.2: un registratore che fluttua sopra le serie, sforzo e note per ogni allenamento, un Focus che mostra dove sei indietro e più modi di registrare.
+LOGIT 5.3: ogni esercizio integrato eseguito da una figura animata che puoi ruotare in 3D, e un registratore che risponde subito a ogni tocco.

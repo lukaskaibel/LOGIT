@@ -64,4 +64,4 @@ Poderemos atualizar estes Termos de tempos em tempos. O uso continuado do Servi√
 
 Perguntas sobre estes Termos:
 
-- E-mail: [logit.fitness@gmail.com](correio para:logit.fitness@gmail.com)
+- E-mail: [logit.app@icloud.com](mailto:logit.app@icloud.com)

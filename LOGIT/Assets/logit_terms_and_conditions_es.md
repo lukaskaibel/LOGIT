@@ -64,4 +64,4 @@ Podemos actualizar estos Términos de vez en cuando. El uso continuo del Servici
 
 Preguntas sobre estos Términos:
 
-- Correo electrónico: [logit-fitness@gmail.com] (correo a: logit-fitness@gmail.com)
+- Correo electrónico: [logit.fitness@gmail.com] (correo a: logit.fitness@gmail.com)

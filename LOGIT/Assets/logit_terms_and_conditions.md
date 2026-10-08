@@ -62,4 +62,4 @@ We may update these Terms from time to time. Continued use of the Service after 
 
 Questions about these Terms:
 
-- Email: [logit-fitness@gmail.com](mailto:logit-fitness@gmail.com)
+- Email: [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com)

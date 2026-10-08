@@ -64,4 +64,4 @@ Potremmo aggiornare i presenti Termini di tanto in tanto. L'uso continuato del S
 
 Domande su questi Termini:
 
--E-mail: [logit-fitness@gmail.com](mailto:logit-fitness@gmail.com))
+-E-mail: [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com))

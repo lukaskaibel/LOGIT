@@ -7,7 +7,7 @@ In dieser Datenschutzerklärung für **LOGIT** („wir“, „uns“ oder „uns
 - Laden Sie unsere mobile Anwendung (LOGIT) oder jede andere unserer Anwendungen herunter, die auf diese Datenschutzerklärung verlinkt, und nutzen Sie sie
 - Auf andere Art und Weise mit uns in Kontakt zu treten, einschließlich Vertrieb, Marketing oder Veranstaltungen
 
-**Fragen oder Bedenken?** Das Lesen dieser Datenschutzerklärung wird Ihnen helfen, Ihre Datenschutzrechte und -optionen zu verstehen. Wenn Sie mit unseren Richtlinien und Praktiken nicht einverstanden sind, nutzen Sie unsere Dienste bitte nicht. Wenn Sie noch Fragen oder Bedenken haben, kontaktieren Sie uns bitte unter [logit-fitness@gmail.com](mailto:logit-fitness@gmail.com).
+**Fragen oder Bedenken?** Das Lesen dieser Datenschutzerklärung wird Ihnen helfen, Ihre Datenschutzrechte und -optionen zu verstehen. Wenn Sie mit unseren Richtlinien und Praktiken nicht einverstanden sind, nutzen Sie unsere Dienste bitte nicht. Wenn Sie noch Fragen oder Bedenken haben, kontaktieren Sie uns bitte unter [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com).
 
 ## ZUSAMMENFASSUNG DER WICHTIGSTEN PUNKTE
 
@@ -168,7 +168,7 @@ Widerruf Ihrer Einwilligung: Wenn wir uns bei der Verarbeitung Ihrer personenbez
 
 Bitte beachten Sie jedoch, dass dies keinen Einfluss auf die Rechtmäßigkeit der Verarbeitung vor ihrem Widerruf hat und, sofern das geltende Recht dies zulässt, auch keinen Einfluss auf die Verarbeitung Ihrer personenbezogenen Daten hat, die auf der Grundlage anderer rechtmäßiger Verarbeitungsgründe als der Einwilligung erfolgt.
 
-Wenn Sie Fragen oder Kommentare zu Ihren Datenschutzrechten haben, können Sie uns eine E-Mail an [logit-fitness@gmail.com](mailto:logit-fitness@gmail.com) senden.
+Wenn Sie Fragen oder Kommentare zu Ihren Datenschutzrechten haben, können Sie uns eine E-Mail an [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com) senden.
 
 ## 8. KONTROLLEN FÜR DO-NOT-TRACK-FUNKTIONEN
 
@@ -282,7 +282,7 @@ Sobald ein Unternehmen Ihre Anfrage erhält, ist es ihm nicht mehr gestattet, Ih
 
 Bitte beachten Sie, dass sensible personenbezogene Daten, die erhoben oder verarbeitet werden, ohne Rückschlüsse auf Merkmale eines Verbrauchers zu ziehen, von diesem Recht ebenso wenig erfasst sind wie öffentlich zugängliche Informationen.
 
-Um von Ihrem Recht Gebrauch zu machen, die Nutzung und Offenlegung sensibler personenbezogener Daten einzuschränken, senden Sie bitte eine E-Mail an logit-fitness@gmail.com oder stellen Sie einen Antrag auf Zugriff für betroffene Personen.
+Um von Ihrem Recht Gebrauch zu machen, die Nutzung und Offenlegung sensibler personenbezogener Daten einzuschränken, senden Sie bitte eine E-Mail an logit.fitness@gmail.com oder stellen Sie einen Antrag auf Zugriff für betroffene Personen.
 
 Verifizierungsprozess
 
@@ -295,7 +295,7 @@ Sie können der Verarbeitung Ihrer personenbezogenen Daten widersprechen.
 Sie können die Berichtigung Ihrer personenbezogenen Daten verlangen, wenn diese unrichtig oder nicht mehr relevant sind, oder eine Einschränkung der Verarbeitung der Daten verlangen.
 Sie können einen autorisierten Vertreter benennen, der in Ihrem Namen einen Antrag gemäß dem CCPA stellt. Wir können einen Antrag eines autorisierten Vertreters ablehnen, der keinen Nachweis vorlegt, dass er gemäß dem CCPA ordnungsgemäß autorisiert ist, in Ihrem Namen zu handeln.
 Sie können verlangen, dass Sie dem zukünftigen Verkauf oder der Weitergabe Ihrer persönlichen Daten an Dritte widersprechen. Nach Erhalt einer Abmeldeanfrage werden wir so schnell wie möglich, spätestens jedoch fünfzehn (15) Tage nach dem Datum der Einreichung der Anfrage, auf die Anfrage reagieren.
-Um diese Rechte auszuüben, können Sie sich an uns wenden, indem Sie einen Antrag auf Dateneinsichtnahme stellen, eine E-Mail an logit-fitness@gmail.com senden oder sich an die Kontaktdaten am Ende dieses Dokuments wenden. Wenn Sie eine Beschwerde darüber haben, wie wir mit Ihren Daten umgehen, würden wir uns freuen, von Ihnen zu hören.
+Um diese Rechte auszuüben, können Sie sich an uns wenden, indem Sie einen Antrag auf Dateneinsichtnahme stellen, eine E-Mail an logit.fitness@gmail.com senden oder sich an die Kontaktdaten am Ende dieses Dokuments wenden. Wenn Sie eine Beschwerde darüber haben, wie wir mit Ihren Daten umgehen, würden wir uns freuen, von Ihnen zu hören.
 
 ### Einwohner von Colorado
 
@@ -308,9 +308,9 @@ Dieser Abschnitt gilt nur für Einwohner Colorados. Nach dem Colorado Privacy Ac
 - Recht, eine Kopie der personenbezogenen Daten zu erhalten, die Sie uns zuvor mitgeteilt haben
 - Recht, der Verarbeitung Ihrer personenbezogenen Daten zu widersprechen, wenn diese für gezielte Werbung, den Verkauf personenbezogener Daten oder Profiling zur Unterstützung von Entscheidungen verwendet werden, die rechtliche oder ähnlich bedeutsame Auswirkungen haben („Profiling“)
 
-Um einen Antrag auf Ausübung dieser oben beschriebenen Rechte einzureichen, senden Sie bitte eine E-Mail an logit-fitness@gmail.com oder senden Sie einen Antrag auf Zugang zur betroffenen Person.
+Um einen Antrag auf Ausübung dieser oben beschriebenen Rechte einzureichen, senden Sie bitte eine E-Mail an logit.fitness@gmail.com oder senden Sie einen Antrag auf Zugang zur betroffenen Person.
 
-Wenn wir es ablehnen, in Bezug auf Ihre Anfrage Maßnahmen zu ergreifen, und Sie gegen unsere Entscheidung Berufung einlegen möchten, senden Sie uns bitte eine E-Mail an logit-fitness@gmail.com. Innerhalb von fünfundvierzig (45) Tagen nach Eingang einer Beschwerde informieren wir Sie schriftlich über alle Maßnahmen, die als Reaktion auf die Beschwerde ergriffen oder unterlassen wurden, einschließlich einer schriftlichen Erläuterung der Gründe für die Entscheidungen.
+Wenn wir es ablehnen, in Bezug auf Ihre Anfrage Maßnahmen zu ergreifen, und Sie gegen unsere Entscheidung Berufung einlegen möchten, senden Sie uns bitte eine E-Mail an logit.fitness@gmail.com. Innerhalb von fünfundvierzig (45) Tagen nach Eingang einer Beschwerde informieren wir Sie schriftlich über alle Maßnahmen, die als Reaktion auf die Beschwerde ergriffen oder unterlassen wurden, einschließlich einer schriftlichen Erläuterung der Gründe für die Entscheidungen.
 
 ### Einwohner von Connecticut
 
@@ -323,9 +323,9 @@ Dieser Abschnitt gilt nur für Einwohner von Connecticut. Nach dem Connecticut D
 - Recht, eine Kopie der personenbezogenen Daten zu erhalten, die Sie uns zuvor mitgeteilt haben
 - Recht, der Verarbeitung Ihrer personenbezogenen Daten zu widersprechen, wenn diese für gezielte Werbung, den Verkauf personenbezogener Daten oder Profiling zur Unterstützung von Entscheidungen verwendet werden, die rechtliche oder ähnlich bedeutsame Auswirkungen haben („Profiling“)
 
-Um einen Antrag auf Ausübung dieser oben beschriebenen Rechte einzureichen, senden Sie bitte eine E-Mail an logit-fitness@gmail.com oder reichen Sie einen Antrag auf Zugriff für eine betroffene Person ein.
+Um einen Antrag auf Ausübung dieser oben beschriebenen Rechte einzureichen, senden Sie bitte eine E-Mail an logit.fitness@gmail.com oder reichen Sie einen Antrag auf Zugriff für eine betroffene Person ein.
 
-Wenn wir es ablehnen, in Bezug auf Ihre Anfrage Maßnahmen zu ergreifen, und Sie gegen unsere Entscheidung Berufung einlegen möchten, senden Sie uns bitte eine E-Mail an logit-fitness@gmail.com. Innerhalb von sechzig (60) Tagen nach Eingang einer Beschwerde informieren wir Sie schriftlich über alle Maßnahmen, die als Reaktion auf die Beschwerde ergriffen oder unterlassen wurden, einschließlich einer schriftlichen Erläuterung der Gründe für die Entscheidungen.
+Wenn wir es ablehnen, in Bezug auf Ihre Anfrage Maßnahmen zu ergreifen, und Sie gegen unsere Entscheidung Berufung einlegen möchten, senden Sie uns bitte eine E-Mail an logit.fitness@gmail.com. Innerhalb von sechzig (60) Tagen nach Eingang einer Beschwerde informieren wir Sie schriftlich über alle Maßnahmen, die als Reaktion auf die Beschwerde ergriffen oder unterlassen wurden, einschließlich einer schriftlichen Erläuterung der Gründe für die Entscheidungen.
 
 ### Einwohner von Utah
 
@@ -337,7 +337,7 @@ Dieser Abschnitt gilt nur für Einwohner von Utah. Nach dem Utah Consumer Privac
 - Recht, eine Kopie der personenbezogenen Daten zu erhalten, die Sie uns zuvor mitgeteilt haben
 - Recht, der Verarbeitung Ihrer personenbezogenen Daten zu widersprechen, wenn diese für gezielte Werbung oder den Verkauf personenbezogener Daten verwendet werden
 
-Um einen Antrag auf Ausübung dieser oben beschriebenen Rechte einzureichen, senden Sie bitte eine E-Mail an logit-fitness@gmail.com oder reichen Sie einen Antrag auf Zugriff für eine betroffene Person ein.
+Um einen Antrag auf Ausübung dieser oben beschriebenen Rechte einzureichen, senden Sie bitte eine E-Mail an logit.fitness@gmail.com oder reichen Sie einen Antrag auf Zugriff für eine betroffene Person ein.
 
 ### Einwohner von Virginia
 
@@ -362,7 +362,7 @@ Ihre Rechte in Bezug auf Ihre personenbezogenen Daten
 
 Machen Sie von Ihren im Virginia VCDPA vorgesehenen Rechten Gebrauch
 
-Sie können uns per E-Mail unter logit-fitness@gmail.com kontaktieren oder einen Antrag auf Datenzugriff für betroffene Personen stellen.
+Sie können uns per E-Mail unter logit.fitness@gmail.com kontaktieren oder einen Antrag auf Datenzugriff für betroffene Personen stellen.
 
 Wenn Sie zur Ausübung Ihrer Rechte einen bevollmächtigten Vertreter beauftragen, können wir einen Antrag ablehnen, wenn der bevollmächtigte Vertreter keinen Nachweis vorlegt, dass er ordnungsgemäß bevollmächtigt ist, in Ihrem Namen zu handeln.
 
@@ -374,7 +374,7 @@ Nach Erhalt Ihrer Anfrage werden wir unverzüglich, in jedem Fall jedoch innerha
 
 Recht auf Berufung
 
-Wenn wir uns weigern, in Bezug auf Ihre Anfrage Maßnahmen zu ergreifen, werden wir Sie über unsere Entscheidung und die Gründe dafür informieren. Wenn Sie gegen unsere Entscheidung Berufung einlegen möchten, senden Sie uns bitte eine E-Mail an logit-fitness@gmail.com. Innerhalb von sechzig (60) Tagen nach Eingang einer Beschwerde informieren wir Sie schriftlich über alle Maßnahmen, die als Reaktion auf die Beschwerde ergriffen oder unterlassen wurden, einschließlich einer schriftlichen Erläuterung der Gründe für die Entscheidungen. Wenn Ihre Berufung abgelehnt wird, können Sie sich an den Generalstaatsanwalt wenden, um eine Beschwerde einzureichen.
+Wenn wir uns weigern, in Bezug auf Ihre Anfrage Maßnahmen zu ergreifen, werden wir Sie über unsere Entscheidung und die Gründe dafür informieren. Wenn Sie gegen unsere Entscheidung Berufung einlegen möchten, senden Sie uns bitte eine E-Mail an logit.fitness@gmail.com. Innerhalb von sechzig (60) Tagen nach Eingang einer Beschwerde informieren wir Sie schriftlich über alle Maßnahmen, die als Reaktion auf die Beschwerde ergriffen oder unterlassen wurden, einschließlich einer schriftlichen Erläuterung der Gründe für die Entscheidungen. Wenn Ihre Berufung abgelehnt wird, können Sie sich an den Generalstaatsanwalt wenden, um eine Beschwerde einzureichen.
 
 ## 10. HABEN ANDERE REGIONEN SPEZIFISCHE DATENSCHUTZRECHTE?
 
@@ -423,7 +423,7 @@ Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren. Die aktu
 
 ## 13. WIE KÖNNEN SIE UNS BEZÜGLICH DIESER MITTEILUNG KONTAKTIEREN?
 
-Wenn Sie Fragen oder Kommentare zu dieser Mitteilung haben, können Sie uns eine E-Mail an [logit-fitness@gmail.com](mailto:logit-fitness@gmail.com) senden.
+Wenn Sie Fragen oder Kommentare zu dieser Mitteilung haben, können Sie uns eine E-Mail an [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com) senden.
 
 ## 14. WIE KÖNNEN SIE DIE VON IHNEN ERFASSTEN DATEN ÜBERPRÜFEN, AKTUALISIEREN ODER LÖSCHEN?
 

@@ -64,4 +64,4 @@ Wir können diese Bedingungen von Zeit zu Zeit aktualisieren. Die fortgesetzte N
 
 Fragen zu diesen Bedingungen:
 
-- E-Mail: [logit-fitness@gmail.com](mailto:logit-fitness@gmail.com)
+- E-Mail: [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com)

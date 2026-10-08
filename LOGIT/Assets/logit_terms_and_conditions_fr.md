@@ -64,4 +64,4 @@ Nous pouvons mettre à jour ces conditions de temps à autre. L'utilisation cont
 
 Questions concernant ces Conditions :
 
-- E-mail : [logit-fitness@gmail.com](mailto:logit-fitness@gmail.com)
+- E-mail : [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com)

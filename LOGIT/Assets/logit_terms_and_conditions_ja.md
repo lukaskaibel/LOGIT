@@ -64,4 +64,4 @@ _発効日 2026 年 1 月 28 日_
 
 これらの規約に関する質問:
 
-- 電子メール: [logit-fitness@gmail.com](mailto:logit-fitness@gmail.com)
+- 電子メール: [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com)

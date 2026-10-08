@@ -237,9 +237,12 @@ platform :ios do
       api_key: api_key
     )
 
+    # skip_info_plist: agvtool would otherwise write the number into both Info.plists in place of
+    # $(CURRENT_PROJECT_VERSION), and a number there outranks the build setting (see AGENT.md).
     increment_build_number(
       xcodeproj: XCODE_PROJECT,
-      build_number: latest_testflight_build_number(api_key: api_key).to_i + 1
+      build_number: latest_testflight_build_number(api_key: api_key).to_i + 1,
+      skip_info_plist: true
     )
 
     build_app(
@@ -317,9 +320,12 @@ platform :ios do
       api_key: api_key
     )
 
+    # skip_info_plist: agvtool would otherwise write the number into both Info.plists in place of
+    # $(CURRENT_PROJECT_VERSION), and a number there outranks the build setting (see AGENT.md).
     increment_build_number(
       xcodeproj: XCODE_PROJECT,
-      build_number: latest_testflight_build_number(api_key: api_key).to_i + 1
+      build_number: latest_testflight_build_number(api_key: api_key).to_i + 1,
+      skip_info_plist: true
     )
 
     build_app(

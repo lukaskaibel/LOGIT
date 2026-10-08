@@ -1,13 +1,5 @@
-LOGIT 5.3 zeigt dir, wie jede Übung geht – jetzt in 3D – und macht den Recorder schnell.
+LOGIT 5.3.1 gibt deinen Fragen und Ideen eine neue Adresse.
 
-Jede Übung sehen
-Alle 208 eingebauten Übungen werden jetzt von einer animierten Figur vorgemacht, die beanspruchten Muskeln hervorgehoben. Du siehst sie in der Übungsliste, wenn du einem Workout eine Übung hinzufügst, in der Gesamtkraft und auf der Seite jeder Übung. Tippe dort darauf, um die Anleitung zu öffnen, und dreh die Figur, um die Bewegung von jeder Seite zu sehen.
-
-Ein schnellerer Recorder
-Der Recorder stockt nach einem Tippen nicht mehr. Ein Sheet schließen, die Übungsliste öffnen, eine Übung hinzufügen und einen Satz löschen geht jetzt um ein Vielfaches schneller, auch mit jahrelangem Verlauf.
-
-Mehr in 5.3
-· Das Ende eines Workouts erscheint in einer einzigen flüssigen Bewegung, und neue Rekorde zählen bis zu ihrem Bestwert hoch
-· Halte einen Satz an beliebiger Stelle gedrückt, um sein Menü zu öffnen
+· Support und Funktion vorschlagen in den Einstellungen schreiben jetzt an logit.app@icloud.com, und Datenschutz und Nutzungsbedingungen nennen sie ebenfalls
 
 Danke, dass du mit LOGIT trainierst. Bleib dran!

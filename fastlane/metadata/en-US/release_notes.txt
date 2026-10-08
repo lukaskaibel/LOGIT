@@ -1,13 +1,5 @@
-LOGIT 5.3 shows you how every exercise is done, now in 3D, and makes the recorder fast.
+LOGIT 5.3.1 gives your questions and ideas a new address.
 
-See every exercise
-All 208 built-in exercises are now performed by an animated figure, with the muscles they work highlighted. You'll see it in the exercise list, when you add an exercise to a workout, on Overall Strength and on every exercise's page. Tap it there to open the instructions, then turn the figure to see the movement from any side.
-
-A faster recorder
-The recorder no longer stalls after a tap. Closing a sheet, opening the exercise list, adding an exercise and deleting a set are now several times faster, even with years of history.
-
-More in 5.3
-· The end of a workout arrives in one smooth movement, and new records count up to their best
-· Press and hold anywhere on a set to open its menu
+· Support and Suggest a Feature in Settings now write to logit.app@icloud.com, and the Privacy Policy and Terms & Conditions name it too
 
 Thanks for training with LOGIT. Keep it up!

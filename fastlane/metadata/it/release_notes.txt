@@ -1,13 +1,5 @@
-LOGIT 5.3 ti mostra come si esegue ogni esercizio, ora in 3D, e rende veloce il registratore.
+LOGIT 5.3.1 dà un nuovo indirizzo alle tue domande e idee.
 
-Guarda ogni esercizio
-Tutti i 208 esercizi integrati ora sono eseguiti da una figura animata, con i muscoli coinvolti in evidenza. La vedi nell'elenco degli esercizi, quando aggiungi un esercizio a un allenamento, in Forza complessiva e nella pagina di ogni esercizio. Toccala lì per aprire le istruzioni e ruota la figura per vedere il movimento da ogni lato.
-
-Un registratore più veloce
-Il registratore non si blocca più dopo ogni tocco. Chiudere un foglio, aprire l'elenco degli esercizi, aggiungere un esercizio ed eliminare una serie ora è molte volte più veloce, anche con anni di storico.
-
-Altro nella 5.3
-· La fine di un allenamento arriva in un unico movimento fluido, e i nuovi record salgono fino al loro massimo
-· Tieni premuto un punto qualsiasi di una serie per aprirne il menu
+· Supporto e Suggerisci una funzione nelle Impostazioni ora scrivono a logit.app@icloud.com, e anche Privacy e Termini e condizioni lo indicano
 
 Grazie per allenarti con LOGIT. Continua così!

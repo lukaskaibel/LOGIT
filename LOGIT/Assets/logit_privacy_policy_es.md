@@ -7,7 +7,7 @@ Este aviso de privacidad para **LOGIT** ("nosotros", "nos" o "nuestro") describe
 - Descargue y utilice nuestra aplicación móvil (LOGIT), o cualquier otra aplicación nuestra que enlace a este aviso de privacidad
 - Interactuar con nosotros de otras formas relacionadas, incluidas ventas, marketing o eventos.
 
-**¿Preguntas o inquietudes?** Leer este aviso de privacidad lo ayudará a comprender sus derechos y opciones de privacidad. Si no está de acuerdo con nuestras políticas y prácticas, no utilice nuestros Servicios. Si aún tiene alguna pregunta o inquietud, comuníquese con nosotros al [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com).
+**¿Preguntas o inquietudes?** Leer este aviso de privacidad lo ayudará a comprender sus derechos y opciones de privacidad. Si no está de acuerdo con nuestras políticas y prácticas, no utilice nuestros Servicios. Si aún tiene alguna pregunta o inquietud, comuníquese con nosotros al [logit.app@icloud.com](mailto:logit.app@icloud.com).
 
 ## RESUMEN DE PUNTOS CLAVE
 
@@ -168,7 +168,7 @@ Retirar su consentimiento: si confiamos en su consentimiento para procesar su in
 
 Sin embargo, tenga en cuenta que esto no afectará la legalidad del procesamiento antes de su retiro ni, cuando la ley aplicable lo permita, afectará el procesamiento de su información personal realizado basándose en motivos de procesamiento legales distintos del consentimiento.
 
-Si tiene preguntas o comentarios sobre sus derechos de privacidad, puede enviarnos un correo electrónico a [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com).
+Si tiene preguntas o comentarios sobre sus derechos de privacidad, puede enviarnos un correo electrónico a [logit.app@icloud.com](mailto:logit.app@icloud.com).
 
 ## 8. CONTROLES PARA FUNCIONES DE NO SEGUIMIENTO
 
@@ -282,7 +282,7 @@ Una vez que una empresa recibe su solicitud, ya no podrá usar ni divulgar su in
 
 Tenga en cuenta que la información personal sensible que se recopila o procesa sin el propósito de inferir características sobre un consumidor no está cubierta por este derecho, así como la información disponible públicamente.
 
-Para ejercer su derecho a limitar el uso y la divulgación de información personal confidencial, envíe un correo electrónico a logit.fitness@gmail.com o envíe una solicitud de acceso del interesado.
+Para ejercer su derecho a limitar el uso y la divulgación de información personal confidencial, envíe un correo electrónico a logit.app@icloud.com o envíe una solicitud de acceso del interesado.
 
 Proceso de verificación
 
@@ -295,7 +295,7 @@ Puede oponerse al procesamiento de su información personal.
 Puede solicitar la corrección de sus datos personales si son incorrectos o ya no son relevantes, o solicitar restringir el procesamiento de la información.
 Puede designar a un agente autorizado para realizar una solicitud en virtud de la CCPA en su nombre. Podemos rechazar una solicitud de un agente autorizado que no presente pruebas de que ha sido autorizado válidamente para actuar en su nombre de conformidad con la CCPA.
 Puede solicitar la exclusión voluntaria de la venta o el intercambio futuro de su información personal con terceros. Al recibir una solicitud de exclusión voluntaria, actuaremos en consecuencia lo antes posible, pero a más tardar quince (15) días a partir de la fecha de envío de la solicitud.
-Para ejercer estos derechos, puede comunicarse con nosotros enviando una solicitud de acceso del interesado, por correo electrónico a logit.fitness@gmail.com o consultando los datos de contacto que se encuentran al final de este documento. Si tiene una queja sobre cómo manejamos sus datos, nos gustaría saber de usted.
+Para ejercer estos derechos, puede comunicarse con nosotros enviando una solicitud de acceso del interesado, por correo electrónico a logit.app@icloud.com o consultando los datos de contacto que se encuentran al final de este documento. Si tiene una queja sobre cómo manejamos sus datos, nos gustaría saber de usted.
 
 ### Residentes de Colorado
 
@@ -308,9 +308,9 @@ Esta sección se aplica únicamente a los residentes de Colorado. Según la Ley 
 - Derecho a obtener una copia de los datos personales que previamente compartió con nosotros
 - Derecho a optar por no procesar sus datos personales si se utilizan para publicidad dirigida, la venta de datos personales o la elaboración de perfiles en cumplimiento de decisiones que produzcan efectos legales o igualmente significativos ("elaboración de perfiles")
 
-Para enviar una solicitud para ejercer estos derechos descritos anteriormente, envíe un correo electrónico a logit.fitness@gmail.com o envíe una solicitud de acceso del interesado.
+Para enviar una solicitud para ejercer estos derechos descritos anteriormente, envíe un correo electrónico a logit.app@icloud.com o envíe una solicitud de acceso del interesado.
 
-Si nos negamos a tomar medidas con respecto a su solicitud y desea apelar nuestra decisión, envíenos un correo electrónico a logit.fitness@gmail.com. Dentro de los cuarenta y cinco (45) días posteriores a la recepción de una apelación, le informaremos por escrito sobre cualquier acción tomada o no en respuesta a la apelación, incluida una explicación por escrito de los motivos de las decisiones.
+Si nos negamos a tomar medidas con respecto a su solicitud y desea apelar nuestra decisión, envíenos un correo electrónico a logit.app@icloud.com. Dentro de los cuarenta y cinco (45) días posteriores a la recepción de una apelación, le informaremos por escrito sobre cualquier acción tomada o no en respuesta a la apelación, incluida una explicación por escrito de los motivos de las decisiones.
 
 ### Residentes de Connecticut
 
@@ -323,9 +323,9 @@ Esta sección se aplica únicamente a los residentes de Connecticut. Según la L
 - Derecho a obtener una copia de los datos personales que previamente compartió con nosotros
 - Derecho a optar por no procesar sus datos personales si se utilizan para publicidad dirigida, la venta de datos personales o la elaboración de perfiles en cumplimiento de decisiones que produzcan efectos legales o igualmente significativos ("elaboración de perfiles")
 
-Para enviar una solicitud para ejercer estos derechos descritos anteriormente, envíe un correo electrónico a logit.fitness@gmail.com o envíe una solicitud de acceso del interesado.
+Para enviar una solicitud para ejercer estos derechos descritos anteriormente, envíe un correo electrónico a logit.app@icloud.com o envíe una solicitud de acceso del interesado.
 
-Si nos negamos a tomar medidas con respecto a su solicitud y desea apelar nuestra decisión, envíenos un correo electrónico a logit.fitness@gmail.com. Dentro de los sesenta (60) días posteriores a la recepción de una apelación, le informaremos por escrito sobre cualquier acción tomada o no en respuesta a la apelación, incluida una explicación por escrito de los motivos de las decisiones.
+Si nos negamos a tomar medidas con respecto a su solicitud y desea apelar nuestra decisión, envíenos un correo electrónico a logit.app@icloud.com. Dentro de los sesenta (60) días posteriores a la recepción de una apelación, le informaremos por escrito sobre cualquier acción tomada o no en respuesta a la apelación, incluida una explicación por escrito de los motivos de las decisiones.
 
 ### Residentes de Utah
 
@@ -337,7 +337,7 @@ Esta sección se aplica únicamente a los residentes de Utah. Según la Ley de P
 - Derecho a obtener una copia de los datos personales que previamente compartió con nosotros
 - Derecho a optar por no participar en el procesamiento de sus datos personales si se utilizan para publicidad dirigida o la venta de datos personales
 
-Para enviar una solicitud para ejercer estos derechos descritos anteriormente, envíe un correo electrónico a logit.fitness@gmail.com o envíe una solicitud de acceso del interesado.
+Para enviar una solicitud para ejercer estos derechos descritos anteriormente, envíe un correo electrónico a logit.app@icloud.com o envíe una solicitud de acceso del interesado.
 
 ### Residentes de Virginia
 
@@ -362,7 +362,7 @@ Tus derechos con respecto a tus datos personales
 
 Ejerza sus derechos previstos en la VCDPA de Virginia
 
-Puede contactarnos por correo electrónico a logit.fitness@gmail.com o enviar una solicitud de acceso del interesado.
+Puede contactarnos por correo electrónico a logit.app@icloud.com o enviar una solicitud de acceso del interesado.
 
 Si utiliza un agente autorizado para ejercer sus derechos, podemos rechazar una solicitud si el agente autorizado no presenta pruebas de que ha sido autorizado válidamente para actuar en su nombre.
 
@@ -374,7 +374,7 @@ Al recibir su solicitud, le responderemos sin demoras indebidas, pero en todos l
 
 Derecho a apelar
 
-Si nos negamos a tomar medidas con respecto a su solicitud, le informaremos de nuestra decisión y del razonamiento que la sustenta. Si desea apelar nuestra decisión, envíenos un correo electrónico a logit.fitness@gmail.com. Dentro de los sesenta (60) días posteriores a la recepción de una apelación, le informaremos por escrito sobre cualquier acción tomada o no en respuesta a la apelación, incluida una explicación por escrito de los motivos de las decisiones. Si se rechaza su apelación, puede comunicarse con el Fiscal General para presentar una queja.
+Si nos negamos a tomar medidas con respecto a su solicitud, le informaremos de nuestra decisión y del razonamiento que la sustenta. Si desea apelar nuestra decisión, envíenos un correo electrónico a logit.app@icloud.com. Dentro de los sesenta (60) días posteriores a la recepción de una apelación, le informaremos por escrito sobre cualquier acción tomada o no en respuesta a la apelación, incluida una explicación por escrito de los motivos de las decisiones. Si se rechaza su apelación, puede comunicarse con el Fiscal General para presentar una queja.
 
 ## 10. ¿TIENEN OTRAS REGIONES DERECHOS DE PRIVACIDAD ESPECÍFICOS?
 
@@ -423,7 +423,7 @@ Es posible que actualicemos este aviso de privacidad de vez en cuando. La versi�
 
 ## 13. ¿CÓMO PUEDE CONTACTARNOS SOBRE ESTE AVISO?
 
-Si tiene preguntas o comentarios sobre este aviso, puede enviarnos un correo electrónico a [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com).
+Si tiene preguntas o comentarios sobre este aviso, puede enviarnos un correo electrónico a [logit.app@icloud.com](mailto:logit.app@icloud.com).
 
 ## 14. ¿CÓMO PUEDES REVISAR, ACTUALIZAR O ELIMINAR LOS DATOS QUE RECOPILAMOS DE TI?
 

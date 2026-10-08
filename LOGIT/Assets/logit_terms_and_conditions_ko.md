@@ -64,4 +64,4 @@ _적용일자: 2026년 1월 28일_
 
 본 약관에 관한 질문:
 
-- 이메일: [logit.fitness@gmail.com](메일받는 사람:logit.fitness@gmail.com)gmail.com)
+- 이메일: [logit.app@icloud.com](mailto:logit.app@icloud.com)

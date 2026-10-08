@@ -5,7 +5,7 @@ This privacy notice for **LOGIT** ("we," "us," or "our"), describes how and why 
 - Download and use our mobile application (LOGIT), or any other application of ours that links to this privacy notice
 - Engage with us in other related ways, including any sales, marketing, or events
 
-**Questions or concerns?** Reading this privacy notice will help you understand your privacy rights and choices. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com).
+**Questions or concerns?** Reading this privacy notice will help you understand your privacy rights and choices. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at [logit.app@icloud.com](mailto:logit.app@icloud.com).
 
 ## SUMMARY OF KEY POINTS
 
@@ -166,7 +166,7 @@ Withdrawing your consent: If we are relying on your consent to process your pers
 
 However, please note that this will not affect the lawfulness of the processing before its withdrawal nor, when applicable law allows, will it affect the processing of your personal information conducted in reliance on lawful processing grounds other than consent.
 
-If you have questions or comments about your privacy rights, you may email us at [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com).
+If you have questions or comments about your privacy rights, you may email us at [logit.app@icloud.com](mailto:logit.app@icloud.com).
 
 ## 8. CONTROLS FOR DO-NOT-TRACK FEATURES
 
@@ -280,7 +280,7 @@ Once a business receives your request, they are no longer allowed to use or disc
 
 Please note that sensitive personal information that is collected or processed without the purpose of inferring characteristics about a consumer is not covered by this right, as well as the publicly available information.
 
-To exercise your right to limit use and disclosure of sensitive personal information, please email logit.fitness@gmail.com or submit a data subject access request.
+To exercise your right to limit use and disclosure of sensitive personal information, please email logit.app@icloud.com or submit a data subject access request.
 
 Verification process
 
@@ -293,7 +293,7 @@ You may object to the processing of your personal information.
 You may request correction of your personal data if it is incorrect or no longer relevant, or ask to restrict the processing of the information.
 You can designate an authorized agent to make a request under the CCPA on your behalf. We may deny a request from an authorized agent that does not submit proof that they have been validly authorized to act on your behalf in accordance with the CCPA.
 You may request to opt out from future selling or sharing of your personal information to third parties. Upon receiving an opt-out request, we will act upon the request as soon as feasibly possible, but no later than fifteen (15) days from the date of the request submission.
-To exercise these rights, you can contact us by submitting a\'a0data subject access request, by email at logit.fitness@gmail.com, or by referring to the contact details at the bottom of this document. If you have a complaint about how we handle your data, we would like to hear from you.
+To exercise these rights, you can contact us by submitting a\'a0data subject access request, by email at logit.app@icloud.com, or by referring to the contact details at the bottom of this document. If you have a complaint about how we handle your data, we would like to hear from you.
 
 ### Colorado Residents
 
@@ -306,9 +306,9 @@ This section applies only to Colorado residents. Under the Colorado Privacy Act 
 - Right to obtain a copy of the personal data you previously shared with us
 - Right to opt out of the processing of your personal data if it is used for targeted advertising, the sale of personal data, or profiling in furtherance of decisions that produce legal or similarly significant effects ("profiling")
 
-To submit a request to exercise\'a0these\'a0rights described above, please email logit.fitness@gmail.com\'a0or\'a0submit a\'a0data subject access request.
+To submit a request to exercise\'a0these\'a0rights described above, please email logit.app@icloud.com\'a0or\'a0submit a\'a0data subject access request.
 
-If we decline to take action regarding your request and you wish to appeal our decision, please email us at logit.fitness@gmail.com. Within forty-five (45) days of receipt of an appeal, we will inform you in writing of any action taken or not taken in response to the appeal, including a written explanation of the reasons for the decisions.
+If we decline to take action regarding your request and you wish to appeal our decision, please email us at logit.app@icloud.com. Within forty-five (45) days of receipt of an appeal, we will inform you in writing of any action taken or not taken in response to the appeal, including a written explanation of the reasons for the decisions.
 
 ### Connecticut Residents
 
@@ -321,9 +321,9 @@ This section applies only to Connecticut residents. Under the Connecticut Data P
 - Right to obtain a copy of the personal data you previously shared with us
 - Right to opt out of the processing of your personal data if it is used for targeted advertising, the sale of personal data, or profiling in furtherance of decisions that produce legal or similarly significant effects ("profiling")
 
-To submit a request to exercise these rights described above, please email logit.fitness@gmail.com or submit a data subject access request.
+To submit a request to exercise these rights described above, please email logit.app@icloud.com or submit a data subject access request.
 
-If we decline to take action regarding your request and you wish to appeal our decision, please email us at logit.fitness@gmail.com. Within sixty (60) days of receipt of an appeal, we will inform you in writing of any action taken or not taken in response to the appeal, including a written explanation of the reasons for the decisions.
+If we decline to take action regarding your request and you wish to appeal our decision, please email us at logit.app@icloud.com. Within sixty (60) days of receipt of an appeal, we will inform you in writing of any action taken or not taken in response to the appeal, including a written explanation of the reasons for the decisions.
 
 ### Utah Residents
 
@@ -335,7 +335,7 @@ This section applies only to Utah residents. Under the Utah Consumer Privacy Act
 - Right to obtain a copy of the personal data you previously shared with us
 - Right to opt out of the processing of your personal data if it is used for targeted advertising or the sale of personal data
 
-To submit a request to exercise these rights described above, please email logit.fitness@gmail.com or submit a data subject access request.
+To submit a request to exercise these rights described above, please email logit.app@icloud.com or submit a data subject access request.
 
 ### Virginia Residents
 
@@ -360,7 +360,7 @@ Your rights with respect to your personal data
 
 Exercise your rights provided under the Virginia VCDPA
 
-You may contact us by email at logit.fitness@gmail.com or submit a data subject access request.
+You may contact us by email at logit.app@icloud.com or submit a data subject access request.
 
 If you are using an authorized agent to exercise your rights, we may deny a request if the authorized agent does not submit proof that they have been validly authorized to act on your behalf.
 
@@ -372,7 +372,7 @@ Upon receiving your request, we will respond without undue delay, but in all cas
 
 Right to appeal
 
-If we decline to take action regarding your request, we will inform you of our decision and reasoning behind it. If you wish to appeal our decision, please email us at logit.fitness@gmail.com. Within sixty (60) days of receipt of an appeal, we will inform you in writing of any action taken or not taken in response to the appeal, including a written explanation of the reasons for the decisions. If your appeal is denied, you may contact the Attorney General to submit a complaint.
+If we decline to take action regarding your request, we will inform you of our decision and reasoning behind it. If you wish to appeal our decision, please email us at logit.app@icloud.com. Within sixty (60) days of receipt of an appeal, we will inform you in writing of any action taken or not taken in response to the appeal, including a written explanation of the reasons for the decisions. If your appeal is denied, you may contact the Attorney General to submit a complaint.
 
 ## 10. DO OTHER REGIONS HAVE SPECIFIC PRIVACY RIGHTS?
 
@@ -421,7 +421,7 @@ We may update this privacy notice from time to time. The updated version will be
 
 ## 13. HOW CAN YOU CONTACT US ABOUT THIS NOTICE?
 
-If you have questions or comments about this notice, you may email us at [logit.fitness@gmail.com](mailto:logit.fitness@gmail.com).
+If you have questions or comments about this notice, you may email us at [logit.app@icloud.com](mailto:logit.app@icloud.com).
 
 ## 14. HOW CAN YOU REVIEW, UPDATE, OR DELETE THE DATA WE COLLECT FROM YOU?
 
